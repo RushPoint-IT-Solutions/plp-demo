@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -11,10 +12,28 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/', function () {
+    return view('student.access-module');
+    });
+
+// Placeholder Routes for Luis's tasks
+Route::get('/applicant', function () {
+    return view('applicant.applicant-login-placeholder');
+});
+
+Route::get('/applicant-form', function () {
+    return view('applicant.applicant-form-placeholder');
+});
+
+Route::get('/student', function () {
+    return view('student.student-login-placeholder');
+});
+
+Route::get('/section-offering', 'StudentController@sectionOffering');
+
+Route::get('/schedule', 'StudentController@schedule');
