@@ -36,4 +36,16 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    /**
+     * Show the application's login form.
+     * Defaults to 'student' module if accessed via /login directly.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showLoginForm()
+    {
+        $module = request()->get('module', 'student');
+        return view('auth.login', ['module' => $module]);
+    }
 }
