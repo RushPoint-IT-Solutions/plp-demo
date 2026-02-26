@@ -4,7 +4,9 @@
     <img src="https://ui-avatars.com/api/?name=Student&background=1a6e1a&color=fff" alt="Profile" class="profile-pic">
 </div>
 
+<div class="dashboard-header-divider"></div>
+
 <div class="dashboard-title-bar">
-    Section Offering
+    @yield('page-title', 'Section Offering')
 </div>
 

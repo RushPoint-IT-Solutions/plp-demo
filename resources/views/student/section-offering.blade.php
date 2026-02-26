@@ -130,6 +130,7 @@
                     <span class="cor-info-label">Year Level:</span>
                     <span class="cor-info-value">{{ $student->year_level }}</span>
                 </div>
+                <div class="cor-info-group"></div>
             </div>
         </div>
 

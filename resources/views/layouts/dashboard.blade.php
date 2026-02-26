@@ -19,16 +19,8 @@
 
         <!-- Main Content -->
         <div class="dashboard-main">
-            
-            <!-- Top White Bar with Profile -->
-            <div class="dashboard-top-bar">
-                <img src="https://ui-avatars.com/api/?name=Student&background=006837&color=fff" alt="Profile" class="profile-pic">
-            </div>
 
-            <!-- Green Title Bar -->
-            <div class="dashboard-title-bar">
-                @yield('page-title', 'Section Offering')
-            </div>
+            @include('includes.dashboard-header')
 
             <!-- Page Content -->
             <div class="dashboard-content">

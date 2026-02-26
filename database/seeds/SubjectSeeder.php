@@ -9,7 +9,7 @@ class SubjectSeeder extends Seeder
     {
         $subjects = [
             [
-                'code'        => 'GEC19',
+                'code'        => 'LAWR19',
                 'name'        => 'Life and Works of Rizal',
                 'units'       => 2.0,
                 'days'        => 'Sat',
@@ -47,19 +47,35 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $subject) {
-            DB::table('subjects')->insert(array_merge($subject, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            DB::table('subjects')->updateOrInsert(
+                [
+                    'code' => $subject['code'],
+                    'semester' => $subject['semester'],
+                    'school_year' => $subject['school_year'],
+                ],
+                array_merge($subject, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
         }
 
         // Enrol student id=1 into all subjects
-        $subjectIds = DB::table('subjects')->pluck('id');
+        $subjectIds = DB::table('subjects')
+            ->whereIn('code', array_column($subjects, 'code'))
+            ->pluck('id');
+
         foreach ($subjectIds as $subjectId) {
-            DB::table('student_subject')->insert([
-                'student_id' => 1,
-                'subject_id' => $subjectId,
-            ]);
+            DB::table('student_subject')->updateOrInsert(
+                [
+                    'student_id' => 1,
+                    'subject_id' => $subjectId,
+                ],
+                [
+                    'student_id' => 1,
+                    'subject_id' => $subjectId,
+                ]
+            );
         }
     }
 }

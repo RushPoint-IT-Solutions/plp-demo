@@ -17,7 +17,7 @@
         
         <!-- Background Watermark -->
         <div class="bg-watermark">
-            <img src="{{ asset('resources/images/watermark.png') }}" alt="Watermark">
+            <img src="{{ asset('resources/images/header-logo.svg') }}" alt="Watermark">
         </div>
 
         <!-- Title -->
