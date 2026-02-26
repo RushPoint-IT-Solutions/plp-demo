@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'PLP - Pamantasan ng Lungsod ng Pasig')</title>
+    <title>@yield('title', 'PLP - Login')</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,15 +20,18 @@
 
     @stack('styles')
 </head>
-<body>
+<body class="login-body">
     @include('includes.header')
 
-    {{-- Main Content --}}
-    <main>
-        @yield('content')
-    </main>
+    {{-- Wrapper that covers both main and footer with the bg image --}}
+    <div class="login-bg-wrapper" style="background-image: url('{{ asset('img/schoolbg.png') }}');">
+        {{-- Main Content --}}
+        <main class="login-main">
+            @yield('content')
+        </main>
 
-    @include('includes.footer')
+        @include('includes.footer')
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

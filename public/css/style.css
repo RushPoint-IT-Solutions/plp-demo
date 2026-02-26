@@ -1,0 +1,524 @@
+/* ========================================================
+   PLP Web System – Global Styles
+   ======================================================== */
+
+/* ---------- Base / Reset ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #ffffff;
+    color: #333;
+    height: 100%;
+    overflow: hidden;
+    /* no scrolling – everything fits in viewport */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ========================================================
+   HEADER
+   ======================================================== */
+.plp-header {
+    background-color: #1a6e1a;
+    width: 100%;
+    padding: 6px 0;
+    overflow: visible;
+}
+
+.plp-header-logo {
+    height: 90px;
+    width: auto;
+    object-fit: contain;
+    margin-top: -10px;
+    margin-bottom: -10px;
+}
+
+/* Header title text next to logo */
+.header-title-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.header-title-text .header-line-1 {
+    color: #ffd700;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.header-title-text .header-line-2 {
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* ========================================================
+   ACCESS MODULE SECTION
+   ======================================================== */
+.access-module-section {
+    position: relative;
+    text-align: center;
+    padding: 0 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Background watermark – bigger */
+.bg-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.bg-watermark img {
+    width: 700px;
+    height: auto;
+}
+
+/* Title – green outline, white fill (hollow look) */
+.access-module-title {
+    font-size: 5.5rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+    -webkit-text-stroke: 4px #1a6e1a;
+    paint-order: stroke fill;
+}
+
+/* Cards wrapper */
+.module-cards-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 850px;
+    width: 100%;
+}
+
+/* Individual module card */
+.module-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Square boxes (1:1 ratio) */
+.module-card-icon {
+    width: 180px;
+    height: 180px;
+    border: 2px solid #1a6e1a;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.75);
+    margin-bottom: 12px;
+    transition: box-shadow 0.2s ease;
+}
+
+.module-card-icon:hover {
+    box-shadow: 0 4px 16px rgba(26, 110, 26, 0.18);
+}
+
+/* Button under each card */
+.module-card-btn {
+    display: inline-block;
+    background-color: #1a6e1a;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 7px 24px;
+    border: 2px solid #ffffff;
+    border-radius: 4px;
+    text-decoration: none;
+    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    min-width: 130px;
+    text-align: center;
+}
+
+.module-card-btn:hover {
+    color: #ffd700;
+    border-color: #ffd700;
+    background-color: #145a14;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 110, 26, 0.3);
+}
+
+/* ========================================================
+   FOOTER
+   ======================================================== */
+.plp-footer {
+    background-color: #ffffff;
+    border-top: 2px dashed #999;
+    padding: 10px 20px;
+    font-size: 0.75rem;
+    color: #555;
+    z-index: 10;
+    position: relative;
+}
+
+.plp-footer a {
+    color: #1a6e1a;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.plp-footer a:hover {
+    color: #1a2a6c;
+}
+
+/* Rushpoint logo */
+.footer-logo-rushpoint {
+    display: inline-block;
+    height: 30px;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 3px;
+}
+
+/* Obanana logo */
+.footer-logo-obanana {
+    display: inline-block;
+    height: 28px;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 3px;
+}
+
+/* Obanana text in yellow */
+.obanana-text {
+    color: #d4a017;
+    font-size: 1rem;
+    margin-left: -2px;
+}
+
+/* ========================================================
+   LOGIN PAGE
+   ======================================================== */
+
+/* Login body – same flex column */
+.login-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* BG wrapper – covers both main and footer */
+.login-bg-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Dandelion / orange tint overlay for vibrance */
+.login-bg-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(218, 165, 32, 0.25);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Main area – just the flex content */
+.login-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+/* Login card wrapper */
+.login-card-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    padding: 20px;
+}
+
+/* The white card */
+.login-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 40px 36px 36px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* Card title  */
+.login-card-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #222;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+}
+
+/* Field group */
+.login-field-group {
+    margin-bottom: 20px;
+}
+
+/* Labels – green, uppercase, spaced */
+.login-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1a6e1a;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+}
+
+/* Input fields */
+.login-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: #333;
+    background: #fff;
+}
+
+.login-input::placeholder {
+    color: #bbb;
+}
+
+.login-input:focus {
+    border-color: #1a6e1a;
+    box-shadow: 0 0 0 3px rgba(26, 110, 26, 0.12);
+}
+
+/* Password wrapper with toggle eye icon */
+.login-password-wrapper {
+    position: relative;
+}
+
+.login-password-wrapper .login-input {
+    padding-right: 44px;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle-btn:hover svg {
+    fill: #1a6e1a;
+}
+
+/* Remember me & Forgot password row */
+.login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: #555;
+    margin-top: 6px;
+}
+
+.login-options .form-check-label {
+    font-size: 0.82rem;
+    color: #555;
+}
+
+.login-forgot {
+    font-size: 0.82rem;
+    color: #555;
+}
+
+.login-forgot a {
+    color: #1a6e1a;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.login-forgot a:hover {
+    color: #145a14;
+}
+
+/* Sign In button – green, rounded, large */
+.login-submit-btn {
+    display: inline-block;
+    background-color: #1a6e1a;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 12px 60px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.login-submit-btn:hover {
+    background-color: #145a14;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26, 110, 26, 0.35);
+}
+
+/* Login footer – transparent, sits on bg image */
+.login-bg-wrapper .plp-footer {
+    background-color: transparent;
+    border-top: 2px dashed rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.85);
+    position: relative;
+    z-index: 2;
+}
+
+.login-bg-wrapper .plp-footer a {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.login-bg-wrapper .plp-footer a:hover {
+    color: #1a2a6c;
+}
+
+.login-bg-wrapper .plp-footer .obanana-text {
+    color: #ffd700;
+}
+
+/* ========================================================
+   AUTH PAGE WRAPPER (for dashboard / other auth pages)
+   ======================================================== */
+.auth-page-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* ========================================================
+   RESPONSIVE
+   ======================================================== */
+@media (max-width: 768px) {
+    .access-module-title {
+        font-size: 2.2rem;
+        letter-spacing: 2px;
+        -webkit-text-stroke: 2px #1a6e1a;
+    }
+
+    .bg-watermark img {
+        width: 400px;
+    }
+
+    .module-card-icon {
+        width: 130px;
+        height: 130px;
+    }
+
+    .module-card-btn {
+        font-size: 0.8rem;
+        padding: 6px 18px;
+        min-width: 110px;
+    }
+
+    .plp-header-logo {
+        height: 50px;
+    }
+
+    .header-title-text .header-line-1 {
+        font-size: 0.85rem;
+    }
+
+    .header-title-text .header-line-2 {
+        font-size: 0.65rem;
+    }
+
+    .login-card {
+        padding: 30px 24px 28px;
+    }
+
+    .login-card-title {
+        font-size: 1.3rem;
+    }
+
+    .login-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .access-module-title {
+        font-size: 1.6rem;
+        margin-bottom: 20px;
+        -webkit-text-stroke: 1.5px #1a6e1a;
+    }
+
+    .bg-watermark img {
+        width: 280px;
+    }
+
+    .module-card-icon {
+        width: 100px;
+        height: 100px;
+    }
+
+    .plp-header-logo {
+        height: 40px;
+    }
+
+    .login-submit-btn {
+        padding: 10px 40px;
+        font-size: 1rem;
+    }
+}
