@@ -35,7 +35,7 @@ main {
    HEADER
    ======================================================== */
 .plp-header {
-    background-color: #1a6e1a;
+    background-color: #0A7D3F;
     width: 100%;
     padding: 6px 0;
     overflow: visible;
@@ -113,7 +113,7 @@ main {
     margin-bottom: 30px;
     position: relative;
     z-index: 1;
-    -webkit-text-stroke: 4px #1a6e1a;
+    -webkit-text-stroke: 4px #0A7D3F;
     paint-order: stroke fill;
 }
 
@@ -136,7 +136,7 @@ main {
 .module-card-icon {
     width: 180px;
     height: 180px;
-    border: 2px solid #1a6e1a;
+    border: 2px solid #0A7D3F;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.75);
     margin-bottom: 12px;
@@ -150,7 +150,7 @@ main {
 /* Button under each card */
 .module-card-btn {
     display: inline-block;
-    background-color: #1a6e1a;
+    background-color: #0A7D3F;
     color: #ffffff;
     font-size: 0.9rem;
     font-weight: 700;
@@ -187,7 +187,7 @@ main {
 }
 
 .plp-footer a {
-    color: #1a6e1a;
+    color: #555;
     text-decoration: underline;
     font-weight: 600;
 }
@@ -304,7 +304,7 @@ main {
     display: block;
     font-size: 0.75rem;
     font-weight: 700;
-    color: #1a6e1a;
+    color: #0A7D3F;
     text-transform: uppercase;
     letter-spacing: 3px;
     margin-bottom: 6px;
@@ -329,7 +329,7 @@ main {
 }
 
 .login-input:focus {
-    border-color: #1a6e1a;
+    border-color: #0A7D3F;
     box-shadow: 0 0 0 3px rgba(26, 110, 26, 0.12);
 }
 
@@ -357,7 +357,7 @@ main {
 }
 
 .password-toggle-btn:hover svg {
-    fill: #1a6e1a;
+    fill: #0A7D3F;
 }
 
 /* Remember me & Forgot password row */
@@ -381,7 +381,7 @@ main {
 }
 
 .login-forgot a {
-    color: #1a6e1a;
+    color: #0A7D3F;
     font-weight: 700;
     text-decoration: underline;
 }
@@ -393,7 +393,7 @@ main {
 /* Sign In button – green, rounded, large */
 .login-submit-btn {
     display: inline-block;
-    background-color: #1a6e1a;
+    background-color: #0A7D3F;
     color: #ffffff;
     font-family: 'Poppins', sans-serif;
     font-size: 1.1rem;
@@ -452,7 +452,7 @@ main {
     .access-module-title {
         font-size: 2.2rem;
         letter-spacing: 2px;
-        -webkit-text-stroke: 2px #1a6e1a;
+        -webkit-text-stroke: 2px #0A7D3F;
     }
 
     .bg-watermark img {
@@ -501,7 +501,7 @@ main {
     .access-module-title {
         font-size: 1.6rem;
         margin-bottom: 20px;
-        -webkit-text-stroke: 1.5px #1a6e1a;
+        -webkit-text-stroke: 1.5px #0A7D3F;
     }
 
     .bg-watermark img {
@@ -520,5 +520,545 @@ main {
     .login-submit-btn {
         padding: 10px 40px;
         font-size: 1rem;
+    }
+}
+
+/* ========================================================
+   STUDENT PORTAL LAYOUT
+   ======================================================== */
+
+/* Body for student pages – no overflow hidden */
+.student-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Main layout – sidebar + content */
+.student-layout {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ---------- SIDEBAR ---------- */
+.plp-sidebar {
+    width: 250px;
+    min-width: 250px;
+    background-color: #0A7D3F;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 0 20px 20px 0;
+    z-index: 10;
+}
+
+/* Sidebar brand / logo area */
+.sidebar-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.sidebar-logo {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+.sidebar-text-logo {
+    width: 215px;
+    height: auto;
+    object-fit: contain;
+    /* Helps prevent 1px thin lines from blurring out when image is scaled */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+.sidebar-brand-text {
+    text-align: center;
+    line-height: 1.25;
+}
+
+.sidebar-brand-text .brand-line-1 {
+    display: block;
+    color: #ffd700;
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-brand-text .brand-line-2 {
+    display: block;
+    color: #ffffff;
+    font-size: 0.52rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar navigation */
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    margin: 4px 16px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+}
+
+.sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-link.active {
+    color: #0A7D3F;
+    background-color: #ffffff;
+    font-weight: 700;
+}
+
+.sidebar-link svg {
+    flex-shrink: 0;
+}
+
+/* Sidebar logout */
+.sidebar-logout {
+    margin-top: auto;
+    padding: 0 16px 20px 16px;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    color: #000000 !important;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 700 !important;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.logout-link:hover {
+    background-color: #f1f1f1;
+}
+
+/* ---------- MAIN WRAPPER ---------- */
+.student-main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* ---------- TOP BAR & PAGE HEADER ---------- */
+.student-topbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #0A7D3F;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px 40px;
+    min-height: 56px;
+}
+
+.topbar-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.student-page-header {
+    margin-top: 6px;
+    border-top: 2px solid #0A7D3F;
+    background-color: #0A7D3F;
+    color: #ffffff;
+    padding: 10px 24px;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* ---------- STUDENT CONTENT ---------- */
+.student-content {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #ffffff;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.student-page-container {
+    padding: 24px 30px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- FILTER SECTION ---------- */
+.student-filter-section {
+    margin-bottom: 24px;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0A7D3F;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.filter-select {
+    width: 100%;
+    max-width: 500px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    background: #fff;
+    color: #555;
+    transition: border-color 0.2s ease;
+}
+
+.filter-select:focus {
+    border-color: #0A7D3F;
+    box-shadow: 0 0 0 3px rgba(26, 110, 26, 0.12);
+}
+
+/* ---------- STUDENT TABLE ---------- */
+.student-table-wrapper {
+    overflow-x: auto;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    background: #fff;
+}
+
+.student-table thead {
+    background-color: #0A7D3F;
+}
+
+.student-table thead th {
+    color: #ffffff;
+    font-weight: 700;
+    text-align: center;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.student-table tbody tr {
+    border-bottom: 1px solid #ccc;
+    transition: background-color 0.15s ease;
+}
+
+.student-table tbody tr:hover {
+    background-color: #f0f7f0;
+}
+
+.student-table tbody td {
+    padding: 14px 16px;
+    text-align: center;
+    vertical-align: middle;
+    color: #333;
+}
+
+/* Remark colors */
+.student-table tbody td.remark-passed {
+    color: #0A7D3F;
+    font-weight: 700;
+}
+
+.student-table tbody td.remark-incomplete {
+    color: #d32f2f;
+    font-weight: 700;
+}
+
+.student-table tbody td.remark-nyp {
+    color: #888;
+    font-weight: 600;
+}
+
+/* Placeholder pages */
+.student-placeholder-content {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.student-placeholder-content h4 {
+    color: #0A7D3F;
+    margin-bottom: 10px;
+}
+
+/* ---------- EVENTS CALENDAR ---------- */
+.calendar-controls-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-nav-buttons {
+    display: flex;
+    border: 1px solid #333;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.cal-btn {
+    background: #fff;
+    border: none;
+    border-right: 1px solid #333;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.cal-btn:last-child {
+    border-right: none;
+}
+
+.cal-btn:hover {
+    background: #f0f0f0;
+}
+
+.calendar-title h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #000;
+    margin: 0;
+}
+
+.calendar-legend {
+    text-align: right;
+}
+
+.calendar-legend strong {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.legend-items {
+    display: flex;
+    gap: 15px;
+    font-size: 0.8rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot-holiday {
+    background-color: #ff0000;
+}
+
+.dot-event {
+    background-color: #1a56db;
+}
+
+.calendar-grid-wrapper {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-table {
+    width: 100%;
+    height: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #efefef;
+    border: 1px solid #999;
+}
+
+.calendar-table thead {
+    background: #0A7D3F;
+}
+
+.calendar-table th {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 6px 0;
+    margin: 0;
+    text-align: center;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+}
+
+.calendar-table th:last-child {
+    border-right: none;
+}
+
+.calendar-table tbody td {
+    height: auto;
+    border: 1px solid #999;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #000;
+}
+
+.calendar-table tbody td.empty-cell {
+    background: #f9f9f9;
+}
+
+/* ---------- PROFILE PAGE ---------- */
+.profile-card {
+    background: #fff;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 40px;
+    max-width: 700px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.profile-avatar-lg {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0A7D3F;
+}
+
+.profile-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0A7D3F;
+    margin-bottom: 12px;
+}
+
+.profile-detail {
+    font-size: 0.9rem;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.profile-detail strong {
+    color: #222;
+}
+
+.topbar-user {
+    text-decoration: none;
+}
+
+/* ---------- Student layout footer ---------- */
+.student-main-wrapper .plp-footer {
+    flex-shrink: 0;
+}
+
+/* ========================================================
+   STUDENT PORTAL RESPONSIVE
+   ======================================================== */
+@media (max-width: 768px) {
+    .plp-sidebar {
+        width: 60px;
+        min-width: 60px;
+    }
+
+    .sidebar-brand-text {
+        display: none;
+    }
+
+    .sidebar-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .sidebar-brand {
+        padding: 12px 8px;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-link {
+        justify-content: center;
+        padding: 14px 0;
+        gap: 0;
+        border-left: none;
+    }
+
+    .sidebar-link.active {
+        border-left: none;
+        border-right: 3px solid #ffd700;
+    }
+
+    .logout-link {
+        justify-content: center !important;
+    }
+
+    .topbar-title {
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+    }
+
+    .student-page-container {
+        padding: 16px;
     }
 }
