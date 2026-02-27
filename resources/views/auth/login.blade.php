@@ -8,10 +8,10 @@
         {{-- Module Title --}}
         <h2 class="login-card-title">{{ strtoupper($module) }} LOGIN</h2>
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('demo.login') }}">
             @csrf
 
-            {{-- Pass the module through so we can redirect back after login --}}
+            {{-- Pass the module through so we redirect to the right pages --}}
             <input type="hidden" name="module" value="{{ $module }}">
 
             {{-- Username / Applicant Number --}}
