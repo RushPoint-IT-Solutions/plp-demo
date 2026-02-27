@@ -350,9 +350,9 @@ main {
     margin: 0 3px;
 }
 
-/* Obanana text in yellow */
+/* Obanana text in dandelion */
 .obanana-text {
-    color: #d4a017;
+    color: #FFAA00;
     font-size: 1rem;
     margin-left: -2px;
 }
@@ -374,7 +374,7 @@ main {
     display: flex;
     flex-direction: column;
     background-size: cover;
-    background-position: center;
+    background-position: center 40%;
     background-repeat: no-repeat;
     position: relative;
 }
@@ -567,7 +567,7 @@ main {
 }
 
 .login-bg-wrapper .plp-footer .obanana-text {
-    color: #ffd700;
+    color: #FFAA00;
 }
 
 /* ========================================================
