@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Student;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Student;
 use App\Subject;
 use App\Semester;
@@ -11,13 +10,14 @@ use App\YearBlock;
 
 class StudentController extends Controller
 {
-    /**
-     * Show the Section Offering / COR page.
-     */
+    // -------------------------------------------------------
+    //  /section-offering
+    //  Shows the COR / section offering page for student id=1
+    // -------------------------------------------------------
     public function sectionOffering()
     {
-        $student    = Student::with('subjects')->first();
-        $subjects   = $student ? $student->subjects : collect();
+        $student    = Student::with('subjects')->firstOrFail();
+        $subjects   = $student->subjects;
         $semesters  = Semester::all();
         $courses    = Course::all();
         $yearBlocks = YearBlock::all();
@@ -27,22 +27,16 @@ class StudentController extends Controller
         ));
     }
 
-    /**
-     * Show the Grades page.
-     */
-    public function grades()
-    {
-        return view('student.grades');
-    }
-
-    /**
-     * Show the Schedule page.
-     */
+    // -------------------------------------------------------
+    //  /schedule
+    //  Shows the subject list table + weekly grid
+    // -------------------------------------------------------
     public function schedule()
     {
-        $student  = Student::with('subjects')->first();
-        $subjects = $student ? $student->subjects : collect();
+        $student  = Student::with('subjects')->firstOrFail();
+        $subjects = $student->subjects;
 
+        // Map abbreviated day codes to full day names
         $dayMap = [
             'Sun' => 'Sunday',
             'M'   => 'Monday',   'Mon' => 'Monday',
@@ -57,7 +51,7 @@ class StudentController extends Controller
         $weekly = array_fill_keys($days, []);
 
         foreach ($subjects as $subject) {
-            foreach (array_map('trim', explode(',', $subject->days ?? '')) as $abbr) {
+            foreach (array_map('trim', explode(',', $subject->days)) as $abbr) {
                 if (isset($dayMap[$abbr])) {
                     $weekly[$dayMap[$abbr]][] = $subject;
                 }
@@ -65,21 +59,5 @@ class StudentController extends Controller
         }
 
         return view('student.schedule', compact('student', 'subjects', 'weekly', 'days'));
-    }
-
-    /**
-     * Show the Events page.
-     */
-    public function events()
-    {
-        return view('student.events');
-    }
-
-    /**
-     * Show the Profile page.
-     */
-    public function profile()
-    {
-        return view('student.profile');
     }
 }
