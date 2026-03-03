@@ -44,14 +44,32 @@
 
         {{-- Personal Information --}}
         <div class="setup-section">
-            <div class="setup-section-header">
-                <h3 class="setup-section-title">Personal Information</h3>
-            </div>
+            <div class="setup-personal-top">
+                <div class="setup-personal-left">
+                    <div class="setup-section-header">
+                        <h3 class="setup-section-title">Personal Information</h3>
+                    </div>
 
-            <div class="setup-row">
-                <div class="setup-col">
-                    <label class="setup-label">Student Number</label>
-                    <input type="text" class="setup-input" placeholder="Student No." name="student_number">
+                    <div class="setup-row">
+                        <div class="setup-col" style="flex: 0 0 280px;">
+                            <label class="setup-label">Student Number</label>
+                            <input type="text" class="setup-input" placeholder="Student No." name="student_number">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Profile Picture --}}
+                <div class="setup-profile-photo">
+                    <div class="profile-photo-square" id="profilePhotoPreview">
+                        <svg class="profile-photo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="12" cy="10" r="3"/>
+                            <path d="M6 21v-1a6 6 0 0 1 12 0v1"/>
+                        </svg>
+                        <img id="profilePhotoImg" src="" alt="" style="display:none;">
+                    </div>
+                    <label class="profile-photo-btn" for="profilePhotoInput">Upload Photo</label>
+                    <input type="file" id="profilePhotoInput" name="profile_photo" accept="image/*" style="display:none;">
                 </div>
             </div>
 
@@ -723,6 +741,22 @@
         // Scroll to top of form
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // Profile photo preview
+    document.getElementById('profilePhotoInput').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                var img = document.getElementById('profilePhotoImg');
+                img.src = ev.target.result;
+                img.style.display = 'block';
+                document.querySelector('.profile-photo-icon').style.display = 'none';
+                document.querySelector('.profile-photo-btn').textContent = 'Change Profile Picture';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
     // Same as Present Address toggle
     document.getElementById('sameAsPresent').addEventListener('change', function() {
