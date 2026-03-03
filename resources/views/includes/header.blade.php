@@ -1,5 +1,9 @@
-<!-- resources/views/includes/header.blade.php -->
 <header class="plp-header">
-    <img src="{{ asset('resources/images/header-logo.svg') }}" alt="PLP Logo" class="plp-header-logo">
-    <img src="{{ asset('resources/images/header-text.svg') }}" alt="Pamantasan ng Lungsod ng Pasig" class="plp-header-text-img">
+    <div class="container-fluid d-flex align-items-center px-4 py-2">
+        <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none">
+            <img src="{{ asset('img/plplogo.png') }}" alt="PLP Logo" class="plp-header-logo">
+            <div class="header-title-text ms-3 d-none d-md-block">
+            </div>
+        </a>
+    </div>
 </header>

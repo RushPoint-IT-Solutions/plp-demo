@@ -16,7 +16,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom App CSS -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
 
     @stack('styles')
 </head>
@@ -49,8 +49,17 @@
         </div>
     </div>
 
+    <!-- Download Success Toast Notification -->
+    <div id="download-toast" class="toast-notification">
+        <span class="toast-message">File Downloaded Successfully.</span>
+        <button class="toast-close">&times;</button>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ asset('js/script.js') }}"></script>
 
     @stack('scripts')
 </body>

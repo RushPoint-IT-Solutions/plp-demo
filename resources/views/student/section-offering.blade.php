@@ -1,7 +1,9 @@
 <!-- resources/views/student/section-offering.blade.php -->
-@extends('layouts.dashboard')
+@extends('layouts.student')
 
 @section('title', 'Section Offering - PLP')
+
+@section('page-title', 'SECTION OFFERING')
 
 @section('content')
 <div class="form-section-container">
@@ -65,15 +67,15 @@
         <!-- COR Header -->
         <div class="cor-header">
             <div class="cor-header-left">
-                <img src="{{ asset('resources/images/header-logo.svg') }}" alt="PLP Logo" class="cor-logo">
-                <img src="{{ asset('resources/images/header-text.svg') }}" alt="Pamantasan ng Lungsod ng Pasig" class="cor-school-text-img">
+                <img src="{{ asset('img/plplogo.png') }}" alt="PLP Logo" class="cor-logo">
+                
             </div>
             <div class="cor-header-center">
                 <h1 class="cor-title">CERTIFICATE OF REGISTRATION</h1>
             </div>
             <div class="cor-header-right">
                 <p class="cor-label">Registration No:</p>
-                <p class="cor-reg-number">{{ $student->registration_no }}</p>
+                <p class="cor-reg-number">{{ optional($student)->registration_no }}</p>
             </div>
         </div>
 
@@ -82,35 +84,35 @@
             <div class="cor-info-row">
                 <div class="cor-info-group">
                     <span class="cor-info-label">Student No.:</span>
-                    <span class="cor-info-value">{{ $student->student_no }}</span>
+                    <span class="cor-info-value">{{ optional($student)->student_no }}</span>
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">College:</span>
-                    <span class="cor-info-value">{{ $student->college }}</span>
+                    <span class="cor-info-value">{{ optional($student)->college }}</span>
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">School Year:</span>
-                    <span class="cor-info-value">{{ $student->school_year_label }}</span>
+                    <span class="cor-info-value">{{ optional($student)->school_year_label }}</span>
                 </div>
             </div>
             <div class="cor-info-row">
                 <div class="cor-info-group">
                     <span class="cor-info-label">Name:</span>
-                    <span class="cor-info-value">{{ $student->name }}</span>
+                    <span class="cor-info-value">{{ optional($student)->name }}</span>
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">Program:</span>
-                    <span class="cor-info-value">{{ $student->program }}</span>
+                    <span class="cor-info-value">{{ optional($student)->program }}</span>
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">Curriculum:</span>
-                    <span class="cor-info-value">{{ $student->curriculum }}</span>
+                    <span class="cor-info-value">{{ optional($student)->curriculum }}</span>
                 </div>
             </div>
             <div class="cor-info-row">
                 <div class="cor-info-group">
                     <span class="cor-info-label">Sex:</span>
-                    <span class="cor-info-value">{{ $student->sex }}</span>
+                    <span class="cor-info-value">{{ optional($student)->sex }}</span>
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">Major:</span>
@@ -118,17 +120,17 @@
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">Scholarship:</span>
-                    <span class="cor-info-value">{{ $student->scholarship }}</span>
+                    <span class="cor-info-value">{{ optional($student)->scholarship }}</span>
                 </div>
             </div>
             <div class="cor-info-row">
                 <div class="cor-info-group">
                     <span class="cor-info-label">Age:</span>
-                    <span class="cor-info-value">{{ $student->age }}</span>
+                    <span class="cor-info-value">{{ optional($student)->age }}</span>
                 </div>
                 <div class="cor-info-group">
                     <span class="cor-info-label">Year Level:</span>
-                    <span class="cor-info-value">{{ $student->year_level }}</span>
+                    <span class="cor-info-value">{{ optional($student)->year_level }}</span>
                 </div>
                 <div class="cor-info-group"></div>
             </div>
@@ -180,7 +182,7 @@
         <!-- Signatures -->
         <div class="cor-signatures">
             <div class="cor-signature-left">
-                <p class="cor-signature-name">{{ strtoupper($student->name) }}</p>
+                <p class="cor-signature-name">{{ strtoupper(optional($student)->name ?? '') }}</p>
                 <p class="cor-signature-role">Student's Signature</p>
             </div>
             <div class="cor-signature-right">

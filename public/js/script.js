@@ -17,10 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const wrapper = document.querySelector('.cor-scroll-wrapper');
         if (!wrapper || !corTable) return;
         const available = wrapper.clientWidth;
-        const zoom = Math.min(1, available / COR_NATIVE_WIDTH);
+        // Allow zoom up to 1.25 so the COR fills more space on wide screens
+        const zoom = Math.min(1.25, available / COR_NATIVE_WIDTH);
         corTable.style.zoom = zoom.toFixed(4);
-        // Keep the wrapper height in sync so page doesn't leave empty space
-        corTable.style.marginTop = '16px';
     }
 
     // Re-fit on viewport resize

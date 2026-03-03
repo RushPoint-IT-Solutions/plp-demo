@@ -1,5 +1,5 @@
 <!-- resources/views/student/schedule.blade.php -->
-@extends('layouts.dashboard')
+@extends('layouts.student')
 
 @section('title', 'Schedule - PLP')
 

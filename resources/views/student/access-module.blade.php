@@ -1,48 +1,40 @@
-<!-- resources/views/student/access-module.blade.php -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Access Module - PLP</title>
-    @include('includes.style')
-</head>
-<body>
+@extends('layouts.app')
 
-    <!-- Header -->
-    @include('includes.header')
+@section('title', 'PLP - Access Module')
 
-    <!-- Main Content -->
-    <main class="access-module-section">
-        
-        <!-- Background Watermark -->
-        <div class="bg-watermark">
-            <img src="{{ asset('resources/images/header-logo.svg') }}" alt="Watermark">
+@section('content')
+<section class="access-module-section">
+    {{-- Background watermark logo --}}
+    <div class="bg-watermark">
+        <img src="{{ asset('img/logobg.png') }}" alt="PLP Background Logo">
+    </div>
+
+    {{-- Title --}}
+    <h2 class="access-module-title">ACCESS MODULE</h2>
+
+    {{-- Module Cards --}}
+    <div class="module-cards-wrapper">
+        <div class="row justify-content-center g-5">
+            {{-- Applicant --}}
+            <div class="col-6 col-md-4">
+                <div class="module-card">
+                    <div class="module-card-icon">
+                        {{-- Placeholder for future icon/image --}}
+                    </div>
+                    <a href="{{ route('module.login', 'applicant') }}" class="module-card-btn">Applicant</a>
+                </div>
+            </div>
+
+            {{-- Student --}}
+            <div class="col-6 col-md-4">
+                <div class="module-card">
+                    <div class="module-card-icon">
+                        {{-- Placeholder for future icon/image --}}
+                    </div>
+                    <a href="{{ route('module.login', 'student') }}" class="module-card-btn">Student</a>
+                </div>
+            </div>
         </div>
-
-        <!-- Title -->
-        <h1 class="access-module-title">Access Module</h1>
-
-        <!-- Cards -->
-        <div class="module-cards-wrapper">
-            
-            <!-- Applicant Card -->
-            <a href="/applicant" class="module-card">
-                <div class="module-card-icon"></div>
-                <div class="module-card-btn">Applicant</div>
-            </a>
-
-            <!-- Student Card -->
-            <a href="/student" class="module-card">
-                <div class="module-card-icon"></div>
-                <div class="module-card-btn">Student</div>
-            </a>
-
-        </div>
-    </main>
-
-    <!-- Footer -->
-    @include('includes.footer')
-
-</body>
-</html>
+    </div>
+</section>
+@endsection
