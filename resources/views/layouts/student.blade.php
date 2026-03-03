@@ -49,6 +49,12 @@
         </div>
     </div>
 
+    <!-- Download Success Toast Notification -->
+    <div id="download-toast" class="toast-notification">
+        <span class="toast-message">File Downloaded Successfully.</span>
+        <button class="toast-close">&times;</button>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
