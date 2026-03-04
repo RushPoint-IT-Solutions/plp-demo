@@ -13,24 +13,27 @@
         <div class="reg-stat-card">
             <div class="reg-stat-card-title">Total Students</div>
             <div class="reg-stat-card-inner">
-                <div>
+                <div class="reg-stat-left">
                     <div class="reg-stat-number">216</div>
                     <div class="reg-stat-sub">
                         <span>120 Men</span>
                         <span>96 Women</span>
                     </div>
-                    <div class="reg-stat-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        +2% Past month
-                    </div>
                 </div>
-<svg class="reg-stat-sparkline" viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {{-- S-curve: starts flat low, curves up steeply in the middle, levels off high --}}
-                    <path d="M 0,48 C 10,47 18,44 28,38 C 38,32 42,18 55,13 C 65,9 78,8 100,6"
-                        fill="none" stroke="#e05070" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <text x="58" y="9" font-size="9" fill="#e05070" font-weight="700" font-family="Poppins,sans-serif">+2%</text>
-                    <text x="63" y="19" font-size="10" fill="#e05070" font-family="Poppins,sans-serif">↑</text>
-                </svg>
+                <div class="reg-stat-right">
+                    <svg class="reg-stat-sparkline" viewBox="0 0 110 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {{-- +2% label and arrow above the line --}}
+                        <text x="62" y="11" font-size="9" fill="#006837" font-weight="700" font-family="Poppins,sans-serif">+2%</text>
+                        <text x="67" y="20" font-size="10" fill="#006837" font-family="Poppins,sans-serif">↑</text>
+                        {{-- S-curve line --}}
+                        <path d="M 0,56 C 12,55 20,51 32,45 C 44,39 50,28 64,23 C 74,19 88,18 110,16"
+                            fill="none" stroke="#006837" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        {{-- subtle fill under line --}}
+                        <path d="M 0,56 C 12,55 20,51 32,45 C 44,39 50,28 64,23 C 74,19 88,18 110,16 L 110,60 L 0,60 Z"
+                            fill="rgba(0,104,55,0.07)"/>
+                    </svg>
+                    <div class="reg-stat-badge">+2% Past month</div>
+                </div>
             </div>
         </div>
 
