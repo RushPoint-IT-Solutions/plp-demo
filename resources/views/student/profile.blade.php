@@ -4,21 +4,32 @@
 @section('page-title', 'PROFILE')
 
 @push('styles')
-<style>
-    /* Make footer scroll with content on profile page (not sticky) */
-    .student-main-wrapper {
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-    }
-    .student-content {
-        overflow: visible !important;
-        flex: none !important;
-    }
-</style>
 @endpush
 
 @section('content')
-<div class="student-page-container">
+<div class="profile-page">
+@php
+    $s    = $profile ?? null;
+    $devs = ($s && $s->devices)     ? (array)json_decode($s->devices, true)     : [];
+    $lmsR = ($s && $s->lms_reasons) ? (array)json_decode($s->lms_reasons, true) : [];
+@endphp
+
+@if(session('success'))
+<div class="profile-save-banner" id="profileSaveBanner">
+    <span>{{ session('success') }}</span>
+    <button type="button" onclick="this.closest('.profile-save-banner').remove()">&#x2715;</button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="profile-save-banner profile-error-banner" id="profileErrorBanner">
+    <span>Please fix the following: {{ implode(' | ', $errors->all()) }}</span>
+    <button type="button" onclick="this.closest('.profile-save-banner').remove()">&#x2715;</button>
+</div>
+@endif
+
+    <form id="studentProfileForm" method="POST" action="{{ route('student.profile.update') }}" enctype="multipart/form-data" novalidate>
+        @csrf
 
     {{-- ===== STEP INDICATOR ===== --}}
     <div class="setup-steps">
@@ -106,26 +117,35 @@
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Nationality</label>
-                    <select class="setup-input setup-select" name="nationality">
+                    <select class="setup-input setup-select" name="nationality" id="nationalitySelect">
                         <option value="" disabled selected>Nationality</option>
                         <option value="Filipino">Filipino</option>
                         <option value="Other">Other</option>
                     </select>
+                    <div id="nationalityOtherWrap" class="religion-input-wrap" style="display:none;">
+                        <input type="text" class="setup-input" id="nationalityOtherInput" name="nationality_other" placeholder="Specify your nationality">
+                        <button type="button" id="nationalityBackBtn" class="religion-back-arrow" title="Back to list">&#8592;</button>
+                    </div>
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Religion</label>
-                    <select class="setup-input setup-select" name="religion">
+                    <select class="setup-input setup-select" name="religion" id="religionSelect">
                         <option value="" disabled selected>Religion</option>
                         <option value="Roman Catholic">Roman Catholic</option>
                         <option value="Islam">Islam</option>
                         <option value="Iglesia ni Cristo">Iglesia ni Cristo</option>
                         <option value="Born Again">Born Again</option>
+                        <option value="Adventist">Adventist</option>
                         <option value="Other">Other</option>
                     </select>
+                    <div id="religionOtherWrap" class="religion-input-wrap" style="display:none;">
+                        <input type="text" class="setup-input" id="religionOtherInput" name="religion_other" placeholder="Specify your religion">
+                        <button type="button" id="religionBackBtn" class="religion-back-arrow" title="Back to list">&#8592;</button>
+                    </div>
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Date of Birth</label>
-                    <input type="date" class="setup-input" name="date_of_birth" placeholder="YYYY-MM-DD">
+                    <input type="date" class="setup-input" name="date_of_birth" id="dobField">
                 </div>
             </div>
 
@@ -136,7 +156,7 @@
                 </div>
                 <div class="setup-col setup-col-sm">
                     <label class="setup-label">Age</label>
-                    <input type="text" class="setup-input" placeholder="Age" name="age" readonly>
+                    <input type="text" class="setup-input" placeholder="Auto" name="age" id="ageField" readonly tabindex="-1">
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Civil Status</label>
@@ -149,11 +169,11 @@
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Mobile Number</label>
-                    <input type="text" class="setup-input" placeholder="Mobile Number" name="mobile_number">
+                    <input type="text" class="setup-input" placeholder="09XXXXXXXXX" name="mobile_number" id="mobileField" maxlength="11" inputmode="numeric">
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Email Address</label>
-                    <input type="email" class="setup-input" placeholder="Email Address" name="email">
+                    <input type="email" class="setup-input" placeholder="Email Address" name="student_email">
                 </div>
             </div>
         </div>
@@ -178,27 +198,27 @@
                 </div>
                 <div class="setup-col setup-col-sm">
                     <label class="setup-label">Zipcode</label>
-                    <input type="text" class="setup-input" placeholder="Zipcode" name="present_zipcode">
+                    <input type="text" class="setup-input" placeholder="Zipcode" name="present_zipcode" maxlength="4" inputmode="numeric">
                 </div>
             </div>
 
             <div class="setup-row">
                 <div class="setup-col">
-                    <label class="setup-label">Municipality/City</label>
-                    <select class="setup-input setup-select" name="present_municipality">
-                        <option value="" disabled selected>Choose Municipality</option>
+                    <label class="setup-label">Region</label>
+                    <select class="setup-input setup-select" name="present_region">
+                        <option value="" disabled selected>Choose Region</option>
                     </select>
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Province</label>
-                    <select class="setup-input setup-select" name="present_province">
+                    <select class="setup-input setup-select" name="present_province" disabled>
                         <option value="" disabled selected>Choose Province</option>
                     </select>
                 </div>
                 <div class="setup-col">
-                    <label class="setup-label">Region</label>
-                    <select class="setup-input setup-select" name="present_region">
-                        <option value="" disabled selected>Choose Region</option>
+                    <label class="setup-label">Municipality/City</label>
+                    <select class="setup-input setup-select" name="present_municipality" disabled>
+                        <option value="" disabled selected>Choose City/Municipality</option>
                     </select>
                 </div>
             </div>
@@ -223,27 +243,27 @@
                 </div>
                 <div class="setup-col setup-col-sm">
                     <label class="setup-label">Zipcode</label>
-                    <input type="text" class="setup-input" placeholder="Zipcode" name="permanent_zipcode">
+                    <input type="text" class="setup-input" placeholder="Zipcode" name="permanent_zipcode" maxlength="4" inputmode="numeric">
                 </div>
             </div>
 
             <div class="setup-row">
                 <div class="setup-col">
-                    <label class="setup-label">Municipality/City</label>
-                    <select class="setup-input setup-select" name="permanent_municipality">
-                        <option value="" disabled selected>Choose Municipality</option>
+                    <label class="setup-label">Region</label>
+                    <select class="setup-input setup-select" name="permanent_region">
+                        <option value="" disabled selected>Choose Region</option>
                     </select>
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Province</label>
-                    <select class="setup-input setup-select" name="permanent_province">
+                    <select class="setup-input setup-select" name="permanent_province" disabled>
                         <option value="" disabled selected>Choose Province</option>
                     </select>
                 </div>
                 <div class="setup-col">
-                    <label class="setup-label">Region</label>
-                    <select class="setup-input setup-select" name="permanent_region">
-                        <option value="" disabled selected>Choose Region</option>
+                    <label class="setup-label">Municipality/City</label>
+                    <select class="setup-input setup-select" name="permanent_municipality" disabled>
+                        <option value="" disabled selected>Choose City/Municipality</option>
                     </select>
                 </div>
             </div>
@@ -297,7 +317,7 @@
             <div class="setup-address-preview">
                 <h4 class="address-preview-title">ADDRESS PREVIEW</h4>
                 <div class="address-preview-box">
-                    <p class="address-preview-text" id="addressPreviewText">ESPAÑA BOULEVARD, BARANGAY 710, CITY OF MANILA, METRO MANILA (NCR)</p>
+                    <p class="address-preview-text is-empty" id="addressPreviewText">Fill in the address fields above to see a preview...</p>
                     <p class="address-preview-format">Format: Street, Barangay, Municipality/City, Province, Region</p>
                 </div>
             </div>
@@ -306,7 +326,7 @@
         {{-- Navigation --}}
         <div class="setup-nav">
             <div></div>
-            <button type="button" class="btn-setup-next" onclick="goToStep(2)">Next</button>
+            <button type="button" class="btn-setup-next" onclick="goToStep2FromStep1()">Next</button>
         </div>
     </div>
 
@@ -335,8 +355,8 @@
 
             <div class="setup-row">
                 <div class="setup-col">
-                    <label class="setup-label">Mother's Contact Number <span class="req">*</span></label>
-                    <input type="text" class="setup-input" placeholder="+63 9" name="mother_contact">
+                    <label class="setup-label">Mother's Contact Number</label>
+                    <input type="text" class="setup-input" placeholder="09XXXXXXXXX" name="mother_contact" maxlength="11" inputmode="numeric">
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Mother's Occupation <span class="req">*</span></label>
@@ -371,8 +391,8 @@
 
             <div class="setup-row">
                 <div class="setup-col">
-                    <label class="setup-label">Father's Contact Number <span class="req">*</span></label>
-                    <input type="text" class="setup-input" placeholder="+63 9" name="father_contact">
+                    <label class="setup-label">Father's Contact Number</label>
+                    <input type="text" class="setup-input" placeholder="09XXXXXXXXX" name="father_contact" maxlength="11" inputmode="numeric">
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Father's Occupation <span class="req">*</span></label>
@@ -408,7 +428,7 @@
             <div class="setup-row">
                 <div class="setup-col">
                     <label class="setup-label">Guardian's Contact Number <span class="req">*</span></label>
-                    <input type="text" class="setup-input" placeholder="+63 9" name="guardian_contact">
+                    <input type="text" class="setup-input" placeholder="09XXXXXXXXX" name="guardian_contact" maxlength="11" inputmode="numeric">
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Guardian's Occupation <span class="req">*</span></label>
@@ -470,7 +490,7 @@
         {{-- Navigation --}}
         <div class="setup-nav">
             <button type="button" class="btn-setup-prev" onclick="goToStep(1)">Previous</button>
-            <button type="button" class="btn-setup-next" onclick="goToStep(3)">Next</button>
+            <button type="button" class="btn-setup-next" onclick="goToStep3FromStep2()">Next</button>
         </div>
     </div>
 
@@ -522,7 +542,7 @@
         {{-- Navigation --}}
         <div class="setup-nav">
             <button type="button" class="btn-setup-prev" onclick="goToStep(2)">Previous</button>
-            <button type="button" class="btn-setup-next" onclick="goToStep(4)">Next</button>
+            <button type="button" class="btn-setup-next" onclick="goToStep4FromStep3()">Next</button>
         </div>
     </div>
 
@@ -536,7 +556,7 @@
             <div class="setup-row">
                 <div class="setup-col">
                     <label class="setup-label">What is your family main source of income? <span class="req">*</span></label>
-                    <select class="setup-input setup-select" name="family_income_source">
+                    <select class="setup-input setup-select" name="family_income_source" id="incomeSourceSelect">
                         <option value="" disabled selected>Select an option</option>
                         <option value="Employment/Salary">Employment/Salary</option>
                         <option value="Business">Business</option>
@@ -545,10 +565,14 @@
                         <option value="Pension">Pension</option>
                         <option value="Others">Others</option>
                     </select>
+                    <div id="incomeSourceOtherWrap" class="religion-input-wrap" style="display:none;">
+                        <input type="text" class="setup-input" id="incomeSourceOtherInput" name="family_income_source_other" placeholder="Specify income source">
+                        <button type="button" id="incomeSourceBackBtn" class="religion-back-arrow" title="Back to list">&#8592;</button>
+                    </div>
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Where do you primarily live while attending college? <span class="req">*</span></label>
-                    <select class="setup-input setup-select" name="living_situation">
+                    <select class="setup-input setup-select" name="living_situation" id="livingSituationSelect">
                         <option value="" disabled selected>Select an option</option>
                         <option value="Family Home">Family Home</option>
                         <option value="Boarding House">Boarding House</option>
@@ -556,6 +580,10 @@
                         <option value="Relative's House">Relative's House</option>
                         <option value="Others">Others</option>
                     </select>
+                    <div id="livingSituationOtherWrap" class="religion-input-wrap" style="display:none;">
+                        <input type="text" class="setup-input" id="livingSituationOtherInput" name="living_situation_other" placeholder="Specify living situation">
+                        <button type="button" id="livingSituationBackBtn" class="religion-back-arrow" title="Back to list">&#8592;</button>
+                    </div>
                 </div>
             </div>
 
@@ -570,7 +598,7 @@
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Do you receive any scholarship/financial assistance? <span class="req">*</span></label>
-                    <select class="setup-input setup-select" name="scholarship">
+                    <select class="setup-input setup-select" name="has_scholarship">
                         <option value="" disabled selected>Select an option</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
@@ -621,7 +649,7 @@
                         <label class="setup-checkbox"><input type="checkbox" name="devices[]" value="Laptop/Notebook Computer"> Laptop/ Notebook Computer</label>
                         <label class="setup-checkbox"><input type="checkbox" name="devices[]" value="Desktop Computer"> Desktop Computer</label>
                         <label class="setup-checkbox"><input type="checkbox" name="devices[]" value="Others"> Others</label>
-                        <input type="text" class="setup-input setup-input-inline" placeholder="Others (Please Specify)" name="devices_other">
+                        <input type="text" class="setup-input setup-input-inline" placeholder="Others (Please Specify)" name="devices_other" style="display:none;">
                     </div>
                 </div>
             </div>
@@ -631,7 +659,7 @@
             <div class="setup-row">
                 <div class="setup-col">
                     <label class="setup-label">Which learning management system is most frequently used in your classes? <span class="req">*</span></label>
-                    <select class="setup-input setup-select" name="lms_used">
+                    <select class="setup-input setup-select" name="lms_used" id="lmsUsedSelect">
                         <option value="" disabled selected>Select an option</option>
                         <option value="Google Classroom">Google Classroom</option>
                         <option value="Moodle">Moodle</option>
@@ -639,11 +667,14 @@
                         <option value="Microsoft Teams">Microsoft Teams</option>
                         <option value="Others">Others</option>
                     </select>
-                    <input type="text" class="setup-input" placeholder="Other (Please Specify)" name="lms_used_other" style="margin-top:8px;">
+                    <div id="lmsUsedOtherWrap" class="religion-input-wrap" style="display:none;">
+                        <input type="text" class="setup-input" id="lmsUsedOtherInput" name="lms_used_other" placeholder="Specify LMS">
+                        <button type="button" id="lmsUsedBackBtn" class="religion-back-arrow" title="Back to list">&#8592;</button>
+                    </div>
                 </div>
                 <div class="setup-col">
                     <label class="setup-label">Which LMS do you prefer to use for your classes? <span class="req">*</span></label>
-                    <select class="setup-input setup-select" name="lms_preferred">
+                    <select class="setup-input setup-select" name="lms_preferred" id="lmsPreferredSelect">
                         <option value="" disabled selected>Select an option</option>
                         <option value="Google Classroom">Google Classroom</option>
                         <option value="Moodle">Moodle</option>
@@ -651,7 +682,10 @@
                         <option value="Microsoft Teams">Microsoft Teams</option>
                         <option value="Others">Others</option>
                     </select>
-                    <input type="text" class="setup-input" placeholder="Other (Please Specify)" name="lms_preferred_other" style="margin-top:8px;">
+                    <div id="lmsPreferredOtherWrap" class="religion-input-wrap" style="display:none;">
+                        <input type="text" class="setup-input" id="lmsPreferredOtherInput" name="lms_preferred_other" placeholder="Specify LMS">
+                        <button type="button" id="lmsPreferredBackBtn" class="religion-back-arrow" title="Back to list">&#8592;</button>
+                    </div>
                 </div>
             </div>
 
@@ -665,7 +699,7 @@
                         <label class="setup-checkbox"><input type="checkbox" name="lms_reasons[]" value="Accessible using mobile devices"> Accessible using mobile devices</label>
                         <label class="setup-checkbox"><input type="checkbox" name="lms_reasons[]" value="Fast Feedback on Assessments"> Fast Feedback on Assessments</label>
                         <label class="setup-checkbox"><input type="checkbox" name="lms_reasons[]" value="Others"> Others</label>
-                        <input type="text" class="setup-input setup-input-inline" placeholder="Other (Please Specify)" name="lms_reasons_other">
+                        <input type="text" class="setup-input setup-input-inline" placeholder="Other (Please Specify)" name="lms_reasons_other" style="display:none;">
                     </div>
                 </div>
             </div>
@@ -698,77 +732,200 @@
         {{-- Navigation --}}
         <div class="setup-nav">
             <button type="button" class="btn-setup-prev" onclick="goToStep(3)">Previous</button>
-            <button type="button" class="btn-setup-submit">Update Profile</button>
+            <button type="submit" class="btn-setup-submit">Update Profile</button>
         </div>
     </div>
+
+    </form>
 
 </div>
 @endsection
 
 @push('scripts')
+@php
+    // Build window.savedProfile — all form field keys used by restoreDraft()
+    $sp_devs = ($s && $s->devices)     ? (array)json_decode($s->devices, true)     : [];
+    $sp_lmsR = ($s && $s->lms_reasons) ? (array)json_decode($s->lms_reasons, true) : [];
+@endphp
 <script>
-    function goToStep(stepNum) {
-        // Hide all panels
-        document.querySelectorAll('.step-panel').forEach(function(panel) {
-            panel.style.display = 'none';
-        });
+window.savedProfile = {
+    "student_number":         {{ json_encode($s ? $s->student_no       : '') }},
+    "last_name":              {{ json_encode($s ? $s->last_name         : '') }},
+    "first_name":             {{ json_encode($s ? $s->first_name        : '') }},
+    "middle_name":            {{ json_encode($s ? $s->middle_name       : '') }},
+    "suffix":                 {{ json_encode($s ? $s->suffix            : '') }},
+    "nickname":               {{ json_encode($s ? $s->nickname          : '') }},
+    "nationality":            {{ json_encode($s ? $s->nationality       : '') }},
+    "nationality_other":      {{ json_encode($s ? $s->nationality_other : '') }},
+    "religion":               {{ json_encode($s ? $s->religion          : '') }},
+    "religion_other":         {{ json_encode($s ? $s->religion_other    : '') }},
+    "date_of_birth":          {{ json_encode($s && $s->date_of_birth ? $s->date_of_birth->format('Y-m-d') : '') }},
+    "place_of_birth":         {{ json_encode($s ? $s->place_of_birth   : '') }},
+    "civil_status":           {{ json_encode($s ? $s->civil_status      : '') }},
+    "mobile_number":          {{ json_encode($s ? $s->mobile_number     : '') }},
+    "student_email":          {{ json_encode($s ? $s->student_email     : '') }},
 
-        // Show target panel
-        var target = document.getElementById('step-' + stepNum);
-        if (target) target.style.display = 'block';
+    "present_street":         {{ json_encode($s ? $s->present_street       : '') }},
+    "present_barangay":       {{ json_encode($s ? $s->present_barangay     : '') }},
+    "present_zipcode":        {{ json_encode($s ? $s->present_zipcode      : '') }},
+    "present_region":         {{ json_encode($s ? $s->present_region       : '') }},
+    "present_province":       {{ json_encode($s ? $s->present_province     : '') }},
+    "present_municipality":   {{ json_encode($s ? $s->present_municipality : '') }},
 
-        // Update step indicators
-        document.querySelectorAll('.step-item').forEach(function(item) {
-            var itemStep = parseInt(item.getAttribute('data-step'));
-            item.classList.remove('active', 'completed');
-            if (itemStep === stepNum) {
-                item.classList.add('active');
-            } else if (itemStep < stepNum) {
-                item.classList.add('completed');
-            }
-        });
+    "permanent_street":       {{ json_encode($s ? $s->permanent_street       : '') }},
+    "permanent_barangay":     {{ json_encode($s ? $s->permanent_barangay     : '') }},
+    "permanent_zipcode":      {{ json_encode($s ? $s->permanent_zipcode      : '') }},
+    "permanent_region":       {{ json_encode($s ? $s->permanent_region       : '') }},
+    "permanent_province":     {{ json_encode($s ? $s->permanent_province     : '') }},
+    "permanent_municipality": {{ json_encode($s ? $s->permanent_municipality : '') }},
 
-        // Update step lines
-        var lines = document.querySelectorAll('.step-line');
-        lines.forEach(function(line, index) {
-            if (index < stepNum - 1) {
-                line.classList.add('active');
-            } else {
-                line.classList.remove('active');
-            }
-        });
+    "mother_firstname":       {{ json_encode($s ? $s->mother_firstname  : '') }},
+    "mother_middlename":      {{ json_encode($s ? $s->mother_middlename : '') }},
+    "mother_lastname":        {{ json_encode($s ? $s->mother_lastname   : '') }},
+    "mother_contact":         {{ json_encode($s ? $s->mother_contact    : '') }},
+    "mother_occupation":      {{ json_encode($s ? $s->mother_occupation : '') }},
+    "father_firstname":       {{ json_encode($s ? $s->father_firstname  : '') }},
+    "father_middlename":      {{ json_encode($s ? $s->father_middlename : '') }},
+    "father_lastname":        {{ json_encode($s ? $s->father_lastname   : '') }},
+    "father_contact":         {{ json_encode($s ? $s->father_contact    : '') }},
+    "father_occupation":      {{ json_encode($s ? $s->father_occupation : '') }},
+    "guardian_firstname":     {{ json_encode($s ? $s->guardian_firstname  : '') }},
+    "guardian_middlename":    {{ json_encode($s ? $s->guardian_middlename : '') }},
+    "guardian_lastname":      {{ json_encode($s ? $s->guardian_lastname   : '') }},
+    "guardian_contact":       {{ json_encode($s ? $s->guardian_contact    : '') }},
+    "guardian_occupation":    {{ json_encode($s ? $s->guardian_occupation : '') }},
+    "guardian_address":       {{ json_encode($s ? $s->guardian_address    : '') }},
+    "parent_marital_status":  {{ json_encode($s ? $s->parent_marital_status : '') }},
+    "monthly_family_income":  {{ json_encode($s ? $s->monthly_family_income : '') }},
+    "number_of_siblings":     {{ json_encode($s ? (string)$s->number_of_siblings : '') }},
+    "household_members":      {{ json_encode($s ? (string)$s->household_members  : '') }},
+    "dependents":             {{ json_encode($s ? (string)$s->dependents          : '') }},
 
-        // Scroll to top of form
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    "junior_school":          {{ json_encode($s ? $s->junior_school    : '') }},
+    "senior_school":          {{ json_encode($s ? $s->senior_school    : '') }},
+    "shs_track_strand":       {{ json_encode($s ? $s->shs_track_strand : '') }},
+    "lrn":                    {{ json_encode($s ? $s->lrn              : '') }},
 
-    // Profile photo preview
-    document.getElementById('profilePhotoInput').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function(ev) {
-                var img = document.getElementById('profilePhotoImg');
-                img.src = ev.target.result;
-                img.style.display = 'block';
-                document.querySelector('.profile-photo-icon').style.display = 'none';
-                document.querySelector('.profile-photo-btn').textContent = 'Change Profile Picture';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+    "family_income_source":       {{ json_encode($s ? $s->family_income_source       : '') }},
+    "family_income_source_other": {{ json_encode($s ? $s->family_income_source_other : '') }},
+    "living_situation":           {{ json_encode($s ? $s->living_situation           : '') }},
+    "living_situation_other":     {{ json_encode($s ? $s->living_situation_other     : '') }},
+    "working_student":            {{ json_encode($s ? $s->working_student            : '') }},
+    "has_scholarship":            {{ json_encode($s ? $s->has_scholarship            : '') }},
+    "first_in_family_college":    {{ json_encode($s ? $s->first_in_family_college    : '') }},
+    "internet_access":            {{ json_encode($s ? $s->internet_access            : '') }},
+    "it_tools_access":            {{ json_encode($s ? $s->it_tools_access            : '') }},
+    "devices_other":              {{ json_encode($s ? $s->devices_other              : '') }},
+    "lms_used":                   {{ json_encode($s ? $s->lms_used                   : '') }},
+    "lms_used_other":             {{ json_encode($s ? $s->lms_used_other             : '') }},
+    "lms_preferred":              {{ json_encode($s ? $s->lms_preferred              : '') }},
+    "lms_preferred_other":        {{ json_encode($s ? $s->lms_preferred_other        : '') }},
+    "lms_reasons_other":          {{ json_encode($s ? $s->lms_reasons_other          : '') }},
+    "preferred_class_time":       {{ json_encode($s ? $s->preferred_class_time       : '') }},
+    "evening_classes":            {{ json_encode($s ? $s->evening_classes            : '') }},
 
-    // Same as Present Address toggle
-    document.getElementById('sameAsPresent').addEventListener('change', function() {
-        var fields = ['street', 'barangay', 'zipcode', 'municipality', 'province', 'region'];
-        fields.forEach(function(field) {
-            var present = document.querySelector('[name="present_' + field + '"]');
-            var permanent = document.querySelector('[name="permanent_' + field + '"]');
-            if (present && permanent) {
-                permanent.value = present.value;
-                permanent.disabled = document.getElementById('sameAsPresent').checked;
-            }
-        });
-    });
+    {{-- Boolean toggles: key format is name||on (default checkbox value) --}}
+    "same_as_present||on":  {{ json_encode($s ? (bool)$s->same_as_present : false) }},
+    "is_orphan||on":        {{ json_encode($s ? (bool)$s->is_orphan       : false) }},
+    "is_first_gen||on":     {{ json_encode($s ? (bool)$s->is_first_gen    : false) }},
+    "is_4ps||on":           {{ json_encode($s ? (bool)$s->is_4ps          : false) }},
+    "has_disability||on":   {{ json_encode($s ? (bool)$s->has_disability  : false) }},
+    "is_foreign||on":       {{ json_encode($s ? (bool)$s->is_foreign      : false) }},
+    "mother_pensioner||on": {{ json_encode($s ? (bool)$s->mother_pensioner : false) }},
+    "father_pensioner||on": {{ json_encode($s ? (bool)$s->father_pensioner : false) }},
+    "no_k12||on":           {{ json_encode($s ? (bool)$s->no_k12          : false) }},
+
+    {{-- Radio buttons --}}
+    "gender||Male":   {{ json_encode($s ? $s->gender === 'Male'   : false) }},
+    "gender||Female": {{ json_encode($s ? $s->gender === 'Female' : false) }},
+
+    {{-- Devices checkboxes --}}
+    "devices[]||Smartphone":              {{ json_encode(in_array('Smartphone',               $sp_devs)) }},
+    "devices[]||Tablet":                  {{ json_encode(in_array('Tablet',                   $sp_devs)) }},
+    "devices[]||Laptop/Notebook Computer":{{ json_encode(in_array('Laptop/Notebook Computer', $sp_devs)) }},
+    "devices[]||Desktop Computer":        {{ json_encode(in_array('Desktop Computer',          $sp_devs)) }},
+    "devices[]||Others":                  {{ json_encode(in_array('Others',                   $sp_devs)) }},
+
+    {{-- LMS Reasons checkboxes --}}
+    "lms_reasons[]||Reliable":                      {{ json_encode(in_array('Reliable',                      $sp_lmsR)) }},
+    "lms_reasons[]||User Friendly":                 {{ json_encode(in_array('User Friendly',                 $sp_lmsR)) }},
+    "lms_reasons[]||Better Communication Feature":  {{ json_encode(in_array('Better Communication Feature',  $sp_lmsR)) }},
+    "lms_reasons[]||Accessible using mobile devices": {{ json_encode(in_array('Accessible using mobile devices', $sp_lmsR)) }},
+    "lms_reasons[]||Fast Feedback on Assessments":  {{ json_encode(in_array('Fast Feedback on Assessments',  $sp_lmsR)) }},
+    "lms_reasons[]||Others":                        {{ json_encode(in_array('Others',                        $sp_lmsR)) }},
+
+    {{-- Other-swap visibility flags --}}
+    "__religionOther":       {{ json_encode($s && $s->religion          === 'Other')  }},
+    "__nationalityOther":    {{ json_encode($s && $s->nationality       === 'Other')  }},
+    "__incomeSourceOther":   {{ json_encode($s && $s->family_income_source   === 'Others') }},
+    "__livingSituationOther":{{ json_encode($s && $s->living_situation        === 'Others') }},
+    "__lmsUsedOther":        {{ json_encode($s && $s->lms_used               === 'Others') }},
+    "__lmsPreferredOther":   {{ json_encode($s && $s->lms_preferred           === 'Others') }},
+
+    {{-- Profile photo URL from DB --}}
+    "__profilePhotoUrl": {{ json_encode($s && $s->profile_photo_path ? asset('storage/' . $s->profile_photo_path) : '') }}
+};
+@if(session('success'))
+// Clear localStorage draft after successful save
+try { localStorage.removeItem('plp_profile_draft'); } catch(e) {}
+@endif
 </script>
+<script src="{{ asset('js/student-profile.js') }}?v={{ time() }}"></script>
+@if($errors->any())
+<script>
+// Auto-jump to the step that contains the first validation error, and highlight error fields
+(function () {
+    var errorKeys = @json(array_keys($errors->messages()));
+    // Highlight each field that has an error
+    function highlightErrorFields() {
+        errorKeys.forEach(function (key) {
+            var el = document.querySelector('[name="' + key + '"]');
+            if (el) {
+                el.classList.add('input-error');
+                var col = el.closest('.setup-col');
+                if (col) col.classList.add('input-error-col');
+            }
+        });
+    }
+    var stepMap = {
+        1: ['student_number','last_name','first_name','middle_name','suffix','nickname','gender',
+            'nationality','nationality_other','religion','religion_other','date_of_birth',
+            'place_of_birth','civil_status','mobile_number','student_email',
+            'present_street','present_barangay','present_zipcode','present_municipality','present_province','present_region',
+            'permanent_street','permanent_barangay','permanent_zipcode','permanent_municipality','permanent_province','permanent_region'],
+        2: ['mother_firstname','mother_middlename','mother_lastname','mother_contact','mother_occupation',
+            'father_firstname','father_middlename','father_lastname','father_contact','father_occupation',
+            'guardian_firstname','guardian_middlename','guardian_lastname','guardian_contact','guardian_occupation','guardian_address',
+            'parent_marital_status','monthly_family_income','number_of_siblings','household_members','dependents'],
+        3: ['junior_school','senior_school','shs_track_strand','lrn'],
+        4: ['family_income_source','living_situation','working_student','has_scholarship','first_in_family_college',
+            'internet_access','it_tools_access','devices','lms_used','lms_preferred','lms_reasons',
+            'preferred_class_time','evening_classes']
+    };
+    function jumpToErrorStep() {
+        for (var step = 1; step <= 4; step++) {
+            for (var i = 0; i < errorKeys.length; i++) {
+                var key = errorKeys[i].replace(/\[\]$/, '');
+                if (stepMap[step] && stepMap[step].indexOf(key) !== -1) {
+                    if (window.goToStep) { window.goToStep(step); }
+                    return;
+                }
+            }
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            jumpToErrorStep();
+            highlightErrorFields();
+        });
+    } else {
+        // DOMContentLoaded already fired (goToStep may not be ready yet)
+        setTimeout(function () {
+            jumpToErrorStep();
+            highlightErrorFields();
+        }, 50);
+    }
+})();
+</script>
+@endif
 @endpush

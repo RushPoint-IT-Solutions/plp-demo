@@ -88,6 +88,8 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::get('/schedule', 'Student\StudentController@schedule')->name('schedule');
     Route::get('/events', 'Student\StudentController@events')->name('events');
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
+    Route::get('/profile/edit', 'Student\StudentController@editProfile')->name('profile.edit');
+    Route::post('/profile', 'Student\StudentController@updateProfile')->name('profile.update');
 });
 
 /*
@@ -101,6 +103,7 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
         Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');

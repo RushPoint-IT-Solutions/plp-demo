@@ -24,6 +24,14 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Process > Requirements
+     */
+    public function requirements()
+    {
+        return view('registrar.requirements');
+    }
+
+    /**
      * Process > Citizenship
      */
     public function citizenship()

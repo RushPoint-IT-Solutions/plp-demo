@@ -1,0 +1,41 @@
+.req {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.visually-hidden,
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.u-nowrap {
+    white-space: nowrap !important;
+}
+
+.u-text-center {
+    text-align: center !important;
+}
+
+/* Remark status colors */
+.remark-passed {
+    color: $plp-green;
+    font-weight: 700;
+}
+
+.remark-incomplete {
+    color: $danger;
+    font-weight: 700;
+}
+
+.remark-nyp {
+    color: $text-secondary;
+    font-weight: 600;
+}

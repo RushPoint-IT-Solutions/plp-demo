@@ -4,53 +4,52 @@
 @section('page-title', 'UNIVERSITY EVENTS CALENDAR')
 
 @section('content')
-<div class="student-page-container">
-    
-    {{-- Calendar Header Controls --}}
-    <div class="calendar-controls-wrapper">
-        <div class="calendar-nav-buttons">
-            <button class="cal-btn" id="prevMonthBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
+<div class="events-page">
+
+    {{-- Calendar Controls: Nav | Month Title | Legend --}}
+    <div class="cal-controls">
+
+        {{-- Nav buttons --}}
+        <div class="cal-nav">
+            <button class="cal-btn" id="prevMonthBtn" aria-label="Previous month">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
             <button class="cal-btn" id="todayBtn">Today</button>
-            <button class="cal-btn" id="nextMonthBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
+            <button class="cal-btn" id="nextMonthBtn" aria-label="Next month">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
         </div>
 
-        <div class="calendar-title">
-            <h2 id="calendarMonthYear">Month 2026</h2>
-        </div>
+        {{-- Month / Year title --}}
+        <h2 class="cal-month-title" id="calendarMonthYear">Month 2026</h2>
 
-        <div class="calendar-legend">
-            <strong>EVENT TYPE</strong>
-            <div class="legend-items">
-                <span class="legend-item"><span class="dot dot-holiday"></span> Holiday</span>
-                <span class="legend-item"><span class="dot dot-event"></span> University Events</span>
+        {{-- Legend --}}
+        <div class="cal-legend">
+            <strong>Event Type</strong>
+            <div class="cal-legend-items">
+                <span class="cal-legend-item"><span class="dot dot-holiday"></span> Holiday</span>
+                <span class="cal-legend-item"><span class="dot dot-event"></span> University Events</span>
             </div>
         </div>
+
     </div>
 
-    {{-- Calendar Grid --}}
-    <div class="calendar-grid-wrapper">
-        <table class="calendar-table">
+    {{-- Calendar Table — reuses .sched-th for day-name headers --}}
+    <div class="grades-scroll">
+        <table class="cal-table">
             <thead>
                 <tr>
-                    <th>Sun</th>
-                    <th>Mon</th>
-                    <th>Tue</th>
-                    <th>Wed</th>
-                    <th>Thurs</th>
-                    <th>Fri</th>
-                    <th>Sat</th>
+                    <th class="sched-th">Sun</th>
+                    <th class="sched-th">Mon</th>
+                    <th class="sched-th">Tue</th>
+                    <th class="sched-th">Wed</th>
+                    <th class="sched-th">Thurs</th>
+                    <th class="sched-th">Fri</th>
+                    <th class="sched-th">Sat</th>
                 </tr>
             </thead>
             <tbody id="calendarBody">
-                <!-- JS will inject days here -->
+                {{-- JS injects day cells here --}}
             </tbody>
         </table>
     </div>
@@ -96,17 +95,14 @@
 
                 for (let j = 0; j < 7; j++) {
                     let cell = document.createElement("td");
-                    
+                    cell.classList.add("cal-td");
+
                     if (i === 0 && j < firstDay) {
-                        // Empty cell before month starts
                         cell.classList.add("empty-cell");
                     } else if (dateCount > daysInMonth) {
-                        // Empty cell after month ends
                         cell.classList.add("empty-cell");
                     } else {
-                        // Actual day cell
                         cell.innerHTML = `<div class="day-number">${dateCount}</div>`;
-                        // Highlight today if it perfectly matches
                         const today = new Date();
                         if (dateCount === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
                             cell.classList.add("today-cell");

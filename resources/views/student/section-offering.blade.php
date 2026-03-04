@@ -6,57 +6,48 @@
 @section('page-title', 'SECTION OFFERING')
 
 @section('content')
-<div class="form-section-container">
+<div class="form-section-container section-offering-page">
     
     <!-- Filter Section (hidden after Download COR) -->
-    <div id="filter-section">
+    <div id="filter-section" class="filter-grid">
 
-    <!-- Row 1: Selected Semester + View COR Button -->
-    <div class="form-row">
-        
-        <!-- Selected Semester -->
-        <div class="form-group-grow">
+        <!-- Row 1, Col 1: Selected Semester -->
+        <div class="filter-cell">
             <label class="form-label-plp">SELECTED SEMESTER</label>
-            <select class="form-input-long">
+            <select class="form-select form-input-long">
                 <option value="" disabled selected>Select Semester</option>
                 @foreach($semesters as $semester)
                 <option value="{{ $semester->id }}">{{ $semester->name }}</option>
                 @endforeach
             </select>
         </div>
-        
-        <!-- View COR / Download COR Button -->
-        <div class="form-group">
-            <span class="label-spacer"></span>
-            <button id="cor-action-btn" class="btn-view-cor">View COR</button>
-        </div>
-    </div>
 
-    <!-- Row 2: Course + Selected Yr & Block -->
-    <div class="form-row">
-        
-        <!-- Course -->
-        <div class="form-group-grow">
+        <!-- Row 1, Col 2: View COR Button -->
+        <div class="filter-cell filter-cell--action">
+            <button id="cor-action-btn" class="btn btn-success btn-view-cor">View COR</button>
+        </div>
+
+        <!-- Row 2, Col 1: Course -->
+        <div class="filter-cell">
             <label class="form-label-plp">COURSE</label>
-            <select class="form-input-long">
+            <select class="form-select form-input-long">
                 <option value="" disabled selected>Select Course</option>
                 @foreach($courses as $course)
                 <option value="{{ $course->id }}">{{ $course->code }}</option>
                 @endforeach
             </select>
         </div>
-        
-        <!-- Selected Yr & Block -->
-        <div class="form-group">
+
+        <!-- Row 2, Col 2: Selected Yr & Block -->
+        <div class="filter-cell">
             <label class="form-label-plp">SELECTED YR & BLOCK</label>
-            <select class="form-input-short">
+            <select class="form-select form-input-short">
                 <option value="" disabled selected>Select your block</option>
                 @foreach($yearBlocks as $block)
                 <option value="{{ $block->id }}">{{ $block->label }}</option>
                 @endforeach
             </select>
         </div>
-    </div>
 
     </div>{{-- /#filter-section --}}
 

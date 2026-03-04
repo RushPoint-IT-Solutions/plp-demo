@@ -3,35 +3,30 @@
 @section('title', 'PLP - Access Module')
 
 @section('content')
-<section class="access-module-section">
-    {{-- Background watermark logo --}}
-    <div class="bg-watermark">
-        <img src="{{ asset('img/logobg.png') }}" alt="PLP Background Logo">
+<section class="am-section py-4 py-md-5">
+    <div class="am-watermark" aria-hidden="true">
+        <img src="{{ asset('img/logobg.png') }}" alt="">
     </div>
 
-    {{-- Title --}}
-    <h2 class="access-module-title">ACCESS MODULE</h2>
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-12 col-xl-10 d-flex flex-column align-items-center justify-content-center">
+                <h2 class="am-title text-center mb-4 mb-md-5">ACCESS MODULE</h2>
 
-    {{-- Module Cards --}}
-    <div class="module-cards-wrapper">
-        <div class="row justify-content-center g-5">
-            {{-- Applicant --}}
-            <div class="col-6 col-md-4">
-                <div class="module-card">
-                    <div class="module-card-icon">
-                        {{-- Placeholder for future icon/image --}}
+                <div class="row justify-content-center g-3 g-md-4 w-100 am-cards-row">
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'applicant') }}" class="btn am-btn w-100">APPLICANT</a>
+                        </div>
                     </div>
-                    <a href="{{ route('module.login', 'applicant') }}" class="module-card-btn">Applicant</a>
-                </div>
-            </div>
 
-            {{-- Student --}}
-            <div class="col-6 col-md-4">
-                <div class="module-card">
-                    <div class="module-card-icon">
-                        {{-- Placeholder for future icon/image --}}
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'student') }}" class="btn am-btn w-100">STUDENT</a>
+                        </div>
                     </div>
-                    <a href="{{ route('module.login', 'student') }}" class="module-card-btn">Student</a>
                 </div>
             </div>
         </div>

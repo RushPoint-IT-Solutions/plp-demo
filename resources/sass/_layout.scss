@@ -1,0 +1,308 @@
+.plp-header {
+    background-color: var(--plp-green);
+    width: 100%;
+    min-height: 80px;
+}
+
+.plp-header-logo {
+    width: auto;
+    height: 64px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.plp-footer {
+    background-color: var(--plp-white);
+    border-top: 2px dashed #999;
+    padding: 10px 20px;
+    font-size: 0.75rem;
+    color: $text-secondary;
+    z-index: 10;
+    position: relative;
+}
+
+.plp-footer a {
+    color: $text-primary;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.plp-footer a:hover {
+    color: var(--plp-green);
+}
+
+.footer-logo-rushpoint {
+    display: inline-block;
+    height: 22px;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 3px;
+}
+
+.footer-logo-obanana {
+    display: inline-block;
+    height: 20px;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 3px;
+}
+
+.obanana-text {
+    color: #d4a017;
+}
+
+.student-portal-body {
+    background-color: $student-shell-bg;
+    min-height: 100vh;
+}
+
+.student-portal-body .student-layout {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+.student-portal-body .sidebar-overlay {
+    display: none;
+}
+
+.student-portal-body .sidebar-toggle {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: $text-primary;
+    padding: 0;
+}
+
+.student-portal-body .plp-sidebar {
+    width: 285px;
+    min-width: 285px;
+    background-color: $student-shell-green;
+    border-top-right-radius: 22px;
+    border-bottom-right-radius: 22px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.student-portal-body .sidebar-brand {
+    padding: 10px 14px 8px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.student-portal-body .sidebar-logo {
+    width: 94px;
+    height: auto;
+    display: block;
+    margin: 0 auto 4px;
+}
+
+.student-portal-body .sidebar-text-logo {
+    width: 200px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.student-portal-body .sidebar-nav {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.student-portal-body .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.student-portal-body .sidebar-link svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.student-portal-body .sidebar-link span {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.student-portal-body .sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.student-portal-body .sidebar-link.active {
+    background-color: #ffffff;
+    color: $student-shell-green;
+    font-weight: 700;
+    box-shadow: $shadow-soft;
+}
+
+.student-portal-body .sidebar-logout {
+    margin-top: auto;
+    padding: 8px;
+}
+
+.student-portal-body .logout-link {
+    background-color: #ffffff;
+    color: #111111;
+    border-radius: $radius-lg;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    font-size: 1rem;
+    box-shadow: $shadow-soft;
+}
+
+.student-portal-body .logout-link svg {
+    width: 22px;
+    height: 22px;
+}
+
+.student-portal-body .student-main-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: $student-shell-bg;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.student-portal-body .student-topbar {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 28px;
+    background-color: $student-shell-bg;
+    position: relative;
+    z-index: 10;            // sits above .student-page-header
+}
+
+// Accent line — lives on the topbar (z-index: 10) so it's never hidden behind the green bar
+// To adjust: change `bottom` (gap from topbar) or `height` (line thickness)
+.student-portal-body .student-topbar::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;   /* 3px gap + 1px line below the topbar */
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: $plp-green-dark;
+}
+
+.student-portal-body .topbar-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid $student-shell-bg;  // same as topbar bg → clean ring buffer
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.student-portal-body .student-page-header {
+    position: relative;
+    margin-top: 7px;  /* 3px gap above line + 1px line + 3px gap below line */
+    height: 40px;
+    background-color: $plp-green;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    box-shadow: $shadow-soft;
+}
+
+// ::before removed — accent line moved to .student-topbar::after above
+
+.student-portal-body .student-content {
+    flex: 1;
+    padding: 30px 28px 16px;
+    overflow: visible;
+}
+
+.student-portal-body .student-main-wrapper .plp-footer {
+    background-color: transparent;
+    border-top: 1px dashed $footer-border;
+    font-size: 11px;
+    color: $text-secondary;
+    padding: 6px 12px 8px;
+}
+
+.student-portal-body .student-main-wrapper .plp-footer p {
+    margin-bottom: 0;
+    line-height: 1.15;
+}
+
+.student-portal-body .student-main-wrapper .plp-footer a {
+    color: $text-muted;
+}
+
+@include down(991px) {
+    .student-portal-body .plp-sidebar {
+        width: 250px;
+        min-width: 250px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: $z-overlay;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+    }
+
+    .student-portal-body .plp-sidebar.sidebar-open {
+        transform: translateX(0);
+    }
+
+    .student-portal-body .sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: ($z-overlay - 1);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease;
+    }
+
+    .student-portal-body .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .student-portal-body .sidebar-toggle {
+        display: inline-flex;
+        align-items: center;
+        margin-right: auto;
+    }
+}
+
+@include down(768px) {
+    .student-portal-body .student-content {
+        padding: 16px 12px 10px;
+    }
+
+    .student-portal-body .student-page-header {
+        font-size: 0.95rem;
+        height: 36px;
+    }
+}

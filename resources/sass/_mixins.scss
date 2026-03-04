@@ -1,0 +1,16 @@
+@mixin down($breakpoint) {
+    @media (max-width: $breakpoint) {
+        @content;
+    }
+}
+
+@mixin up($breakpoint) {
+    @media (min-width: $breakpoint) {
+        @content;
+    }
+}
+
+@mixin focus-reset {
+    outline: none;
+    box-shadow: none;
+}

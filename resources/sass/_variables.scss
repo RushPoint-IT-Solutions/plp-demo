@@ -1,20 +1,34 @@
+$plp-green: #006837;
+$plp-green-dark: #005028;
+$plp-yellow: #ffd100;
+$plp-white: #ffffff;
+$plp-gray: #f5f5f5;
+$plp-border: #cccccc;
+$student-shell-green: #0a813c;
+$student-shell-bg: #d9d9d9;
+$text-primary: #333333;
+$text-secondary: #555555;
+$text-muted: #5f5f5f;
+$footer-border: #a8a8a8;
+$danger: #dc3545;
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 10px;
+$radius-xl: 12px;
+$shadow-soft: 0 2px 7px rgba(0, 0, 0, 0.2);
+$shadow-md: 0 3px 6px rgba(0, 0, 0, 0.24);
 
-// Body
-$body-bg: #f8fafc;
+$font-primary: 'Poppins', sans-serif;
 
-// Typography
-$font-family-sans-serif: "Nunito", sans-serif;
-$font-size-base: 0.9rem;
-$line-height-base: 1.6;
+$z-base: 1;
+$z-overlay: 1000;
+$z-toast: 9999;
 
-// Colors
-$blue: #3490dc;
-$indigo: #6574cd;
-$purple: #9561e2;
-$pink: #f66D9b;
-$red: #e3342f;
-$orange: #f6993f;
-$yellow: #ffed4a;
-$green: #38c172;
-$teal: #4dc0b5;
-$cyan: #6cb2eb;
+:root {
+    --plp-green: #{$plp-green};
+    --plp-green-dark: #{$plp-green-dark};
+    --plp-yellow: #{$plp-yellow};
+    --plp-white: #{$plp-white};
+    --plp-gray: #{$plp-gray};
+    --plp-border: #{$plp-border};
+}

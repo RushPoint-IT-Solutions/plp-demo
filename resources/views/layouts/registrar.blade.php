@@ -16,11 +16,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom App CSS -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
 
     @stack('styles')
 </head>
-<body class="student-body registrar-body">
+<body class="student-body student-portal-body registrar-body">
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
