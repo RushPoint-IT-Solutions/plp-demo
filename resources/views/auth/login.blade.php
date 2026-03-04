@@ -14,10 +14,12 @@
             {{-- Pass the module through so we redirect to the right pages --}}
             <input type="hidden" name="module" value="{{ $module }}">
 
-            {{-- Username / Applicant Number --}}
+            {{-- Username / Student Number / Applicant Number --}}
             <div class="login-field-group">
                 @if($module === 'applicant')
                     <label for="username" class="login-label">APPLICANT NUMBER</label>
+                @elseif($module === 'student')
+                    <label for="username" class="login-label">STUDENT NUMBER</label>
                 @else
                     <label for="username" class="login-label">USERNAME</label>
                 @endif
@@ -27,7 +29,7 @@
                     class="login-input{{ $errors->has('username') ? ' is-invalid' : '' }}"
                     name="username"
                     value="{{ old('username') }}"
-                    placeholder="{{ $module === 'applicant' ? 'Enter Applicant Number' : 'Enter Username' }}"
+                    placeholder="{{ $module === 'applicant' ? 'Enter Applicant Number' : ($module === 'student' ? 'Enter Student Number' : 'Enter Username') }}"
                     required
                     autofocus
                 >

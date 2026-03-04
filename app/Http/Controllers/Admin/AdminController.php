@@ -37,7 +37,7 @@ class AdminController extends Controller
         $redirectMap = [
             'student'    => 'student.grades',
             'applicant'  => 'admin.access-module',   // no applicant pages yet
-            'registrar'  => 'admin.access-module',   // placeholder until registrar pages exist
+            'registrar'  => 'registrar.dashboard',
             'accounting' => 'admin.access-module',
             'cashier'    => 'admin.access-module',
             'faculty'    => 'admin.access-module',

@@ -20,8 +20,11 @@
 
     @stack('styles')
 </head>
-<body class="student-body">
+<body class="student-body student-portal-body">
     <div class="student-layout">
+        {{-- Mobile overlay --}}
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         {{-- Sidebar --}}
         @include('includes.sidebar')
 
@@ -29,6 +32,15 @@
         <div class="student-main-wrapper">
             {{-- Top Header Bar --}}
             <header class="student-topbar">
+                {{-- Hamburger toggle (visible on mobile) --}}
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+
                 <a href="{{ route('student.profile') }}" class="topbar-user">
                     <img src="{{ asset('img/profile.png') }}" alt="User Avatar" class="topbar-avatar">
                 </a>
@@ -62,5 +74,26 @@
     <script src="{{ asset('js/script.js') }}"></script>
 
     @stack('scripts')
+
+    {{-- Sidebar toggle for mobile --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.querySelector('.plp-sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('sidebarToggle');
+
+            if (toggleBtn && sidebar && overlay) {
+                toggleBtn.addEventListener('click', function () {
+                    sidebar.classList.toggle('sidebar-open');
+                    overlay.classList.toggle('active');
+                });
+
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('sidebar-open');
+                    overlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -89,3 +89,24 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::get('/events', 'Student\StudentController@events')->name('events');
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Registrar Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('registrar')->name('registrar.')->group(function () {
+    Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
+
+    // Process sub-pages
+    Route::prefix('process')->name('process.')->group(function () {
+        Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
+        Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
+        Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
+        Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
+        Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
+        Route::get('/admission-report', 'Registrar\RegistrarController@admissionReport')->name('admission-report');
+        Route::get('/schedule-exam', 'Registrar\RegistrarController@scheduleExam')->name('schedule-exam');
+    });
+});
