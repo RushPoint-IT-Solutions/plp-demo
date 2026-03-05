@@ -787,10 +787,6 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('input', saveDraft);
   form.addEventListener('change', saveDraft);
   form.addEventListener('submit', function () {
-    // Re-enable any disabled fields so their values are included in the POST submission
-    form.querySelectorAll('input[disabled], select[disabled], textarea[disabled]').forEach(function (el) {
-      el.disabled = false;
-    });
     // Do NOT clear draft here — clear only after confirmed success (done in blade).
     // This preserves in-progress data if server-side validation fails.
   });
