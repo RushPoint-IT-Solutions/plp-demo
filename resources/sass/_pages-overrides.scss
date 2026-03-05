@@ -13,15 +13,15 @@
 
 /* Events page */
 .events-page {
-    max-width: 1080px;
-    margin: 0;
+    max-width: 100%;
+    margin: 0 auto;
     padding: 6px 0 0;
 }
 
 /* Profile / setup wizard */
 .profile-page {
     max-width: 1080px;
-    margin: 0;
+    margin: 0 auto;
     padding: 6px 0 0;
 }
 
@@ -349,6 +349,21 @@
     .sidebar-dropdown {
         display: flex;
         flex-direction: column;
+        border-radius: 12px;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .sidebar-dropdown .sidebar-link {
+        margin: 0;
+        border-radius: 12px;
+    }
+    .sidebar-dropdown.open {
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        border-radius: 12px;
+    }
+    .sidebar-dropdown.open .sidebar-link {
+        color: $student-shell-green;
+        font-weight: 700;
     }
     .sidebar-dropdown-toggle {
         display: flex;
@@ -356,39 +371,47 @@
         gap: 12px;
         width: 100%;
     }
+    .sidebar-dropdown-toggle span {
+        flex: 1;
+    }
     .sidebar-chevron {
         margin-left: auto;
         flex-shrink: 0;
-        transition: transform 0.2s ease;
+        transition: transform 0.3s ease;
     }
     .sidebar-dropdown.open .sidebar-chevron {
         transform: rotate(180deg);
+        color: $student-shell-green;
     }
     .sidebar-dropdown-menu {
         display: none;
         flex-direction: column;
-        gap: 2px;
-        padding-left: 48px;
-        margin-top: 2px;
     }
     .sidebar-dropdown.open .sidebar-dropdown-menu {
         display: flex;
     }
     .sidebar-sublink {
-        color: rgba(255,255,255,0.82);
+        display: block;
+        position: relative;
+        padding: 8px 18px 8px 34px;
+        color: #333;
         text-decoration: none;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         font-weight: 500;
-        padding: 7px 10px;
         border-radius: 6px;
-        transition: background 0.15s, color 0.15s;
+        transition: color 0.15s, background 0.15s;
+        &::before {
+            content: '\2022';
+            position: absolute;
+            left: 20px;
+            color: inherit;
+        }
         &:hover {
-            background-color: rgba(255,255,255,0.12);
-            color: #fff;
+            color: $student-shell-green;
+            background-color: rgba(0, 104, 55, 0.06);
         }
         &.active {
-            background-color: rgba(255,255,255,0.2);
-            color: #fff;
+            color: $student-shell-green;
             font-weight: 700;
         }
     }
@@ -417,6 +440,307 @@
         display: inline-flex;
         align-items: center;
         text-decoration: none;
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SHARED — Student / Registrar tables
+// ══════════════════════════════════════════════════════════════════════
+.student-table-wrapper {
+    overflow-x: auto;
+    border: 2px solid #c0c0c0;
+    border-radius: 8px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+    background: #fff;
+}
+
+.student-table thead {
+    background-color: $student-shell-green;
+}
+
+.student-table thead th {
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.student-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.student-table tbody tr:hover {
+    background-color: #f0f7f0;
+}
+
+.student-table tbody td {
+    padding: 14px 16px;
+    text-align: center;
+    vertical-align: middle;
+    color: #333;
+    border-bottom: 1px solid #c0c0c0;
+}
+
+.student-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REGISTRAR — Form elements (Citizenship, Religion, etc.)
+// ══════════════════════════════════════════════════════════════════════
+.registrar-form-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.registrar-form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.registrar-form-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--plp-green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.registrar-form-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s ease;
+    &:focus { border-color: var(--plp-green); }
+    &::placeholder { color: #bbb; }
+}
+
+.registrar-form-btn-group {
+    flex: 0 0 auto;
+}
+
+.btn-registrar-save {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    background-color: var(--plp-green);
+    border: none;
+    border-radius: 6px;
+    padding: 10px 40px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+    letter-spacing: 0.5px;
+    &:hover {
+        background-color: var(--plp-green-dark);
+        transform: translateY(-1px);
+    }
+}
+
+.registrar-table {
+    table-layout: auto;
+    thead th { text-align: center; }
+    thead th:last-child { text-align: left; }
+    tbody td { text-align: center; }
+    tbody td:last-child { text-align: left; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REGISTRAR — Document List
+// ══════════════════════════════════════════════════════════════════════
+.doclist-page { padding: 4px 0; }
+
+.doclist-form-card {
+    background: #fff;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+
+.doclist-options-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.doclist-radios {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.doclist-radio-label,
+.doclist-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+
+    input[type="radio"],
+    input[type="checkbox"] {
+        accent-color: var(--plp-green);
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+}
+
+.doclist-save-wrap {
+    margin-left: auto;
+}
+
+.doclist-table {
+    thead th { text-align: center; }
+    thead th:last-child { text-align: center; }
+    tbody td { text-align: center; }
+    tbody td:last-child { text-align: center; }
+}
+
+.doclist-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.doclist-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+
+    &:hover { transform: translateY(-1px); }
+}
+
+.doclist-edit-btn {
+    background: #e8f5e9;
+    color: #2e7d32;
+    &:hover { background: #c8e6c9; }
+}
+
+.doclist-delete-btn {
+    background: #ffebee;
+    color: #c62828;
+    &:hover { background: #ffcdd2; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REGISTRAR — Batch Upload
+// ══════════════════════════════════════════════════════════════════════
+.batch-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.batch-dropzone {
+    border: 2px dashed var(--plp-green);
+    border-radius: 8px;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background: #fff;
+    &:hover,
+    &.dragover {
+        background-color: #f0f7f0;
+        border-color: $plp-green-dark;
+    }
+}
+
+.dropzone-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #999;
+    margin: 0;
+    pointer-events: none;
+}
+
+.batch-upload-note {
+    padding: 0;
+    p {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        color: #333;
+        margin: 0;
+        line-height: 1.6;
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REGISTRAR — Responsive overrides
+// ══════════════════════════════════════════════════════════════════════
+@include down(991px) {
+    .registrar-body .registrar-form-row {
+        gap: 12px;
+    }
+}
+
+@include down(768px) {
+    .registrar-body .registrar-form-row {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    .registrar-body .registrar-form-group[style*="flex: 2"] {
+        flex: 1 !important;
+    }
+    .registrar-body .registrar-form-btn-group {
+        align-self: flex-start;
+    }
+    .registrar-body .student-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .registrar-body .student-table thead th {
+        padding: 10px 12px;
+        font-size: 0.75rem;
+    }
+    .registrar-body .student-table tbody td {
+        padding: 10px 12px;
+        font-size: 0.82rem;
+    }
+    .registrar-body .btn-registrar-save {
+        padding: 8px 28px;
+        font-size: 0.82rem;
+    }
+    .registrar-body .registrar-form-input {
+        padding: 8px 12px;
+        font-size: 0.82rem;
     }
 }
 
@@ -464,6 +788,7 @@
 .reg-announce-card,
 .reg-schedule-card {
     background: #fff;
+    border: 1.5px solid #d0d0d0;
     border-radius: 14px;
     padding: 18px 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.07);
@@ -553,6 +878,7 @@
     width: fit-content;
     min-width: 300px;
     background: #fff;
+    border: 1.5px solid #d0d0d0;
     border-radius: 14px;
     padding: 20px 22px 16px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.07);
@@ -608,6 +934,7 @@
 }
 .reg-applicants-card {
     background: #fce8f0;
+    border: 1.5px solid #e8b0c4;
     border-radius: 14px;
     padding: 28px 64px 28px 36px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.07);
@@ -685,7 +1012,7 @@
     align-items: flex-start;
     gap: 10px;
     padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #d8d8d8;
     &:last-child { border-bottom: none; }
 }
 .reg-announce-dot {
@@ -708,7 +1035,7 @@
     margin-bottom: 8px;
     gap: 8px;
     background: #f8f8f8;
-    border: 1px solid #ececec;
+    border: 1px solid #d0d0d0;
     border-radius: 8px;
     padding: 10px 14px;
 }
@@ -833,12 +1160,13 @@
 }
 .app-table-wrap {
     overflow-x: auto;
+    border: 2px solid #c0c0c0;
     border-radius: 10px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.06);
 }
 .app-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background: #fff;
     font-size: 0.84rem;
     thead tr { background: #006837; color: #fff; }
@@ -849,14 +1177,16 @@
         letter-spacing: 0.03em;
         white-space: nowrap;
     }
-    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr { border-bottom: 1px solid #c0c0c0; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: #f9fffe; }
     td {
         padding: 11px 14px;
         color: #333;
         vertical-align: middle;
+        border-bottom: 1px solid #c0c0c0;
     }
+    tbody tr:last-child td { border-bottom: none; }
 }
 .app-status-accepted   { color: #006837; font-weight: 600; }
 .app-status-pending    { color: #e6a817; font-weight: 600; }
@@ -1184,6 +1514,21 @@
     cursor: pointer;
     transition: background 0.15s;
     &:hover { background: #005229; }
+}
+
+// Modal field helpers
+.req-modal-field-group {
+    display: flex;
+    flex-direction: column;
+}
+.req-modal-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+select.req-modal-input {
+    appearance: auto;
 }
 
 // ══════════════════════════════════════════════════════════════════════

@@ -130,7 +130,7 @@
     aspect-ratio: 1 / 1;
     border: 2px solid #0a7d3f;
     border-radius: $radius-sm;
-    background: transparent;
+    background: #ffffff;
     margin-bottom: 12px;
 }
 
@@ -646,8 +646,10 @@
 
 .sched-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background-color: #ffffff;
+    border: 2px solid #c0c0c0;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -670,7 +672,7 @@
     color: #333;
     padding: 12px 16px;
     text-align: center;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #c0c0c0;
 }
 
 .sched-table tbody tr:last-child .sched-td {
@@ -877,7 +879,7 @@
 }
 
 .cal-month-title {
-    font-size: 1.55rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: $text-primary;
     margin: 0;
@@ -930,8 +932,10 @@
 /* Reuses .sched-th for the day-name header row */
 .cal-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background-color: #fff;
+    border: 2px solid #c0c0c0;
     border-radius: $radius-md;
     overflow: hidden;
     box-shadow: $shadow-soft;
@@ -940,12 +944,13 @@
 
 .cal-td {
     vertical-align: top;
-    padding: 8px 10px;
-    border: 1px solid #e8e8e8;
-    height: 80px;
+    padding: 10px 12px;
+    border: 1px solid #c0c0c0;
+    height: 110px;
     font-family: $font-primary;
-    background-color: #f5f5f5;
+    background-color: #fafafa;
     width: calc(100% / 7);
+    position: relative;
 }
 
 .cal-td.empty-cell {
@@ -957,8 +962,18 @@
     border-color: rgba($plp-green, 0.3);
 }
 
+.cal-td.holiday-cell {
+    background-color: rgba(229, 57, 53, 0.12);
+    border-color: rgba(229, 57, 53, 0.35);
+}
+
+.cal-td.event-cell {
+    background-color: rgba(30, 111, 224, 0.10);
+    border-color: rgba(30, 111, 224, 0.3);
+}
+
 .day-number {
-    font-size: 0.92rem;
+    font-size: 1rem;
     font-weight: 600;
     color: $text-primary;
     line-height: 1;
@@ -966,6 +981,37 @@
 
 .cal-td.today-cell .day-number {
     color: $plp-green;
+}
+
+.cal-td.holiday-cell .day-number {
+    color: #c62828;
+}
+
+.cal-td.event-cell .day-number {
+    color: #1565c0;
+}
+
+// Event label inside cell — anchored to bottom-right
+.cal-event-label {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    left: 10px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.cal-td.holiday-cell .cal-event-label {
+    color: #c62828;
+}
+
+.cal-td.event-cell .cal-event-label {
+    color: #1565c0;
 }
 
 /* ── Profile / Setup Wizard ─────────────────────────────── */
@@ -1018,8 +1064,8 @@
 .setup-form-container {
     background: #fff;
     border-radius: $radius-md;
-    padding: 28px 32px;
-    box-shadow: $shadow-soft;
+    padding: 32px 36px;
+    border: 2px dashed $plp-green;
     margin-bottom: 20px;
 }
 

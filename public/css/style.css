@@ -53,12 +53,12 @@ select:hover {
 .plp-header {
   background-color: var(--plp-green);
   width: 100%;
-  min-height: 80px;
+  min-height: 100px;
 }
 
 .plp-header-logo {
   width: auto;
-  height: 64px;
+  height: 80px;
   -o-object-fit: contain;
      object-fit: contain;
   flex-shrink: 0;
@@ -67,8 +67,8 @@ select:hover {
 .plp-footer {
   background-color: var(--plp-white);
   border-top: 2px dashed #999;
-  padding: 10px 20px;
-  font-size: 0.75rem;
+  padding: 12px 20px;
+  font-size: 0.88rem;
   color: #555555;
   z-index: 10;
   position: relative;
@@ -86,26 +86,28 @@ select:hover {
 
 .footer-logo-rushpoint {
   display: inline-block;
-  height: 22px;
+  height: 32px;
   width: auto;
   vertical-align: middle;
-  margin: 0 3px;
+  margin: 0 4px;
 }
 
 .footer-logo-obanana {
   display: inline-block;
-  height: 20px;
+  height: 30px;
   width: auto;
   vertical-align: middle;
-  margin: 0 3px;
+  margin: 0 4px;
 }
 
 .obanana-text {
   color: #d4a017;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .student-portal-body {
-  background-color: #d9d9d9;
+  background-color: #ffffff;
   min-height: 100vh;
 }
 
@@ -137,6 +139,8 @@ select:hover {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: 4px 0 14px rgba(0, 0, 0, 0.15);
+  z-index: 5;
 }
 
 .student-portal-body .sidebar-brand {
@@ -231,7 +235,7 @@ select:hover {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background-color: #d9d9d9;
+  background-color: #ffffff;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -242,20 +246,10 @@ select:hover {
   align-items: center;
   justify-content: flex-end;
   padding: 0 28px;
-  background-color: #d9d9d9;
+  background-color: #ffffff;
+  border-bottom: 1px solid #0a813c;
   position: relative;
   z-index: 10;
-}
-
-.student-portal-body .student-topbar::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  /* 3px gap + 1px line below the topbar */
-  left: 0;
-  right: 0;
-  height: 1px;
-  background-color: #005028;
 }
 
 .student-portal-body .topbar-avatar {
@@ -264,16 +258,16 @@ select:hover {
   border-radius: 50%;
   -o-object-fit: cover;
      object-fit: cover;
-  border: 3px solid #d9d9d9;
+  border: 3px solid #ffffff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 .student-portal-body .student-page-header {
   position: relative;
-  margin-top: 7px;
-  /* 3px gap above line + 1px line + 3px gap below line */
+  margin-top: 6px;
+  border-top: 2px solid #0a813c;
   height: 40px;
-  background-color: #006837;
+  background-color: #0a813c;
   color: #ffffff;
   font-size: 1.05rem;
   font-weight: 700;
@@ -288,7 +282,9 @@ select:hover {
 .student-portal-body .student-content {
   flex: 1;
   padding: 30px 28px 16px;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #ffffff;
 }
 
 .student-portal-body .student-main-wrapper .plp-footer {
@@ -356,6 +352,48 @@ select:hover {
   .student-portal-body .student-page-header {
     font-size: 0.95rem;
     height: 36px;
+  }
+}
+
+@media (max-width: 991px) {
+  .registrar-body .plp-sidebar {
+    width: 250px;
+    min-width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    border-top-right-radius: 22px;
+    border-bottom-right-radius: 22px;
+  }
+
+  .registrar-body .plp-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .registrar-body .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+  }
+
+  .registrar-body .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .registrar-body .sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    margin-right: auto;
   }
 }
 
@@ -493,7 +531,7 @@ select:hover {
   aspect-ratio: 1/1;
   border: 2px solid #0a7d3f;
   border-radius: 4px;
-  background: transparent;
+  background: #ffffff;
   margin-bottom: 12px;
 }
 
@@ -1019,8 +1057,10 @@ select:hover {
 
 .sched-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background-color: #ffffff;
+  border: 2px solid #c0c0c0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -1043,7 +1083,7 @@ select:hover {
   color: #333;
   padding: 12px 16px;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #c0c0c0;
 }
 
 .sched-table tbody tr:last-child .sched-td {
@@ -1265,7 +1305,7 @@ select:hover {
 }
 
 .cal-month-title {
-  font-size: 1.55rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #333333;
   margin: 0;
@@ -1324,8 +1364,10 @@ select:hover {
 
 .cal-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background-color: #fff;
+  border: 2px solid #c0c0c0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
@@ -1334,12 +1376,13 @@ select:hover {
 
 .cal-td {
   vertical-align: top;
-  padding: 8px 10px;
-  border: 1px solid #e8e8e8;
-  height: 80px;
+  padding: 10px 12px;
+  border: 1px solid #c0c0c0;
+  height: 110px;
   font-family: "Poppins", sans-serif;
-  background-color: #f5f5f5;
+  background-color: #fafafa;
   width: 14.2857142857%;
+  position: relative;
 }
 
 .cal-td.empty-cell {
@@ -1351,8 +1394,18 @@ select:hover {
   border-color: rgba(0, 104, 55, 0.3);
 }
 
+.cal-td.holiday-cell {
+  background-color: rgba(229, 57, 53, 0.12);
+  border-color: rgba(229, 57, 53, 0.35);
+}
+
+.cal-td.event-cell {
+  background-color: rgba(30, 111, 224, 0.1);
+  border-color: rgba(30, 111, 224, 0.3);
+}
+
 .day-number {
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #333333;
   line-height: 1;
@@ -1360,6 +1413,36 @@ select:hover {
 
 .cal-td.today-cell .day-number {
   color: #006837;
+}
+
+.cal-td.holiday-cell .day-number {
+  color: #c62828;
+}
+
+.cal-td.event-cell .day-number {
+  color: #1565c0;
+}
+
+.cal-event-label {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  left: 10px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.cal-td.holiday-cell .cal-event-label {
+  color: #c62828;
+}
+
+.cal-td.event-cell .cal-event-label {
+  color: #1565c0;
 }
 
 /* ── Profile / Setup Wizard ─────────────────────────────── */
@@ -1416,8 +1499,8 @@ select:hover {
 .setup-form-container {
   background: #fff;
   border-radius: 8px;
-  padding: 28px 32px;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+  padding: 32px 36px;
+  border: 2px dashed #006837;
   margin-bottom: 20px;
 }
 
@@ -2123,8 +2206,8 @@ select:hover {
 /* Events page */
 
 .events-page {
-  max-width: 1080px;
-  margin: 0;
+  max-width: 100%;
+  margin: 0 auto;
   padding: 6px 0 0;
 }
 
@@ -2132,7 +2215,7 @@ select:hover {
 
 .profile-page {
   max-width: 1080px;
-  margin: 0;
+  margin: 0 auto;
   padding: 6px 0 0;
 }
 
@@ -2480,6 +2563,24 @@ select:hover {
 .student-portal-body .sidebar-dropdown {
   display: flex;
   flex-direction: column;
+  border-radius: 12px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-portal-body .sidebar-dropdown .sidebar-link {
+  margin: 0;
+  border-radius: 12px;
+}
+
+.student-portal-body .sidebar-dropdown.open {
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+}
+
+.student-portal-body .sidebar-dropdown.open .sidebar-link {
+  color: #0a813c;
+  font-weight: 700;
 }
 
 .student-portal-body .sidebar-dropdown-toggle {
@@ -2489,22 +2590,24 @@ select:hover {
   width: 100%;
 }
 
+.student-portal-body .sidebar-dropdown-toggle span {
+  flex: 1;
+}
+
 .student-portal-body .sidebar-chevron {
   margin-left: auto;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
 .student-portal-body .sidebar-dropdown.open .sidebar-chevron {
   transform: rotate(180deg);
+  color: #0a813c;
 }
 
 .student-portal-body .sidebar-dropdown-menu {
   display: none;
   flex-direction: column;
-  gap: 2px;
-  padding-left: 48px;
-  margin-top: 2px;
 }
 
 .student-portal-body .sidebar-dropdown.open .sidebar-dropdown-menu {
@@ -2512,23 +2615,31 @@ select:hover {
 }
 
 .student-portal-body .sidebar-sublink {
-  color: rgba(255, 255, 255, 0.82);
+  display: block;
+  position: relative;
+  padding: 8px 18px 8px 34px;
+  color: #333;
   text-decoration: none;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  padding: 7px 10px;
   border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s, background 0.15s;
+}
+
+.student-portal-body .sidebar-sublink::before {
+  content: "\2022";
+  position: absolute;
+  left: 20px;
+  color: inherit;
 }
 
 .student-portal-body .sidebar-sublink:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: #0a813c;
+  background-color: rgba(0, 104, 55, 0.06);
 }
 
 .student-portal-body .sidebar-sublink.active {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: #0a813c;
   font-weight: 700;
 }
 
@@ -2560,6 +2671,345 @@ select:hover {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+}
+
+.student-table-wrapper {
+  overflow-x: auto;
+  border: 2px solid #c0c0c0;
+  border-radius: 8px;
+}
+
+.student-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.88rem;
+  background: #fff;
+}
+
+.student-table thead {
+  background-color: #0a813c;
+}
+
+.student-table thead th {
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.student-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.student-table tbody tr:hover {
+  background-color: #f0f7f0;
+}
+
+.student-table tbody td {
+  padding: 14px 16px;
+  text-align: center;
+  vertical-align: middle;
+  color: #333;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.student-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.registrar-form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.registrar-form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.registrar-form-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--plp-green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  font-family: "Poppins", sans-serif;
+}
+
+.registrar-form-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-family: "Poppins", sans-serif;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.registrar-form-input:focus {
+  border-color: var(--plp-green);
+}
+
+.registrar-form-input::-moz-placeholder {
+  color: #bbb;
+}
+
+.registrar-form-input::placeholder {
+  color: #bbb;
+}
+
+.registrar-form-btn-group {
+  flex: 0 0 auto;
+}
+
+.btn-registrar-save {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--plp-green);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 40px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  letter-spacing: 0.5px;
+}
+
+.btn-registrar-save:hover {
+  background-color: var(--plp-green-dark);
+  transform: translateY(-1px);
+}
+
+.registrar-table {
+  table-layout: auto;
+}
+
+.registrar-table thead th {
+  text-align: center;
+}
+
+.registrar-table thead th:last-child {
+  text-align: left;
+}
+
+.registrar-table tbody td {
+  text-align: center;
+}
+
+.registrar-table tbody td:last-child {
+  text-align: left;
+}
+
+.doclist-page {
+  padding: 4px 0;
+}
+
+.doclist-form-card {
+  background: #fff;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.doclist-options-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.doclist-radios {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.doclist-radio-label,
+.doclist-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+}
+
+.doclist-radio-label input[type=radio],
+.doclist-radio-label input[type=checkbox],
+.doclist-checkbox-label input[type=radio],
+.doclist-checkbox-label input[type=checkbox] {
+  accent-color: var(--plp-green);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.doclist-save-wrap {
+  margin-left: auto;
+}
+
+.doclist-table thead th {
+  text-align: center;
+}
+
+.doclist-table thead th:last-child {
+  text-align: center;
+}
+
+.doclist-table tbody td {
+  text-align: center;
+}
+
+.doclist-table tbody td:last-child {
+  text-align: center;
+}
+
+.doclist-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.doclist-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.doclist-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.doclist-edit-btn {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.doclist-edit-btn:hover {
+  background: #c8e6c9;
+}
+
+.doclist-delete-btn {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.doclist-delete-btn:hover {
+  background: #ffcdd2;
+}
+
+.batch-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.batch-dropzone {
+  border: 2px dashed var(--plp-green);
+  border-radius: 8px;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  background: #fff;
+}
+
+.batch-dropzone:hover,
+.batch-dropzone.dragover {
+  background-color: #f0f7f0;
+  border-color: #005028;
+}
+
+.dropzone-text {
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #999;
+  margin: 0;
+  pointer-events: none;
+}
+
+.batch-upload-note {
+  padding: 0;
+}
+
+.batch-upload-note p {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+  color: #333;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 991px) {
+  .registrar-body .registrar-form-row {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .registrar-body .registrar-form-row {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .registrar-body .registrar-form-group[style*="flex: 2"] {
+    flex: 1 !important;
+  }
+
+  .registrar-body .registrar-form-btn-group {
+    align-self: flex-start;
+  }
+
+  .registrar-body .student-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .registrar-body .student-table thead th {
+    padding: 10px 12px;
+    font-size: 0.75rem;
+  }
+
+  .registrar-body .student-table tbody td {
+    padding: 10px 12px;
+    font-size: 0.82rem;
+  }
+
+  .registrar-body .btn-registrar-save {
+    padding: 8px 28px;
+    font-size: 0.82rem;
+  }
+
+  .registrar-body .registrar-form-input {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
 }
 
 .reg-dashboard {
@@ -2612,6 +3062,7 @@ select:hover {
 .reg-announce-card,
 .reg-schedule-card {
   background: #fff;
+  border: 1.5px solid #d0d0d0;
   border-radius: 14px;
   padding: 18px 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
@@ -2729,6 +3180,7 @@ select:hover {
   width: fit-content;
   min-width: 300px;
   background: #fff;
+  border: 1.5px solid #d0d0d0;
   border-radius: 14px;
   padding: 20px 22px 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
@@ -2794,6 +3246,7 @@ select:hover {
 
 .reg-applicants-card {
   background: #fce8f0;
+  border: 1.5px solid #e8b0c4;
   border-radius: 14px;
   padding: 28px 64px 28px 36px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
@@ -2883,7 +3336,7 @@ select:hover {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #d8d8d8;
 }
 
 .reg-announce-item:last-child {
@@ -2912,7 +3365,7 @@ select:hover {
   margin-bottom: 8px;
   gap: 8px;
   background: #f8f8f8;
-  border: 1px solid #ececec;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
   padding: 10px 14px;
 }
@@ -3086,13 +3539,14 @@ select:hover {
 
 .app-table-wrap {
   overflow-x: auto;
+  border: 2px solid #c0c0c0;
   border-radius: 10px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
 }
 
 .app-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: #fff;
   font-size: 0.84rem;
 }
@@ -3111,7 +3565,7 @@ select:hover {
 }
 
 .app-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #c0c0c0;
 }
 
 .app-table tbody tr:last-child {
@@ -3126,6 +3580,11 @@ select:hover {
   padding: 11px 14px;
   color: #333;
   vertical-align: middle;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.app-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .app-status-accepted {
@@ -3573,6 +4032,24 @@ select:hover {
 
 .req-btn-ok:hover {
   background: #005229;
+}
+
+.req-modal-field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.req-modal-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+select.req-modal-input {
+  -webkit-appearance: auto;
+     -moz-appearance: auto;
+          appearance: auto;
 }
 
 .apst-page {

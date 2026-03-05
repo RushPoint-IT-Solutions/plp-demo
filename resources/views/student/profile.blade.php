@@ -4,6 +4,15 @@
 @section('page-title', 'PROFILE')
 
 @push('styles')
+<style>
+    /* Let the profile form scroll naturally — footer flows after content */
+    .student-main-wrapper {
+        overflow-y: auto !important;
+    }
+    .student-content {
+        flex: none !important;
+    }
+</style>
 @endpush
 
 @section('content')

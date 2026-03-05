@@ -3,59 +3,51 @@
 @section('title', 'PLP - Access Module')
 
 @section('content')
-<section class="access-module-section">
-    {{-- Background watermark logo --}}
-    <div class="bg-watermark">
-        <img src="{{ asset('img/logobg.png') }}" alt="PLP Background Logo">
+<section class="am-section py-4 py-md-5">
+    <div class="am-watermark" aria-hidden="true">
+        <img src="{{ asset('img/logobg.png') }}" alt="">
     </div>
 
-    {{-- Title --}}
-    <h2 class="access-module-title">ACCESS MODULE</h2>
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-12 col-xl-10 d-flex flex-column align-items-center justify-content-center">
+                <h2 class="am-title text-center mb-4 mb-md-5">ACCESS MODULE</h2>
 
-    {{-- Module Cards --}}
-    <div class="module-cards-wrapper">
-        <div class="row justify-content-center g-4">
-            {{-- Registrar --}}
-            <div class="col-6 col-md-3">
-                <div class="module-card">
-                    <div class="module-card-icon">
-                        {{-- Placeholder for future icon/image --}}
+                <div class="row justify-content-center g-3 g-md-4 w-100 am-cards-row">
+                    {{-- Registrar --}}
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'registrar') }}" class="btn am-btn w-100">REGISTRAR</a>
+                        </div>
                     </div>
-                    <a href="{{ route('module.login', 'registrar') }}" class="module-card-btn">Registrar</a>
-                </div>
-            </div>
 
-            {{-- Accounting --}}
-            <div class="col-6 col-md-3">
-                <div class="module-card">
-                    <div class="module-card-icon">
-                        {{-- Placeholder for future icon/image --}}
+                    {{-- Accounting --}}
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'accounting') }}" class="btn am-btn w-100">ACCOUNTING</a>
+                        </div>
                     </div>
-                    <a href="{{ route('module.login', 'accounting') }}" class="module-card-btn">Accounting</a>
-                </div>
-            </div>
 
-            {{-- Cashier --}}
-            <div class="col-6 col-md-3">
-                <div class="module-card">
-                    <div class="module-card-icon">
-                        {{-- Placeholder for future icon/image --}}
+                    {{-- Cashier --}}
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'cashier') }}" class="btn am-btn w-100">CASHIER</a>
+                        </div>
                     </div>
-                    <a href="{{ route('module.login', 'cashier') }}" class="module-card-btn">Cashier</a>
-                </div>
-            </div>
 
-            {{-- Faculty --}}
-            <div class="col-6 col-md-3">
-                <div class="module-card">
-                    <div class="module-card-icon">
-                        {{-- Placeholder for future icon/image --}}
+                    {{-- Faculty --}}
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'faculty') }}" class="btn am-btn w-100">FACULTY</a>
+                        </div>
                     </div>
-                    <a href="{{ route('module.login', 'faculty') }}" class="module-card-btn">Faculty</a>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 </section>
 @endsection
