@@ -18,7 +18,7 @@
     </div>
 
     {{-- Data Table --}}
-    <div class="student-table-wrapper">
+    <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table">
             <thead>
                 <tr>

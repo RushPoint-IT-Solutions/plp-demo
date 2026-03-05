@@ -58,7 +58,7 @@
     </div>
 
     {{-- ── Table ── --}}
-    <div class="student-table-wrapper">
+    <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table doclist-table">
             <thead>
                 <tr>

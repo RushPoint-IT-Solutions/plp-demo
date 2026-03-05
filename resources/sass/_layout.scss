@@ -21,6 +21,21 @@
     position: relative;
 }
 
+.footer-powered-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.footer-line-1,
+.footer-line-2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
 .plp-footer a {
     color: $text-primary;
     text-decoration: underline;

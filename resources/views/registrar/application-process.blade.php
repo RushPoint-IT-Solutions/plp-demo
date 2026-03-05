@@ -61,7 +61,7 @@
     </div>
 
     {{-- Table --}}
-    <div class="app-table-wrap">
+    <div class="app-table-wrap table-responsive">
         <table class="app-table">
             <thead>
                 <tr>

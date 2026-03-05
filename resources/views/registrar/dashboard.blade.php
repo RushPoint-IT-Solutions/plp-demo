@@ -7,7 +7,7 @@
 <div class="reg-dashboard">
 
     {{-- ── Top stat cards ── --}}
-    <div class="reg-dash-top">
+    <div class="reg-dash-top d-flex flex-column flex-md-row">
 
         {{-- Total Students --}}
         <div class="reg-stat-card">
@@ -47,7 +47,7 @@
     </div>
 
     {{-- ── Bottom section ── --}}
-    <div class="reg-dash-bottom">
+    <div class="reg-dash-bottom d-grid">
 
         {{-- Announcements --}}
         <div class="reg-announce-card">

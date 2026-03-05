@@ -74,6 +74,22 @@ select:hover {
   position: relative;
 }
 
+.footer-powered-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.footer-line-1,
+.footer-line-2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
 .plp-footer a {
   color: #333333;
   text-decoration: underline;
@@ -3605,6 +3621,81 @@ select:hover {
 .app-status-inprogress {
   color: #1a73e8;
   font-weight: 600;
+}
+
+@media (max-width: 991px) {
+  .reg-dash-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-stat-card {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .reg-applicants-card {
+    padding: 20px 28px;
+  }
+
+  .app-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-filter-group {
+    width: 100%;
+  }
+
+  .app-filter-select-wide,
+  .app-filter-input-search,
+  .app-filter-input-sort {
+    min-width: unset;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .reg-dash-top {
+    gap: 14px;
+  }
+
+  .reg-stat-card-inner {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reg-stat-sparkline {
+    width: 100%;
+  }
+
+  .reg-applicants-card {
+    width: 100%;
+    padding: 16px 20px;
+  }
+
+  .reg-dash-bottom {
+    gap: 14px;
+  }
+
+  .reg-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .doclist-form-card {
+    padding: 14px 16px;
+  }
+
+  .doclist-options-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .doclist-save-wrap {
+    align-self: flex-start;
+  }
 }
 
 .req-page {
