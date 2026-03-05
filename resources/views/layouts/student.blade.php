@@ -21,7 +21,7 @@
 
     @stack('styles')
 </head>
-<body class="student-body student-portal-body">
+<body class="student-body student-portal-body @yield('body-class')">
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -43,7 +43,8 @@
                 </button>
 
                 <a href="{{ route('student.profile') }}" class="topbar-user">
-                    <img src="{{ asset('img/profile.png') }}" alt="User Avatar" class="topbar-avatar">
+                    @php $__topbarProfile = \App\StudentProfile::first(); @endphp
+                    <img src="{{ $__topbarProfile && $__topbarProfile->profile_photo_path ? asset('storage/' . $__topbarProfile->profile_photo_path) : asset('img/profile.png') }}" alt="User Avatar" class="topbar-avatar">
                 </a>
             </header>
 
@@ -76,25 +77,7 @@
 
     @stack('scripts')
 
-    {{-- Sidebar toggle for mobile --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.querySelector('.plp-sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const toggleBtn = document.getElementById('sidebarToggle');
-
-            if (toggleBtn && sidebar && overlay) {
-                toggleBtn.addEventListener('click', function () {
-                    sidebar.classList.toggle('sidebar-open');
-                    overlay.classList.toggle('active');
-                });
-
-                overlay.addEventListener('click', function () {
-                    sidebar.classList.remove('sidebar-open');
-                    overlay.classList.remove('active');
-                });
-            }
-        });
-    </script>
+    {{-- Sidebar JS --}}
+    <script src="{{ asset('js/student-layout.js') }}"></script>
 </body>
 </html>
