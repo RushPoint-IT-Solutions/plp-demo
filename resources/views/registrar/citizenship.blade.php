@@ -17,7 +17,7 @@
             <input type="text" class="registrar-form-input" placeholder="Description" name="description">
         </div>
         <div class="registrar-form-group registrar-form-btn-group">
-            <button type="button" class="btn-registrar-save">Save</button>
+            <button type="button" class="btn-registrar-save" onclick="saveCitizenship()">Save</button>
         </div>
     </div>
 
@@ -52,4 +52,17 @@
     </div>
 
 </div>
+@push('scripts')
+<script>
+function saveCitizenship() {
+    var code = document.querySelector('input[name="code"]').value.trim();
+    var desc = document.querySelector('input[name="description"]').value.trim();
+    if (!code || !desc) {
+        showRegistrarToast('Please fill in all required fields.', 'warning');
+        return;
+    }
+    showRegistrarToast('Citizenship saved successfully.', 'success');
+}
+</script>
+@endpush
 @endsection

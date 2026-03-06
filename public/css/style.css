@@ -1269,6 +1269,16 @@ select:hover {
   color: #842029;
 }
 
+.toast-notification.toast-warning {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+.toast-notification.toast-warning .toast-message,
+.toast-notification.toast-warning .toast-close {
+  color: #664d03;
+}
+
 /* ── Calendar ─────────────────────────────────────────── */
 
 .cal-controls {
