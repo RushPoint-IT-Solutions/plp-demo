@@ -39,10 +39,8 @@
                 <a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>
                 <a href="{{ route('registrar.process.batch-upload') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.batch-upload') ? 'active' : '' }}">Batch Upload Image</a>
                 <a href="{{ route('registrar.process.document-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.document-list') ? 'active' : '' }}">Document List</a>
-                <a href="#" class="sidebar-sublink">Requirements</a>
-                <a href="#" class="sidebar-sublink">Reports</a>
-                <a href="{{ route('registrar.process.admission-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.admission-report') ? 'active' : '' }}">Admission Report</a>
-                <a href="{{ route('registrar.process.schedule-exam') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.schedule-exam') ? 'active' : '' }}">Schedule of Exam</a>
+                <a href="{{ route('registrar.process.requirements') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.requirements') ? 'active' : '' }}">Requirements</a>
+                <a href="{{ route('registrar.process.reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.reports') ? 'active' : '' }}">Reports</a>
             </div>
         </div>
 

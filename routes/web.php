@@ -109,7 +109,6 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
-        Route::get('/admission-report', 'Registrar\RegistrarController@admissionReport')->name('admission-report');
-        Route::get('/schedule-exam', 'Registrar\RegistrarController@scheduleExam')->name('schedule-exam');
+        Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
     });
 });
