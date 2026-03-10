@@ -955,6 +955,31 @@
         margin-top: 6px;
     }
 }
+.reg-faculty-card {
+    background: #e8f0fe;
+    border: 1.5px solid #a8c0f0;
+    border-radius: 14px;
+    padding: 28px 64px 28px 36px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    display: inline-flex;
+    flex-direction: column;
+    align-self: end;
+    width: auto;
+    white-space: nowrap;
+    .reg-stat-card-title {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+    .reg-stat-number {
+        font-size: 2.8rem;
+    }
+    .reg-faculty-dept {
+        font-size: 1rem;
+        margin-top: 6px;
+        color: #3b6fd4;
+        font-weight: 600;
+    }
+}
 .reg-applicants-label {
     font-size: 0.82rem;
     font-weight: 600;
@@ -1207,6 +1232,9 @@
     .reg-applicants-card {
         padding: 20px 28px;
     }
+    .reg-faculty-card {
+        padding: 20px 28px;
+    }
     .app-filter-row {
         flex-direction: column;
         align-items: stretch;
@@ -1234,6 +1262,10 @@
         width: 100%;
     }
     .reg-applicants-card {
+        width: 100%;
+        padding: 16px 20px;
+    }
+    .reg-faculty-card {
         width: 100%;
         padding: 16px 20px;
     }
@@ -1702,3 +1734,188 @@ select.req-modal-input {
     }
 }
 #apstTable td:first-child { position: relative; }
+
+// ══════════════════════════════════════════════════════════════════════
+// REGISTRAR — Application Process: applicant detail panels
+// ══════════════════════════════════════════════════════════════════════
+
+// ─ Clickable rows
+.app-table tbody tr {
+    cursor: pointer;
+    transition: background 0.12s;
+    &:hover { background-color: #f0faf4; }
+}
+
+// ─ Applicant detail view
+#applicantDetailView { display: none; }
+
+.appl-detail-header {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+.appl-detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: #006837;
+        text-transform: uppercase;
+        margin: 0;
+    }
+    input[type="text"] {
+        border: 1px solid #d0d0d0;
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 14px;
+        color: #444;
+        background: #f7f7f7;
+        outline: none;
+        min-width: 150px;
+    }
+    &.wide input[type="text"] { min-width: 320px; }
+}
+
+// ─ Panels
+.applicant-panel { display: none; }
+.applicant-panel.active { display: block; }
+
+// ─ Under development placeholder
+.under-dev-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    color: #aaa;
+    font-size: 1rem;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    border: 2px dashed #e0e0e0;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+// ─ Schedule of Exam panel
+.sched-exam-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 26px 28px;
+}
+.sched-fields-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 22px;
+}
+.sched-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    &.flex-grow { flex: 1; }
+    label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: #006837;
+        text-transform: uppercase;
+        margin: 0;
+    }
+    select,
+    input[type="text"] {
+        border: 1px solid #d0d0d0;
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 14px;
+        color: #333;
+        background: #fff;
+        outline: none;
+        min-width: 150px;
+    }
+    select { min-width: 165px; padding-right: 10px; }
+    &.flex-grow input[type="text"] { width: 100%; }
+}
+.sched-actions {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+.sched-btn-save {
+    background: #0a813c;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 38px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    &:hover { background: #076b31; }
+}
+.sched-btn-print {
+    background: transparent;
+    color: #0a813c;
+    border: 2px solid #0a813c;
+    border-radius: 25px;
+    padding: 10px 38px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    &:hover { background: #0a813c; color: #fff; }
+}
+.sched-reminders {
+    border-top: 1px solid #eee;
+    padding-top: 18px;
+    p {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        color: #333;
+    }
+    ul {
+        font-size: 13px;
+        padding-left: 20px;
+        margin-bottom: 16px;
+        color: #444;
+        li { margin-bottom: 4px; }
+    }
+}
+
+// ─ Applicant sidebar
+#applicantSidebar { display: none; }
+.appl-sidebar-back {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+    transition: background 0.15s;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
+    svg { width: 20px; height: 20px; flex-shrink: 0; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// STUDENT — Profile edit page layout overrides
+// ══════════════════════════════════════════════════════════════════════
+body.page-profile-edit {
+    .student-main-wrapper { overflow-y: auto !important; }
+    .student-content { flex: none !important; }
+}

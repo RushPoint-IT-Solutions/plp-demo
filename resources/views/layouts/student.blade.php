@@ -7,6 +7,9 @@
 
     <title>@yield('title', 'PLP - Student Portal')</title>
 
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +24,7 @@
 
     @stack('styles')
 </head>
-<body class="student-body student-portal-body">
+<body class="student-body student-portal-body @yield('body-class')">
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -43,7 +46,12 @@
                 </button>
 
                 <a href="{{ route('student.profile') }}" class="topbar-user">
-                    <img src="{{ asset('img/profile.png') }}" alt="User Avatar" class="topbar-avatar">
+                    <div class="topbar-avatar-placeholder" style="width:36px;height:36px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
                 </a>
             </header>
 
@@ -76,25 +84,7 @@
 
     @stack('scripts')
 
-    {{-- Sidebar toggle for mobile --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.querySelector('.plp-sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const toggleBtn = document.getElementById('sidebarToggle');
-
-            if (toggleBtn && sidebar && overlay) {
-                toggleBtn.addEventListener('click', function () {
-                    sidebar.classList.toggle('sidebar-open');
-                    overlay.classList.toggle('active');
-                });
-
-                overlay.addEventListener('click', function () {
-                    sidebar.classList.remove('sidebar-open');
-                    overlay.classList.remove('active');
-                });
-            }
-        });
-    </script>
+    {{-- Sidebar JS --}}
+    <script src="{{ asset('js/student-layout.js') }}"></script>
 </body>
 </html>

@@ -44,6 +44,13 @@
             <div class="reg-applicants-dept">4 Department</div>
         </div>
 
+        {{-- Faculty --}}
+        <div class="reg-faculty-card">
+            <div class="reg-stat-card-title">Faculty</div>
+            <div class="reg-stat-number">10</div>
+            <div class="reg-faculty-dept">4 Department</div>
+        </div>
+
     </div>
 
     {{-- ── Bottom section ── --}}

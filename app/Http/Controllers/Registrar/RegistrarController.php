@@ -72,18 +72,10 @@ class RegistrarController extends Controller
     }
 
     /**
-     * Process > Admission Report
+     * Process > Reports
      */
-    public function admissionReport()
+    public function reports()
     {
-        return view('registrar.admission-report');
-    }
-
-    /**
-     * Process > Schedule of Exam
-     */
-    public function scheduleExam()
-    {
-        return view('registrar.schedule-exam');
+        return view('registrar.reports');
     }
 }

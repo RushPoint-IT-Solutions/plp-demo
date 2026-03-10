@@ -3,8 +3,17 @@
 @section('title', 'PLP - Application Process')
 @section('page-title', 'APPLICATION PROCESS')
 
+
+
+{{-- ====== Applicant Sidebar (injected into layout's extra-sidebar slot) ====== --}}
+@push('extra-sidebar')
+@include('registrar.applicant.sidebar')
+@endpush
+
 @section('content')
-<div class="app-process-page">
+
+{{-- ========== MAIN APPLICATION PROCESS VIEW ========== --}}
+<div class="app-process-page" id="appProcessPage">
 
     {{-- Filter Bar --}}
     <div class="app-filter-bar">
@@ -75,7 +84,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr data-id="2223A8137" data-name="Mark Jay Bares">
                     <td>1</td>
                     <td>2223A8137</td>
                     <td>Mark Jay Bares</td>
@@ -84,10 +93,10 @@
                     <td>June 07, 2025</td>
                     <td><span class="app-status-accepted"><span class="app-status-dot"></span>Accepted</span></td>
                 </tr>
-                <tr>
-                    <td>1</td>
-                    <td>2223A8137</td>
-                    <td>Mark Jay Bares</td>
+                <tr data-id="2223A8138" data-name="Andrea Jane Austero">
+                    <td>2</td>
+                    <td>2223A8138</td>
+                    <td>Andrea Jane Austero</td>
                     <td>BSCS</td>
                     <td>June 07, 2025</td>
                     <td>June 07, 2025</td>
@@ -98,4 +107,61 @@
     </div>
 
 </div>
+
+{{-- ========== APPLICANT DETAIL VIEW ========== --}}
+<div id="applicantDetailView">
+
+    {{-- Applicant ID + Name --}}
+    <div class="appl-detail-header">
+        <div class="appl-detail-field">
+            <label>Applicant ID</label>
+            <input type="text" id="detailApplicantId" readonly>
+        </div>
+        <div class="appl-detail-field wide">
+            <label>Applicant Name</label>
+            <input type="text" id="detailApplicantName" readonly>
+        </div>
+    </div>
+
+    {{-- Application Form --}}
+    <div class="applicant-panel" id="panel-application-form">
+        @include('registrar.applicant.application-form')
+    </div>
+
+    {{-- Documents Submitted --}}
+    <div class="applicant-panel" id="panel-documents-submitted">
+        @include('registrar.applicant.documents-submitted')
+    </div>
+
+    {{-- Schedule of Exam --}}
+    <div class="applicant-panel" id="panel-schedule-exam">
+        @include('registrar.applicant.schedule-exam')
+    </div>
+
+    {{-- Medical Clearance --}}
+    <div class="applicant-panel" id="panel-medical-clearance">
+        @include('registrar.applicant.medical-clearance')
+    </div>
+
+    {{-- Exam Result --}}
+    <div class="applicant-panel" id="panel-exam-result">
+        @include('registrar.applicant.exam-result')
+    </div>
+
+    {{-- Approval --}}
+    <div class="applicant-panel" id="panel-approval">
+        @include('registrar.applicant.approval')
+    </div>
+
+    {{-- Application Status --}}
+    <div class="applicant-panel" id="panel-application-status">
+        @include('registrar.applicant.application-status')
+    </div>
+
+</div>
+
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/application-process.js') }}?v={{ time() }}"></script>
+@endpush

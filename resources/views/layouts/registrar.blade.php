@@ -7,6 +7,9 @@
 
     <title>@yield('title', 'PLP - Registrar Portal')</title>
 
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +31,9 @@
 
         {{-- Registrar Sidebar --}}
         @include('includes.registrar-sidebar')
+
+        {{-- Extra sidebars (e.g. applicant detail sidebar) --}}
+        @stack('extra-sidebar')
 
         {{-- Main wrapper (header + content + footer) --}}
         <div class="student-main-wrapper">
@@ -60,7 +66,12 @@
 
                     {{-- Profile Avatar --}}
                     <a href="#" class="topbar-user">
-                        <img src="{{ asset('img/profile.png') }}" alt="User Avatar" class="topbar-avatar">
+                        <div class="topbar-avatar-placeholder" style="width:36px;height:36px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
                     </a>
                 </div>
             </header>
@@ -80,44 +91,35 @@
         </div>
     </div>
 
+    <!-- Registrar Toast Notification -->
+    <div id="registrar-toast" class="toast-notification">
+        <span class="toast-message"></span>
+        <button class="toast-close" onclick="document.getElementById('registrar-toast').classList.remove('show')">&times;</button>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JS -->
     <script src="{{ asset('js/script.js') }}"></script>
 
-    <!-- Sidebar dropdown toggle -->
+    <!-- Sidebar JS -->
+    <script src="{{ asset('js/registrar-layout.js') }}"></script>
+
     <script>
-        document.querySelectorAll('.sidebar-dropdown-toggle').forEach(function(toggle) {
-            toggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                var dropdown = this.closest('.sidebar-dropdown');
-                var menu = dropdown.querySelector('.sidebar-dropdown-menu');
-                // Only toggle if the dropdown actually has sub-links
-                if (menu && menu.querySelector('.sidebar-sublink')) {
-                    dropdown.classList.toggle('open');
-                }
-            });
-        });
-
-        // Sidebar toggle (mobile drawer)
-        var sidebarToggle = document.getElementById('sidebarToggle');
-        var sidebar = document.querySelector('.plp-sidebar');
-        var overlay = document.getElementById('sidebarOverlay');
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('sidebar-open');
-                overlay.classList.toggle('active');
-            });
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('sidebar-open');
-                overlay.classList.remove('active');
-            });
-        }
+    function showRegistrarToast(message, type) {
+        var toast = document.getElementById('registrar-toast');
+        if (!toast) return;
+        var messageEl = toast.querySelector('.toast-message');
+        if (messageEl) messageEl.textContent = message;
+        toast.classList.remove('show', 'toast-error', 'toast-warning');
+        if (type === 'warning') toast.classList.add('toast-warning');
+        if (type === 'error') toast.classList.add('toast-error');
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        if (toast._timer) clearTimeout(toast._timer);
+        toast._timer = setTimeout(function () { toast.classList.remove('show'); }, 3000);
+    }
     </script>
 
     @stack('scripts')
