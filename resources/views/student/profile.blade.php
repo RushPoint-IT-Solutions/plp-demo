@@ -3,8 +3,7 @@
 @section('title', 'PLP - Profile')
 @section('page-title', 'PROFILE')
 
-@push('styles')
-@endpush
+@section('body-class', 'page-profile-edit')
 
 @section('content')
 <div class="profile-page">
@@ -80,7 +79,6 @@
                         <img id="profilePhotoImg" src="" alt="" style="display:none;">
                     </div>
                     <label class="profile-photo-btn" for="profilePhotoInput">Upload Photo</label>
-                    <input type="file" id="profilePhotoInput" name="profile_photo" accept="image/*" style="display:none;">
                 </div>
             </div>
 
@@ -736,6 +734,9 @@
         </div>
     </div>
 
+    {{-- File input lives outside all step panels so it is always included in the form submission --}}
+    <input type="file" id="profilePhotoInput" name="profile_photo" accept="image/*" style="display:none;">
+
     </form>
 
 </div>
@@ -872,60 +873,7 @@ try { localStorage.removeItem('plp_profile_draft'); } catch(e) {}
 </script>
 <script src="{{ asset('js/student-profile.js') }}?v={{ time() }}"></script>
 @if($errors->any())
-<script>
-// Auto-jump to the step that contains the first validation error, and highlight error fields
-(function () {
-    var errorKeys = @json(array_keys($errors->messages()));
-    // Highlight each field that has an error
-    function highlightErrorFields() {
-        errorKeys.forEach(function (key) {
-            var el = document.querySelector('[name="' + key + '"]');
-            if (el) {
-                el.classList.add('input-error');
-                var col = el.closest('.setup-col');
-                if (col) col.classList.add('input-error-col');
-            }
-        });
-    }
-    var stepMap = {
-        1: ['student_number','last_name','first_name','middle_name','suffix','nickname','gender',
-            'nationality','nationality_other','religion','religion_other','date_of_birth',
-            'place_of_birth','civil_status','mobile_number','student_email',
-            'present_street','present_barangay','present_zipcode','present_municipality','present_province','present_region',
-            'permanent_street','permanent_barangay','permanent_zipcode','permanent_municipality','permanent_province','permanent_region'],
-        2: ['mother_firstname','mother_middlename','mother_lastname','mother_contact','mother_occupation',
-            'father_firstname','father_middlename','father_lastname','father_contact','father_occupation',
-            'guardian_firstname','guardian_middlename','guardian_lastname','guardian_contact','guardian_occupation','guardian_address',
-            'parent_marital_status','monthly_family_income','number_of_siblings','household_members','dependents'],
-        3: ['junior_school','senior_school','shs_track_strand','lrn'],
-        4: ['family_income_source','living_situation','working_student','has_scholarship','first_in_family_college',
-            'internet_access','it_tools_access','devices','lms_used','lms_preferred','lms_reasons',
-            'preferred_class_time','evening_classes']
-    };
-    function jumpToErrorStep() {
-        for (var step = 1; step <= 4; step++) {
-            for (var i = 0; i < errorKeys.length; i++) {
-                var key = errorKeys[i].replace(/\[\]$/, '');
-                if (stepMap[step] && stepMap[step].indexOf(key) !== -1) {
-                    if (window.goToStep) { window.goToStep(step); }
-                    return;
-                }
-            }
-        }
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            jumpToErrorStep();
-            highlightErrorFields();
-        });
-    } else {
-        // DOMContentLoaded already fired (goToStep may not be ready yet)
-        setTimeout(function () {
-            jumpToErrorStep();
-            highlightErrorFields();
-        }, 50);
-    }
-})();
-</script>
+<script>window.profileErrorKeys = @json(array_keys($errors->messages()));</script>
+<script src="{{ asset('js/student-profile-errors.js') }}"></script>
 @endif
 @endpush

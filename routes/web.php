@@ -109,7 +109,17 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
-        Route::get('/admission-report', 'Registrar\RegistrarController@admissionReport')->name('admission-report');
-        Route::get('/schedule-exam', 'Registrar\RegistrarController@scheduleExam')->name('schedule-exam');
+        Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
+    });
+
+    // Registrar menu sub-pages
+    Route::prefix('registrar-menu')->name('registrar-menu.')->group(function () {
+        // Academic Master
+        Route::prefix('academic-master')->name('academic-master.')->group(function () {
+            Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
+            Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
+            Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
+            Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
+        });
     });
 });

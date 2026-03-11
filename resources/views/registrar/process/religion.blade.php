@@ -13,12 +13,12 @@
             <input type="text" class="registrar-form-input" placeholder="Description" name="description">
         </div>
         <div class="registrar-form-group registrar-form-btn-group">
-            <button type="button" class="btn-registrar-save">Save</button>
+            <button type="button" class="btn-registrar-save" onclick="saveReligion()">Save</button>
         </div>
     </div>
 
     {{-- Data Table --}}
-    <div class="student-table-wrapper">
+    <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table">
             <thead>
                 <tr>
@@ -44,4 +44,16 @@
     </div>
 
 </div>
+@push('scripts')
+<script>
+function saveReligion() {
+    var desc = document.querySelector('input[name="description"]').value.trim();
+    if (!desc) {
+        showRegistrarToast('Please fill in the description.', 'warning');
+        return;
+    }
+    showRegistrarToast('Religion saved successfully.', 'success');
+}
+</script>
+@endpush
 @endsection

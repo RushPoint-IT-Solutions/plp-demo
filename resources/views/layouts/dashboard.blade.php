@@ -7,6 +7,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <title>@yield('title', 'PLP Portal')</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
     
     @include('includes.style')
 </head>

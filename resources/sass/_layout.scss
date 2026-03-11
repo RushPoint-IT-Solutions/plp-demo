@@ -1,12 +1,12 @@
 .plp-header {
     background-color: var(--plp-green);
     width: 100%;
-    min-height: 80px;
+    min-height: 100px;
 }
 
 .plp-header-logo {
     width: auto;
-    height: 64px;
+    height: 80px;
     object-fit: contain;
     flex-shrink: 0;
 }
@@ -14,11 +14,26 @@
 .plp-footer {
     background-color: var(--plp-white);
     border-top: 2px dashed #999;
-    padding: 10px 20px;
-    font-size: 0.75rem;
+    padding: 12px 20px;
+    font-size: 0.88rem;
     color: $text-secondary;
     z-index: 10;
     position: relative;
+}
+
+.footer-powered-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.footer-line-1,
+.footer-line-2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
 }
 
 .plp-footer a {
@@ -33,22 +48,24 @@
 
 .footer-logo-rushpoint {
     display: inline-block;
-    height: 22px;
+    height: 32px;
     width: auto;
     vertical-align: middle;
-    margin: 0 3px;
+    margin: 0 4px;
 }
 
 .footer-logo-obanana {
     display: inline-block;
-    height: 20px;
+    height: 30px;
     width: auto;
     vertical-align: middle;
-    margin: 0 3px;
+    margin: 0 4px;
 }
 
 .obanana-text {
     color: #d4a017;
+    font-size: 1rem;
+    font-weight: 700;
 }
 
 .student-portal-body {
@@ -84,6 +101,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    box-shadow: 4px 0 14px rgba(0, 0, 0, 0.15);
+    z-index: 5;
 }
 
 .student-portal-body .sidebar-brand {
@@ -189,21 +208,10 @@
     align-items: center;
     justify-content: flex-end;
     padding: 0 28px;
-    background-color: $student-shell-bg;
+    background-color: #ffffff;
+    border-bottom: 1px solid $student-shell-green;
     position: relative;
-    z-index: 10;            // sits above .student-page-header
-}
-
-// Accent line — lives on the topbar (z-index: 10) so it's never hidden behind the green bar
-// To adjust: change `bottom` (gap from topbar) or `height` (line thickness)
-.student-portal-body .student-topbar::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;   /* 3px gap + 1px line below the topbar */
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: $plp-green-dark;
+    z-index: 10;
 }
 
 .student-portal-body .topbar-avatar {
@@ -211,15 +219,16 @@
     height: 52px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid $student-shell-bg;  // same as topbar bg → clean ring buffer
+    border: 3px solid #ffffff;
     box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
 }
 
 .student-portal-body .student-page-header {
     position: relative;
-    margin-top: 7px;  /* 3px gap above line + 1px line + 3px gap below line */
+    margin-top: 6px;
+    border-top: 2px solid $student-shell-green;
     height: 40px;
-    background-color: $plp-green;
+    background-color: $student-shell-green;
     color: #ffffff;
     font-size: 1.05rem;
     font-weight: 700;
@@ -231,12 +240,12 @@
     box-shadow: $shadow-soft;
 }
 
-// ::before removed — accent line moved to .student-topbar::after above
-
 .student-portal-body .student-content {
     flex: 1;
     padding: 30px 28px 16px;
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #ffffff;
 }
 
 .student-portal-body .student-main-wrapper .plp-footer {
@@ -304,5 +313,58 @@
     .student-portal-body .student-page-header {
         font-size: 0.95rem;
         height: 36px;
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// REGISTRAR — body-scoped overrides
+// ══════════════════════════════════════════════════════════════════════
+// The registrar layout body carries BOTH .student-portal-body AND
+// .registrar-body, so it inherits every student-portal rule above.
+// Use .registrar-body to layer registrar-only tweaks on top.
+
+.registrar-body {
+    // Sidebar responsive — same drawer pattern, scoped so it can't
+    // bleed into the student portal.
+    @include down(991px) {
+        .plp-sidebar {
+            width: 250px;
+            min-width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: $z-overlay;
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+            border-top-right-radius: 22px;
+            border-bottom-right-radius: 22px;
+        }
+
+        .plp-sidebar.sidebar-open {
+            transform: translateX(0);
+        }
+
+        .sidebar-overlay {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: ($z-overlay - 1);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar-toggle {
+            display: inline-flex;
+            align-items: center;
+            margin-right: auto;
+        }
     }
 }

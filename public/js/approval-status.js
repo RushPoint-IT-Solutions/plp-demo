@@ -1,91 +1,3 @@
-@extends('layouts.registrar')
-
-@section('title', 'PLP - Approval Status')
-@section('page-title', 'APPROVAL STATUS')
-
-@section('content')
-<div class="apst-page">
-
-    {{-- Top bar: search + new button --}}
-    <div class="apst-topbar">
-        <div class="apst-search-box">
-            <input type="text" class="apst-search-input" placeholder="Search Status Code" id="apstSearchInput" oninput="filterRows()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="apst-search-icon">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-        </div>
-        <button class="apst-new-btn" onclick="openNewModal()">+ New Status</button>
-    </div>
-
-    {{-- Table --}}
-    <div class="app-table-wrap">
-        <table class="app-table" id="apstTable">
-            <thead>
-                <tr>
-                    <th style="width:70px;">Action</th>
-                    <th style="width:130px;">Status Code</th>
-                    <th style="width:180px;">Status</th>
-                    <th>Message</th>
-                </tr>
-            </thead>
-            <tbody id="apstTableBody"></tbody>
-        </table>
-    </div>
-
-    {{-- Edit / New Modal --}}
-    <div class="req-modal-overlay" id="apstModal" style="display:none;" onclick="closeApstModal(event)">
-        <div class="req-modal-box">
-            <h3 class="req-modal-title" id="apstModalTitle">NEW STATUS</h3>
-            <div class="req-modal-fields">
-                <div class="req-modal-field-group">
-                    <label class="req-modal-label">STATUS CODE</label>
-                    <input type="text" class="req-modal-input" id="apstInputCode" placeholder="e.g. D" maxlength="5">
-                </div>
-                <div class="req-modal-field-group">
-                    <label class="req-modal-label">STATUS</label>
-                    <input type="text" class="req-modal-input" id="apstInputStatus" placeholder="e.g. Document Submitted">
-                </div>
-            </div>
-            <div class="req-modal-field-group" style="margin-top:12px;">
-                <label class="req-modal-label">MESSAGE</label>
-                <textarea class="req-modal-input" id="apstInputMessage" rows="3" placeholder="Enter message..."
-                    style="resize:vertical; font-size:0.85rem; padding:8px 10px;"></textarea>
-            </div>
-            <div class="req-modal-actions">
-                <button class="req-btn-cancel" onclick="closeApstModal()">Cancel</button>
-                <button class="req-btn-save" onclick="saveApstRow()">Save</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- Delete confirm modal --}}
-    <div class="req-modal-overlay" id="apstDeleteModal" style="display:none;" onclick="closeDeleteModal(event)">
-        <div class="req-modal-box req-modal-success" style="min-width:300px;">
-            <h3 class="req-modal-title" style="color:#c0392b;">DELETE STATUS</h3>
-            <p style="font-size:0.88rem; color:#444; margin-bottom:20px; text-align:center;">
-                Are you sure you want to delete this status?
-            </p>
-            <div class="req-modal-actions" style="justify-content:center;">
-                <button class="req-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-                <button class="req-btn-save" style="background:#c0392b;" onclick="confirmDelete()">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- Success modal --}}
-    <div class="req-modal-overlay" id="apstSuccessModal" style="display:none;" onclick="closeApstSuccess(event)">
-        <div class="req-modal-box req-modal-success">
-            <h3 class="req-modal-success-title">SUCCESSFUL!</h3>
-            <p class="req-modal-success-msg" id="apstSuccessMsg">Status saved successfully.</p>
-            <button class="req-btn-ok" onclick="closeApstSuccess()">OK</button>
-        </div>
-    </div>
-
-</div>
-
-@push('scripts')
-<script>
 var STATUSES = [
     { code: 'D', status: 'Document Submitted', message: 'Document Submitted' },
     { code: 'O', status: 'On Probation',        message: 'Process On Probation' },
@@ -139,16 +51,35 @@ function filterRows() {
 // Close any open dropdown when clicking elsewhere
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.apst-action-btn') && !e.target.closest('.apst-dropdown')) {
-        document.querySelectorAll('.apst-dropdown').forEach(function(d){ d.classList.remove('open'); });
+        document.querySelectorAll('.apst-dropdown').forEach(function(d){ d.classList.remove('open'); d.classList.remove('drop-up'); d.style.top = ''; d.style.left = ''; d.style.bottom = ''; });
     }
 });
+
+// Close dropdown on scroll so the fixed-position menu doesn't float away
+window.addEventListener('scroll', function () {
+    document.querySelectorAll('.apst-dropdown.open').forEach(function (d) { d.classList.remove('open'); d.classList.remove('drop-up'); d.style.top = ''; d.style.left = ''; d.style.bottom = ''; });
+}, true);
 
 function toggleMenu(idx, e) {
     e.stopPropagation();
     var menu = document.getElementById('apstMenu' + idx);
     var isOpen = menu.classList.contains('open');
-    document.querySelectorAll('.apst-dropdown').forEach(function(d){ d.classList.remove('open'); });
-    if (!isOpen) menu.classList.add('open');
+    document.querySelectorAll('.apst-dropdown').forEach(function(d){ d.classList.remove('open'); d.classList.remove('drop-up'); d.style.top = ''; d.style.left = ''; d.style.bottom = ''; });
+    if (!isOpen) {
+        var btn = menu.parentElement.querySelector('.apst-action-btn');
+        var rect = btn.getBoundingClientRect();
+        var spaceBelow = window.innerHeight - rect.bottom;
+        menu.style.left = (rect.right + 4) + 'px';
+        if (spaceBelow < 120) {
+            menu.classList.add('drop-up');
+            menu.style.top = 'auto';
+            menu.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+        } else {
+            menu.style.top = rect.top + 'px';
+            menu.style.bottom = 'auto';
+        }
+        menu.classList.add('open');
+    }
 }
 
 // ── New modal ─────────────────────────────────────────────────────────
@@ -221,6 +152,3 @@ function closeApstSuccess(e) {
 }
 
 renderTable();
-</script>
-@endpush
-@endsection
