@@ -92,25 +92,25 @@
     <div class="app-filter-bar">
         {{-- Row 1: Date range + Course --}}
         <div class="app-filter-row">
-            <div class="app-filter-group">
+            <div class="app-filter-group" style="flex:1;">
                 <span class="app-filter-label">From Date</span>
-                <select class="app-filter-select">
-                    <option>January 1, 2026</option>
-                    <option>February 1, 2026</option>
-                    <option>March 1, 2026</option>
-                </select>
-            </div>
-            <div class="app-filter-group">
-                <span class="app-filter-label">From To</span>
-                <select class="app-filter-select">
+                <select class="app-filter-select" style="width:100%;">
                     <option>January 1, 2026</option>
                     <option>February 1, 2026</option>
                     <option>March 1, 2026</option>
                 </select>
             </div>
             <div class="app-filter-group" style="flex:1;">
+                <span class="app-filter-label">To Date</span>
+                <select class="app-filter-select" style="width:100%;">
+                    <option>January 1, 2026</option>
+                    <option>February 1, 2026</option>
+                    <option>March 1, 2026</option>
+                </select>
+            </div>
+            <div class="app-filter-group" style="flex:2;">
                 <span class="app-filter-label">Course</span>
-                <select class="app-filter-select app-filter-select-wide" style="width:100%;">
+                <select class="app-filter-select" style="width:100%;">
                     <option value="">Select Course</option>
                     <option>BSCS</option>
                     <option>BSIT</option>
@@ -122,17 +122,17 @@
 
         {{-- Row 2: Search + Sort By + Show Entries --}}
         <div class="app-filter-row">
-            <div class="app-filter-group">
+            <div class="app-filter-group" style="flex:2;">
                 <span class="app-filter-label">Search</span>
-                <input type="text" class="app-filter-input app-filter-input-search" placeholder="Search">
+                <input type="text" class="app-filter-input" placeholder="Search" style="width:100%;">
             </div>
-            <div class="app-filter-group">
+            <div class="app-filter-group" style="flex:2;">
                 <span class="app-filter-label">Sort By</span>
-                <input type="text" class="app-filter-input app-filter-input-sort" placeholder="Applicant ID">
+                <input type="text" class="app-filter-input" placeholder="Applicant ID" style="width:100%;">
             </div>
-            <div class="app-filter-group">
+            <div class="app-filter-group" style="flex:1;">
                 <span class="app-filter-label">Show Entries</span>
-                <select class="app-filter-select app-filter-select-sm">
+                <select class="app-filter-select" style="width:100%;">
                     <option>100</option>
                     <option>50</option>
                     <option>25</option>

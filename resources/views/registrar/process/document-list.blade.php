@@ -6,55 +6,24 @@
 @section('content')
 <div class="doclist-page">
 
-    {{-- ── Add / Edit Form ── --}}
-    <div class="doclist-form-card">
-        <form method="POST" action="#" id="doclistForm" onsubmit="return handleDoclistSave(event)">
-            @csrf
-
-            {{-- Row 1: dropdowns + text --}}
-            <div class="registrar-form-row">
-                <div class="registrar-form-group">
-                    <label class="registrar-form-label">Department Type</label>
-                    <select class="registrar-form-input" name="department_type">
-                        <option value="">-Select Type-</option>
-                        <option value="2223A8137">2223A8137</option>
-                    </select>
-                </div>
-                <div class="registrar-form-group">
-                    <label class="registrar-form-label">Year Level</label>
-                    <select class="registrar-form-input" name="grade_level">
-                        <option value="">-Select Grade Level-</option>
-                        <option value="All Year Level">All Year Level</option>
-                        <option value="1st Year">1st Year</option>
-                        <option value="2nd Year">2nd Year</option>
-                        <option value="3rd Year">3rd Year</option>
-                        <option value="4th Year">4th Year</option>
-                    </select>
-                </div>
-                <div class="registrar-form-group">
-                    <label class="registrar-form-label">Document/Requirements</label>
-                    <input type="text" class="registrar-form-input" name="document" placeholder="Document">
-                </div>
+    {{-- ── Filter Bar ── --}}
+    <div class="doclist-filter-bar">
+        <div class="doclist-filter-left">
+            <div class="doclist-filter-group">
+                <span class="app-filter-label">Search</span>
+                <input type="text" class="app-filter-input" id="doclistSearch" placeholder="Search document..." style="width:100%;" oninput="filterDoclistTable()">
             </div>
-
-            {{-- Row 2: radios + checkbox + save --}}
-            <div class="doclist-options-row">
-                <div class="doclist-radios">
-                    <label class="doclist-radio-label">
-                        <input type="radio" name="doc_type" value="Medical"> Medical
-                    </label>
-                    <label class="doclist-radio-label">
-                        <input type="radio" name="doc_type" value="Document" checked> Document
-                    </label>
-                </div>
-                <label class="doclist-checkbox-label">
-                    <input type="checkbox" name="non_filipino" value="1"> Non-Filipino
-                </label>
-                <div class="doclist-save-wrap">
-                    <button type="submit" class="btn-registrar-save">Save</button>
-                </div>
+            <div class="doclist-filter-group">
+                <span class="app-filter-label">Sort By</span>
+                <select class="app-filter-select" id="doclistSort" style="width:100%;" onchange="sortDoclistTable()">
+                    <option value="asc">A – Z</option>
+                    <option value="desc">Z – A</option>
+                </select>
             </div>
-        </form>
+        </div>
+        <div class="doclist-filter-right">
+            <button type="button" class="doclist-add-btn" onclick="openAddDocModal()">+ Add</button>
+        </div>
     </div>
 
     {{-- ── Table ── --}}
@@ -116,6 +85,62 @@
         </table>
     </div>
 
+</div>
+
+{{-- ══════ ADD DOCUMENT MODAL ══════ --}}
+<div class="req-modal-overlay" id="addDocModal" style="display:none;" onclick="if(event.target===this) closeAddDocModal()">
+    <div class="req-modal-box">
+        <div class="req-modal-title">ADD DOCUMENT</div>
+        <form id="addDocForm" onsubmit="return handleAddDocSave(event)">
+            <div class="req-modal-fields" style="flex-direction:column; gap:14px;">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">Department Type</label>
+                    <select class="req-modal-input" id="addDeptType" name="department_type">
+                        <option value="">-Select Type-</option>
+                        <option value="2223A8137">2223A8137</option>
+                    </select>
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">Year Level</label>
+                    <select class="req-modal-input" id="addGradeLevel" name="grade_level">
+                        <option value="">-Select Grade Level-</option>
+                        <option value="All Year Level">All Year Level</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">Document / Requirements</label>
+                    <input type="text" class="req-modal-input" id="addDocument" name="document" placeholder="Enter document name">
+                </div>
+                <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+                    <div class="req-modal-field-group" style="flex:0 0 auto;">
+                        <label class="req-modal-label">Type</label>
+                        <div style="display:flex; gap:14px; margin-top:4px;">
+                            <label class="doclist-radio-label">
+                                <input type="radio" name="add_doc_type" value="Medical"> Medical
+                            </label>
+                            <label class="doclist-radio-label">
+                                <input type="radio" name="add_doc_type" value="Document" checked> Document
+                            </label>
+                        </div>
+                    </div>
+                    <div class="req-modal-field-group" style="flex:0 0 auto;">
+                        <label class="req-modal-label">Non-Filipino</label>
+                        <label class="doclist-checkbox-label" style="margin-top:4px;">
+                            <input type="checkbox" id="addNonFilipino" name="non_filipino" value="1"> Yes
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="req-modal-actions">
+                <button type="button" class="req-btn-cancel" onclick="closeAddDocModal()">Cancel</button>
+                <button type="submit" class="req-btn-save">Add Document</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 {{-- ══════ EDIT MODAL ══════ --}}

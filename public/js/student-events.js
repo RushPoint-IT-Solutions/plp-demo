@@ -63,6 +63,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (ev) {
                         cell.classList.add(ev.type === 'holiday' ? 'holiday-cell' : 'event-cell');
                         html += `<span class="cal-event-label">${ev.label}</span>`;
+                        cell.dataset.eventType = ev.type;
+                        cell.dataset.eventLabel = ev.label;
                     }
 
                     cell.innerHTML = html;
@@ -98,4 +100,84 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     renderCalendar(currentDate);
+
+    /* ── Mobile tap-to-reveal popup ─────────────────────── */
+
+    let activePopup = null;
+
+    function closeEventPopup() {
+        if (activePopup) {
+            activePopup.remove();
+            activePopup = null;
+        }
+    }
+
+    function isMobileView() {
+        return window.innerWidth <= 991;
+    }
+
+    calendarBody.addEventListener("click", function(e) {
+        if (!isMobileView()) return;
+
+        const cell = e.target.closest(".cal-td");
+        if (!cell || !cell.dataset.eventLabel) return;
+
+        // If tapping the same cell, just toggle off
+        if (activePopup && activePopup._cell === cell) {
+            closeEventPopup();
+            return;
+        }
+
+        closeEventPopup();
+
+        const type = cell.dataset.eventType;
+        const label = cell.dataset.eventLabel;
+
+        const popup = document.createElement("div");
+        popup.className = "cal-event-popup";
+        popup._cell = cell;
+        popup.innerHTML =
+            `<div class="cal-popup-type popup-${type}">` +
+                `<span class="popup-dot"></span>` +
+                `${type === 'holiday' ? 'Holiday' : 'University Event'}` +
+            `</div>` +
+            `<div class="cal-popup-label">${label}</div>`;
+
+        document.body.appendChild(popup);
+
+        // Position popup centered below the cell
+        const rect = cell.getBoundingClientRect();
+        const popupRect = popup.getBoundingClientRect();
+
+        let left = rect.left + rect.width / 2 - popupRect.width / 2;
+        let top = rect.bottom + 8;
+
+        // Keep within viewport
+        if (left < 8) left = 8;
+        if (left + popupRect.width > window.innerWidth - 8) {
+            left = window.innerWidth - popupRect.width - 8;
+        }
+        // If no room below, show above
+        if (top + popupRect.height > window.innerHeight - 8) {
+            top = rect.top - popupRect.height - 8;
+            popup.style.transformOrigin = "bottom center";
+        }
+
+        popup.style.left = left + "px";
+        popup.style.top = top + "px";
+
+        activePopup = popup;
+    });
+
+    // Close popup on tap outside
+    document.addEventListener("click", function(e) {
+        if (!activePopup) return;
+        if (activePopup.contains(e.target)) return;
+        if (e.target.closest(".cal-td[data-event-label]")) return;
+        closeEventPopup();
+    });
+
+    // Close popup on scroll or resize
+    window.addEventListener("scroll", closeEventPopup, true);
+    window.addEventListener("resize", closeEventPopup);
 });
