@@ -3,10 +3,19 @@ document.querySelectorAll('.sidebar-dropdown-toggle').forEach(function(toggle) {
         e.preventDefault();
         var dropdown = this.closest('.sidebar-dropdown');
         var menu = dropdown.querySelector('.sidebar-dropdown-menu');
-        // Only toggle if the dropdown actually has sub-links
-        if (menu && menu.querySelector('.sidebar-sublink')) {
+        // Only toggle if the dropdown actually has sub-links or nested dropdowns
+        if (menu && (menu.querySelector('.sidebar-sublink') || menu.querySelector('.sidebar-nested-dropdown'))) {
             dropdown.classList.toggle('open');
         }
+    });
+});
+
+// Nested sub-dropdown toggle (e.g. Academic Master inside Registrar)
+document.querySelectorAll('.sidebar-nested-toggle').forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        var nested = this.closest('.sidebar-nested-dropdown');
+        nested.classList.toggle('open');
     });
 });
 

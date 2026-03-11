@@ -2,13 +2,14 @@
 
 @section('title', 'PLP - Profile')
 @section('page-title', 'PROFILE')
+@section('body-class', 'page-profile-view')
 
 @section('content')
 @php
     $fullName      = trim(($profile->first_name ?? '') . ' ' . ($profile->middle_name ?? '') . ' ' . ($profile->last_name ?? '') . ($profile->suffix ? ', '.$profile->suffix : ''));
     $displayName   = strtoupper($fullName);
     $studentNo     = $profile->student_no ?? '—';
-    $photoUrl      = $profile->profile_photo_path ? asset('storage/' . $profile->profile_photo_path) : asset('img/profile.png');
+    $photoUrl      = $profile->profile_photo_path ? asset('storage/' . $profile->profile_photo_path) : null;
 
     $presentAddr   = collect([
         $profile->present_street,
@@ -45,23 +46,28 @@
 
 <div class="pv-page">
 
-    {{-- Flash success --}}
-    @if(session('success'))
-    <div class="profile-save-banner" id="profileSaveBanner">
-        <span>{{ session('success') }}</span>
-        <button type="button" onclick="this.closest('.profile-save-banner').remove()">&#x2715;</button>
-    </div>
-    @endif
-
     <div class="pv-layout">
 
         {{-- ===== LEFT SIDEBAR ===== --}}
         <div class="pv-sidebar">
-            <div class="pv-avatar-wrap">
-                <img src="{{ $photoUrl }}" alt="Profile Photo" class="pv-avatar">
+            <div class="pv-sidebar-header">
+                <div class="pv-avatar-wrap">
+                    @if($photoUrl)
+                        <img src="{{ $photoUrl }}" alt="Profile Photo" class="pv-avatar">
+                    @else
+                        <div class="pv-avatar-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#006837" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                    @endif
+                </div>
+                <div class="pv-sidebar-info">
+                    <h2 class="pv-name">{{ $displayName }}</h2>
+                    <p class="pv-student-id">{{ $studentNo }}</p>
+                </div>
             </div>
-            <h2 class="pv-name">{{ $displayName }}</h2>
-            <p class="pv-student-id">{{ $studentNo }}</p>
 
             <hr class="pv-divider">
 
@@ -83,8 +89,14 @@
             </div>
 
             <div class="pv-btn-group">
-                <a href="{{ route('student.profile.edit') }}" class="pv-btn pv-btn-edit">Edit</a>
-                <a href="{{ route('student.section-offering') }}" class="pv-btn pv-btn-back">Back</a>
+                <a href="{{ route('student.profile.edit') }}" class="pv-btn pv-btn-edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit
+                </a>
+                <a href="{{ route('student.section-offering') }}" class="pv-btn pv-btn-back">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back
+                </a>
             </div>
         </div>
 
@@ -101,6 +113,7 @@
 
             {{-- ===== TAB: PERSONAL ===== --}}
             <div class="pv-panel active" id="pv-personal">
+              <div class="pv-panel-card">
                 @if($profile->lrn)
                 <div class="pv-row">
                     <span class="pv-label">LRN</span>
@@ -171,10 +184,12 @@
                     <span class="pv-sep">:</span>
                     <span class="pv-value">{{ strtoupper($permanentAddr ?: '—') }}</span>
                 </div>
+              </div>
             </div>
 
             {{-- ===== TAB: FAMILY/GUARDIAN ===== --}}
             <div class="pv-panel" id="pv-family">
+              <div class="pv-panel-card">
                 <div class="pv-sub-heading">Mother's Information</div>
                 <div class="pv-row">
                     <span class="pv-label">FULL NAME</span>
@@ -270,10 +285,12 @@
                     <span class="pv-sep">:</span>
                     <span class="pv-value">{{ $profile->dependents ?? '—' }}</span>
                 </div>
+              </div>
             </div>
 
             {{-- ===== TAB: EDUCATIONAL ===== --}}
             <div class="pv-panel" id="pv-educational">
+              <div class="pv-panel-card">
                 <div class="pv-row">
                     <span class="pv-label">JUNIOR HIGH SCHOOL</span>
                     <span class="pv-sep">:</span>
@@ -345,6 +362,7 @@
                     <span class="pv-sep">:</span>
                     <span class="pv-value">{{ $profile->evening_classes ?? '—' }}</span>
                 </div>
+              </div>
             </div>
 
         </div>{{-- /.pv-body --}}
@@ -352,6 +370,32 @@
 </div>{{-- /.pv-page --}}
 @endsection
 
+@push('styles')
+<style>
+body.page-profile-view .student-main-wrapper {
+    background-image: url('{{ asset('img/schoolbg.png') }}');
+}
+</style>
+@endpush
+
 @push('scripts')
 <script src="{{ asset('js/profile-view.js') }}"></script>
+@if(session('success'))
+<script>
+(function() {
+    var toast = document.getElementById('download-toast');
+    if (!toast) return;
+    var msg = toast.querySelector('.toast-message');
+    var closeBtn = toast.querySelector('.toast-close');
+    if (msg) msg.textContent = {!! json_encode(session('success')) !!};
+    toast.classList.remove('toast-error');
+    toast.classList.add('show');
+    if (closeBtn && !closeBtn.dataset.pvBound) {
+        closeBtn.addEventListener('click', function() { toast.classList.remove('show'); });
+        closeBtn.dataset.pvBound = '1';
+    }
+    setTimeout(function() { toast.classList.remove('show'); }, 3000);
+})();
+</script>
+@endif
 @endpush

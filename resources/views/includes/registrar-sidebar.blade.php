@@ -63,7 +63,49 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                {{-- Placeholder sub-links --}}
+                {{-- Academic Master (nested sub-dropdown) --}}
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.academic-master.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.academic-master.*') ? 'active' : '' }}">
+                        Academic Master
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.program-file') ? 'active' : '' }}">Program File</a>
+                        <a href="{{ route('registrar.registrar-menu.academic-master.subject-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.subject-file') ? 'active' : '' }}">Subject File</a>
+                        <a href="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.pre-requisites') ? 'active' : '' }}">Pre-requisites</a>
+                        <a href="{{ route('registrar.registrar-menu.academic-master.letter-grade') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.letter-grade') ? 'active' : '' }}">Letter Grade Setup</a>
+                    </div>
+                </div>
+
+                {{-- Scheduling --}}
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle">
+                        Scheduling
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                    </div>
+                </div>
+
+                {{-- Student Management --}}
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.student-mgmt.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle">
+                        Student Management
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                    </div>
+                </div>
+
+                {{-- Alumni Tracker --}}
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.alumni.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle">
+                        Alumni Tracker
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -11,7 +11,9 @@
 
             this.classList.add('active');
             var panel = document.getElementById(target);
-            if (panel) panel.classList.add('active');
+            if (panel) {
+                panel.classList.add('active');
+            }
         });
     });
 })();
