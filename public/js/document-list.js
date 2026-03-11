@@ -1,20 +1,57 @@
-// ── Stub handlers (no backend yet) ──
-function handleDoclistSave(e) {
+// ── Add Document Modal ──
+function openAddDocModal() {
+    document.getElementById('addDeptType').value = '';
+    document.getElementById('addGradeLevel').value = '';
+    document.getElementById('addDocument').value = '';
+    document.querySelector('#addDocForm input[name="add_doc_type"][value="Document"]').checked = true;
+    document.getElementById('addNonFilipino').checked = false;
+    document.getElementById('addDocModal').style.display = 'flex';
+}
+
+function closeAddDocModal() {
+    document.getElementById('addDocModal').style.display = 'none';
+}
+
+function handleAddDocSave(e) {
     e.preventDefault();
-    var deptType = document.querySelector('#doclistForm select[name="department_type"]').value;
-    var gradeLevel = document.querySelector('#doclistForm select[name="grade_level"]').value;
-    var document_ = document.querySelector('#doclistForm input[name="document"]').value.trim();
-    if (!deptType || !gradeLevel || !document_) {
+    var deptType   = document.getElementById('addDeptType').value;
+    var gradeLevel = document.getElementById('addGradeLevel').value;
+    var doc        = document.getElementById('addDocument').value.trim();
+    if (!deptType || !gradeLevel || !doc) {
         showRegistrarToast('Please fill in all required fields.', 'warning');
         return false;
     }
-    var btn = document.querySelector('#doclistForm .btn-registrar-save');
-    var orig = btn.textContent;
-    btn.textContent = 'Saved!';
-    btn.disabled = true;
-    setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 1500);
-    showRegistrarToast('Document saved successfully.', 'success');
+    closeAddDocModal();
+    showRegistrarToast('Document added successfully.', 'success');
     return false;
+}
+
+// Close add modal on overlay click
+document.getElementById('addDocModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddDocModal();
+});
+
+// ── Filter & Sort ──
+function filterDoclistTable() {
+    var query = document.getElementById('doclistSearch').value.toLowerCase();
+    var rows  = document.querySelectorAll('.doclist-table tbody tr');
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        row.style.display = text.indexOf(query) !== -1 ? '' : 'none';
+    });
+}
+
+function sortDoclistTable() {
+    var dir   = document.getElementById('doclistSort').value;
+    var tbody = document.querySelector('.doclist-table tbody');
+    var rows  = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort(function(a, b) {
+        var aText = a.cells[3] ? a.cells[3].textContent.trim().toLowerCase() : '';
+        var bText = b.cells[3] ? b.cells[3].textContent.trim().toLowerCase() : '';
+        var cmp = aText.localeCompare(bText);
+        return dir === 'desc' ? -cmp : cmp;
+    });
+    rows.forEach(function(row) { tbody.appendChild(row); });
 }
 
 function handleEditSave(e) {
@@ -79,6 +116,7 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {
 // Close on Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+        closeAddDocModal();
         closeEditModal();
         closeDeleteModal();
     }
