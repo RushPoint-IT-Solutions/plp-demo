@@ -1,0 +1,90 @@
+@extends('layouts.registrar')
+
+@section('title', 'PLP - Section Offering')
+@section('page-title', 'SECTION OFFERING')
+
+@section('content')
+<div class="pf-page">
+
+    {{-- Filter Bar --}}
+    <div class="sched-filter-bar">
+        <div class="sched-filter-row">
+            <div class="sched-filter-group">
+                <span class="app-filter-label">SY</span>
+                <select class="app-filter-select" id="soSY" style="width:100%;">
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2023-2024">2023-2024</option>
+                </select>
+            </div>
+            <div class="sched-filter-group">
+                <span class="app-filter-label">Term</span>
+                <select class="app-filter-select" id="soTerm" style="width:100%;">
+                    <option value="First">First</option>
+                    <option value="Second">Second</option>
+                    <option value="Summer">Summer</option>
+                </select>
+            </div>
+            <div class="sched-filter-group">
+                <span class="app-filter-label">Year Level</span>
+                <select class="app-filter-select" id="soYearLevel" style="width:100%;">
+                    <option value="First">First</option>
+                    <option value="Second">Second</option>
+                    <option value="Third">Third</option>
+                    <option value="Fourth">Fourth</option>
+                </select>
+            </div>
+            <div class="sched-filter-group">
+                <span class="app-filter-label">Section</span>
+                <select class="app-filter-select" id="soSection" style="width:100%;">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+            </div>
+        </div>
+        <div class="sched-filter-row">
+            <div class="sched-filter-group sched-filter-group-lg">
+                <span class="app-filter-label">Program</span>
+                <select class="app-filter-select" id="soProgram" style="width:100%;">
+                    <option value="BSIT">BSIT</option>
+                    <option value="BSCS">BSCS</option>
+                    <option value="BSED">BSED</option>
+                    <option value="BSAT">BSAT</option>
+                    <option value="BSN">BSN</option>
+                    <option value="BSET">BSET</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {{-- Subject Offering Table (shown after filters set) --}}
+    <div class="student-table-wrapper table-responsive" id="soTableWrap" style="display:none;">
+        <table class="student-table registrar-table" id="soTable">
+            <thead>
+                <tr>
+                    <th>Subject Code</th>
+                    <th>Subject Title</th>
+                    <th>Lec Units</th>
+                    <th>Lab Units</th>
+                    <th>Total Units</th>
+                    <th>Schedule</th>
+                    <th>Instructor</th>
+                </tr>
+            </thead>
+            <tbody id="soBody">
+                {{-- JS-rendered rows --}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pf-pagination" id="soPageInfo" style="display:none;">
+        <span class="pf-page-info" id="soPageText">Showing 0 subjects</span>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="{{ asset('js/section-offering.js') }}"></script>
+@endpush

@@ -121,5 +121,20 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });
+
+        // Scheduling
+        Route::prefix('scheduling')->name('scheduling.')->group(function () {
+            Route::get('/room-file', 'Registrar\RegistrarController@roomFile')->name('room-file');
+            Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
+            Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
+        });
+
+        // Student Management
+        Route::prefix('student-management')->name('student-mgmt.')->group(function () {
+            Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
+            Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
+            Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
+            Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
+        });
     });
 });

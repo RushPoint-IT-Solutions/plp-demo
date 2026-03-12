@@ -84,7 +84,7 @@ class RegistrarController extends Controller
      */
     public function programFile()
     {
-        return view('registrar.registrar-menu.program-file');
+        return view('registrar.registrar-menu.academic-master.program-file');
     }
 
     /**
@@ -92,7 +92,7 @@ class RegistrarController extends Controller
      */
     public function subjectFile()
     {
-        return view('registrar.registrar-menu.subject-file');
+        return view('registrar.registrar-menu.academic-master.subject-file');
     }
 
     /**
@@ -100,7 +100,7 @@ class RegistrarController extends Controller
      */
     public function preRequisites()
     {
-        return view('registrar.registrar-menu.pre-requisites');
+        return view('registrar.registrar-menu.academic-master.pre-requisites');
     }
 
     /**
@@ -108,6 +108,62 @@ class RegistrarController extends Controller
      */
     public function letterGrade()
     {
-        return view('registrar.registrar-menu.letter-grade');
+        return view('registrar.registrar-menu.scheduling.letter-grade');
+    }
+
+    /**
+     * Registrar > Scheduling > Room File
+     */
+    public function roomFile()
+    {
+        return view('registrar.registrar-menu.scheduling.room-file');
+    }
+
+    /**
+     * Registrar > Scheduling > Section Offering
+     */
+    public function sectionOffering()
+    {
+        return view('registrar.registrar-menu.scheduling.section-offering');
+    }
+
+    /**
+     * Registrar > Scheduling > Slot Monitoring
+     */
+    public function slotMonitoring()
+    {
+        return view('registrar.registrar-menu.scheduling.slot-monitoring');
+    }
+
+    /**
+     * Registrar > Student Management > Student Enrollment
+     */
+    public function studentEnrollment()
+    {
+        return view('registrar.registrar-menu.student-management.student-enrollment');
+    }
+
+    /**
+     * Registrar > Student Management > Grading Sheet
+     */
+    public function gradingSheet()
+    {
+        return view('registrar.registrar-menu.student-management.grading-sheet');
+    }
+
+    /**
+     * Registrar > Student Management > Evaluation
+     */
+    public function evaluation()
+    {
+        return view('registrar.registrar-menu.student-management.evaluation');
+    }
+
+    /**
+     * Registrar > Student Management > Clinic Record
+     */
+    public function clinicRecord()
+    {
+        return view('registrar.registrar-menu.student-management.clinic-record');
     }
 }
