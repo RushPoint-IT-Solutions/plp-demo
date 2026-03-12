@@ -5943,8 +5943,9 @@ select.req-modal-input {
   text-transform: uppercase;
   letter-spacing: 0.3px;
   min-width: 0;
+  padding-left: 14px;
 }
-.cr-med-hcol-item { min-width: 130px; flex: 0 0 130px; }
+.cr-med-hcol-item { min-width: 130px; flex: 0 0 130px; padding-left: 0; }
 .cr-med-hcol-actions { flex: 0 0 60px; }
 .cr-med-row {
   display: flex;
@@ -6065,6 +6066,10 @@ select.req-modal-input {
   gap: 14px;
   padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
+}
+.cr-cond-row .cr-med-check {
+  min-width: 110px;
+  flex-shrink: 0;
 }
 .cr-cond-row:last-child { border-bottom: none; }
 .cr-cond-input {
@@ -7047,5 +7052,131 @@ body.page-profile-view .student-main-wrapper .plp-footer a:hover {
 
 body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   color: #d4a017;
+}
+
+/* ════════════════════════════════════════════
+   UNIFIED CUSTOM CHECKBOXES
+   Consistent with the Clinic Record design
+   ════════════════════════════════════════════ */
+
+/* ── Label wrappers (flex row with gap) ── */
+.setup-checkbox-label,
+.setup-checkbox,
+.doclist-checkbox-label,
+.sf-check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: #333;
+  cursor: pointer;
+}
+
+/* ── Checkbox group (flex-wrap row for multi-select lists) ── */
+.setup-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+/* ── Custom checkbox appearance (matches clinic record) ── */
+.setup-checkbox-label input[type="checkbox"],
+.setup-checkbox input[type="checkbox"],
+.doclist-checkbox-label input[type="checkbox"],
+.sf-check-label input[type="checkbox"],
+.registrar-table td > input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #0a813c;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+/* ── Checked state ── */
+.setup-checkbox-label input[type="checkbox"]:checked,
+.setup-checkbox input[type="checkbox"]:checked,
+.doclist-checkbox-label input[type="checkbox"]:checked,
+.sf-check-label input[type="checkbox"]:checked,
+.registrar-table td > input[type="checkbox"]:checked {
+  background: #0a813c;
+  border-color: #0a813c;
+}
+
+/* ── Checkmark icon ── */
+.setup-checkbox-label input[type="checkbox"]:checked::after,
+.setup-checkbox input[type="checkbox"]:checked::after,
+.doclist-checkbox-label input[type="checkbox"]:checked::after,
+.sf-check-label input[type="checkbox"]:checked::after,
+.registrar-table td > input[type="checkbox"]:checked::after {
+  content: '\2713';
+  position: absolute;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Hover glow ── */
+.setup-checkbox-label input[type="checkbox"]:hover,
+.setup-checkbox input[type="checkbox"]:hover,
+.doclist-checkbox-label input[type="checkbox"]:hover,
+.sf-check-label input[type="checkbox"]:hover,
+.registrar-table td > input[type="checkbox"]:hover {
+  border-color: #004d29;
+  box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
+}
+
+/* ── Custom radio buttons (document list modals) ── */
+.doclist-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.doclist-radio-label input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #0a813c;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.doclist-radio-label input[type="radio"]:checked {
+  border-color: #0a813c;
+  background: #fff;
+}
+
+.doclist-radio-label input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0a813c;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.doclist-radio-label input[type="radio"]:hover {
+  border-color: #004d29;
+  box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
