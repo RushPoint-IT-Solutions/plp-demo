@@ -3,17 +3,17 @@
 var GS_SECTIONS = [
     {
         id: 1, section: 'BSIT-4A', courseCode: 'CAP 102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
-        faculty: 'DIAZ, JONNEL MARK', prelim: '01/15/2026', midterm: '02/15/2026', preFinal: '03/15/2026', finalized: '03/20/2026',
-        approvedBy: 'Admin 1', courseFull: 'Bachelor Of Science In Information Technology', schedule: 'Room No.: TBA',
+        faculty: 'DIAZ, JONNEL MARK', prelim: '02/21/2026', midterm: '02/21/2025', preFinal: '02/21/2026', finalized: '02/21/2026',
+        approvedBy: 'Admin 1', courseFull: 'Bachelor Of Sience In Information Technology', schedule: 'Room No. : TBA',
         students: [
             { studentNo: '2223A8141', name: 'ABILA, MARK V.', fda: false, na: false, prelim: 86.50, midterm: 85.00, preFinal: 85.00, finals: 85.00, cRating: 85.30, fRating: 2.25, remarks: 'Passed' },
             { studentNo: '2223A8142', name: 'ACEDO, VINCENT', fda: false, na: false, prelim: 86.50, midterm: 85.00, preFinal: 85.00, finals: 85.00, cRating: 85.30, fRating: 2.25, remarks: 'Passed' }
         ]
     },
     {
-        id: 2, section: 'BSCS-4A', courseCode: 'CAP 102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
-        faculty: 'DIAZ, JONNEL MARK', prelim: '01/15/2026', midterm: '02/15/2026', preFinal: '03/15/2026', finalized: '03/20/2026',
-        approvedBy: 'Admin 1', courseFull: 'Bachelor Of Science In Computer Science', schedule: 'Room No.: TBA',
+        id: 2, section: 'BSCS- 4A', courseCode: 'CAP 102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
+        faculty: 'DIAZ, JONNEL MARK', prelim: '02/21/2026', midterm: '02/21/2026', preFinal: '02/21/2026', finalized: '02/21/2026',
+        approvedBy: 'Admin 1', courseFull: 'Bachelor Of Science In Computer Science', schedule: 'Room No. : TBA',
         students: [
             { studentNo: '2223A8137', name: 'BARES, MARK JAY', fda: false, na: false, prelim: 86.50, midterm: 85.00, preFinal: 85.00, finals: 85.00, cRating: 85.30, fRating: 2.25, remarks: 'Passed' },
             { studentNo: '2223A8139', name: 'DELA CRUZ, JUAN', fda: false, na: false, prelim: 86.50, midterm: 85.00, preFinal: 85.00, finals: 85.00, cRating: 85.30, fRating: 2.25, remarks: 'Passed' },
@@ -34,10 +34,10 @@ function renderSectionList() {
             '<td>' + s.courseCode + '</td>' +
             '<td>' + s.description + '</td>' +
             '<td>' + s.faculty + '</td>' +
-            '<td>' + s.prelim + '</td>' +
-            '<td>' + s.midterm + '</td>' +
-            '<td>' + s.preFinal + '</td>' +
-            '<td>' + s.finalized + '</td>' +
+            '<td class="gs-date-cell">' + s.prelim + '</td>' +
+            '<td class="gs-date-cell">' + s.midterm + '</td>' +
+            '<td class="gs-date-cell">' + s.preFinal + '</td>' +
+            '<td class="gs-date-cell">' + s.finalized + '</td>' +
             '<td>' + s.approvedBy + '</td>' +
         '</tr>';
     }

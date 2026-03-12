@@ -71,19 +71,22 @@
     {{-- ═══ VIEW 1: Section List Table ═══ --}}
     <div id="gsListView">
         <div class="student-table-wrapper table-responsive">
-            <table class="student-table registrar-table" id="gsListTable">
+            <table class="student-table registrar-table gs-list-table" id="gsListTable">
                 <thead>
-                    <tr>
-                        <th style="width:40px;">#</th>
-                        <th>Section</th>
-                        <th>Course Code</th>
-                        <th>Description</th>
-                        <th>Faculty</th>
+                    <tr class="gs-thead-top">
+                        <th rowspan="2" style="width:40px;">#</th>
+                        <th rowspan="2">Section</th>
+                        <th rowspan="2">Course Code</th>
+                        <th rowspan="2">Description</th>
+                        <th rowspan="2">Faculty</th>
+                        <th colspan="4" class="gs-date-group-header">Date Posted</th>
+                        <th rowspan="2">Approved By</th>
+                    </tr>
+                    <tr class="gs-thead-sub">
                         <th>Prelim</th>
                         <th>Midterm</th>
-                        <th>Pre-Final</th>
+                        <th>Pre- Final</th>
                         <th>Finalized</th>
-                        <th>Approved By</th>
                     </tr>
                 </thead>
                 <tbody id="gsListBody">
@@ -107,26 +110,23 @@
         </div>
 
         {{-- Section Info Banner --}}
-        <div class="gs-section-banner">
-            <div class="gs-banner-row">
-                <div class="gs-banner-item">
-                    <span class="gs-banner-label">Section</span>
-                    <span class="gs-banner-value" id="gsBannerSection"></span>
+        <div class="gs-section-banner-v2">
+            <div class="gs-banner-grid">
+                <div class="gs-banner-pair">
+                    <span class="gs-banner-key">Section:</span>
+                    <span class="gs-banner-val" id="gsBannerSection"></span>
                 </div>
-                <div class="gs-banner-divider"></div>
-                <div class="gs-banner-item">
-                    <span class="gs-banner-label">Course</span>
-                    <span class="gs-banner-value" id="gsBannerCourse"></span>
+                <div class="gs-banner-pair">
+                    <span class="gs-banner-key">Course:</span>
+                    <span class="gs-banner-val" id="gsBannerCourse"></span>
                 </div>
-                <div class="gs-banner-divider"></div>
-                <div class="gs-banner-item">
-                    <span class="gs-banner-label">Professor</span>
-                    <span class="gs-banner-value" id="gsBannerProf"></span>
+                <div class="gs-banner-pair">
+                    <span class="gs-banner-key">Professor:</span>
+                    <span class="gs-banner-val" id="gsBannerProf"></span>
                 </div>
-                <div class="gs-banner-divider"></div>
-                <div class="gs-banner-item">
-                    <span class="gs-banner-label">Schedule</span>
-                    <span class="gs-banner-value" id="gsBannerSched"></span>
+                <div class="gs-banner-pair">
+                    <span class="gs-banner-key">Schedule:</span>
+                    <span class="gs-banner-val" id="gsBannerSched"></span>
                 </div>
             </div>
         </div>
