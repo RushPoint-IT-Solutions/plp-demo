@@ -9,48 +9,72 @@ class SubjectSeeder extends Seeder
     {
         $subjects = [
             [
-                'code'        => 'LAWR19',
-                'name'        => 'Life and Works of Rizal',
-                'units'       => 2.0,
-                'days'        => 'Sat',
-                'time_start'  => '04:00PM',
-                'time_end'    => '07:00PM',
-                'room'        => 'RM 1',
-                'faculty'     => 'Abejo, M.',
-                'semester'    => '2nd Semester',
-                'school_year' => '2025-2026',
+                'code'           => 'SAM125',
+                'name'           => 'System Administration and Maintenance',
+                'units'          => 3.0,
+                'days'           => 'M,Th',
+                'time_start'     => '01:00PM',
+                'time_end'       => '02:00PM',
+                'room'           => '5',
+                'faculty'        => 'Abejo, M.',
+                'year_section'   => '4-B',
+                'course'         => 'BSCS',
+                'grading_status' => 'Submitted',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
             ],
             [
-                'code'        => 'SAM125',
-                'name'        => 'System Administration and Maintenance',
-                'units'       => 3.0,
-                'days'        => 'W,Th',
-                'time_start'  => '01:00PM',
-                'time_end'    => '02:00PM',
-                'room'        => 'RM 5',
-                'faculty'     => 'Abejo, M.',
-                'semester'    => '2nd Semester',
-                'school_year' => '2025-2026',
+                'code'           => 'OOP111',
+                'name'           => 'Object-Oriented Programming',
+                'units'          => 3.0,
+                'days'           => 'T,F',
+                'time_start'     => '04:00PM',
+                'time_end'       => '05:00PM',
+                'room'           => '2',
+                'faculty'        => 'Abejo, M.',
+                'year_section'   => '4-B',
+                'course'         => 'BSCS',
+                'grading_status' => 'Open For Encoding',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
             ],
             [
-                'code'        => 'CP126',
-                'name'        => 'Capstone Project',
-                'units'       => 3.0,
-                'days'        => 'M,F',
-                'time_start'  => '04:00PM',
-                'time_end'    => '07:00PM',
-                'room'        => 'RM 3',
-                'faculty'     => 'Abejo, M.',
-                'semester'    => '2nd Semester',
-                'school_year' => '2025-2026',
+                'code'           => 'SPI128',
+                'name'           => 'Social And Professional Issues',
+                'units'          => 2.0,
+                'days'           => 'W,Th',
+                'time_start'     => '08:00AM',
+                'time_end'       => '10:00AM',
+                'room'           => '1',
+                'faculty'        => 'Abejo, M.',
+                'year_section'   => '4-A',
+                'course'         => 'BSIT',
+                'grading_status' => 'Open For Encoding',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
+            ],
+            [
+                'code'           => 'UTS12',
+                'name'           => 'Understanding The Self',
+                'units'          => 2.0,
+                'days'           => 'F,Th',
+                'time_start'     => '03:00PM',
+                'time_end'       => '05:00PM',
+                'room'           => '8',
+                'faculty'        => 'Abejo, M.',
+                'year_section'   => '1-C',
+                'course'         => 'BSCS',
+                'grading_status' => 'Open For Encoding',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
             ],
         ];
 
         foreach ($subjects as $subject) {
             DB::table('subjects')->updateOrInsert(
                 [
-                    'code' => $subject['code'],
-                    'semester' => $subject['semester'],
+                    'code'        => $subject['code'],
+                    'semester'    => $subject['semester'],
                     'school_year' => $subject['school_year'],
                 ],
                 array_merge($subject, [
@@ -67,14 +91,8 @@ class SubjectSeeder extends Seeder
 
         foreach ($subjectIds as $subjectId) {
             DB::table('student_subject')->updateOrInsert(
-                [
-                    'student_id' => 1,
-                    'subject_id' => $subjectId,
-                ],
-                [
-                    'student_id' => 1,
-                    'subject_id' => $subjectId,
-                ]
+                ['student_id' => 1, 'subject_id' => $subjectId],
+                ['student_id' => 1, 'subject_id' => $subjectId]
             );
         }
     }

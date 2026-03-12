@@ -10,15 +10,30 @@ class Subject extends Model
     protected $fillable = [
         'code', 'name', 'units', 'days',
         'time_start', 'time_end', 'room', 'faculty',
-        'semester', 'school_year',
+        'year_section', 'course', 'semester', 'school_year',
+        'grading_status',
     ];
 
     /**
-     * Formatted time range: "04:00PM–07:00PM"
+     * Formatted time range for display: "01:00-02:00 PM"
      */
     public function getTimeRangeAttribute()
     {
         return $this->time_start . '–' . $this->time_end;
+    }
+
+    /**
+     * Formatted time range for display: "01:00-02:00 PM"
+     * Strips duplicate AM/PM marker from start time.
+     */
+    public function getFormattedTimeAttribute()
+    {
+        $start = preg_replace('/(AM|PM)$/i', '', $this->time_start ?? '');
+        $end   = $this->time_end ?? '';
+        preg_match('/(AM|PM)$/i', $end, $m);
+        $period  = isset($m[1]) ? strtoupper($m[1]) : '';
+        $endTime = preg_replace('/(AM|PM)$/i', '', $end);
+        return $start . '-' . $endTime . ' ' . $period;
     }
 
     /**
@@ -27,5 +42,13 @@ class Subject extends Model
     public function students()
     {
         return $this->belongsToMany(Student::class, 'student_subject');
+    }
+
+    /**
+     * Faculty evaluations for this subject.
+     */
+    public function evaluations()
+    {
+        return $this->hasMany(FacultyEvaluation::class);
     }
 }
