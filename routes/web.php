@@ -137,4 +137,36 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
         });
     });
+
+    // Services sub-pages
+    Route::prefix('services')->name('services.')->group(function () {
+        Route::get('/faculty-loads', 'Registrar\Services\FacultyLoadsController@index')->name('faculty-loads.index');
+        Route::get('/faculty-loads/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('faculty-loads.show');
+        Route::post('/faculty-loads/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('faculty-loads.assign');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Applicant Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('applicant')->name('applicant.')->group(function () {
+    Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
+    Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
+    Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
+    Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Faculty Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('faculty')->name('faculty.')->group(function () {
+    Route::get('/load', 'Faculty\FacultyController@facultyLoad')->name('load');
+    Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
+    Route::get('/calendar', 'Faculty\FacultyController@calendar')->name('calendar');
+    Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');
+    Route::get('/evaluation', 'Faculty\FacultyController@evaluation')->name('evaluation');
 });

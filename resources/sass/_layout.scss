@@ -14,11 +14,18 @@
 .plp-footer {
     background-color: var(--plp-white);
     border-top: 2px dashed #999;
-    padding: 12px 20px;
+    height: 84px;
+    min-height: 84px;
+    padding: 0 20px;
     font-size: 0.88rem;
     color: $text-secondary;
     z-index: 10;
     position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .footer-powered-line {
@@ -70,12 +77,13 @@
 
 .student-portal-body {
     background-color: $student-shell-bg;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .student-portal-body .student-layout {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
     position: relative;
 }
 
@@ -92,8 +100,11 @@
 }
 
 .student-portal-body .plp-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
     width: 285px;
-    min-width: 285px;
+    height: 100vh;
     background-color: $student-shell-green;
     border-top-right-radius: 22px;
     border-bottom-right-radius: 22px;
@@ -102,7 +113,7 @@
     flex-direction: column;
     overflow: hidden;
     box-shadow: 4px 0 14px rgba(0, 0, 0, 0.15);
-    z-index: 5;
+    z-index: 50;
 }
 
 .student-portal-body .sidebar-brand {
@@ -193,8 +204,9 @@
 }
 
 .student-portal-body .student-main-wrapper {
-    flex: 1;
-    min-width: 0;
+    margin-left: 285px;
+    width: calc(100% - 285px);
+    height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: $student-shell-bg;
@@ -203,6 +215,7 @@
 }
 
 .student-portal-body .student-topbar {
+    flex-shrink: 0;
     height: 72px;
     display: flex;
     align-items: center;
@@ -210,8 +223,9 @@
     padding: 0 28px;
     background-color: #ffffff;
     border-bottom: 1px solid $student-shell-green;
-    position: relative;
-    z-index: 10;
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .student-portal-body .topbar-avatar {
@@ -221,6 +235,18 @@
     object-fit: cover;
     border: 3px solid #ffffff;
     box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.student-portal-body .topbar-avatar-placeholder {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: $plp-green;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .student-portal-body .student-page-header {
@@ -241,11 +267,18 @@
 }
 
 .student-portal-body .student-content {
-    flex: 1;
+    flex: 0 0 auto;
     padding: 30px 28px 16px;
-    overflow-y: auto;
     overflow-x: hidden;
     background-color: #ffffff;
+}
+
+.student-portal-body .content-footer-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    min-height: calc(100vh - 72px);
 }
 
 .student-portal-body .student-main-wrapper .plp-footer {
@@ -254,6 +287,7 @@
     font-size: 11px;
     color: $text-secondary;
     padding: 6px 12px 8px;
+    margin-top: auto;
 }
 
 .student-portal-body .student-main-wrapper .plp-footer p {
@@ -302,6 +336,11 @@
         display: inline-flex;
         align-items: center;
         margin-right: auto;
+    }
+
+    .student-portal-body .student-main-wrapper {
+        margin-left: 0;
+        width: 100%;
     }
 }
 
