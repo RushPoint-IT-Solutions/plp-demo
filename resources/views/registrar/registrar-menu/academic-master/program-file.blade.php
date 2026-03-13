@@ -4,21 +4,72 @@
 @section('page-title', 'PROGRAM FILE')
 
 @section('content')
-<div class="pf-page">
-
-    {{-- Toolbar --}}
+<div class="pf-page" id="programFilePage" data-success="{{ session('program_file_success', '') }}" data-open-setup="{{ $errors->any() ? '1' : '0' }}">
     <div class="pf-toolbar">
-        <div class="pf-search-wrap">
-            <svg class="pf-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" class="pf-search-input" placeholder="Search programs..." id="pfSearch">
+        <div class="pf-toolbar-actions">
+            <button type="button" class="pf-btn-new" onclick="openSetupDepartmentsModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                Setup Department
+            </button>
+            <button type="button" class="pf-btn-new" onclick="openNewProgramModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Program
+            </button>
         </div>
-        <button type="button" class="pf-btn-new" onclick="openNewProgramModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Program
-        </button>
     </div>
 
-    {{-- Table --}}
+    <form method="GET" action="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="pf-top-filter" id="pfTopFilterForm">
+        <div class="pf-top-filter-grid">
+            <div class="pf-top-field">
+                <label class="pf-top-label" for="filterDepartment">Department</label>
+                <select name="department_id" id="filterDepartment" class="pf-modal-select">
+                    <option value="">-All Group-</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" {{ (string)$filters['department_id'] === (string)$department->id ? 'selected' : '' }}>
+                            {{ $department->description }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="pf-top-field">
+                <label class="pf-top-label" for="filterProgramType">Program Type</label>
+                <select name="program_type" id="filterProgramType" class="pf-modal-select">
+                    <option value="">-Select Type-</option>
+                    <option value="Degree" {{ $filters['program_type'] === 'Degree' ? 'selected' : '' }}>Degree</option>
+                    <option value="Diploma" {{ $filters['program_type'] === 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                    <option value="Certificate" {{ $filters['program_type'] === 'Certificate' ? 'selected' : '' }}>Certificate</option>
+                </select>
+            </div>
+
+            <div class="pf-top-field">
+                <label class="pf-top-label" for="filterProgramCode">Program Code</label>
+                <input type="text" id="filterProgramCode" name="program_code" class="pf-modal-input" value="{{ $filters['program_code'] }}">
+            </div>
+
+            <div class="pf-top-field">
+                <label class="pf-top-label" for="filterDescription">Description</label>
+                <input type="text" id="filterDescription" name="description" class="pf-modal-input" value="{{ $filters['description'] }}">
+            </div>
+
+            <div class="pf-top-search-btn-wrap">
+                <button type="submit" class="pf-btn-new pf-top-search-btn">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="pf-table-controls">
+        <div class="pf-entries-control">
+            <label for="pfEntriesLimit">Show Entries</label>
+            <select id="pfEntriesLimit" class="pf-entries-select">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+            </select>
+        </div>
+    </div>
+
     <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table" id="pfTable">
             <thead>
@@ -26,179 +77,145 @@
                     <th>Program Code</th>
                     <th>Program Name</th>
                     <th>Department</th>
-                    <th>Accreditation Level</th>
-                    <th>Action</th>
+                    <th>Program Type</th>
+                    <th>Slots</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>BSIT</td>
-                    <td>Bachelor of Science in Information Technology</td>
-                    <td>College of Information Technology Education</td>
-                    <td>Level I Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(1,'BSIT','Bachelor of Science in Information Technology','College of Information Technology Education','Level I Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(1,'BSIT')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BSCS</td>
-                    <td>Bachelor of Science in Computer Science</td>
-                    <td>College of Information Technology Education</td>
-                    <td>Level II Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(2,'BSCS','Bachelor of Science in Computer Science','College of Information Technology Education','Level II Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(2,'BSCS')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BSA</td>
-                    <td>Bachelor of Science in Accountancy</td>
-                    <td>College of Business and Accountancy</td>
-                    <td>Level III Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(3,'BSA','Bachelor of Science in Accountancy','College of Business and Accountancy','Level III Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(3,'BSA')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BSBA</td>
-                    <td>Bachelor of Science in Business Administration</td>
-                    <td>College of Business and Accountancy</td>
-                    <td>Level II Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(4,'BSBA','Bachelor of Science in Business Administration','College of Business and Accountancy','Level II Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(4,'BSBA')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BSN</td>
-                    <td>Bachelor of Science in Nursing</td>
-                    <td>College of Allied Health Sciences</td>
-                    <td>Level III Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(5,'BSN','Bachelor of Science in Nursing','College of Allied Health Sciences','Level III Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(5,'BSN')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BSCE</td>
-                    <td>Bachelor of Science in Civil Engineering</td>
-                    <td>College of Engineering and Architecture</td>
-                    <td>Level I Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(6,'BSCE','Bachelor of Science in Civil Engineering','College of Engineering and Architecture','Level I Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(6,'BSCE')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BEED</td>
-                    <td>Bachelor of Elementary Education</td>
-                    <td>College of Education</td>
-                    <td>Level II Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(7,'BEED','Bachelor of Elementary Education','College of Education','Level II Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(7,'BEED')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>BSED</td>
-                    <td>Bachelor of Secondary Education</td>
-                    <td>College of Education</td>
-                    <td>Level II Accredited</td>
-                    <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn" onclick="openEditProgramModal(8,'BSED','Bachelor of Secondary Education','College of Education','Level II Accredited')" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                            </button>
-                            <button class="doclist-action-btn doclist-delete-btn" onclick="openDeleteProgramModal(8,'BSED')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                @forelse($programs as $program)
+                    <tr>
+                        <td>{{ $program->code }}</td>
+                        <td>{{ $program->description ?: $program->name }}</td>
+                        <td>{{ optional($program->department)->description ?: '-' }}</td>
+                        <td>{{ $program->program_type ?: '-' }}</td>
+                        <td>{{ (int) $program->slots }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center pf-empty-row" style="padding: 18px; color: #888;">No programs found.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
-    {{-- Pagination --}}
     <div class="pf-pagination">
-        <span class="pf-page-info">Showing 1-8 of 8 programs</span>
+        <span class="pf-page-info">Showing {{ $programs->count() }} program(s)</span>
     </div>
 </div>
 
-{{-- ══════ NEW PROGRAM MODAL ══════ --}}
+<div class="pf-modal-overlay" id="setupDepartmentsModal" style="display:none;">
+    <div class="pf-modal-box pf-dept-modal-box">
+        <div class="pf-modal-title pf-dept-modal-title">Setup Department</div>
+
+        <form method="POST" action="{{ route('registrar.registrar-menu.academic-master.program-file.setup') }}" id="setupDepartmentsForm">
+            @csrf
+
+            @if($errors->any())
+                <div class="pf-form-error-box">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
+            <div class="pf-dept-form-grid">
+                <div class="pf-modal-field pf-item-program-type">
+                    <label class="pf-modal-label" for="setupProgramType">Program Type</label>
+                    <select class="pf-modal-select" id="setupProgramType" name="program_type" required>
+                        <option value="">-Select Type-</option>
+                        <option value="Degree" {{ old('program_type') === 'Degree' ? 'selected' : '' }}>Degree</option>
+                        <option value="Diploma" {{ old('program_type') === 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                        <option value="Certificate" {{ old('program_type') === 'Certificate' ? 'selected' : '' }}>Certificate</option>
+                    </select>
+                </div>
+
+                <div class="pf-modal-field pf-item-program-code">
+                    <label class="pf-modal-label" for="setupProgramCode">Program Code</label>
+                    <input type="text" class="pf-modal-input" id="setupProgramCode" name="program_code" value="{{ old('program_code') }}" required>
+                </div>
+
+                <div class="pf-modal-field pf-item-department">
+                    <label class="pf-modal-label" for="setupDepartment">Department</label>
+                    <select class="pf-modal-select" id="setupDepartment" name="department_id" required>
+                        <option value="">-Select Department-</option>
+                        @foreach($departments as $department)
+                            <option value="{{ $department->id }}" {{ (string)old('department_id') === (string)$department->id ? 'selected' : '' }}>
+                                {{ $department->description }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="pf-modal-field pf-item-description">
+                    <label class="pf-modal-label" for="setupDescription">Description</label>
+                    <input type="text" class="pf-modal-input" id="setupDescription" name="description" value="{{ old('description') }}" required>
+                </div>
+
+                <div class="pf-modal-field pf-item-slots">
+                    <label class="pf-modal-label" for="setupSlots">Slots</label>
+                    <input type="number" class="pf-modal-input" id="setupSlots" name="slots" min="0" value="{{ old('slots', 0) }}">
+                </div>
+
+                <div class="pf-modal-field pf-item-track">
+                    <label class="pf-modal-label">Track Category for SHS</label>
+                    <div class="pf-track-options">
+                        <label class="pf-track-option"><input type="radio" name="track_category" value="Academic" {{ old('track_category') === 'Academic' ? 'checked' : '' }}> Academic</label>
+                        <label class="pf-track-option"><input type="radio" name="track_category" value="TVL" {{ old('track_category') === 'TVL' ? 'checked' : '' }}> TVL</label>
+                        <label class="pf-track-option"><input type="radio" name="track_category" value="Academic/TVL" {{ old('track_category') === 'Academic/TVL' ? 'checked' : '' }}> Academic/TVL</label>
+                        <label class="pf-track-option pf-track-option-check"><input type="checkbox" name="non_filipino" value="1" {{ old('non_filipino') ? 'checked' : '' }}> Non-Filipino</label>
+                    </div>
+                </div>
+
+                <div class="pf-modal-field pf-item-dean">
+                    <label class="pf-modal-label" for="setupDeanDirector">Dean / Director</label>
+                    <select class="pf-modal-select" id="setupDeanDirector" name="dean_director_id">
+                        <option value="">-Select Faculty-</option>
+                        @foreach($faculties as $faculty)
+                            <option value="{{ $faculty->id }}" {{ (string)old('dean_director_id') === (string)$faculty->id ? 'selected' : '' }}>
+                                {{ $faculty->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="pf-modal-actions pf-dept-modal-actions">
+                <button type="button" class="pf-modal-btn-cancel" onclick="closeSetupDepartmentsModal()">Cancel</button>
+                <button type="submit" class="pf-modal-btn-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="pf-modal-overlay" id="newProgramModal" style="display:none;">
-    <div class="pf-modal-box">
-        <div class="pf-modal-title">New Program</div>
+    <div class="pf-modal-box pf-new-modal-box">
+        <div class="pf-modal-title pf-new-modal-title">Add New Program</div>
+
         <form id="newProgramForm" onsubmit="return handleNewProgramSave(event)">
-            <div class="pf-modal-form">
+            <div class="pf-new-form-grid">
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Program Code</label>
-                    <input type="text" class="pf-modal-input" id="newProgramCode" placeholder="e.g. BSIT" required>
+                    <label class="pf-modal-label" for="newProgramCode">Program Code</label>
+                    <input type="text" class="pf-modal-input" id="newProgramCode" placeholder="Code" required>
                 </div>
+
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Program Name</label>
-                    <input type="text" class="pf-modal-input" id="newProgramName" placeholder="e.g. Bachelor of Science in Information Technology" required>
+                    <label class="pf-modal-label" for="newProgramName">Program Name:</label>
+                    <input type="text" class="pf-modal-input" id="newProgramName" placeholder="Name" required>
                 </div>
+
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Department</label>
-                    <select class="pf-modal-select" id="newProgramDept" required>
-                        <option value="">- Select Department -</option>
-                        <option value="College of Information Technology Education">College of Information Technology Education</option>
-                        <option value="College of Business and Accountancy">College of Business and Accountancy</option>
-                        <option value="College of Allied Health Sciences">College of Allied Health Sciences</option>
-                        <option value="College of Engineering and Architecture">College of Engineering and Architecture</option>
-                        <option value="College of Education">College of Education</option>
-                        <option value="College of Arts and Sciences">College of Arts and Sciences</option>
+                    <label class="pf-modal-label" for="newProgramDepartment">Select Department</label>
+                    <select class="pf-modal-select" id="newProgramDepartment" required>
+                        <option value="">Select Department</option>
+                        @foreach($departments as $department)
+                            <option value="{{ $department->id }}">{{ $department->description }}</option>
+                        @endforeach
                     </select>
                 </div>
+
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Accreditation Level</label>
-                    <select class="pf-modal-select" id="newProgramAccred" required>
-                        <option value="">- Select Level -</option>
+                    <label class="pf-modal-label" for="newProgramAccreditation">Accreditation Level</label>
+                    <select class="pf-modal-select" id="newProgramAccreditation" required>
+                        <option value="">Select Level</option>
                         <option value="Level I Accredited">Level I Accredited</option>
                         <option value="Level II Accredited">Level II Accredited</option>
                         <option value="Level III Accredited">Level III Accredited</option>
@@ -206,162 +223,13 @@
                         <option value="Pending Review">Pending Review</option>
                     </select>
                 </div>
-                <div class="pf-modal-actions">
-                    <button type="button" class="pf-modal-btn-cancel" onclick="closeNewProgramModal()">Cancel</button>
-                    <button type="submit" class="pf-modal-btn-save">Add Program</button>
-                </div>
+            </div>
+
+            <div class="pf-modal-actions pf-new-modal-actions">
+                <button type="button" class="pf-modal-btn-cancel" onclick="closeNewProgramModal()">Cancel</button>
+                <button type="submit" class="pf-modal-btn-save">Save</button>
             </div>
         </form>
-    </div>
-</div>
-
-{{-- ══════ EDIT PROGRAM MODAL ══════ --}}
-<div class="pf-modal-overlay" id="editProgramModal" style="display:none;">
-    <div class="pf-modal-box">
-        <div class="pf-modal-title">Edit Program</div>
-        <form id="editProgramForm" onsubmit="return handleEditProgramSave(event)">
-            <input type="hidden" id="editProgramId">
-            <div class="pf-modal-form">
-                <div class="pf-modal-field">
-                    <label class="pf-modal-label">Program Code</label>
-                    <input type="text" class="pf-modal-input" id="editProgramCode" required>
-                </div>
-                <div class="pf-modal-field">
-                    <label class="pf-modal-label">Program Name</label>
-                    <input type="text" class="pf-modal-input" id="editProgramName" required>
-                </div>
-                <div class="pf-modal-field">
-                    <label class="pf-modal-label">Department</label>
-                    <select class="pf-modal-select" id="editProgramDept" required>
-                        <option value="">- Select Department -</option>
-                        <option value="College of Information Technology Education">College of Information Technology Education</option>
-                        <option value="College of Business and Accountancy">College of Business and Accountancy</option>
-                        <option value="College of Allied Health Sciences">College of Allied Health Sciences</option>
-                        <option value="College of Engineering and Architecture">College of Engineering and Architecture</option>
-                        <option value="College of Education">College of Education</option>
-                        <option value="College of Arts and Sciences">College of Arts and Sciences</option>
-                    </select>
-                </div>
-                <div class="pf-modal-field">
-                    <label class="pf-modal-label">Accreditation Level</label>
-                    <select class="pf-modal-select" id="editProgramAccred" required>
-                        <option value="">- Select Level -</option>
-                        <option value="Level I Accredited">Level I Accredited</option>
-                        <option value="Level II Accredited">Level II Accredited</option>
-                        <option value="Level III Accredited">Level III Accredited</option>
-                        <option value="Level IV Accredited">Level IV Accredited</option>
-                        <option value="Pending Review">Pending Review</option>
-                    </select>
-                </div>
-                <div class="pf-modal-actions">
-                    <button type="button" class="pf-modal-btn-cancel" onclick="closeEditProgramModal()">Cancel</button>
-                    <button type="submit" class="pf-modal-btn-save">Save Changes</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- ══════ DELETE PROGRAM MODAL ══════ --}}
-<div class="pf-modal-overlay" id="deleteProgramModal" style="display:none;">
-    <div class="pf-modal-box" style="text-align:center; max-width:420px;">
-        <div style="margin-bottom:16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c62828" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-        </div>
-        <div class="pf-modal-title" style="color:#c62828;">Delete Program</div>
-        <p style="font-size:0.9rem; color:#444; margin-bottom:6px;">Are you sure you want to delete</p>
-        <p style="font-size:0.95rem; font-weight:700; color:#1a1a2e; margin-bottom:20px;" id="deleteProgramName"></p>
-        <p style="font-size:0.78rem; color:#999; margin-bottom:22px;">This action cannot be undone.</p>
-        <input type="hidden" id="deleteProgramId">
-        <div class="pf-modal-actions" style="justify-content:center;">
-            <button type="button" class="pf-modal-btn-cancel" onclick="closeDeleteProgramModal()">Cancel</button>
-            <button type="button" class="pf-modal-btn-save" style="background:#c62828;" onmouseover="this.style.background='#a31f1f'" onmouseout="this.style.background='#c62828'" onclick="handleDeleteProgramConfirm()">Delete</button>
-        </div>
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-/* ── Search filter ── */
-document.getElementById('pfSearch').addEventListener('input', function () {
-    var filter = this.value.toLowerCase();
-    var rows = document.querySelectorAll('#pfTable tbody tr');
-    rows.forEach(function (row) {
-        var text = row.textContent.toLowerCase();
-        row.style.display = text.indexOf(filter) > -1 ? '' : 'none';
-    });
-});
-
-/* ── NEW PROGRAM MODAL ── */
-function openNewProgramModal() {
-    document.getElementById('newProgramForm').reset();
-    document.getElementById('newProgramModal').style.display = 'flex';
-}
-function closeNewProgramModal() {
-    document.getElementById('newProgramModal').style.display = 'none';
-}
-function handleNewProgramSave(e) {
-    e.preventDefault();
-    var code = document.getElementById('newProgramCode').value.trim();
-    var name = document.getElementById('newProgramName').value.trim();
-    var dept = document.getElementById('newProgramDept').value;
-    var accred = document.getElementById('newProgramAccred').value;
-    if (!code || !name || !dept || !accred) {
-        showRegistrarToast('Please fill in all fields.', 'warning');
-        return false;
-    }
-    closeNewProgramModal();
-    showRegistrarToast('Program "' + code + '" added successfully.', 'success');
-    return false;
-}
-
-/* ── EDIT PROGRAM MODAL ── */
-function openEditProgramModal(id, code, name, dept, accred) {
-    document.getElementById('editProgramId').value = id;
-    document.getElementById('editProgramCode').value = code;
-    document.getElementById('editProgramName').value = name;
-    document.getElementById('editProgramDept').value = dept;
-    document.getElementById('editProgramAccred').value = accred;
-    document.getElementById('editProgramModal').style.display = 'flex';
-}
-function closeEditProgramModal() {
-    document.getElementById('editProgramModal').style.display = 'none';
-}
-function handleEditProgramSave(e) {
-    e.preventDefault();
-    var code = document.getElementById('editProgramCode').value.trim();
-    if (!code) {
-        showRegistrarToast('Please fill in all fields.', 'warning');
-        return false;
-    }
-    closeEditProgramModal();
-    showRegistrarToast('Program "' + code + '" updated successfully.', 'success');
-    return false;
-}
-
-/* ── DELETE PROGRAM MODAL ── */
-function openDeleteProgramModal(id, code) {
-    document.getElementById('deleteProgramId').value = id;
-    document.getElementById('deleteProgramName').textContent = code;
-    document.getElementById('deleteProgramModal').style.display = 'flex';
-}
-function closeDeleteProgramModal() {
-    document.getElementById('deleteProgramModal').style.display = 'none';
-}
-function handleDeleteProgramConfirm() {
-    var code = document.getElementById('deleteProgramName').textContent;
-    closeDeleteProgramModal();
-    showRegistrarToast('Program "' + code + '" deleted successfully.', 'success');
-}
-
-/* ── Close modals on overlay click ── */
-document.querySelectorAll('.pf-modal-overlay').forEach(function (overlay) {
-    overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) overlay.style.display = 'none';
-    });
-});
-</script>
-@endpush
