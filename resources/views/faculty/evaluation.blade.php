@@ -13,8 +13,8 @@
         @endforeach
     </select>
 
-    <div class="app-table-wrap">
-        <table class="app-table">
+    <div class="faculty-table-wrap">
+        <table class="faculty-table">
             <thead>
                 <tr>
                     <th>Subject</th>

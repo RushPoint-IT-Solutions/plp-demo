@@ -8,8 +8,8 @@
 
     <p class="faculty-section-header">Kindly select a subject to view Class List. You can only select one at a time.</p>
 
-    <div class="app-table-wrap">
-        <table class="app-table" id="classListTable">
+    <div class="faculty-table-wrap">
+        <table class="faculty-table" id="classListTable">
             <thead>
                 <tr>
                     <th>View List</th>
@@ -61,7 +61,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <table class="app-table" id="classListModalTable">
+                <table class="faculty-table" id="classListModalTable">
                     <thead>
                         <tr>
                             <th>#</th>

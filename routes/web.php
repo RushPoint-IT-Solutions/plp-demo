@@ -99,6 +99,7 @@ Route::prefix('student')->name('student.')->group(function () {
 */
 Route::prefix('registrar')->name('registrar.')->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
+    Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
 
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
@@ -127,14 +128,19 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/room-file', 'Registrar\RegistrarController@roomFile')->name('room-file');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
+            Route::get('/section-merging', 'Registrar\RegistrarController@sectionMerging')->name('section-merging');
         });
 
         // Student Management
         Route::prefix('student-management')->name('student-mgmt.')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
+            Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
+        });
+
+        // Faculty Management
+        Route::prefix('faculty-management')->name('faculty-mgmt.')->group(function () {
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
-            Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
         });
     });
 

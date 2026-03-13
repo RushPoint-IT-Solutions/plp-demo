@@ -232,6 +232,7 @@ function removeMedRow(index) {
 function goToStep(step) {
     document.getElementById('crListView').style.display = 'none';
     document.getElementById('crPersonalView').style.display = 'none';
+    document.getElementById('crParentsView').style.display = 'none';
     document.getElementById('crMedicalView').style.display = 'none';
     document.getElementById('crImmunizationView').style.display = 'none';
 
@@ -241,6 +242,9 @@ function goToStep(step) {
     } else if (step === 'personal') {
         document.getElementById('crPersonalView').style.display = 'block';
         CR_CURRENT_VIEW = 'personal';
+    } else if (step === 'parents') {
+        document.getElementById('crParentsView').style.display = 'block';
+        CR_CURRENT_VIEW = 'parents';
     } else if (step === 'medical') {
         document.getElementById('crMedicalView').style.display = 'block';
         renderMedHistory();
