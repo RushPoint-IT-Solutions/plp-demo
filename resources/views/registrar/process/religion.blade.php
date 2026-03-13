@@ -6,14 +6,14 @@
 @section('content')
 <div class="student-page-container">
 
-    {{-- Code/Description Input Row + Save Button --}}
+    {{-- Code/Description Input Row + Add Button --}}
     <div class="registrar-form-row">
         <div class="registrar-form-group" style="flex: 2;">
             <label class="registrar-form-label">DESCRIPTION</label>
             <input type="text" class="registrar-form-input" placeholder="Description" name="description">
         </div>
         <div class="registrar-form-group registrar-form-btn-group">
-            <button type="button" class="btn-registrar-save" onclick="saveReligion()">Save</button>
+            <button type="button" class="btn-registrar-save" onclick="saveReligion()">+Add</button>
         </div>
     </div>
 

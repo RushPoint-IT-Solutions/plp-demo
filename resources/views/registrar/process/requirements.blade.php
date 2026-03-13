@@ -32,7 +32,10 @@
     ══════════════════════════════════════════════ --}}
     <div id="reqDetailView" style="display:none;">
         <div class="req-detail-topbar">
-            <button class="req-back-btn" onclick="showListView()">&#8592; Back</button>
+            <button type="button" class="gs-back-btn" onclick="showListView()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to List
+            </button>
             <div class="req-search-box req-search-box-sm">
                 <input type="text" class="req-search-input" placeholder="Search Requirement" id="reqDetailSearch" oninput="filterDetailRows()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"

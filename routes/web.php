@@ -99,6 +99,7 @@ Route::prefix('student')->name('student.')->group(function () {
 */
 Route::prefix('registrar')->name('registrar.')->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
+    Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
 
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
@@ -127,14 +128,51 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/room-file', 'Registrar\RegistrarController@roomFile')->name('room-file');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
+            Route::get('/section-merging', 'Registrar\RegistrarController@sectionMerging')->name('section-merging');
         });
 
         // Student Management
         Route::prefix('student-management')->name('student-mgmt.')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
-            Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
-            Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
             Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
         });
+
+        // Faculty Management
+        Route::prefix('faculty-management')->name('faculty-mgmt.')->group(function () {
+            Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
+            Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
+        });
     });
+
+    // Services sub-pages
+    Route::prefix('services')->name('services.')->group(function () {
+        Route::get('/faculty-loads', 'Registrar\Services\FacultyLoadsController@index')->name('faculty-loads.index');
+        Route::get('/faculty-loads/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('faculty-loads.show');
+        Route::post('/faculty-loads/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('faculty-loads.assign');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Applicant Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('applicant')->name('applicant.')->group(function () {
+    Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
+    Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
+    Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
+    Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Faculty Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('faculty')->name('faculty.')->group(function () {
+    Route::get('/load', 'Faculty\FacultyController@facultyLoad')->name('load');
+    Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
+    Route::get('/calendar', 'Faculty\FacultyController@calendar')->name('calendar');
+    Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');
+    Route::get('/evaluation', 'Faculty\FacultyController@evaluation')->name('evaluation');
 });

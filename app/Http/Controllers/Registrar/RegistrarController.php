@@ -16,6 +16,14 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar Messaging
+     */
+    public function messaging()
+    {
+        return view('registrar.messaging');
+    }
+
+    /**
      * Process > Application Process
      */
     public function applicationProcess()
@@ -136,6 +144,14 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar > Scheduling > Section Merging
+     */
+    public function sectionMerging()
+    {
+        return view('registrar.registrar-menu.scheduling.section-merging');
+    }
+
+    /**
      * Registrar > Student Management > Student Enrollment
      */
     public function studentEnrollment()
@@ -144,19 +160,19 @@ class RegistrarController extends Controller
     }
 
     /**
-     * Registrar > Student Management > Grading Sheet
+     * Registrar > Faculty Management > Grading Sheet
      */
     public function gradingSheet()
     {
-        return view('registrar.registrar-menu.student-management.grading-sheet');
+        return view('registrar.registrar-menu.faculty-management.grading-sheet');
     }
 
     /**
-     * Registrar > Student Management > Evaluation
+     * Registrar > Faculty Management > Evaluation
      */
     public function evaluation()
     {
-        return view('registrar.registrar-menu.student-management.evaluation');
+        return view('registrar.registrar-menu.faculty-management.evaluation');
     }
 
     /**

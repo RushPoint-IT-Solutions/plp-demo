@@ -55,18 +55,20 @@
                 </a>
             </header>
 
-            {{-- Green Title Bar --}}
-            <div class="student-page-header">
-                @yield('page-title', 'Dashboard')
+            <div class="content-footer-wrap">
+                {{-- Green Title Bar --}}
+                <div class="student-page-header">
+                    @yield('page-title', 'Dashboard')
+                </div>
+
+                {{-- Page Content --}}
+                <main class="student-content">
+                    @yield('content')
+                </main>
+
+                {{-- Footer --}}
+                @include('includes.footer')
             </div>
-
-            {{-- Page Content --}}
-            <main class="student-content">
-                @yield('content')
-            </main>
-
-            {{-- Footer --}}
-            @include('includes.footer')
         </div>
     </div>
 

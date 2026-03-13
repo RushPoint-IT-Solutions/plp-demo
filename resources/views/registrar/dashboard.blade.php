@@ -66,13 +66,16 @@
                 </div>
             </div>
 
-            <div class="reg-announce-item">
+            <div class="reg-announce-item pinned">
                 <div class="reg-announce-dot"></div>
                 <div class="reg-announce-text">
                     <div class="reg-announce-title">Outing schedule for every departement</div>
                     <div class="reg-announce-time">5 Minutes ago</div>
                 </div>
-                <button class="reg-icon-btn" title="More options">
+                <button type="button" class="reg-icon-btn reg-pin-btn active" title="Pinned" aria-pressed="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
+                </button>
+                <button type="button" class="reg-icon-btn" title="More options">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                 </button>
             </div>
@@ -83,7 +86,10 @@
                     <div class="reg-announce-title">Meeting HR Department</div>
                     <div class="reg-announce-time">Yesterday, 12:30 PM</div>
                 </div>
-                <button class="reg-icon-btn" title="More options">
+                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
+                </button>
+                <button type="button" class="reg-icon-btn" title="More options">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                 </button>
             </div>
@@ -94,7 +100,10 @@
                     <div class="reg-announce-title">IT Department need two more talents for UX/UI Designer position</div>
                     <div class="reg-announce-time">Yesterday, 09:15 AM</div>
                 </div>
-                <button class="reg-icon-btn" title="More options">
+                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
+                </button>
+                <button type="button" class="reg-icon-btn" title="More options">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                 </button>
             </div>
@@ -172,3 +181,45 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var card = document.querySelector('.reg-announce-card');
+    if (!card) return;
+
+    var seeAll = card.querySelector('.reg-see-all');
+
+    function setPinned(item, pinned) {
+        item.classList.toggle('pinned', pinned);
+        var btn = item.querySelector('.reg-pin-btn');
+        if (!btn) return;
+        btn.classList.toggle('active', pinned);
+        btn.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+        btn.title = pinned ? 'Pinned' : 'Pin';
+    }
+
+    card.querySelectorAll('.reg-pin-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (event) {
+            event.preventDefault();
+            var item = btn.closest('.reg-announce-item');
+            if (!item) return;
+            var willPin = !item.classList.contains('pinned');
+            setPinned(item, willPin);
+
+            if (willPin) {
+                var firstItem = card.querySelector('.reg-announce-item');
+                if (firstItem && firstItem !== item) {
+                    card.insertBefore(item, firstItem);
+                }
+                return;
+            }
+
+            if (seeAll) {
+                card.insertBefore(item, seeAll);
+            }
+        });
+    });
+});
+</script>
+@endpush
