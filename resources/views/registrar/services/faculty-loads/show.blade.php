@@ -3,10 +3,6 @@
 @section('title', 'PLP - Faculty Loads')
 @section('page-title', 'FACULTY LOADS')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/registrar-faculty-loads.css') }}?v={{ time() }}">
-@endpush
-
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
 @endpush
@@ -171,8 +167,8 @@
                 </div>
             </form>
 
-            <div class="faculty-table-wrap rfl-assigned-table">
-                <table class="faculty-table">
+            <div class="app-table-wrap rfl-assigned-table">
+                <table class="app-table">
                     <thead>
                         <tr>
                             <th>Subject Code</th>

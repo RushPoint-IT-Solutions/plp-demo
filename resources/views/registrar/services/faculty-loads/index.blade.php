@@ -3,10 +3,6 @@
 @section('title', 'PLP - Faculty Loads')
 @section('page-title', 'FACULTY LOADS')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/registrar-faculty-loads.css') }}?v={{ time() }}">
-@endpush
-
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
 @endpush
@@ -30,8 +26,8 @@
         {{ $faculties->firstItem() ?? 0 }} - {{ $faculties->lastItem() ?? 0 }} of {{ $faculties->total() }}
     </div>
 
-    <div class="faculty-table-wrap">
-        <table class="faculty-table rfl-table" id="rflFacultyTable">
+    <div class="app-table-wrap">
+        <table class="app-table rfl-table" id="rflFacultyTable">
             <thead>
                 <tr>
                     <th style="width:70px">#</th>

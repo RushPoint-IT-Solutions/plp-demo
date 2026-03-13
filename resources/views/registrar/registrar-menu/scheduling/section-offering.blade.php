@@ -8,7 +8,7 @@
 
     {{-- Filter Bar --}}
     <div class="sched-filter-bar">
-        <div class="sched-filter-row">
+        <div class="sched-filter-row sched-filter-row-main">
             <div class="sched-filter-group">
                 <span class="app-filter-label">SY</span>
                 <select class="app-filter-select" id="soSY" style="width:100%;">
@@ -43,8 +43,6 @@
                     <option value="D">D</option>
                 </select>
             </div>
-        </div>
-        <div class="sched-filter-row">
             <div class="sched-filter-group sched-filter-group-lg">
                 <span class="app-filter-label">Program</span>
                 <select class="app-filter-select" id="soProgram" style="width:100%;">
@@ -59,28 +57,47 @@
         </div>
     </div>
 
-    {{-- Subject Offering Table (shown after filters set) --}}
-    <div class="student-table-wrapper table-responsive" id="soTableWrap" style="display:none;">
-        <table class="student-table registrar-table" id="soTable">
-            <thead>
-                <tr>
-                    <th>Subject Code</th>
-                    <th>Subject Title</th>
-                    <th>Lec Units</th>
-                    <th>Lab Units</th>
-                    <th>Total Units</th>
-                    <th>Schedule</th>
-                    <th>Instructor</th>
-                </tr>
-            </thead>
-            <tbody id="soBody">
-                {{-- JS-rendered rows --}}
-            </tbody>
-        </table>
+    {{-- Section Offering Card --}}
+    <div class="so-card" id="soCard" style="display:none;">
+        <div class="so-card-header">
+            <div class="so-card-title" id="soCardTitle">Section Offering: A</div>
+            <button type="button" class="btn btn-success so-print-btn">Print Class Program</button>
+        </div>
+
+        <div class="student-table-wrapper table-responsive" id="soTableWrap">
+            <table class="student-table registrar-table" id="soTable">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Description</th>
+                        <th>Lec</th>
+                        <th>Lab</th>
+                        <th>Tuition Units</th>
+                        <th>Cred. Units</th>
+                        <th>Section</th>
+                        <th>Room No</th>
+                        <th>Professor</th>
+                        <th>Slots</th>
+                        <th>Schedule</th>
+                    </tr>
+                </thead>
+                <tbody id="soBody">
+                    {{-- JS-rendered rows --}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pf-pagination" id="soPageInfo">
+            <span class="pf-page-info" id="soPageText">Showing 0 subjects</span>
+        </div>
     </div>
 
-    <div class="pf-pagination" id="soPageInfo" style="display:none;">
-        <span class="pf-page-info" id="soPageText">Showing 0 subjects</span>
+    {{-- Schedule Grid --}}
+    <div class="so-weekly" id="soWeekly" style="display:none;">
+        <div class="so-weekly-title">Class Schedule</div>
+        <div class="so-weekly-scroll">
+            <div class="so-weekly-grid" id="soWeeklyGrid"></div>
+        </div>
     </div>
 </div>
 @endsection

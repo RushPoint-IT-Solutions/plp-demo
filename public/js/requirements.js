@@ -153,9 +153,11 @@ function renderDetailTable(reqs, filter) {
             var f = filter.toLowerCase();
             if (r.name.toLowerCase().indexOf(f) === -1 && r.remarks.toLowerCase().indexOf(f) === -1) return;
         }
-        var checkHtml = r.done
-            ? '<div class="req-checkbox checked" onclick="toggleCheck(' + currentStudentIdx + ',' + i + ')"><svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#fff\' stroke-width=\'3\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'20 6 9 17 4 12\'/></svg></div>'
-            : '<div class="req-checkbox" onclick="toggleCheck(' + currentStudentIdx + ',' + i + ')"></div>';
+        var checkHtml =
+            '<input type="checkbox" class="req-checkbox-input" ' +
+            'aria-label="Toggle requirement" ' +
+            (r.done ? 'checked ' : '') +
+            'onclick="toggleCheck(' + currentStudentIdx + ',' + i + ')">';
 
         var dateCell = '';
         if (r.done) {

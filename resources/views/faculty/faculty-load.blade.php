@@ -6,8 +6,8 @@
 @section('content')
 <div class="faculty-load-wrap">
 
-    <div class="faculty-table-wrap">
-        <table class="faculty-table">
+    <div class="app-table-wrap">
+        <table class="app-table">
             <thead>
                 <tr>
                     <th>Subject Code</th>

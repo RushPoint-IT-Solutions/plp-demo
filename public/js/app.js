@@ -49440,10 +49440,10 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\app.js */"./resources/js/app.js");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\app.js */"./resources/js/app.js");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
 
 
 /***/ })

@@ -38,9 +38,9 @@
                         <option value="Fourth" selected>Fourth</option>
                     </select>
                 </div>
-            </div>
-            <div style="display:flex; justify-content:flex-end; margin-top:10px;">
-                <button type="button" class="gs-view-btn" onclick="printRecords()">Print Records</button>
+                <div class="cr-filter-actions">
+                    <button type="button" class="gs-view-btn" onclick="printRecords()">Print Records</button>
+                </div>
             </div>
         </div>
 

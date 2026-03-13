@@ -8,8 +8,8 @@
 
     <p class="faculty-section-header">Select a subject to encode grades.</p>
 
-    <div class="faculty-table-wrap">
-        <table class="faculty-table">
+    <div class="app-table-wrap">
+        <table class="app-table">
             <thead>
                 <tr>
                     <th>Select</th>
