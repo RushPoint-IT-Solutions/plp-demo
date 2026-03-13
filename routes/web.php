@@ -137,6 +137,13 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
         });
     });
+
+    // Services sub-pages
+    Route::prefix('services')->name('services.')->group(function () {
+        Route::get('/faculty-loads', 'Registrar\Services\FacultyLoadsController@index')->name('faculty-loads.index');
+        Route::get('/faculty-loads/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('faculty-loads.show');
+        Route::post('/faculty-loads/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('faculty-loads.assign');
+    });
 });
 
 /*

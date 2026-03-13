@@ -1,0 +1,333 @@
+@import 'variables';
+@import 'mixins';
+
+.rfl-wrap {
+    padding: 24px;
+}
+
+.rfl-alert {
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.rfl-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid rgba(0, 104, 55, 0.25);
+}
+
+.rfl-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 6px 6px 0 0;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: $plp-green;
+    border: 1px solid rgba(0, 104, 55, 0.35);
+    border-bottom: none;
+    background: #fff;
+
+    &.active {
+        background: $plp-green;
+        color: #fff;
+        border-color: $plp-green;
+    }
+}
+
+.rfl-filters {
+    display: flex;
+    gap: 16px;
+    align-items: end;
+    margin: 16px 0 10px;
+    flex-wrap: wrap;
+}
+
+.rfl-filter-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    font-weight: 800;
+    color: $text-muted;
+    margin-bottom: 6px;
+}
+
+.rfl-select {
+    min-width: 200px;
+    font-size: 0.9rem;
+}
+
+.rfl-set-btn {
+    min-width: 86px;
+    height: 38px;
+    font-weight: 700;
+    background-color: $plp-green;
+    border-color: $plp-green;
+
+    &:hover {
+        background-color: $plp-green-dark;
+        border-color: $plp-green-dark;
+    }
+}
+
+.rfl-faculty-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background: $plp-green;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin: 6px 0 16px;
+}
+
+.rfl-subject-line {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: $text-secondary;
+    margin: 6px 0 4px;
+}
+
+.rfl-subject-schedule {
+    font-size: 0.84rem;
+    color: $text-muted;
+    font-weight: 600;
+    padding-left: 26px;
+    line-height: 1.45;
+}
+
+.rfl-faculty-code {
+    font-weight: 700;
+    opacity: 0.95;
+}
+
+.rfl-search {
+    margin-bottom: 14px;
+}
+
+.rfl-search-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    font-weight: 800;
+    color: $text-muted;
+    margin-bottom: 6px;
+}
+
+.rfl-search-form {
+    position: relative;
+    max-width: 360px;
+}
+
+.rfl-search-input {
+    padding-right: 44px;
+    border-radius: 6px;
+    height: 38px;
+    font-size: 0.9rem;
+}
+
+.rfl-search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #9a9a9a;
+    padding: 6px;
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+.rfl-meta {
+    font-size: 0.85rem;
+    color: $text-muted;
+    margin-bottom: 10px;
+}
+
+.rfl-row {
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(0, 104, 55, 0.03);
+    }
+}
+
+.rfl-name-link {
+    color: $plp-green;
+    text-decoration: underline;
+    font-weight: 600;
+
+    &:hover {
+        color: $plp-green-dark;
+    }
+}
+
+.rfl-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.rfl-total {
+    font-size: 0.9rem;
+    color: $text-secondary;
+
+    span {
+        color: $plp-green;
+        font-weight: 800;
+    }
+}
+
+.rfl-load-card {
+    margin-top: 6px;
+}
+
+.rfl-course-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.28em;
+    font-weight: 900;
+    color: $plp-green;
+    margin-bottom: 8px;
+}
+
+.rfl-schedule-box {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.rfl-year-title {
+    font-weight: 800;
+    color: $text-secondary;
+    margin: 10px 0 6px;
+}
+
+.rfl-schedule-line {
+    font-size: 0.85rem;
+    color: $text-secondary;
+    line-height: 1.45;
+}
+
+.rfl-line-code {
+    font-weight: 800;
+    margin-right: 6px;
+}
+
+.rfl-line-desc {
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+.rfl-line-meta {
+    color: $text-muted;
+    font-weight: 600;
+}
+
+.rfl-loading-wrap {
+    margin-top: 6px;
+}
+
+.rfl-loading-header {
+    font-size: 0.65rem;
+    letter-spacing: 0.28em;
+    font-weight: 900;
+    color: $plp-green;
+    margin: 10px 0 8px;
+}
+
+.rfl-assign-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.rfl-assign-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.rfl-subject-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.rfl-add-btn {
+    font-weight: 700;
+    height: 38px;
+    padding: 0 18px;
+    white-space: nowrap;
+    min-width: 130px;
+}
+
+.rfl-assign-options {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 8px;
+}
+.rfl-assign-options .form-check-input {
+    accent-color: $plp-green;
+}
+
+.rfl-assign-options .form-check-input:checked {
+    background-color: $plp-green;
+    border-color: $plp-green;
+}
+
+.rfl-assign-options .form-check-input:focus {
+    border-color: rgba($plp-green, 0.6);
+    box-shadow: 0 0 0 0.15rem rgba($plp-green, 0.15);
+}
+
+.rfl-num-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rfl-num-label {
+    font-size: 0.82rem;
+    color: $text-muted;
+    font-weight: 700;
+}
+
+.rfl-num {
+    width: 110px;
+    height: 34px;
+    font-size: 0.9rem;
+}
+
+.rfl-assigned-table {
+    margin-top: 10px;
+}
+
+.rfl-totals-row td {
+    border-top: none;
+    padding-top: 10px;
+}
+
+.rfl-total-cell {
+    text-align: center;
+    font-weight: 900;
+    color: $plp-green;
+}

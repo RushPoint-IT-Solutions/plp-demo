@@ -9,9 +9,12 @@ class Subject extends Model
 {
     protected $fillable = [
         'code', 'name', 'units', 'days',
+        'lec', 'lab',
         'time_start', 'time_end', 'room', 'faculty',
+        'faculty_id',
         'year_section', 'course', 'semester', 'school_year',
         'grading_status',
+        'load_type', 'credited_tuition_units', 'load_hours', 'added_by',
     ];
 
     /**
@@ -50,5 +53,10 @@ class Subject extends Model
     public function evaluations()
     {
         return $this->hasMany(FacultyEvaluation::class);
+    }
+
+    public function facultyModel()
+    {
+        return $this->belongsTo(Faculty::class, 'faculty_id');
     }
 }
