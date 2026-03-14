@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Registrar;
 
+use App\Course;
+use App\Department;
+use App\Faculty;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -90,9 +93,75 @@ class RegistrarController extends Controller
     /**
      * Registrar > Academic Master > Program File
      */
-    public function programFile()
+    public function programFile(Request $request)
     {
-        return view('registrar.registrar-menu.academic-master.program-file');
+        $departments = Department::orderBy('description')->get();
+        $faculties = Faculty::orderBy('name')->get();
+
+        $programs = Course::with(['department', 'deanDirector'])
+            ->when($request->filled('department_id'), function ($query) use ($request) {
+                $query->where('department_id', $request->input('department_id'));
+            })
+            ->when($request->filled('program_type'), function ($query) use ($request) {
+                $query->where('program_type', $request->input('program_type'));
+            })
+            ->when($request->filled('program_code'), function ($query) use ($request) {
+                $query->where('code', 'like', '%' . $request->input('program_code') . '%');
+            })
+            ->when($request->filled('description'), function ($query) use ($request) {
+                $term = $request->input('description');
+                $query->where(function ($subQuery) use ($term) {
+                    $subQuery->where('name', 'like', '%' . $term . '%')
+                        ->orWhere('description', 'like', '%' . $term . '%');
+                });
+            })
+            ->orderBy('code')
+            ->get();
+
+        return view('registrar.registrar-menu.academic-master.program-file', [
+            'departments' => $departments,
+            'faculties' => $faculties,
+            'programs' => $programs,
+            'filters' => [
+                'department_id' => $request->input('department_id', ''),
+                'program_type' => $request->input('program_type', ''),
+                'program_code' => $request->input('program_code', ''),
+                'description' => $request->input('description', ''),
+            ],
+        ]);
+    }
+
+    /**
+     * Registrar > Academic Master > Program File > Save setup modal
+     */
+    public function saveProgramSetup(Request $request)
+    {
+        $validated = $request->validate([
+            'program_type' => 'required|string|max:80',
+            'program_code' => 'required|string|max:30|unique:courses,code',
+            'department_id' => 'required|exists:departments,id',
+            'description' => 'required|string|max:255',
+            'slots' => 'nullable|integer|min:0',
+            'track_category' => 'nullable|in:Academic,TVL,Academic/TVL',
+            'non_filipino' => 'nullable|boolean',
+            'dean_director_id' => 'nullable|exists:faculties,id',
+        ]);
+
+        Course::create([
+            'code' => $validated['program_code'],
+            'name' => $validated['description'],
+            'program_type' => $validated['program_type'],
+            'department_id' => $validated['department_id'],
+            'description' => $validated['description'],
+            'slots' => $validated['slots'] ?? 0,
+            'track_category' => $validated['track_category'] ?? null,
+            'non_filipino' => (bool) ($validated['non_filipino'] ?? false),
+            'dean_director_id' => $validated['dean_director_id'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Program setup saved successfully.');
     }
 
     /**

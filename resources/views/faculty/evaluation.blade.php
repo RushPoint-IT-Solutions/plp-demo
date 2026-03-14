@@ -29,8 +29,10 @@
                     <tr>
                         <td>{{ $subject->name }}</td>
                         <td>{{ $eval->section }}</td>
-                        <td>{{ number_format($eval->mean_score, 1) }}</td>
-                        <td><a href="#" class="eval-view-link">View Details</a></td>
+                        <td class="avg-cell score-cell">{{ number_format($eval->mean_score, 1) }}</td>
+                        <td>
+                            <a href="#" class="eval-view-link faculty-eval-open" data-eval-id="{{ $eval->id }}">View Details</a>
+                        </td>
                     </tr>
                     @endforeach
                 @empty
@@ -41,4 +43,38 @@
     </div>
 
 </div>
+
+<div class="modal fade" id="facultyEvaluationModal" tabindex="-1" aria-labelledby="facultyEvaluationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="faculty-eval-result-head">
+                    <button type="button" class="faculty-eval-back-btn" data-bs-dismiss="modal">Back</button>
+                    <div class="faculty-eval-result-title" id="facultyEvaluationModalLabel">Evaluation Results</div>
+                    <div></div>
+                </div>
+
+                <div class="faculty-table-wrap">
+                    <table class="faculty-table">
+                        <thead>
+                            <tr>
+                                <th>Evaluation Criteria</th>
+                                <th>Mean Score (1.0 - 5.0)</th>
+                                <th>Interpretation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evalModalBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+    var facultyEvaluationDetails = @json($evaluationDetails);
+</script>
+<script src="{{ asset('js/faculty-evaluation.js') }}"></script>
+@endpush

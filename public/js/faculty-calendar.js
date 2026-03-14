@@ -29,18 +29,19 @@ document.addEventListener('DOMContentLoaded', function () {
             var tr = document.createElement('tr');
             for (var c = 0; c < 7; c++) {
                 var td = document.createElement('td');
+                td.classList.add('cal-td');
                 var cellIndex = r * 7 + c;
 
                 if (cellIndex < firstDay) {
                     // Previous month days
-                    td.textContent = daysInPrev - firstDay + cellIndex + 1;
+                    td.innerHTML = '<div class="day-number">' + (daysInPrev - firstDay + cellIndex + 1) + '</div>';
                     td.classList.add('fc-other-month');
                 } else if (day > daysInMonth) {
                     // Next month days
-                    td.textContent = nextDay++;
+                    td.innerHTML = '<div class="day-number">' + (nextDay++) + '</div>';
                     td.classList.add('fc-other-month');
                 } else {
-                    td.textContent = day;
+                    td.innerHTML = '<div class="day-number">' + day + '</div>';
                     // Highlight today
                     if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
                         td.classList.add('fc-today');

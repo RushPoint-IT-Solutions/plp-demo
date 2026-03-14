@@ -4,10 +4,10 @@
 @section('page-title', 'GRADES')
 
 @section('content')
-<div class="grades-page">
+<div class="grades-page sched-page-container">
 
     {{-- Semester Filter --}}
-    <div class="mb-4">
+    <div class="mb-4 grades-filter-row">
         <label class="form-label-plp">SELECTED SEMESTER</label>
         <select class="form-select form-input-long" id="semesterFilter">
             <option value="">Select Semester</option>

@@ -191,6 +191,11 @@
 
 .rfl-load-card {
     margin-top: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
 }
 
 .rfl-course-title {
@@ -198,14 +203,16 @@
     letter-spacing: 0.28em;
     font-weight: 900;
     color: $plp-green;
-    margin-bottom: 8px;
+    margin: 18px 0 8px;
 }
 
 .rfl-schedule-box {
-    background: #fff;
-    border: 1px solid #e8e8e8;
-    border-radius: 10px;
-    padding: 14px 16px;
+    background: #f2fbf5;
+    border: 2px solid rgba(0, 104, 55, 0.28);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 16px rgba(0, 104, 55, 0.12);
+    margin-bottom: 20px;
 }
 
 .rfl-year-title {
