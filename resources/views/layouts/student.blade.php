@@ -45,14 +45,25 @@
                     </svg>
                 </button>
 
-                <a href="{{ route('student.profile') }}" class="topbar-user">
-                    <div class="topbar-avatar-placeholder" style="width:36px;height:36px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
+                <div class="topbar-icons">
+                    {{-- Notification Bell --}}
+                    <a href="#" class="topbar-icon-link" title="Notifications">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                         </svg>
-                    </div>
-                </a>
+                    </a>
+
+                    {{-- Profile Avatar --}}
+                    <a href="{{ route('student.profile') }}" class="topbar-user" title="Profile">
+                        <div class="topbar-avatar-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                    </a>
+                </div>
             </header>
 
             <div class="content-footer-wrap">

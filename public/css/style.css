@@ -333,6 +333,30 @@ select:hover {
   color: #5f5f5f;
 }
 
+/* Keep registrar shell stable: long pages scroll inside content area, not the full document. */
+.registrar-body .content-footer-wrap {
+  min-height: calc(100vh - 72px);
+  max-height: calc(100vh - 72px);
+  overflow: hidden;
+}
+
+.registrar-body .student-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.registrar-body .student-main-wrapper .plp-footer {
+  flex-shrink: 0;
+}
+
+.registrar-body .student-page-header {
+  flex-shrink: 0;
+  min-height: 40px;
+}
+
 @media (max-width: 991px) {
   .student-portal-body .plp-sidebar {
     width: 250px;
@@ -381,6 +405,10 @@ select:hover {
   .student-portal-body .student-page-header {
     font-size: 0.95rem;
     height: 36px;
+  }
+
+  .registrar-body .student-page-header {
+    min-height: 36px;
   }
 }
 
@@ -2357,7 +2385,7 @@ select:hover {
 }
 
 .section-offering-page {
-  max-width: 1080px;
+  max-width: 100%;
   margin: 0;
   padding: 6px 0 0;
 }
@@ -2719,6 +2747,7 @@ select:hover {
 .btn-faculty-download:hover {
   background-color: #005028;
   color: #fff;
+  text-decoration: none;
 }
 
 .faculty-class-list-wrap {
@@ -2739,15 +2768,20 @@ select:hover {
   background-color: #006837;
   color: #fff;
   padding: 9px 20px;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #006837;
+  border-radius: 8px;
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  line-height: 1.1;
+  box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
 }
 
 .btn-view-list:hover {
   background-color: #005028;
+  border-color: #005028;
+  transform: translateY(-1px);
 }
 
 .grading-sheet-wrap {
@@ -2764,14 +2798,27 @@ select:hover {
 }
 
 .grading-view-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 5px 12px;
+  border: 1px solid #0a9a56;
+  border-radius: 6px;
+  background: #f3fbf6;
   color: #006837;
-  text-decoration: underline;
-  font-weight: 500;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.8rem;
   cursor: pointer;
+  line-height: 1;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .grading-view-link:hover {
-  color: #005028;
+  background: #006837;
+  border-color: #006837;
+  color: #ffffff;
 }
 
 .faculty-detail-header {
@@ -2783,21 +2830,27 @@ select:hover {
 }
 
 .faculty-back-btn {
-  border: none;
-  background: transparent;
+  border: 1px solid #006837;
+  background: #ffffff;
   color: #006837;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.88rem;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
-  padding: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 104, 55, 0.12);
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
 .faculty-back-btn::before {
-  content: "\2190";
-  font-size: 1.2rem;
-  margin-right: 6px;
-  vertical-align: middle;
+  content: none;
+}
+
+.faculty-back-btn:hover {
+  background: #006837;
+  border-color: #006837;
+  color: #ffffff;
 }
 
 .faculty-detail-title {
@@ -2854,14 +2907,34 @@ select:hover {
   gap: 8px;
 }
 
+.cal-nav {
+  gap: 0;
+}
+
+.cal-nav .fc-btn:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.cal-nav .fc-btn:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.cal-nav .fc-btn:not(:first-child) {
+  border-left: none;
+}
+
 .fc-btn {
   background: #fff;
-  border: 1.5px solid #ccc;
+  border: 1px solid #ccc;
+  color: #333333;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
   border-radius: 4px;
-  padding: 5px 12px;
+  padding: 6px 13px;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.15s;
+  line-height: 1.4;
+  transition: background 0.15s ease;
 }
 
 .fc-btn:hover {
@@ -2937,12 +3010,13 @@ select:hover {
 
 .fc-grid tbody tr td {
   width: 14.28%;
-  height: 80px;
+  height: 110px;
   vertical-align: top;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-right: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
   color: #333333;
   background: #fff;
 }
@@ -3006,7 +3080,7 @@ select:hover {
 }
 
 .eval-view-link:hover {
-  text-decoration: underline;
+  text-decoration: none;
   color: #005028;
 }
 
@@ -3144,12 +3218,13 @@ select:hover {
 }
 
 .so-print-btn {
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 8px;
   background: #006837;
   border-color: #006837;
+  min-height: 38px;
 }
 
 .so-print-btn:hover {
@@ -3259,9 +3334,14 @@ select:hover {
 /* Grades page */
 
 .grades-page {
-  max-width: 1080px;
+  max-width: 100%;
   margin: 0;
   padding: 6px 0 0;
+}
+
+.grades-filter-row #semesterFilter {
+  width: 100%;
+  max-width: 360px;
 }
 
 /* Events page */
@@ -3320,6 +3400,12 @@ select:hover {
   -webkit-overflow-scrolling: touch;
 }
 
+.events-page .grades-scroll {
+  height: 620px;
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+}
+
 /* Left-align Code & Course columns, keep numerics centered */
 
 .grades-page .sched-th:nth-child(1),
@@ -3344,6 +3430,10 @@ select:hover {
   .events-page,
   .profile-page {
     padding-top: 0;
+  }
+
+  .events-page .grades-scroll {
+    height: 520px;
   }
 }
 
@@ -3455,6 +3545,7 @@ select:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   position: sticky;
   top: 20px;
+  align-self: flex-start;
 }
 
 .pv-avatar-wrap {
@@ -3758,6 +3849,7 @@ select:hover {
     width: 100%;
     min-width: unset;
     position: static;
+    align-self: auto;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
@@ -3820,6 +3912,7 @@ select:hover {
 
   .pv-btn-group {
     margin-top: 14px;
+    padding-top: 0;
   }
 
   .pv-body {
@@ -4026,13 +4119,13 @@ select:hover {
 .pf-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .pf-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -4072,6 +4165,7 @@ select:hover {
 .pf-btn-new {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 9px 18px;
   background: #006837;
@@ -4093,7 +4187,7 @@ select:hover {
 .pf-top-filter {
   border: 1.5px solid #d4d4d4;
   border-radius: 10px;
-  padding: 12px;
+  padding: 12px 12px 10px;
   background: #f8f8f8;
   width: 100%;
   box-sizing: border-box;
@@ -4102,22 +4196,22 @@ select:hover {
 
 .pf-top-filter-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(92px, 108px);
-  gap: 8px;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(140px, 1fr) minmax(130px, 0.9fr) minmax(200px, 1.5fr) minmax(98px, 108px);
+  gap: 10px;
   align-items: end;
 }
 
 .pf-toolbar-actions {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .pf-top-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
 }
 
@@ -4125,7 +4219,7 @@ select:hover {
   font-size: 0.73rem;
   font-weight: 700;
   color: #006837;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -4139,27 +4233,31 @@ select:hover {
 }
 
 .pf-table-controls {
-  margin: 12px 0 8px;
+  margin: 6px 0 4px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .pf-entries-control {
   display: inline-flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
 
 .pf-entries-control label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #006837;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .pf-entries-select {
-  width: 58px;
+  width: 64px;
   height: 34px;
   border: 1.5px solid #d0d0d0;
   border-radius: 6px;
@@ -4234,6 +4332,7 @@ select:hover {
   align-items: center;
   gap: 6px;
   font-size: 0.82rem;
+  font-weight: 600;
   color: #1f1f1f;
   white-space: nowrap;
   flex: 0 0 auto;
@@ -4249,10 +4348,60 @@ select:hover {
   color: #006837;
 }
 
-.pf-track-option input {
-  width: 17px;
-  height: 17px;
-  accent-color: #0b8043;
+.pf-track-option input[type="radio"],
+.pf-track-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  appearance: none;
+  background: #fff;
+  border: 2px solid #0a813c;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pf-track-option input[type="radio"] {
+  border-radius: 50%;
+}
+
+.pf-track-option input[type="checkbox"] {
+  border-radius: 4px;
+}
+
+.pf-track-option input[type="radio"]:checked,
+.pf-track-option input[type="checkbox"]:checked {
+  border-color: #006837;
+  background: #006837;
+}
+
+.pf-track-option input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pf-track-option input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  top: 0px;
+  left: 4px;
+  transform: rotate(45deg);
+}
+
+.pf-track-option input[type="radio"]:hover,
+.pf-track-option input[type="checkbox"]:hover {
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.14);
 }
 
 .pf-modal-input,
@@ -4590,7 +4739,8 @@ select:hover {
 
 .pf-page-info {
   font-size: 0.82rem;
-  color: #888;
+  color: #666;
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -4607,6 +4757,21 @@ select:hover {
   .pf-toolbar-actions .pf-btn-new {
     flex: 1;
     min-width: 0;
+  }
+
+  .pf-table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .pf-entries-control {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .pf-page-info {
+    text-align: left;
   }
 
   .pf-top-filter-grid,
@@ -6465,7 +6630,7 @@ select.req-modal-input {
 .sched-filter-bar .app-filter-label {
   font-size: 0.68rem;
   letter-spacing: 0.08em;
-  color: #4b4f56;
+  color: #006837;
 }
 
 .sched-filter-bar .app-filter-select {
@@ -6475,9 +6640,81 @@ select.req-modal-input {
   border-radius: 6px;
 }
 
+/* Section Offering: compact one-line desktop filters, responsive below desktop. */
+.page-section-offering .so-filter-row {
+  display: grid;
+  grid-template-columns: 115px 125px 145px 110px 180px;
+  gap: 10px;
+  align-items: end;
+}
+
+.page-section-offering .so-filter-row .sched-filter-group,
+.page-section-offering .so-filter-row .sched-filter-group-lg {
+  min-width: 0;
+  max-width: none;
+}
+
+.page-section-offering .sched-filter-bar {
+  width: 100%;
+}
+
+.page-section-offering .student-page-header {
+  width: 100%;
+}
+
+/* Slot Monitoring: keep one row on desktop and responsive wrapping on smaller widths. */
+.page-slot-monitoring .sm-filter-row {
+  display: grid;
+  grid-template-columns: 150px 130px 120px 170px;
+  gap: 10px;
+  align-items: end;
+}
+
+.page-slot-monitoring .sm-filter-row .sched-filter-group {
+  min-width: 0;
+  max-width: none;
+}
+
+@media (max-width: 991px) {
+  .page-section-offering .so-filter-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .page-section-offering .so-filter-program {
+    grid-column: span 3;
+  }
+
+  .page-slot-monitoring .sm-filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .page-section-offering .so-filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page-section-offering .so-filter-program {
+    grid-column: span 2;
+  }
+
+  .page-slot-monitoring .sm-filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .sched-filter-row {
     flex-direction: column;
+  }
+  .page-slot-monitoring .sm-filter-row {
+    grid-template-columns: 1fr;
+  }
+  .page-section-offering .so-filter-row {
+    grid-template-columns: 1fr;
+  }
+  .page-section-offering .so-filter-program {
+    grid-column: span 1;
   }
   .sched-filter-group-lg {
     max-width: none;
