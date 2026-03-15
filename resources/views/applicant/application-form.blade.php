@@ -1,4 +1,4 @@
-@extends('layouts.applicant')
+﻿@extends('layouts.applicant')
 
 @section('title', 'PLP - Application Form')
 @section('page-title', 'APPLICATION FORM')
@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="setup-row">
-                            <div class="setup-col" style="flex: 0 0 280px;">
+                            <div class="setup-col setup-col--w-280">
                                 <label class="setup-label">LRN</label>
                                 <input type="text" class="setup-input" placeholder="LRN" name="lrn" value="{{ old('lrn') }}">
                             </div>
@@ -53,14 +53,14 @@
                     <div class="setup-profile-photo">
                         <div class="profile-photo-square" id="profilePhotoPreview">
                             @if(isset($applicant) && $applicant->photo)
-                                <img id="photoImg" src="{{ asset('storage/' . $applicant->photo) }}" alt="Photo" style="width:100%; height:100%; object-fit:cover;">
+                                <img id="photoImg" src="{{ asset('storage/' . $applicant->photo) }}" alt="Photo" class="setup-photo-img">
                             @else
                                 <svg class="profile-photo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                                     <circle cx="12" cy="10" r="3"/>
                                     <path d="M6 21v-1a6 6 0 0 1 12 0v1"/>
                                 </svg>
-                                <img id="photoImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                                <img id="photoImg" src="" alt="" class="setup-photo-img setup-photo-img--hidden">
                             @endif
                         </div>
                         <label class="profile-photo-btn" for="photoInput">Upload Photo</label>
@@ -159,15 +159,15 @@
                 <h4 class="setup-subsection-title">Present Address</h4>
 
                 <div class="setup-row">
-                    <div class="setup-col" style="flex:3;">
+                    <div class="setup-col setup-col--flex-3">
                         <label class="setup-label">Street</label>
                         <input type="text" name="present_street" id="present_street" class="setup-input" placeholder="Street" value="{{ old('present_street') }}">
                     </div>
-                    <div class="setup-col" style="flex:2;">
+                    <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Barangay</label>
                         <input type="text" name="present_barangay" id="present_barangay" class="setup-input" placeholder="Barangay" value="{{ old('present_barangay') }}">
                     </div>
-                    <div class="setup-col" style="flex:1;">
+                    <div class="setup-col setup-col--flex-1">
                         <label class="setup-label">Zipcode</label>
                         <input type="text" name="present_zipcode" id="present_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('present_zipcode') }}">
                     </div>
@@ -175,30 +175,21 @@
 
                 <div class="setup-row">
                     <div class="setup-col">
-                        <label class="setup-label">Municipality/City</label>
-                        <select name="present_municipality" id="present_municipality" class="setup-input setup-select">
-                            <option value="">Choose City</option>
-                            @foreach(['Pasig City','Makati City','Taguig City','Mandaluyong City','Marikina City','Pasay City','Paranaque City','Other'] as $city)
-                            <option value="{{ $city }}" {{ old('present_municipality') === $city ? 'selected' : '' }}>{{ $city }}</option>
-                            @endforeach
+                        <label class="setup-label">Region</label>
+                        <select name="present_region" id="present_region" class="setup-input setup-select">
+                            <option value="" disabled selected>Choose Region</option>
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Province</label>
                         <select name="present_province" id="present_province" class="setup-input setup-select">
-                            <option value="">Choose Province</option>
-                            @foreach(['Metro Manila','Bulacan','Laguna','Rizal','Cavite','Other'] as $prov)
-                            <option value="{{ $prov }}" {{ old('present_province') === $prov ? 'selected' : '' }}>{{ $prov }}</option>
-                            @endforeach
+                            <option value="" disabled selected>Choose Province</option>
                         </select>
                     </div>
                     <div class="setup-col">
-                        <label class="setup-label">Region</label>
-                        <select name="present_region" id="present_region" class="setup-input setup-select">
-                            <option value="">Choose Region</option>
-                            @foreach(['NCR','Region I','Region II','Region III','Region IV-A','Region IV-B','Region V','Other'] as $reg)
-                            <option value="{{ $reg }}" {{ old('present_region') === $reg ? 'selected' : '' }}>{{ $reg }}</option>
-                            @endforeach
+                        <label class="setup-label">Municipality/City</label>
+                        <select name="present_municipality" id="present_municipality" class="setup-input setup-select">
+                            <option value="" disabled selected>Choose City/Municipality</option>
                         </select>
                     </div>
                 </div>
@@ -213,15 +204,15 @@
                 <h4 class="setup-subsection-title">Permanent Address</h4>
 
                 <div class="setup-row" id="permanentAddressFields">
-                    <div class="setup-col" style="flex:3;">
+                    <div class="setup-col setup-col--flex-3">
                         <label class="setup-label">Street</label>
                         <input type="text" name="permanent_street" id="permanent_street" class="setup-input" placeholder="Street" value="{{ old('permanent_street') }}">
                     </div>
-                    <div class="setup-col" style="flex:2;">
+                    <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Barangay</label>
                         <input type="text" name="permanent_barangay" id="permanent_barangay" class="setup-input" placeholder="Barangay" value="{{ old('permanent_barangay') }}">
                     </div>
-                    <div class="setup-col" style="flex:1;">
+                    <div class="setup-col setup-col--flex-1">
                         <label class="setup-label">Zipcode</label>
                         <input type="text" name="permanent_zipcode" id="permanent_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('permanent_zipcode') }}">
                     </div>
@@ -229,30 +220,21 @@
 
                 <div class="setup-row" id="permanentSelectFields">
                     <div class="setup-col">
-                        <label class="setup-label">Municipality/City</label>
-                        <select name="permanent_municipality" id="permanent_municipality" class="setup-input setup-select">
-                            <option value="">Choose City</option>
-                            @foreach(['Pasig City','Makati City','Taguig City','Mandaluyong City','Marikina City','Pasay City','Paranaque City','Other'] as $city)
-                            <option value="{{ $city }}" {{ old('permanent_municipality') === $city ? 'selected' : '' }}>{{ $city }}</option>
-                            @endforeach
+                        <label class="setup-label">Region</label>
+                        <select name="permanent_region" id="permanent_region" class="setup-input setup-select">
+                            <option value="" disabled selected>Choose Region</option>
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Province</label>
                         <select name="permanent_province" id="permanent_province" class="setup-input setup-select">
-                            <option value="">Choose Province</option>
-                            @foreach(['Metro Manila','Bulacan','Laguna','Rizal','Cavite','Other'] as $prov)
-                            <option value="{{ $prov }}" {{ old('permanent_province') === $prov ? 'selected' : '' }}>{{ $prov }}</option>
-                            @endforeach
+                            <option value="" disabled selected>Choose Province</option>
                         </select>
                     </div>
                     <div class="setup-col">
-                        <label class="setup-label">Region</label>
-                        <select name="permanent_region" id="permanent_region" class="setup-input setup-select">
-                            <option value="">Choose Region</option>
-                            @foreach(['NCR','Region I','Region II','Region III','Region IV-A','Region IV-B','Region V','Other'] as $reg)
-                            <option value="{{ $reg }}" {{ old('permanent_region') === $reg ? 'selected' : '' }}>{{ $reg }}</option>
-                            @endforeach
+                        <label class="setup-label">Municipality/City</label>
+                        <select name="permanent_municipality" id="permanent_municipality" class="setup-input setup-select">
+                            <option value="" disabled selected>Choose City/Municipality</option>
                         </select>
                     </div>
                 </div>
@@ -265,35 +247,33 @@
         </div>
 
         {{-- ===== STEP 2: EDUCATIONAL INFORMATION ===== --}}
-        <div class="setup-form-container step-panel" id="step-2" style="display:none;">
+        <div class="setup-form-container step-panel step-hidden" id="step-2">
             <div class="setup-section">
                 <div class="setup-section-header">
                     <h3 class="setup-section-title">Educational Information</h3>
                 </div>
 
                 <div class="setup-row">
-                    <div class="setup-col" style="flex: 2;">
+                    <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Last School Attended</label>
-                        <select class="setup-input setup-select">
-                            <option value="">Select School</option>
-                        </select>
+                        <input type="text" name="last_school_attended" class="setup-input" placeholder="Last School Attended" value="{{ old('last_school_attended') }}">
                     </div>
-                    <div class="setup-col" style="flex: 2.3;">
+                    <div class="setup-col setup-col--flex-23">
                         <label class="setup-label">School Address</label>
-                        <input type="text" class="setup-input" placeholder="School Address">
+                        <input type="text" name="school_address" class="setup-input" placeholder="School Address" value="{{ old('school_address') }}">
                     </div>
-                    <div class="setup-col" style="flex: 0.8; min-width: 110px;">
+                    <div class="setup-col setup-col--flex-08 setup-col--w-110">
                         <label class="setup-label">School Type</label>
                         <select class="setup-input setup-select">
                             <option value="">Public</option>
                             <option value="private">Private</option>
                         </select>
                     </div>
-                    <div class="setup-col setup-col-sm" style="min-width: 90px;">
+                    <div class="setup-col setup-col-sm setup-col--w-90">
                         <label class="setup-label">Year</label>
                         <input type="text" class="setup-input" placeholder="Year">
                     </div>
-                    <div class="setup-col" style="flex: 0 0 34px; min-width: 34px;">
+                    <div class="setup-col setup-col--w-34">
                         <label class="setup-label">&nbsp;</label>
                         <button type="button" class="setup-mini-add" aria-label="Add school">+</button>
                     </div>
@@ -307,7 +287,7 @@
         </div>
 
         {{-- ===== STEP 3: FAMILY BACKGROUND ===== --}}
-        <div class="setup-form-container step-panel" id="step-3" style="display:none;">
+        <div class="setup-form-container step-panel step-hidden" id="step-3">
             <div class="setup-section">
                 <div class="setup-section-header">
                     <h3 class="setup-section-title">Family Background</h3>
@@ -327,15 +307,15 @@
                 </div>
                 <div class="setup-row">
                     <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" placeholder="Occupation"></div>
-                    <div class="setup-col" style="flex: 1.4;"><label class="setup-label">Company Address</label><input type="text" class="setup-input" placeholder="Company Address"></div>
+                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" placeholder="Company Address"></div>
                     <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" placeholder="Estimated Monthly Income"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col" style="flex: 1.6;"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" placeholder="Residence Address"></div>
+                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" placeholder="Residence Address"></div>
                     <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" placeholder="Email Address"></div>
                 </div>
 
-                <h4 class="setup-subsection-title" style="margin-top: 18px;">Father/Guardian</h4>
+                <h4 class="setup-subsection-title setup-subsection-title--mt18">Father/Guardian</h4>
                 <div class="setup-row">
                     <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" placeholder="Last Name"></div>
                     <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" placeholder="First Name"></div>
@@ -349,11 +329,11 @@
                 </div>
                 <div class="setup-row">
                     <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" placeholder="Occupation"></div>
-                    <div class="setup-col" style="flex: 1.4;"><label class="setup-label">Company Address</label><input type="text" class="setup-input" placeholder="Company Address"></div>
+                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" placeholder="Company Address"></div>
                     <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" placeholder="Estimated Monthly Income"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col" style="flex: 1.6;"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" placeholder="Residence Address"></div>
+                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" placeholder="Residence Address"></div>
                     <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" placeholder="Email Address"></div>
                 </div>
             </div>
@@ -365,16 +345,16 @@
         </div>
 
         {{-- ===== STEP 4: APPLYING FOR ===== --}}
-        <div class="setup-form-container step-panel" id="step-4" style="display:none;">
+        <div class="setup-form-container step-panel step-hidden" id="step-4">
             <div class="setup-section">
                 <div class="setup-section-header">
                     <h3 class="setup-section-title">Applying For</h3>
                 </div>
 
                 <div class="setup-row">
-                    <div class="setup-col" style="flex: 1.2; min-width: 180px;">
+                    <div class="setup-col setup-col--flex-12 setup-col--w-180">
                         <label class="setup-label">Program Type</label>
-                        <div class="setup-radio-group" style="height:auto; gap:16px; margin-top: 4px;">
+                        <div class="setup-radio-group setup-radio-group--spaced">
                             <label class="setup-radio"><input type="radio" name="apply_program" value="senior_high" checked> Senior High</label>
                             <label class="setup-radio"><input type="radio" name="apply_program" value="college"> College</label>
                         </div>
@@ -398,26 +378,26 @@
                         <label class="setup-label">Entry Classification</label>
                         <select class="setup-input setup-select"><option value="">Select School</option></select>
                     </div>
-                    <div class="setup-col setup-col-sm" style="min-width: 130px;">
+                    <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">Year Level</label>
                         <select class="setup-input setup-select"><option value="">Year Level</option></select>
                     </div>
-                    <div class="setup-col setup-col-sm" style="min-width: 130px;">
+                    <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">Semester</label>
                         <select class="setup-input setup-select"><option value="">First Semester</option></select>
                     </div>
-                    <div class="setup-col setup-col-sm" style="min-width: 130px;">
+                    <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">School Year</label>
                         <input type="text" class="setup-input" value="2025-2026" readonly>
                     </div>
                 </div>
 
-                <div class="setup-row">
-                    <div class="setup-col setup-col-sm" style="min-width: 130px;">
+                <div class="setup-row setup-row--app-meta">
+                    <div class="setup-col setup-col-sm setup-col--w-220">
                         <label class="setup-label">Application Date</label>
                         <input type="date" class="setup-input">
                     </div>
-                    <div class="setup-col setup-col-sm" style="min-width: 130px;">
+                    <div class="setup-col setup-col-sm setup-col--w-160">
                         <label class="setup-label">Campus</label>
                         <input type="text" class="setup-input" value="Pasig" readonly>
                     </div>
@@ -434,6 +414,16 @@
 </div>
 
 @push('scripts')
+<script>
+    var applicantAddressDraft = {
+        present_region: {{ json_encode(old('present_region')) }},
+        present_province: {{ json_encode(old('present_province')) }},
+        present_municipality: {{ json_encode(old('present_municipality')) }},
+        permanent_region: {{ json_encode(old('permanent_region')) }},
+        permanent_province: {{ json_encode(old('permanent_province')) }},
+        permanent_municipality: {{ json_encode(old('permanent_municipality')) }}
+    };
+</script>
 <script src="{{ asset('js/applicant-form.js') }}"></script>
 @endpush
 @endsection

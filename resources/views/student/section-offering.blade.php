@@ -6,7 +6,7 @@
 @section('page-title', 'SECTION OFFERING')
 
 @section('content')
-<div class="form-section-container section-offering-page">
+<div class="form-section-container section-offering-page sched-page-container">
     
     <!-- Filter Section (hidden after Download COR) -->
     <div id="filter-section" class="filter-grid">

@@ -2,30 +2,31 @@
 
 @section('title', 'PLP - Section Offering')
 @section('page-title', 'SECTION OFFERING')
+@section('body-class', 'page-section-offering')
 
 @section('content')
 <div class="pf-page">
 
     {{-- Filter Bar --}}
     <div class="sched-filter-bar">
-        <div class="sched-filter-row sched-filter-row-main">
-            <div class="sched-filter-group">
-                <span class="app-filter-label">SY</span>
+        <div class="sched-filter-row sched-filter-row-main so-filter-row">
+            <div class="sched-filter-group so-filter-sy">
+                <span class="app-filter-label">School Year</span>
                 <select class="app-filter-select" id="soSY" style="width:100%;">
                     <option value="2025-2026">2025-2026</option>
                     <option value="2024-2025">2024-2025</option>
                     <option value="2023-2024">2023-2024</option>
                 </select>
             </div>
-            <div class="sched-filter-group">
-                <span class="app-filter-label">Term</span>
+            <div class="sched-filter-group so-filter-term">
+                <span class="app-filter-label">Semester</span>
                 <select class="app-filter-select" id="soTerm" style="width:100%;">
                     <option value="First">First</option>
                     <option value="Second">Second</option>
                     <option value="Summer">Summer</option>
                 </select>
             </div>
-            <div class="sched-filter-group">
+            <div class="sched-filter-group so-filter-year">
                 <span class="app-filter-label">Year Level</span>
                 <select class="app-filter-select" id="soYearLevel" style="width:100%;">
                     <option value="First">First</option>
@@ -34,7 +35,7 @@
                     <option value="Fourth">Fourth</option>
                 </select>
             </div>
-            <div class="sched-filter-group">
+            <div class="sched-filter-group so-filter-section">
                 <span class="app-filter-label">Section</span>
                 <select class="app-filter-select" id="soSection" style="width:100%;">
                     <option value="A">A</option>
@@ -43,8 +44,8 @@
                     <option value="D">D</option>
                 </select>
             </div>
-            <div class="sched-filter-group sched-filter-group-lg">
-                <span class="app-filter-label">Program</span>
+            <div class="sched-filter-group sched-filter-group-lg so-filter-program">
+                <span class="app-filter-label">Course</span>
                 <select class="app-filter-select" id="soProgram" style="width:100%;">
                     <option value="BSIT">BSIT</option>
                     <option value="BSCS">BSCS</option>
@@ -61,7 +62,7 @@
     <div class="so-card" id="soCard" style="display:none;">
         <div class="so-card-header">
             <div class="so-card-title" id="soCardTitle">Section Offering: A</div>
-            <button type="button" class="btn btn-success so-print-btn">Print Class Program</button>
+            <button type="button" class="pf-btn-new so-print-btn">Print Class Program</button>
         </div>
 
         <div class="student-table-wrapper table-responsive" id="soTableWrap">

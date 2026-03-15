@@ -24,7 +24,7 @@
 
     @stack('styles')
 </head>
-<body class="student-body student-portal-body registrar-body">
+<body class="student-body student-portal-body registrar-body @yield('body-class')">
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>

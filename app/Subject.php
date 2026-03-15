@@ -55,6 +55,11 @@ class Subject extends Model
         return $this->hasMany(FacultyEvaluation::class);
     }
 
+    public function studentGrades()
+    {
+        return $this->hasMany(StudentSubjectGrade::class);
+    }
+
     public function facultyModel()
     {
         return $this->belongsTo(Faculty::class, 'faculty_id');

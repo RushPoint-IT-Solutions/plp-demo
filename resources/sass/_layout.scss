@@ -19,6 +19,7 @@
     color: $text-secondary;
     z-index: 10;
     position: relative;
+    margin-top: auto;
 }
 
 .footer-powered-line {
@@ -100,7 +101,9 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: 4px 0 14px rgba(0, 0, 0, 0.15);
     z-index: 5;
 }
@@ -198,7 +201,16 @@
     display: flex;
     flex-direction: column;
     background-color: $student-shell-bg;
-    overflow-y: auto;
+    overflow-y: visible !important;
+    overflow-x: hidden;
+}
+
+.student-portal-body .content-footer-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: calc(100vh - 72px);
+    overflow-y: visible !important;
     overflow-x: hidden;
 }
 
@@ -241,9 +253,9 @@
 }
 
 .student-portal-body .student-content {
-    flex: 1;
+    flex: 0 0 auto;
     padding: 30px 28px 16px;
-    overflow-y: auto;
+    overflow-y: visible !important;
     overflow-x: hidden;
     background-color: #ffffff;
 }
@@ -254,6 +266,7 @@
     font-size: 11px;
     color: $text-secondary;
     padding: 6px 12px 8px;
+    margin-top: auto;
 }
 
 .student-portal-body .student-main-wrapper .plp-footer p {

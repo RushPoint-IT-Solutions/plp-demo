@@ -140,5 +140,133 @@
         });
     }
 
+    // ── Cascading address dropdowns (region → province → municipality) ──────────────────
+    function fillSelect(selectEl, items, placeholder) {
+        selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
+        items.forEach(function (item) {
+            var opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            selectEl.appendChild(opt);
+        });
+        selectEl.disabled = false;
+    }
+
+    function resetSelect(selectEl, placeholder) {
+        selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
+        selectEl.disabled = true;
+        selectEl.value = '';
+    }
+
+    function setupCascade(prefix, addressData) {
+        var regionEl   = document.querySelector('[name="' + prefix + '_region"]');
+        var provinceEl = document.querySelector('[name="' + prefix + '_province"]');
+        var cityEl     = document.querySelector('[name="' + prefix + '_municipality"]');
+        if (!regionEl || !provinceEl || !cityEl) { return; }
+
+        fillSelect(regionEl, addressData.map(function (r) { return r.name; }), 'Choose Region');
+        regionEl.disabled = false;
+
+        regionEl.addEventListener('change', function () {
+            resetSelect(provinceEl, 'Choose Province');
+            resetSelect(cityEl, 'Choose City/Municipality');
+
+            var region = addressData.find(function (r) { return r.name === regionEl.value; });
+            if (!region) { return; }
+
+            if (region.provinces.length === 1) {
+                fillSelect(provinceEl, [region.provinces[0].name], 'Choose Province');
+                provinceEl.value = region.provinces[0].name;
+                provinceEl.dispatchEvent(new Event('change'));
+            } else {
+                fillSelect(provinceEl, region.provinces.map(function (p) { return p.name; }), 'Choose Province');
+            }
+        });
+
+        provinceEl.addEventListener('change', function () {
+            resetSelect(cityEl, 'Choose City/Municipality');
+
+            var region = addressData.find(function (r) { return r.name === regionEl.value; });
+            if (!region) { return; }
+            var province = region.provinces.find(function (p) { return p.name === provinceEl.value; });
+            if (!province) { return; }
+            fillSelect(cityEl, province.cities, 'Choose City/Municipality');
+        });
+    }
+
+    function syncAddressCascade(prefixFrom, prefixTo) {
+        var fromRegion   = document.querySelector('[name="' + prefixFrom + '_region"]');
+        var fromProvince = document.querySelector('[name="' + prefixFrom + '_province"]');
+        var fromCity     = document.querySelector('[name="' + prefixFrom + '_municipality"]');
+        var toRegion     = document.querySelector('[name="' + prefixTo + '_region"]');
+        var toProvince   = document.querySelector('[name="' + prefixTo + '_province"]');
+        var toCity       = document.querySelector('[name="' + prefixTo + '_municipality"]');
+
+        if (fromRegion && toRegion) {
+            toRegion.value = fromRegion.value;
+            toRegion.dispatchEvent(new Event('change'));
+        }
+
+        setTimeout(function () {
+            if (fromProvince && toProvince && fromProvince.value) {
+                toProvince.value = fromProvince.value;
+                toProvince.dispatchEvent(new Event('change'));
+            }
+        }, 60);
+
+        setTimeout(function () {
+            if (fromCity && toCity && fromCity.value) {
+                toCity.value = fromCity.value;
+            }
+        }, 120);
+    }
+
+    fetch('/js/ph-address.json')
+        .then(function (res) { return res.json(); })
+        .then(function (addressData) {
+            setupCascade('present', addressData);
+            setupCascade('permanent', addressData);
+
+            function restoreCascade(prefix) {
+                if (!window.applicantAddressDraft) { return; }
+                var draft = window.applicantAddressDraft;
+                var regionEl   = document.querySelector('[name="' + prefix + '_region"]');
+                var provinceEl = document.querySelector('[name="' + prefix + '_province"]');
+                var cityEl     = document.querySelector('[name="' + prefix + '_municipality"]');
+                if (!regionEl || !provinceEl || !cityEl) { return; }
+
+                var savedRegion   = draft[prefix + '_region'];
+                var savedProvince = draft[prefix + '_province'];
+                var savedCity     = draft[prefix + '_municipality'];
+                if (!savedRegion) { return; }
+
+                regionEl.value = savedRegion;
+                regionEl.dispatchEvent(new Event('change'));
+
+                setTimeout(function () {
+                    if (savedProvince) {
+                        provinceEl.value = savedProvince;
+                        provinceEl.dispatchEvent(new Event('change'));
+                    }
+                }, 50);
+
+                setTimeout(function () {
+                    if (savedCity) {
+                        cityEl.value = savedCity;
+                    }
+                }, 120);
+            }
+
+            restoreCascade('present');
+            restoreCascade('permanent');
+
+            if (sameCheck && sameCheck.checked) {
+                syncAddressCascade('present', 'permanent');
+            }
+        })
+        .catch(function (err) {
+            console.warn('Could not load address data:', err);
+        });
+
     goToStep(1);
 })();

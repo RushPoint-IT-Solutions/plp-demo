@@ -109,8 +109,8 @@
             <div class="rfl-search">
                 <div class="app-filter-label">Search</div>
                 <div class="rfl-search-form">
-                    <input type="text" class="form-control rfl-search-input" placeholder="Search Student ID / Name" disabled>
-                    <button class="rfl-search-btn" type="button" aria-label="Search" disabled>
+                    <input type="text" class="form-control rfl-search-input" placeholder="Search Student ID / Name">
+                    <button class="rfl-search-btn" type="button" aria-label="Search">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -219,6 +219,142 @@
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+
+            <div class="rfl-loading-header rfl-schedule-table-title">FACULTY SCHEDULE</div>
+            @php
+                $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                $scheduleByDay = array_fill_keys($weekDays, []);
+
+                $extractDays = function ($rawDays) {
+                    $raw = strtoupper((string) $rawDays);
+                    $days = [];
+
+                    $patternMap = [
+                        'Monday' => '/MON(DAY)?/',
+                        'Tuesday' => '/TUE(SDAY)?/',
+                        'Wednesday' => '/WED(NESDAY)?/',
+                        'Thursday' => '/THU(RSDAY)?/',
+                        'Friday' => '/FRI(DAY)?/',
+                        'Saturday' => '/SAT(URDAY)?/',
+                        'Sunday' => '/SUN(DAY)?/',
+                    ];
+
+                    foreach ($patternMap as $dayName => $pattern) {
+                        if (preg_match($pattern, $raw)) {
+                            $days[] = $dayName;
+                        }
+                    }
+
+                    if (!empty($days)) {
+                        return array_values(array_unique($days));
+                    }
+
+                    $compact = preg_replace('/[^A-Z]/', '', $raw);
+                    $i = 0;
+                    while ($i < strlen($compact)) {
+                        $next3 = substr($compact, $i, 3);
+                        $next2 = substr($compact, $i, 2);
+                        $next1 = substr($compact, $i, 1);
+
+                        if ($next3 === 'THU') {
+                            $days[] = 'Thursday';
+                            $i += 3;
+                            continue;
+                        }
+                        if ($next2 === 'TH') {
+                            $days[] = 'Thursday';
+                            $i += 2;
+                            continue;
+                        }
+                        if ($next1 === 'M') {
+                            $days[] = 'Monday';
+                            $i += 1;
+                            continue;
+                        }
+                        if ($next1 === 'T') {
+                            $days[] = 'Tuesday';
+                            $i += 1;
+                            continue;
+                        }
+                        if ($next1 === 'W') {
+                            $days[] = 'Wednesday';
+                            $i += 1;
+                            continue;
+                        }
+                        if ($next1 === 'R') {
+                            $days[] = 'Thursday';
+                            $i += 1;
+                            continue;
+                        }
+                        if ($next1 === 'F') {
+                            $days[] = 'Friday';
+                            $i += 1;
+                            continue;
+                        }
+                        if ($next1 === 'S') {
+                            $days[] = 'Saturday';
+                            $i += 1;
+                            continue;
+                        }
+                        if ($next1 === 'U') {
+                            $days[] = 'Sunday';
+                            $i += 1;
+                            continue;
+                        }
+
+                        $i += 1;
+                    }
+
+                    return array_values(array_unique($days));
+                };
+
+                foreach ($assignedSubjects as $s) {
+                    $mappedDays = $extractDays($s->days ?? '');
+                    $section = trim((($s->course ?? '') . ' ' . ($s->year_section ?? '')));
+                    $entry = [
+                        'time' => strtoupper((string) ($s->formatted_time ?? '')),
+                        'code' => strtoupper((string) ($s->code ?? '')),
+                        'section' => strtoupper($section),
+                        'room' => strtoupper((string) ($s->room ?? '')),
+                        'sort' => strtotime((string) ($s->time_start ?? '')) ?: 0,
+                    ];
+
+                    foreach ($mappedDays as $d) {
+                        if (isset($scheduleByDay[$d])) {
+                            $scheduleByDay[$d][] = $entry;
+                        }
+                    }
+                }
+
+                foreach ($scheduleByDay as $d => $entries) {
+                    usort($entries, function ($a, $b) {
+                        return ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0);
+                    });
+                    $scheduleByDay[$d] = $entries;
+                }
+            @endphp
+
+            <div class="rfl-weekly-scroll">
+                <div class="rfl-weekly-board">
+                    @foreach($weekDays as $dayName)
+                        <div class="rfl-weekly-col">
+                            <div class="rfl-weekly-day">{{ strtoupper($dayName) }}</div>
+                            <div class="rfl-weekly-body">
+                                @forelse($scheduleByDay[$dayName] as $entry)
+                                    <div class="rfl-weekly-card">
+                                        <div class="rfl-weekly-time">{{ $entry['time'] }}</div>
+                                        <div class="rfl-weekly-code">{{ $entry['code'] }}</div>
+                                        <div class="rfl-weekly-section">{{ $entry['section'] !== '' ? $entry['section'] : '—' }}</div>
+                                        <div class="rfl-weekly-room">{{ $entry['room'] !== '' ? $entry['room'] : 'TBA' }}</div>
+                                    </div>
+                                @empty
+                                    <div class="rfl-weekly-empty"></div>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
         </div>

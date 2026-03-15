@@ -2,13 +2,14 @@
 
 @section('title', 'PLP - Slot Monitoring')
 @section('page-title', 'SLOT MONITORING')
+@section('body-class', 'page-slot-monitoring')
 
 @section('content')
 <div class="pf-page">
 
     {{-- Filter Bar --}}
     <div class="sched-filter-bar">
-        <div class="sched-filter-row">
+        <div class="sched-filter-row sm-filter-row">
             <div class="sched-filter-group">
                 <span class="app-filter-label">School Year</span>
                 <select class="app-filter-select" id="smSY" style="width:100%;">

@@ -122,5 +122,103 @@ document.addEventListener('DOMContentLoaded', function() {
             passwordInput.setAttribute('type', type);
         });
     }
-    
+
+    // ===== PROGRAM FILE PAGE =====
+    const programFilePage = document.getElementById('programFilePage');
+    if (programFilePage) {
+        const successMessage = programFilePage.getAttribute('data-success');
+        if (successMessage && typeof showRegistrarToast === 'function') {
+            showRegistrarToast(successMessage, 'success');
+        }
+
+        const shouldOpenSetup = programFilePage.getAttribute('data-open-setup') === '1';
+        if (shouldOpenSetup) {
+            openSetupDepartmentsModal();
+        }
+
+        const entriesSelect = document.getElementById('pfEntriesLimit');
+        const table = document.getElementById('pfTable');
+        const pageInfo = document.querySelector('.pf-page-info');
+
+        if (entriesSelect && table) {
+            const tableRows = Array.from(table.querySelectorAll('tbody tr'));
+            const emptyRows = tableRows.filter(function (row) {
+                return row.querySelector('.pf-empty-row') !== null;
+            });
+            const dataRows = tableRows.filter(function (row) {
+                return row.querySelector('.pf-empty-row') === null;
+            });
+
+            function applyEntryLimit() {
+                const limit = parseInt(entriesSelect.value, 10);
+                const total = dataRows.length;
+                const visibleCount = Number.isNaN(limit) ? total : Math.min(limit, total);
+
+                dataRows.forEach(function (row, index) {
+                    row.style.display = index < visibleCount ? '' : 'none';
+                });
+
+                emptyRows.forEach(function (row) {
+                    row.style.display = total === 0 ? '' : 'none';
+                });
+
+                if (pageInfo) {
+                    pageInfo.textContent = 'Showing ' + visibleCount + ' of ' + total + ' program(s)';
+                }
+            }
+
+            entriesSelect.addEventListener('change', applyEntryLimit);
+            applyEntryLimit();
+        }
+    }
+});
+
+function openSetupDepartmentsModal() {
+    const modal = document.getElementById('setupDepartmentsModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function openNewProgramModal() {
+    const modal = document.getElementById('newProgramModal');
+    const form = document.getElementById('newProgramForm');
+    if (form) form.reset();
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeNewProgramModal() {
+    const modal = document.getElementById('newProgramModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function handleNewProgramSave(event) {
+    event.preventDefault();
+    const codeInput = document.getElementById('newProgramCode');
+    const code = codeInput ? codeInput.value.trim() : '';
+
+    if (!code) {
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast('Please fill in required fields.', 'warning');
+        }
+        return false;
+    }
+
+    closeNewProgramModal();
+    if (typeof showRegistrarToast === 'function') {
+        showRegistrarToast('Program "' + code + '" saved successfully.', 'success');
+    }
+    return false;
+}
+
+function closeSetupDepartmentsModal() {
+    const modal = document.getElementById('setupDepartmentsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('click', function (event) {
+    const overlays = document.querySelectorAll('.pf-modal-overlay');
+    overlays.forEach(function (overlay) {
+        if (event.target === overlay) {
+            overlay.style.display = 'none';
+        }
+    });
 });

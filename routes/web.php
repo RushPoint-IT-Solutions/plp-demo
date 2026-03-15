@@ -118,6 +118,7 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         // Academic Master
         Route::prefix('academic-master')->name('academic-master.')->group(function () {
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
+            Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
@@ -234,5 +235,6 @@ Route::prefix('faculty')->name('faculty.')->group(function () {
     Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
     Route::get('/calendar', 'Faculty\FacultyController@calendar')->name('calendar');
     Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');
+    Route::post('/grading-sheet/update', 'Faculty\FacultyController@updateGrades')->name('grading-sheet.update');
     Route::get('/evaluation', 'Faculty\FacultyController@evaluation')->name('evaluation');
 });
