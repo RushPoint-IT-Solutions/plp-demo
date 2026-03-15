@@ -142,13 +142,73 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
         });
+
+        // Alumni Tracker
+        Route::prefix('alumni')->name('alumni.')->group(function () {
+            Route::get('/tracker', 'Registrar\RegistrarController@alumniTracker')->name('tracker');
+        });
     });
 
     // Services sub-pages
     Route::prefix('services')->name('services.')->group(function () {
-        Route::get('/faculty-loads', 'Registrar\Services\FacultyLoadsController@index')->name('faculty-loads.index');
-        Route::get('/faculty-loads/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('faculty-loads.show');
-        Route::post('/faculty-loads/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('faculty-loads.assign');
+        Route::prefix('classroom-faculty')->name('classroom-faculty.')->group(function () {
+            Route::get('/class-list', 'Registrar\Services\ClassListController@index')->name('class-list');
+            Route::get('/attendance', 'Registrar\Services\AttendanceController@index')->name('attendance');
+
+            Route::prefix('faculty-loads')->name('faculty-loads.')->group(function () {
+                Route::get('/', 'Registrar\Services\FacultyLoadsController@index')->name('index');
+                Route::get('/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('show');
+                Route::post('/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('assign');
+            });
+        });
+
+        Route::prefix('grading-academic')->name('grading-academic.')->group(function () {
+            Route::get('/grading-system', 'Registrar\Services\GradingAcademicController@gradingSystem')->name('grading-system');
+            Route::get('/grading-periods', 'Registrar\Services\GradingAcademicController@gradingPeriods')->name('grading-periods');
+            Route::get('/grading-components', 'Registrar\Services\GradingAcademicController@gradingComponents')->name('grading-components');
+            Route::get('/transmutation', 'Registrar\Services\GradingAcademicController@transmutation')->name('transmutation');
+            Route::get('/deficiency', 'Registrar\Services\GradingAcademicController@deficiency')->name('deficiency');
+        });
+
+        Route::prefix('reports-admin')->name('reports-admin.')->group(function () {
+            Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
+            Route::get('/guidance-reports', 'Registrar\Services\ReportsAdminController@guidanceReports')->name('guidance-reports');
+            Route::get('/certifications', 'Registrar\Services\ReportsAdminController@certifications')->name('certifications');
+            Route::get('/tagging-of-graduates', 'Registrar\Services\ReportsAdminController@taggingOfGraduates')->name('tagging-of-graduates');
+        });
+
+        Route::prefix('student-account')->name('student-account.')->group(function () {
+            Route::get('/student-discipline', 'Registrar\Services\StudentAccountController@studentDiscipline')->name('student-discipline');
+            Route::get('/family', 'Registrar\Services\StudentAccountController@family')->name('family');
+            Route::get('/change-password', 'Registrar\Services\StudentAccountController@changePassword')->name('change-password');
+        });
+    });
+
+    // Admin Tools
+    Route::prefix('admin-tools')->name('admin-tools.')->group(function () {
+        Route::prefix('system-config')->name('system-config.')->group(function () {
+            Route::get('/configuration', 'Registrar\Services\AdminToolsController@configuration')->name('configuration');
+            Route::get('/admission-config', 'Registrar\Services\AdminToolsController@admissionConfig')->name('admission-config');
+            Route::get('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendar')->name('academic-calendar');
+            Route::get('/announcement', 'Registrar\Services\AdminToolsController@announcement')->name('announcement');
+        });
+
+        Route::prefix('access-management')->name('access-management.')->group(function () {
+            Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
+            Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');
+        });
+
+        Route::prefix('master-files')->name('master-files.')->group(function () {
+            Route::get('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFile')->name('faculty-file');
+            Route::get('/student-profile', 'Registrar\Services\AdminToolsController@studentProfile')->name('student-profile');
+            Route::get('/student-grade-file', 'Registrar\Services\AdminToolsController@studentGradeFile')->name('student-grade-file');
+        });
+
+        Route::prefix('student-maintenance')->name('student-maintenance.')->group(function () {
+            Route::get('/bed-student-status', 'Registrar\Services\AdminToolsController@bedStudentStatus')->name('bed-student-status');
+            Route::get('/bed-days', 'Registrar\Services\AdminToolsController@bedDays')->name('bed-days');
+            Route::get('/student-update', 'Registrar\Services\AdminToolsController@studentUpdate')->name('student-update');
+        });
     });
 });
 

@@ -148,6 +148,7 @@ select:hover {
 .student-portal-body .plp-sidebar {
   width: 285px;
   min-width: 285px;
+  height: 100vh;
   background-color: #0a813c;
   border-top-right-radius: 22px;
   border-bottom-right-radius: 22px;
@@ -185,6 +186,10 @@ select:hover {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .student-portal-body .sidebar-link {

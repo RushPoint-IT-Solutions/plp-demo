@@ -182,4 +182,12 @@ class RegistrarController extends Controller
     {
         return view('registrar.registrar-menu.student-management.clinic-record');
     }
+
+    /**
+     * Registrar > Alumni Tracker
+     */
+    public function alumniTracker()
+    {
+        return view('registrar.registrar-menu.alumni-tracker');
+    }
 }
