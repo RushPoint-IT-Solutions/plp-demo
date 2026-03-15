@@ -24,7 +24,7 @@ class FacultyLoadsController extends Controller
             ->paginate(25)
             ->appends($request->query());
 
-        return view('registrar.services.faculty-loads.index', compact('faculties', 'search'));
+        return view('registrar.services.classroom-faculty.faculty-loads.index', compact('faculties', 'search'));
     }
 
     public function show(Request $request, $facultyId)
@@ -95,7 +95,7 @@ class FacultyLoadsController extends Controller
             'units' => (float) $assignedSubjects->sum(function (Subject $s) { return (float) ($s->units ?? 0); }),
         ];
 
-        return view('registrar.services.faculty-loads.show', compact(
+        return view('registrar.services.classroom-faculty.faculty-loads.show', compact(
             'faculty',
             'tab',
             'schoolYears',
@@ -136,7 +136,7 @@ class FacultyLoadsController extends Controller
         $subject->save();
 
         return redirect()
-            ->route('registrar.services.faculty-loads.show', [
+            ->route('registrar.services.classroom-faculty.faculty-loads.show', [
                 'faculty' => $faculty->id,
                 'tab' => 'loading',
                 'school_year' => $validated['school_year'] ?? null,

@@ -11,7 +11,7 @@
 <div class="rfl-wrap">
     <div class="rfl-search">
         <div class="app-filter-label">Search</div>
-        <form method="GET" action="{{ route('registrar.services.faculty-loads.index') }}" class="rfl-search-form">
+        <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="rfl-search-form">
             <input type="text" name="q" class="form-control rfl-search-input" placeholder="Search Student ID / Name" value="{{ $search }}">
             <button class="rfl-search-btn" type="submit" aria-label="Search">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -37,11 +37,11 @@
             </thead>
             <tbody>
                 @forelse($faculties as $i => $faculty)
-                    <tr class="rfl-row" data-href="{{ route('registrar.services.faculty-loads.show', $faculty->id) }}">
+                    <tr class="rfl-row" data-href="{{ route('registrar.services.classroom-faculty.faculty-loads.show', $faculty->id) }}">
                         <td>{{ ($faculties->firstItem() ?? 0) + $i }}</td>
                         <td class="td-code">{{ $faculty->code }}</td>
                         <td>
-                            <a class="rfl-name-link" href="{{ route('registrar.services.faculty-loads.show', $faculty->id) }}">
+                            <a class="rfl-name-link" href="{{ route('registrar.services.classroom-faculty.faculty-loads.show', $faculty->id) }}">
                                 {{ $faculty->name }}
                             </a>
                         </td>

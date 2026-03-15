@@ -1,7 +1,7 @@
 @extends('layouts.registrar')
 
-@section('title', 'PLP - Section Merging')
-@section('page-title', 'SECTION MERGING')
+@section('title', 'PLP - Academic Calendar')
+@section('page-title', 'ACADEMIC CALENDAR')
 
 @section('content')
 <div class="pf-page">
@@ -12,8 +12,8 @@
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
-        <h2 class="placeholder-title">Section Merging</h2>
-        <p class="placeholder-text">This page is under development. Section merging features will be available soon.</p>
+        <h2 class="placeholder-title">Academic Calendar</h2>
+        <p class="placeholder-text">This page is under development. Academic calendar features will be available soon.</p>
     </div>
 </div>
 @endsection

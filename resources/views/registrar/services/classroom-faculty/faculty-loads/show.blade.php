@@ -23,15 +23,15 @@
     @endif
 
     <div class="rfl-tabs">
-        <a class="rfl-tab {{ $tab === 'load' ? 'active' : '' }}" href="{{ route('registrar.services.faculty-loads.show', ['faculty' => $faculty->id, 'tab' => 'load', 'school_year' => $selectedSchoolYear, 'semester' => $selectedSemester]) }}">
+        <a class="rfl-tab {{ $tab === 'load' ? 'active' : '' }}" href="{{ route('registrar.services.classroom-faculty.faculty-loads.show', ['faculty' => $faculty->id, 'tab' => 'load', 'school_year' => $selectedSchoolYear, 'semester' => $selectedSemester]) }}">
             Faculty Load
         </a>
-        <a class="rfl-tab {{ $tab === 'loading' ? 'active' : '' }}" href="{{ route('registrar.services.faculty-loads.show', ['faculty' => $faculty->id, 'tab' => 'loading', 'school_year' => $selectedSchoolYear, 'semester' => $selectedSemester]) }}">
+        <a class="rfl-tab {{ $tab === 'loading' ? 'active' : '' }}" href="{{ route('registrar.services.classroom-faculty.faculty-loads.show', ['faculty' => $faculty->id, 'tab' => 'loading', 'school_year' => $selectedSchoolYear, 'semester' => $selectedSemester]) }}">
             Faculty Loading
         </a>
     </div>
 
-    <form method="GET" action="{{ route('registrar.services.faculty-loads.show', $faculty->id) }}" class="rfl-filters">
+    <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.show', $faculty->id) }}" class="rfl-filters">
         <input type="hidden" name="tab" value="{{ $tab }}">
 
         <div class="rfl-filter">
@@ -123,7 +123,7 @@
                 <div class="rfl-loading-cols">SUBJECT CODE | DESCRIPTION | LEC | LAB | UNITS | SECTION | SCHEDULE</div>
             </div>
 
-            <form method="POST" action="{{ route('registrar.services.faculty-loads.assign', $faculty->id) }}" class="rfl-assign-form">
+            <form method="POST" action="{{ route('registrar.services.classroom-faculty.faculty-loads.assign', $faculty->id) }}" class="rfl-assign-form">
                 @csrf
                 <input type="hidden" name="school_year" value="{{ $selectedSchoolYear }}">
                 <input type="hidden" name="semester" value="{{ $selectedSemester }}">
