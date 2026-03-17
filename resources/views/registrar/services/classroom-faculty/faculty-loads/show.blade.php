@@ -2,6 +2,7 @@
 
 @section('title', 'PLP - Faculty Loads')
 @section('page-title', 'FACULTY LOADS')
+@section('body-class', 'page-services-faculty-loads')
 
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
@@ -106,21 +107,23 @@
     @if ($tab === 'loading')
         <div class="rfl-loading-wrap">
 
-            <div class="rfl-search">
-                <div class="app-filter-label">Search</div>
-                <div class="rfl-search-form">
-                    <input type="text" class="form-control rfl-search-input" placeholder="Search Student ID / Name">
-                    <button class="rfl-search-btn" type="button" aria-label="Search">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
+            <div class="rfl-loading-tools">
+                <div class="rfl-search">
+                    <div class="app-filter-label">Search</div>
+                    <div class="rfl-search-form">
+                        <input type="text" class="form-control rfl-search-input" placeholder="Search Subject Code / Description">
+                        <button class="rfl-search-btn" type="button" aria-label="Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="rfl-loading-header">
-                <div class="rfl-loading-cols">SUBJECT CODE | DESCRIPTION | LEC | LAB | UNITS | SECTION | SCHEDULE</div>
+                <div class="rfl-loading-header">
+                    <div class="rfl-loading-cols">SUBJECT CODE | DESCRIPTION | LEC | LAB | UNITS | SECTION | SCHEDULE</div>
+                </div>
             </div>
 
             <form method="POST" action="{{ route('registrar.services.classroom-faculty.faculty-loads.assign', $faculty->id) }}" class="rfl-assign-form">
@@ -142,27 +145,31 @@
                 </div>
 
                 <div class="rfl-assign-options">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="load_type" id="ltRegular" value="Regular" {{ old('load_type', 'Regular') === 'Regular' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="ltRegular">Regular</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="load_type" id="ltPart" value="Part-time" {{ old('load_type') === 'Part-time' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="ltPart">Part-time</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="load_type" id="ltTemp" value="Temporary Substitution" {{ old('load_type') === 'Temporary Substitution' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="ltTemp">Temporary Substitution</label>
-                    </div>
-
-                    <div class="rfl-num-wrap">
-                        <label class="rfl-num-label">Credited Tuition Units:</label>
-                        <input type="number" step="0.01" min="0" name="credited_tuition_units" class="form-control rfl-num" placeholder="Units" value="{{ old('credited_tuition_units') }}">
+                    <div class="rfl-load-type-group" role="radiogroup" aria-label="Load Type">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="load_type" id="ltRegular" value="Regular" {{ old('load_type', 'Regular') === 'Regular' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="ltRegular">Regular</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="load_type" id="ltPart" value="Part-time" {{ old('load_type') === 'Part-time' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="ltPart">Part-time</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="load_type" id="ltTemp" value="Temporary Substitution" {{ old('load_type') === 'Temporary Substitution' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="ltTemp">Temporary Substitution</label>
+                        </div>
                     </div>
 
-                    <div class="rfl-num-wrap">
-                        <label class="rfl-num-label">Load Hours:</label>
-                        <input type="number" step="0.01" min="0" name="load_hours" class="form-control rfl-num" placeholder="Units" value="{{ old('load_hours') }}">
+                    <div class="rfl-metric-group">
+                        <div class="rfl-num-wrap">
+                            <label class="rfl-num-label">Credited Tuition Units:</label>
+                            <input type="number" step="0.01" min="0" name="credited_tuition_units" class="form-control rfl-num" placeholder="Units" value="{{ old('credited_tuition_units') }}">
+                        </div>
+
+                        <div class="rfl-num-wrap">
+                            <label class="rfl-num-label">Load Hours:</label>
+                            <input type="number" step="0.01" min="0" name="load_hours" class="form-control rfl-num" placeholder="Units" value="{{ old('load_hours') }}">
+                        </div>
                     </div>
                 </div>
             </form>
@@ -335,21 +342,21 @@
                 }
             @endphp
 
-            <div class="rfl-weekly-scroll">
-                <div class="rfl-weekly-board">
+            <div class="rfl-weekly-scroll so-weekly-scroll">
+                <div class="rfl-weekly-board so-weekly-grid">
                     @foreach($weekDays as $dayName)
-                        <div class="rfl-weekly-col">
-                            <div class="rfl-weekly-day">{{ strtoupper($dayName) }}</div>
-                            <div class="rfl-weekly-body">
+                        <div class="rfl-weekly-col so-weekly-col">
+                            <div class="rfl-weekly-day so-weekly-day">{{ strtoupper($dayName) }}</div>
+                            <div class="rfl-weekly-body so-weekly-body">
                                 @forelse($scheduleByDay[$dayName] as $entry)
-                                    <div class="rfl-weekly-card">
-                                        <div class="rfl-weekly-time">{{ $entry['time'] }}</div>
-                                        <div class="rfl-weekly-code">{{ $entry['code'] }}</div>
-                                        <div class="rfl-weekly-section">{{ $entry['section'] !== '' ? $entry['section'] : '—' }}</div>
-                                        <div class="rfl-weekly-room">{{ $entry['room'] !== '' ? $entry['room'] : 'TBA' }}</div>
+                                    <div class="rfl-weekly-card so-weekly-card">
+                                        <div class="rfl-weekly-time so-weekly-time">{{ $entry['time'] }}</div>
+                                        <div class="rfl-weekly-code so-weekly-code">{{ $entry['code'] }}</div>
+                                        <div class="rfl-weekly-section so-weekly-section">{{ $entry['section'] !== '' ? $entry['section'] : '—' }}</div>
+                                        <div class="rfl-weekly-room so-weekly-room">{{ $entry['room'] !== '' ? $entry['room'] : 'TBA' }}</div>
                                     </div>
                                 @empty
-                                    <div class="rfl-weekly-empty"></div>
+                                    <div class="rfl-weekly-empty so-weekly-empty"></div>
                                 @endforelse
                             </div>
                         </div>
