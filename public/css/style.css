@@ -6056,12 +6056,12 @@ select:hover {
 
 .req-card {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid #80b497;
+  border-radius: 8px;
   padding: 18px 16px;
   cursor: pointer;
   transition: box-shadow 0.18s, transform 0.15s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0 0 1px rgba(15, 123, 67, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
   box-sizing: border-box;
   min-width: 0;
   overflow: hidden;
@@ -6166,7 +6166,7 @@ select:hover {
 
 .req-detail-header {
   background: #fff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #80b497;
   border-radius: 8px;
   padding: 12px 20px;
   margin-bottom: 16px;
@@ -6175,6 +6175,7 @@ select:hover {
   color: #1a1a2e;
   display: flex;
   gap: 32px;
+  box-shadow: 0 0 0 1px rgba(15, 123, 67, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .req-detail-name-label span,
@@ -8751,6 +8752,11 @@ select.req-modal-input {
   margin-bottom: 20px;
   flex-wrap: wrap;
   align-items: flex-end;
+  background: #fff;
+  border: 1px solid #80b497;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(15, 123, 67, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
+  padding: 12px 14px;
 }
 
 .appl-detail-field {
@@ -11006,10 +11012,11 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-student-enrollment .se-student-card {
   border: 1px solid #80b497;
-  border-radius: 4px;
-  background: #f8fcf9;
-  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px 14px;
   margin-bottom: 10px;
+  box-shadow: 0 0 0 1px rgba(15, 123, 67, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .page-student-enrollment .se-student-grid {
@@ -11156,6 +11163,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   min-width: 1120px;
 }
 
+.page-student-enrollment #seChangeFromTable {
+  table-layout: fixed;
+}
+
+.page-student-enrollment #seAddSubjectsTable {
+  table-layout: fixed;
+}
+
 .page-student-enrollment .se-subject-table td,
 .page-student-enrollment .se-subject-table th {
   padding: 7px 9px;
@@ -11166,15 +11181,92 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   text-align: center !important;
 }
 
-.page-student-enrollment .se-subject-table thead th:nth-child(6),
-.page-student-enrollment .se-subject-table tbody td:nth-child(6) {
+.page-student-enrollment #seChangeFromTable tbody td {
+  text-align: center !important;
+}
+
+.page-student-enrollment #seChangeFromTable tbody td:nth-child(3),
+.page-student-enrollment #seChangeFromTable tbody td:nth-child(6) {
+  text-align: left !important;
+}
+
+.page-student-enrollment #seAddSubjectsTable tbody td {
+  text-align: center !important;
+}
+
+.page-student-enrollment #seAddSubjectsTable tbody td:nth-child(2),
+.page-student-enrollment #seAddSubjectsTable tbody td:nth-child(3),
+.page-student-enrollment #seAddSubjectsTable tbody td:nth-child(5) {
+  text-align: left !important;
+}
+
+.page-student-enrollment #seAddSubjectsTable thead th:nth-child(2),
+.page-student-enrollment #seAddSubjectsTable thead th:nth-child(3),
+.page-student-enrollment #seAddSubjectsTable thead th:nth-child(5) {
+  text-align: left !important;
+}
+
+.page-student-enrollment #seChangeFromTable thead th:nth-child(6),
+.page-student-enrollment #seChangeFromTable tbody td:nth-child(6) {
   min-width: 280px;
+}
+
+.page-student-enrollment #seAddSubjectsTable thead th:nth-child(5),
+.page-student-enrollment #seAddSubjectsTable tbody td:nth-child(5) {
+  min-width: 280px;
+}
+
+.page-student-enrollment #seChangeFromTable tbody td.se-schedule-cell {
+  text-align: center !important;
+  white-space: normal;
+  line-height: 1.35;
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.page-student-enrollment #seChangeFromTable thead th:nth-child(6) {
+  text-align: center !important;
+}
+
+.page-student-enrollment #seChangeFromTable .se-schedule-line {
+  padding: 2px 0;
+  margin: 0;
+  text-align: center;
+}
+
+.page-student-enrollment #seChangeFromTable .se-schedule-line + .se-schedule-line {
+  border-top: 1px dashed #d8dfda;
+  margin-top: 2px;
+}
+
+.page-student-enrollment #seChangeFromTable thead th:nth-child(4),
+.page-student-enrollment #seChangeFromTable tbody td:nth-child(4) {
+  min-width: 96px;
+  text-align: center !important;
+  white-space: nowrap;
+}
+
+.page-student-enrollment #seAddSubjectsTable tbody td.se-catalog-schedule-cell {
+  white-space: normal;
+  line-height: 1.35;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.page-student-enrollment #seAddSubjectsTable .se-catalog-schedule-line {
+  padding: 2px 0;
+  margin: 0;
 }
 
 .page-student-enrollment .se-total-units-row td,
 .page-student-enrollment .se-units-cell {
   font-weight: 700;
   color: #006837;
+  text-align: left !important;
+}
+
+.page-student-enrollment #seChangeFromTable tbody tr.se-total-units-row td,
+.page-student-enrollment #seChangeFromTable tbody tr.se-total-units-row td.se-units-cell {
   text-align: left !important;
 }
 
@@ -11185,6 +11277,8 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-student-enrollment .se-section-actions {
   margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .page-student-enrollment .se-schedule-section {
@@ -11353,6 +11447,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   }
 
   .page-student-enrollment .se-detail-actions .se-btn {
+    width: 100%;
+  }
+
+  .page-student-enrollment .se-section-actions {
+    justify-content: stretch;
+  }
+
+  .page-student-enrollment .se-section-actions .se-btn {
     width: 100%;
   }
 

@@ -114,7 +114,6 @@
 
     <div id="seDetailView" style="display:none;">
         <div class="se-detail-topbar">
-            <button type="button" class="se-btn se-btn-save" onclick="saveDetailSelection()">Save Enrollment Changes</button>
             <button type="button" class="se-btn se-btn-danger" onclick="withdrawEnrollment()">Withdraw Enrollment</button>
         </div>
 
@@ -141,6 +140,15 @@
             <div class="se-action-note">For replace: select exactly 1 row in Current Enrolled and 1 row in Subject Catalog.</div>
             <div class="student-table-wrapper table-responsive">
                 <table class="student-table registrar-table se-subject-table" id="seChangeFromTable">
+                    <colgroup>
+                        <col style="width:54px;">
+                        <col style="width:130px;">
+                        <col style="width:240px;">
+                        <col style="width:96px;">
+                        <col style="width:72px;">
+                        <col style="width:390px;">
+                        <col style="width:110px;">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>#</th>
@@ -204,6 +212,9 @@
                     </tbody>
                 </table>
             </div>
+            <div class="se-section-actions">
+                <button type="button" class="se-btn se-btn-save" onclick="saveDetailSelection()">Save Enrollment Changes</button>
+            </div>
         </div>
 
         <div class="se-section">
@@ -249,6 +260,13 @@
             <div class="se-action-note">Edit Selected requires exactly 1 checked catalog row. You can edit the Schedule field in the popup modal.</div>
             <div class="student-table-wrapper table-responsive">
                 <table class="student-table registrar-table se-subject-table" id="seAddSubjectsTable">
+                    <colgroup>
+                        <col style="width:54px;">
+                        <col style="width:270px;">
+                        <col style="width:390px;">
+                        <col style="width:86px;">
+                        <col style="width:320px;">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>#</th>
@@ -264,33 +282,21 @@
                             <td>PATHFIT1</td>
                             <td>BSTMOVEMENT ENHANCEMENT/ SCRIMFUNDAMENTALS OF MARTIALS ARTS</td>
                             <td>2</td>
-                            <td>
-                                <select class="app-filter-select" style="width:100%;">
-                                    <option>35 | BSIT 4-A | M 01:00PM-03:00PM GYM</option>
-                                </select>
-                            </td>
+                            <td>35 | BSIT 4-A | M 01:00PM-03:00PM GYM</td>
                         </tr>
                         <tr data-program="BSIT" data-year="4">
                             <td><input type="checkbox"></td>
                             <td>NSTP101B</td>
                             <td>NSTP-CWTS1</td>
                             <td>2</td>
-                            <td>
-                                <select class="app-filter-select" style="width:100%;">
-                                    <option>40 | BSIT 4-A | S 08:00AM-11:00AM FIELD</option>
-                                </select>
-                            </td>
+                            <td>40 | BSIT 4-A | S 08:00AM-11:00AM FIELD</td>
                         </tr>
                         <tr data-program="BSCS" data-year="3">
                             <td><input type="checkbox"></td>
                             <td>CS ELEC 2</td>
                             <td>MACHINE LEARNING FUNDAMENTALS</td>
                             <td>3</td>
-                            <td>
-                                <select class="app-filter-select" style="width:100%;">
-                                    <option>28 | BSCS 3-B | TH 01:00PM-04:00PM LAB 2</option>
-                                </select>
-                            </td>
+                            <td>28 | BSCS 3-B | TH 01:00PM-04:00PM LAB 2</td>
                         </tr>
                     </tbody>
                 </table>
@@ -846,8 +852,7 @@ function openSubjectRowModal(mode, tableId) {
         if (mode === 'edit' && row) {
             var cell = row.children[index];
             if (cell) {
-                var select = cell.querySelector('select');
-                value = select ? ((select.options[select.selectedIndex] && select.options[select.selectedIndex].text) || '') : (cell.innerText || '').trim();
+                value = type === 'schedule' ? getScheduleTextFromCell(cell) : (cell.innerText || '').trim();
             }
         } else {
             if (normalized.indexOf('subject code') !== -1) value = 'NEW 101';
@@ -911,29 +916,71 @@ function closeSubjectRowModal() {
     seSubjectRowState.columns = [];
 }
 
+function splitScheduleEntries(rawValue) {
+    var clean = String(rawValue || '').replace(/\s+/g, ' ').trim();
+    if (!clean || clean === '-') return [];
+    return clean.split(/\s*\/\s*/).map(function (entry) {
+        return entry.trim();
+    }).filter(function (entry) {
+        return entry !== '';
+    });
+}
+
+function renderEnrolledScheduleCell(cell, rawValue) {
+    if (!cell) return;
+
+    var clean = String(rawValue || '').replace(/\s+/g, ' ').trim();
+    var entries = splitScheduleEntries(clean);
+    cell.classList.add('se-schedule-cell');
+    cell.setAttribute('data-raw-schedule', clean || '-');
+    cell.innerHTML = '';
+
+    if (!entries.length) {
+        cell.textContent = '-';
+        return;
+    }
+
+    entries.forEach(function (entry) {
+        var line = document.createElement('div');
+        line.className = 'se-schedule-line';
+        line.textContent = entry;
+        cell.appendChild(line);
+    });
+}
+
+function renderCatalogScheduleCell(cell, rawValue) {
+    if (!cell) return;
+
+    var clean = String(rawValue || '').replace(/\s+/g, ' ').trim();
+    var entries = splitScheduleEntries(clean);
+    cell.classList.add('se-catalog-schedule-cell');
+    cell.setAttribute('data-raw-schedule', clean || '-');
+    cell.innerHTML = '';
+
+    if (!entries.length) {
+        cell.textContent = '-';
+        return;
+    }
+
+    entries.forEach(function (entry) {
+        var line = document.createElement('div');
+        line.className = 'se-catalog-schedule-line';
+        line.textContent = entry;
+        cell.appendChild(line);
+    });
+}
+
 function setSubjectCellValue(row, column, value) {
     var cell = row.children[column.index];
     if (!cell) return;
 
-    if (column.type === 'schedule') {
-        var select = cell.querySelector('select');
-        if (!select) {
-            select = document.createElement('select');
-            select.className = 'app-filter-select';
-            select.style.width = '100%';
-            cell.innerHTML = '';
-            cell.appendChild(select);
-        }
+    var table = row.closest('table');
+    var tableId = table ? table.id : '';
 
-        if (select.options.length) {
-            select.options[0].text = value;
-            select.options[0].value = value;
-        } else {
-            var option = document.createElement('option');
-            option.textContent = value;
-            option.value = value;
-            select.appendChild(option);
-        }
+    if (column.type === 'schedule' && tableId === 'seChangeFromTable') {
+        renderEnrolledScheduleCell(cell, value);
+    } else if (column.type === 'schedule') {
+        renderCatalogScheduleCell(cell, value);
     } else {
         cell.textContent = value;
     }
@@ -941,11 +988,13 @@ function setSubjectCellValue(row, column, value) {
 
 function getScheduleTextFromCell(cell) {
     if (!cell) return '';
+    var raw = cell.getAttribute('data-raw-schedule');
+    if (raw) return raw;
     var select = cell.querySelector('select');
     if (select && select.options.length) {
         return (select.options[select.selectedIndex] && select.options[select.selectedIndex].text) || '';
     }
-    return (cell.innerText || '').trim();
+    return (cell.innerText || '').replace(/\s*\n+\s*/g, ' / ').trim();
 }
 
 function createCurrentSubjectRow(data) {
@@ -956,8 +1005,9 @@ function createCurrentSubjectRow(data) {
         '<td>' + (data.description || '-') + '</td>' +
         '<td></td>' +
         '<td>' + (data.units || '0') + '</td>' +
-        '<td>' + (data.schedule || '-') + '</td>' +
+        '<td class="se-schedule-cell"></td>' +
         '<td>Admin 1</td>';
+    renderEnrolledScheduleCell(row.children[5], data.schedule || '-');
     return row;
 }
 
@@ -1038,7 +1088,7 @@ function changeSelectedFromCatalog() {
     currentRow.children[1].textContent = (catalogCells[1] && catalogCells[1].innerText || '').trim();
     currentRow.children[2].textContent = (catalogCells[2] && catalogCells[2].innerText || '').trim();
     currentRow.children[4].textContent = (catalogCells[3] && catalogCells[3].innerText || '').trim();
-    currentRow.children[5].textContent = getScheduleTextFromCell(catalogCells[4]);
+    renderEnrolledScheduleCell(currentRow.children[5], getScheduleTextFromCell(catalogCells[4]));
 
     updateCurrentUnitsTotal();
     updateSubjectActionStates();
@@ -1251,6 +1301,24 @@ function sortEnrollmentRows() {
 updateEnrollmentTotal();
 filterCatalogRows();
 updateSubjectActionStates();
+
+(function formatInitialCurrentSchedules() {
+    var rows = document.querySelectorAll('#seChangeFromTable tbody tr:not(.se-total-units-row)');
+    rows.forEach(function (row) {
+        var cell = row.children[5];
+        if (!cell) return;
+        renderEnrolledScheduleCell(cell, getScheduleTextFromCell(cell));
+    });
+})();
+
+(function formatInitialCatalogSchedules() {
+    var rows = document.querySelectorAll('#seAddSubjectsTable tbody tr');
+    rows.forEach(function (row) {
+        var cell = row.children[4];
+        if (!cell) return;
+        renderCatalogScheduleCell(cell, getScheduleTextFromCell(cell));
+    });
+})();
 
 document.addEventListener('change', function (event) {
     if (event.target && event.target.matches('.se-subject-table input[type="checkbox"]')) {
