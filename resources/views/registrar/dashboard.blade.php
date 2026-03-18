@@ -4,6 +4,19 @@
 @section('page-title', 'DASHBOARD')
 
 @section('content')
+@php
+    $dashboardData = $dashboardData ?? [];
+    $studentCount = (int) ($dashboardData['studentCount'] ?? 0);
+    $maleCount = (int) ($dashboardData['maleCount'] ?? 0);
+    $femaleCount = (int) ($dashboardData['femaleCount'] ?? 0);
+    $applicantCount = (int) ($dashboardData['applicantCount'] ?? 0);
+    $facultyCount = (int) ($dashboardData['facultyCount'] ?? 0);
+    $departmentCount = (int) ($dashboardData['departmentCount'] ?? 0);
+    $trendPercent = (float) ($dashboardData['trendPercent'] ?? 0);
+    $trendPercentText = ($trendPercent >= 0 ? '+' : '') . rtrim(rtrim(number_format($trendPercent, 1), '0'), '.') . '%';
+    $sparklinePath = $dashboardData['sparklinePath'] ?? 'M 2,44 L 24,38 L 46,33 L 68,26 L 90,22 L 108,18';
+    $sparklineAreaPath = $dashboardData['sparklineAreaPath'] ?? 'M 2,44 L 24,38 L 46,33 L 68,26 L 90,22 L 108,18 L 108,56 L 2,56 Z';
+@endphp
 <div class="reg-dashboard">
 
     {{-- ── Top stat cards ── --}}
@@ -14,22 +27,22 @@
             <div class="reg-stat-card-title">Total Students</div>
             <div class="reg-stat-card-inner">
                 <div class="reg-stat-left">
-                    <div class="reg-stat-number">216</div>
+                    <div class="reg-stat-number">{{ $studentCount }}</div>
                     <div class="reg-stat-sub">
-                        <span>120 Men</span>
-                        <span>96 Women</span>
+                        <span>{{ $maleCount }} Men</span>
+                        <span>{{ $femaleCount }} Women</span>
                     </div>
                 </div>
                 <div class="reg-stat-right">
                     <svg class="reg-stat-sparkline" viewBox="0 0 110 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <text x="62" y="11" font-size="9" fill="#006837" font-weight="700" font-family="Poppins,sans-serif">+2%</text>
+                        <text x="62" y="11" font-size="9" fill="#006837" font-weight="700" font-family="Poppins,sans-serif">{{ $trendPercentText }}</text>
                         <text x="67" y="20" font-size="10" fill="#006837" font-family="Poppins,sans-serif">&#x2191;</text>
-                        <path d="M 0,56 C 12,55 20,51 32,45 C 44,39 50,28 64,23 C 74,19 88,18 110,16"
+                        <path d="{{ $sparklinePath }}"
                             fill="none" stroke="#006837" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M 0,56 C 12,55 20,51 32,45 C 44,39 50,28 64,23 C 74,19 88,18 110,16 L 110,60 L 0,60 Z"
+                        <path d="{{ $sparklineAreaPath }}"
                             fill="rgba(0,104,55,0.07)"/>
                     </svg>
-                    <div class="reg-stat-badge">+2% Past month</div>
+                    <div class="reg-stat-badge">{{ $trendPercentText }} Past month</div>
                 </div>
             </div>
         </div>
@@ -37,15 +50,15 @@
         {{-- Applicants --}}
         <div class="reg-applicants-card">
             <div class="reg-stat-card-title">Applicants</div>
-            <div class="reg-stat-number">24</div>
-            <div class="reg-applicants-dept">4 Department</div>
+            <div class="reg-stat-number">{{ $applicantCount }}</div>
+            <div class="reg-applicants-dept">{{ $departmentCount }} Department</div>
         </div>
 
         {{-- Faculty --}}
         <div class="reg-faculty-card">
             <div class="reg-stat-card-title">Faculty</div>
-            <div class="reg-stat-number">10</div>
-            <div class="reg-faculty-dept">4 Department</div>
+            <div class="reg-stat-number">{{ $facultyCount }}</div>
+            <div class="reg-faculty-dept">{{ $departmentCount }} Department</div>
         </div>
 
     </div>
