@@ -7,7 +7,84 @@
 @section('content')
 <div class="pf-page">
     <div class="ga-page">
-        <div class="ga-toolbar ga-toolbar-end">
+        <style>
+            .ga-trans-table th:nth-child(8),
+            .ga-trans-table td:nth-child(8) {
+                text-align: center !important;
+                padding-left: 0 !important;
+            }
+
+            .ga-trans-table td.ga-state-pass {
+                color: #28a745 !important;
+                font-weight: bold !important;
+            }
+
+            .ga-trans-table td.ga-state-fail {
+                color: #dc3545 !important;
+                font-weight: bold !important;
+            }
+
+            .tm-modal-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
+                margin-top: 15px;
+            }
+
+            .tm-modal-grid-3 {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 16px;
+                margin-top: 15px;
+            }
+
+            .tm-modal-initial-group {
+                grid-column: span 2;
+                background: #f8f9fa;
+                padding: 12px 16px;
+                border-radius: 6px;
+                border: 1px solid #e2e8f0;
+            }
+
+            .tm-modal-initial-group .req-modal-label {
+                margin-bottom: 12px;
+                display: block;
+                color: #555;
+            }
+
+            .tm-modal-initial-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .tm-modal-grid .tm-modal-remarks {
+                margin-left: 0;
+            }
+
+            @media (max-width: 720px) {
+                .tm-modal-grid,
+                .tm-modal-grid-3,
+                .tm-modal-initial-grid {
+                    grid-template-columns: 1fr;
+                }
+                .tm-modal-initial-group {
+                    grid-column: 1 / -1;
+                }
+
+                .ga-trans-table th:nth-child(8),
+                .ga-trans-table td:nth-child(8) {
+                    padding-left: 12px;
+                }
+            }
+        </style>
+        <div class="ga-toolbar">
+            <div class="pf-search-wrap ga-search-wrap">
+                <span class="pf-search-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </span>
+                <input type="text" class="pf-search-input" id="tmSearchInput" placeholder="Search SY, Program, Code...">
+            </div>
             <button type="button" class="pf-btn-new ga-btn ga-btn-primary" data-ga-modal-open="gaTransmutationNewModal">+ Add Transmutation</button>
         </div>
 
@@ -21,7 +98,7 @@
                         <col class="ga-trans-col-initial">
                         <col class="ga-trans-col-grade">
                         <col class="ga-trans-col-code">
-                        <col class="ga-trans-col-remarks">
+                        <col class="ga-trans-col-remarks" style="width: 140px;">
                         <col class="ga-trans-col-action">
                     </colgroup>
                     <thead>
@@ -32,7 +109,7 @@
                             <th colspan="2" style="text-align: center;">Initial Grade</th>
                             <th rowspan="2" style="text-align: center;">Transmuted Grade</th>
                             <th rowspan="2" style="text-align: center;">Code</th>
-                            <th rowspan="2" style="text-align: left;">Remarks</th>
+                            <th rowspan="2" style="text-align: center;">Remarks</th>
                             <th rowspan="2" style="text-align: center;">Action</th>
                         </tr>
                         <tr class="ga-trans-head-sub">
@@ -100,53 +177,73 @@
         </div>
 
         <div class="req-modal-overlay" id="gaTransmutationNewModal" style="display:none;">
-            <div class="req-modal-box" style="max-width:620px;">
-                <h3 class="req-modal-title" id="gaTransmutationNewTitle">ADD TRANSMUTATION RULE</h3>
-                <div class="req-modal-fields">
-                    <div class="req-modal-field-group"><label class="req-modal-label">SY</label><input class="req-modal-input" id="tmNewSy" placeholder="2025-2026"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">TERM</label><input class="req-modal-input" id="tmNewTerm" placeholder="First"></div>
+            <div class="req-modal-box" style="max-width:640px; padding: 25px;">
+                <h3 class="req-modal-title" id="gaTransmutationNewTitle" style="margin-bottom: 20px;">ADD TRANSMUTATION RULE</h3>
+                
+                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
+                    <div class="tm-modal-grid" style="margin-top: 0;">
+                        <div class="req-modal-field-group"><label class="req-modal-label">SY</label><input class="req-modal-input" id="tmNewSy" placeholder="2025-2026"></div>
+                        <div class="req-modal-field-group"><label class="req-modal-label">TERM</label><input class="req-modal-input" id="tmNewTerm" placeholder="First"></div>
+                        
+                        <div class="req-modal-field-group" style="grid-column: 1 / -1;"><label class="req-modal-label">PROGRAM</label><input class="req-modal-input" id="tmNewProgram" placeholder="BSIT"></div>
+                    </div>
                 </div>
-                <div class="req-modal-fields" style="margin-top:10px;">
-                    <div class="req-modal-field-group"><label class="req-modal-label">PROGRAM</label><input class="req-modal-input" id="tmNewProgram" placeholder="BSIT"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmNewCode" placeholder="P"></div>
+
+                <div style="background: #f8fbf9; border: 1px solid #cce3d6; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
+                    <label class="req-modal-label" style="text-align: center; display: block; margin-bottom: 12px; color: #006837;">INITIAL GRADE</label>
+                    <div class="tm-modal-initial-grid">
+                        <div class="req-modal-field-group"><label class="req-modal-label">FROM</label><input class="req-modal-input" id="tmNewFrom" placeholder="75.00"></div>
+                        <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmNewTo" placeholder="79.99"></div>
+                    </div>
                 </div>
-                <div class="req-modal-fields" style="margin-top:10px;">
-                    <div class="req-modal-field-group"><label class="req-modal-label">INITIAL GRADE FROM</label><input class="req-modal-input" id="tmNewFrom" placeholder="75.00"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmNewTo" placeholder="79.99"></div>
+
+                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
+                    <div class="tm-modal-grid-3" style="margin-top: 0;">
+                        <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED</label><input class="req-modal-input" id="tmNewGrade" placeholder="3.00"></div>
+                        <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmNewCode" placeholder="P"></div>
+                        <div class="req-modal-field-group tm-modal-remarks"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmNewRemarks" placeholder="Passed"></div>
+                    </div>
                 </div>
-                <div class="req-modal-fields" style="margin-top:10px;">
-                    <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED GRADE</label><input class="req-modal-input" id="tmNewGrade" placeholder="3.00"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmNewRemarks" placeholder="Passed"></div>
-                </div>
-                <div class="req-modal-actions">
-                    <button type="button" class="req-btn-cancel" data-ga-close>Cancel</button>
-                    <button type="button" class="req-btn-save" data-tm-save-new>Save</button>
+
+                <div class="req-modal-actions" style="margin-top: 25px; gap: 12px;">
+                    <button type="button" class="req-btn-cancel" data-ga-close style="padding: 10px 20px;">Cancel</button>
+                    <button type="button" class="req-btn-save" data-tm-save-new style="padding: 10px 24px; background: #006837;">Save</button>
                 </div>
             </div>
         </div>
 
         <div class="req-modal-overlay" id="gaTransmutationActionModal" style="display:none;">
-            <div class="req-modal-box" style="max-width:620px;">
-                <h3 class="req-modal-title" id="gaTransmutationActionTitle">EDIT TRANSMUTATION RULE</h3>
-                <div class="req-modal-fields">
-                    <div class="req-modal-field-group"><label class="req-modal-label">SY</label><input class="req-modal-input" id="tmEditSy"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">TERM</label><input class="req-modal-input" id="tmEditTerm"></div>
+            <div class="req-modal-box" style="max-width:640px; padding: 25px;">
+                <h3 class="req-modal-title" id="gaTransmutationActionTitle" style="margin-bottom: 20px;">EDIT TRANSMUTATION RULE</h3>
+                
+                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
+                    <div class="tm-modal-grid" style="margin-top: 0;">
+                        <div class="req-modal-field-group"><label class="req-modal-label">SY</label><input class="req-modal-input" id="tmEditSy"></div>
+                        <div class="req-modal-field-group"><label class="req-modal-label">TERM</label><input class="req-modal-input" id="tmEditTerm"></div>
+                        
+                        <div class="req-modal-field-group" style="grid-column: 1 / -1;"><label class="req-modal-label">PROGRAM</label><input class="req-modal-input" id="tmEditProgram"></div>
+                    </div>
                 </div>
-                <div class="req-modal-fields" style="margin-top:10px;">
-                    <div class="req-modal-field-group"><label class="req-modal-label">PROGRAM</label><input class="req-modal-input" id="tmEditProgram"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmEditCode"></div>
+                    
+                <div style="background: #f8fbf9; border: 1px solid #cce3d6; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
+                    <label class="req-modal-label" style="text-align: center; display: block; margin-bottom: 12px; color: #006837;">INITIAL GRADE</label>
+                    <div class="tm-modal-initial-grid">
+                        <div class="req-modal-field-group"><label class="req-modal-label">FROM</label><input class="req-modal-input" id="tmEditFrom"></div>
+                        <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmEditTo"></div>
+                    </div>
                 </div>
-                <div class="req-modal-fields" style="margin-top:10px;">
-                    <div class="req-modal-field-group"><label class="req-modal-label">INITIAL GRADE FROM</label><input class="req-modal-input" id="tmEditFrom"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmEditTo"></div>
+                    
+                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
+                    <div class="tm-modal-grid-3" style="margin-top: 0;">
+                        <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED</label><input class="req-modal-input" id="tmEditGrade"></div>
+                        <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmEditCode"></div>
+                        <div class="req-modal-field-group tm-modal-remarks"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmEditRemarks"></div>
+                    </div>
                 </div>
-                <div class="req-modal-fields" style="margin-top:10px;">
-                    <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED GRADE</label><input class="req-modal-input" id="tmEditGrade"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmEditRemarks"></div>
-                </div>
-                <div class="req-modal-actions">
-                    <button type="button" class="req-btn-cancel" data-ga-close>Cancel</button>
-                    <button type="button" class="req-btn-save" data-ga-confirm-action>Save</button>
+                
+                <div class="req-modal-actions" style="margin-top: 25px; gap: 12px;">
+                    <button type="button" class="req-btn-cancel" data-ga-close style="padding: 10px 20px;">Cancel</button>
+                    <button type="button" class="req-btn-save" data-ga-confirm-action style="padding: 10px 24px; background: #006837;">Save</button>
                 </div>
             </div>
         </div>
@@ -421,6 +518,23 @@ document.addEventListener('DOMContentLoaded', function () {
             closeActionMenus();
         }
     });
+
+    // Filtering logic
+    var searchInput = document.getElementById('tmSearchInput');
+    if (searchInput && table) {
+        searchInput.addEventListener('input', function () {
+            var filter = this.value.toLowerCase().trim();
+            var rows = table.querySelectorAll('tbody tr');
+            rows.forEach(function (row) {
+                var text = row.textContent.toLowerCase();
+                if (text.indexOf(filter) > -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
 });
 </script>
 @endpush

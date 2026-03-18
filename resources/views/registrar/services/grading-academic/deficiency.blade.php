@@ -70,9 +70,9 @@
 
         <div id="dfStudentDetailView" style="display:none;">
             <div class="ga-toolbar ga-toolbar-start" style="margin-bottom: 20px;">
-                <button type="button" class="ga-btn" onclick="document.getElementById('dfStudentDetailView').style.display='none'; document.getElementById('dfStudentsListView').style.display='block';" style="display:flex; align-items:center; gap:6px; color:#444; background:#f0f0f0; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">
+                <button type="button" class="ga-btn" onclick="document.getElementById('dfStudentDetailView').style.display='none'; document.getElementById('dfStudentsListView').style.display='block';" style="display:flex; align-items:center; gap:6px; color:#444; background:transparent; border:1px solid #ccc; padding:8px 16px; border-radius:6px; cursor:pointer;" onmouseover="this.style.background='#f0f0f0';" onmouseout="this.style.background='transparent';">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                    Back to Deficiencies
+                    Back
                 </button>
             </div>
 
@@ -131,7 +131,7 @@
                         <th>Remarks</th>
                         <th>Date Today</th>
                         <th>Submission Date</th>
-                        <th>Completed</th>
+                        <th style="text-align: center;">Completed</th>
                         <th>Compliance Date</th>
                         <th>Updated By</th>
                         <th>Action</th>
@@ -144,7 +144,7 @@
                         <td>Damaged Item (Math book)</td>
                         <td>03/01/2026</td>
                         <td>03/10/2026</td>
-                        <td><label class="ga-check ga-check-tight"><input type="checkbox"> Cleared</label></td>
+                        <td style="text-align: center;"><label class="ga-check ga-check-tight" style="justify-content: center;"><input type="checkbox" onchange="syncCompletedState(this, null, null, this.closest('tr'))"> </label></td>
                         <td>03/10/2026</td>
                         <td>Admin 1</td>
                         <td>
@@ -169,7 +169,7 @@
                         <td>Unsettled fee balance</td>
                         <td>03/01/2026</td>
                         <td>03/15/2026</td>
-                        <td><label class="ga-check ga-check-tight"><input type="checkbox"> Cleared</label></td>
+                        <td style="text-align: center;"><label class="ga-check ga-check-tight" style="justify-content: center;"><input type="checkbox" onchange="syncCompletedState(this, null, null, this.closest('tr'))"> </label></td>
                         <td>-</td>
                         <td>Admin 1</td>
                         <td>
@@ -264,7 +264,7 @@
                 </div>
                 <div class="req-modal-fields" style="margin-top:10px;">
                     <div class="req-modal-field-group"><label class="req-modal-label">UPDATED BY</label><input class="req-modal-input" id="dfNewUpdatedBy" placeholder="Admin"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">COMPLETED</label><label class="ga-check"><input type="checkbox" id="dfNewCompleted"> Cleared</label></div>
+                    <div class="req-modal-field-group"><label class="req-modal-label">COMPLETED</label><label class="ga-check"><input type="checkbox" id="dfNewCompleted" onchange="syncCompletedState(this, 'dfNewComplianceDate', 'dfNewUpdatedBy')"> </label></div>
                 </div>
                 <div class="req-modal-field-group" style="margin-top:10px;">
                     <label class="req-modal-label">REMARKS</label>
@@ -290,7 +290,7 @@
                 </div>
                 <div class="req-modal-fields" style="margin-top:10px;">
                     <div class="req-modal-field-group"><label class="req-modal-label">UPDATED BY</label><input class="req-modal-input" id="dfEditUpdatedBy"></div>
-                    <div class="req-modal-field-group"><label class="req-modal-label">COMPLETED</label><label class="ga-check"><input type="checkbox" id="dfEditCompleted"> Cleared</label></div>
+                    <div class="req-modal-field-group"><label class="req-modal-label">COMPLETED</label><label class="ga-check"><input type="checkbox" id="dfEditCompleted" onchange="syncCompletedState(this, 'dfEditComplianceDate', 'dfEditUpdatedBy')"> </label></div>
                 </div>
                 <div class="req-modal-field-group" style="margin-top:10px;">
                     <label class="req-modal-label">REMARKS</label>
@@ -389,6 +389,34 @@ document.addEventListener('DOMContentLoaded', function () {
         return parts[1] + '/' + parts[2] + '/' + parts[0];
     }
 
+    function getTodayInputDate() {
+        var now = new Date();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        return now.getFullYear() + '-' + month + '-' + day;
+    }
+
+    function getUpdatedByName() {
+        var possibleNameEl = document.querySelector('[data-registrar-user-name]') ||
+            document.querySelector('meta[name="user-name"]') ||
+            document.querySelector('[name="updated_by"]');
+        if (!possibleNameEl) return 'Admin';
+        var value = (possibleNameEl.getAttribute('content') || possibleNameEl.value || possibleNameEl.textContent || '').trim();
+        return value || 'Admin';
+    }
+
+    function syncCompletedState(checkbox, dateInput, updatedByInput) {
+        if (!checkbox) return;
+        if (checkbox.checked) {
+            if (dateInput) dateInput.value = getTodayInputDate();
+            if (updatedByInput && !updatedByInput.value.trim()) {
+                updatedByInput.value = getUpdatedByName();
+            }
+            return;
+        }
+        if (dateInput) dateInput.value = '';
+    }
+
     function closeActionMenus() {
         page.querySelectorAll('.apst-dropdown.open').forEach(function (menu) {
             menu.classList.remove('open');
@@ -434,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (dfEditRemarks) dfEditRemarks.value = (row.cells[2].textContent || '').trim();
         if (dfEditDateToday) dfEditDateToday.value = toInputDate((row.cells[3].textContent || '').trim());
         if (dfEditSubmissionDate) dfEditSubmissionDate.value = toInputDate((row.cells[4].textContent || '').trim());
-        if (dfEditCompleted) dfEditCompleted.checked = (row.cells[5].textContent || '').toLowerCase().indexOf('cleared') !== -1;
+        if (dfEditCompleted) { const cb = row.cells[5].querySelector('input[type="checkbox"]'); dfEditCompleted.checked = cb ? cb.checked : false; }
         if (dfEditComplianceDate) dfEditComplianceDate.value = toInputDate((row.cells[6].textContent || '').trim());
         if (dfEditUpdatedBy) dfEditUpdatedBy.value = (row.cells[7].textContent || '').trim();
     }
@@ -445,9 +473,25 @@ document.addEventListener('DOMContentLoaded', function () {
         row.cells[2].textContent = dfEditRemarks ? dfEditRemarks.value.trim() : row.cells[2].textContent;
         row.cells[3].textContent = dfEditDateToday ? toDisplayDate(dfEditDateToday.value) : row.cells[3].textContent;
         row.cells[4].textContent = dfEditSubmissionDate ? toDisplayDate(dfEditSubmissionDate.value) : row.cells[4].textContent;
-        row.cells[5].innerHTML = '<label class="ga-check ga-check-tight"><input type="checkbox"' + ((dfEditCompleted && dfEditCompleted.checked) ? ' checked' : '') + '> Cleared</label>';
+        row.cells[5].innerHTML = '<label class="ga-check ga-check-tight" style="justify-content: center;"><input type="checkbox" onchange="syncCompletedState(this, null, null, this.closest(\'tr\'))"' + ((dfEditCompleted && dfEditCompleted.checked) ? ' checked' : '') + '> </label>';
+        row.cells[5].style.textAlign = 'center';
         row.cells[6].textContent = dfEditComplianceDate ? toDisplayDate(dfEditComplianceDate.value) : row.cells[6].textContent;
         row.cells[7].textContent = dfEditUpdatedBy ? dfEditUpdatedBy.value.trim() : row.cells[7].textContent;
+    }
+
+    if (dfEditCompleted) {
+        dfEditCompleted.addEventListener('change', function () {
+            syncCompletedState(dfEditCompleted, dfEditComplianceDate, dfEditUpdatedBy);
+        });
+    }
+
+    var dfNewCompleted = document.getElementById('dfNewCompleted');
+    var dfNewComplianceDate = document.getElementById('dfNewComplianceDate');
+    var dfNewUpdatedBy = document.getElementById('dfNewUpdatedBy');
+    if (dfNewCompleted) {
+        dfNewCompleted.addEventListener('change', function () {
+            syncCompletedState(dfNewCompleted, dfNewComplianceDate, dfNewUpdatedBy);
+        });
     }
 
     function buildActionCell(item, menuId) {
@@ -542,6 +586,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var dfNewComplianceDate = document.getElementById('dfNewComplianceDate');
             var dfNewUpdatedBy = document.getElementById('dfNewUpdatedBy');
 
+            syncCompletedState(dfNewCompleted, dfNewComplianceDate, dfNewUpdatedBy);
+
             var dept = dfNewDepartment ? dfNewDepartment.value.trim() : '';
             var remarks = dfNewRemarks ? dfNewRemarks.value.trim() : '';
             if (!dept || !remarks) {
@@ -560,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 '<td>' + remarks + '</td>' +
                 '<td>' + toDisplayDate(dfNewDateToday ? dfNewDateToday.value : '') + '</td>' +
                 '<td>' + toDisplayDate(dfNewSubmissionDate ? dfNewSubmissionDate.value : '') + '</td>' +
-                '<td><label class="ga-check ga-check-tight"><input type="checkbox"' + ((dfNewCompleted && dfNewCompleted.checked) ? ' checked' : '') + '> Cleared</label></td>' +
+                  '<td style="text-align: center;"><label class="ga-check ga-check-tight" style="justify-content: center;"><input type="checkbox" onchange="syncCompletedState(this, null, null, this.closest(\'tr\'))"' + ((dfNewCompleted && dfNewCompleted.checked) ? ' checked' : '') + '> </label></td>' +
                 '<td>' + toDisplayDate(dfNewComplianceDate ? dfNewComplianceDate.value : '') + '</td>' +
                 '<td>' + ((dfNewUpdatedBy && dfNewUpdatedBy.value.trim()) ? dfNewUpdatedBy.value.trim() : 'Admin') + '</td>' +
                 buildActionCell(dept + ' deficiency', menuId);
@@ -593,6 +639,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 showRegistrarToast('Deficiency deleted successfully.');
             }
             closeModal(deleteModal);
+        }
+
+        if (event.target.matches('#dfTable tbody input[type="checkbox"]')) {
+            var row = event.target.closest('tr');
+            if (!row || row.cells.length < 8) return;
+            if (event.target.checked) {
+                row.cells[6].textContent = toDisplayDate(getTodayInputDate());
+                row.cells[7].textContent = getUpdatedByName();
+            } else {
+                row.cells[6].textContent = '-';
+                row.cells[7].textContent = '-';
+            }
         }
     });
 

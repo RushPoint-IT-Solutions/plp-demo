@@ -6714,7 +6714,8 @@ select.req-modal-input {
 }
 
 .page-services-grading-academic .ga-trans-table tbody td:nth-child(8) {
-  text-align: left;
+    text-align: center;
+    padding-left: 0;
 }
 
 .page-services-grading-academic .ga-trans-table tbody td:nth-child(9) {
@@ -12714,8 +12715,12 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 }
 
 .page-services-grading-academic .ga-btn-primary {
-  background: #0d8a4a;
+  background: #006837;
   color: #fff;
+}
+
+.page-services-grading-academic .ga-btn-primary:hover {
+  background: #005a2e;
 }
 
 .page-services-grading-academic .ga-btn-danger {
