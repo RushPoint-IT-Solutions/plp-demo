@@ -140,8 +140,8 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.*') ? 'open' : '' }}">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.*') ? 'active' : '' }}">
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.classroom-faculty.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.classroom-faculty.*') ? 'active' : '' }}">
                         Classroom &amp; Faculty
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
@@ -186,7 +186,7 @@
                     </a>
                     <div class="sidebar-nested-menu">
                         <a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>
-                        <a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Family</a>
+                        <a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Student Family</a>
                         <a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>
                     </div>
                 </div>

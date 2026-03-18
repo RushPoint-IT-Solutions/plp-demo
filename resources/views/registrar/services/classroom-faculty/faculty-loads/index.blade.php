@@ -2,6 +2,7 @@
 
 @section('title', 'PLP - Faculty Loads')
 @section('page-title', 'FACULTY LOADS')
+@section('body-class', 'page-services-faculty-loads')
 
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
@@ -9,24 +10,26 @@
 
 @section('content')
 <div class="rfl-wrap">
-    <div class="rfl-search">
-        <div class="app-filter-label">Search</div>
-        <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="rfl-search-form">
-            <input type="text" name="q" class="form-control rfl-search-input" placeholder="Search Student ID / Name" value="{{ $search }}">
-            <button class="rfl-search-btn" type="submit" aria-label="Search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-            </button>
-        </form>
+    <div class="rfl-topbar">
+        <div class="rfl-search">
+            <div class="app-filter-label">Search</div>
+            <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="rfl-search-form">
+                <input type="text" name="q" class="form-control rfl-search-input" placeholder="Search Faculty Code / Name" value="{{ $search }}">
+                <button class="rfl-search-btn" type="submit" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <div class="rfl-meta">
+            {{ $faculties->firstItem() ?? 0 }} - {{ $faculties->lastItem() ?? 0 }} of {{ $faculties->total() }}
+        </div>
     </div>
 
-    <div class="rfl-meta">
-        {{ $faculties->firstItem() ?? 0 }} - {{ $faculties->lastItem() ?? 0 }} of {{ $faculties->total() }}
-    </div>
-
-    <div class="app-table-wrap">
+    <div class="app-table-wrap rfl-table-wrap">
         <table class="app-table rfl-table" id="rflFacultyTable">
             <thead>
                 <tr>
