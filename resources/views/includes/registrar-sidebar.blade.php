@@ -118,14 +118,9 @@
                 </div>
 
                 {{-- Alumni Tracker --}}
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.alumni.*') ? 'open' : '' }}">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle">
-                        Alumni Tracker
-                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </a>
-                    <div class="sidebar-nested-menu">
-                    </div>
-                </div>
+                <a href="{{ route('registrar.registrar-menu.alumni.tracker') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.alumni.tracker') ? 'active' : '' }}">
+                    Alumni Tracker
+                </a>
             </div>
         </div>
 
@@ -145,19 +140,60 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.faculty-loads.*') ? 'open' : '' }}">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.faculty-loads.*') ? 'active' : '' }}">
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.*') ? 'active' : '' }}">
                         Classroom &amp; Faculty
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.services.faculty-loads.index') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.faculty-loads.*') ? 'active' : '' }}">Faculty Loads</a>
+                        <a href="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.class-list') ? 'active' : '' }}">Class List</a>
+                        <a href="{{ route('registrar.services.classroom-faculty.attendance') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.attendance') ? 'active' : '' }}">Attendance</a>
+                        <a href="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.faculty-loads.*') ? 'active' : '' }}">Faculty Loads</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.grading-academic.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.grading-academic.*') ? 'active' : '' }}">
+                        Grading &amp; Academic
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.services.grading-academic.grading-system') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-system') ? 'active' : '' }}">Grading System</a>
+                        <a href="{{ route('registrar.services.grading-academic.grading-periods') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-periods') ? 'active' : '' }}">Grading Periods</a>
+                        <a href="{{ route('registrar.services.grading-academic.grading-components') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-components') ? 'active' : '' }}">Grading Components</a>
+                        <a href="{{ route('registrar.services.grading-academic.transmutation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.transmutation') ? 'active' : '' }}">Transmutation</a>
+                        <a href="{{ route('registrar.services.grading-academic.deficiency') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.deficiency') ? 'active' : '' }}">Deficiency</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.reports-admin.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.reports-admin.*') ? 'active' : '' }}">
+                        Reports &amp; Admin
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.services.reports-admin.academic-reports') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.reports-admin.academic-reports') ? 'active' : '' }}">Academic Reports</a>
+                        <a href="{{ route('registrar.services.reports-admin.guidance-reports') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.reports-admin.guidance-reports') ? 'active' : '' }}">Guidance Reports</a>
+                        <a href="{{ route('registrar.services.reports-admin.certifications') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.reports-admin.certifications') ? 'active' : '' }}">Certifications</a>
+                        <a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.reports-admin.tagging-of-graduates') ? 'active' : '' }}">Tagging of Graduates</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.student-account.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.student-account.*') ? 'active' : '' }}">
+                        Student &amp; Account
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>
+                        <a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Family</a>
+                        <a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Admin Tools (Dropdown) - Calendar with 8 icon (same as Events) --}}
+        {{-- Admin Tools (Dropdown) --}}
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.admin-tools.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.admin-tools.*') ? 'active' : '' }}">
                 {{-- Vuesax calendar with number 8 --}}
@@ -174,7 +210,53 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                {{-- Placeholder sub-links --}}
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.system-config.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.system-config.*') ? 'active' : '' }}">
+                        System Config
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.admin-tools.system-config.configuration') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.configuration') ? 'active' : '' }}">Configuration</a>
+                        <a href="{{ route('registrar.admin-tools.system-config.admission-config') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.admission-config') ? 'active' : '' }}">Admission Config</a>
+                        <a href="{{ route('registrar.admin-tools.system-config.academic-calendar') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.academic-calendar') ? 'active' : '' }}">Academic Calendar</a>
+                        <a href="{{ route('registrar.admin-tools.system-config.announcement') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.announcement') ? 'active' : '' }}">Announcement</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.access-management.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.access-management.*') ? 'active' : '' }}">
+                        Access Management
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.admin-tools.access-management.user-accounts') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.access-management.user-accounts') ? 'active' : '' }}">User Accounts</a>
+                        <a href="{{ route('registrar.admin-tools.access-management.report-access') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.access-management.report-access') ? 'active' : '' }}">Report Access</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.master-files.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.master-files.*') ? 'active' : '' }}">
+                        Master Files
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.admin-tools.master-files.faculty-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.faculty-file') ? 'active' : '' }}">Faculty File</a>
+                        <a href="{{ route('registrar.admin-tools.master-files.student-profile') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-profile') ? 'active' : '' }}">Student Profile</a>
+                        <a href="{{ route('registrar.admin-tools.master-files.student-grade-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-grade-file') ? 'active' : '' }}">Student Grade File</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.student-maintenance.*') ? 'open' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.student-maintenance.*') ? 'active' : '' }}">
+                        Student Maintenance
+                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </a>
+                    <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.admin-tools.student-maintenance.bed-student-status') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.bed-student-status') ? 'active' : '' }}">BED Student Status</a>
+                        <a href="{{ route('registrar.admin-tools.student-maintenance.bed-days') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.bed-days') ? 'active' : '' }}">BED Days</a>
+                        <a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>
+                    </div>
+                </div>
             </div>
         </div>
 

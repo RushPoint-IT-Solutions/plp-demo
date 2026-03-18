@@ -11,11 +11,11 @@
 
         {{-- Nav buttons --}}
         <div class="cal-nav">
-            <button class="cal-btn" id="prevMonthBtn" aria-label="Previous month">
+            <button class="fc-btn" id="prevMonthBtn" aria-label="Previous month">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
-            <button class="cal-btn" id="todayBtn">Today</button>
-            <button class="cal-btn" id="nextMonthBtn" aria-label="Next month">
+            <button class="fc-btn" id="todayBtn">Today</button>
+            <button class="fc-btn" id="nextMonthBtn" aria-label="Next month">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
         </div>

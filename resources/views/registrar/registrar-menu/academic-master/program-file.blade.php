@@ -68,6 +68,7 @@
                 <option value="100" selected>100</option>
             </select>
         </div>
+        <span class="pf-page-info">Showing {{ $programs->count() }} program(s)</span>
     </div>
 
     <div class="student-table-wrapper table-responsive">
@@ -99,9 +100,6 @@
         </table>
     </div>
 
-    <div class="pf-pagination">
-        <span class="pf-page-info">Showing {{ $programs->count() }} program(s)</span>
-    </div>
 </div>
 
 <div class="pf-modal-overlay" id="setupDepartmentsModal" style="display:none;">

@@ -39,31 +39,35 @@
     </div>{{-- /.sched-scroll-wrapper --}}
 
     <!-- ===== Weekly Schedule Card ===== -->
-    <div class="weekly-box">
-        <h2 class="weekly-title">My Weekly Schedule</h2>
+    <div class="so-weekly">
+        <h2 class="so-weekly-title">My Weekly Schedule</h2>
 
-        <div class="weekly-scroll-wrapper">
-        <div class="weekly-grid">
+        <div class="so-weekly-scroll">
+        <div class="so-weekly-grid">
 
-            @foreach($days as $day)
-            <div class="weekly-col">
-                <div class="weekly-day-header">{{ $day }}</div>
-                <div class="weekly-day-body">
-                    @foreach($weekly[$day] as $subject)
-                    <div class="weekly-card">
-                        <p class="wc-code">{{ $subject->code }}</p>
-                        <p class="wc-name">{{ $subject->name }}</p>
-                        <p class="wc-time">{{ $subject->time_start }}–{{ $subject->time_end }}</p>
-                        <p class="wc-room">{{ strtoupper($subject->room) }}</p>
+            @php($dayList = is_iterable($days ?? null) ? $days : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+            @foreach($dayList as $day)
+            <div class="so-weekly-col">
+                <div class="so-weekly-day">{{ $day }}</div>
+                <div class="so-weekly-body">
+                    @php($dayItems = data_get($weekly, $day, []))
+                    @forelse($dayItems as $subject)
+                    <div class="so-weekly-card">
+                        <p class="so-weekly-code">{{ $subject->code }}</p>
+                        <p class="so-weekly-section">{{ $subject->name }}</p>
+                        <p class="so-weekly-time">{{ $subject->time_start }}–{{ $subject->time_end }}</p>
+                        <p class="so-weekly-room">{{ strtoupper($subject->room) }}</p>
                     </div>
-                    @endforeach
+                    @empty
+                    <div class="so-weekly-empty">No class</div>
+                    @endforelse
                 </div>
             </div>
             @endforeach
 
-        </div>{{-- /.weekly-grid --}}
-        </div>{{-- /.weekly-scroll-wrapper --}}
-    </div>{{-- /.weekly-box --}}
+        </div>{{-- /.so-weekly-grid --}}
+        </div>{{-- /.so-weekly-scroll --}}
+    </div>{{-- /.so-weekly --}}
 
 </div>{{-- /.sched-page-container --}}
 @endsection

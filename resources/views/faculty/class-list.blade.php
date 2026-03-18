@@ -30,7 +30,7 @@
                         data-subject-name="{{ $subject->name }}"
                         data-subject-section="{{ trim(($subject->course ?: '') . ' ' . ($subject->year_section ?: '')) }}">
                         <td class="text-center">
-                            <a href="#" class="grading-view-link class-list-open-link">View</a>
+                            <button type="button" class="grading-view-link class-list-open-link">View</button>
                         </td>
                         <td class="td-code">{{ $subject->code }}</td>
                         <td>{{ $subject->name }}</td>
