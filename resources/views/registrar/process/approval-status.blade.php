@@ -23,9 +23,9 @@
         <table class="app-table" id="apstTable">
             <thead>
                 <tr>
-                    <th style="width:70px;">Action</th>
-                    <th style="width:130px;">Status Code</th>
-                    <th style="width:180px;">Status</th>
+                    <th>Action</th>
+                    <th>Status Code</th>
+                    <th>Status</th>
                     <th>Message</th>
                 </tr>
             </thead>
