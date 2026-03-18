@@ -186,7 +186,7 @@
                     </a>
                     <div class="sidebar-nested-menu">
                         <a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>
-                        <a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Family</a>
+                        <a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Student Family</a>
                         <a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>
                     </div>
                 </div>
