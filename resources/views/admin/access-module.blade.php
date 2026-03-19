@@ -23,20 +23,26 @@
                     </div>
 
                     {{-- Accounting --}}
+                    {{-- Accounting (temporarily hidden) --}}
+                    {{--
                     <div class="col-6 col-sm-5 col-md-4 col-lg-3">
                         <div class="am-card mx-auto">
                             <div class="am-card-box"></div>
                             <a href="{{ route('module.login', 'accounting') }}" class="btn am-btn w-100">ACCOUNTING</a>
                         </div>
                     </div>
+                    --}}
 
                     {{-- Cashier --}}
+                    {{-- Cashier (temporarily hidden) --}}
+                    {{--
                     <div class="col-6 col-sm-5 col-md-4 col-lg-3">
                         <div class="am-card mx-auto">
                             <div class="am-card-box"></div>
                             <a href="{{ route('module.login', 'cashier') }}" class="btn am-btn w-100">CASHIER</a>
                         </div>
                     </div>
+                    --}}
 
                     {{-- Faculty --}}
                     <div class="col-6 col-sm-5 col-md-4 col-lg-3">
