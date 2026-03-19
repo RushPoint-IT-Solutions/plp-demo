@@ -8435,13 +8435,538 @@ select.req-modal-input {
   resize: vertical;
 }
 
+/* ── System Config: Configuration Page ── */
+.cfg-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── System Config: Admission Config Page ── */
+.adm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.adm-setting-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+  align-items: end;
+}
+
+.adm-setting-field {
+  min-width: 0;
+}
+
+.adm-setting-action {
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-setting-save {
+  width: 100%;
+}
+
+.adm-setting-note {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #35614f;
+}
+
+.adm-card {
+  background: #ffffff;
+  border: 1px solid #d6e4dd;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.adm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.adm-card-head h3 {
+  margin: 0;
+  font-size: 1.06rem;
+  color: #0f7b43;
+  font-weight: 700;
+}
+
+.adm-table thead th,
+.adm-table tbody td {
+  text-align: left;
+}
+
+.adm-table thead th:last-child,
+.adm-table tbody td:last-child {
+  text-align: center;
+}
+
+.adm-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 2px 2px;
+}
+
+.adm-page-nav-wrap {
+  display: inline-flex;
+}
+
+.adm-page-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.adm-page-btn {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  color: #3c544a;
+  background: #ffffff;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.adm-page-btn:hover:not(:disabled) {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.adm-page-btn:disabled {
+  opacity: 0.45;
+}
+
+.adm-page-num {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2d4b40;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.adm-page-num:hover {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.adm-page-num.active,
+.adm-page-num.active:hover {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
+}
+
+#admAdmissionTable .apst-dropdown,
+#admOrientationTable .apst-dropdown,
+#admFormAgreementTable .apst-dropdown,
+#admEnrollmentTable .apst-dropdown,
+#admAppGuidelinesTable .apst-dropdown,
+#admComplianceTable .apst-dropdown {
+  position: fixed;
+}
+
+#admOrientationTable td:last-child .apst-action-btn,
+#admFormAgreementTable td:last-child .apst-action-btn,
+#admEnrollmentTable td:last-child .apst-action-btn,
+#admAppGuidelinesTable td:last-child .apst-action-btn,
+#admComplianceTable td:last-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+.cfg-grid-top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cfg-card {
+  background: #ffffff;
+  border: 1px solid #d6e4dd;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.cfg-card.cfg-card-full {
+  width: 100%;
+}
+
+.cfg-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cfg-card-head h3 {
+  margin: 0;
+  font-size: 1.06rem;
+  color: #0f7b43;
+  font-weight: 700;
+}
+
+.cfg-table thead th,
+.cfg-table tbody td {
+  text-align: left;
+}
+
+#cfgSchoolSemTable,
+#cfgGradePostingTable {
+  table-layout: auto;
+}
+
+#cfgSchoolSemTable thead th,
+#cfgSchoolSemTable tbody td,
+#cfgGradePostingTable thead th,
+#cfgGradePostingTable tbody td {
+  white-space: nowrap !important;
+}
+
+#cfgSchoolSemTable {
+  min-width: 420px;
+}
+
+#cfgGradePostingTable {
+  min-width: 640px;
+}
+
+.cfg-table thead th:last-child,
+.cfg-table tbody td:last-child {
+  text-align: center;
+}
+
+.cfg-icon-btn-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 5px;
+  background: #fff0ee;
+  color: #c0392b;
+  cursor: pointer;
+}
+
+.cfg-icon-btn-delete:hover {
+  background: #ffdcd8;
+}
+
+.cfg-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 2px 2px;
+}
+
+.cfg-page-nav-wrap {
+  display: inline-flex;
+}
+
+.cfg-page-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cfg-page-btn {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  color: #3c544a;
+  background: #ffffff;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cfg-page-btn:hover:not(:disabled) {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.cfg-page-btn:disabled {
+  opacity: 0.45;
+}
+
+.cfg-page-num {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2d4b40;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.cfg-page-num:hover {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.cfg-page-num.active,
+.cfg-page-num.active:hover {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
+}
+
+.rtp-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 2px 2px;
+}
+
+.rtp-nav {
+  display: inline-flex;
+}
+
+.rtp-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rtp-page-btn,
+.rtp-page-num {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2d4b40;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.rtp-page-btn {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.rtp-page-btn:hover:not(:disabled),
+.rtp-page-num:hover {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.rtp-page-btn:disabled {
+  opacity: 0.45;
+}
+
+.rtp-page-num.active,
+.rtp-page-num.active:hover {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
+}
+
+.cfg-modal-box {
+  width: min(720px, 94vw);
+}
+
+.cfg-modal-box.cfg-modal-wide {
+  width: min(860px, 95vw);
+}
+
+@media (max-width: 1320px) {
+  .cfg-grid-top {
+    grid-template-columns: 1fr;
+  }
+
+  .cfg-grid-top > .cfg-card {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .cfg-grid-top {
+    grid-template-columns: 1fr;
+  }
+
+  #cfgSchoolSemTable thead th,
+  #cfgSchoolSemTable tbody td,
+  #cfgGradePostingTable thead th,
+  #cfgGradePostingTable tbody td {
+    font-size: 0.83rem;
+    padding: 10px 10px;
+  }
+}
+
+@media (max-width: 820px) {
+  .adm-setting-row {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-setting-action .req-modal-label {
+    display: none;
+  }
+
+  .adm-card {
+    padding: 10px;
+  }
+
+  .adm-card-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-card-head .pf-btn-new {
+    width: 100%;
+  }
+
+  .adm-pagination {
+    justify-content: center;
+    padding-top: 12px;
+  }
+
+  .adm-page-btn,
+  .adm-page-num {
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .cfg-page {
+    gap: 10px;
+  }
+
+  .cfg-card {
+    padding: 10px;
+  }
+
+  .cfg-card .app-table-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cfg-card-head h3 {
+    font-size: 0.98rem;
+  }
+
+  .cfg-card-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cfg-card-head .pf-btn-new {
+    width: 100%;
+  }
+
+  .cfg-modal-box,
+  .cfg-modal-box.cfg-modal-wide {
+    width: min(860px, 96vw);
+  }
+
+  .cfg-modal-box .sc-modal-grid,
+  .cfg-modal-box .sc-modal-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .cfg-modal-box .req-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cfg-modal-box .req-modal-actions .req-btn-cancel,
+  .cfg-modal-box .req-modal-actions .req-btn-save {
+    width: 100%;
+  }
+
+  .cfg-pagination {
+    justify-content: center;
+    padding-top: 12px;
+  }
+
+  .cfg-page-btn {
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .cfg-page-num,
+  .cfg-page-num:hover,
+  .cfg-page-num.active,
+  .cfg-page-num.active:hover {
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .rtp-pagination {
+    justify-content: center;
+    padding-top: 12px;
+  }
+
+  .rtp-page-btn,
+  .rtp-page-num {
+    min-width: 36px;
+    height: 36px;
+  }
+}
+
 #acTable .apst-dropdown,
 #anTable .apst-dropdown {
   position: fixed;
 }
 
+#cfgSchoolSemTable .apst-dropdown,
+#cfgGradePostingTable .apst-dropdown,
+#cfgRegistrationTable .apst-dropdown {
+  position: fixed;
+}
+
 #acTable td:last-child .apst-action-btn,
 #anTable td:last-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+#cfgSchoolSemTable td:last-child .apst-action-btn,
+#cfgGradePostingTable td:last-child .apst-action-btn,
+#cfgRegistrationTable td:last-child .apst-action-btn {
   margin: 0 auto;
 }
 
