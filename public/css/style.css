@@ -4634,6 +4634,15 @@ select:hover {
   text-transform: uppercase;
 }
 
+.pf-entries-control span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #006837;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .pf-entries-select {
   width: 64px;
   height: 34px;
@@ -4643,6 +4652,21 @@ select:hover {
   color: #555;
   font-size: 0.88rem;
   padding: 4px 6px;
+}
+
+.pf-total-row td {
+  font-weight: 700;
+  color: #006837;
+  cursor: default;
+}
+
+.pf-total-cell {
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+#pfTable tbody tr.pf-total-row:hover {
+  background-color: transparent;
 }
 
 .pf-modal-box.pf-dept-modal-box {
@@ -5372,9 +5396,20 @@ select:hover {
   text-align: left;
 }
 
+.pf-page #pfTable thead th {
+  background-color: #005229;
+  color: #ffffff;
+  border-color: #004824;
+}
+
 .pf-page .registrar-table thead th:last-child,
 .pf-page .registrar-table tbody td:last-child {
   text-align: center;
+}
+
+.pf-page #pfTable tbody tr.pf-total-row td {
+  color: #006837 !important;
+  font-weight: 700;
 }
 
 .doclist-page {
@@ -5484,6 +5519,14 @@ select:hover {
 
 .doclist-table tbody td:last-child {
   text-align: center;
+}
+
+#doclistTable .apst-dropdown {
+  position: fixed;
+}
+
+#doclistTable td:last-child .apst-action-btn {
+  margin: 0 auto;
 }
 
 .doclist-actions {
@@ -7101,6 +7144,100 @@ select.req-modal-input {
   position: relative;
 }
 
+#gsTable th:first-child,
+#gsTable td:first-child {
+  text-align: center;
+}
+
+#gsTable td:first-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+#gsTable {
+  table-layout: auto;
+  min-width: 860px;
+}
+
+#gsTable th:nth-child(1),
+#gsTable td:nth-child(1) {
+  width: 124px;
+}
+
+#gsTable th:nth-child(2),
+#gsTable td:nth-child(2) {
+  min-width: 140px;
+  padding-left: 74px;
+}
+
+#gsTable th:nth-child(3),
+#gsTable td:nth-child(3) {
+  min-width: 120px;
+}
+
+#gsTable th:nth-child(4),
+#gsTable td:nth-child(4) {
+  min-width: 260px;
+}
+
+#gsTable th,
+#gsTable td {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+#gsTable td:nth-child(2),
+#gsTable td:nth-child(3) {
+  white-space: nowrap;
+}
+
+#gsTable td:nth-child(4) {
+  white-space: normal;
+}
+
+@media (max-width: 900px) {
+  #gsTable {
+    min-width: 700px;
+  }
+}
+
+#gaNewPeriodModal .req-modal-box {
+  width: min(620px, 94vw);
+}
+
+#gaNewPeriodModal .req-modal-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+#gaNewPeriodModal .req-modal-field-group {
+  min-width: 0;
+}
+
+#gaNewPeriodModal .req-modal-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  #gaNewPeriodModal .req-modal-box {
+    width: min(620px, 96vw);
+    padding: 16px;
+  }
+
+  #gaNewPeriodModal .req-modal-fields {
+    grid-template-columns: 1fr;
+  }
+
+  #gaNewPeriodModal .req-modal-actions {
+    justify-content: stretch;
+  }
+
+  #gaNewPeriodModal .req-modal-actions .req-btn-cancel,
+  #gaNewPeriodModal .req-modal-actions .req-btn-save {
+    flex: 1 1 100%;
+  }
+}
+
 #dfTable .apst-dropdown {
   position: fixed;
 }
@@ -7219,6 +7356,12 @@ select.req-modal-input {
 
   .apst-new-btn {
     margin-left: auto;
+  }
+
+  .page-services-grading-academic .apst-topbar .apst-new-btn {
+    flex: 1 1 100%;
+    width: 100%;
+    margin-left: 0;
   }
 
   #apstTable {
@@ -8151,6 +8294,184 @@ select.req-modal-input {
   color: #888;
   max-width: 400px;
   line-height: 1.5;
+}
+
+/* ── System Config: Announcement / Academic Calendar ── */
+.sc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sc-search-wrap {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+}
+
+.sc-search-input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #cbd5d1;
+  border-radius: 6px;
+  padding: 0 34px 0 10px;
+  font-size: 0.8rem;
+}
+
+.sc-search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a9590;
+  pointer-events: none;
+}
+
+.sc-search-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sc-table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sc-show-entry {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #006837;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sc-show-entry span,
+.sc-show-entry label {
+  white-space: nowrap;
+}
+
+.sc-action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sc-link-btn {
+  border: none;
+  background: transparent;
+  color: #0b7d48;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sc-icon-btn {
+  width: 24px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sc-icon-btn.edit {
+  background: #ef5a7b;
+}
+
+.sc-icon-btn.delete {
+  background: #f08fa2;
+}
+
+.sc-empty-row {
+  text-align: center;
+  color: #8a9590;
+  font-style: italic;
+}
+
+.sc-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.sc-modal-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.sc-modal-full {
+  grid-column: 1 / -1;
+}
+
+.sc-modal-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+#acTable .apst-dropdown,
+#anTable .apst-dropdown {
+  position: fixed;
+}
+
+#acTable td:last-child .apst-action-btn,
+#anTable td:last-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .sc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-search-wrap {
+    width: 100%;
+  }
+
+  .sc-toolbar .pf-btn-new {
+    width: 100%;
+  }
+
+  .sc-table-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-table-head .pf-btn-new {
+    width: 100%;
+  }
+
+  .sc-modal-grid,
+  .sc-modal-grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ════════════════════════════════════════════
@@ -9339,6 +9660,21 @@ select.req-modal-input {
   font-weight: 600;
   color: #555;
   padding: 2px 0;
+}
+
+.sf-total-row td {
+  font-weight: 700;
+  color: #006837;
+  cursor: default;
+}
+
+.sf-total-cell {
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+#sfTable tbody tr.sf-total-row:hover {
+  background-color: transparent;
 }
 
 .sf-check-label {
@@ -13469,6 +13805,10 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   text-align: left !important;
 }
 
+.page-services-attendance .att-table tbody td:nth-child(2) {
+  color: #0f7b43;
+}
+
 .page-services-attendance .att-table tbody td:nth-child(4),
 .page-services-attendance .att-table tbody td:nth-child(6),
 .page-services-attendance .att-table tbody td:nth-child(8),
@@ -13496,7 +13836,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-attendance .att-table tbody td:nth-child(2) {
   font-weight: 600;
-  color: #284737;
+  color: #0f7b43;
 }
 
 .page-services-attendance .att-table th:last-child,

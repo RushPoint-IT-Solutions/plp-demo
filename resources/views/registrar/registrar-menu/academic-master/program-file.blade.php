@@ -60,15 +60,15 @@
 
     <div class="pf-table-controls">
         <div class="pf-entries-control">
-            <label for="pfEntriesLimit">Show Entries</label>
+            <label for="pfEntriesLimit">Show</label>
             <select id="pfEntriesLimit" class="pf-entries-select">
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>
                 <option value="100" selected>100</option>
             </select>
+            <span>Entries</span>
         </div>
-        <span class="pf-page-info">Showing {{ $programs->count() }} program(s)</span>
     </div>
 
     <div class="student-table-wrapper table-responsive">

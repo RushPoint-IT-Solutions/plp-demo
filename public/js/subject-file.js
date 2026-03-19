@@ -52,7 +52,11 @@ function renderTable(filter) {
             '<td style="text-align:center;">' + yn(s.specialized) + '</td>';
         tbody.appendChild(tr);
     });
-    document.getElementById('sfTotal').textContent = 'Total Subjects: ' + count;
+
+    var totalRow = document.createElement('tr');
+    totalRow.className = 'sf-total-row';
+    totalRow.innerHTML = '<td colspan="9" class="sf-total-cell">Total Subjects: <strong>' + count + '</strong></td>';
+    tbody.appendChild(totalRow);
 }
 
 function filterSubjects() {
