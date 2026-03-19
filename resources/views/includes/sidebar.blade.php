@@ -51,6 +51,38 @@
             </svg>
             <span>Events</span>
         </a>
+
+        <div class="sidebar-dropdown {{ request()->routeIs('student.forms.*') ? 'open' : '' }}">
+            <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('student.forms.*') ? 'active' : '' }}">
+                {{-- Vuesax linear/document --}}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6C4.9 2 4 2.89 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 2V8H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 16H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 20H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Forms</span>
+                <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </a>
+
+            <div class="sidebar-dropdown-menu sidebar-dropdown-menu--forms">
+                <a href="{{ route('student.forms.show', 'add-change-delete') }}" class="sidebar-sublink {{ request()->is('student/forms/add-change-delete') ? 'active' : '' }}">
+                    ADDING/CHANGING/DELETE form
+                </a>
+                <a href="{{ route('student.forms.show', 'late-leave-appeal') }}" class="sidebar-sublink {{ request()->is('student/forms/late-leave-appeal') ? 'active' : '' }}">
+                    APPEAL FOR LATE APPLICATION OF LEAVE OF ABSENCE
+                </a>
+                <a href="{{ route('student.forms.show', 'change-grade') }}" class="sidebar-sublink {{ request()->is('student/forms/change-grade') ? 'active' : '' }}">
+                    APPLICATION FOR CHANGE OF GRADE
+                </a>
+                <a href="{{ route('student.forms.show', 'cross-enroll') }}" class="sidebar-sublink {{ request()->is('student/forms/cross-enroll') ? 'active' : '' }}">
+                    APPLICATION TO CROSS ENROLL
+                </a>
+            </div>
+        </div>
     </nav>
 
     {{-- Log Out --}}

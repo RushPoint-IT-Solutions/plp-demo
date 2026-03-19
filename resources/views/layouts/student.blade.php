@@ -56,12 +56,48 @@
 
                     {{-- Profile Avatar --}}
                     <a href="{{ route('student.profile') }}" class="topbar-user" title="Profile">
-                        <div class="topbar-avatar-placeholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                        </div>
+                        @php
+                            $topbarPhotoUrl = null;
+                            $topbarUser = auth()->user();
+                            if ($topbarUser) {
+                                $topbarStudent = null;
+
+                                if (method_exists($topbarUser, 'student') && !empty($topbarUser->student_id)) {
+                                    $topbarStudent = $topbarUser->student;
+                                }
+
+                                if (!$topbarStudent && !empty($topbarUser->student_id)) {
+                                    $topbarStudent = \App\Student::find($topbarUser->student_id);
+                                }
+
+                                if (!$topbarStudent && !empty($topbarUser->username)) {
+                                    $topbarStudent = \App\Student::where('student_no', $topbarUser->username)->first();
+                                }
+
+                                $topbarProfile = null;
+                                if ($topbarStudent) {
+                                    $topbarProfile = \App\StudentProfile::where('student_no', $topbarStudent->student_no)->first();
+                                }
+
+                                if (!$topbarProfile && !empty($topbarUser->email)) {
+                                    $topbarProfile = \App\StudentProfile::where('student_email', $topbarUser->email)->first();
+                                }
+
+                                if ($topbarProfile && !empty($topbarProfile->profile_photo_path)) {
+                                    $topbarPhotoUrl = asset('storage/' . $topbarProfile->profile_photo_path);
+                                }
+                            }
+                        @endphp
+                        @if($topbarPhotoUrl)
+                            <img src="{{ $topbarPhotoUrl }}" alt="Profile" class="topbar-avatar-image">
+                        @else
+                            <div class="topbar-avatar-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        @endif
                     </a>
                 </div>
             </header>
@@ -99,5 +135,6 @@
 
     {{-- Sidebar JS --}}
     <script src="{{ asset('js/student-layout.js') }}"></script>
+    <script src="{{ asset('js/student-sidebar-dropdown.js') }}"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -46,5 +47,33 @@ class AdminController extends Controller
         $routeName = $redirectMap[$module] ?? 'admin.access-module';
 
         return redirect()->route($routeName);
+    }
+
+    /**
+     * Real student login using username + password.
+     */
+    public function studentLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+            'remember' => 'nullable|boolean',
+        ]);
+
+        $remember = (bool) $request->input('remember', false);
+
+        if (Auth::attempt([
+            'username' => $credentials['username'],
+            'password' => $credentials['password'],
+            'module' => 'student',
+        ], $remember)) {
+            $request->session()->regenerate();
+
+            return redirect()->route('student.section-offering');
+        }
+
+        return back()->withErrors([
+            'username' => 'Invalid student credentials.',
+        ])->withInput($request->only('username', 'remember'));
     }
 }

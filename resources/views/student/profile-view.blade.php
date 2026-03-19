@@ -370,14 +370,6 @@
 </div>{{-- /.pv-page --}}
 @endsection
 
-@push('styles')
-<style>
-body.page-profile-view .student-main-wrapper {
-    background-image: url('{{ asset('img/schoolbg.png') }}');
-}
-</style>
-@endpush
-
 @push('scripts')
 <script src="{{ asset('js/profile-view.js') }}"></script>
 @if(session('success'))
