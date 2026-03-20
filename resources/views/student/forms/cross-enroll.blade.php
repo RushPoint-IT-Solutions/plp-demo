@@ -31,7 +31,7 @@
             </div>
 
             <div class="ce-body">
-                <p>PLPRO FORM NO. 1G Revised 2023</p>
+                <p style="margin: 0 0 8px; font-size: 0.72rem; font-weight: 700; text-align: left;">PLPRO FORM NO. 1G Revised 2023</p>
                 <h2>APPLICATION TO CROSS-ENROLL</h2>
 
                 <p class="ce-date"><input type="text" class="acd-inline-input acd-inline-input--md acd-inline-input--center no-print-underline" value="{{ now()->format('F d, Y') }}"></p>
@@ -75,7 +75,8 @@
                         <p>Approved by:</p>
                         <p class="ce-line"><input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center" value=""></p>
                         <p><em>Dean</em></p>
-                        <p><strong>FEDERICO G. NUEVA, MT</strong><br><em>Registrar</em></p>
+                        <p class="ce-line"><input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center" value="FEDERICO G. NUEVA, MT"></p>
+                        <p><em>Registrar</em></p>
                     </div>
                     <div>
                         <p>Very respectfully yours,</p>
@@ -88,7 +89,7 @@
                     </div>
                 </div>
 
-                <p class="ce-print-by">Printed by: Jerald A. Culaniban</p>
+                <p class="ce-print-by">Printed by: <input type="text" class="acd-inline-input acd-inline-input--md" value="Jerald A. Culaniban"></p>
             </div>
         </div>
     </div>

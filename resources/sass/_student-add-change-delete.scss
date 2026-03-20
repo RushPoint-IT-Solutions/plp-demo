@@ -36,7 +36,7 @@
     width: var(--acd-paper-width);
     min-width: var(--acd-paper-width);
     min-height: 297mm;
-    border-color: #9aa1a8;
+    border: 1.5px solid #9aa1a8;
     border-radius: 0 !important;
     transform: scale(var(--acd-scale));
     transform-origin: top left;
@@ -99,16 +99,31 @@
     font-family: "Times New Roman", Times, serif;
 }
 
+.acd-office-name {
+    color: #c4d600;
+}
+
 .acd-school-name { font-size: 16pt; }
 .acd-office-name { font-size: 14pt; }
 .acd-contact { font-size: 12pt; font-weight: 600; }
 
 .acd-body {
     padding: 14px 16px 18px;
-    color: #3d4a53;
-    font-size: 0.74rem;
+    color: #000;
+    font-size: 16px;
     font-family: Arial, Helvetica, sans-serif;
     letter-spacing: 0;
+}
+
+.acd-form .acd-body,
+.acd-form .acd-body *,
+.acd-form .loa-body,
+.acd-form .loa-body *,
+.acd-form .cog-body,
+.acd-form .cog-body *,
+.acd-form .ce-body,
+.acd-form .ce-body * {
+    font-size: 16px;
 }
 
 .acd-form-number {
@@ -277,14 +292,14 @@
 .acd-footer-note {
     margin-top: 14px;
     font-size: 0.7rem;
-    color: #59636d;
+    color: #000;
     text-align: center;
 }
 
 @media print {
     @page {
         size: A4 portrait;
-        margin: 0 0.5in 0.35in 0.5in;
+        margin: 0.35in 1in;
     }
 
     html,
@@ -337,7 +352,7 @@
         height: auto !important;
         min-height: auto !important;
         transform: none !important;
-        border: none !important;
+        border: 1.5px solid #000 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         break-inside: avoid-page !important;
@@ -347,7 +362,7 @@
     .acd-form,
     .acd-form * {
         font-family: Arial, Helvetica, sans-serif !important;
-        font-size: 12px !important;
+        font-size: 16px !important;
         line-height: 1.1 !important;
     }
 
@@ -521,7 +536,7 @@
     margin: 0;
     font-size: 0.9rem;
     font-weight: 800;
-    color: #000;
+    color: #c4d600;
     letter-spacing: 1.8px;
 }
 
@@ -539,7 +554,7 @@
 .ce-body {
     padding: 16px 18px 20px;
     font-size: 0.76rem;
-    color: #3f464d;
+    color: #000;
     font-family: Arial, Helvetica, sans-serif;
     letter-spacing: 0;
 }

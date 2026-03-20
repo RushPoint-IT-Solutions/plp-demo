@@ -29,8 +29,8 @@
             </div>
 
             <div class="loa-body">
+                <p style="margin: 0 0 8px; font-weight: 700; text-align: left;">PLPRO FORM NO. 1H-4</p>
                 <div class="loa-top-row">
-                    <p>PLPRO FORM NO. 1H-4</p>
                     <p>Date of Application: <input type="text" class="acd-inline-input acd-inline-input--md no-print-underline" value="{{ now()->format('F d, Y') }}"></p>
                 </div>
                 <h2>APPEAL FOR LATE APPLICATION OF LEAVE OF ABSENCE</h2>

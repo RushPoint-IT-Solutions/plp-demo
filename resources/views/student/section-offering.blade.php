@@ -52,8 +52,8 @@
     </div>{{-- /#filter-section --}}
 
     <!-- COR Table (Hidden by Default) -->
-    <div class="cor-scroll-wrapper">
-    <div id="cor-table" class="cor-container mt-5" style="display: none;">
+    <div class="cor-scroll-wrapper so-cor-page">
+    <div id="cor-table" class="cor-container" style="display: none;">
         
         <!-- COR Header -->
         <div class="cor-header">

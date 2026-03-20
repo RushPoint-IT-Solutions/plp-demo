@@ -22,13 +22,13 @@
                 <div class="cor-header-center form-header-copy">
                     <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
                     <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
-                    <p class="cog-form-no-header">PLPRO FORM NO. 3C</p>
                     <h2 class="cog-title-main">APPLICATION FOR COMPLETION OF GRADE</h2>
                 </div>
                 <div class="cor-header-right cog-header-right"></div>
             </div>
 
             <div class="cog-body comp-body">
+                <p class="cog-form-no-header" style="text-align: left; margin: 0 0 8px;">PLPRO FORM NO. 3C</p>
                 <div class="comp-date-wrap">
                     <p class="cog-date">Date of Application: <input type="text" class="cog-box cog-box--lg acd-inline-input no-print-underline" value="{{ now()->format('F d, Y') }}"></p>
                 </div>

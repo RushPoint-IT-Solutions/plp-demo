@@ -30,8 +30,7 @@
         </div>
 
         <div class="acd-body">
-            <p class="acd-form-number">PLPRO FORM NO.2</p>
-
+            <p class="acd-form-number" style="margin: 0 0 8px; text-align: left;">PLPRO FORM NO.2</p>
             <div class="acd-meta-grid">
                 <div class="acd-left-meta">
                     <p class="acd-label">Application for :</p>

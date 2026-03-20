@@ -1,4 +1,4 @@
-/* Access module reusable blocks */
+﻿/* Access module reusable blocks */
 .access-module-section {
     position: relative;
     text-align: center;
@@ -378,7 +378,7 @@
     box-shadow: none;
 }
 
-/* Filter grid — guarantees cross-row alignment */
+/* Filter grid â€” guarantees cross-row alignment */
 .filter-grid {
     display: grid;
     grid-template-columns: 1fr 240px;
@@ -407,21 +407,21 @@
 }
 
 /* COR */
-.cor-scroll-wrapper {
+.section-offering-page .cor-scroll-wrapper {
     width: 100%;
     display: flex;
     justify-content: center;
 }
 
-.cor-container {
-    --cor-header-min-height: clamp(72px, 8vw, 78px);
-    --cor-header-pad-y: clamp(8px, 1.2vw, 10px);
-    --cor-header-pad-x: clamp(14px, 2.2vw, 20px);
-    --cor-header-gap: clamp(6px, 1.5vw, 10px);
-    --cor-logo-size: clamp(64px, 8.5vw, 78px);
-    --cor-school-size: clamp(28px, 5.2vw, 28px);
-    --cor-title-size: clamp(14px, 2.4vw, 18px);
-    --cor-reg-size: clamp(0.62rem, 1.6vw, 0.75rem);
+.section-offering-page .cor-container {
+    --cor-header-min-height: clamp(74px, 8vw, 86px);
+    --cor-header-pad-y: clamp(8px, 1vw, 10px);
+    --cor-header-pad-x: clamp(12px, 1.8vw, 18px);
+    --cor-header-gap: clamp(8px, 1.2vw, 10px);
+    --cor-logo-size: clamp(62px, 7vw, 74px);
+    --cor-school-size: clamp(30px, 4.4vw, 36px);
+    --cor-title-size: clamp(19px, 2.6vw, 24px);
+    --cor-reg-size: clamp(13px, 1.5vw, 16px);
 
     border: 2px solid #000;
     border-radius: 0;
@@ -435,7 +435,7 @@
     transform-origin: top center;
 }
 
-.cor-header {
+.section-offering-page .cor-header {
     display: grid;
     grid-template-columns: auto 1fr auto;
     grid-template-areas:
@@ -444,33 +444,33 @@
     align-items: center;
     padding: var(--cor-header-pad-y) var(--cor-header-pad-x);
     min-height: calc(var(--cor-header-min-height) + 14px);
-    row-gap: 4px;
+    row-gap: 2px;
     background-color: #006837;
     border-bottom: 2px solid #006837;
 }
 
-.cor-header-left {
+.section-offering-page .cor-header-left {
     grid-area: left;
     display: flex;
     align-items: center;
     gap: var(--cor-header-gap);
 }
 
-.cor-header-left img {
+.section-offering-page .cor-header-left img {
     width: auto;
     flex-shrink: 0;
     object-fit: contain;
 }
 
-.cor-logo {
+.section-offering-page .cor-logo {
     height: var(--cor-logo-size);
 }
 
-.cor-school-text-img {
+.section-offering-page .cor-school-text-img {
     height: var(--cor-school-size);
 }
 
-.cor-header-center {
+.section-offering-page .cor-header-center {
     grid-area: title;
     justify-self: center;
     align-self: center;
@@ -479,17 +479,17 @@
     white-space: nowrap;
 }
 
-.cor-title {
+.section-offering-page .cor-title {
     font-family: 'Roboto', 'Poppins', sans-serif;
     font-size: var(--cor-title-size);
-    font-weight: 700;
+    font-weight: 800;
     color: #ffffff;
     text-transform: uppercase;
     margin: 0;
     line-height: 1;
 }
 
-.cor-header-right {
+.section-offering-page .cor-header-right {
     grid-area: right;
     text-align: right;
     white-space: nowrap;
@@ -501,37 +501,37 @@
     z-index: 2;
 }
 
-.cor-label {
-    font-size: 0.65rem;
+.section-offering-page .cor-label {
+    font-size: 12px;
     font-weight: 700;
     color: #ffffff;
     margin: 0;
     text-transform: uppercase;
 }
 
-.cor-reg-number {
+.section-offering-page .cor-reg-number {
     font-size: var(--cor-reg-size);
     font-weight: 700;
     color: #ff3333;
     margin: 0;
 }
 
-.cor-student-info {
+.section-offering-page .cor-student-info {
     padding: 20px 42px;
     border-bottom: 1px solid #000;
 }
 
-.cor-info-row {
+.section-offering-page .cor-info-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 6px;
 }
 
-.cor-info-row:last-child {
+.section-offering-page .cor-info-row:last-child {
     margin-bottom: 0;
 }
 
-.cor-info-group {
+.section-offering-page .cor-info-group {
     display: flex;
     flex: 1;
     align-items: baseline;
@@ -539,25 +539,25 @@
     min-width: 0;
 }
 
-.cor-info-label,
-.cor-info-value {
-    font-size: 0.7rem;
+.section-offering-page .cor-info-label,
+.section-offering-page .cor-info-value {
+    font-size: 12px;
     color: #000;
     font-weight: 700;
 }
 
-.cor-info-label {
+.section-offering-page .cor-info-label {
     white-space: nowrap;
 }
 
-.cor-schedule-header {
+.section-offering-page .cor-schedule-header {
     background-color: #006837;
     padding: 8px;
     text-align: center;
 }
 
-.cor-schedule-title {
-    font-size: 0.75rem;
+.section-offering-page .cor-schedule-title {
+    font-size: 16px;
     font-weight: 700;
     color: #fff;
     text-transform: uppercase;
@@ -565,7 +565,7 @@
     letter-spacing: 1px;
 }
 
-.cor-table {
+.section-offering-page .cor-table {
     width: calc(100% - 84px);
     margin-left: auto;
     margin-right: auto;
@@ -573,119 +573,119 @@
     border-collapse: collapse;
 }
 
-.cor-table thead {
+.section-offering-page .cor-table thead {
     background-color: #fff;
     border-bottom: 1px solid #000;
 }
 
-.cor-th,
-.cor-td {
+.section-offering-page .cor-th,
+.section-offering-page .cor-td {
     padding: 10px 12px;
-    font-size: 0.7rem;
+    font-size: 12px;
     color: #000;
     border: none;
     font-weight: 700;
 }
 
-.cor-th {
+.section-offering-page .cor-th {
     text-align: center;
 }
 
-.cor-td {
+.section-offering-page .cor-td {
     text-align: left;
 }
 
-.cor-table .cor-th:first-child,
-.cor-table .cor-td:first-child {
+.section-offering-page .cor-table .cor-th:first-child,
+.section-offering-page .cor-table .cor-td:first-child {
     padding-left: 24px;
 }
 
-.cor-table .cor-th:last-child,
-.cor-table .cor-td:last-child {
+.section-offering-page .cor-table .cor-th:last-child,
+.section-offering-page .cor-table .cor-td:last-child {
     padding-right: 24px;
 }
 
-.cor-table tbody tr {
+.section-offering-page .cor-table tbody tr {
     border-bottom: 1px solid #ddd;
 }
 
-.cor-table tbody tr:last-child {
+.section-offering-page .cor-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.cor-td {
+.section-offering-page .cor-td {
     vertical-align: top;
 }
 
-.cor-td:nth-child(2) {
+.section-offering-page .cor-td:nth-child(2) {
     white-space: normal;
 }
 
-.cor-table .cor-th:nth-child(5),
-.cor-table .cor-th:nth-child(6),
-.cor-table .cor-th:nth-child(7),
-.cor-table .cor-td:nth-child(5),
-.cor-table .cor-td:nth-child(6),
-.cor-table .cor-td:nth-child(7) {
+.section-offering-page .cor-table .cor-th:nth-child(5),
+.section-offering-page .cor-table .cor-th:nth-child(6),
+.section-offering-page .cor-table .cor-th:nth-child(7),
+.section-offering-page .cor-table .cor-td:nth-child(5),
+.section-offering-page .cor-table .cor-td:nth-child(6),
+.section-offering-page .cor-table .cor-td:nth-child(7) {
     white-space: nowrap;
 }
 
-.cor-totals {
+.section-offering-page .cor-totals {
     padding: 15px 42px;
     border-top: 1px solid #000;
 }
 
-.cor-totals-text {
-    font-size: 0.7rem;
+.section-offering-page .cor-totals-text {
+    font-size: 12px;
     color: #000;
     margin: 0;
 }
 
-.cor-note-bar {
+.section-offering-page .cor-note-bar {
     background-color: #006837;
     padding: 8px;
     text-align: center;
 }
 
-.cor-note-text {
-    font-size: 0.7rem;
+.section-offering-page .cor-note-text {
+    font-size: 12px;
     font-weight: 700;
     color: #fff;
     margin: 0;
 }
 
-.cor-signatures {
+.section-offering-page .cor-signatures {
     display: flex;
     justify-content: space-between;
     padding: 40px 80px 30px;
     margin-top: 20px;
 }
 
-.cor-signature-left,
-.cor-signature-right {
+.section-offering-page .cor-signature-left,
+.section-offering-page .cor-signature-right {
     text-align: center;
     flex: 1;
     max-width: 300px;
 }
 
-.cor-signature-left {
+.section-offering-page .cor-signature-left {
     margin-right: 80px;
 }
 
-.cor-signature-right {
+.section-offering-page .cor-signature-right {
     margin-left: 80px;
 }
 
-.cor-signature-name {
-    font-size: 0.7rem;
+.section-offering-page .cor-signature-name {
+    font-size: 12px;
     font-weight: 700;
     color: #000;
     text-transform: uppercase;
     margin: 0 0 5px 0;
 }
 
-.cor-signature-role {
-    font-size: 0.65rem;
+.section-offering-page .cor-signature-role {
+    font-size: 12px;
     color: #555;
     margin: 0;
 }
@@ -997,7 +997,7 @@
     color: #842029;
 }
 
-/* ── Calendar ─────────────────────────────────────────── */
+/* â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cal-controls {
     display: flex;
     align-items: flex-start;
@@ -1192,7 +1192,7 @@
     color: #1565c0;
 }
 
-// Event label inside cell — anchored to bottom-right
+// Event label inside cell â€” anchored to bottom-right
 .cal-event-label {
     position: absolute;
     bottom: 8px;
@@ -1215,7 +1215,7 @@
     color: #1565c0;
 }
 
-/* ── Profile / Setup Wizard ─────────────────────────────── */
+/* â”€â”€ Profile / Setup Wizard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 // Step indicator
 .setup-steps {
@@ -1318,7 +1318,7 @@
     align-items: center;
 }
 
-// Labels — same visual as .form-label-plp (reuse token values)
+// Labels â€” same visual as .form-label-plp (reuse token values)
 .setup-label {
     color: $plp-green;
     font-weight: 700;
@@ -1329,7 +1329,7 @@
     display: block;
 }
 
-// Inputs — same visual as .form-input-long (reuse token values)
+// Inputs â€” same visual as .form-input-long (reuse token values)
 .setup-input {
     border: 1px solid #bfbfbf;
     border-radius: $radius-md;
@@ -1917,7 +1917,7 @@
     .student-main-wrapper,
     .content-footer-wrap,
     .student-content,
-    .cor-scroll-wrapper {
+    .section-offering-page .cor-scroll-wrapper {
         margin: 0 !important;
         padding: 0 !important;
         width: auto !important;
@@ -1934,7 +1934,7 @@
         display: none !important;
     }
 
-    .cor-container {
+    .section-offering-page .cor-container {
         display: block !important;
         zoom: 1 !important;
         width: 100% !important;
@@ -1948,57 +1948,67 @@
         box-shadow: none;
     }
 
-    * {
+    .section-offering-page,
+    .section-offering-page * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
-    .cor-container {
+    .section-offering-page .cor-container {
         font-family: "Times New Roman", Times, serif !important;
     }
     
-    .cor-container * {
+    .section-offering-page .cor-container * {
         font-family: inherit;
     }
 
-    .cor-info-label,
-    .cor-info-value,
-    .cor-th,
-    .cor-td,
-    .cor-totals-text,
-    .cor-note-text,
-    .cor-signature-name,
-    .cor-signature-role {
-        font-size: 12pt !important;
+    .section-offering-page .cor-info-label,
+    .section-offering-page .cor-info-value,
+    .section-offering-page .cor-th,
+    .section-offering-page .cor-td,
+    .section-offering-page .cor-totals-text,
+    .section-offering-page .cor-note-text,
+    .section-offering-page .cor-signature-name,
+    .section-offering-page .cor-signature-role {
+        font-size: 12px !important;
     }
     
-    .cor-label,
-    .cor-schedule-title {
-        font-size: 11pt !important;
+    .section-offering-page .cor-label,
+    .section-offering-page .cor-schedule-title {
+        font-size: 12px !important;
+    }
+
+    .section-offering-page .cor-title {
+        font-size: 20px !important;
+    }
+
+    .section-offering-page .cor-reg-number {
+        font-size: 14px !important;
     }
     
-    .cor-student-info {
+    .section-offering-page .cor-student-info {
         padding-left: 42px !important;
         padding-right: 42px !important;
     }
 
-    .cor-table .cor-th:first-child,
-    .cor-table .cor-td:first-child {
+    .section-offering-page .cor-table .cor-th:first-child,
+    .section-offering-page .cor-table .cor-td:first-child {
         padding-left: 24px !important;
     }
 
-    .cor-table .cor-th:last-child,
-    .cor-table .cor-td:last-child {
+    .section-offering-page .cor-table .cor-th:last-child,
+    .section-offering-page .cor-table .cor-td:last-child {
         padding-right: 24px !important;
     }
 
-    .cor-totals {
+    .section-offering-page .cor-totals {
         padding-left: 42px !important;
         padding-right: 42px !important;
     }
 
-    .cor-signatures {
+    .section-offering-page .cor-signatures {
         padding-left: 80px !important;
         padding-right: 80px !important;
     }
 }
+
