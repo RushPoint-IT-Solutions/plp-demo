@@ -5667,20 +5667,9 @@ body.page-profile-edit .student-content {
 .acd-body {
   padding: 14px 16px 18px;
   color: #000;
-  font-size: 16px;
+  font-size: 0.74rem;
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0;
-}
-
-.acd-form .acd-body,
-.acd-form .acd-body *,
-.acd-form .loa-body,
-.acd-form .loa-body *,
-.acd-form .cog-body,
-.acd-form .cog-body *,
-.acd-form .ce-body,
-.acd-form .ce-body * {
-  font-size: 16px;
 }
 
 .acd-form-number {
