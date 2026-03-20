@@ -5584,24 +5584,32 @@ body.page-profile-edit .student-content {
 .acd-form .cor-header {
   border-radius: 0 !important;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  gap: 12px;
   position: relative;
-  padding: 20px;
+  padding: 16px 20px;
   background: transparent !important;
   border-bottom: none !important;
 }
 
 .acd-form .cor-header-left {
-  justify-content: flex-end;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin-right: 10px;
 }
 
 .acd-form .cor-header-center {
-  text-align: left;
+  text-align: center;
   padding: 0;
   white-space: normal;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
 .acd-form .cor-header-right {
@@ -5617,7 +5625,7 @@ body.page-profile-edit .student-content {
 }
 
 .acd-header-center {
-  text-align: left;
+  text-align: center;
 }
 
 .acd-school-name,
@@ -5627,18 +5635,19 @@ body.page-profile-edit .student-content {
   color: #000;
   font-weight: 700;
   letter-spacing: 0.2px;
+  font-family: "Times New Roman", Times, serif;
 }
 
 .acd-school-name {
-  font-size: 0.95rem;
+  font-size: 16pt;
 }
 
 .acd-office-name {
-  font-size: 0.82rem;
+  font-size: 14pt;
 }
 
 .acd-contact {
-  font-size: 0.75rem;
+  font-size: 12pt;
   font-weight: 600;
 }
 
@@ -6009,8 +6018,31 @@ body.page-profile-edit .student-content {
 }
 
 .form-logo-left .cor-logo {
-  height: 110px;
+  height: 108px;
   width: auto;
+  max-height: 108px;
+}
+
+/* If the header area is narrow, allow the logo to reposition above the pyramid */
+
+@media (max-width: 600px) {
+  .acd-form .cor-header-left {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    margin-bottom: 8px;
+    justify-content: center;
+  }
+
+  .acd-form .cor-header-center {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+  }
 }
 
 .form-header-copy {
