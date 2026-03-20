@@ -2,18 +2,294 @@
 
 @section('title', 'PLP - BED Days')
 @section('page-title', 'BED DAYS')
+@section('body-class', 'page-bed-days')
+
+
 
 @section('content')
 <div class="pf-page">
-    <div class="placeholder-card">
-        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#006837" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        <h2 class="placeholder-title">BED Days</h2>
-        <p class="placeholder-text">This page is under development. BED days features will be available soon.</p>
+    <div class="bd-page">
+        <section class="cfg-card">
+            <div class="bd-toolbar">
+                <div class="bd-field">
+                    <label class="app-filter-label" for="bdSY">SY</label>
+                    <input id="bdSY" class="app-filter-input" type="text" value="2025-2026">
+                </div>
+                <div class="bd-field">
+                    <label class="app-filter-label" for="bdSem">Sem</label>
+                    <select id="bdSem" class="app-filter-select">
+                        <option>First</option>
+                        <option>Second</option>
+                    </select>
+                </div>
+                <div class="bd-field">
+                    <label class="app-filter-label" for="bdMonth">Month</label>
+                    <input id="bdMonth" class="app-filter-input" type="text" placeholder="Month">
+                </div>
+                <div class="bd-field">
+                    <label class="app-filter-label" for="bdDays">No. of Days</label>
+                    <input id="bdDays" class="app-filter-input" type="number" min="0" placeholder="0">
+                </div>
+                <button type="button" class="pf-btn-new" id="bdSaveBtn">Save</button>
+            </div>
+        </section>
+
+        <section>
+            <div class="app-table-wrap">
+                <table id="bdTable" class="app-table cfg-table" data-no-auto-pager="1">
+                    <thead>
+                        <tr>
+                            <th style="width:54px;">#</th>
+                            <th>SY</th>
+                            <th>Semester</th>
+                            <th>Month</th>
+                            <th>No. Of Days</th>
+                            <th style="width:110px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bdTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="bd-pager-row">
+                <div class="bd-page-list">
+                    <button type="button" class="bd-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
+                    <button type="button" class="bd-page-num active" aria-current="page">1</button>
+                    <button type="button" class="bd-page-btn" disabled aria-label="Next page">&rsaquo;</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="req-modal-overlay" id="bdEditModal" style="display:none;" onclick="if(event.target===this) bdCloseEditModal()">
+    <div class="req-modal-box" style="max-width:560px;">
+        <h3 class="req-modal-title">EDIT BED DAYS RECORD</h3>
+        <input type="hidden" id="bdEditId" value="">
+
+        <div class="sc-modal-grid-3" style="margin-top:10px;">
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">SY</label>
+                <input id="bdEditSY" class="req-modal-input" type="text">
+            </div>
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">Semester</label>
+                <select id="bdEditSem" class="req-modal-input">
+                    <option>First</option>
+                    <option>Second</option>
+                </select>
+            </div>
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">Month</label>
+                <input id="bdEditMonth" class="req-modal-input" type="text">
+            </div>
+        </div>
+
+        <div class="sc-modal-grid" style="margin-top:10px;">
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">No. Of Days</label>
+                <input id="bdEditDays" class="req-modal-input" type="number" min="0">
+            </div>
+        </div>
+
+        <div class="req-modal-actions" style="margin-top:14px;">
+            <button type="button" class="req-btn-cancel" onclick="bdCloseEditModal()">Cancel</button>
+            <button type="button" class="req-btn-save" onclick="bdSaveEdit()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="req-modal-overlay" id="bdDeleteModal" style="display:none;" onclick="if(event.target===this) bdCloseDeleteModal()">
+    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
+        <h3 class="req-modal-title" style="color:#c0392b;">DELETE BED DAYS RECORD</h3>
+        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this record?</p>
+        <input type="hidden" id="bdDeleteId" value="">
+        <div class="req-modal-actions" style="justify-content:center;">
+            <button type="button" class="req-btn-cancel" onclick="bdCloseDeleteModal()">Cancel</button>
+            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="bdConfirmDelete()">Delete</button>
+        </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    var bdRows = [
+        { id: 'bd-1', sy: '2025-2026', sem: 'First', month: 'January', days: '20' },
+        { id: 'bd-2', sy: '2025-2026', sem: 'First', month: 'February', days: '19' },
+        { id: 'bd-3', sy: '2025-2026', sem: 'Second', month: 'June', days: '22' },
+        { id: 'bd-4', sy: '2025-2026', sem: 'Second', month: 'July', days: '23' },
+        { id: 'bd-5', sy: '2026-2027', sem: 'First', month: 'August', days: '21' }
+    ];
+
+    function bdEscapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, function(ch) {
+            var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+            return map[ch];
+        });
+    }
+
+    function bdBuildMenu(menuId, id) {
+        return '' +
+            '<div class="apst-action-btn" data-bd-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
+            '<div class="apst-dropdown" id="' + menuId + '">' +
+                '<button type="button" onclick="bdOpenEditModal(\'' + bdEscapeHtml(id) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>' +
+                '<button type="button" class="apst-del-btn" onclick="bdOpenDeleteModal(\'' + bdEscapeHtml(id) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
+            '</div>';
+    }
+
+    function bdCloseActionMenus() {
+        document.querySelectorAll('.apst-dropdown.open').forEach(function(menu) {
+            menu.classList.remove('open', 'drop-up');
+            menu.style.top = '';
+            menu.style.left = '';
+            menu.style.right = '';
+            menu.style.bottom = '';
+        });
+    }
+
+    function bdToggleActionMenu(menuId, trigger) {
+        var menu = document.getElementById(menuId);
+        if (!menu || !trigger) return;
+
+        var isOpen = menu.classList.contains('open');
+        bdCloseActionMenus();
+        if (isOpen) return;
+
+        var rect = trigger.getBoundingClientRect();
+        var spaceBelow = window.innerHeight - rect.bottom;
+
+        menu.style.left = 'auto';
+        menu.style.right = (window.innerWidth - rect.left + 4) + 'px';
+
+        if (spaceBelow < 120) {
+            menu.classList.add('drop-up');
+            menu.style.top = 'auto';
+            menu.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+        } else {
+            menu.style.top = rect.top + 'px';
+            menu.style.bottom = 'auto';
+        }
+
+        menu.classList.add('open');
+    }
+
+    function bdRenderTable() {
+        var tbody = document.getElementById('bdTableBody');
+        if (!tbody) return;
+
+        bdCloseActionMenus();
+
+        var html = bdRows.map(function(row, idx) {
+            var menuId = 'bdMenu' + idx;
+            return '' +
+                '<tr>' +
+                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + bdEscapeHtml(row.sy) + '</td>' +
+                    '<td>' + bdEscapeHtml(row.sem) + '</td>' +
+                    '<td>' + bdEscapeHtml(row.month) + '</td>' +
+                    '<td>' + bdEscapeHtml(row.days) + '</td>' +
+                    '<td style="text-align:center;">' + bdBuildMenu(menuId, row.id) + '</td>' +
+                '</tr>';
+        }).join('');
+
+        if (!html) {
+            html = '<tr><td colspan="6" class="sc-empty-row">No data listed.</td></tr>';
+        }
+
+        tbody.innerHTML = html + '<tr class="bd-total-row"><td colspan="6">Total Students: <strong>' + bdRows.length + '</strong></td></tr>';
+    }
+
+    function bdOpenEditModal(id) {
+        var row = bdRows.find(function(item) { return item.id === id; });
+        if (!row) return;
+        bdCloseActionMenus();
+        document.getElementById('bdEditId').value = row.id;
+        document.getElementById('bdEditSY').value = row.sy;
+        document.getElementById('bdEditSem').value = row.sem;
+        document.getElementById('bdEditMonth').value = row.month;
+        document.getElementById('bdEditDays').value = row.days;
+        document.getElementById('bdEditModal').style.display = 'flex';
+    }
+
+    function bdCloseEditModal() {
+        document.getElementById('bdEditModal').style.display = 'none';
+    }
+
+    function bdSaveEdit() {
+        var id = document.getElementById('bdEditId').value;
+        var sy = (document.getElementById('bdEditSY').value || '').trim();
+        var sem = document.getElementById('bdEditSem').value;
+        var month = (document.getElementById('bdEditMonth').value || '').trim();
+        var days = (document.getElementById('bdEditDays').value || '').trim();
+
+        if (!sy || !month || !days) {
+            alert('Please fill in SY, Month, and No. of Days.');
+            return;
+        }
+
+        bdRows = bdRows.map(function(item) {
+            if (item.id !== id) return item;
+            return { id: item.id, sy: sy, sem: sem, month: month, days: days };
+        });
+
+        bdCloseEditModal();
+        bdRenderTable();
+    }
+
+    function bdOpenDeleteModal(id) {
+        bdCloseActionMenus();
+        document.getElementById('bdDeleteId').value = id;
+        document.getElementById('bdDeleteModal').style.display = 'flex';
+    }
+
+    function bdCloseDeleteModal() {
+        document.getElementById('bdDeleteModal').style.display = 'none';
+    }
+
+    function bdConfirmDelete() {
+        var id = document.getElementById('bdDeleteId').value;
+        bdRows = bdRows.filter(function(item) { return item.id !== id; });
+        bdCloseDeleteModal();
+        bdRenderTable();
+    }
+
+    document.getElementById('bdSaveBtn').addEventListener('click', function() {
+        var month = (document.getElementById('bdMonth').value || '').trim();
+        var days = (document.getElementById('bdDays').value || '').trim();
+        if (!month || !days) {
+            alert('Please fill in Month and No. of Days.');
+            return;
+        }
+
+        bdRows.unshift({
+            id: 'bd-' + Date.now(),
+            sy: document.getElementById('bdSY').value,
+            sem: document.getElementById('bdSem').value,
+            month: month,
+            days: days
+        });
+        document.getElementById('bdMonth').value = '';
+        document.getElementById('bdDays').value = '';
+        bdRenderTable();
+    });
+
+    document.addEventListener('click', function(event) {
+        var menuToggle = event.target.closest('[data-bd-menu-toggle]');
+        if (menuToggle) {
+            event.stopPropagation();
+            bdToggleActionMenu(menuToggle.getAttribute('data-bd-menu-toggle'), menuToggle);
+            return;
+        }
+
+        if (!event.target.closest('.apst-dropdown')) {
+            bdCloseActionMenus();
+        }
+    });
+
+    window.addEventListener('scroll', bdCloseActionMenus, true);
+
+    bdRenderTable();
+</script>
+@endpush
+

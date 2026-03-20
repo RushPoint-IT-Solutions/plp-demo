@@ -45,6 +45,7 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 */
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
+Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 
 /*
 |--------------------------------------------------------------------------
