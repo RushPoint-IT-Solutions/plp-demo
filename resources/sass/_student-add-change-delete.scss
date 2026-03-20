@@ -454,6 +454,12 @@
         content: "(✓) ";
     }
 
+        .loa-grid-third .acd-inline-input--lg {
+            width: calc(100% - 12px) !important;
+            max-width: calc(100% - 12px) !important;
+            box-sizing: border-box !important;
+        }
+
     /* LOA print should stay readable within reduced margins */
     .loa-form,
     .loa-form * {
@@ -748,6 +754,16 @@
 }
 
 .loa-small-sign { min-height: 90px; }
+
+.loa-grid-third .loa-sign-line {
+    overflow: hidden;
+}
+
+.loa-grid-third .acd-inline-input--lg {
+    width: calc(100% - 12px);
+    max-width: calc(100% - 12px);
+    box-sizing: border-box;
+}
 
 .loa-sign-line {
     margin-top: 8px !important;

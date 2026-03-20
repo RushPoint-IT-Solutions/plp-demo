@@ -6042,6 +6042,12 @@ body.page-profile-edit .student-content {
     content: "(\2713) ";
   }
 
+  .loa-grid-third .acd-inline-input--lg {
+    width: calc(100% - 12px) !important;
+    max-width: calc(100% - 12px) !important;
+    box-sizing: border-box !important;
+  }
+
   /* LOA print should stay readable within reduced margins */
 
   .loa-form,
@@ -6357,6 +6363,16 @@ body.page-profile-edit .student-content {
 
 .loa-small-sign {
   min-height: 90px;
+}
+
+.loa-grid-third .loa-sign-line {
+  overflow: hidden;
+}
+
+.loa-grid-third .acd-inline-input--lg {
+  width: calc(100% - 12px);
+  max-width: calc(100% - 12px);
+  box-sizing: border-box;
 }
 
 .loa-sign-line {
