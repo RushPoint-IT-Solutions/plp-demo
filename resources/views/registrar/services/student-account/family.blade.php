@@ -2,6 +2,7 @@
 
 @section('title', 'PLP - Student Family')
 @section('page-title', 'STUDENT FAMILY')
+@section('body-class', 'page-student-account page-student-family')
 
 @section('content')
 <style>

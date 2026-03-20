@@ -4,6 +4,10 @@
 @section('page-title', 'FACULTY LOADS')
 @section('body-class', 'page-services-faculty-loads')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/registrar-faculty-loads.css') }}?v={{ time() }}">
+@endpush
+
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
 @endpush
@@ -54,13 +58,15 @@
                         <td colspan="3" class="text-center text-muted py-4">No faculty found.</td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
-    </div>
+            <tr class="rfl-list-total-row">
+                <td colspan="3" class="rfl-list-total-cell">Total Faculty: <strong>{{ $faculties->total() }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
-    <div class="rfl-footer">
-        <div class="rfl-total">Total Faculty: <span>{{ $faculties->total() }}</span></div>
-        <div class="rfl-pagination">{{ $faculties->links() }}</div>
-    </div>
+<div class="rfl-footer">
+    <div class="rfl-pagination">{{ $faculties->links() }}</div>
+</div>
 </div>
 @endsection

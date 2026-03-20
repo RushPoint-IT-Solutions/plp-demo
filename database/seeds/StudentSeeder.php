@@ -7,8 +7,9 @@ class StudentSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('students')->insert([
+        DB::table('students')->updateOrInsert([
             'student_no'      => '1234567891012',
+        ], [
             'name'            => 'Austero, Andrea Jane',
             'sex'             => 'Female',
             'age'             => 21,

@@ -1,0 +1,1084 @@
+// Student Form: Adding/Changing/Deleting (PLPRO Form No.2)
+.acd-page {
+    padding-top: 8px;
+    overflow-x: hidden;
+}
+
+.acd-canvas {
+    --acd-scale: 1;
+    --acd-paper-width: 210mm;
+    width: var(--acd-paper-width);
+    min-width: var(--acd-paper-width);
+    margin: 0 auto;
+}
+
+.acd-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 8px;
+}
+
+.acd-print-btn {
+    background-color: #006837;
+    border: 1px solid #006837;
+    color: #fff;
+    font-weight: 700;
+}
+
+.acd-print-btn:hover,
+.acd-print-btn:focus {
+    background-color: #0b5f37;
+    border-color: #0b5f37;
+    color: #fff;
+}
+
+.acd-form {
+    width: var(--acd-paper-width);
+    min-width: var(--acd-paper-width);
+    min-height: 297mm;
+    border: 1.5px solid #9aa1a8;
+    border-radius: 0 !important;
+    transform: scale(var(--acd-scale));
+    transform-origin: top left;
+}
+
+.acd-form .cor-header {
+    border-radius: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+    padding: 16px 20px;
+    background: transparent !important;
+    border-bottom: none !important;
+}
+
+.acd-form .cor-header-left {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    margin-right: 10px;
+}
+
+.acd-form .cor-header-center {
+    text-align: center;
+    padding: 0;
+    white-space: normal;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.acd-form .cor-header-right {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 11pt;
+}
+
+.acd-header {
+    background: transparent;
+    border-bottom: none;
+}
+
+.acd-header-center {
+    text-align: center;
+}
+
+.acd-school-name,
+.acd-office-name,
+.acd-contact {
+    margin: 0;
+    color: #000;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.acd-office-name {
+    color: #c4d600;
+}
+
+.acd-school-name { font-size: 16pt; }
+.acd-office-name { font-size: 14pt; }
+.acd-contact { font-size: 12pt; font-weight: 600; }
+
+.acd-body {
+    padding: 14px 16px 18px;
+    color: #000;
+    font-size: 0.74rem;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0;
+}
+
+.acd-form-number {
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.acd-meta-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.acd-label {
+    margin: 0 0 6px;
+    font-weight: 700;
+}
+
+.acd-check {
+    display: block;
+    margin: 2px 0;
+    font-weight: 600;
+}
+
+.acd-check input {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.acd-line-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.acd-line {
+    flex: 1;
+    border-bottom: 1px solid #98a0a8;
+    min-height: 10px;
+    display: inline-flex;
+    align-items: flex-end;
+    padding: 0 4px;
+    font-weight: 600;
+}
+
+.acd-table-block {
+    margin-top: 8px;
+}
+
+.acd-table-title {
+    margin: 0;
+    padding: 3px 0;
+    text-align: center;
+    font-weight: 700;
+    border-top: 1px solid #9aa1a8;
+    border-bottom: 1px solid #9aa1a8;
+}
+
+.acd-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3px;
+}
+
+.acd-table th,
+.acd-table td {
+    border: 1px solid #a6adb5;
+    padding: 3px 4px;
+    font-size: 0.67rem;
+    text-align: center;
+    height: 24px;
+}
+
+.acd-cell-input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: center;
+    line-height: 1.1;
+    padding: 0;
+}
+
+.acd-cell-input--left {
+    text-align: left;
+}
+
+.acd-table th {
+    font-weight: 700;
+    background: #f8fafb;
+}
+
+.acd-total-label {
+    text-align: right;
+    font-weight: 700;
+    padding-right: 12px;
+}
+
+.acd-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 14px;
+}
+
+.acd-bottom-grid p {
+    margin: 0 0 8px;
+    font-weight: 600;
+}
+
+.acd-emphasis {
+    font-style: italic;
+}
+
+.acd-sign-row {
+    margin: 0 0 8px;
+}
+
+.acd-sign-main {
+    margin: 0;
+    font-weight: 600;
+}
+
+.acd-sign-sub {
+    margin: 2px 0 0;
+    padding-left: 2px;
+    font-weight: 600;
+}
+
+.acd-inline-line {
+    display: inline-block;
+    border-bottom: 1px solid #8f98a0;
+    height: 0.9em;
+    vertical-align: baseline;
+}
+
+.acd-inline-input {
+    display: inline-block;
+    border: 0;
+    border-bottom: 1px solid #8f98a0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1.2;
+    padding: 0 2px;
+}
+
+.acd-inline-input:focus {
+    outline: none;
+    border-bottom-color: #1f2a35;
+}
+
+.acd-inline-input--xs { width: 72px; }
+.acd-inline-input--sm { width: 110px; }
+.acd-inline-input--md { width: 180px; }
+.acd-inline-input--lg { width: 250px; }
+.acd-inline-input--xl { width: 320px; }
+.acd-inline-input--center { text-align: center; }
+.acd-inline-input--caps { text-transform: uppercase; }
+
+.cog-box.acd-inline-input {
+    display: inline-flex;
+    align-items: center;
+}
+
+.acd-inline-line--md { width: 170px; }
+.acd-inline-line--lg { width: 250px; }
+.acd-inline-line--xl { width: 240px; }
+
+.acd-mt-lg {
+    margin-top: 12px !important;
+}
+
+.acd-footer-note {
+    margin-top: 14px;
+    font-size: 0.7rem;
+    color: #000;
+    text-align: center;
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0.5in;
+    }
+
+    html,
+    body.student-portal-body,
+    .student-layout,
+    .student-main-wrapper,
+    .content-footer-wrap,
+    .student-content,
+    .cor-scroll-wrapper {
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+
+    .student-topbar,
+    .student-page-header,
+    .plp-sidebar,
+    .sidebar-overlay,
+    .plp-footer,
+    #download-toast {
+        display: none !important;
+    }
+
+    .acd-page {
+        padding-top: 0;
+        overflow: visible;
+    }
+
+    .acd-actions {
+        display: none !important;
+    }
+
+    .acd-canvas {
+        --acd-paper-width: auto !important;
+        --acd-scale: 1 !important;
+        width: calc(100% - 1in) !important;
+        max-width: calc(100% - 1in) !important;
+        min-width: 0 !important;
+        height: auto !important;
+        margin: 0 auto !important;
+    }
+
+    .acd-form {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        transform: none !important;
+        border: 1.5px solid #000 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        break-inside: avoid-page !important;
+        page-break-inside: avoid !important;
+    }
+
+    .acd-form,
+    .acd-form * {
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.1 !important;
+    }
+
+    .acd-school-name, .loa-school, .ce-school, .cog-school {
+        font-size: 16pt !important;
+    }
+
+    .acd-office-name, .loa-office, .ce-office, .cog-office {
+        font-size: 14pt !important;
+    }
+
+    .loa-body h2, .cog-body h2, .ce-body h2, .acd-container h2 {
+        font-size: 18pt !important;
+    }
+
+    .acd-body, .loa-body, .cog-body, .ce-body {
+        padding-left: 0.15in !important;
+        padding-right: 0.15in !important;
+        padding-top: 0 !important;
+        padding-bottom: 0.1in !important;
+    }
+
+    .acd-table th,
+    .acd-table td {
+        padding: 2px 3px !important;
+        height: 18px !important;
+    }
+
+    .acd-bottom-grid p {
+        margin: 0 0 4px !important;
+    }
+
+    .acd-footer-note {
+        margin-top: 6px !important;
+    }
+
+    .loa-page .acd-canvas {
+        --acd-paper-width: auto !important;
+    }
+
+    .cor-container.acd-form,
+    .cor-container.acd-form * {
+        box-shadow: none !important;
+    }
+
+    .cor-container {
+        width: 100% !important;
+        height: auto !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    .acd-inline-input {
+        border: 0 !important;
+        border-bottom: 1px solid #000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .acd-inline-input.has-value {
+        border-bottom: 1px solid #000 !important;
+    }
+
+    .acd-inline-input.has-value.no-print-underline {
+        border-bottom: 0 !important;
+    }
+
+    .loa-check input[type="checkbox"] {
+        display: none !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .loa-check {
+        position: relative;
+        display: inline !important;
+        font-weight: 600;
+    }
+
+    .loa-check::before {
+        content: "( ) ";
+    }
+
+    .loa-check[data-print-checked="true"]::before {
+        content: "(✓) ";
+    }
+
+        .loa-grid-third .acd-inline-input--lg {
+            width: calc(100% - 12px) !important;
+            max-width: calc(100% - 12px) !important;
+            box-sizing: border-box !important;
+        }
+
+    /* LOA print should stay readable within reduced margins */
+    .loa-form,
+    .loa-form * {
+        font-size: 14px !important;
+        line-height: 1.1 !important;
+    }
+
+    .loa-form h2 {
+        font-size: 16px !important;
+    }
+
+    /* Ensure Change of Grade print remains exactly 16px */
+    .cog-form,
+    .cog-form * {
+        font-size: 16px !important;
+        line-height: 1.1 !important;
+    }
+
+    .cog-form h2,
+    .cog-title-main {
+        font-size: 16px !important;
+    }
+
+    .cog-line-row--details {
+        flex-wrap: wrap !important;
+        white-space: normal !important;
+        gap: 6px !important;
+    }
+
+    .cog-line-row--details .cog-box--sm {
+        width: 96px !important;
+    }
+
+    .cog-line-row--details .cog-box--prog {
+        width: 150px !important;
+    }
+
+    .cog-line-row--details .cog-box--course {
+        flex: 0 0 170px !important;
+        width: 170px !important;
+        min-width: 170px !important;
+        max-width: 170px !important;
+    }
+
+    .cog-line-row--details .cog-course-combo {
+        flex: 0 0 210px !important;
+        width: 210px !important;
+        min-width: 210px !important;
+        max-width: 210px !important;
+    }
+
+    .cog-line-row--details .cog-box--course-short {
+        width: 42px !important;
+    }
+
+    .cog-line-row--details .cog-box--course-long {
+        width: 168px !important;
+    }
+
+    .cog-signatures > div {
+        min-width: 0 !important;
+    }
+
+    .cog-signatures .cog-line {
+        overflow: hidden !important;
+    }
+
+    .cog-signatures .acd-inline-input--lg {
+        width: calc(100% - 8px) !important;
+        max-width: calc(100% - 8px) !important;
+        box-sizing: border-box !important;
+    }
+}
+
+/* Late Leave Appeal */
+.loa-form { min-height: 320mm; }
+
+.loa-header,
+.cog-header,
+.ce-header {
+    background: transparent;
+    border-bottom: none;
+    min-height: 74px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.loa-header-center,
+.cog-header-center,
+.ce-header-center {
+    color: #000;
+}
+
+.form-logo-left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.form-logo-left .cor-logo {
+    height: 108px;
+    width: auto;
+    max-height: 108px;
+}
+
+/* If the header area is narrow, allow the logo to reposition above the pyramid */
+@include down(600px) {
+    .acd-form .cor-header-left {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        margin-bottom: 8px;
+        justify-content: center;
+    }
+
+    .acd-form .cor-header-center {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        width: 100%;
+        max-width: none;
+    }
+}
+
+.form-header-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0;
+}
+
+.loa-gov,
+.ce-gov {
+    margin: 0;
+    font-size: 0.58rem;
+    font-weight: 600;
+    color: #000;
+}
+
+.loa-school,
+.ce-school,
+.cog-school {
+    margin: 0;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #000;
+}
+
+.loa-office,
+.ce-office,
+.cog-office {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #c4d600;
+    letter-spacing: 1.8px;
+}
+
+.loa-address,
+.loa-contact,
+.ce-contact {
+    margin: 0;
+    font-size: 0.52rem;
+    font-weight: 600;
+    color: #000;
+}
+
+.loa-body,
+.cog-body,
+.ce-body {
+    padding: 16px 18px 20px;
+    font-size: 0.76rem;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0;
+}
+
+.loa-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.loa-body h2,
+.cog-body h2,
+.ce-body h2 {
+    margin: 4px 0 10px;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+.loa-text-line,
+.ce-body p,
+.cog-body p {
+    margin: 7px 0;
+    line-height: 1.35;
+}
+
+.loa-first-indent {
+    display: inline-block;
+    padding-left: 20px;
+}
+
+.loa-page .acd-canvas {
+    --acd-paper-width: 232mm;
+}
+
+.loa-body h2 {
+    font-size: 1.55rem;
+    white-space: nowrap;
+}
+
+.loa-options {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px 14px;
+    margin: 6px 0 8px;
+}
+
+.loa-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.loa-check input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    margin: 0;
+    border: 1px solid #4c5660;
+    background: #fff;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.loa-check input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0;
+    width: 4px;
+    height: 8px;
+    border: solid #1f2a35;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.loa-medical-check {
+    padding-left: 18px;
+}
+
+.loa-body ul {
+    margin: 6px 0 8px 20px;
+}
+
+.loa-sign,
+.loa-sign-sub,
+.loa-student-no {
+    text-align: center;
+    margin: 0;
+}
+
+.loa-student-no { margin-top: 6px; }
+
+.loa-student-divider {
+    border-top: 1px dashed #9ea6ae;
+    margin: 8px 0 10px;
+}
+
+.loa-grid {
+    display: grid;
+    grid-template-columns: 34.3% 35.8% 29.9%;
+    gap: 0;
+    border: 1px solid #9ea6ae;
+    margin-top: 10px;
+}
+
+.loa-box {
+    padding: 8px;
+    border-right: 1px solid #9ea6ae;
+    min-height: 130px;
+}
+
+.loa-grid .loa-box:last-child { border-right: none; }
+
+.loa-box p { margin: 2px 0; line-height: 1.3; }
+
+.loa-box table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+}
+
+.loa-box table td {
+    border: 1px solid #b0b7be;
+    padding: 3px 4px;
+}
+
+.loa-box table td:last-child {
+    white-space: nowrap;
+}
+
+.loa-box table .loa-check {
+    margin-right: 8px;
+}
+
+.loa-remark-line {
+    margin: 2px 0;
+}
+
+.loa-remark-cont {
+    padding-left: 24px;
+}
+
+.loa-assessed { margin-top: 18px !important; }
+.loa-assessor { font-weight: 700; text-align: center; }
+
+.loa-grid-second,
+.loa-grid-third {
+    margin-top: 0;
+    border-top: none;
+}
+
+.loa-grid-second {
+    grid-template-columns: 34.3% 35.8% 29.9%;
+}
+
+.loa-grid-third {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.loa-small-sign { min-height: 90px; }
+
+.loa-grid-third .loa-sign-line {
+    overflow: hidden;
+}
+
+.loa-grid-third .acd-inline-input--lg {
+    width: calc(100% - 12px);
+    max-width: calc(100% - 12px);
+    box-sizing: border-box;
+}
+
+.loa-sign-line {
+    margin-top: 8px !important;
+    min-height: 12px;
+}
+
+.loa-sign-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.loa-present-box {
+    margin-top: 10px;
+    border: 1px solid #9ea6ae;
+    padding: 8px;
+}
+
+.loa-present-divider {
+    border-top: 1px dashed #9ea6ae;
+    margin-top: 10px;
+}
+
+/* Change Grade */
+.cog-form { min-height: 240mm; }
+
+.cog-form .cog-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.cog-form .form-header-copy {
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+
+.cog-form .loa-school,
+.cog-form .cog-title-main,
+.cog-form .cog-form-no-header {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+}
+
+.cog-form .loa-school {
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.cog-header-right {
+    display: none;
+}
+
+.cog-form-no-header {
+    margin: 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #000;
+    white-space: nowrap;
+    letter-spacing: 0.15px;
+}
+
+.cog-title-main {
+    margin-top: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.cog-date {
+    text-align: right;
+    margin: 4px 0 14px;
+}
+
+.cog-line-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 8px 0;
+    white-space: nowrap;
+}
+
+.cog-line-row--details {
+    flex-wrap: wrap;
+    white-space: normal;
+}
+
+.cog-box {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    border: 1px solid #9ea6ae;
+    vertical-align: middle;
+    background: #fff;
+    padding: 0 6px;
+    overflow: visible;
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+.cog-box--sm { width: 108px; }
+.cog-box--md { width: 250px; }
+.cog-box--lg { width: 340px; }
+.cog-box--xl { width: 470px; }
+.cog-box--xxl { width: 560px; }
+.cog-box--prog { width: 170px; }
+
+.cog-box--course {
+    flex: 1;
+    min-width: 220px;
+    max-width: 100%;
+}
+
+.cog-course-combo {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.cog-box--course-short { width: 54px; }
+.cog-box--course-long { width: 185px; }
+
+.cog-course-combo .cog-box {
+    margin: 0;
+}
+
+.cog-course-combo .cog-box--course-long {
+    border-left: 0;
+}
+
+.cog-line-fill {
+    display: inline-block;
+    flex: 1;
+    border-bottom: 1px solid #9ea6ae;
+    min-height: 18px;
+}
+
+.cog-line-fill--full {
+    display: block;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.cog-subtitle {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 16px 0 8px;
+}
+
+.cog-computation table {
+    width: 56%;
+    border-collapse: collapse;
+    margin: 4px 0 16px;
+}
+
+.cog-computation th,
+.cog-computation td {
+    border: 1px solid #98a1aa;
+    padding: 5px 8px;
+    font-size: 0.72rem;
+}
+
+.cog-signatures {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.cog-signatures > div {
+    min-width: 0;
+}
+
+.cog-line {
+    min-height: 14px;
+    margin: 8px 0 4px;
+    overflow: hidden;
+}
+
+.cog-signatures .acd-inline-input--lg {
+    width: calc(100% - 8px);
+    max-width: calc(100% - 8px);
+    box-sizing: border-box;
+}
+
+.cog-attachment {
+    margin-top: 12px;
+}
+
+.cog-cut-divider {
+    border-top: 1px dashed #9ea6ae;
+    margin-top: 12px;
+}
+
+/* Cross Enroll */
+.ce-form { min-height: 320mm; }
+
+.ce-date {
+    text-align: right;
+    margin-top: 8px !important;
+}
+
+.ce-subject-grid {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr;
+    gap: 36px;
+    margin: 10px 0;
+}
+
+.ce-subject-grid p {
+    margin: 6px 0;
+}
+
+.ce-total {
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 8px 0 !important;
+}
+
+.ce-sign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 44px;
+    margin-top: 12px;
+}
+
+.ce-invalid {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.05;
+    text-align: center;
+    margin: 6px 0 18px !important;
+}
+
+.ce-line {
+    min-height: 14px;
+    margin: 10px 0 4px;
+}
+
+.ce-mt { margin-top: 22px !important; }
+
+.ce-print-by {
+    margin-top: 20px !important;
+    font-size: 0.64rem;
+}
+
+/* Completion Grade */
+.comp-body { min-height: 200mm; }
+.comp-date-wrap { text-align: right; margin-bottom: 20px; }
+.comp-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border: 1px solid #9ea6ae; padding: 16px; margin-bottom: 20px; }
+.comp-info-col { display: flex; flex-direction: column; gap: 10px; }
+.comp-info-row { display: flex; gap: 12px; align-items: baseline; }
+.comp-info-row span:first-child { font-weight: 700; min-width: 90px; }
+.comp-info-title { font-weight: 800; font-size: 0.85rem; margin: 0 0 10px; text-decoration: underline; }
+.comp-cert { margin: 20px 0; text-align: justify; line-height: 1.5; }
+.comp-table { width: 100%; border-collapse: collapse; margin: 20px 0 30px; }
+.comp-table th, .comp-table td { border: 1px solid #9aa1a8; padding: 8px; text-align: center; }
+.comp-table th { background: #f8fafb; font-weight: 700; text-transform: uppercase; font-size: 0.72rem; }
+.comp-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; }
+.comp-sig-col { display: flex; flex-direction: column; gap: 30px; }
+.comp-sig-line { text-align: center; padding-top: 6px; font-weight: 700; }
+.comp-sig-line span { font-weight: 400; font-size: 0.7rem; display: block; margin-top: 2px; }

@@ -18,6 +18,12 @@ class RedirectIfAuthenticated
     public function handle($request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->check()) {
+            $user = Auth::guard($guard)->user();
+
+            if ($user && $user->module === 'student') {
+                return redirect()->route('student.section-offering');
+            }
+
             return redirect('/home');
         }
 

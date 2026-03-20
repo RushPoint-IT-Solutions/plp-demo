@@ -44,6 +44,7 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 | Replace this with real auth when the backend team is ready.
 */
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
+Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
 
 /*
 |--------------------------------------------------------------------------
@@ -79,7 +80,7 @@ Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login'
 | Student Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('student')->name('student.')->group(function () {
+Route::prefix('student')->name('student.')->middleware(['auth', 'student.user'])->group(function () {
     Route::get('/', function () {
         return view('student.access-module');
     })->name('access-module');
@@ -87,6 +88,7 @@ Route::prefix('student')->name('student.')->group(function () {
     Route::get('/grades', 'Student\StudentController@grades')->name('grades');
     Route::get('/schedule', 'Student\StudentController@schedule')->name('schedule');
     Route::get('/events', 'Student\StudentController@events')->name('events');
+    Route::get('/forms/{category}', 'Student\StudentController@forms')->name('forms.show');
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
     Route::get('/profile/edit', 'Student\StudentController@editProfile')->name('profile.edit');
     Route::post('/profile', 'Student\StudentController@updateProfile')->name('profile.update');

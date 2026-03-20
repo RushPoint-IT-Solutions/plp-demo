@@ -44,9 +44,6 @@
         </table>
     </div>
 
-    {{-- Total --}}
-    <div class="sf-total" id="sfTotal">Total Subjects: 0</div>
-
     {{-- ══════ NEW / EDIT SUBJECT MODAL ══════ --}}
     <div class="req-modal-overlay" id="sfModal" style="display:none;" onclick="closeSfModal(event)">
         <div class="req-modal-box" style="max-width:520px;">

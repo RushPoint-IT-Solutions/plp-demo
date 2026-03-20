@@ -9,17 +9,34 @@ use App\Subject;
 use App\Semester;
 use App\Course;
 use App\YearBlock;
+use App\StudentSubjectGrade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class StudentController extends Controller
 {
+    private function currentStudent()
+    {
+        $user = Auth::user();
+
+        if ($user && $user->student_id) {
+            return Student::with('subjects')->find($user->student_id);
+        }
+
+        if ($user && !empty($user->username)) {
+            return Student::with('subjects')->where('student_no', $user->username)->first();
+        }
+
+        return Student::with('subjects')->first();
+    }
+
     /**
      * Show the Section Offering / COR page.
      */
     public function sectionOffering()
     {
-        $student    = Student::with('subjects')->first();
+        $student    = $this->currentStudent();
         $subjects   = $student ? $student->subjects : collect();
         $semesters  = Semester::all();
         $courses    = Course::all();
@@ -35,7 +52,34 @@ class StudentController extends Controller
      */
     public function grades()
     {
-        return view('student.grades');
+        $student = $this->currentStudent();
+
+        $gradeRows = collect();
+        if ($student) {
+            $gradeRows = StudentSubjectGrade::with('subject')
+                ->where('student_id', $student->id)
+                ->get();
+        }
+
+        $semesterOptions = $gradeRows
+            ->map(function ($row) {
+                return optional($row->subject)->school_year . '|' . optional($row->subject)->semester;
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $selectedSemester = request('semester');
+
+        if ($selectedSemester) {
+            [$selectedSchoolYear, $selectedSem] = array_pad(explode('|', $selectedSemester), 2, null);
+            $gradeRows = $gradeRows->filter(function ($row) use ($selectedSchoolYear, $selectedSem) {
+                return optional($row->subject)->school_year === $selectedSchoolYear
+                    && optional($row->subject)->semester === $selectedSem;
+            })->values();
+        }
+
+        return view('student.grades', compact('student', 'gradeRows', 'semesterOptions', 'selectedSemester'));
     }
 
     /**
@@ -43,7 +87,7 @@ class StudentController extends Controller
      */
     public function schedule()
     {
-        $student  = Student::with('subjects')->first();
+        $student  = $this->currentStudent();
         $subjects = $student ? $student->subjects : collect();
 
         $dayMap = [
@@ -79,15 +123,44 @@ class StudentController extends Controller
     }
 
     /**
+     * Show a forms sub-module page by category.
+     */
+    public function forms(string $category)
+    {
+        $viewByCategory = [
+            'add-change-delete' => 'student.forms.add-change-delete',
+            'late-leave-appeal' => 'student.forms.late-leave-appeal',
+            'change-grade'      => 'student.forms.change-grade',
+            'completion-grade'  => 'student.forms.completion-grade',
+            'cross-enroll'      => 'student.forms.cross-enroll',
+        ];
+
+        if (!array_key_exists($category, $viewByCategory)) {
+            abort(404);
+        }
+
+        $student = $this->currentStudent();
+        $profile = $student
+            ? StudentProfile::where('student_no', $student->student_no)->first()
+            : null;
+
+        return view($viewByCategory[$category], compact('student', 'profile'));
+    }
+
+    /**
      * Show the Profile view page (read-only if complete, else redirect to edit).
      */
     public function profile()
     {
-        $profile = StudentProfile::first();
+        $student = $this->currentStudent();
+        $profile = $student
+            ? StudentProfile::where('student_no', $student->student_no)->first()
+            : null;
+
         if (!$profile || !$profile->profile_complete) {
             return redirect()->route('student.profile.edit');
         }
-        $student = Student::first();
+
         return view('student.profile-view', compact('profile', 'student'));
     }
 
@@ -96,7 +169,11 @@ class StudentController extends Controller
      */
     public function editProfile()
     {
-        $profile = StudentProfile::first();
+        $student = $this->currentStudent();
+        $profile = $student
+            ? StudentProfile::where('student_no', $student->student_no)->first()
+            : null;
+
         return view('student.profile', compact('profile'));
     }
 
@@ -227,10 +304,17 @@ class StudentController extends Controller
             'evening_classes'            => 'required|string|max:255',
         ]);
 
-        $profile = StudentProfile::first() ?? new StudentProfile();
+        $student = $this->currentStudent();
+
+        if (!$student) {
+            return redirect()->route('module.login', ['module' => 'student'])
+                ->withErrors(['username' => 'Student record not found for this account.']);
+        }
+
+        $profile = StudentProfile::where('student_no', $student->student_no)->first() ?? new StudentProfile();
 
         // Map form field names to DB column names
-        $profile->student_no    = $data['student_number'] ?? $profile->student_no;
+        $profile->student_no    = $student->student_no;
         $profile->first_name    = $data['first_name'];
         $profile->last_name     = $data['last_name'];
         $profile->middle_name   = $data['middle_name'];
@@ -336,6 +420,12 @@ class StudentController extends Controller
         $profile->profile_complete           = true;
 
         $profile->save();
+
+        // Keep legacy student fields aligned with profile edits so pages/forms
+        // still reading App\Student values won't show stale seeded data.
+        $student->name = trim($profile->first_name . ' ' . $profile->last_name);
+        $student->sex = $profile->gender;
+        $student->save();
 
         return redirect()->route('student.profile')->with('success', 'Profile saved successfully!');
     }

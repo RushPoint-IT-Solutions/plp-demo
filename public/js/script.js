@@ -59,9 +59,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             } else if (this.textContent.trim() === 'Download COR') {
                 // ── State 1 → 2 ──────────────────────────────────
-                // Hide the filter section and show the download toast
+                // Hide the filter section, trigger print view, and reset
                 filterSection.style.display = 'none';
-                showToast();
+                window.print();
+                resetToDefault();
             }
         });
     }
@@ -138,10 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const entriesSelect = document.getElementById('pfEntriesLimit');
         const table = document.getElementById('pfTable');
-        const pageInfo = document.querySelector('.pf-page-info');
 
         if (entriesSelect && table) {
-            const tableRows = Array.from(table.querySelectorAll('tbody tr'));
+            const tableBody = table.querySelector('tbody');
+            const tableRows = tableBody ? Array.from(tableBody.querySelectorAll('tr')) : [];
             const emptyRows = tableRows.filter(function (row) {
                 return row.querySelector('.pf-empty-row') !== null;
             });
@@ -162,8 +163,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.style.display = total === 0 ? '' : 'none';
                 });
 
-                if (pageInfo) {
-                    pageInfo.textContent = 'Showing ' + visibleCount + ' of ' + total + ' program(s)';
+                if (tableBody) {
+                    const oldTotalRow = tableBody.querySelector('.pf-total-row');
+                    if (oldTotalRow) {
+                        oldTotalRow.remove();
+                    }
+
+                    const totalRow = document.createElement('tr');
+                    totalRow.className = 'pf-total-row';
+                    totalRow.innerHTML = '<td colspan="5" class="pf-total-cell">Total Programs: <strong>' + visibleCount + '</strong></td>';
+                    tableBody.appendChild(totalRow);
                 }
             }
 

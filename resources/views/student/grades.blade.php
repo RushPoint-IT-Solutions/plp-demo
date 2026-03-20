@@ -9,12 +9,18 @@
     {{-- Semester Filter --}}
     <div class="mb-4 grades-filter-row">
         <label class="form-label-plp">SELECTED SEMESTER</label>
-        <select class="form-select form-input-long" id="semesterFilter">
-            <option value="">Select Semester</option>
-            <option value="1st-2024">SY 2024-2025 First Semester</option>
-            <option value="2nd-2024">SY 2024-2025 Second Semester</option>
-            <option value="1st-2025">SY 2025-2026 First Semester</option>
-            <option value="2nd-2025" selected>SY 2025-2026 Second Semester</option>
+        <select class="form-select form-input-long" id="semesterFilter" onchange="if(this.value){window.location='?semester='+encodeURIComponent(this.value)}else{window.location='{{ route('student.grades') }}'}">
+            <option value="">All Semesters</option>
+            @foreach($semesterOptions as $option)
+                @php
+                    $parts = explode('|', $option);
+                    $sy = $parts[0] ?? '';
+                    $sem = $parts[1] ?? '';
+                @endphp
+                <option value="{{ $option }}" {{ ($selectedSemester === $option) ? 'selected' : '' }}>
+                    SY {{ $sy }} {{ $sem }}
+                </option>
+            @endforeach
         </select>
     </div>
 
@@ -33,42 +39,29 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="sched-td">LAWR19</td>
-                    <td class="sched-td">Life and Works of Rizal</td>
-                    <td class="sched-td">3.0</td>
-                    <td class="sched-td">3.0</td>
-                    <td class="sched-td">0.0</td>
-                    <td class="sched-td">1.5</td>
-                    <td class="sched-td remark-passed">Passed</td>
-                </tr>
-                <tr>
-                    <td class="sched-td">SAM125</td>
-                    <td class="sched-td">System Administration and Maintenance</td>
-                    <td class="sched-td">3.0</td>
-                    <td class="sched-td">2.0</td>
-                    <td class="sched-td">1.0</td>
-                    <td class="sched-td">INC</td>
-                    <td class="sched-td remark-incomplete">Incomplete</td>
-                </tr>
-                <tr>
-                    <td class="sched-td">CP126</td>
-                    <td class="sched-td">Capstone Project</td>
-                    <td class="sched-td">3.0</td>
-                    <td class="sched-td">1.0</td>
-                    <td class="sched-td">2.0</td>
-                    <td class="sched-td">1.8</td>
-                    <td class="sched-td remark-passed">Passed</td>
-                </tr>
-                <tr>
-                    <td class="sched-td">SPI128</td>
-                    <td class="sched-td">Social and Professional Issues</td>
-                    <td class="sched-td">3.0</td>
-                    <td class="sched-td">3.0</td>
-                    <td class="sched-td">0.0</td>
-                    <td class="sched-td">0.0</td>
-                    <td class="sched-td remark-nyp">NYP</td>
-                </tr>
+                @forelse($gradeRows as $row)
+                    @php
+                        $subject = $row->subject;
+                        $remarksClass = strtolower((string) $row->remarks) === 'passed'
+                            ? 'remark-passed'
+                            : (strtolower((string) $row->remarks) === 'incomplete' ? 'remark-incomplete' : 'remark-nyp');
+                        $lecUnits = number_format((float) optional($subject)->units, 1);
+                        $labUnits = '0.0';
+                    @endphp
+                    <tr>
+                        <td class="sched-td">{{ optional($subject)->code }}</td>
+                        <td class="sched-td">{{ optional($subject)->name }}</td>
+                        <td class="sched-td">{{ number_format((float) optional($subject)->units, 1) }}</td>
+                        <td class="sched-td">{{ $lecUnits }}</td>
+                        <td class="sched-td">{{ $labUnits }}</td>
+                        <td class="sched-td">{{ number_format((float) $row->final_average, 2) }}</td>
+                        <td class="sched-td {{ $remarksClass }}">{{ $row->remarks }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td class="sched-td" colspan="7">No grade records found for this student.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
