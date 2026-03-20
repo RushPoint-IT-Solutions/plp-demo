@@ -857,7 +857,7 @@ select:hover {
   --cor-header-pad-x: clamp(14px, 2.2vw, 20px);
   --cor-header-gap: clamp(6px, 1.5vw, 10px);
   --cor-logo-size: clamp(64px, 8.5vw, 78px);
-  --cor-school-size: clamp(28px, 5.2vw, 52px);
+  --cor-school-size: clamp(28px, 5.2vw, 28px);
   --cor-title-size: clamp(14px, 2.4vw, 18px);
   --cor-reg-size: clamp(0.62rem, 1.6vw, 0.75rem);
   border: 2px solid #000;
@@ -1454,36 +1454,72 @@ select:hover {
 }
 
 .cal-btn {
-  background: #fff;
-  border: 1px solid #ccc;
+  background: transparent;
+  border: 1px solid rgba(16, 24, 32, 0.06);
   color: #333333;
   font-family: "Poppins", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 6px 13px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 6px 10px;
   cursor: pointer;
-  line-height: 1.4;
-  transition: background 0.15s ease;
-}
-
-.cal-btn:first-child {
-  border-radius: 4px 0 0 4px;
-}
-
-.cal-btn:last-child {
-  border-radius: 0 4px 4px 0;
-}
-
-.cal-btn:not(:first-child) {
-  border-left: none;
-}
-
-.cal-btn:hover {
-  background: #f0f0f0;
+  line-height: 1.2;
+  transition: background 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+  border-radius: 4px;
+  box-shadow: none;
 }
 
 .cal-btn svg {
   display: block;
+}
+
+.cal-btn:hover {
+  background: #fafafa;
+  transform: translateY(-1px);
+}
+
+.cal-btn:active {
+  transform: translateY(0);
+}
+
+/* Calendar nav variants (minimal) */
+
+.cal-nav .cal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.cal-nav #prevMonthBtn,
+.cal-nav #nextMonthBtn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 999px;
+  /* circular */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-nav #prevMonthBtn svg,
+.cal-nav #nextMonthBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cal-nav #todayBtn {
+  padding: 6px 12px;
+  margin: 0 8px;
+  background: transparent;
+  color: #333333;
+  border: 1px solid rgba(16, 24, 32, 0.06);
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.cal-nav #todayBtn:hover {
+  background: #f6f6f6;
 }
 
 .cal-month-title {
@@ -2470,14 +2506,16 @@ select:hover {
   font-weight: 700;
 }
 
-.remark-incomplete {
+.remark-incomplete,
+.remark-nyp {
   color: #dc3545;
   font-weight: 700;
 }
 
 .remark-nyp {
-  color: #555555;
-  font-weight: 600;
+  /* fallback for any special overrides, now same as incomplete */
+  color: #dc3545;
+  font-weight: 700;
 }
 
 .section-offering-page {

@@ -1015,23 +1015,68 @@
 }
 
 .cal-btn {
-    background: #fff;
-    border: 1px solid #ccc;
+    background: transparent;
+    border: 1px solid rgba(16,24,32,0.06);
     color: $text-primary;
     font-family: $font-primary;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 6px 13px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 6px 10px;
     cursor: pointer;
-    line-height: 1.4;
-    transition: background 0.15s ease;
-
-    &:first-child { border-radius: $radius-sm 0 0 $radius-sm; }
-    &:last-child  { border-radius: 0 $radius-sm $radius-sm 0; }
-    &:not(:first-child) { border-left: none; }
-    &:hover { background: #f0f0f0; }
+    line-height: 1.2;
+    transition: background 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+    border-radius: $radius-sm;
+    box-shadow: none;
 
     svg { display: block; }
+
+    &:hover {
+        background: #fafafa;
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+/* Calendar nav variants (minimal) */
+.cal-nav .cal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.cal-nav #prevMonthBtn,
+.cal-nav #nextMonthBtn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 999px; /* circular */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cal-nav #prevMonthBtn svg,
+.cal-nav #nextMonthBtn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.cal-nav #todayBtn {
+    padding: 6px 12px;
+    margin: 0 8px;
+    background: transparent;
+    color: $text-primary;
+    border: 1px solid rgba(16,24,32,0.06);
+    font-weight: 600;
+    border-radius: $radius-sm;
+}
+
+.cal-nav #todayBtn:hover {
+    background: #f6f6f6;
 }
 
 .cal-month-title {

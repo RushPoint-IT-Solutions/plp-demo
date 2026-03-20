@@ -30,12 +30,14 @@
     font-weight: 700;
 }
 
-.remark-incomplete {
+.remark-incomplete,
+.remark-nyp {
     color: $danger;
     font-weight: 700;
 }
 
 .remark-nyp {
-    color: $text-secondary;
-    font-weight: 600;
+    /* fallback for any special overrides, now same as incomplete */
+    color: $danger;
+    font-weight: 700;
 }
