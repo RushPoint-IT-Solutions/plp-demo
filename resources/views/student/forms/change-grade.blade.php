@@ -22,6 +22,7 @@
                 <div class="cor-header-center form-header-copy">
                     <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
                     <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
+                    <h2 class="cog-title-main" style="margin-top: 15px; font-size: 1.8rem; font-weight: bold;">APPLICATION FOR CHANGE OF GRADE</h2>
                 </div>
                 <div class="cor-header-right cog-header-right">
                     <p class="cog-form-no-header">PLPRO FORM NO. 3F REVISED 2023</p>
@@ -29,37 +30,38 @@
             </div>
 
             <div class="cog-body">
-                <h2 class="cog-title-main">APPLICATION FOR CHANGE OF GRADE</h2>
-                <p class="cog-date">Date of Application: <span class="cog-box cog-box--lg"></span></p>
+                <div class="comp-date-wrap">
+                    <p class="cog-date">Date of Application: <input type="text" class="cog-box cog-box--lg acd-inline-input no-print-underline" value="{{ now()->format('F d, Y') }}"></p>
+                </div>
 
                 <p class="cog-line-row">
                     <span>This is to certify that the ( ) Midterm ( ) Final grade of (student's name)</span>
-                    <span class="cog-box cog-box--xl">{{ $displayName ?: optional($student)->name }}</span>
+                    <input type="text" class="cog-box cog-box--xl acd-inline-input" value="{{ $displayName ?: optional($student)->name }}">
                 </p>
                 <p class="cog-line-row">
                     <span>with student number</span>
-                    <span class="cog-box cog-box--sm">{{ $displayStudentNo }}</span>
+                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ $displayStudentNo }}">
                     <span>of (Program, Year &amp; Section)</span>
-                    <span class="cog-box cog-box--md">{{ trim((optional($student)->program ?? '') . ' ' . (optional($student)->year_level ?? '')) }}</span>
+                    <input type="text" class="cog-box cog-box--md acd-inline-input" value="{{ trim((optional($student)->program ?? '') . ' ' . (optional($student)->year_level ?? '')) }}">
                     <span>in (course code &amp; description)</span>
-                    <span class="cog-box cog-box--md"></span>
+                    <input type="text" class="cog-box cog-box--md acd-inline-input" value="">
                 </p>
                 <p class="cog-line-row">
-                    <span class="cog-box cog-box--xxl"></span>
+                    <input type="text" class="cog-box cog-box--xxl acd-inline-input" value="">
                     <span>for the</span>
-                    <span class="cog-box cog-box--sm">{{ optional($student)->semester }}</span>
+                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ optional($student)->semester }}">
                     <span>Semester of Academic Year</span>
-                    <span class="cog-box cog-box--sm">{{ optional($student)->school_year }}</span>
+                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ optional($student)->school_year }}">
                 </p>
                 <p class="cog-line-row">
                     <span>Grade has been changed from</span>
-                    <span class="cog-box cog-box--sm"></span>
+                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="">
                     <span>to</span>
-                    <span class="cog-box cog-box--sm"></span>
+                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="">
                     <span>due to the following reason(s):</span>
-                    <span class="cog-line-fill"></span>
+                    <input type="text" class="acd-inline-input cog-line-fill" value="">
                 </p>
-                <p class="cog-line-fill cog-line-fill--full"></p>
+                <p><input type="text" class="acd-inline-input cog-line-fill cog-line-fill--full" value=""></p>
 
                 <div class="cog-computation">
                     <p class="cog-subtitle">NEW SEMESTRAL GRADE COMPUTATION:</p>
@@ -76,11 +78,11 @@
                 </div>
 
                 <div class="cog-signatures">
-                    <div><p>Requested by:</p><p class="cog-line"></p><p><strong>Faculty</strong></p></div>
-                    <div><p>Conforme:</p><p class="cog-line"></p><p><strong>Student</strong></p></div>
-                    <div><p>Approved by:</p><p class="cog-line"></p><p><strong>College Dean of Student</strong></p></div>
-                    <div><p>Approved by:</p><p class="cog-line"></p><p><strong>College Dean of Faculty</strong></p></div>
-                    <div><p>Noted by:</p><p class="cog-line"></p><p><strong>University Registrar</strong></p></div>
+                    <div><p>Requested by:</p><p class="cog-line"><input type="text" class="acd-inline-input acd-inline-input--lg"></p><p><strong>Faculty</strong></p></div>
+                    <div><p>Conforme:</p><p class="cog-line"><input type="text" class="acd-inline-input acd-inline-input--lg"></p><p><strong>Student</strong></p></div>
+                    <div><p>Approved by:</p><p class="cog-line"><input type="text" class="acd-inline-input acd-inline-input--lg"></p><p><strong>College Dean of Student</strong></p></div>
+                    <div><p>Approved by:</p><p class="cog-line"><input type="text" class="acd-inline-input acd-inline-input--lg"></p><p><strong>College Dean of Faculty</strong></p></div>
+                    <div><p>Noted by:</p><p class="cog-line"><input type="text" class="acd-inline-input acd-inline-input--lg"></p><p><strong>University Registrar</strong></p></div>
                 </div>
 
                 <p class="cog-attachment">Attachment:<br>1. Class Record of the Faculty</p>

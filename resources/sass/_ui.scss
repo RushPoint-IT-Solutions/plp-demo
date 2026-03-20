@@ -414,11 +414,19 @@
 }
 
 .cor-container {
+    --cor-header-min-height: clamp(72px, 8vw, 78px);
+    --cor-header-pad-y: clamp(8px, 1.2vw, 10px);
+    --cor-header-pad-x: clamp(14px, 2.2vw, 20px);
+    --cor-header-gap: clamp(6px, 1.5vw, 10px);
+    --cor-logo-size: clamp(64px, 8.5vw, 78px);
+    --cor-school-size: clamp(28px, 5.2vw, 28px);
+    --cor-title-size: clamp(14px, 2.4vw, 18px);
+    --cor-reg-size: clamp(0.62rem, 1.6vw, 0.75rem);
+
     border: 2px solid #000;
-    border-radius: 4px;
+    border-radius: 0;
     padding: 0;
     background-color: #fff;
-    margin-top: 30px;
     overflow: hidden;
     width: 210mm;
     min-height: 250mm;
@@ -429,29 +437,43 @@
 
 .cor-header {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+        "left . right"
+        "title title title";
     align-items: center;
-    padding: 8px 20px;
-    min-height: 70px;
+    padding: var(--cor-header-pad-y) var(--cor-header-pad-x);
+    min-height: calc(var(--cor-header-min-height) + 14px);
+    row-gap: 4px;
     background-color: #006837;
     border-bottom: 2px solid #006837;
 }
 
 .cor-header-left {
+    grid-area: left;
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: var(--cor-header-gap);
 }
 
-.cor-header-left img,
-.cor-school-text-img {
+.cor-header-left img {
     width: auto;
-    height: 48px;
     flex-shrink: 0;
     object-fit: contain;
 }
 
+.cor-logo {
+    height: var(--cor-logo-size);
+}
+
+.cor-school-text-img {
+    height: var(--cor-school-size);
+}
+
 .cor-header-center {
+    grid-area: title;
+    justify-self: center;
+    align-self: center;
     text-align: center;
     padding: 0 12px;
     white-space: nowrap;
@@ -459,7 +481,7 @@
 
 .cor-title {
     font-family: 'Roboto', 'Poppins', sans-serif;
-    font-size: 18px;
+    font-size: var(--cor-title-size);
     font-weight: 700;
     color: #ffffff;
     text-transform: uppercase;
@@ -468,6 +490,7 @@
 }
 
 .cor-header-right {
+    grid-area: right;
     text-align: right;
     white-space: nowrap;
     display: flex;
@@ -475,6 +498,7 @@
     align-items: flex-end;
     justify-content: center;
     align-self: stretch;
+    z-index: 2;
 }
 
 .cor-label {
@@ -486,14 +510,14 @@
 }
 
 .cor-reg-number {
-    font-size: 0.85rem;
+    font-size: var(--cor-reg-size);
     font-weight: 700;
     color: #ff3333;
     margin: 0;
 }
 
 .cor-student-info {
-    padding: 20px 30px;
+    padding: 20px 42px;
     border-bottom: 1px solid #000;
 }
 
@@ -542,7 +566,10 @@
 }
 
 .cor-table {
-    width: 100%;
+    width: calc(100% - 84px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 14px;
     border-collapse: collapse;
 }
 
@@ -558,7 +585,24 @@
     color: #000;
     border: none;
     font-weight: 700;
+}
+
+.cor-th {
+    text-align: center;
+}
+
+.cor-td {
     text-align: left;
+}
+
+.cor-table .cor-th:first-child,
+.cor-table .cor-td:first-child {
+    padding-left: 24px;
+}
+
+.cor-table .cor-th:last-child,
+.cor-table .cor-td:last-child {
+    padding-right: 24px;
 }
 
 .cor-table tbody tr {
@@ -577,8 +621,17 @@
     white-space: normal;
 }
 
+.cor-table .cor-th:nth-child(5),
+.cor-table .cor-th:nth-child(6),
+.cor-table .cor-th:nth-child(7),
+.cor-table .cor-td:nth-child(5),
+.cor-table .cor-td:nth-child(6),
+.cor-table .cor-td:nth-child(7) {
+    white-space: nowrap;
+}
+
 .cor-totals {
-    padding: 15px 30px;
+    padding: 15px 42px;
     border-top: 1px solid #000;
 }
 
@@ -604,7 +657,7 @@
 .cor-signatures {
     display: flex;
     justify-content: space-between;
-    padding: 40px 60px 30px;
+    padding: 40px 80px 30px;
     margin-top: 20px;
 }
 
@@ -1808,6 +1861,26 @@
 }
 
 @media print {
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+
+    html,
+    body.student-portal-body,
+    .student-layout,
+    .student-main-wrapper,
+    .content-footer-wrap,
+    .student-content,
+    .cor-scroll-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+
     .plp-sidebar,
     .student-topbar,
     .student-page-header,
@@ -1819,16 +1892,68 @@
     .cor-container {
         display: block !important;
         zoom: 1 !important;
-        width: 210mm;
-        height: 297mm;
-        margin: 0;
-        padding: 0;
-        border: 2px solid #000;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0;
         box-shadow: none;
     }
 
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+    }
+
+    .cor-container {
+        font-family: "Times New Roman", Times, serif !important;
+    }
+    
+    .cor-container * {
+        font-family: inherit;
+    }
+
+    .cor-info-label,
+    .cor-info-value,
+    .cor-th,
+    .cor-td,
+    .cor-totals-text,
+    .cor-note-text,
+    .cor-signature-name,
+    .cor-signature-role {
+        font-size: 12pt !important;
+    }
+    
+    .cor-label,
+    .cor-schedule-title {
+        font-size: 11pt !important;
+    }
+    
+    .cor-student-info {
+        padding-left: 42px !important;
+        padding-right: 42px !important;
+    }
+
+    .cor-table .cor-th:first-child,
+    .cor-table .cor-td:first-child {
+        padding-left: 24px !important;
+    }
+
+    .cor-table .cor-th:last-child,
+    .cor-table .cor-td:last-child {
+        padding-right: 24px !important;
+    }
+
+    .cor-totals {
+        padding-left: 42px !important;
+        padding-right: 42px !important;
+    }
+
+    .cor-signatures {
+        padding-left: 80px !important;
+        padding-right: 80px !important;
     }
 }

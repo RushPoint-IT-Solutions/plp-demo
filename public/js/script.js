@@ -59,9 +59,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             } else if (this.textContent.trim() === 'Download COR') {
                 // ── State 1 → 2 ──────────────────────────────────
-                // Hide the filter section and show the download toast
+                // Hide the filter section, trigger print view, and reset
                 filterSection.style.display = 'none';
-                showToast();
+                window.print();
+                resetToDefault();
             }
         });
     }

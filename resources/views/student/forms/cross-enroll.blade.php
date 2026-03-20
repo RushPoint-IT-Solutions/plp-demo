@@ -7,6 +7,7 @@
 @php
     $displayName = trim(($profile->first_name ?? '') . ' ' . ($profile->middle_name ?? '') . ' ' . ($profile->last_name ?? ''));
     $displayStudentNo = $profile->student_no ?? optional($student)->student_no;
+    $displayNameUpper = strtoupper($displayName ?: optional($student)->name ?? '');
 @endphp
 <div class="cor-scroll-wrapper acd-page">
     <div class="acd-canvas">
@@ -33,44 +34,57 @@
                 <p>PLPRO FORM NO. 1G Revised 2023</p>
                 <h2>APPLICATION TO CROSS-ENROLL</h2>
 
-                <p class="ce-date">{{ now()->format('F d') }}, {{ now()->format('Y') }}</p>
+                <p class="ce-date"><input type="text" class="acd-inline-input acd-inline-input--md acd-inline-input--center no-print-underline" value="{{ now()->format('F d, Y') }}"></p>
                 <p>THE REGISTRAR<br>Pamantasan ng Lungsod ng Pasig<br>Pasig City</p>
                 <p>Sir/Madam:</p>
 
-                <p>I wish to enroll/cross-enroll the following subjects at the _____________________ located at __________________________ in the {{ optional($student)->semester ?? '______ Semester' }} of Academic Year {{ optional($student)->school_year ?? '2____, 2____' }}.</p>
+                <p>
+                    I wish to enroll/cross-enroll the following subjects at the
+                    <input type="text" class="acd-inline-input acd-inline-input--md" value="">
+                    located at
+                    <input type="text" class="acd-inline-input acd-inline-input--md" value="">
+                    in the
+                    <input type="text" class="acd-inline-input acd-inline-input--sm" value="{{ optional($student)->semester ?? '' }}">
+                    of Academic Year
+                    <input type="text" class="acd-inline-input acd-inline-input--sm" value="{{ optional($student)->school_year ?? '' }}">.
+                </p>
 
                 <div class="ce-subject-grid">
                     <div>
-                        <p>________________________</p>
-                        <p>________________________</p>
-                        <p>________________________</p>
-                        <p>________________________</p>
-                        <p>________________________</p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
                     </div>
                     <div>
-                        <p>__________ Units</p>
-                        <p>__________ Units</p>
-                        <p>__________ Units</p>
-                        <p>__________ Units</p>
-                        <p>__________ Units</p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
+                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
                     </div>
                 </div>
 
-                <p class="ce-total">TOTAL = __________ UNITS</p>
+                <p class="ce-total">TOTAL = <input type="text" class="acd-inline-input acd-inline-input--sm acd-inline-input--center" value=""> UNITS</p>
                 <p>I have passed the pre-requisite to the foregoing subjects, and I will promptly submit my ratings in the course after the close of the school term.</p>
 
                 <div class="ce-sign-grid">
                     <div>
                         <p class="ce-invalid">NOT VALID<br>AS<br>PERMIT</p>
                         <p>Approved by:</p>
-                        <p class="ce-line">______________________</p>
+                        <p class="ce-line"><input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center" value=""></p>
                         <p><em>Dean</em></p>
                         <p><strong>FEDERICO G. NUEVA, MT</strong><br><em>Registrar</em></p>
                     </div>
                     <div>
                         <p>Very respectfully yours,</p>
-                        <p class="ce-line ce-mt">______________________</p>
-                        <p>Signature over printed name<br>Student Number: {{ $displayStudentNo ?? '____________' }}<br>{{ $displayName ?: optional($student)->name ?? '______________________' }}<br>{{ optional($student)->program ?? 'Program' }} &amp; {{ optional($student)->year_level ?? 'Year' }}</p>
+                        <br>
+                        <p class="ce-sign-name-row" style="text-align: center;">
+                            <input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center acd-inline-input--caps" value="{{ $displayNameUpper }}" style="font-weight: bold;">
+                        </p>
+                        <p style="text-align: center; margin-top: 0; font-size: 0.8rem;">Signature over printed name</p>
+                        <p style="margin-top: 15px;">Student Number: <input type="text" class="acd-inline-input acd-inline-input--md" value="{{ $displayStudentNo ?? '' }}"><br><input type="text" class="acd-inline-input acd-inline-input--md" value="{{ trim((optional($student)->program ?? 'Program') . ' & ' . (optional($student)->year_level ?? 'Year')) }}"></p>
                     </div>
                 </div>
 

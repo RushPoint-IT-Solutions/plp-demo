@@ -58,8 +58,8 @@
         <!-- COR Header -->
         <div class="cor-header">
             <div class="cor-header-left">
-                <img src="{{ asset('img/plplogo.png') }}" alt="PLP Logo" class="cor-logo">
-                
+                <img src="{{ asset('img/logo.svg') }}" alt="PLP Logo" class="cor-logo">
+                <img src="{{ asset('img/schoolname.svg') }}" alt="Pamantasan ng Lungsod ng Pasig" class="cor-school-text-img">
             </div>
             <div class="cor-header-center">
                 <h1 class="cor-title">CERTIFICATE OF REGISTRATION</h1>

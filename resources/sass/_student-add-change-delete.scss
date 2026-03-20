@@ -37,24 +37,55 @@
     min-width: var(--acd-paper-width);
     min-height: 297mm;
     border-color: #9aa1a8;
+    border-radius: 0 !important;
     transform: scale(var(--acd-scale));
     transform-origin: top left;
 }
 
+.acd-form .cor-header {
+    border-radius: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    padding: 20px;
+    background: transparent !important;
+    border-bottom: none !important;
+}
+
+.acd-form .cor-header-left {
+    justify-content: flex-end;
+    margin: 0;
+}
+
+.acd-form .cor-header-center {
+    text-align: left;
+    padding: 0;
+    white-space: normal;
+}
+
+.acd-form .cor-header-right {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 11pt;
+}
+
 .acd-header {
-    background: #006837;
-    border-bottom: 1px solid #0b5f37;
+    background: transparent;
+    border-bottom: none;
 }
 
 .acd-header-center {
-    text-align: center;
+    text-align: left;
 }
 
 .acd-school-name,
 .acd-office-name,
 .acd-contact {
     margin: 0;
-    color: #fff;
+    color: #000;
     font-weight: 700;
     letter-spacing: 0.2px;
 }
@@ -181,6 +212,35 @@
     vertical-align: baseline;
 }
 
+.acd-inline-input {
+    display: inline-block;
+    border: 0;
+    border-bottom: 1px solid #8f98a0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1.2;
+    padding: 0 2px;
+}
+
+.acd-inline-input:focus {
+    outline: none;
+    border-bottom-color: #1f2a35;
+}
+
+.acd-inline-input--xs { width: 72px; }
+.acd-inline-input--sm { width: 110px; }
+.acd-inline-input--md { width: 180px; }
+.acd-inline-input--lg { width: 250px; }
+.acd-inline-input--xl { width: 320px; }
+.acd-inline-input--center { text-align: center; }
+.acd-inline-input--caps { text-transform: uppercase; }
+
+.cog-box.acd-inline-input {
+    display: inline-flex;
+    align-items: center;
+}
+
 .acd-inline-line--md { width: 170px; }
 .acd-inline-line--lg { width: 250px; }
 .acd-inline-line--xl { width: 240px; }
@@ -253,7 +313,31 @@
         min-height: auto !important;
         transform: none !important;
         border: none !important;
+        border-radius: 0 !important;
         box-shadow: none !important;
+    }
+
+    .acd-form,
+    .acd-form * {
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 11pt !important;
+    }
+
+    .acd-school-name, .loa-school, .ce-school, .cog-school {
+        font-size: 16pt !important;
+    }
+
+    .acd-office-name, .loa-office, .ce-office, .cog-office {
+        font-size: 14pt !important;
+    }
+
+    .loa-body h2, .cog-body h2, .ce-body h2, .acd-container h2 {
+        font-size: 18pt !important;
+    }
+
+    .acd-body, .loa-body, .cog-body, .ce-body {
+        padding-left: 0.15in !important;
+        padding-right: 0.15in !important;
     }
 
     .loa-page .acd-canvas {
@@ -269,6 +353,22 @@
         width: 100% !important;
         height: auto !important;
         border: none !important;
+        border-radius: 0 !important;
+    }
+
+    .acd-inline-input {
+        border: 0 !important;
+        border-bottom: 1px solid #000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .acd-inline-input.has-value {
+        border-bottom: 1px solid #000 !important;
+    }
+
+    .acd-inline-input.has-value.no-print-underline {
+        border-bottom: 0 !important;
     }
 
     .loa-check input[type="checkbox"] {
@@ -298,8 +398,8 @@
 .loa-header,
 .cog-header,
 .ce-header {
-    background: #006837;
-    border-bottom: 1px solid #0b5f37;
+    background: transparent;
+    border-bottom: none;
     min-height: 74px;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -308,7 +408,7 @@
 .loa-header-center,
 .cog-header-center,
 .ce-header-center {
-    color: #fff;
+    color: #000;
 }
 
 .form-logo-left {
@@ -318,7 +418,7 @@
 }
 
 .form-logo-left .cor-logo {
-    height: 70px;
+    height: 110px;
     width: auto;
 }
 
@@ -326,8 +426,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     gap: 0;
 }
 
@@ -336,7 +436,7 @@
     margin: 0;
     font-size: 0.58rem;
     font-weight: 600;
-    color: #f4fff8;
+    color: #000;
 }
 
 .loa-school,
@@ -346,7 +446,7 @@
     font-size: 0.84rem;
     font-weight: 800;
     letter-spacing: 1px;
-    color: #ffffff;
+    color: #000;
 }
 
 .loa-office,
@@ -355,7 +455,7 @@
     margin: 0;
     font-size: 0.9rem;
     font-weight: 800;
-    color: #d9ffd8;
+    color: #000;
     letter-spacing: 1.8px;
 }
 
@@ -365,7 +465,7 @@
     margin: 0;
     font-size: 0.52rem;
     font-weight: 600;
-    color: #ebfff0;
+    color: #000;
 }
 
 .loa-body,
@@ -543,7 +643,6 @@
 
 .loa-sign-line {
     margin-top: 8px !important;
-    border-top: 1px solid #8f98a0;
     min-height: 12px;
 }
 
@@ -658,7 +757,6 @@
 }
 
 .cog-line {
-    border-top: 1px solid #8f98a0;
     min-height: 14px;
     margin: 8px 0 4px;
 }
@@ -714,7 +812,6 @@
 }
 
 .ce-line {
-    border-top: 1px solid #8f98a0;
     min-height: 14px;
     margin: 10px 0 4px;
 }
@@ -725,3 +822,20 @@
     margin-top: 20px !important;
     font-size: 0.64rem;
 }
+
+/* Completion Grade */
+.comp-body { min-height: 200mm; }
+.comp-date-wrap { text-align: right; margin-bottom: 20px; }
+.comp-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border: 1px solid #9ea6ae; padding: 16px; margin-bottom: 20px; }
+.comp-info-col { display: flex; flex-direction: column; gap: 10px; }
+.comp-info-row { display: flex; gap: 12px; align-items: baseline; }
+.comp-info-row span:first-child { font-weight: 700; min-width: 90px; }
+.comp-info-title { font-weight: 800; font-size: 0.85rem; margin: 0 0 10px; text-decoration: underline; }
+.comp-cert { margin: 20px 0; text-align: justify; line-height: 1.5; }
+.comp-table { width: 100%; border-collapse: collapse; margin: 20px 0 30px; }
+.comp-table th, .comp-table td { border: 1px solid #9aa1a8; padding: 8px; text-align: center; }
+.comp-table th { background: #f8fafb; font-weight: 700; text-transform: uppercase; font-size: 0.72rem; }
+.comp-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; }
+.comp-sig-col { display: flex; flex-direction: column; gap: 30px; }
+.comp-sig-line { text-align: center; padding-top: 6px; font-weight: 700; }
+.comp-sig-line span { font-weight: 400; font-size: 0.7rem; display: block; margin-top: 2px; }

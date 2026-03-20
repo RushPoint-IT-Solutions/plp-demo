@@ -103,6 +103,12 @@ document.addEventListener('DOMContentLoaded', function () {
       label.setAttribute('data-print-checked', checkbox.checked ? 'true' : 'false');
     });
   }
+  function syncPrintableInputState() {
+    document.querySelectorAll('.acd-inline-input').forEach(function (input) {
+      var hasValue = input.value && input.value.trim().length > 0;
+      input.classList.toggle('has-value', hasValue);
+    });
+  }
   function fitAcdFormCanvas() {
     var page = document.querySelector('.acd-page');
     var canvas = document.querySelector('.acd-canvas');
@@ -135,13 +141,27 @@ document.addEventListener('DOMContentLoaded', function () {
   if (printBtn) {
     printBtn.addEventListener('click', function () {
       syncLaoPrintCheckboxState();
+      syncPrintableInputState();
       window.print();
     });
   }
-  window.addEventListener('beforeprint', syncLaoPrintCheckboxState);
+  window.addEventListener('beforeprint', function () {
+    syncLaoPrintCheckboxState();
+    syncPrintableInputState();
+  });
+  document.addEventListener('input', function (event) {
+    var target = event.target;
+    if (!target || target.matches('.acd-inline-input') === false) {
+      return;
+    }
+    syncPrintableInputState();
+  });
   document.addEventListener('change', function (event) {
     var target = event.target;
     if (!target || target.matches('.loa-check input[type="checkbox"]') === false) {
+      if (target && target.matches('.acd-inline-input')) {
+        syncPrintableInputState();
+      }
       return;
     }
     syncLaoPrintCheckboxState();
@@ -149,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
   fitAcdFormCanvas();
   window.addEventListener('resize', fitAcdFormCanvas);
   syncLaoPrintCheckboxState();
+  syncPrintableInputState();
 });
 
 /***/ }),

@@ -78,6 +78,9 @@
                 <a href="{{ route('student.forms.show', 'change-grade') }}" class="sidebar-sublink {{ request()->is('student/forms/change-grade') ? 'active' : '' }}">
                     APPLICATION FOR CHANGE OF GRADE
                 </a>
+                <a href="{{ route('student.forms.show', 'completion-grade') }}" class="sidebar-sublink {{ request()->is('student/forms/completion-grade') ? 'active' : '' }}">
+                    APPLICATION FOR COMPLETION OF GRADE
+                </a>
                 <a href="{{ route('student.forms.show', 'cross-enroll') }}" class="sidebar-sublink {{ request()->is('student/forms/cross-enroll') ? 'active' : '' }}">
                     APPLICATION TO CROSS ENROLL
                 </a>

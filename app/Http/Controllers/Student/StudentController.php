@@ -131,6 +131,7 @@ class StudentController extends Controller
             'add-change-delete' => 'student.forms.add-change-delete',
             'late-leave-appeal' => 'student.forms.late-leave-appeal',
             'change-grade'      => 'student.forms.change-grade',
+            'completion-grade'  => 'student.forms.completion-grade',
             'cross-enroll'      => 'student.forms.cross-enroll',
         ];
 

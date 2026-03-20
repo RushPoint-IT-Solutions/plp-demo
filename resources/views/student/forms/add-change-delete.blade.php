@@ -43,11 +43,11 @@
                 </div>
 
                 <div class="acd-right-meta">
-                    <div class="acd-line-row"><span>Semester &amp; Academic Year:</span><span class="acd-line">{{ optional($student)->semester }} {{ optional($student)->school_year ? ' / SY ' . $student->school_year : '' }}</span></div>
-                    <div class="acd-line-row"><span>Student Number:</span><span class="acd-line">{{ $displayStudentNo }}</span></div>
-                    <div class="acd-line-row"><span>Student Name:</span><span class="acd-line">{{ $displayName ?: optional($student)->name }}</span></div>
-                    <div class="acd-line-row"><span>Course:</span><span class="acd-line">{{ $displayCourse }}</span></div>
-                    <div class="acd-line-row"><span>Section:</span><span class="acd-line">{{ $displaySection }}</span></div>
+                    <div class="acd-line-row"><span>Semester &amp; Academic Year:</span><input type="text" class="acd-line acd-inline-input" value="{{ optional($student)->semester }} {{ optional($student)->school_year ? ' / SY ' . $student->school_year : '' }}"></div>
+                    <div class="acd-line-row"><span>Student Number:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displayStudentNo }}"></div>
+                    <div class="acd-line-row"><span>Student Name:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displayName ?: optional($student)->name }}"></div>
+                    <div class="acd-line-row"><span>Course:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displayCourse }}"></div>
+                    <div class="acd-line-row"><span>Section:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displaySection }}"></div>
                 </div>
             </div>
 
@@ -132,22 +132,22 @@
             <div class="acd-bottom-grid">
                 <div class="acd-bottom-left">
                     <p>CHANGE IN UNIT LOAD FROM 15 TO 15</p>
-                    <p>REASON: <span class="acd-inline-line acd-inline-line--lg"></span></p>
+                    <p>REASON: <input type="text" class="acd-inline-input acd-inline-input--lg" value=""></p>
                     <p class="acd-mt-lg">To be accomplished by the Registrar's Office.</p>
-                    <p>ADDITIONAL TF: <span class="acd-inline-line acd-inline-line--md"></span></p>
+                    <p>ADDITIONAL TF: <input type="text" class="acd-inline-input acd-inline-input--md" value=""></p>
                     <p class="acd-mt-lg">To be accomplished by the Finance Office:</p>
-                    <p>Payment: <span class="acd-inline-line acd-inline-line--lg"></span></p>
-                    <p>OR No: <span class="acd-inline-line acd-inline-line--lg"></span></p>
-                    <p>Payment Received By: <span class="acd-inline-line acd-inline-line--md"></span></p>
+                    <p>Payment: <input type="text" class="acd-inline-input acd-inline-input--lg" value=""></p>
+                    <p>OR No: <input type="text" class="acd-inline-input acd-inline-input--lg" value=""></p>
+                    <p>Payment Received By: <input type="text" class="acd-inline-input acd-inline-input--md" value=""></p>
                 </div>
 
                 <div class="acd-bottom-right">
-                    <p>APPROVED BY DEAN: <span class="acd-inline-line acd-inline-line--xl"></span> (Name and Signature)</p>
+                    <p>APPROVED BY DEAN: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Name and Signature)</p>
                     <p class="acd-emphasis">VALIDATION and RECORDING BY THE REGISTRAR'S OFFICE:</p>
-                    <p>RECEIVED BY: <span class="acd-inline-line acd-inline-line--xl"></span> (Registrar's Personnel)</p>
-                    <p>RECORDED BY: <span class="acd-inline-line acd-inline-line--xl"></span> (Records Officer)</p>
-                    <p>COR/OSL ISSUED BY: <span class="acd-inline-line acd-inline-line--xl"></span> (Registrar's Personnel)</p>
-                    <p>NOTED BY: <span class="acd-inline-line acd-inline-line--xl"></span> (Registrar's Personnel)</p>
+                    <p>RECEIVED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Registrar's Personnel)</p>
+                    <p>RECORDED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Records Officer)</p>
+                    <p>COR/OSL ISSUED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Registrar's Personnel)</p>
+                    <p>NOTED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Registrar's Personnel)</p>
                 </div>
             </div>
 
