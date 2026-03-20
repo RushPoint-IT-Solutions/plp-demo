@@ -732,21 +732,49 @@
 /* Change Grade */
 .cog-form { min-height: 240mm; }
 
-.cog-header-right {
+.cog-form .cog-header {
     display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.cog-form .form-header-copy {
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+
+.cog-form .loa-school,
+.cog-form .cog-title-main,
+.cog-form .cog-form-no-header {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+}
+
+.cog-form .loa-school {
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.cog-header-right {
+    display: none;
 }
 
 .cog-form-no-header {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    color: #ebfff0;
+    color: #000;
     white-space: nowrap;
+    letter-spacing: 0.15px;
 }
 
 .cog-title-main {
+    margin-top: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
     text-align: center;
 }
 

@@ -22,11 +22,10 @@
                 <div class="cor-header-center form-header-copy">
                     <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
                     <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
-                    <h2 class="cog-title-main" style="margin-top: 15px; font-size: 1.8rem; font-weight: bold;">APPLICATION FOR CHANGE OF GRADE</h2>
-                </div>
-                <div class="cor-header-right cog-header-right">
                     <p class="cog-form-no-header">PLPRO FORM NO. 3F REVISED 2023</p>
+                    <h2 class="cog-title-main">APPLICATION FOR CHANGE OF GRADE</h2>
                 </div>
+                <div class="cor-header-right cog-header-right"></div>
             </div>
 
             <div class="cog-body">
@@ -70,9 +69,21 @@
                             <tr><th></th><th>PERCENTAGE</th><th>GRADE POINT</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>MIDTERM GRADE</td><td></td><td></td></tr>
-                            <tr><td>FINAL GRADE</td><td></td><td></td></tr>
-                            <tr><td>SEMESTRAL</td><td></td><td></td></tr>
+                            <tr>
+                                <td>MIDTERM GRADE</td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Midterm percentage"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Midterm grade point"></td>
+                            </tr>
+                            <tr>
+                                <td>FINAL GRADE</td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Final percentage"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Final grade point"></td>
+                            </tr>
+                            <tr>
+                                <td>SEMESTRAL</td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Semestral percentage"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Semestral grade point"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

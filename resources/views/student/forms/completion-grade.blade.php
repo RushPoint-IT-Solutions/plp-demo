@@ -22,11 +22,10 @@
                 <div class="cor-header-center form-header-copy">
                     <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
                     <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
-                    <h2 class="cog-title-main" style="margin-top: 15px; font-size: 1.2rem;">APPLICATION FOR COMPLETION OF GRADE</h2>
-                </div>
-                <div class="cor-header-right cog-header-right">
                     <p class="cog-form-no-header">PLPRO FORM NO. 3C</p>
+                    <h2 class="cog-title-main">APPLICATION FOR COMPLETION OF GRADE</h2>
                 </div>
+                <div class="cor-header-right cog-header-right"></div>
             </div>
 
             <div class="cog-body comp-body">
@@ -89,9 +88,39 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-                            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                            <tr>
+                                <td><input type="text" class="acd-cell-input" aria-label="Course code row 1"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Course description row 1"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Units row 1"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Faculty name row 1"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Signature row 1"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Midterm grade row 1"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Final grade row 1"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Semestral grade row 1"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Section row 1"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="acd-cell-input" aria-label="Course code row 2"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Course description row 2"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Units row 2"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Faculty name row 2"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Signature row 2"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Midterm grade row 2"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Final grade row 2"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Semestral grade row 2"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Section row 2"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="acd-cell-input" aria-label="Course code row 3"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Course description row 3"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Units row 3"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Faculty name row 3"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Signature row 3"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Midterm grade row 3"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Final grade row 3"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Semestral grade row 3"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Section row 3"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
