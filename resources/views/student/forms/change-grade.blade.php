@@ -37,18 +37,18 @@
                     <span>This is to certify that the ( ) Midterm ( ) Final grade of (student's name)</span>
                     <input type="text" class="cog-box cog-box--xl acd-inline-input" value="{{ $displayName ?: optional($student)->name }}">
                 </p>
-                <p class="cog-line-row">
+                <p class="cog-line-row cog-line-row--details">
                     <span>with student number</span>
                     <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ $displayStudentNo }}">
                     <span>of (Program, Year &amp; Section)</span>
-                    <input type="text" class="cog-box cog-box--md acd-inline-input" value="{{ trim((optional($student)->program ?? '') . ' ' . (optional($student)->year_level ?? '')) }}">
+                    <input type="text" class="cog-box cog-box--prog acd-inline-input" value="{{ trim((optional($student)->program ?? '') . ' ' . (optional($student)->year_level ?? '')) }}">
                     <span>in (course code &amp; description)</span>
-                    <input type="text" class="cog-box cog-box--md acd-inline-input" value="">
-                </p>
-                <p class="cog-line-row">
-                    <input type="text" class="cog-box cog-box--xxl acd-inline-input" value="">
+                    <span class="cog-course-combo">
+                        <input type="text" class="cog-box cog-box--course-short acd-inline-input" value="">
+                        <input type="text" class="cog-box cog-box--course-long acd-inline-input" value="">
+                    </span>
                     <span>for the</span>
-                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ optional($student)->semester }}">
+                    <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ trim(preg_replace('/\bsemester\b/i', '', (string) optional($student)->semester)) }}">
                     <span>Semester of Academic Year</span>
                     <input type="text" class="cog-box cog-box--sm acd-inline-input" value="{{ optional($student)->school_year }}">
                 </p>

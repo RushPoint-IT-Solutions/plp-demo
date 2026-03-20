@@ -6072,6 +6072,56 @@ body.page-profile-edit .student-content {
   .cog-title-main {
     font-size: 16px !important;
   }
+
+  .cog-line-row--details {
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    gap: 6px !important;
+  }
+
+  .cog-line-row--details .cog-box--sm {
+    width: 96px !important;
+  }
+
+  .cog-line-row--details .cog-box--prog {
+    width: 150px !important;
+  }
+
+  .cog-line-row--details .cog-box--course {
+    flex: 0 0 170px !important;
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+  }
+
+  .cog-line-row--details .cog-course-combo {
+    flex: 0 0 210px !important;
+    width: 210px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
+  }
+
+  .cog-line-row--details .cog-box--course-short {
+    width: 42px !important;
+  }
+
+  .cog-line-row--details .cog-box--course-long {
+    width: 168px !important;
+  }
+
+  .cog-signatures > div {
+    min-width: 0 !important;
+  }
+
+  .cog-signatures .cog-line {
+    overflow: hidden !important;
+  }
+
+  .cog-signatures .acd-inline-input--lg {
+    width: calc(100% - 8px) !important;
+    max-width: calc(100% - 8px) !important;
+    box-sizing: border-box !important;
+  }
 }
 
 /* Late Leave Appeal */
@@ -6463,6 +6513,11 @@ body.page-profile-edit .student-content {
   white-space: nowrap;
 }
 
+.cog-line-row--details {
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
 .cog-box {
   display: inline-flex;
   align-items: center;
@@ -6471,9 +6526,9 @@ body.page-profile-edit .student-content {
   vertical-align: middle;
   background: #fff;
   padding: 0 6px;
-  overflow: hidden;
+  overflow: visible;
   white-space: nowrap;
-  text-overflow: ellipsis;
+  text-overflow: clip;
 }
 
 .cog-box--sm {
@@ -6494,6 +6549,39 @@ body.page-profile-edit .student-content {
 
 .cog-box--xxl {
   width: 560px;
+}
+
+.cog-box--prog {
+  width: 170px;
+}
+
+.cog-box--course {
+  flex: 1;
+  min-width: 220px;
+  max-width: 100%;
+}
+
+.cog-course-combo {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.cog-box--course-short {
+  width: 54px;
+}
+
+.cog-box--course-long {
+  width: 185px;
+}
+
+.cog-course-combo .cog-box {
+  margin: 0;
+}
+
+.cog-course-combo .cog-box--course-long {
+  border-left: 0;
 }
 
 .cog-line-fill {
@@ -6535,9 +6623,20 @@ body.page-profile-edit .student-content {
   margin-top: 14px;
 }
 
+.cog-signatures > div {
+  min-width: 0;
+}
+
 .cog-line {
   min-height: 14px;
   margin: 8px 0 4px;
+  overflow: hidden;
+}
+
+.cog-signatures .acd-inline-input--lg {
+  width: calc(100% - 8px);
+  max-width: calc(100% - 8px);
+  box-sizing: border-box;
 }
 
 .cog-attachment {
