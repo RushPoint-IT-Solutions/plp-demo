@@ -70,21 +70,21 @@
                     <tbody>
                         @for($i = 0; $i < 10; $i++)
                             <tr>
-                                <td>&nbsp;</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Code row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Descriptive title row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Units row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Days row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Time row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Room row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Section row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Reg verification row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Professor signature row {{ $i + 1 }}"></td>
                             </tr>
                         @endfor
                         <tr>
                             <td colspan="2" class="acd-total-label">TOTAL</td>
-                            <td></td>
-                            <td colspan="6"></td>
+                            <td><input type="text" class="acd-cell-input" aria-label="Total units"></td>
+                            <td colspan="6"><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Total remarks"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -109,21 +109,21 @@
                     <tbody>
                         @for($i = 0; $i < 8; $i++)
                             <tr>
-                                <td>&nbsp;</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement code row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Replacement descriptive title row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement units row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement days row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement time row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement room row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement section row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input" aria-label="Replacement reg verification row {{ $i + 1 }}"></td>
+                                <td><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Replacement professor signature row {{ $i + 1 }}"></td>
                             </tr>
                         @endfor
                         <tr>
                             <td colspan="2" class="acd-total-label">TOTAL</td>
-                            <td></td>
-                            <td colspan="6"></td>
+                            <td><input type="text" class="acd-cell-input" aria-label="Replacement total units"></td>
+                            <td colspan="6"><input type="text" class="acd-cell-input acd-cell-input--left" aria-label="Replacement total remarks"></td>
                         </tr>
                     </tbody>
                 </table>
