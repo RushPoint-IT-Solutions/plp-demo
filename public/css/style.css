@@ -5844,7 +5844,7 @@ body.page-profile-edit .student-content {
 @media print {
 @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 0 0.5in 0.35in 0.5in;
 }
 
   html,
@@ -5900,12 +5900,15 @@ body.page-profile-edit .student-content {
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
   }
 
   .acd-form,
   .acd-form * {
-    font-family: "Times New Roman", Times, serif !important;
-    font-size: 11pt !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
   }
 
   .acd-school-name,
@@ -5935,6 +5938,22 @@ body.page-profile-edit .student-content {
   .ce-body {
     padding-left: 0.15in !important;
     padding-right: 0.15in !important;
+    padding-top: 0 !important;
+    padding-bottom: 0.1in !important;
+  }
+
+  .acd-table th,
+  .acd-table td {
+    padding: 2px 3px !important;
+    height: 18px !important;
+  }
+
+  .acd-bottom-grid p {
+    margin: 0 0 4px !important;
+  }
+
+  .acd-footer-note {
+    margin-top: 6px !important;
   }
 
   .loa-page .acd-canvas {
