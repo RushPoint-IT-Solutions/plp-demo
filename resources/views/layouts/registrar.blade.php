@@ -108,6 +108,9 @@
     <!-- Sidebar JS -->
     <script src="{{ asset('js/registrar-layout.js') }}"></script>
 
+    <!-- Registrar Table Pagination -->
+    <script src="{{ asset('js/registrar-table-pagination.js') }}?v={{ time() }}"></script>
+
     <script>
     function showRegistrarToast(message, type) {
         var toast = document.getElementById('registrar-toast');

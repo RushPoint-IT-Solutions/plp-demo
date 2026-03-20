@@ -1,5 +1,45 @@
+function closeDoclistActionMenus() {
+    document.querySelectorAll('#doclistTable .apst-dropdown.open').forEach(function(menu) {
+        menu.classList.remove('open', 'drop-up');
+        menu.style.top = '';
+        menu.style.left = '';
+        menu.style.right = '';
+        menu.style.bottom = '';
+    });
+}
+
+function toggleDoclistActionMenu(menuId, trigger) {
+    var menu = document.getElementById(menuId);
+    if (!menu || !trigger) {
+        return;
+    }
+
+    var isOpen = menu.classList.contains('open');
+    closeDoclistActionMenus();
+    if (isOpen) {
+        return;
+    }
+
+    var rect = trigger.getBoundingClientRect();
+    var spaceBelow = window.innerHeight - rect.bottom;
+    menu.style.left = 'auto';
+    menu.style.right = (window.innerWidth - rect.left + 4) + 'px';
+
+    if (spaceBelow < 120) {
+        menu.classList.add('drop-up');
+        menu.style.top = 'auto';
+        menu.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+    } else {
+        menu.style.top = rect.top + 'px';
+        menu.style.bottom = 'auto';
+    }
+
+    menu.classList.add('open');
+}
+
 // ── Add Document Modal ──
 function openAddDocModal() {
+    closeDoclistActionMenus();
     document.getElementById('addDeptType').value = '';
     document.getElementById('addGradeLevel').value = '';
     document.getElementById('addDocument').value = '';
@@ -39,6 +79,7 @@ function filterDoclistTable() {
         var text = row.textContent.toLowerCase();
         row.style.display = text.indexOf(query) !== -1 ? '' : 'none';
     });
+    closeDoclistActionMenus();
 }
 
 function sortDoclistTable() {
@@ -52,6 +93,7 @@ function sortDoclistTable() {
         return dir === 'desc' ? -cmp : cmp;
     });
     rows.forEach(function(row) { tbody.appendChild(row); });
+    closeDoclistActionMenus();
 }
 
 function handleEditSave(e) {
@@ -75,6 +117,7 @@ function handleDeleteConfirm(e) {
 
 // ── Edit Modal ──
 function openEditModal(id, dept, grade, doc, type, nonFilipino) {
+    closeDoclistActionMenus();
     document.getElementById('editId').value = id;
     document.getElementById('editDeptType').value = dept;
     document.getElementById('editGradeLevel').value = grade;
@@ -96,6 +139,7 @@ function closeEditModal() {
 
 // ── Delete Modal ──
 function openDeleteModal(id, docName) {
+    closeDoclistActionMenus();
     document.getElementById('deleteId').value = id;
     document.getElementById('deleteDocName').textContent = '"' + docName + '"';
     document.getElementById('deleteModal').style.display = 'flex';
@@ -116,8 +160,24 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {
 // Close on Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+        closeDoclistActionMenus();
         closeAddDocModal();
         closeEditModal();
         closeDeleteModal();
     }
 });
+
+document.addEventListener('click', function(e) {
+    var toggle = e.target.closest('[data-doc-menu-toggle]');
+    if (toggle) {
+        e.stopPropagation();
+        toggleDoclistActionMenu(toggle.getAttribute('data-doc-menu-toggle'), toggle);
+        return;
+    }
+
+    if (!e.target.closest('#doclistTable .apst-dropdown')) {
+        closeDoclistActionMenus();
+    }
+});
+
+window.addEventListener('scroll', closeDoclistActionMenus, true);

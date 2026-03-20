@@ -4,6 +4,10 @@
 @section('page-title', 'FACULTY LOADS')
 @section('body-class', 'page-services-faculty-loads')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/registrar-faculty-loads.css') }}?v={{ time() }}">
+@endpush
+
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
 @endpush
