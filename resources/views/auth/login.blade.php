@@ -19,7 +19,7 @@
                 @if($module === 'applicant')
                     <label for="username" class="login-label">APPLICANT NUMBER</label>
                 @elseif($module === 'student')
-                    <label for="username" class="login-label">STUDENT NUMBER</label>
+                    <label for="username" class="login-label">STUDENT NUMBER / USERNAME</label>
                 @else
                     <label for="username" class="login-label">USERNAME</label>
                 @endif
@@ -29,7 +29,7 @@
                     class="login-input{{ $errors->has('username') ? ' is-invalid' : '' }}"
                     name="username"
                     value="{{ old('username') }}"
-                    placeholder="{{ $module === 'applicant' ? 'Enter Applicant Number' : ($module === 'student' ? 'Enter Student Number' : 'Enter Username') }}"
+                    placeholder="{{ $module === 'applicant' ? 'Enter Applicant Number' : ($module === 'student' ? 'Enter Student Number or Username' : 'Enter Username') }}"
                     required
                     autofocus
                 >

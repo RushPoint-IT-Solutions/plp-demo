@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,7 +51,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Real student login using username + password.
+     * Real student login using username OR student number + password.
      */
     public function studentLogin(Request $request)
     {
@@ -61,12 +62,31 @@ class AdminController extends Controller
         ]);
 
         $remember = (bool) $request->input('remember', false);
+        $loginIdentifier = trim($credentials['username']);
 
-        if (Auth::attempt([
-            'username' => $credentials['username'],
+        $isAuthenticated = Auth::attempt([
+            'username' => $loginIdentifier,
             'password' => $credentials['password'],
             'module' => 'student',
-        ], $remember)) {
+        ], $remember);
+
+        if (!$isAuthenticated) {
+            $studentUser = User::where('module', 'student')
+                ->whereHas('student', function ($query) use ($loginIdentifier) {
+                    $query->where('student_no', $loginIdentifier);
+                })
+                ->first();
+
+            if ($studentUser) {
+                $isAuthenticated = Auth::attempt([
+                    'username' => $studentUser->username,
+                    'password' => $credentials['password'],
+                    'module' => 'student',
+                ], $remember);
+            }
+        }
+
+        if ($isAuthenticated) {
             $request->session()->regenerate();
 
             return redirect()->route('student.section-offering');
