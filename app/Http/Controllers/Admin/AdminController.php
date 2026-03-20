@@ -58,10 +58,9 @@ class AdminController extends Controller
         $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
-            'remember' => 'nullable|boolean',
         ]);
 
-        $remember = (bool) $request->input('remember', false);
+        $remember = $request->filled('remember');
         $loginIdentifier = trim($credentials['username']);
 
         $isAuthenticated = Auth::attempt([
@@ -95,5 +94,41 @@ class AdminController extends Controller
         return back()->withErrors([
             'username' => 'Invalid student credentials.',
         ])->withInput($request->only('username', 'remember'));
+    }
+
+    /**
+     * Real login for registrar/faculty using username + password.
+     */
+    public function moduleAuthLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'module' => 'required|string|in:registrar,faculty',
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $module = $credentials['module'];
+        $remember = $request->filled('remember');
+
+        $isAuthenticated = Auth::attempt([
+            'username' => trim($credentials['username']),
+            'password' => $credentials['password'],
+            'module' => $module,
+        ], $remember);
+
+        if (!$isAuthenticated) {
+            return back()->withErrors([
+                'username' => 'Invalid ' . $module . ' credentials.',
+            ])->withInput($request->only('username', 'remember'));
+        }
+
+        $request->session()->regenerate();
+
+        $redirectMap = [
+            'registrar' => 'registrar.dashboard',
+            'faculty' => 'faculty.load',
+        ];
+
+        return redirect()->route($redirectMap[$module]);
     }
 }

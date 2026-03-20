@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 
 /*
  |--------------------------------------------------------------------------
@@ -1220,7 +1220,7 @@ select:hover {
   box-shadow: none;
 }
 
-/* Filter grid â€” guarantees cross-row alignment */
+/* Filter grid — guarantees cross-row alignment */
 
 .filter-grid {
   display: grid;
@@ -1698,7 +1698,7 @@ select:hover {
   color: #664d03;
 }
 
-/* â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Calendar ─────────────────────────────────────────── */
 
 .cal-controls {
   display: flex;
@@ -1890,7 +1890,7 @@ select:hover {
   color: #1565c0;
 }
 
-/* â”€â”€ Calendar Event Popup (mobile tap-to-reveal) â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Calendar Event Popup (mobile tap-to-reveal) ──────── */
 
 .cal-event-popup {
   position: fixed;
@@ -1956,7 +1956,7 @@ select:hover {
   line-height: 1.35;
 }
 
-/* â”€â”€ Profile / Setup Wizard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Profile / Setup Wizard ─────────────────────────────── */
 
 .setup-steps {
   display: flex;
@@ -2957,6 +2957,30 @@ select:hover {
   gap: 6px;
 }
 
+.msg-folder-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.msg-folder-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #006837;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.msg-folder-select {
+  height: 30px;
+  border: 1px solid #d3ddd8;
+  border-radius: 8px;
+  padding: 0 28px 0 10px;
+  font-size: 0.82rem;
+  color: #2f4b40;
+  background: #ffffff;
+}
+
 .msg-folder-pill {
   display: inline-flex;
   align-items: center;
@@ -2974,6 +2998,49 @@ select:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.msg-page-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.msg-page-btn,
+.msg-page-num {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2d4b40;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.msg-page-btn {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.msg-page-btn:hover:not(:disabled),
+.msg-page-num:hover {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.msg-page-btn:disabled {
+  opacity: 0.45;
+}
+
+.msg-page-num.active,
+.msg-page-num.active:hover {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
 }
 
 .msg-modal-header {
@@ -3014,12 +3081,24 @@ select:hover {
   resize: vertical;
 }
 
-.msg-rows-select {
-  height: 26px;
-  border: 1px solid #dcdcdc;
-  border-radius: 6px;
-  padding: 0 6px;
-  font-size: 0.78rem;
+@media (max-width: 768px) {
+  .msg-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .msg-footer-right {
+    justify-content: flex-end;
+  }
+
+  .msg-folder-form {
+    width: 100%;
+  }
+
+  .msg-folder-select {
+    width: 100%;
+  }
 }
 
 @media (max-width: 900px) {
@@ -4453,7 +4532,7 @@ select:hover {
   font-weight: 700;
 }
 
-/* â”€â”€ Nested sub-dropdowns (e.g. Academic Master) â”€â”€ */
+/* ── Nested sub-dropdowns (e.g. Academic Master) ── */
 .student-portal-body .sidebar-nested-dropdown {
   display: flex;
   flex-direction: column;
@@ -4493,7 +4572,7 @@ select:hover {
   left: 36px;
 }
 
-/* â”€â”€ Program File / Academic Master pages â”€â”€ */
+/* ── Program File / Academic Master pages ── */
 .pf-page {
   display: flex;
   flex-direction: column;
@@ -5017,7 +5096,7 @@ select:hover {
   text-decoration: underline;
 }
 
-/* â”€â”€ Program File Modal â”€â”€ */
+/* ── Program File Modal ── */
 .pf-modal-overlay {
   position: fixed;
   inset: 0;
@@ -5399,7 +5478,7 @@ select:hover {
   text-align: left;
 }
 
-/* Program File table â€” all columns left-aligned, Action centered */
+/* Program File table — all columns left-aligned, Action centered */
 .pf-page .registrar-table thead th,
 .pf-page .registrar-table tbody td {
   text-align: left;
@@ -7378,7 +7457,7 @@ select.req-modal-input {
   }
 }
 
-/* â”€â”€ Scheduling Filter Bar â”€â”€ */
+/* ── Scheduling Filter Bar ── */
 
 .sched-filter-bar {
   display: flex;
@@ -7516,7 +7595,7 @@ select.req-modal-input {
   }
 }
 
-/* â”€â”€ Slot Monitoring Progress Bar â”€â”€ */
+/* ── Slot Monitoring Progress Bar ── */
 
 .slot-status-wrap {
   display: flex;
@@ -7547,7 +7626,7 @@ select.req-modal-input {
   text-align: right;
 }
 
-/* â”€â”€ Grading Sheet Page â”€â”€ */
+/* ── Grading Sheet Page ── */
 .gs-filter-bar {
   padding: 18px 22px 14px;
   margin-bottom: 22px;
@@ -7605,7 +7684,7 @@ select.req-modal-input {
 }
 .gs-view-btn:hover { background: #004d29; }
 
-/* â”€â”€ Grading Sheet: Two-row table header â”€â”€ */
+/* ── Grading Sheet: Two-row table header ── */
 .gs-list-table thead {
   background: #006837;
 }
@@ -7686,7 +7765,7 @@ select.req-modal-input {
   background: #f0faf4;
 }
 
-/* â”€â”€ Section Info Banner v2 (detail view) â”€â”€ */
+/* ── Section Info Banner v2 (detail view) ── */
 .gs-section-banner-v2 {
   background: #fff;
   border: 1.5px solid #c8e6c9;
@@ -7752,7 +7831,7 @@ select.req-modal-input {
   .gs-banner-grid { grid-template-columns: 1fr; gap: 8px 0; }
 }
 
-/* â”€â”€ Evaluation Page â”€â”€ */
+/* ── Evaluation Page ── */
 .eval-layout {
   display: grid;
   grid-template-columns: 1fr 520px;
@@ -8101,7 +8180,7 @@ select.req-modal-input {
   font-weight: 500;
 }
 
-/* â”€â”€ Evaluation Dashboard (right panel) â”€â”€ */
+/* ── Evaluation Dashboard (right panel) ── */
 .eval-dashboard {
   background: #fff;
   border: 1.5px solid #e0e0e0;
@@ -8196,7 +8275,7 @@ select.req-modal-input {
 .eval-status-draft { background: #f9a825; color: #fff; }
 .eval-status-closed { background: #ccc; color: #555; }
 
-/* â”€â”€ Responsive: Grading Sheet + Evaluation â”€â”€ */
+/* ── Responsive: Grading Sheet + Evaluation ── */
 @media (max-width: 1200px) {
   .eval-layout { grid-template-columns: 1fr 280px; gap: 16px; }
 }
@@ -8224,7 +8303,7 @@ select.req-modal-input {
   .eval-q-actions { align-self: flex-end; }
 }
 
-/* â”€â”€ Eval CRUD Modal â”€â”€ */
+/* ── Eval CRUD Modal ── */
 .eval-crud-overlay {
   position: fixed;
   inset: 0;
@@ -8279,7 +8358,7 @@ select.req-modal-input {
   margin-top: 6px;
 }
 
-/* â”€â”€ Placeholder Page Card â”€â”€ */
+/* ── Placeholder Page Card ── */
 .placeholder-card {
   display: flex;
   flex-direction: column;
@@ -8305,7 +8384,7 @@ select.req-modal-input {
   line-height: 1.5;
 }
 
-/* â”€â”€ System Config: Announcement / Academic Calendar â”€â”€ */
+/* ── System Config: Announcement / Academic Calendar ── */
 .sc-page {
   display: flex;
   flex-direction: column;
@@ -8444,14 +8523,14 @@ select.req-modal-input {
   resize: vertical;
 }
 
-/* â”€â”€ System Config: Configuration Page â”€â”€ */
+/* ── System Config: Configuration Page ── */
 .cfg-page {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* â”€â”€ System Config: Admission Config Page â”€â”€ */
+/* ── System Config: Admission Config Page ── */
 .adm-page {
   display: flex;
   flex-direction: column;
@@ -9034,11 +9113,11 @@ select.req-modal-input {
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ════════════════════════════════════════════
    CLINIC RECORD / INFIRMARY LOG
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ════════════════════════════════════════════ */
 
-/* â”€â”€ Filter Bar â”€â”€ */
+/* ── Filter Bar ── */
 .cr-filter-bar {
   margin-bottom: 18px;
 }
@@ -9088,7 +9167,7 @@ select.req-modal-input {
   outline: none;
 }
 
-/* â”€â”€ Student Table (uses shared .student-table pattern) â”€â”€ */
+/* ── Student Table (uses shared .student-table pattern) ── */
 .cr-name-link {
   color: #006837;
   text-decoration: none;
@@ -9106,7 +9185,7 @@ select.req-modal-input {
   background: #f8fcf9;
 }
 
-/* â”€â”€ Card (shared for Personal Info, Medical, Immunization) â”€â”€ */
+/* ── Card (shared for Personal Info, Medical, Immunization) ── */
 .cr-card {
   background: #fff;
   border: 1.5px solid #e0e0e0;
@@ -9129,7 +9208,7 @@ select.req-modal-input {
   margin-top: 24px;
 }
 
-/* â”€â”€ Parents Information â”€â”€ */
+/* ── Parents Information ── */
 .cr-parent-card {
   padding-bottom: 0;
   display: flex;
@@ -9334,7 +9413,7 @@ select.req-modal-input {
   background: #fff;
 }
 
-/* â”€â”€ Personal Information Grid â”€â”€ */
+/* ── Personal Information Grid ── */
 .cr-info-grid {
   display: flex;
   flex-direction: column;
@@ -9370,7 +9449,7 @@ select.req-modal-input {
   font-weight: 600;
 }
 
-/* â”€â”€ Medical History â”€â”€ */
+/* ── Medical History ── */
 .cr-med-table-wrap {
   margin-bottom: 28px;
 }
@@ -9419,7 +9498,7 @@ select.req-modal-input {
   color: #333;
   cursor: pointer;
 }
-/* â”€â”€ Custom Checkboxes (all clinic sections) â”€â”€ */
+/* ── Custom Checkboxes (all clinic sections) ── */
 .cr-med-check input[type="checkbox"],
 .cr-imm-check input[type="checkbox"],
 .cr-imm-sub-check input[type="checkbox"] {
@@ -9529,7 +9608,7 @@ select.req-modal-input {
 }
 .cr-cond-input:focus { border-color: #006837; outline: none; }
 
-/* â”€â”€ Immunization â”€â”€ */
+/* ── Immunization ── */
 .cr-imm-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -9604,7 +9683,7 @@ select.req-modal-input {
 }
 .cr-imm-sub-input:focus { border-color: #006837; outline: none; }
 
-/* â”€â”€ Doctor Info (grid item) â”€â”€ */
+/* ── Doctor Info (grid item) ── */
 .cr-doctor-box {
   grid-column: span 2;
 }
@@ -9626,7 +9705,7 @@ select.req-modal-input {
   letter-spacing: 0.3px;
 }
 
-/* â”€â”€ Clinic Record Responsive â”€â”€ */
+/* ── Clinic Record Responsive ── */
 @media (max-width: 1100px) {
   .cr-imm-grid { grid-template-columns: repeat(3, 1fr); }
   .cr-doctor-box { grid-column: span 2; }
@@ -9662,7 +9741,7 @@ select.req-modal-input {
   .cr-cond-input { width: 100%; }
 }
 
-/* â”€â”€ Pre-requisites Page â”€â”€ */
+/* ── Pre-requisites Page ── */
 .prereq-page {
   padding: 4px 0;
 }
@@ -9732,7 +9811,7 @@ select.req-modal-input {
   background: #005229;
 }
 
-/* â”€â”€ List View â”€â”€ */
+/* ── List View ── */
 .prereq-list-header {
   display: flex;
   align-items: center;
@@ -9858,7 +9937,7 @@ select.req-modal-input {
   padding: 18px 12px !important;
 }
 
-/* â”€â”€ Detail / Edit View â”€â”€ */
+/* ── Detail / Edit View ── */
 .prereq-detail-banner {
   display: flex;
   align-items: center;
@@ -10131,7 +10210,7 @@ select.req-modal-input {
   }
 }
 
-/* â”€â”€ Subject File Page â”€â”€ */
+/* ── Subject File Page ── */
 .sf-page {
   display: flex;
   flex-direction: column;
@@ -10935,7 +11014,7 @@ select.req-modal-input {
 
 /* profile-edit: keep header fixed, content scrolls normally */
 
-/* â”€â”€ Profile View: bg on wrapper like login â”€â”€ */
+/* ── Profile View: bg on wrapper like login ── */
 body.page-profile-view .student-main-wrapper {
   background-color: #006837;
   background-size: cover;
@@ -10977,12 +11056,12 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   color: #d4a017;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ════════════════════════════════════════════
    UNIFIED CUSTOM CHECKBOXES
    Consistent with the Clinic Record design
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ════════════════════════════════════════════ */
 
-/* â”€â”€ Label wrappers (flex row with gap) â”€â”€ */
+/* ── Label wrappers (flex row with gap) ── */
 .setup-checkbox-label,
 .setup-checkbox,
 .doclist-checkbox-label,
@@ -10995,14 +11074,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   cursor: pointer;
 }
 
-/* â”€â”€ Checkbox group (flex-wrap row for multi-select lists) â”€â”€ */
+/* ── Checkbox group (flex-wrap row for multi-select lists) ── */
 .setup-checkbox-group {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 22px;
 }
 
-/* â”€â”€ Custom checkbox appearance (matches clinic record) â”€â”€ */
+/* ── Custom checkbox appearance (matches clinic record) ── */
 .setup-checkbox-label input[type="checkbox"],
 .setup-checkbox input[type="checkbox"],
 .doclist-checkbox-label input[type="checkbox"],
@@ -11024,7 +11103,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-/* â”€â”€ Checked state â”€â”€ */
+/* ── Checked state ── */
 .setup-checkbox-label input[type="checkbox"]:checked,
 .setup-checkbox input[type="checkbox"]:checked,
 .doclist-checkbox-label input[type="checkbox"]:checked,
@@ -11037,7 +11116,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   border-color: #0a813c;
 }
 
-/* â”€â”€ Checkmark icon â”€â”€ */
+/* ── Checkmark icon ── */
 .setup-checkbox-label input[type="checkbox"]:checked::after,
 .setup-checkbox input[type="checkbox"]:checked::after,
 .doclist-checkbox-label input[type="checkbox"]:checked::after,
@@ -11056,7 +11135,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   transform: translate(-50%, -50%);
 }
 
-/* â”€â”€ Hover glow â”€â”€ */
+/* ── Hover glow ── */
 .setup-checkbox-label input[type="checkbox"]:hover,
 .setup-checkbox input[type="checkbox"]:hover,
 .doclist-checkbox-label input[type="checkbox"]:hover,
@@ -11069,7 +11148,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
-/* â”€â”€ Custom radio buttons (document list modals) â”€â”€ */
+/* ── Custom radio buttons (document list modals) ── */
 .doclist-radio-label {
   display: flex;
   align-items: center;
@@ -11115,7 +11194,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
-/* â”€â”€ Faculty Loads â”€â”€ */
+/* ── Faculty Loads ── */
 .rfl-wrap {
   padding: 24px;
 }
@@ -16595,3 +16674,1406 @@ body.page-profile-edit .student-content {
   color: #ffffff !important;
 }
 /* MIGRATED STUDENT UWIS BLOCK END */
+
+/* ===== Merged from css/styles.css on 2026-03-21 ===== */
+
+/* Registrar Admin Tools: Access Management, Master Files, Student Maintenance */
+
+.page-user-accounts .ua-page,
+.page-report-access .ra-page,
+.page-faculty-file .ff-page,
+.page-student-profile .sp-page,
+.page-student-grade-file .sgf-page,
+.page-bed-days .bd-page,
+.page-bed-status .bs-page,
+.page-student-update .su-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-user-accounts .cfg-card,
+.page-report-access .cfg-card,
+.page-bed-days .cfg-card,
+.page-bed-status .cfg-card,
+.page-student-update .su-card,
+.page-student-update .su-left {
+  box-shadow: 0 2px 12px rgba(8, 64, 34, 0.04);
+}
+
+.page-user-accounts .ua-filter-grid,
+.page-bed-status .bs-toolbar,
+.page-bed-days .bd-toolbar,
+.page-report-access .ra-toolbar,
+.page-faculty-file .ff-toolbar,
+.page-student-profile .sp-toolbar,
+.page-student-grade-file .sgf-toolbar {
+  display: grid;
+  gap: 10px;
+  align-items: end;
+}
+
+.page-user-accounts .ua-filter-grid {
+  grid-template-columns: repeat(4, minmax(160px, 1fr)) auto auto;
+}
+
+.page-bed-status .bs-toolbar {
+  grid-template-columns: minmax(240px, 1.6fr) repeat(4, minmax(120px, 1fr)) auto;
+}
+
+.page-bed-days .bd-toolbar {
+  grid-template-columns: repeat(4, minmax(130px, 1fr)) auto;
+}
+
+.page-report-access .ra-toolbar {
+  grid-template-columns: minmax(260px, 1.6fr) auto minmax(180px, 1fr);
+}
+
+.page-faculty-file .ff-toolbar,
+.page-student-profile .sp-toolbar,
+.page-student-grade-file .sgf-toolbar {
+  grid-template-columns: auto;
+}
+
+.page-bed-status .bs-search-wrap,
+.page-faculty-file .ff-search-wrap,
+.page-student-profile .sp-search-wrap,
+.page-student-grade-file .sgf-search-wrap,
+.page-report-access .ra-search-wrap {
+  min-width: 0;
+}
+
+.page-bed-status .bs-field,
+.page-bed-days .bd-field,
+.page-student-update .su-field,
+.page-user-accounts .ua-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.page-bed-status .bs-toolbar-label,
+.page-user-accounts .ua-form-label,
+.page-user-accounts .ua-selected-label,
+.page-user-accounts .ua-table-caption,
+.page-report-access .ra-caption,
+.page-student-update .su-subtitle,
+.page-student-update .su-note,
+.page-student-update .su-task-sub,
+.page-student-update .su-task-foot,
+.page-student-update .su-meta-label {
+  font-size: 0.78rem;
+  color: #4f6058;
+}
+
+.page-user-accounts .ua-table-caption,
+.page-report-access .ra-caption {
+  font-weight: 500;
+}
+
+.page-bed-status .bs-table-head,
+.page-faculty-file .ff-table-head,
+.page-student-profile .sp-table-head,
+.page-student-grade-file .sgf-table-head {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.page-user-accounts .ua-page-list,
+.page-report-access .ra-page-list,
+.page-faculty-file .ff-page-list,
+.page-student-profile .sp-page-list,
+.page-student-grade-file .sgf-page-list,
+.page-bed-days .bd-page-list,
+.page-bed-status .bs-page-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.page-user-accounts .ua-page-btn,
+.page-user-accounts .ua-page-num,
+.page-report-access .ra-page-btn,
+.page-report-access .ra-page-num,
+.page-faculty-file .ff-page-btn,
+.page-faculty-file .ff-page-num,
+.page-student-profile .sp-page-btn,
+.page-student-profile .sp-page-num,
+.page-student-grade-file .sgf-page-btn,
+.page-student-grade-file .sgf-page-num,
+.page-bed-days .bd-page-btn,
+.page-bed-days .bd-page-num,
+.page-bed-status .bs-page-btn,
+.page-bed-status .bs-page-num {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  background: #fff;
+  color: #2d4b40;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 8px;
+}
+
+.page-user-accounts .ua-page-btn,
+.page-report-access .ra-page-btn,
+.page-faculty-file .ff-page-btn,
+.page-student-profile .sp-page-btn,
+.page-student-grade-file .sgf-page-btn,
+.page-bed-days .bd-page-btn,
+.page-bed-status .bs-page-btn {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.page-user-accounts .ua-page-btn:hover:not(:disabled),
+.page-user-accounts .ua-page-num:hover,
+.page-report-access .ra-page-btn:hover:not(:disabled),
+.page-report-access .ra-page-num:hover,
+.page-faculty-file .ff-page-btn:hover:not(:disabled),
+.page-faculty-file .ff-page-num:hover,
+.page-student-profile .sp-page-btn:hover:not(:disabled),
+.page-student-profile .sp-page-num:hover,
+.page-student-grade-file .sgf-page-btn:hover:not(:disabled),
+.page-student-grade-file .sgf-page-num:hover,
+.page-bed-days .bd-page-btn:hover:not(:disabled),
+.page-bed-days .bd-page-num:hover,
+.page-bed-status .bs-page-btn:hover:not(:disabled),
+.page-bed-status .bs-page-num:hover {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.page-user-accounts .ua-page-btn:disabled,
+.page-report-access .ra-page-btn:disabled,
+.page-faculty-file .ff-page-btn:disabled,
+.page-student-profile .sp-page-btn:disabled,
+.page-student-grade-file .sgf-page-btn:disabled,
+.page-bed-days .bd-page-btn:disabled,
+.page-bed-status .bs-page-btn:disabled {
+  opacity: 0.45;
+}
+
+.page-user-accounts .ua-page-num.active,
+.page-report-access .ra-page-num.active,
+.page-faculty-file .ff-page-num.active,
+.page-student-profile .sp-page-num.active,
+.page-student-grade-file .sgf-page-num.active,
+.page-bed-days .bd-page-num.active,
+.page-bed-status .bs-page-num.active {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #fff;
+}
+
+.page-user-accounts .ua-table-meta,
+.page-report-access .ra-table-meta,
+.page-faculty-file .ff-pager-row,
+.page-student-profile .sp-pager-row,
+.page-student-grade-file .sgf-pager-row,
+.page-bed-days .bd-pager-row,
+.page-bed-status .bs-pager-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 2px 2px;
+}
+
+.page-faculty-file .ff-pager-row,
+.page-student-profile .sp-pager-row,
+.page-student-grade-file .sgf-pager-row,
+.page-bed-days .bd-pager-row,
+.page-bed-status .bs-pager-row {
+  justify-content: flex-end;
+}
+
+.page-user-accounts .ua-clear-btn {
+  border: 1px solid #0f7b43;
+  background: #0f7b43;
+  color: #fff;
+  border-radius: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  font-weight: 600;
+}
+
+.page-user-accounts .ua-clear-btn:hover {
+  background: #0c6a39;
+  border-color: #0c6a39;
+}
+
+.page-user-accounts .ua-clear-btn:active {
+  background: #0a5c31;
+  border-color: #0a5c31;
+}
+
+.page-user-accounts .ua-clear-btn:focus-visible {
+  outline: 2px solid rgba(15, 123, 67, 0.32);
+  outline-offset: 2px;
+}
+
+.page-user-accounts .ua-selected-user {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.page-user-accounts .ua-selected-item {
+  border: 1px solid #d9e4de;
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: #fbfdfc;
+}
+
+.page-user-accounts .ua-selected-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #173a2b;
+  font-weight: 600;
+}
+
+.page-user-accounts .ua-form-grid {
+  display: grid;
+  grid-template-columns: 170px minmax(260px, 420px) minmax(220px, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.page-user-accounts .ua-form-grid .app-filter-input,
+.page-user-accounts .ua-form-grid .ua-password-wrap {
+  max-width: 420px;
+}
+
+.page-user-accounts .ua-form-note {
+  font-size: 0.74rem;
+  color: #63736c;
+}
+
+.page-user-accounts .ua-password-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.page-user-accounts .ua-password-wrap .app-filter-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.page-user-accounts .ua-pass-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #4f6058;
+  width: 28px;
+  height: 28px;
+}
+
+.page-user-accounts .ua-pass-toggle .ua-eye-off {
+  display: none;
+}
+
+.page-user-accounts .ua-pass-toggle.is-visible .ua-eye-on {
+  display: none;
+}
+
+.page-user-accounts .ua-pass-toggle.is-visible .ua-eye-off {
+  display: inline;
+}
+
+.page-user-accounts .ua-status-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.page-user-accounts .ua-status-active {
+  background: #e8f8ef;
+  color: #0f7b43;
+}
+
+.page-user-accounts .ua-status-inactive {
+  background: #fdeceb;
+  color: #c0392b;
+}
+
+.page-user-accounts .ua-selected-row {
+  background: #f4faf7;
+}
+
+.page-user-accounts .ua-bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.page-report-access .ra-type-filter,
+.page-report-access .ra-modal-head,
+.page-report-access .ra-modal-tools,
+.page-report-access .ra-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-report-access .ra-modal-box {
+  width: min(1080px, 96vw);
+}
+
+.page-report-access .ra-modal-user {
+  font-size: 0.79rem;
+  color: #50635a;
+  font-weight: 600;
+}
+
+.page-report-access .ra-section-title {
+  margin: 0;
+  color: #1f4d38;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.page-report-access .ra-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.page-report-access .ra-group {
+  border: 1px solid #dce7e1;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fbfdfc;
+}
+
+.page-report-access .ra-group-title h4 {
+  margin: 0;
+  color: #0f5132;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.page-report-access .ra-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 180px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.page-report-access .ra-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #2f4e40;
+}
+
+.page-report-access .ra-check-master {
+  font-weight: 700;
+  color: #1f4d38;
+}
+
+.page-report-access .ra-action-btn,
+.page-bed-status .bs-export-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #cfe0d7;
+  background: #fff;
+  color: #1f4d38;
+  border-radius: 8px;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
+}
+
+.page-report-access .ra-action-btn:hover,
+.page-bed-status .bs-export-btn:hover {
+  background: #f4faf7;
+  border-color: #9ec7b3;
+}
+
+.page-report-access .ra-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.page-faculty-file .ff-status {
+  display: inline-block;
+  min-width: 72px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.page-faculty-file .ff-status-active {
+  background: #e8f8ef;
+  color: #0f7b43;
+}
+
+.page-faculty-file .ff-status-inactive {
+  background: #fdeceb;
+  color: #c0392b;
+}
+
+.page-faculty-file .ff-total-row td,
+.page-student-profile .sp-total-row td,
+.page-student-grade-file .sgf-total-row td,
+.page-bed-days .bd-total-row td {
+  background: #f8fcf9;
+  color: #1f4d38;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-top: 1px solid #dce7e1;
+  text-align: left !important;
+}
+
+#ffTable .apst-dropdown,
+#spTable .apst-dropdown,
+#sgfTable .apst-dropdown,
+#bdTable .apst-dropdown,
+#bsTable .apst-dropdown {
+  position: fixed;
+}
+
+#ffTable td:last-child .apst-action-btn,
+#spTable td:last-child .apst-action-btn,
+#sgfTable td:last-child .apst-action-btn,
+#bdTable td:last-child .apst-action-btn,
+#bsTable td:last-child .apst-action-btn,
+#raTable td:last-child .ra-action-btn {
+  margin: 0 auto;
+}
+
+.page-report-access .ra-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.page-report-access .ra-table-meta {
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.page-report-access .ra-page-list {
+  margin-right: 0;
+}
+
+.page-report-access .ra-search-wrap {
+  flex: 1 1 320px;
+  min-width: 260px;
+}
+
+.page-report-access #raSearchBtn {
+  margin-left: 0;
+}
+
+.page-report-access .ra-type-filter {
+  margin-left: 0;
+  min-width: 210px;
+}
+
+.page-report-access #raSearchBtn {
+  margin-left: auto;
+}
+
+.page-faculty-file .ff-toolbar,
+.page-student-profile .sp-toolbar,
+.page-student-grade-file .sgf-toolbar {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.page-faculty-file .ff-search-wrap,
+.page-student-profile .sp-search-wrap,
+.page-student-grade-file .sgf-search-wrap {
+  flex: 1 1 420px;
+}
+
+.page-bed-status .pf-search-wrap,
+.page-report-access .pf-search-wrap,
+.page-faculty-file .pf-search-wrap,
+.page-student-profile .pf-search-wrap,
+.page-student-grade-file .pf-search-wrap {
+  max-width: none;
+  min-width: 360px;
+}
+
+.page-bed-status .pf-search-input,
+.page-report-access .pf-search-input,
+.page-faculty-file .pf-search-input,
+.page-student-profile .pf-search-input,
+.page-student-grade-file .pf-search-input {
+  min-height: 38px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.page-faculty-file #ffSearchBtn,
+.page-student-profile #spSearchBtn,
+.page-student-grade-file #sgfSearchBtn {
+  margin-left: 0;
+}
+
+.page-bed-status .bs-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.page-bed-status .bs-search-wrap {
+  order: 1;
+  flex: 1 1 420px;
+}
+
+.page-bed-status .bs-field {
+  order: 2;
+  flex: 0 1 130px;
+}
+
+.page-bed-status #bsSearchBtn {
+  order: 3;
+  margin-left: auto;
+}
+
+.page-bed-status .bs-filter-foot {
+  padding-top: 8px;
+}
+
+.page-bed-status .bs-filter-checks,
+.page-student-update .su-rule-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.page-bed-status .bs-check,
+.page-student-update .su-checkline,
+.page-student-update .su-danger-note {
+  font-size: 0.81rem;
+  color: #2f4e40;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-bed-status .bs-table-export {
+  position: relative;
+}
+
+.page-bed-status .bs-export-caret {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+}
+
+.page-bed-status .bs-export-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  border: 1px solid #d8e4dd;
+  border-radius: 9px;
+  background: #fff;
+  min-width: 150px;
+  box-shadow: 0 10px 28px rgba(18, 49, 34, 0.12);
+  display: none;
+  z-index: 12;
+}
+
+.page-bed-status .bs-export-menu.open {
+  display: block;
+}
+
+.page-bed-status .bs-export-menu button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 9px 11px;
+  font-size: 0.8rem;
+  color: #1f4d38;
+}
+
+.page-bed-status .bs-export-menu button:hover {
+  background: #f4faf7;
+}
+
+.page-bed-status .bs-export-btn {
+  background: #006837;
+  border-color: #006837;
+  color: #ffffff;
+}
+
+.page-bed-status .bs-export-btn:hover {
+  background: #005a2e;
+  border-color: #005a2e;
+  color: #ffffff;
+}
+
+.page-student-update .su-page {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 12px;
+}
+
+.page-student-update .su-left,
+.page-student-update .su-op-card {
+  border: 1px solid #d8e4dd;
+  border-radius: 10px;
+  background: #fff;
+  padding: 12px;
+}
+
+.page-student-update .su-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-student-update .su-title,
+.page-student-update .su-task-title,
+.page-student-update .su-section-title,
+.page-student-update .su-rule-title {
+  margin: 0;
+  color: #0f5132;
+  font-weight: 700;
+}
+
+.page-student-update .su-title {
+  font-size: 0.97rem;
+}
+
+.page-student-update .su-task-title {
+  font-size: 0.92rem;
+}
+
+.page-student-update .su-section-title {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.page-student-update .su-grid-4,
+.page-student-update .su-grid-5 {
+  display: grid;
+  gap: 10px;
+}
+
+.page-student-update .su-grid-4 {
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+}
+
+.page-student-update .su-grid-5 {
+  grid-template-columns: repeat(5, minmax(110px, 1fr));
+}
+
+.page-student-update .su-rule-box {
+  border: 1px dashed #c4d7cc;
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 10px;
+  margin-top: 12px;
+}
+
+.page-student-update .su-danger-note {
+  margin-top: 10px;
+}
+
+.page-student-update .su-save-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.page-student-update .su-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-student-update .su-task-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page-student-update .su-meta-item {
+  border: 1px solid #e0e9e3;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fbfdfc;
+}
+
+.page-student-update .su-meta-value {
+  color: #1f4d38;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.page-student-update .su-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: #5f7268;
+}
+
+.page-student-update .su-progress-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.page-student-update .su-progress-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.page-student-update .su-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #c9d8d0;
+}
+
+.page-student-update .su-progress.running .su-progress-dot {
+  background: #0f7b43;
+  animation: suPulse 1s ease-in-out infinite;
+}
+
+@keyframes suPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+}
+
+.page-student-update .su-task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page-student-update .su-task-actions .pf-btn-new,
+.page-student-update .su-task-actions .req-btn-cancel {
+  min-width: 110px;
+}
+
+@media (max-width: 1180px) {
+  .page-user-accounts .ua-filter-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+
+  .page-student-update .su-page {
+    grid-template-columns: 1fr;
+  }
+
+  .page-student-update .su-grid-4,
+  .page-student-update .su-grid-5 {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .page-user-accounts .ua-filter-grid,
+  .page-bed-days .bd-toolbar,
+  .page-faculty-file .ff-toolbar,
+  .page-student-profile .sp-toolbar,
+  .page-student-grade-file .sgf-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-selected-user,
+  .page-user-accounts .ua-form-grid,
+  .page-report-access .ra-groups,
+  .page-student-update .su-grid-4,
+  .page-student-update .su-grid-5,
+  .page-student-update .su-task-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-bottom-actions,
+  .page-report-access .ra-modal-actions,
+  .page-student-update .su-task-actions,
+  .page-student-update .su-save-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-user-accounts .ua-bottom-actions .req-btn-cancel,
+  .page-user-accounts .ua-bottom-actions .req-btn-save,
+  .page-report-access .ra-modal-actions .req-btn-cancel,
+  .page-report-access .ra-modal-actions .req-btn-save,
+  .page-student-update .su-task-actions .pf-btn-new,
+  .page-student-update .su-task-actions .req-btn-cancel,
+  .page-student-update .su-save-wrap .pf-btn-new {
+    width: 100%;
+  }
+
+  .page-user-accounts .ua-table-meta,
+  .page-report-access .ra-table-meta,
+  .page-faculty-file .ff-pager-row,
+  .page-student-profile .sp-pager-row,
+  .page-student-grade-file .sgf-pager-row,
+  .page-bed-days .bd-pager-row,
+  .page-bed-status .bs-pager-row {
+    justify-content: flex-end;
+  }
+
+  .page-user-accounts .ua-table-meta,
+  .page-report-access .ra-table-meta {
+    justify-content: center;
+  }
+
+  .page-report-access .ra-table-meta {
+    justify-content: flex-start;
+  }
+
+  .page-bed-status .bs-search-wrap,
+  .page-bed-status #bsSearchBtn,
+  .page-bed-status .bs-field {
+    order: initial;
+    flex: 1 1 100%;
+  }
+
+  .page-report-access .ra-search-wrap,
+  .page-report-access .ra-type-filter,
+  .page-faculty-file .ff-search-wrap,
+  .page-student-profile .sp-search-wrap,
+  .page-student-grade-file .sgf-search-wrap {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .page-bed-status .pf-search-wrap,
+  .page-report-access .pf-search-wrap,
+  .page-faculty-file .pf-search-wrap,
+  .page-student-profile .pf-search-wrap,
+  .page-student-grade-file .pf-search-wrap {
+    min-width: 0;
+  }
+
+  .page-report-access .ra-toolbar,
+  .page-faculty-file .ff-toolbar,
+  .page-student-profile .sp-toolbar,
+  .page-student-grade-file .sgf-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .page-student-profile .sp-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .page-student-profile .sp-search-wrap,
+  .page-student-profile #spSearchBtn {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .page-student-profile .sp-search-wrap .pf-search-wrap {
+    width: 100%;
+  }
+
+  .page-student-profile .app-table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .page-student-profile #spTable {
+    min-width: 980px;
+  }
+
+  .page-student-profile #spTable th,
+  .page-student-profile #spTable td {
+    white-space: nowrap;
+  }
+
+  .page-report-access #raSearchBtn,
+  .page-faculty-file #ffSearchBtn,
+  .page-student-profile #spSearchBtn,
+  .page-student-grade-file #sgfSearchBtn,
+  .page-faculty-file #ffNewRecordBtn,
+  .page-student-profile #spNewRecordBtn,
+  .page-student-grade-file #sgfNewRecordBtn {
+    width: 100%;
+  }
+
+  .page-report-access .ra-type-filter {
+    margin-left: 0;
+  }
+
+  .page-faculty-file .ff-table-head,
+  .page-student-profile .sp-table-head,
+  .page-student-grade-file .sgf-table-head {
+    align-items: stretch;
+  }
+}
+
+.page-student-profile-config .spc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-student-profile-config .spc-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.page-student-profile-config .spc-back-link {
+  text-decoration: none;
+  color: #5e666f !important;
+}
+
+.page-student-profile-config .spc-back-link:hover,
+.page-student-profile-config .spc-back-link:focus {
+  text-decoration: none;
+  color: #4f5861 !important;
+  background: #eef1f4;
+  border-color: #d0d6dd;
+}
+
+.page-student-profile-config .spc-back-link:visited {
+  color: #5e666f !important;
+}
+
+.page-student-profile-config .spc-view-form-btn {
+  font-size: 0.8rem;
+  padding: 7px 12px;
+}
+
+.page-student-profile-config .spc-card {
+  padding: 10px;
+}
+
+.page-student-profile-config .app-filter-label {
+  white-space: normal;
+  line-height: 1.2;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.page-student-profile-config .app-filter-input {
+  min-height: 36px;
+  font-size: 0.82rem;
+}
+
+.page-student-profile-config .spc-grid-top,
+.page-student-profile-config .spc-grid-contact,
+.page-student-profile-config .spc-grid-birth,
+.page-student-profile-config .spc-grid-address,
+.page-student-profile-config .spc-grid-acad,
+.page-student-profile-config .spc-grid-status,
+.page-student-profile-config .spc-grid-transfer {
+  display: grid;
+  gap: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.page-student-profile-config .spc-grid-top {
+  grid-template-columns: repeat(5, minmax(120px, 1fr)) minmax(140px, 170px);
+}
+
+.page-student-profile-config .spc-grid-contact,
+.page-student-profile-config .spc-grid-birth,
+.page-student-profile-config .spc-grid-address {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+}
+
+.page-student-profile-config .spc-grid-acad,
+.page-student-profile-config .spc-grid-status {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+.page-student-profile-config .spc-grid-transfer {
+  grid-template-columns: minmax(190px, 2fr) minmax(130px, 1fr) minmax(190px, 2fr);
+}
+
+.page-student-profile-config .spc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.page-student-profile-config .spc-field-grow {
+  min-width: 0;
+}
+
+.page-student-profile-config .spc-field-sm {
+  max-width: 120px;
+}
+
+.page-student-profile-config .spc-photo-box {
+  border: 1px solid #d8e4dd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  color: #9aa7a0;
+  font-size: 0.76rem;
+  min-height: 104px;
+  padding: 6px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.page-student-profile-config .spc-photo-input {
+  display: none;
+}
+
+.page-student-profile-config .spc-photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.page-student-profile-config .spc-photo-icon {
+  opacity: 0.8;
+}
+
+.page-student-profile-config .spc-checkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #5d6b65;
+  font-size: 0.74rem;
+  margin-top: 8px;
+}
+
+.page-student-profile-config .spc-divider {
+  border-top: 1px solid #d8e4dd;
+  margin: 6px 0;
+}
+
+.page-student-profile-config .spc-transfer-row {
+  margin: 2px 0 6px;
+}
+
+.page-student-profile-config .spc-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+@media (max-width: 1100px) {
+  .page-student-profile-config .spc-grid-top,
+  .page-student-profile-config .spc-grid-contact,
+  .page-student-profile-config .spc-grid-birth,
+  .page-student-profile-config .spc-grid-address,
+  .page-student-profile-config .spc-grid-acad,
+  .page-student-profile-config .spc-grid-status,
+  .page-student-profile-config .spc-grid-transfer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page-student-profile-config .spc-field-grow {
+    grid-column: span 1;
+  }
+
+  .page-student-profile-config .spc-photo-box {
+    min-height: 92px;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-student-profile-config .spc-head-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-student-profile-config .spc-view-form-btn,
+  .page-student-profile-config .spc-back-link,
+  .page-student-profile-config .spc-actions .pf-btn-new {
+    width: 100%;
+  }
+
+  .page-student-profile-config .spc-grid-top,
+  .page-student-profile-config .spc-grid-contact,
+  .page-student-profile-config .spc-grid-birth,
+  .page-student-profile-config .spc-grid-address,
+  .page-student-profile-config .spc-grid-acad,
+  .page-student-profile-config .spc-grid-status,
+  .page-student-profile-config .spc-grid-transfer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.page-faculty-file-config .ffc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-faculty-file-config .ffc-head-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.page-faculty-file-config .ffc-back-link {
+  text-decoration: none;
+  color: #5e666f !important;
+}
+
+.page-faculty-file-config .ffc-back-link:hover,
+.page-faculty-file-config .ffc-back-link:focus {
+  text-decoration: none;
+  color: #4f5861 !important;
+  background: #eef1f4;
+  border-color: #d0d6dd;
+}
+
+.page-faculty-file-config .ffc-back-link:visited {
+  color: #5e666f !important;
+}
+
+.page-faculty-file-config .ffc-card {
+  padding: 12px;
+}
+
+.page-faculty-file-config .ffc-section-title,
+.page-faculty-file-config .ffc-subtitle {
+  color: #0b5c36;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  margin: 4px 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-faculty-file-config .ffc-section-title::before,
+.page-faculty-file-config .ffc-subtitle::before {
+  content: "";
+  width: 4px;
+  height: 14px;
+  border-radius: 999px;
+  background: #0f7b43;
+  box-shadow: 0 0 0 1px rgba(15, 123, 67, 0.18);
+}
+
+.page-faculty-file-config .ffc-subtitle {
+  margin-top: 12px;
+}
+
+.page-faculty-file-config .ffc-grid-top,
+.page-faculty-file-config .ffc-grid-profile,
+.page-faculty-file-config .ffc-grid-main,
+.page-faculty-file-config .ffc-grid-edu {
+  display: grid;
+  gap: 9px 10px;
+  margin-bottom: 10px;
+}
+
+.page-faculty-file-config .ffc-grid-top {
+  grid-template-columns: minmax(240px, 2.1fr) minmax(150px, 1fr) minmax(150px, 1fr);
+  align-items: end;
+}
+
+.page-faculty-file-config .ffc-grid-top .app-filter-input,
+.page-faculty-file-config .ffc-grid-top .app-filter-select,
+.page-faculty-file-config .ffc-grid-main .app-filter-input,
+.page-faculty-file-config .ffc-grid-main .app-filter-select {
+  width: 100%;
+}
+
+.page-faculty-file-config .ffc-grid-main {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+}
+
+.page-faculty-file-config .ffc-grid-profile {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+}
+
+.page-faculty-file-config .ffc-grid-edu {
+  grid-template-columns: 1fr 1.8fr 1fr 1fr;
+}
+
+.page-faculty-file-config .ffc-grid-personal {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 9px 10px;
+  margin-bottom: 10px;
+}
+
+.page-faculty-file-config .ffc-grid-parent {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 9px 10px;
+  margin-bottom: 10px;
+}
+
+.page-faculty-file-config .ffc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.page-faculty-file-config .ffc-field-grow {
+  grid-column: span 2;
+}
+
+.page-faculty-file-config .ffc-field .app-filter-input {
+  min-height: 36px;
+  font-size: 0.82rem;
+}
+
+.page-faculty-file-config .ffc-field .app-filter-select {
+  min-height: 36px;
+  font-size: 0.82rem;
+}
+
+.page-faculty-file-config .ffc-divider {
+  border-top: 1px solid #deebe4;
+  margin: 8px 0 10px;
+}
+
+.page-faculty-file-config .ffc-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
+.page-faculty-file-config .ffc-list-title {
+  margin: 0;
+  color: #0b5c36;
+  font-weight: 800;
+  letter-spacing: 0.085em;
+  text-transform: uppercase;
+  font-size: 0.83rem;
+  line-height: 1.2;
+}
+
+.page-faculty-file-config .ffc-add-btn {
+  min-width: 78px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+}
+
+.page-faculty-file-config .ffc-table-wrap {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.page-faculty-file-config .ffc-table thead th,
+.page-faculty-file-config .ffc-table tbody td {
+  font-size: 0.78rem;
+}
+
+.page-faculty-file-config .ffc-table td:last-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+.page-faculty-file-config .ffc-table .apst-dropdown {
+  position: fixed;
+}
+
+.page-faculty-file-config .ffc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 980px) {
+  .page-faculty-file-config .ffc-grid-top,
+  .page-faculty-file-config .ffc-grid-profile,
+  .page-faculty-file-config .ffc-grid-main,
+  .page-faculty-file-config .ffc-grid-edu,
+  .page-faculty-file-config .ffc-grid-personal,
+  .page-faculty-file-config .ffc-grid-parent {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page-faculty-file-config .ffc-field-grow {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-faculty-file-config .ffc-grid-top,
+  .page-faculty-file-config .ffc-grid-profile,
+  .page-faculty-file-config .ffc-grid-main,
+  .page-faculty-file-config .ffc-grid-edu,
+  .page-faculty-file-config .ffc-grid-personal,
+  .page-faculty-file-config .ffc-grid-parent {
+    grid-template-columns: 1fr;
+  }
+
+  .page-faculty-file-config .ffc-list-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-faculty-file-config .ffc-add-btn {
+    width: 100%;
+  }
+
+  .page-faculty-file-config .ffc-actions {
+    flex-direction: column;
+  }
+
+  .page-faculty-file-config .ffc-actions .pf-btn-new,
+  .page-faculty-file-config .ffc-actions .req-btn-cancel {
+    width: 100%;
+  }
+}
