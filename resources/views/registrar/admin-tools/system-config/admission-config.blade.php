@@ -232,6 +232,12 @@
         return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
     }
 
+    function admFormatDateLong(dateString) {
+        if (!dateString) return '';
+        var d = new Date(dateString + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    }
+
     function admCloseActionMenus() {
         document.querySelectorAll('.apst-dropdown.open').forEach(function(menu) {
             menu.classList.remove('open', 'drop-up');
@@ -349,7 +355,11 @@
         if (fromInput) fromInput.value = admAdmissionPeriod.dateFrom || '';
         if (toInput) toInput.value = admAdmissionPeriod.dateTo || '';
         if (note) {
-            note.textContent = 'Current period: ' + admFormatDate(admAdmissionPeriod.dateFrom) + ' to ' + admFormatDate(admAdmissionPeriod.dateTo);
+            note.innerHTML = '' +
+                '<span class="adm-note-label">Current Period</span>' +
+                '<span class="adm-note-value">' +
+                    admEscapeHtml(admFormatDateLong(admAdmissionPeriod.dateFrom)) + ' to ' + admEscapeHtml(admFormatDateLong(admAdmissionPeriod.dateTo)) +
+                '</span>';
         }
     }
 
