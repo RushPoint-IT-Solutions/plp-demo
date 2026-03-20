@@ -288,7 +288,7 @@
 @media print {
     @page {
         size: A4 portrait;
-        margin: 0.35in 1in;
+        margin: 0.5in;
     }
 
     html,
@@ -327,11 +327,11 @@
     .acd-canvas {
         --acd-paper-width: auto !important;
         --acd-scale: 1 !important;
-        width: 100% !important;
+        width: calc(100% - 1in) !important;
+        max-width: calc(100% - 1in) !important;
         min-width: 0 !important;
-        max-width: 100% !important;
         height: auto !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
     }
 
     .acd-form {
@@ -437,6 +437,29 @@
 
     .loa-check[data-print-checked="true"]::before {
         content: "(✓) ";
+    }
+
+    /* LOA print should stay readable within reduced margins */
+    .loa-form,
+    .loa-form * {
+        font-size: 14px !important;
+        line-height: 1.1 !important;
+    }
+
+    .loa-form h2 {
+        font-size: 16px !important;
+    }
+
+    /* Ensure Change of Grade print remains exactly 16px */
+    .cog-form,
+    .cog-form * {
+        font-size: 16px !important;
+        line-height: 1.1 !important;
+    }
+
+    .cog-form h2,
+    .cog-title-main {
+        font-size: 16px !important;
     }
 }
 

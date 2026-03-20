@@ -2378,7 +2378,7 @@ select:hover {
 @media print {
 @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 0.35in 1in;
 }
 
   html,
@@ -2439,21 +2439,12 @@ select:hover {
   .section-offering-page .cor-totals-text,
   .section-offering-page .cor-note-text,
   .section-offering-page .cor-signature-name,
-  .section-offering-page .cor-signature-role {
-    font-size: 12px !important;
-  }
-
+  .section-offering-page .cor-signature-role,
   .section-offering-page .cor-label,
-  .section-offering-page .cor-schedule-title {
-    font-size: 12px !important;
-  }
-
-  .section-offering-page .cor-title {
-    font-size: 20px !important;
-  }
-
+  .section-offering-page .cor-schedule-title,
+  .section-offering-page .cor-title,
   .section-offering-page .cor-reg-number {
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
 
   .section-offering-page .cor-student-info {
@@ -5873,7 +5864,7 @@ body.page-profile-edit .student-content {
 @media print {
 @page {
     size: A4 portrait;
-    margin: 0.35in 1in;
+    margin: 0.5in;
 }
 
   html,
@@ -5912,11 +5903,11 @@ body.page-profile-edit .student-content {
   .acd-canvas {
     --acd-paper-width: auto !important;
     --acd-scale: 1 !important;
-    width: 100% !important;
+    width: calc(100% - 1in) !important;
+    max-width: calc(100% - 1in) !important;
     min-width: 0 !important;
-    max-width: 100% !important;
     height: auto !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
   }
 
   .acd-form {
@@ -6034,6 +6025,31 @@ body.page-profile-edit .student-content {
 
   .loa-check[data-print-checked=true]::before {
     content: "(\2713) ";
+  }
+
+  /* LOA print should stay readable within reduced margins */
+
+  .loa-form,
+  .loa-form * {
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+  }
+
+  .loa-form h2 {
+    font-size: 16px !important;
+  }
+
+  /* Ensure Change of Grade print remains exactly 16px */
+
+  .cog-form,
+  .cog-form * {
+    font-size: 16px !important;
+    line-height: 1.1 !important;
+  }
+
+  .cog-form h2,
+  .cog-title-main {
+    font-size: 16px !important;
   }
 }
 
