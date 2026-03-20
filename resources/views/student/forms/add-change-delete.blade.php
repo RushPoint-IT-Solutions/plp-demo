@@ -141,12 +141,27 @@
                 </div>
 
                 <div class="acd-bottom-right">
-                    <p>APPROVED BY DEAN: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Name and Signature)</p>
+                    <div class="acd-sign-row">
+                        <p class="acd-sign-main">APPROVED BY DEAN: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p class="acd-sign-sub">(Name and Signature)</p>
+                    </div>
                     <p class="acd-emphasis">VALIDATION and RECORDING BY THE REGISTRAR'S OFFICE:</p>
-                    <p>RECEIVED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Registrar's Personnel)</p>
-                    <p>RECORDED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Records Officer)</p>
-                    <p>COR/OSL ISSUED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Registrar's Personnel)</p>
-                    <p>NOTED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""> (Registrar's Personnel)</p>
+                    <div class="acd-sign-row">
+                        <p class="acd-sign-main">RECEIVED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p class="acd-sign-sub">(Registrar's Personnel)</p>
+                    </div>
+                    <div class="acd-sign-row">
+                        <p class="acd-sign-main">RECORDED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p class="acd-sign-sub">(Records Officer)</p>
+                    </div>
+                    <div class="acd-sign-row">
+                        <p class="acd-sign-main">COR/OSL ISSUED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p class="acd-sign-sub">(Registrar's Personnel)</p>
+                    </div>
+                    <div class="acd-sign-row">
+                        <p class="acd-sign-main">NOTED BY: <input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        <p class="acd-sign-sub">(Registrar's Personnel)</p>
+                    </div>
                 </div>
             </div>
 
