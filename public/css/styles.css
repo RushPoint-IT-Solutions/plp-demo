@@ -468,7 +468,8 @@
 .page-faculty-file .ff-total-row td,
 .page-student-profile .sp-total-row td,
 .page-student-grade-file .sgf-total-row td,
-.page-bed-days .bd-total-row td {
+.page-bed-days .bd-total-row td,
+.page-bed-status .bs-total-row td {
   background: #f8fcf9;
   color: #1f4d38;
   font-size: 0.82rem;
