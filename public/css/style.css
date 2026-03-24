@@ -432,10 +432,11 @@ select:hover {
 
 .plp-header-logo {
   width: auto;
-  height: 80px;
+  height: 72px;
   -o-object-fit: contain;
      object-fit: contain;
   flex-shrink: 0;
+  transform: translateY(2px);
 }
 
 .plp-footer {
@@ -7170,7 +7171,9 @@ select.req-modal-input {
 #smTable .apst-dropdown,
 #gpTable .apst-dropdown,
 #tmTable .apst-dropdown,
-#gsTable .apst-dropdown {
+#gsTable .apst-dropdown,
+#torTable .apst-dropdown,
+#diplomaTable .apst-dropdown {
   position: fixed;
 }
 

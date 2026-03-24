@@ -478,6 +478,8 @@
 #sgfTable td:last-child .apst-action-btn,
 #bdTable td:last-child .apst-action-btn,
 #bsTable td:last-child .apst-action-btn,
+#torTable td:last-child .apst-action-btn,
+#diplomaTable td:last-child .apst-action-btn,
 #raTable td:last-child .ra-action-btn {
   margin: 0 auto;
 }

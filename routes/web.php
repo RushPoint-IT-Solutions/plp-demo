@@ -155,6 +155,8 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         // Forms
         Route::prefix('forms')->name('forms.')->group(function () {
             Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
+            Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
+            Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
         });
     });
 

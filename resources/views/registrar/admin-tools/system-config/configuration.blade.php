@@ -50,6 +50,7 @@
             </section>
         </div>
 
+        {{--
         <section class="cfg-card cfg-card-full">
             <div class="cfg-card-head">
                 <h3>Registration Period</h3>
@@ -73,6 +74,8 @@
             </div>
             <div class="cfg-pagination" id="cfgRegistrationPager"></div>
         </section>
+        --}}
+
     </div>
 </div>
 
