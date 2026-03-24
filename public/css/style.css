@@ -1220,7 +1220,7 @@ select:hover {
   box-shadow: none;
 }
 
-/* Filter grid — guarantees cross-row alignment */
+/* Filter grid â€” guarantees cross-row alignment */
 
 .filter-grid {
   display: grid;
@@ -1698,7 +1698,7 @@ select:hover {
   color: #664d03;
 }
 
-/* ── Calendar ─────────────────────────────────────────── */
+/* â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .cal-controls {
   display: flex;
@@ -1890,7 +1890,7 @@ select:hover {
   color: #1565c0;
 }
 
-/* ── Calendar Event Popup (mobile tap-to-reveal) ──────── */
+/* â”€â”€ Calendar Event Popup (mobile tap-to-reveal) â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .cal-event-popup {
   position: fixed;
@@ -1956,7 +1956,7 @@ select:hover {
   line-height: 1.35;
 }
 
-/* ── Profile / Setup Wizard ─────────────────────────────── */
+/* â”€â”€ Profile / Setup Wizard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .setup-steps {
   display: flex;
@@ -4532,7 +4532,7 @@ select:hover {
   font-weight: 700;
 }
 
-/* ── Nested sub-dropdowns (e.g. Academic Master) ── */
+/* â”€â”€ Nested sub-dropdowns (e.g. Academic Master) â”€â”€ */
 .student-portal-body .sidebar-nested-dropdown {
   display: flex;
   flex-direction: column;
@@ -4572,7 +4572,7 @@ select:hover {
   left: 36px;
 }
 
-/* ── Program File / Academic Master pages ── */
+/* â”€â”€ Program File / Academic Master pages â”€â”€ */
 .pf-page {
   display: flex;
   flex-direction: column;
@@ -4733,20 +4733,7 @@ select:hover {
   padding: 4px 6px;
 }
 
-.pf-total-row td {
-  font-weight: 700;
-  color: #006837;
-  cursor: default;
-}
 
-.pf-total-cell {
-  text-align: left !important;
-  white-space: nowrap;
-}
-
-#pfTable tbody tr.pf-total-row:hover {
-  background-color: transparent;
-}
 
 .pf-modal-box.pf-dept-modal-box {
   width: fit-content;
@@ -5096,7 +5083,7 @@ select:hover {
   text-decoration: underline;
 }
 
-/* ── Program File Modal ── */
+/* â”€â”€ Program File Modal â”€â”€ */
 .pf-modal-overlay {
   position: fixed;
   inset: 0;
@@ -5478,7 +5465,7 @@ select:hover {
   text-align: left;
 }
 
-/* Program File table — all columns left-aligned, Action centered */
+/* Program File table â€” all columns left-aligned, Action centered */
 .pf-page .registrar-table thead th,
 .pf-page .registrar-table tbody td {
   text-align: left;
@@ -5495,10 +5482,7 @@ select:hover {
   text-align: center;
 }
 
-.pf-page #pfTable tbody tr.pf-total-row td {
-  color: #006837 !important;
-  font-weight: 700;
-}
+
 
 .doclist-page {
   padding: 4px 0;
@@ -7457,7 +7441,7 @@ select.req-modal-input {
   }
 }
 
-/* ── Scheduling Filter Bar ── */
+/* â”€â”€ Scheduling Filter Bar â”€â”€ */
 
 .sched-filter-bar {
   display: flex;
@@ -7595,7 +7579,7 @@ select.req-modal-input {
   }
 }
 
-/* ── Slot Monitoring Progress Bar ── */
+/* â”€â”€ Slot Monitoring Progress Bar â”€â”€ */
 
 .slot-status-wrap {
   display: flex;
@@ -7626,7 +7610,7 @@ select.req-modal-input {
   text-align: right;
 }
 
-/* ── Grading Sheet Page ── */
+/* â”€â”€ Grading Sheet Page â”€â”€ */
 .gs-filter-bar {
   padding: 18px 22px 14px;
   margin-bottom: 22px;
@@ -7684,7 +7668,7 @@ select.req-modal-input {
 }
 .gs-view-btn:hover { background: #004d29; }
 
-/* ── Grading Sheet: Two-row table header ── */
+/* â”€â”€ Grading Sheet: Two-row table header â”€â”€ */
 .gs-list-table thead {
   background: #006837;
 }
@@ -7765,7 +7749,7 @@ select.req-modal-input {
   background: #f0faf4;
 }
 
-/* ── Section Info Banner v2 (detail view) ── */
+/* â”€â”€ Section Info Banner v2 (detail view) â”€â”€ */
 .gs-section-banner-v2 {
   background: #fff;
   border: 1.5px solid #c8e6c9;
@@ -7831,7 +7815,7 @@ select.req-modal-input {
   .gs-banner-grid { grid-template-columns: 1fr; gap: 8px 0; }
 }
 
-/* ── Evaluation Page ── */
+/* â”€â”€ Evaluation Page â”€â”€ */
 .eval-layout {
   display: grid;
   grid-template-columns: 1fr 520px;
@@ -8180,7 +8164,7 @@ select.req-modal-input {
   font-weight: 500;
 }
 
-/* ── Evaluation Dashboard (right panel) ── */
+/* â”€â”€ Evaluation Dashboard (right panel) â”€â”€ */
 .eval-dashboard {
   background: #fff;
   border: 1.5px solid #e0e0e0;
@@ -8275,7 +8259,7 @@ select.req-modal-input {
 .eval-status-draft { background: #f9a825; color: #fff; }
 .eval-status-closed { background: #ccc; color: #555; }
 
-/* ── Responsive: Grading Sheet + Evaluation ── */
+/* â”€â”€ Responsive: Grading Sheet + Evaluation â”€â”€ */
 @media (max-width: 1200px) {
   .eval-layout { grid-template-columns: 1fr 280px; gap: 16px; }
 }
@@ -8303,7 +8287,7 @@ select.req-modal-input {
   .eval-q-actions { align-self: flex-end; }
 }
 
-/* ── Eval CRUD Modal ── */
+/* â”€â”€ Eval CRUD Modal â”€â”€ */
 .eval-crud-overlay {
   position: fixed;
   inset: 0;
@@ -8358,7 +8342,7 @@ select.req-modal-input {
   margin-top: 6px;
 }
 
-/* ── Placeholder Page Card ── */
+/* â”€â”€ Placeholder Page Card â”€â”€ */
 .placeholder-card {
   display: flex;
   flex-direction: column;
@@ -8384,7 +8368,7 @@ select.req-modal-input {
   line-height: 1.5;
 }
 
-/* ── System Config: Announcement / Academic Calendar ── */
+/* â”€â”€ System Config: Announcement / Academic Calendar â”€â”€ */
 .sc-page {
   display: flex;
   flex-direction: column;
@@ -8523,14 +8507,14 @@ select.req-modal-input {
   resize: vertical;
 }
 
-/* ── System Config: Configuration Page ── */
+/* â”€â”€ System Config: Configuration Page â”€â”€ */
 .cfg-page {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ── System Config: Admission Config Page ── */
+/* â”€â”€ System Config: Admission Config Page â”€â”€ */
 .adm-page {
   display: flex;
   flex-direction: column;
@@ -9113,11 +9097,11 @@ select.req-modal-input {
   }
 }
 
-/* ════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    CLINIC RECORD / INFIRMARY LOG
-   ════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Filter Bar ── */
+/* â”€â”€ Filter Bar â”€â”€ */
 .cr-filter-bar {
   margin-bottom: 18px;
 }
@@ -9167,7 +9151,7 @@ select.req-modal-input {
   outline: none;
 }
 
-/* ── Student Table (uses shared .student-table pattern) ── */
+/* â”€â”€ Student Table (uses shared .student-table pattern) â”€â”€ */
 .cr-name-link {
   color: #006837;
   text-decoration: none;
@@ -9185,7 +9169,7 @@ select.req-modal-input {
   background: #f8fcf9;
 }
 
-/* ── Card (shared for Personal Info, Medical, Immunization) ── */
+/* â”€â”€ Card (shared for Personal Info, Medical, Immunization) â”€â”€ */
 .cr-card {
   background: #fff;
   border: 1.5px solid #e0e0e0;
@@ -9208,7 +9192,7 @@ select.req-modal-input {
   margin-top: 24px;
 }
 
-/* ── Parents Information ── */
+/* â”€â”€ Parents Information â”€â”€ */
 .cr-parent-card {
   padding-bottom: 0;
   display: flex;
@@ -9413,7 +9397,7 @@ select.req-modal-input {
   background: #fff;
 }
 
-/* ── Personal Information Grid ── */
+/* â”€â”€ Personal Information Grid â”€â”€ */
 .cr-info-grid {
   display: flex;
   flex-direction: column;
@@ -9449,7 +9433,7 @@ select.req-modal-input {
   font-weight: 600;
 }
 
-/* ── Medical History ── */
+/* â”€â”€ Medical History â”€â”€ */
 .cr-med-table-wrap {
   margin-bottom: 28px;
 }
@@ -9498,7 +9482,7 @@ select.req-modal-input {
   color: #333;
   cursor: pointer;
 }
-/* ── Custom Checkboxes (all clinic sections) ── */
+/* â”€â”€ Custom Checkboxes (all clinic sections) â”€â”€ */
 .cr-med-check input[type="checkbox"],
 .cr-imm-check input[type="checkbox"],
 .cr-imm-sub-check input[type="checkbox"] {
@@ -9608,7 +9592,7 @@ select.req-modal-input {
 }
 .cr-cond-input:focus { border-color: #006837; outline: none; }
 
-/* ── Immunization ── */
+/* â”€â”€ Immunization â”€â”€ */
 .cr-imm-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -9683,7 +9667,7 @@ select.req-modal-input {
 }
 .cr-imm-sub-input:focus { border-color: #006837; outline: none; }
 
-/* ── Doctor Info (grid item) ── */
+/* â”€â”€ Doctor Info (grid item) â”€â”€ */
 .cr-doctor-box {
   grid-column: span 2;
 }
@@ -9705,7 +9689,7 @@ select.req-modal-input {
   letter-spacing: 0.3px;
 }
 
-/* ── Clinic Record Responsive ── */
+/* â”€â”€ Clinic Record Responsive â”€â”€ */
 @media (max-width: 1100px) {
   .cr-imm-grid { grid-template-columns: repeat(3, 1fr); }
   .cr-doctor-box { grid-column: span 2; }
@@ -9741,7 +9725,7 @@ select.req-modal-input {
   .cr-cond-input { width: 100%; }
 }
 
-/* ── Pre-requisites Page ── */
+/* â”€â”€ Pre-requisites Page â”€â”€ */
 .prereq-page {
   padding: 4px 0;
 }
@@ -9811,7 +9795,7 @@ select.req-modal-input {
   background: #005229;
 }
 
-/* ── List View ── */
+/* â”€â”€ List View â”€â”€ */
 .prereq-list-header {
   display: flex;
   align-items: center;
@@ -9937,7 +9921,7 @@ select.req-modal-input {
   padding: 18px 12px !important;
 }
 
-/* ── Detail / Edit View ── */
+/* â”€â”€ Detail / Edit View â”€â”€ */
 .prereq-detail-banner {
   display: flex;
   align-items: center;
@@ -10210,7 +10194,7 @@ select.req-modal-input {
   }
 }
 
-/* ── Subject File Page ── */
+/* â”€â”€ Subject File Page â”€â”€ */
 .sf-page {
   display: flex;
   flex-direction: column;
@@ -10301,20 +10285,7 @@ select.req-modal-input {
   padding: 2px 0;
 }
 
-.sf-total-row td {
-  font-weight: 700;
-  color: #006837;
-  cursor: default;
-}
 
-.sf-total-cell {
-  text-align: left !important;
-  white-space: nowrap;
-}
-
-#sfTable tbody tr.sf-total-row:hover {
-  background-color: transparent;
-}
 
 .sf-check-label {
   display: inline-flex;
@@ -11014,7 +10985,7 @@ select.req-modal-input {
 
 /* profile-edit: keep header fixed, content scrolls normally */
 
-/* ── Profile View: bg on wrapper like login ── */
+/* â”€â”€ Profile View: bg on wrapper like login â”€â”€ */
 body.page-profile-view .student-main-wrapper {
   background-color: #006837;
   background-size: cover;
@@ -11056,12 +11027,12 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   color: #d4a017;
 }
 
-/* ════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    UNIFIED CUSTOM CHECKBOXES
    Consistent with the Clinic Record design
-   ════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Label wrappers (flex row with gap) ── */
+/* â”€â”€ Label wrappers (flex row with gap) â”€â”€ */
 .setup-checkbox-label,
 .setup-checkbox,
 .doclist-checkbox-label,
@@ -11074,14 +11045,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   cursor: pointer;
 }
 
-/* ── Checkbox group (flex-wrap row for multi-select lists) ── */
+/* â”€â”€ Checkbox group (flex-wrap row for multi-select lists) â”€â”€ */
 .setup-checkbox-group {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 22px;
 }
 
-/* ── Custom checkbox appearance (matches clinic record) ── */
+/* â”€â”€ Custom checkbox appearance (matches clinic record) â”€â”€ */
 .setup-checkbox-label input[type="checkbox"],
 .setup-checkbox input[type="checkbox"],
 .doclist-checkbox-label input[type="checkbox"],
@@ -11103,7 +11074,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-/* ── Checked state ── */
+/* â”€â”€ Checked state â”€â”€ */
 .setup-checkbox-label input[type="checkbox"]:checked,
 .setup-checkbox input[type="checkbox"]:checked,
 .doclist-checkbox-label input[type="checkbox"]:checked,
@@ -11116,7 +11087,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   border-color: #0a813c;
 }
 
-/* ── Checkmark icon ── */
+/* â”€â”€ Checkmark icon â”€â”€ */
 .setup-checkbox-label input[type="checkbox"]:checked::after,
 .setup-checkbox input[type="checkbox"]:checked::after,
 .doclist-checkbox-label input[type="checkbox"]:checked::after,
@@ -11135,7 +11106,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   transform: translate(-50%, -50%);
 }
 
-/* ── Hover glow ── */
+/* â”€â”€ Hover glow â”€â”€ */
 .setup-checkbox-label input[type="checkbox"]:hover,
 .setup-checkbox input[type="checkbox"]:hover,
 .doclist-checkbox-label input[type="checkbox"]:hover,
@@ -11148,7 +11119,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
-/* ── Custom radio buttons (document list modals) ── */
+/* â”€â”€ Custom radio buttons (document list modals) â”€â”€ */
 .doclist-radio-label {
   display: flex;
   align-items: center;
@@ -11194,7 +11165,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
-/* ── Faculty Loads ── */
+/* â”€â”€ Faculty Loads â”€â”€ */
 .rfl-wrap {
   padding: 24px;
 }
@@ -11389,17 +11360,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   flex-wrap: wrap;
 }
 
-.rfl-list-total-row td {
-  font-weight: 700;
-  color: #006837;
-  font-size: 0.8rem;
-  background-color: #fcfcfc;
-}
 
-.rfl-list-total-cell {
-  text-align: left !important;
-  white-space: nowrap;
-}
 
 .rfl-list-total-cell strong {
   font-size: 1.1em;
@@ -11737,7 +11698,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 }
 
 .rfl-total-cell {
-  text-align: center;
+  text-align: left;
   font-weight: 900;
   color: var(--plp-green);
 }
@@ -12404,17 +12365,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   color: #1f2937;
 }
 
-.page-alumni-tracker .at-total-row td {
-  font-weight: 700;
-  color: #006837;
-}
 
-.page-alumni-tracker .at-total-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
 
 .page-alumni-tracker .at-total-cell strong {
   font-weight: 800;
@@ -13254,21 +13205,19 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   background: #db4d4d;
 }
 
-.page-student-discipline .sd-total-row td {
-  font-weight: 700;
-  color: #006837 !important;
-  font-size: 0.8rem;
-  background-color: #fcfcfc;
-}
 
-.page-student-discipline .sd-total-cell {
-  text-align: left !important;
-  white-space: nowrap;
-}
 
 .page-student-discipline .sd-total-cell strong {
   font-size: 1.1em;
   color: #006837 !important;
+}
+
+.page-student-discipline .sd-total-row td,
+.page-student-discipline .sd-total-cell {
+  color: #006837 !important;
+  text-align: left !important;
+  font-weight: 700;
+  background: #f8fcf9 !important;
 }
 
 .page-student-discipline .sd-table-head {
@@ -13290,7 +13239,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 }
 
 .page-student-discipline #sdStudentsTable th:last-child,
-.page-student-discipline #sdStudentsTable td:last-child {
+.page-student-discipline #sdStudentsTable tbody tr:not(.sd-total-row) td:last-child {
   width: 70px;
   text-align: center;
 }
@@ -13411,7 +13360,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 }
 
 .page-student-discipline #sdConductTable th:last-child,
-.page-student-discipline #sdConductTable td:last-child {
+.page-student-discipline #sdConductTable tbody tr:not(.sd-total-row) td:last-child {
   width: 10%;
   text-align: center !important;
 }
@@ -14201,15 +14150,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   min-width: 860px;
 }
 
-.page-services-class-list .svc-total-row td {
-  font-weight: 700;
-  color: #006837;
-}
 
-.page-services-class-list .svc-total-cell {
-  text-align: left !important;
-  white-space: nowrap;
-}
 
 /* Class List top controls: mirror Alumni Tracker Search + System Configuration */
 .page-services-class-list .at-top-row {
@@ -17142,17 +17083,7 @@ body.page-profile-edit .student-content {
   color: #c0392b;
 }
 
-.page-faculty-file .ff-total-row td,
-.page-student-profile .sp-total-row td,
-.page-student-grade-file .sgf-total-row td,
-.page-bed-days .bd-total-row td {
-  background: #f8fcf9;
-  color: #1f4d38;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-top: 1px solid #dce7e1;
-  text-align: left !important;
-}
+
 
 #ffTable .apst-dropdown,
 #spTable .apst-dropdown,
@@ -18074,6 +18005,728 @@ body.page-profile-edit .student-content {
 
   .page-faculty-file-config .ffc-actions .pf-btn-new,
   .page-faculty-file-config .ffc-actions .req-btn-cancel {
+    width: 100%;
+  }
+}
+
+/* Unified registrar total row style for all tables */
+.registrar-body .app-table tr[class$="-total-row"] td,
+.registrar-body .app-table tr[class$="-totals-row"] td,
+.registrar-body .app-table tr[class*="-total-"][class$="-row"] td,
+.registrar-body .cfg-table tr[class$="-total-row"] td,
+.registrar-body .cfg-table tr[class$="-totals-row"] td,
+.registrar-body .cfg-table tr[class*="-total-"][class$="-row"] td,
+.registrar-body .student-table tr[class$="-total-row"] td,
+.registrar-body .student-table tr[class$="-totals-row"] td,
+.registrar-body .student-table tr[class*="-total-"][class$="-row"] td,
+.registrar-body .registrar-table tr[class$="-total-row"] td,
+.registrar-body .registrar-table tr[class$="-totals-row"] td,
+.registrar-body .registrar-table tr[class*="-total-"][class$="-row"] td {
+  background: #f8fcf9 !important;
+  color: #006837 !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-top: 1px solid #dce7e1;
+  text-align: left !important;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.registrar-body .app-table [class$="-total-cell"],
+.registrar-body .cfg-table [class$="-total-cell"],
+.registrar-body .student-table [class$="-total-cell"],
+.registrar-body .registrar-table [class$="-total-cell"] {
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+.registrar-body .page-alumni-tracker .at-total-cell {
+  display: table-cell !important;
+  text-align: left !important;
+}
+
+.registrar-body .page-alumni-tracker .at-total-row td,
+.registrar-body .page-alumni-tracker .at-total-cell,
+.registrar-body .page-services-class-list .svc-total-row td,
+.registrar-body .page-services-class-list .svc-total-cell,
+.registrar-body .page-services-faculty-loads .rfl-list-total-row td,
+.registrar-body .page-services-faculty-loads .rfl-totals-row td,
+.registrar-body .page-services-faculty-loads .rfl-list-total-cell,
+.registrar-body .page-services-faculty-loads .rfl-total-cell,
+.registrar-body .page-student-discipline .sd-total-row td,
+.registrar-body .page-student-discipline .sd-total-cell {
+  color: #006837 !important;
+  text-align: left !important;
+  background: #f8fcf9 !important;
+  display: table-cell !important;
+}
+
+.registrar-body .app-table tr[class$="-total-row"]:hover,
+.registrar-body .app-table tr[class$="-totals-row"]:hover,
+.registrar-body .app-table tr[class*="-total-"][class$="-row"]:hover,
+.registrar-body .cfg-table tr[class$="-total-row"]:hover,
+.registrar-body .cfg-table tr[class$="-totals-row"]:hover,
+.registrar-body .cfg-table tr[class*="-total-"][class$="-row"]:hover,
+.registrar-body .student-table tr[class$="-total-row"]:hover,
+.registrar-body .student-table tr[class$="-totals-row"]:hover,
+.registrar-body .student-table tr[class*="-total-"][class$="-row"]:hover,
+.registrar-body .registrar-table tr[class$="-total-row"]:hover,
+.registrar-body .registrar-table tr[class$="-totals-row"]:hover,
+.registrar-body .registrar-table tr[class*="-total-"][class$="-row"]:hover {
+  background-color: transparent !important;
+}
+
+/* Canonical lock for registrar total rows (prevents style regressions) */
+.registrar-body tr.pf-total-row td,
+.registrar-body tr.sf-total-row td,
+.registrar-body tr.at-total-row td,
+.registrar-body tr.se-total-row td,
+.registrar-body tr.se-total-units-row td,
+.registrar-body tr.sd-total-row td,
+.registrar-body tr.svc-total-row td,
+.registrar-body tr.rfl-list-total-row td,
+.registrar-body tr.rfl-totals-row td,
+.registrar-body tr.ff-total-row td,
+.registrar-body tr.sp-total-row td,
+.registrar-body tr.sgf-total-row td,
+.registrar-body tr.bd-total-row td,
+.registrar-body tr.bs-total-row td {
+  background: #f8fcf9 !important;
+  color: #006837 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  border-top: 1px solid #dce7e1 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  display: table-cell !important;
+}
+
+.registrar-body .pf-total-cell,
+.registrar-body .sf-total-cell,
+.registrar-body .at-total-cell,
+.registrar-body .se-total-cell,
+.registrar-body .se-units-cell,
+.registrar-body .sd-total-cell,
+.registrar-body .svc-total-cell,
+.registrar-body .rfl-list-total-cell,
+.registrar-body .rfl-total-cell,
+.registrar-body .ff-total-cell,
+.registrar-body .sp-total-cell,
+.registrar-body .sgf-total-cell,
+.registrar-body .bd-total-cell,
+.registrar-body .bs-total-cell {
+  color: #006837 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  font-weight: 700 !important;
+  display: table-cell !important;
+}
+
+.registrar-body tr.pf-total-row:hover,
+.registrar-body tr.sf-total-row:hover,
+.registrar-body tr.at-total-row:hover,
+.registrar-body tr.se-total-row:hover,
+.registrar-body tr.se-total-units-row:hover,
+.registrar-body tr.sd-total-row:hover,
+.registrar-body tr.svc-total-row:hover,
+.registrar-body tr.rfl-list-total-row:hover,
+.registrar-body tr.rfl-totals-row:hover,
+.registrar-body tr.ff-total-row:hover,
+.registrar-body tr.sp-total-row:hover,
+.registrar-body tr.sgf-total-row:hover,
+.registrar-body tr.bd-total-row:hover,
+.registrar-body tr.bs-total-row:hover {
+  background-color: transparent !important;
+}
+
+/* Consistent total typography: both label and value are bold on all pages */
+.registrar-body tr[class*="total"][class$="-row"] td,
+.registrar-body .pf-total-cell,
+.registrar-body .sf-total-cell,
+.registrar-body .at-total-cell,
+.registrar-body .se-total-cell,
+.registrar-body .se-units-cell,
+.registrar-body .sd-total-cell,
+.registrar-body .svc-total-cell,
+.registrar-body .rfl-list-total-cell,
+.registrar-body .rfl-total-cell,
+.registrar-body .ff-total-cell,
+.registrar-body .sp-total-cell,
+.registrar-body .sgf-total-cell,
+.registrar-body .bd-total-cell,
+.registrar-body .bs-total-cell,
+.registrar-body .cr-total-cell {
+  color: #006837 !important;
+  font-weight: 700 !important;
+}
+
+.registrar-body tr[class*="total"][class$="-row"] td strong,
+.registrar-body .pf-total-cell strong,
+.registrar-body .sf-total-cell strong,
+.registrar-body .at-total-cell strong,
+.registrar-body .se-total-cell strong,
+.registrar-body .se-units-cell strong,
+.registrar-body .sd-total-cell strong,
+.registrar-body .svc-total-cell strong,
+.registrar-body .rfl-list-total-cell strong,
+.registrar-body .rfl-total-cell strong,
+.registrar-body .ff-total-cell strong,
+.registrar-body .sp-total-cell strong,
+.registrar-body .sgf-total-cell strong,
+.registrar-body .bd-total-cell strong,
+.registrar-body .bs-total-cell strong,
+.registrar-body .cr-total-cell strong {
+  color: inherit !important;
+  font-weight: 800 !important;
+}
+
+/* ===== Merged from css/registrar-faculty-loads.css ===== */
+:root {
+  --plp-green: #006837;
+  --plp-green-dark: #005028;
+  --plp-yellow: #ffd100;
+  --plp-white: #ffffff;
+  --plp-gray: #f5f5f5;
+  --plp-border: #cccccc;
+}
+
+.rfl-wrap {
+  padding: 24px;
+}
+
+.rfl-alert {
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.rfl-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid rgba(0, 104, 55, 0.25);
+}
+
+.rfl-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 6px 6px 0 0;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #006837;
+  border: 1px solid rgba(0, 104, 55, 0.35);
+  border-bottom: none;
+  background: #fff;
+}
+
+.rfl-tab.active {
+  background: #006837;
+  color: #fff;
+  border-color: #006837;
+}
+
+.rfl-filters {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  margin: 16px 0 10px;
+  flex-wrap: wrap;
+}
+
+.rfl-filter-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  font-weight: 800;
+  color: #5f5f5f;
+  margin-bottom: 6px;
+}
+
+.rfl-select {
+  min-width: 200px;
+  font-size: 0.9rem;
+}
+
+.rfl-set-btn {
+  min-width: 86px;
+  height: 38px;
+  font-weight: 700;
+  background-color: #006837;
+  border-color: #006837;
+}
+
+.rfl-set-btn:hover {
+  background-color: #005028;
+  border-color: #005028;
+}
+
+.rfl-faculty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: #006837;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  margin: 6px 0 16px;
+}
+
+.rfl-subject-line {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #555555;
+  margin: 6px 0 4px;
+}
+
+.rfl-subject-schedule {
+  font-size: 0.84rem;
+  color: #5f5f5f;
+  font-weight: 600;
+  padding-left: 26px;
+  line-height: 1.45;
+}
+
+.rfl-faculty-code {
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.rfl-search {
+  margin-bottom: 14px;
+}
+
+.rfl-search-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  font-weight: 800;
+  color: #5f5f5f;
+  margin-bottom: 6px;
+}
+
+.rfl-search-form {
+  position: relative;
+  max-width: 360px;
+}
+
+.rfl-search-input {
+  padding-right: 44px;
+  border-radius: 6px;
+  height: 38px;
+  font-size: 0.9rem;
+}
+
+.rfl-search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #9a9a9a;
+  padding: 6px;
+}
+
+.rfl-search-btn:disabled {
+  opacity: 0.5;
+}
+
+.rfl-meta {
+  font-size: 0.85rem;
+  color: #5f5f5f;
+  margin-bottom: 10px;
+}
+
+.rfl-row {
+  cursor: pointer;
+}
+
+.rfl-row:hover {
+  background: rgba(0, 104, 55, 0.03);
+}
+
+.rfl-name-link {
+  color: #006837;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.rfl-name-link:hover {
+  color: #005028;
+}
+
+.rfl-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.rfl-total {
+  font-size: 0.9rem;
+  color: #555555;
+}
+
+.rfl-total span {
+  color: #006837;
+  font-weight: 800;
+}
+
+.rfl-load-card {
+  margin-top: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.rfl-course-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  font-weight: 900;
+  color: #006837;
+  margin: 18px 0 8px;
+}
+
+.rfl-schedule-box {
+  background: #f2fbf5;
+  border: 2px solid rgba(0, 104, 55, 0.28);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 16px rgba(0, 104, 55, 0.12);
+  margin-bottom: 20px;
+}
+
+.rfl-year-title {
+  font-weight: 800;
+  color: #555555;
+  margin: 10px 0 6px;
+}
+
+.rfl-schedule-line {
+  font-size: 0.85rem;
+  color: #555555;
+  line-height: 1.45;
+}
+
+.rfl-line-code {
+  font-weight: 800;
+  margin-right: 6px;
+}
+
+.rfl-line-desc {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.rfl-line-meta {
+  color: #5f5f5f;
+  font-weight: 600;
+}
+
+.rfl-loading-wrap {
+  margin-top: 6px;
+}
+
+.rfl-loading-header {
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  font-weight: 900;
+  color: #006837;
+  margin: 10px 0 8px;
+}
+
+.rfl-assign-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.rfl-assign-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.rfl-subject-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rfl-add-btn {
+  font-weight: 700;
+  height: 38px;
+  padding: 0 18px;
+  white-space: nowrap;
+  min-width: 130px;
+}
+
+.rfl-assign-options {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.rfl-assign-options .form-check-input {
+  accent-color: #006837;
+}
+
+.rfl-assign-options .form-check-input:checked {
+  background-color: #006837;
+  border-color: #006837;
+}
+
+.rfl-assign-options .form-check-input:focus {
+  border-color: rgba(0, 104, 55, 0.6);
+  box-shadow: 0 0 0 0.15rem rgba(0, 104, 55, 0.15);
+}
+
+.rfl-num-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rfl-num-label {
+  font-size: 0.82rem;
+  color: #5f5f5f;
+  font-weight: 700;
+}
+
+.rfl-num {
+  width: 110px;
+  height: 34px;
+  font-size: 0.9rem;
+}
+
+.rfl-assigned-table {
+  margin-top: 10px;
+}
+
+.rfl-totals-row td {
+  border-top: none;
+  padding-top: 10px;
+}
+
+.rfl-total-cell {
+  text-align: left;
+  font-weight: 900;
+  color: #006837;
+}
+
+.rfl-list-total-row td,
+.rfl-list-total-cell,
+.rfl-totals-row td,
+.rfl-total-cell {
+  color: #006837 !important;
+  text-align: left !important;
+  background: #f8fcf9 !important;
+  font-weight: 700 !important;
+}
+
+.rfl-list-total-row td strong,
+.rfl-list-total-cell strong,
+.rfl-totals-row td strong,
+.rfl-total-cell strong {
+  color: inherit !important;
+  font-weight: 800 !important;
+}
+
+/* ===== Restored Admin Tools Layout Overrides (post styles.css merge) ===== */
+.registrar-body .page-user-accounts .ua-filter-grid,
+.registrar-body .page-bed-status .bs-toolbar,
+.registrar-body .page-bed-days .bd-toolbar,
+.registrar-body .page-report-access .ra-toolbar,
+.registrar-body .page-faculty-file .ff-toolbar,
+.registrar-body .page-student-profile .sp-toolbar,
+.registrar-body .page-student-grade-file .sgf-toolbar {
+  gap: 10px;
+  align-items: end;
+}
+
+.registrar-body .page-user-accounts .ua-filter-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(160px, 1fr)) auto auto !important;
+}
+
+.registrar-body .page-bed-status .bs-toolbar {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.registrar-body .page-bed-days .bd-toolbar {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(130px, 1fr)) auto !important;
+}
+
+.registrar-body .page-report-access .ra-toolbar {
+  display: flex !important;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.registrar-body .page-faculty-file .ff-toolbar,
+.registrar-body .page-student-profile .sp-toolbar,
+.registrar-body .page-student-grade-file .sgf-toolbar {
+  display: inline-flex !important;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.registrar-body .page-faculty-file .ff-search-wrap,
+.registrar-body .page-student-profile .sp-search-wrap,
+.registrar-body .page-student-grade-file .sgf-search-wrap {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.registrar-body .page-report-access .ra-search-wrap {
+  flex: 1 1 320px;
+  min-width: 260px;
+}
+
+.registrar-body .page-report-access .ra-type-filter {
+  margin-left: 0;
+  min-width: 210px;
+}
+
+.registrar-body .page-report-access #raSearchBtn {
+  margin-left: auto;
+}
+
+.registrar-body .page-faculty-file #ffSearchBtn,
+.registrar-body .page-student-profile #spSearchBtn,
+.registrar-body .page-student-grade-file #sgfSearchBtn {
+  margin-left: 0;
+}
+
+.registrar-body .page-bed-status .pf-search-wrap,
+.registrar-body .page-report-access .pf-search-wrap,
+.registrar-body .page-faculty-file .pf-search-wrap,
+.registrar-body .page-student-profile .pf-search-wrap,
+.registrar-body .page-student-grade-file .pf-search-wrap {
+  max-width: none;
+  min-width: 360px;
+}
+
+.registrar-body .page-bed-status .pf-search-input,
+.registrar-body .page-report-access .pf-search-input,
+.registrar-body .page-faculty-file .pf-search-input,
+.registrar-body .page-student-profile .pf-search-input,
+.registrar-body .page-student-grade-file .pf-search-input {
+  min-height: 38px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.registrar-body .page-bed-status .bs-search-wrap {
+  order: 1;
+  flex: 1 1 420px;
+}
+
+.registrar-body .page-bed-status .bs-field {
+  order: 2;
+  flex: 0 1 130px;
+}
+
+.registrar-body .page-bed-status #bsSearchBtn {
+  order: 3;
+  margin-left: auto;
+}
+
+.registrar-body .page-bed-status .bs-table-head,
+.registrar-body .page-faculty-file .ff-table-head,
+.registrar-body .page-student-profile .sp-table-head,
+.registrar-body .page-student-grade-file .sgf-table-head {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  .registrar-body .page-user-accounts .ua-filter-grid,
+  .registrar-body .page-bed-days .bd-toolbar,
+  .registrar-body .page-faculty-file .ff-toolbar,
+  .registrar-body .page-student-profile .sp-toolbar,
+  .registrar-body .page-student-grade-file .sgf-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .registrar-body .page-report-access .ra-toolbar,
+  .registrar-body .page-faculty-file .ff-toolbar,
+  .registrar-body .page-student-profile .sp-toolbar,
+  .registrar-body .page-student-grade-file .sgf-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .registrar-body .page-report-access .ra-search-wrap,
+  .registrar-body .page-report-access .ra-type-filter,
+  .registrar-body .page-faculty-file .ff-search-wrap,
+  .registrar-body .page-student-profile .sp-search-wrap,
+  .registrar-body .page-student-grade-file .sgf-search-wrap,
+  .registrar-body .page-bed-status .bs-search-wrap,
+  .registrar-body .page-bed-status #bsSearchBtn,
+  .registrar-body .page-bed-status .bs-field {
+    min-width: 0;
+    flex: 1 1 100%;
+    order: initial;
+  }
+
+  .registrar-body .page-bed-status .pf-search-wrap,
+  .registrar-body .page-report-access .pf-search-wrap,
+  .registrar-body .page-faculty-file .pf-search-wrap,
+  .registrar-body .page-student-profile .pf-search-wrap,
+  .registrar-body .page-student-grade-file .pf-search-wrap {
+    min-width: 0;
+  }
+
+  .registrar-body .page-report-access #raSearchBtn,
+  .registrar-body .page-faculty-file #ffSearchBtn,
+  .registrar-body .page-student-profile #spSearchBtn,
+  .registrar-body .page-student-grade-file #sgfSearchBtn,
+  .registrar-body .page-faculty-file #ffNewRecordBtn,
+  .registrar-body .page-student-profile #spNewRecordBtn,
+  .registrar-body .page-student-grade-file #sgfNewRecordBtn {
+    width: 100%;
+  }
+
+  .registrar-body .page-student-profile .sp-toolbar {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .registrar-body .page-student-profile .sp-search-wrap,
+  .registrar-body .page-student-profile #spSearchBtn {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .registrar-body .page-student-profile .sp-search-wrap .pf-search-wrap {
     width: 100%;
   }
 }

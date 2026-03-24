@@ -134,10 +134,7 @@
                     <td>Fourth</td>
                 </tr>
                 <tr class="at-total-row">
-                    <td colspan="5" class="at-total-cell">
-                        <span>Total Students:</span>
-                        <strong>4</strong>
-                    </td>
+                    <td colspan="5" class="at-total-cell" style="text-align:left !important;color:#006837 !important;background:#f8fcf9 !important;font-weight:700 !important;">Total Students: <strong>4</strong></td>
                 </tr>
             </tbody>
         </table>

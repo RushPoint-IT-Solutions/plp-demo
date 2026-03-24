@@ -27,9 +27,11 @@
     }
 
     return rows.filter(function (row) {
+      var rowClass = (row.className || '').toString();
       if (row.classList.contains('sc-empty-row')) return false;
       if (row.classList.contains('subject-total-row')) return false;
       if (row.classList.contains('program-total-row')) return false;
+      if (/(^|\s)[\w-]*total[\w-]*-row(\s|$)/.test(rowClass)) return false;
       return true;
     });
   }

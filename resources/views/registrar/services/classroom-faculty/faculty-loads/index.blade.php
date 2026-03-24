@@ -4,10 +4,6 @@
 @section('page-title', 'FACULTY LOADS')
 @section('body-class', 'page-services-faculty-loads')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/registrar-faculty-loads.css') }}?v={{ time() }}">
-@endpush
-
 @push('scripts')
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
 @endpush
@@ -59,7 +55,7 @@
                     </tr>
                 @endforelse
             <tr class="rfl-list-total-row">
-                <td colspan="3" class="rfl-list-total-cell">Total Faculty: <strong>{{ $faculties->total() }}</strong></td>
+                <td colspan="3" class="rfl-list-total-cell" style="color:#006837 !important;background:#f8fcf9 !important;text-align:left !important;font-weight:700 !important;">Total Faculty: <strong>{{ $faculties->total() }}</strong></td>
             </tr>
         </tbody>
     </table>

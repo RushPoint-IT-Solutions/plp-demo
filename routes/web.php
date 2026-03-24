@@ -151,6 +151,11 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         Route::prefix('alumni')->name('alumni.')->group(function () {
             Route::get('/tracker', 'Registrar\RegistrarController@alumniTracker')->name('tracker');
         });
+
+        // Forms
+        Route::prefix('forms')->name('forms.')->group(function () {
+            Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
+        });
     });
 
     // Services sub-pages
