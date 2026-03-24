@@ -42,6 +42,16 @@
                         <option>Fourth</option>
                     </select>
                 </div>
+                <div class="app-filter-group" style="flex:1;">
+                    <label class="app-filter-label" style="text-transform: uppercase;">Section</label>
+                    <select class="app-filter-select">
+                        <option>-Select Section-</option>
+                        <option>BSCS 4A</option>
+                        <option>BSCS 4B</option>
+                        <option>BSIT 4A</option>
+                        <option>BSED 4A</option>
+                    </select>
+                </div>
             </div>
             <div style="display:flex; justify-content:flex-end; margin-top:15px;">
                 <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;">Set</button>
@@ -62,7 +72,9 @@
             <table id="diplomaTable" class="ga-table app-table" style="min-width: 900px;">
                 <thead>
                     <tr>
-                        <th style="width: 50px; text-align: center;">#</th>
+                        <th style="width: 54px; text-align: center;">
+                            <input type="checkbox" id="diplomaSelectAll" onchange="diplomaToggleSelectAll(this)">
+                        </th>
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
@@ -72,7 +84,7 @@
                 </thead>
                 <tbody id="diplomaTableBody">
                     <tr data-row-id="1">
-                        <td style="text-align: center;">1</td>
+                        <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
                         <td>2122B0104</td>
                         <td>Jhon Mark Samson</td>
                         <td>BSIT</td>
@@ -92,7 +104,7 @@
                         </td>
                     </tr>
                     <tr data-row-id="2">
-                        <td style="text-align: center;">2</td>
+                        <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
                         <td>2122B0115</td>
                         <td>Mary Ann dela Cruz</td>
                         <td>BSED</td>
@@ -163,6 +175,28 @@
 @push('scripts')
 <script>
     var diplomaCurrentRowId = null;
+
+    function diplomaToggleSelectAll(source) {
+        document.querySelectorAll('#diplomaTableBody .diploma-row-select').forEach(function(cb) {
+            cb.checked = !!source.checked;
+        });
+        diplomaSyncSelectAll();
+    }
+
+    function diplomaSyncSelectAll() {
+        var header = document.getElementById('diplomaSelectAll');
+        var items = document.querySelectorAll('#diplomaTableBody .diploma-row-select');
+        if (!header) return;
+
+        var total = items.length;
+        var checked = 0;
+        items.forEach(function(cb) {
+            if (cb.checked) checked++;
+        });
+
+        header.checked = total > 0 && checked === total;
+        header.indeterminate = checked > 0 && checked < total;
+    }
 
     function diplomaCloseMenus() {
         document.querySelectorAll('.apst-dropdown.open').forEach(function(menu) {
@@ -248,6 +282,7 @@
     function diplomaConfirmDelete() {
         var row = diplomaGetRow(diplomaCurrentRowId);
         if (row) row.remove();
+        diplomaSyncSelectAll();
         diplomaCloseModal('diplomaDeleteModal');
     }
 
