@@ -57,7 +57,6 @@
                     <button type="button" class="ra-page-num active" aria-current="page">1</button>
                     <button type="button" class="ra-page-btn" disabled aria-label="Next page">&rsaquo;</button>
                 </div>
-                <div class="ra-caption">Click the access icon to configure report permissions for a user.</div>
             </div>
         </section>
     </div>

@@ -93,7 +93,7 @@
                         <td>W/F | 7:00PM-9:00PM / 7:00AM-10:00AM | Room#ONLINE CLASS/BLDG. 1 - 401</td>
                     </tr>
                     <tr class="svc-total-row">
-                        <td colspan="5" class="svc-total-cell">Total Subjects: <strong>4</strong></td>
+                        <td colspan="5" class="svc-total-cell" style="text-align:left !important;color:#006837 !important;background:#f8fcf9 !important;font-weight:700 !important;">Total Subjects: <strong>4</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -141,7 +141,7 @@
                         <td>Fourth</td>
                     </tr>
                     <tr class="svc-total-row">
-                        <td colspan="5" class="svc-total-cell">Total Subjects: <strong>4</strong></td>
+                        <td colspan="5" class="svc-total-cell" style="text-align:left !important;color:#006837 !important;background:#f8fcf9 !important;font-weight:700 !important;">Total Subjects: <strong>4</strong></td>
                     </tr>
                 </tbody>
             </table>

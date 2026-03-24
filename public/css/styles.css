@@ -1,4 +1,4 @@
-/* ===== Merged from css/styles.css on 2026-03-21 ===== */
+/* ===== Restored css/styles.css (Admin Tools) ===== */
 
 /* Registrar Admin Tools: Access Management, Master Files, Student Maintenance */
 
@@ -17,7 +17,7 @@
 
 .page-user-accounts .cfg-card,
 .page-report-access .cfg-card,
-.page-bed-days .cfg-card,
+.page-bed-days .bd-card,
 .page-bed-status .cfg-card,
 .page-student-update .su-card,
 .page-student-update .su-left {
@@ -465,19 +465,6 @@
   color: #c0392b;
 }
 
-.page-faculty-file .ff-total-row td,
-.page-student-profile .sp-total-row td,
-.page-student-grade-file .sgf-total-row td,
-.page-bed-days .bd-total-row td,
-.page-bed-status .bs-total-row td {
-  background: #f8fcf9;
-  color: #1f4d38;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-top: 1px solid #dce7e1;
-  text-align: left !important;
-}
-
 #ffTable .apst-dropdown,
 #spTable .apst-dropdown,
 #sgfTable .apst-dropdown,
@@ -504,11 +491,12 @@
 }
 
 .page-report-access .ra-table-meta {
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: 14px;
 }
 
 .page-report-access .ra-page-list {
+  margin-left: auto;
   margin-right: 0;
 }
 
@@ -518,16 +506,12 @@
 }
 
 .page-report-access #raSearchBtn {
-  margin-left: 0;
+  margin-left: auto;
 }
 
 .page-report-access .ra-type-filter {
   margin-left: 0;
   min-width: 210px;
-}
-
-.page-report-access #raSearchBtn {
-  margin-left: auto;
 }
 
 .page-faculty-file .ff-toolbar,
@@ -893,7 +877,7 @@
   }
 
   .page-report-access .ra-table-meta {
-    justify-content: flex-start;
+    justify-content: flex-end;
   }
 
   .page-bed-status .bs-search-wrap,
@@ -1400,4 +1384,175 @@
   .page-faculty-file-config .ffc-actions .req-btn-cancel {
     width: 100%;
   }
+}
+
+/* Unified registrar total row style for all tables */
+.registrar-body .app-table tr[class$="-total-row"] td,
+.registrar-body .app-table tr[class$="-totals-row"] td,
+.registrar-body .app-table tr[class*="-total-"][class$="-row"] td,
+.registrar-body .cfg-table tr[class$="-total-row"] td,
+.registrar-body .cfg-table tr[class$="-totals-row"] td,
+.registrar-body .cfg-table tr[class*="-total-"][class$="-row"] td,
+.registrar-body .student-table tr[class$="-total-row"] td,
+.registrar-body .student-table tr[class$="-totals-row"] td,
+.registrar-body .student-table tr[class*="-total-"][class$="-row"] td,
+.registrar-body .registrar-table tr[class$="-total-row"] td,
+.registrar-body .registrar-table tr[class$="-totals-row"] td,
+.registrar-body .registrar-table tr[class*="-total-"][class$="-row"] td {
+  background: #f8fcf9 !important;
+  color: #006837 !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-top: 1px solid #dce7e1;
+  text-align: left !important;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.registrar-body .app-table [class$="-total-cell"],
+.registrar-body .cfg-table [class$="-total-cell"],
+.registrar-body .student-table [class$="-total-cell"],
+.registrar-body .registrar-table [class$="-total-cell"] {
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+.registrar-body .page-alumni-tracker .at-total-cell {
+  display: table-cell !important;
+  text-align: left !important;
+}
+
+.registrar-body .page-alumni-tracker .at-total-row td,
+.registrar-body .page-alumni-tracker .at-total-cell,
+.registrar-body .page-services-class-list .svc-total-row td,
+.registrar-body .page-services-class-list .svc-total-cell,
+.registrar-body .page-services-faculty-loads .rfl-list-total-row td,
+.registrar-body .page-services-faculty-loads .rfl-totals-row td,
+.registrar-body .page-services-faculty-loads .rfl-list-total-cell,
+.registrar-body .page-services-faculty-loads .rfl-total-cell,
+.registrar-body .page-student-discipline .sd-total-row td,
+.registrar-body .page-student-discipline .sd-total-cell {
+  color: #006837 !important;
+  text-align: left !important;
+  background: #f8fcf9 !important;
+  display: table-cell !important;
+}
+
+.registrar-body .app-table tr[class$="-total-row"]:hover,
+.registrar-body .app-table tr[class$="-totals-row"]:hover,
+.registrar-body .app-table tr[class*="-total-"][class$="-row"]:hover,
+.registrar-body .cfg-table tr[class$="-total-row"]:hover,
+.registrar-body .cfg-table tr[class$="-totals-row"]:hover,
+.registrar-body .cfg-table tr[class*="-total-"][class$="-row"]:hover,
+.registrar-body .student-table tr[class$="-total-row"]:hover,
+.registrar-body .student-table tr[class$="-totals-row"]:hover,
+.registrar-body .student-table tr[class*="-total-"][class$="-row"]:hover,
+.registrar-body .registrar-table tr[class$="-total-row"]:hover,
+.registrar-body .registrar-table tr[class$="-totals-row"]:hover,
+.registrar-body .registrar-table tr[class*="-total-"][class$="-row"]:hover {
+  background-color: transparent !important;
+}
+
+/* Canonical lock for registrar total rows (prevents style regressions) */
+.registrar-body tr.pf-total-row td,
+.registrar-body tr.sf-total-row td,
+.registrar-body tr.at-total-row td,
+.registrar-body tr.se-total-row td,
+.registrar-body tr.se-total-units-row td,
+.registrar-body tr.sd-total-row td,
+.registrar-body tr.svc-total-row td,
+.registrar-body tr.rfl-list-total-row td,
+.registrar-body tr.rfl-totals-row td,
+.registrar-body tr.ff-total-row td,
+.registrar-body tr.sp-total-row td,
+.registrar-body tr.sgf-total-row td,
+.registrar-body tr.bd-total-row td,
+.registrar-body tr.bs-total-row td {
+  background: #f8fcf9 !important;
+  color: #006837 !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  border-top: 1px solid #dce7e1 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  display: table-cell !important;
+}
+
+.registrar-body .pf-total-cell,
+.registrar-body .sf-total-cell,
+.registrar-body .at-total-cell,
+.registrar-body .se-total-cell,
+.registrar-body .se-units-cell,
+.registrar-body .sd-total-cell,
+.registrar-body .svc-total-cell,
+.registrar-body .rfl-list-total-cell,
+.registrar-body .rfl-total-cell,
+.registrar-body .ff-total-cell,
+.registrar-body .sp-total-cell,
+.registrar-body .sgf-total-cell,
+.registrar-body .bd-total-cell,
+.registrar-body .bs-total-cell {
+  color: #006837 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  font-weight: 700 !important;
+  display: table-cell !important;
+}
+
+.registrar-body tr.pf-total-row:hover,
+.registrar-body tr.sf-total-row:hover,
+.registrar-body tr.at-total-row:hover,
+.registrar-body tr.se-total-row:hover,
+.registrar-body tr.se-total-units-row:hover,
+.registrar-body tr.sd-total-row:hover,
+.registrar-body tr.svc-total-row:hover,
+.registrar-body tr.rfl-list-total-row:hover,
+.registrar-body tr.rfl-totals-row:hover,
+.registrar-body tr.ff-total-row:hover,
+.registrar-body tr.sp-total-row:hover,
+.registrar-body tr.sgf-total-row:hover,
+.registrar-body tr.bd-total-row:hover,
+.registrar-body tr.bs-total-row:hover {
+  background-color: transparent !important;
+}
+
+/* Consistent total typography: both label and value are bold on all pages */
+.registrar-body tr[class*="total"][class$="-row"] td,
+.registrar-body .pf-total-cell,
+.registrar-body .sf-total-cell,
+.registrar-body .at-total-cell,
+.registrar-body .se-total-cell,
+.registrar-body .se-units-cell,
+.registrar-body .sd-total-cell,
+.registrar-body .svc-total-cell,
+.registrar-body .rfl-list-total-cell,
+.registrar-body .rfl-total-cell,
+.registrar-body .ff-total-cell,
+.registrar-body .sp-total-cell,
+.registrar-body .sgf-total-cell,
+.registrar-body .bd-total-cell,
+.registrar-body .bs-total-cell,
+.registrar-body .cr-total-cell {
+  color: #006837 !important;
+  font-weight: 700 !important;
+}
+
+.registrar-body tr[class*="total"][class$="-row"] td strong,
+.registrar-body .pf-total-cell strong,
+.registrar-body .sf-total-cell strong,
+.registrar-body .at-total-cell strong,
+.registrar-body .se-total-cell strong,
+.registrar-body .se-units-cell strong,
+.registrar-body .sd-total-cell strong,
+.registrar-body .svc-total-cell strong,
+.registrar-body .rfl-list-total-cell strong,
+.registrar-body .rfl-total-cell strong,
+.registrar-body .ff-total-cell strong,
+.registrar-body .sp-total-cell strong,
+.registrar-body .sgf-total-cell strong,
+.registrar-body .bd-total-cell strong,
+.registrar-body .bs-total-cell strong,
+.registrar-body .cr-total-cell strong {
+  color: inherit !important;
+  font-weight: 800 !important;
 }
