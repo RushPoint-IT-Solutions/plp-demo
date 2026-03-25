@@ -653,4 +653,20 @@ class RegistrarController extends Controller
     {
         return view('registrar.registrar-menu.forms.diploma');
     }
+
+    /**
+     * Registrar > Forms > Honorable Dismissal
+     */
+    public function formsHonorableDismissal()
+    {
+        return view('registrar.registrar-menu.forms.honorable-dismissal');
+    }
+
+    /**
+     * Registrar > Forms > Official Grade Report
+     */
+    public function formsOfficialGradeReport()
+    {
+        return view('registrar.registrar-menu.forms.official-grade-report');
+    }
 }

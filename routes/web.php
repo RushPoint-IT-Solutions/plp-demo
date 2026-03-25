@@ -157,6 +157,8 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
             Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
+            Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
+            Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
         });
     });
 

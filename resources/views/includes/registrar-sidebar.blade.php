@@ -125,6 +125,8 @@
                         {{-- <a href="{{ route('registrar.registrar-menu.forms.placeholder') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.placeholder') ? 'active' : '' }}">Form Templates</a> --}}
                         <a href="{{ route('registrar.registrar-menu.forms.tor') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.tor') ? 'active' : '' }}">TOR</a>
                         <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
+                        <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.honorable-dismissal') ? 'active' : '' }}">Honorable Dismissal</a>
+                        <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.official-grade-report') ? 'active' : '' }}">Official Grade Report</a>
                     </div>
                 </div>
 
