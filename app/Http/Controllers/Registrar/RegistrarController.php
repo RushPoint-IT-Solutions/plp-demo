@@ -629,4 +629,28 @@ class RegistrarController extends Controller
     {
         return view('registrar.registrar-menu.alumni-tracker');
     }
+
+    /**
+     * Registrar > Forms > Placeholder
+     */
+    public function formsPlaceholder()
+    {
+        return view('registrar.registrar-menu.forms.placeholder');
+    }
+
+    /**
+     * Registrar > Forms > TOR
+     */
+    public function formsTor()
+    {
+        return view('registrar.registrar-menu.forms.tor');
+    }
+
+    /**
+     * Registrar > Forms > Diploma
+     */
+    public function formsDiploma()
+    {
+        return view('registrar.registrar-menu.forms.diploma');
+    }
 }

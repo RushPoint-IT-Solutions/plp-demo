@@ -54,13 +54,15 @@
                         <td colspan="3" class="text-center text-muted py-4">No faculty found.</td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
-    </div>
+            <tr class="rfl-list-total-row">
+                <td colspan="3" class="rfl-list-total-cell" style="color:#006837 !important;background:#f8fcf9 !important;text-align:left !important;font-weight:700 !important;">Total Faculty: <strong>{{ $faculties->total() }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
-    <div class="rfl-footer">
-        <div class="rfl-total">Total Faculty: <span>{{ $faculties->total() }}</span></div>
-        <div class="rfl-pagination">{{ $faculties->links() }}</div>
-    </div>
+<div class="rfl-footer">
+    <div class="rfl-pagination">{{ $faculties->links() }}</div>
+</div>
 </div>
 @endsection

@@ -21,7 +21,7 @@
             <table class="ga-table app-table" id="gsTable">
                 <thead>
                     <tr>
-                        <th style="width:70px;">Action</th>
+                        <th style="text-align:center;">Action</th>
                         <th>Grade Code</th>
                         <th>Grade</th>
                         <th>Remarks</th>

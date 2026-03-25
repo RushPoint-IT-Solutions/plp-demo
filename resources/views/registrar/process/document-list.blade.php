@@ -28,7 +28,7 @@
 
     {{-- ── Table ── --}}
     <div class="student-table-wrapper table-responsive">
-        <table class="student-table registrar-table doclist-table">
+        <table id="doclistTable" class="student-table registrar-table doclist-table">
             <thead>
                 <tr>
                     <th>#</th>
@@ -49,14 +49,15 @@
                     <td>Document</td>
                     <td>False</td>
                     <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn"
-                                onclick="openEditModal(1, '2223A8137', 'All Year Level', '2×2 Picture', 'Document', false)" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                        <div class="apst-action-btn" data-doc-menu-toggle="docMenu1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                        <div class="apst-dropdown" id="docMenu1">
+                            <button type="button" onclick="openEditModal(1, '2223A8137', 'All Year Level', '2×2 Picture', 'Document', false)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                Edit
                             </button>
-                            <button class="doclist-action-btn doclist-delete-btn"
-                                onclick="openDeleteModal(1, '2×2 Picture')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            <button type="button" class="apst-del-btn" onclick="openDeleteModal(1, '2×2 Picture')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                Delete
                             </button>
                         </div>
                     </td>
@@ -69,14 +70,15 @@
                     <td>Document</td>
                     <td>False</td>
                     <td>
-                        <div class="doclist-actions">
-                            <button class="doclist-action-btn doclist-edit-btn"
-                                onclick="openEditModal(2, '2223A8137', 'All Year Level', 'Birth Certificate', 'Document', false)" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                        <div class="apst-action-btn" data-doc-menu-toggle="docMenu2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                        <div class="apst-dropdown" id="docMenu2">
+                            <button type="button" onclick="openEditModal(2, '2223A8137', 'All Year Level', 'Birth Certificate', 'Document', false)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                Edit
                             </button>
-                            <button class="doclist-action-btn doclist-delete-btn"
-                                onclick="openDeleteModal(2, 'Birth Certificate')" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            <button type="button" class="apst-del-btn" onclick="openDeleteModal(2, 'Birth Certificate')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                Delete
                             </button>
                         </div>
                     </td>

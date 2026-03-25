@@ -210,15 +210,15 @@
                         <tr class="rfl-totals-row">
                             <td></td>
                             <td></td>
-                            <td class="rfl-total-cell">{{ (int) ($totals['lec'] ?? 0) }}</td>
-                            <td class="rfl-total-cell">{{ (int) ($totals['lab'] ?? 0) }}</td>
+                            <td class="rfl-total-cell" style="color:#006837 !important;background:#f8fcf9 !important;text-align:left !important;font-weight:700 !important;">{{ (int) ($totals['lec'] ?? 0) }}</td>
+                            <td class="rfl-total-cell" style="color:#006837 !important;background:#f8fcf9 !important;text-align:left !important;font-weight:700 !important;">{{ (int) ($totals['lab'] ?? 0) }}</td>
                             @php
                                 $unitsTotal = (float) ($totals['units'] ?? 0);
                                 $unitsDisplay = (floor($unitsTotal) == $unitsTotal)
                                     ? (string) (int) $unitsTotal
                                     : number_format($unitsTotal, 1);
                             @endphp
-                            <td class="rfl-total-cell">{{ $unitsDisplay }}</td>
+                            <td class="rfl-total-cell" style="color:#006837 !important;background:#f8fcf9 !important;text-align:left !important;font-weight:700 !important;">{{ $unitsDisplay }}</td>
                             <td></td>
                             <td></td>
                             <td></td>

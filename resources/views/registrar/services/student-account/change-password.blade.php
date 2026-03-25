@@ -2,6 +2,7 @@
 
 @section('title', 'PLP - Change Password')
 @section('page-title', 'UPDATE PASSWORD')
+@section('body-class', 'page-student-account page-student-change-password')
 
 @section('content')
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: calc(100vh - 140px); padding: 40px 20px;">

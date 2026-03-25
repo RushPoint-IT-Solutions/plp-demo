@@ -21,6 +21,7 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}?v={{ time() }}">
 
     @stack('styles')
 </head>
@@ -107,6 +108,9 @@
 
     <!-- Sidebar JS -->
     <script src="{{ asset('js/registrar-layout.js') }}"></script>
+
+    <!-- Registrar Table Pagination -->
+    <script src="{{ asset('js/registrar-table-pagination.js') }}?v={{ time() }}"></script>
 
     <script>
     function showRegistrarToast(message, type) {

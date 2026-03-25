@@ -45,6 +45,7 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 */
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
+Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 
 /*
 |--------------------------------------------------------------------------
@@ -149,6 +150,13 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         // Alumni Tracker
         Route::prefix('alumni')->name('alumni.')->group(function () {
             Route::get('/tracker', 'Registrar\RegistrarController@alumniTracker')->name('tracker');
+        });
+
+        // Forms
+        Route::prefix('forms')->name('forms.')->group(function () {
+            Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
+            Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
+            Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
         });
     });
 

@@ -218,24 +218,7 @@
                 </table>
             </div>
 
-            <div class="msg-footer">
-                <div class="msg-footer-left">
-                    <span class="msg-folder-pill">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2 2z"/></svg>
-                        Folder
-                    </span>
-                    <span class="msg-dropdown-caret">&#9662;</span>
-                </div>
-                <div class="msg-footer-right">
-                    <span class="msg-rows-label">Rows Per Page</span>
-                    <select class="msg-rows-select">
-                        <option>25</option>
-                        <option>50</option>
-                        <option>100</option>
-                    </select>
-                    <span class="msg-range">1-0 of 0</span>
-                </div>
-            </div>
+            
         </section>
     </div>
 </div>
