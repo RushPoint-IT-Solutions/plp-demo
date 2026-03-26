@@ -82,34 +82,43 @@
             </div>
         </div>
 
+        <style>
+        /* Table title moved into the table so borders join cleanly */
+        .cor-table{ border-collapse: collapse; width: 100%; color: #000; }
+        .cor-table th, .cor-table td{ border: 1px solid #000; padding: 8px; color: #000; }
+        .cor-table .cor-table-title{ text-align: center; font-weight: 700; background: #fff; color: #000; }
+        .cor-table .cor-th{ text-align: left; font-weight: 700; color: #000; }
+        .cor-total-label{ text-align: right; font-weight: 700; }
+        </style>
+
         <!-- Schedule Table -->
         <table class="cor-table">
             <thead>
                 <tr>
-                    <th class="cor-table-title cor-th" colspan="8">CLASS SCHEDULE</th>
+                    <th class="cor-table-title" colspan="8">CLASS SCHEDULE</th>
                 </tr>
                 <tr>
-                    <th class="cor-th col-name">Subject Name</th>
-                    <th class="cor-th col-desc">Subject Description</th>
-                    <th class="cor-th col-section">Section</th>
-                    <th class="cor-th col-units">Units</th>
-                    <th class="cor-th col-room">Room</th>
-                    <th class="cor-th col-days">Days</th>
-                    <th class="cor-th col-time">Time</th>
-                    <th class="cor-th col-pay">Pay Units</th>
+                    <th class="cor-th">Subject Name</th>
+                    <th class="cor-th">Subject Description</th>
+                    <th class="cor-th">Section</th>
+                    <th class="cor-th">Units</th>
+                    <th class="cor-th">Room</th>
+                    <th class="cor-th">Days</th>
+                    <th class="cor-th">Time</th>
+                    <th class="cor-th">Pay Units</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($subjects as $subject)
                 <tr>
-                    <td class="cor-td col-name">{{ $subject->code }}</td>
-                    <td class="cor-td col-desc">{{ $subject->name }}</td>
-                    <td class="cor-td col-section">{{ $subject->section ?? optional($student)->year_level }}</td>
-                    <td class="cor-td col-units">{{ number_format($subject->units, 1) }}</td>
-                    <td class="cor-td col-room">{{ $subject->room }}</td>
-                    <td class="cor-td col-days">{{ $subject->days }}</td>
-                    <td class="cor-td col-time">{{ $subject->time_range }}</td>
-                    <td class="cor-td col-pay">{{ number_format($subject->pay_units ?? $subject->units, 1) }}</td>
+                    <td class="cor-td">{{ $subject->code }}</td>
+                    <td class="cor-td">{{ $subject->name }}</td>
+                    <td class="cor-td">{{ $subject->section ?? optional($student)->year_level }}</td>
+                    <td class="cor-td">{{ number_format($subject->units, 1) }}</td>
+                    <td class="cor-td">{{ $subject->room }}</td>
+                    <td class="cor-td">{{ $subject->days }}</td>
+                    <td class="cor-td">{{ $subject->time_range }}</td>
+                    <td class="cor-td">{{ number_format($subject->pay_units ?? $subject->units, 1) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -118,40 +127,28 @@
                     $totalUnits = $subjects->sum('units');
                 @endphp
                 <tr>
-                    <td class="cor-td col-name"></td>
-                    <td class="cor-td col-desc"></td>
-                    <td class="cor-td col-section cor-total-label">TOTAL:</td>
-                    <td class="cor-td col-units cor-total-value">{{ number_format($totalUnits, 2) }}</td>
-                    <td class="cor-td col-room"></td>
-                    <td class="cor-td col-days"></td>
-                    <td class="cor-td col-time"></td>
-                    <td class="cor-td col-pay"></td>
+                    <td class="cor-td"></td>
+                    <td class="cor-td"></td>
+                    <td class="cor-td cor-total-label">TOTAL:</td>
+                    <td class="cor-td cor-total-value">{{ number_format($totalUnits, 2) }}</td>
+                    <td class="cor-td"></td>
+                    <td class="cor-td"></td>
+                    <td class="cor-td"></td>
+                    <td class="cor-td"></td>
                 </tr>
             </tfoot>
-        </table>
-
-        <!-- Assessment of Fees -->
-        <div class="cor-assessment">
-            <div class="cor-assessment-left">
-                <p class="cor-assessment-title">ASSESSMENT OF FEES</p>
-                <table class="cor-assessment-table">
-                    <tbody>
-                        <tr><td><strong>PARTICULARS</strong></td><td class="cor-assess-amount"><strong>AMOUNT</strong></td></tr>
-                        <tr><td>Tuition Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td class="cor-indent">Tuition Fee</td><td class="cor-assess-amount">17.00 x 50.00</td></tr>
-                        <tr><td class="cor-indent">CW/ROTC TF</td><td class="cor-assess-amount">3.00 x 50.00</td></tr>
-                        <tr class="cor-double"><td>Total Tuition Fee</td><td class="cor-assess-amount">1,000.00</td></tr>
+        <!-- Schedule Table -->
+                        <tr><td class="cor-indent">CW/ROTC TF</td><td class="cor-assess-amount"></td></tr>
+                        <tr class="cor-double"><td>Total Tuition Fee</td><td class="cor-assess-amount"></td></tr>
                         <tr><td>Miscellaneous Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td class="cor-indent">Miscellaneous Fee</td><td class="cor-assess-amount">300.00</td></tr>
-                        <tr class="cor-double"><td>Total Miscellaneous Fee</td><td class="cor-assess-amount">300.00</td></tr>
+                        <tr class="cor-double"><td>Total Miscellaneous Fee</td><td class="cor-assess-amount"></td></tr>
                         <tr><td>Laboratory Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td class="cor-indent">Laboratory Fee</td><td class="cor-assess-amount">500.00</td></tr>
-                        <tr class="cor-double"><td>Total Laboratory Fee</td><td class="cor-assess-amount">500.00</td></tr>
-                        <tr><td>Old Account</td><td class="cor-assess-amount">-</td></tr>
-                        <tr><td>Current Account</td><td class="cor-assess-amount">1,800.00</td></tr>
-                        <tr><td class="cor-indent"><strong>Contract / Petition Subject</strong></td><td class="cor-assess-amount">.</td></tr>
-                        <tr><td class="cor-indent"><strong>Midterm Due</strong></td><td class="cor-assess-amount">.</td></tr>
-                        <tr><td class="cor-indent"><strong>Final Due</strong></td><td class="cor-assess-amount">.</td></tr>
+                        <tr class="cor-double"><td>Total Laboratory Fee</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td>Old Account</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td>Current Account</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td>Contract / Petition Subject</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td>Midterm Due</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td>Final Due</td><td class="cor-assess-amount"></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -170,24 +167,15 @@
                 </div>
 
                 <div class="cor-enrolled-box">
-                    <div class="cor-enrolled-logo">
-                        <img src="{{ asset('img/logobg.png') }}" alt="School Logo">
-                    </div>
                     <p class="cor-enrolled-title">PAMANTASAN NG LUNGSOD NG PASIG<br>OFFICE OF THE UNIVERSITY REGISTRAR</p>
                     <p class="cor-enrolled-label">OFFICIALLY ENROLLED</p>
                     <p class="cor-enrolled-note">Present this certificate of registration for any claim or transaction that you engage in within the University.</p>
                 </div>
-                <!-- Row 1: Notice Text -->
-                <p class='cor-notice-text'>Notice to all students</p>
-
-                <!-- Row 2: Semester Text -->
-                <p class='cor-semester-text'>1st Sem 2021 - 2022</p>
             </div>
         </div>
 
         <!-- Legend -->
         <div class="cor-legend">
-            <p class="cor-legend-title">LEGEND</p>
             <span class="cor-legend-item">* - Added Subjects</span>
             <span class="cor-legend-item">** - Officially Dropped Subjects</span>
         </div>
@@ -197,7 +185,3 @@
 
 </div>
 @endsection
-
-@push('scripts')
-<script src="{{ asset('js/section-offering.js') }}"></script>
-@endpush
