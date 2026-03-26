@@ -7,6 +7,9 @@
 
 require('./bootstrap');
 
+// Page-specific scripts
+require('./section-offering');
+
 window.Vue = require('vue');
 
 /**

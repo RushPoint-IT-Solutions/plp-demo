@@ -13,21 +13,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form loa-form">
-            <div class="cor-header loa-header">
-                <div class="cor-header-left form-logo-left">
-                    <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="cor-logo">
-                </div>
-                <div class="cor-header-center form-header-copy">
-                    <p class="loa-gov">City Government of Pasig</p>
-                    <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
-                    <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
-                    <p class="loa-address">Alkalde Jose St. Kapasigan, Pasig City, Philippines1600</p>
-                    <p class="loa-contact">Tel Nos. 8642-8300 / registrar@plpasig.edu.ph</p>
-                </div>
-                <div class="cor-header-right"></div>
-            </div>
-
+        <div class="cor-container acd-form loa-form" style="margin-top: 2in;">
             <div class="loa-body">
                 <p style="margin: 0 0 8px; font-weight: 700; text-align: left;">PLPRO FORM NO. 1H-4</p>
                 <div class="loa-top-row">

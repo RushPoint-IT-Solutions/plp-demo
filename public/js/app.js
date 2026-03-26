@@ -49242,6 +49242,9 @@ module.exports = function(module) {
  */
 
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
+
+// Page-specific scripts
+__webpack_require__(/*! ./section-offering */ "./resources/js/section-offering.js");
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
 
 /**
@@ -49397,6 +49400,54 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ref_6_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e__WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
+
+/***/ }),
+
+/***/ "./resources/js/section-offering.js":
+/*!******************************************!*\
+  !*** ./resources/js/section-offering.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+document.addEventListener('DOMContentLoaded', function () {
+  var lines = document.querySelectorAll('.section-offering-page .cor-info-line');
+  if (!lines || !lines.length) return;
+  lines.forEach(function (line) {
+    var labelEl = line.querySelector('.cor-info-label');
+    if (!labelEl) return;
+    var labelText = labelEl.textContent.trim().toLowerCase();
+    if (!labelText.startsWith('school year')) return;
+    var valueEl = line.querySelector('.cor-info-value');
+    if (!valueEl) return;
+    var raw = valueEl.textContent.trim();
+
+    // Extract school year range (e.g. 2025-2026)
+    var yearMatch = raw.match(/(\d{4}-\d{4})/);
+
+    // Extract semester token (1st, 2nd, 3rd, first, second, etc., or plain digits)
+    var semMatch = raw.match(/(1st|1|first|one|2nd|2|second|two|3rd|3|third|three)/i);
+    var result = '';
+    if (yearMatch) result = yearMatch[1];
+    if (semMatch) {
+      var token = semMatch[1].toLowerCase();
+      var num = null;
+      if (/1|first|one/.test(token)) num = 1;else if (/2|second|two/.test(token)) num = 2;else if (/3|third|three/.test(token)) num = 3;
+      if (num !== null) {
+        var suffix = num === 1 ? 'ST' : num === 2 ? 'ND' : num === 3 ? 'RD' : 'TH';
+        result = (result ? result + ' / ' : '') + "".concat(num).concat(suffix, " SEMESTER");
+      }
+    }
+
+    // Fallback: if nothing parsed, strip leading 'SY' and trim
+    if (!result) {
+      var fallback = raw.replace(/^\s*SY\s*/i, '').trim();
+      valueEl.textContent = fallback;
+    } else {
+      valueEl.textContent = result;
+    }
+  });
+});
 
 /***/ }),
 

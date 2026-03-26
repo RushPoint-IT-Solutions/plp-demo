@@ -121,11 +121,13 @@ function hdOpenPreview(rowId) {
     if (!sheet) return;
     sheet.innerHTML = hdBuildTemplate(data, meta);
     document.getElementById('hdPreviewModal').style.display = 'flex';
+    document.body.classList.add('hd-preview-open');
 }
 
 function hdClosePreview() {
     var m = document.getElementById('hdPreviewModal');
     if (m) m.style.display = 'none';
+    document.body.classList.remove('hd-preview-open');
 }
 
 function hdPrintPreview() {
@@ -161,6 +163,7 @@ function hdPrintSelected() {
 
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('hd-printing');
+    document.body.classList.remove('hd-preview-open');
     var pc = document.getElementById('hdPrintContainer');
     if (pc) pc.innerHTML = '';
 });

@@ -818,6 +818,30 @@ select:hover {
 
 .filter-grid {
   display: grid;
+
+  /* Legend: professional document styling for correlation legend */
+}
+
+.cor-legend {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
+  margin-left: 20px;
+  color: #000;
+}
+
+.cor-legend-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: #000;
+}
+
+.cor-legend-item {
+  display: block;
+  margin-left: 60px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #000;
   grid-template-columns: 1fr 240px;
   gap: 14px 20px;
 }
@@ -864,6 +888,7 @@ select:hover {
   border-radius: 0;
   padding: 0;
   background-color: #fff;
+  background-image: none !important;
   overflow: hidden;
   width: 210mm;
   min-height: 250mm;
@@ -872,152 +897,192 @@ select:hover {
   transform-origin: top center;
 }
 
-.section-offering-page .cor-header {
+/* COR content layout (no printed header/watermark) */
+.section-offering-page .cor-student-info {
+  padding: 16px 22px 10px;
+  border-bottom: 1px solid #000;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.section-offering-page .cor-info-row--grid {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: "left . right" "title title title";
-  align-items: center;
-  padding: var(--cor-header-pad-y) var(--cor-header-pad-x);
-  min-height: calc(var(--cor-header-min-height) + 14px);
-  row-gap: 2px;
-  background-color: #006837;
-  border-bottom: 2px solid #006837;
+  grid-template-columns: 1fr 1fr 0.5fr;
+  gap: 6px 20px;
+  margin-bottom: 6px;
+  margin-top: 2in;
 }
 
-.section-offering-page .cor-header-left {
-  grid-area: left;
-  display: flex;
-  align-items: center;
-  gap: var(--cor-header-gap);
-}
-
-.section-offering-page .cor-header-left img {
-  width: auto;
-  flex-shrink: 0;
-  -o-object-fit: contain;
-     object-fit: contain;
-}
-
-.section-offering-page .cor-logo {
-  height: var(--cor-logo-size);
-}
-
-.section-offering-page .cor-school-text-img {
-  height: var(--cor-school-size);
-}
-
-.section-offering-page .cor-header-center {
-  grid-area: title;
-  justify-self: center;
-  align-self: center;
-  text-align: center;
-  padding: 0 12px;
-  white-space: nowrap;
-}
-
-.section-offering-page .cor-title {
-  font-family: "Roboto", "Poppins", sans-serif;
-  font-size: var(--cor-title-size);
-  font-weight: 800;
-  color: #ffffff;
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 1;
-}
-
-.section-offering-page .cor-header-right {
-  grid-area: right;
-  text-align: right;
-  white-space: nowrap;
+.section-offering-page .cor-info-col {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  align-self: stretch;
-  z-index: 2;
+  gap: 2px;
 }
 
-.section-offering-page .cor-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.section-offering-page .cor-reg-number {
-  font-size: var(--cor-reg-size);
-  font-weight: 700;
-  color: #ff3333;
-  margin: 0;
-}
-
-.section-offering-page .cor-student-info {
-  padding: 20px 42px;
-  border-bottom: 1px solid #000;
-}
-
-.section-offering-page .cor-info-row {
+.section-offering-page .cor-info-line {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.section-offering-page .cor-info-row:last-child {
-  margin-bottom: 0;
-}
-
-.section-offering-page .cor-info-group {
-  display: flex;
-  flex: 1;
-  align-items: baseline;
-  gap: 4px;
-  min-width: 0;
-}
-
-.section-offering-page .cor-info-label,
-.section-offering-page .cor-info-value {
-  font-size: 12px;
-  color: #000;
-  font-weight: 700;
+  gap: 6px;
 }
 
 .section-offering-page .cor-info-label {
-  white-space: nowrap;
-}
-
-.section-offering-page .cor-schedule-header {
-  background-color: #006837;
-  padding: 8px;
-  text-align: center;
-}
-
-.section-offering-page .cor-schedule-title {
-  font-size: 16px;
+  min-width: 108px;
   font-weight: 700;
-  color: #fff;
-  text-transform: uppercase;
-  margin: 0;
-  letter-spacing: 1px;
+}
+
+.section-offering-page .cor-info-value {
+  font-weight: 700;
+  flex: 1;
+}
+
+.section-offering-page .cor-info-value--wide {
+  display: inline-block;
+  min-width: 60%;
+}
+
+.section-offering-page .cor-info-row--scholar {
+  display: flex;
+  gap: 6px;
 }
 
 .section-offering-page .cor-table {
-  width: calc(100% - 84px);
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 14px;
+  width: calc(100% - 32px);
+  margin: 0 auto 0;
   border-collapse: collapse;
+  border: 1px solid #000;
+}
+
+/* COR responsive & print tweaks */
+/* COR: Global Zoom-to-Fit and responsive fallbacks */
+.section-offering-page #cor-table,
+.section-offering-page .cor-scroll-wrapper {
+  zoom: 0.85 !important;
+  width: 100% !important;
+  transform-origin: top left;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+}
+
+/* Ensure horizontal scrolling fallback on containers */
+.section-offering-page .cor-scroll-wrapper,
+.section-offering-page .cor-container {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box !important;
+}
+
+/* Table layout and sizing */
+.section-offering-page .cor-table {
+  table-layout: auto;
+  width: 100% !important;
+}
+
+/* Wide Subject Description */
+.section-offering-page .cor-table .col-desc {
+  min-width: 300px !important;
+  text-align: left !important;
+}
+
+/* Make Subject Name narrower to save space */
+.section-offering-page .cor-table .col-name {
+  width: 120px !important;
+  max-width: 160px !important;
+}
+
+/* Center Subject Name column for headers and data */
+.section-offering-page .cor-table th.col-name,
+.section-offering-page .cor-table td.col-name {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Strict centering for specific columns (headers + data) */
+.section-offering-page .cor-table th.col-section,
+.section-offering-page .cor-table th.col-units,
+.section-offering-page .cor-table th.col-room,
+.section-offering-page .cor-table th.col-days,
+.section-offering-page .cor-table th.col-time,
+.section-offering-page .cor-table th.col-pay,
+.section-offering-page .cor-table td.col-section,
+.section-offering-page .cor-table td.col-units,
+.section-offering-page .cor-table td.col-room,
+.section-offering-page .cor-table td.col-days,
+.section-offering-page .cor-table td.col-time,
+.section-offering-page .cor-table td.col-pay {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Wrapping & typography for table cells */
+.section-offering-page .cor-table th,
+.section-offering-page .cor-table td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  font-size: 11pt !important;
+  padding: 6px 4px !important;
+}
+
+/* Student info grid: enforce columns */
+.section-offering-page .cor-info-row--grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 0.5fr !important;
+}
+
+/* Print optimization */
+@media print {
+  @page { size: A4 portrait; margin: 10mm; }
+  .section-offering-page #cor-table,
+  .section-offering-page .cor-scroll-wrapper {
+    zoom: 1 !important;
+    transform: none !important;
+    width: 100% !important;
+  }
+  .section-offering-page .cor-table th,
+  .section-offering-page .cor-table td {
+    font-size: 8pt !important;
+  }
+  .section-offering-page .cor-scroll-wrapper,
+  .section-offering-page .cor-container {
+    overflow: visible !important;
+  }
+}
+
+/* Ensure any element using the ID 'cor-table' has no top margin */
+#cor-table {
+  margin-top: 0 !important;
+}
+
+/* Make entire COR use 12pt (16px) to match requested document sizing */
+.section-offering-page .cor-container {
+  font-size: 0.833rem !important;
+}
+
+/* Override more specific rules inside COR to ensure consistent sizing */
+.section-offering-page .cor-container * {
+  font-size: 0.833rem !important;
+}
+
+.section-offering-page .cor-schedule-title-bar {
+  width: calc(100% - 32px);
+  margin: 10px auto 0;
+  font-size: 0.833rem !important;
+  font-weight: 800;
+  text-align: center;
+  border-top: 2px solid #000;
+  border-bottom: 2px solid #000;
+  padding: 6px 8px 4px;
+  letter-spacing: 0.4px;
+  margin-bottom: 0;
 }
 
 .section-offering-page .cor-table thead {
   background-color: #fff;
-  border-bottom: 1px solid #000;
 }
 
 .section-offering-page .cor-th,
 .section-offering-page .cor-td {
-  padding: 10px 12px;
-  font-size: 12px;
+  padding: 8px 10px;
+  font-size: 0.833rem !important;
   color: #000;
   border: none;
   font-weight: 700;
@@ -1031,6 +1096,11 @@ select:hover {
   text-align: left;
 }
 
+
+/* Remove extra space under legend title */
+.section-offering-page .cor-legend-title {
+  margin-bottom: 0 !important;
+}
 .section-offering-page .cor-table .cor-th:first-child,
 .section-offering-page .cor-table .cor-td:first-child {
   padding-left: 24px;
@@ -1042,11 +1112,20 @@ select:hover {
 }
 
 .section-offering-page .cor-table tbody tr {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #000;
+}
+.section-offering-page .cor-table tfoot td {
+  border-top: 2px solid #000;
+  border-bottom: 1px solid #000;
+  font-weight: 800;
 }
 
-.section-offering-page .cor-table tbody tr:last-child {
-  border-bottom: none;
+.section-offering-page .cor-total-label {
+  text-align: right;
+}
+
+.section-offering-page .cor-total-value {
+  text-align: center;
 }
 
 .section-offering-page .cor-td {
@@ -1067,8 +1146,7 @@ select:hover {
 }
 
 .section-offering-page .cor-totals {
-  padding: 15px 42px;
-  border-top: 1px solid #000;
+  display: none;
 }
 
 .section-offering-page .cor-totals-text {
@@ -1077,39 +1155,27 @@ select:hover {
   margin: 0;
 }
 
-.section-offering-page .cor-note-bar {
-  background-color: #006837;
-  padding: 8px;
-  text-align: center;
-}
-
-.section-offering-page .cor-note-text {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-}
-
 .section-offering-page .cor-signatures {
   display: flex;
   justify-content: space-between;
-  padding: 40px 80px 30px;
-  margin-top: 20px;
+  gap: 20px !important;
+  padding: 12px 8px;
+  margin-top: 100px !important;
 }
 
 .section-offering-page .cor-signature-left,
 .section-offering-page .cor-signature-right {
   text-align: center;
   flex: 1;
-  max-width: 300px;
+  max-width: 320px;
 }
 
 .section-offering-page .cor-signature-left {
-  margin-right: 80px;
+  margin-right: 0;
 }
 
 .section-offering-page .cor-signature-right {
-  margin-left: 80px;
+  margin-left: 0;
 }
 
 .section-offering-page .cor-signature-name {
@@ -1118,12 +1184,254 @@ select:hover {
   color: #000;
   text-transform: uppercase;
   margin: 0 0 5px 0;
+  border-bottom: 1px solid #000;
 }
 
 .section-offering-page .cor-signature-role {
   font-size: 12px;
-  color: #555;
+  color: #000 !important;
   margin: 0;
+  font-style: italic !important;
+}
+
+/* Assessment and certification block */
+.section-offering-page .cor-assessment {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 15px;
+  padding: 0;
+  margin-top: 10px !important;
+}
+
+.section-offering-page .cor-assessment-left {
+  border: 4px double #000;
+  padding: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-left: 20px;
+}
+
+.section-offering-page .cor-assessment-right {
+  display: block;
+  margin-right: 20px;
+}
+
+.section-offering-page .cor-assessment-title {
+  font-size: 12px;
+  font-weight: bold !important;
+  margin: 0 0 0 0 !important;
+  margin-bottom: 0px !important;
+  text-align: center;
+  padding: 8px 0;
+  color: black;
+}
+
+.section-offering-page .cor-assessment-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Header row (PARTICULARS / AMOUNT) - using first row as header */
+.section-offering-page .cor-assessment-table tbody tr:first-child {
+  border-top: 2.5px solid #000;
+  border-bottom: 2.5px solid #000;
+}
+
+.section-offering-page .cor-assessment-table tbody tr:first-child td {
+  padding: 8px 10px;
+  border: none;
+  font-weight: bold;
+}
+
+.section-offering-page .cor-assessment-table tbody tr:first-child td:first-child {
+  text-align: left;
+}
+
+.section-offering-page .cor-assessment-table tbody tr:first-child td:last-child {
+  text-align: right;
+}
+
+/* All other rows - no default borders */
+.section-offering-page .cor-assessment-table td {
+  border: none;
+  padding: 6px 10px;
+  color: #000;
+  font-weight: normal;
+}
+
+.section-offering-page .cor-assessment-table td:first-child {
+  text-align: left;
+}
+
+.section-offering-page .cor-assessment-table td:last-child {
+  text-align: right;
+}
+
+/* Category headers (not indented) - bold, no indentation */
+.section-offering-page .cor-assessment-table tbody tr:not(.cor-double) td:not(.cor-indent) {
+  font-weight: bold;
+}
+
+/* Indented items - normal weight, 40px indentation */
+.section-offering-page .cor-assessment-table .cor-indent {
+  padding-left: 40px;
+  font-weight: normal;
+}
+
+/* Bold indented items (specific rows with strong tags) */
+.section-offering-page .cor-assessment-table .cor-indent strong {
+  font-weight: bold;
+}
+
+/* Total rows - 2.5px top and bottom borders */
+.section-offering-page .cor-assessment-table .cor-double {
+  border-top: 2.5px solid #000;
+  border-bottom: 2.5px solid #000;
+}
+
+.section-offering-page .cor-assessment-table .cor-double td {
+  padding: 8px 10px;
+  font-weight: bold;
+}
+
+.section-offering-page .cor-assess-amount {
+  width: auto;
+  text-align: right;
+}
+
+/* Vertically compress assessment table rows */
+.section-offering-page .cor-assessment-table th,
+.section-offering-page .cor-assessment-table td {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  line-height: 1.1 !important;
+}
+
+.section-offering-page .cor-cert-text {
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: black;
+}
+
+.section-offering-page .cor-enrolled-box {
+  border: 1px solid #000;
+  padding: 15px !important;
+  margin-top: 12px;
+  text-align: center !important;
+}
+
+.section-offering-page .cor-enrolled-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-offering-page .cor-enrolled-logo img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.section-offering-page .cor-enrolled-title {
+  font-size: 1.1rem !important;
+  line-height: 1.2 !important;
+  font-weight: 700;
+  text-align: center;
+  margin: 8px 0 !important;
+  text-transform: uppercase !important;
+  color: #000;
+}
+
+.section-offering-page .cor-enrolled-label {
+  font-size: 2rem !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  text-align: center;
+  margin: 15px 0 !important;
+  text-transform: uppercase !important;
+  color: #000;
+}
+
+.section-offering-page .cor-enrolled-note {
+  font-size: 0.833rem !important;
+  line-height: 1.3 !important;
+  text-align: center !important;
+  margin: 0;
+  color: #000;
+}
+
+/* Mirror enrolled box styles in print so PDF matches screen proportions */
+@media print {
+  .section-offering-page .cor-enrolled-box {
+    padding: 15px !important;
+    text-align: center !important;
+  }
+
+  .section-offering-page .cor-enrolled-title {
+    font-size: 1.1rem !important;
+    line-height: 1.2 !important;
+    margin: 8px 0 !important;
+    text-transform: uppercase !important;
+  }
+
+  .section-offering-page .cor-enrolled-label {
+    font-size: 2rem !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+    margin: 15px 0 !important;
+    text-transform: uppercase !important;
+  }
+
+  .section-offering-page .cor-enrolled-note {
+    font-size: 0.833rem !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+  }
+}
+
+/* New notice and semester rows styling */
+.cor-notice-text {
+  margin-top: 20px !important;
+  text-align: left !important;
+  text-decoration: underline !important;
+  font-weight: 400 !important;
+  color: #000 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.cor-semester-text {
+  margin-top: 5px !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  color: #000 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+@media print {
+  .cor-notice-text,
+  .cor-semester-text {
+    -webkit-print-color-adjust: exact !important;
+    color: #000 !important;
+  }
+}
+
+.section-offering-page .cor-legend {
+  padding: 8px 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  gap: 16px;
+  margin: 10px 20px;
+}
+
+.section-offering-page .cor-legend-item {
+  white-space: nowrap;
 }
 
 /* Schedule */
@@ -6810,4 +7118,61 @@ body.page-profile-edit .student-content {
   display: block;
   margin-top: 2px;
 }
+
+/* COR print and screen sync overrides (important to override aggressive print rules) */
+@media print {
+  /* Ensure student info fields print at exact 0.833rem (10pt) */
+  .section-offering-page .cor-info-label,
+  .section-offering-page .cor-info-value,
+  .section-offering-page .cor-info-col {
+    font-size: 0.833rem !important;
+  }
+
+  .section-offering-page .cor-th,
+  .section-offering-page .cor-td,
+  .section-offering-page .cor-signature-name,
+  .section-offering-page .cor-signature-role {
+    font-size: inherit !important;
+  }
+
+  .section-offering-page .cor-signature-name,
+  .section-offering-page .cor-signature-role {
+    white-space: nowrap !important;
+    width: auto !important;
+  }
+
+  .section-offering-page .cor-signatures {
+    margin-top: 100px !important;
+    padding: 8px 0px !important;
+    display: flex !important;
+    justify-content: space-around !important;
+  }
+
+  .section-offering-page .cor-signature-left,
+  .section-offering-page .cor-signature-right {
+    width: 45% !important;
+    max-width: none !important;
+    text-align: center !important;
+  }
+
+  .section-offering-page .cor-assessment-right {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+/* Screen view: ensure signature spacing matches print */
+.section-offering-page .cor-signatures {
+  margin-top: 100px !important;
+}
+
+/* Ensure class schedule table uses exact 0.833rem (10pt) in print */
+@media print {
+  .section-offering-page th.cor-table-title.cor-th,
+  .section-offering-page th,
+  .section-offering-page td {
+    font-size: 0.833rem !important;
+  }
+}
+
 

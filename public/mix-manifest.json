@@ -4,6 +4,7 @@
     "/css/style.css": "/css/style.css",
     "/css/registrar-faculty-loads.css": "/css/registrar-faculty-loads.css",
     "/js/registrar-faculty-loads.js": "/js/registrar-faculty-loads.js",
+    "/js/section-offering.js": "/js/section-offering.js",
     "/js/student-profile.js": "/js/student-profile.js",
     "/js/student-sidebar-dropdown.js": "/js/student-sidebar-dropdown.js"
 }

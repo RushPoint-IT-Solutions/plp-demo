@@ -53,133 +53,143 @@
 
     <!-- COR Table (Hidden by Default) -->
     <div class="cor-scroll-wrapper so-cor-page">
-    <div id="cor-table" class="cor-container" style="display: none;">
-        
-        <!-- COR Header -->
-        <div class="cor-header">
-            <div class="cor-header-left">
-                <img src="{{ asset('img/logo.svg') }}" alt="PLP Logo" class="cor-logo">
-                <img src="{{ asset('img/schoolname.svg') }}" alt="Pamantasan ng Lungsod ng Pasig" class="cor-school-text-img">
-            </div>
-            <div class="cor-header-center">
-                <h1 class="cor-title">CERTIFICATE OF REGISTRATION</h1>
-            </div>
-            <div class="cor-header-right">
-                <p class="cor-label">Registration No:</p>
-                <p class="cor-reg-number">{{ optional($student)->registration_no }}</p>
-            </div>
-        </div>
+    <div id="cor-table" class="cor-container" style="display: none; margin-top: 2in;">
 
-        <!-- Student Information -->
+        <!-- Student Information (matches printed layout, no header/green bar) -->
         <div class="cor-student-info">
-            <div class="cor-info-row">
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Student No.:</span>
-                    <span class="cor-info-value">{{ optional($student)->student_no }}</span>
+            <div class="cor-info-row cor-info-row--grid">
+                <div class="cor-info-col">
+                    <div class="cor-info-line"><span class="cor-info-label">Enrollment No.:</span><span class="cor-info-value">{{ optional($student)->enrollment_no }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Student No.:</span><span class="cor-info-value">{{ optional($student)->student_no }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Student Name:</span><span class="cor-info-value">{{ optional($student)->name }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Address:</span><span class="cor-info-value">{{ optional($student)->address }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Course:</span><span class="cor-info-value">{{ optional($student)->program }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Department:</span><span class="cor-info-value">{{ optional($student)->department }}</span></div>
                 </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">College:</span>
-                    <span class="cor-info-value">{{ optional($student)->college }}</span>
+                <div class="cor-info-col">
+                    <div class="cor-info-line"><span class="cor-info-label">Enrollment Date:</span><span class="cor-info-value">{{ optional($student)->enrollment_date }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Curriculum:</span><span class="cor-info-value">{{ optional($student)->curriculum }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">School Year:</span><span class="cor-info-value">{{ optional($student)->school_year_label }}</span></div>
                 </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">School Year:</span>
-                    <span class="cor-info-value">{{ optional($student)->school_year_label }}</span>
-                </div>
-            </div>
-            <div class="cor-info-row">
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Name:</span>
-                    <span class="cor-info-value">{{ optional($student)->name }}</span>
-                </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Program:</span>
-                    <span class="cor-info-value">{{ optional($student)->program }}</span>
-                </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Curriculum:</span>
-                    <span class="cor-info-value">{{ optional($student)->curriculum }}</span>
+                <div class="cor-info-col">
+                    <div class="cor-info-line"><span class="cor-info-label">Year Level:</span><span class="cor-info-value">{{ optional($student)->year_level }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Student Type:</span><span class="cor-info-value">{{ optional($student)->student_type }}</span></div>
                 </div>
             </div>
-            <div class="cor-info-row">
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Sex:</span>
-                    <span class="cor-info-value">{{ optional($student)->sex }}</span>
-                </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Major:</span>
-                    <span class="cor-info-value"></span>
-                </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Scholarship:</span>
-                    <span class="cor-info-value">{{ optional($student)->scholarship }}</span>
-                </div>
+            <div class="cor-info-row cor-info-row--scholar">
+                <span class="cor-info-label">Scholarship/Grant:</span>
+                <span class="cor-info-value cor-info-value--wide">{{ optional($student)->scholarship }}</span>
             </div>
-            <div class="cor-info-row">
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Age:</span>
-                    <span class="cor-info-value">{{ optional($student)->age }}</span>
-                </div>
-                <div class="cor-info-group">
-                    <span class="cor-info-label">Year Level:</span>
-                    <span class="cor-info-value">{{ optional($student)->year_level }}</span>
-                </div>
-                <div class="cor-info-group"></div>
-            </div>
-        </div>
-
-        <!-- Schedule Header -->
-        <div class="cor-schedule-header">
-            <h2 class="cor-schedule-title">SCHEDULE</h2>
         </div>
 
         <!-- Schedule Table -->
         <table class="cor-table">
             <thead>
                 <tr>
-                    <th class="cor-th">Code</th>
-                    <th class="cor-th">Subject</th>
-                    <th class="cor-th">Units</th>
-                    <th class="cor-th">Days</th>
-                    <th class="cor-th">Time</th>
-                    <th class="cor-th">Room</th>
-                    <th class="cor-th">Faculty</th>
+                    <th class="cor-table-title cor-th" colspan="8">CLASS SCHEDULE</th>
+                </tr>
+                <tr>
+                    <th class="cor-th col-name">Subject Name</th>
+                    <th class="cor-th col-desc">Subject Description</th>
+                    <th class="cor-th col-section">Section</th>
+                    <th class="cor-th col-units">Units</th>
+                    <th class="cor-th col-room">Room</th>
+                    <th class="cor-th col-days">Days</th>
+                    <th class="cor-th col-time">Time</th>
+                    <th class="cor-th col-pay">Pay Units</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($subjects as $subject)
                 <tr>
-                    <td class="cor-td">{{ $subject->code }}</td>
-                    <td class="cor-td">{{ $subject->name }}</td>
-                    <td class="cor-td">{{ number_format($subject->units, 1) }}</td>
-                    <td class="cor-td">{{ $subject->days }}</td>
-                    <td class="cor-td">{{ $subject->time_range }}</td>
-                    <td class="cor-td">{{ $subject->room }}</td>
-                    <td class="cor-td">{{ $subject->faculty }}</td>
+                    <td class="cor-td col-name">{{ $subject->code }}</td>
+                    <td class="cor-td col-desc">{{ $subject->name }}</td>
+                    <td class="cor-td col-section">{{ $subject->section ?? optional($student)->year_level }}</td>
+                    <td class="cor-td col-units">{{ number_format($subject->units, 1) }}</td>
+                    <td class="cor-td col-room">{{ $subject->room }}</td>
+                    <td class="cor-td col-days">{{ $subject->days }}</td>
+                    <td class="cor-td col-time">{{ $subject->time_range }}</td>
+                    <td class="cor-td col-pay">{{ number_format($subject->pay_units ?? $subject->units, 1) }}</td>
                 </tr>
                 @endforeach
             </tbody>
+            <tfoot>
+                @php
+                    $totalUnits = $subjects->sum('units');
+                @endphp
+                <tr>
+                    <td class="cor-td col-name"></td>
+                    <td class="cor-td col-desc"></td>
+                    <td class="cor-td col-section cor-total-label">TOTAL:</td>
+                    <td class="cor-td col-units cor-total-value">{{ number_format($totalUnits, 2) }}</td>
+                    <td class="cor-td col-room"></td>
+                    <td class="cor-td col-days"></td>
+                    <td class="cor-td col-time"></td>
+                    <td class="cor-td col-pay"></td>
+                </tr>
+            </tfoot>
         </table>
 
-        <!-- Totals -->
-        <div class="cor-totals">
-            <p class="cor-totals-text">Totals: &nbsp; Subjects = <strong>{{ $subjects->count() }}</strong> &nbsp; Credit Units = <strong>{{ number_format($subjects->sum('units'), 1) }}</strong></p>
+        <!-- Assessment of Fees -->
+        <div class="cor-assessment">
+            <div class="cor-assessment-left">
+                <p class="cor-assessment-title">ASSESSMENT OF FEES</p>
+                <table class="cor-assessment-table">
+                    <tbody>
+                        <tr><td><strong>PARTICULARS</strong></td><td class="cor-assess-amount"><strong>AMOUNT</strong></td></tr>
+                        <tr><td>Tuition Fee</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td class="cor-indent">Tuition Fee</td><td class="cor-assess-amount">17.00 x 50.00</td></tr>
+                        <tr><td class="cor-indent">CW/ROTC TF</td><td class="cor-assess-amount">3.00 x 50.00</td></tr>
+                        <tr class="cor-double"><td>Total Tuition Fee</td><td class="cor-assess-amount">1,000.00</td></tr>
+                        <tr><td>Miscellaneous Fee</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td class="cor-indent">Miscellaneous Fee</td><td class="cor-assess-amount">300.00</td></tr>
+                        <tr class="cor-double"><td>Total Miscellaneous Fee</td><td class="cor-assess-amount">300.00</td></tr>
+                        <tr><td>Laboratory Fee</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td class="cor-indent">Laboratory Fee</td><td class="cor-assess-amount">500.00</td></tr>
+                        <tr class="cor-double"><td>Total Laboratory Fee</td><td class="cor-assess-amount">500.00</td></tr>
+                        <tr><td>Old Account</td><td class="cor-assess-amount">-</td></tr>
+                        <tr><td>Current Account</td><td class="cor-assess-amount">1,800.00</td></tr>
+                        <tr><td class="cor-indent"><strong>Contract / Petition Subject</strong></td><td class="cor-assess-amount">.</td></tr>
+                        <tr><td class="cor-indent"><strong>Midterm Due</strong></td><td class="cor-assess-amount">.</td></tr>
+                        <tr><td class="cor-indent"><strong>Final Due</strong></td><td class="cor-assess-amount">.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cor-assessment-right">
+                <p class="cor-cert-text">This is to certify that the student whose name appears on this document is officially enrolled this term with subject load listed above.</p>
+                <div class="cor-signatures">
+                    <div class="cor-signature-left">
+                        <p class="cor-signature-name">{{ strtoupper(optional($student)->name ?? '') }}</p>
+                        <p class="cor-signature-role">STUDENT SIGNATURE</p>
+                    </div>
+                    <div class="cor-signature-right">
+                        <p class="cor-signature-name">Prof. Federico G. Nueva</p>
+                        <p class="cor-signature-role">UNIVERSITY REGISTRAR</p>
+                    </div>
+                </div>
+
+                <div class="cor-enrolled-box">
+                    <div class="cor-enrolled-logo">
+                        <img src="{{ asset('img/logobg.png') }}" alt="School Logo">
+                    </div>
+                    <p class="cor-enrolled-title">PAMANTASAN NG LUNGSOD NG PASIG<br>OFFICE OF THE UNIVERSITY REGISTRAR</p>
+                    <p class="cor-enrolled-label">OFFICIALLY ENROLLED</p>
+                    <p class="cor-enrolled-note">Present this certificate of registration for any claim or transaction that you engage in within the University.</p>
+                </div>
+                <!-- Row 1: Notice Text -->
+                <p class='cor-notice-text'>Notice to all students</p>
+
+                <!-- Row 2: Semester Text -->
+                <p class='cor-semester-text'>1st Sem 2021 - 2022</p>
+            </div>
         </div>
 
-        <!-- Note Bar -->
-        <div class="cor-note-bar">
-            <p class="cor-note-text">Note: Invalid Without the Registrar's Signature</p>
-        </div>
-
-        <!-- Signatures -->
-        <div class="cor-signatures">
-            <div class="cor-signature-left">
-                <p class="cor-signature-name">{{ strtoupper(optional($student)->name ?? '') }}</p>
-                <p class="cor-signature-role">Student's Signature</p>
-            </div>
-            <div class="cor-signature-right">
-                <p class="cor-signature-name">MARIA CONSUELO</p>
-                <p class="cor-signature-role">College Registrar</p>
-            </div>
+        <!-- Legend -->
+        <div class="cor-legend">
+            <p class="cor-legend-title">LEGEND</p>
+            <span class="cor-legend-item">* - Added Subjects</span>
+            <span class="cor-legend-item">** - Officially Dropped Subjects</span>
         </div>
 
     </div>
@@ -187,3 +197,7 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/section-offering.js') }}"></script>
+@endpush
