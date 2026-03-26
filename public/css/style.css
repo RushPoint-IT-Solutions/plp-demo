@@ -964,8 +964,9 @@ select:hover {
 }
 
 .section-offering-page .cor-student-info {
-  padding: 20px 42px;
-  border-bottom: none;
+  padding: 20px 42px 12px;
+  border-bottom: none !important;
+  margin-bottom: 10px;
 }
 
 .section-offering-page .cor-info-row {
@@ -976,10 +977,11 @@ select:hover {
 
 .section-offering-page .cor-info-row--grid {
   display: grid;
-  grid-template-columns: calc(var(--cor-col-name) + var(--cor-col-desc)) var(--cor-col-section) 1fr;
-  -moz-column-gap: 24px;
-       column-gap: 24px;
+  grid-template-columns: 1fr 1fr 0.5fr !important;
+  -moz-column-gap: 12px;
+       column-gap: 12px;
   align-items: start;
+  justify-content: start;
 }
 
 .section-offering-page .cor-info-row:last-child {
@@ -996,6 +998,14 @@ select:hover {
   flex-direction: column;
 }
 
+.section-offering-page .cor-info-col {
+  flex: 0 1 auto !important;
+  width: -moz-fit-content !important;
+  width: fit-content !important;
+  justify-self: start !important;
+  align-self: start !important;
+}
+
 .section-offering-page .cor-info-label,
 .section-offering-page .cor-info-value {
   font-size: 12px;
@@ -1008,7 +1018,7 @@ select:hover {
 }
 
 .section-offering-page .cor-info-row--scholar {
-  padding: 6px 0;
+  padding: 6px 0 8px;
   border-top: 1px dotted #000;
   border-bottom: 1px dotted #000;
 }
@@ -1032,15 +1042,17 @@ select:hover {
   width: calc(100% - 84px);
   margin-left: auto;
   margin-right: auto;
-  margin-top: 14px;
+  margin-top: 10px;
   border-collapse: collapse;
   border-spacing: 0;
-  border: none;
+  border: 1px solid #000;
+  border-top: 1px solid #000;
 }
 
 .section-offering-page .cor-table thead {
   background-color: #fff;
   border-bottom: 1px solid #000;
+  border-top: none;
 }
 
 .section-offering-page .cor-th,
@@ -1056,6 +1068,7 @@ select:hover {
 .section-offering-page .cor-th {
   text-align: center;
   white-space: nowrap;
+  border-bottom: 1px solid #000 !important;
 }
 
 .section-offering-page .cor-td {
@@ -1087,7 +1100,7 @@ select:hover {
   font-weight: 700;
   background: #fff;
   color: #000;
-  border-top: none;
+  border-bottom: 1px solid #000 !important;
 }
 
 .section-offering-page .cor-table thead tr:first-child th {

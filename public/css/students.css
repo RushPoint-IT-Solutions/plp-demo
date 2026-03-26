@@ -883,7 +883,7 @@ select:hover {
 
 .section-offering-page .cor-info-row--grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 0.5fr;
   gap: 6px 20px;
   margin-bottom: 6px;
 }
