@@ -911,7 +911,7 @@ select:hover {
   grid-template-columns: 1fr 1fr 0.5fr;
   gap: 6px 20px;
   margin-bottom: 6px;
-  margin-top: 192px;
+  margin-top: 2in;
 }
 
 .section-offering-page .cor-info-col {
@@ -952,15 +952,121 @@ select:hover {
   border: 1px solid #000;
 }
 
+/* COR responsive & print tweaks */
+/* COR: Global Zoom-to-Fit and responsive fallbacks */
+.section-offering-page #cor-table,
+.section-offering-page .cor-scroll-wrapper {
+  zoom: 0.8 !important;
+  width: 100% !important;
+  transform-origin: top left;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+}
+
+/* Ensure horizontal scrolling fallback on containers */
+.section-offering-page .cor-scroll-wrapper,
+.section-offering-page .cor-container {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box !important;
+}
+
+/* Table layout and sizing */
+.section-offering-page .cor-table {
+  table-layout: auto;
+  width: 100% !important;
+}
+
+/* Wide Subject Description */
+.section-offering-page .cor-table .col-desc {
+  min-width: 300px !important;
+  text-align: left !important;
+}
+
+/* Make Subject Name narrower to save space */
+.section-offering-page .cor-table .col-name {
+  width: 120px !important;
+  max-width: 160px !important;
+}
+
+/* Center Subject Name column for headers and data */
+.section-offering-page .cor-table th.col-name,
+.section-offering-page .cor-table td.col-name {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Strict centering for specific columns (headers + data) */
+.section-offering-page .cor-table th.col-section,
+.section-offering-page .cor-table th.col-units,
+.section-offering-page .cor-table th.col-room,
+.section-offering-page .cor-table th.col-days,
+.section-offering-page .cor-table th.col-time,
+.section-offering-page .cor-table th.col-pay,
+.section-offering-page .cor-table td.col-section,
+.section-offering-page .cor-table td.col-units,
+.section-offering-page .cor-table td.col-room,
+.section-offering-page .cor-table td.col-days,
+.section-offering-page .cor-table td.col-time,
+.section-offering-page .cor-table td.col-pay {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Wrapping & typography for table cells */
+.section-offering-page .cor-table th,
+.section-offering-page .cor-table td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  font-size: 11pt !important;
+  padding: 6px 4px !important;
+}
+
+/* Student info grid: enforce columns */
+.section-offering-page .cor-info-row--grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 0.5fr !important;
+}
+
+/* Print optimization */
+@media print {
+  @page { size: A4 portrait; margin: 10mm; }
+  .section-offering-page #cor-table,
+  .section-offering-page .cor-scroll-wrapper {
+    zoom: 1 !important;
+    transform: none !important;
+    width: 100% !important;
+  }
+  .section-offering-page .cor-table th,
+  .section-offering-page .cor-table td {
+    font-size: 8pt !important;
+  }
+  .section-offering-page .cor-scroll-wrapper,
+  .section-offering-page .cor-container {
+    overflow: visible !important;
+  }
+}
+
 /* Ensure any element using the ID 'cor-table' has no top margin */
 #cor-table {
   margin-top: 0 !important;
 }
 
+/* Make entire COR use 12pt (16px) to match requested document sizing */
+.section-offering-page .cor-container {
+  font-size: 0.833rem !important;
+}
+
+/* Override more specific rules inside COR to ensure consistent sizing */
+.section-offering-page .cor-container * {
+  font-size: 0.833rem !important;
+}
+
 .section-offering-page .cor-schedule-title-bar {
   width: calc(100% - 32px);
   margin: 10px auto 0;
-  font-size: 12px;
+  font-size: 0.833rem !important;
   font-weight: 800;
   text-align: center;
   border-top: 2px solid #000;
@@ -977,7 +1083,7 @@ select:hover {
 .section-offering-page .cor-th,
 .section-offering-page .cor-td {
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: 0.833rem !important;
   color: #000;
   border: none;
   font-weight: 700;
@@ -991,6 +1097,11 @@ select:hover {
   text-align: left;
 }
 
+
+/* Remove extra space under legend title */
+.section-offering-page .cor-legend-title {
+  margin-bottom: 0 !important;
+}
 .section-offering-page .cor-table .cor-th:first-child,
 .section-offering-page .cor-table .cor-td:first-child {
   padding-left: 24px;
@@ -1107,10 +1218,11 @@ select:hover {
 
 .section-offering-page .cor-assessment-title {
   font-size: 12px;
-  font-weight: bold;
+  font-weight: bold !important;
   margin: 0 0 10px 0;
   text-align: center;
   padding: 8px 0;
+  color: black;
 }
 
 .section-offering-page .cor-assessment-table {
