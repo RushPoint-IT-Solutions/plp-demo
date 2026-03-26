@@ -7059,7 +7059,13 @@ body.page-profile-edit .student-content {
 
 /* COR print and screen sync overrides (important to override aggressive print rules) */
 @media print {
+  /* Ensure student info fields print at exact 0.833rem (10pt) */
   .section-offering-page .cor-info-label,
+  .section-offering-page .cor-info-value,
+  .section-offering-page .cor-info-col {
+    font-size: 0.833rem !important;
+  }
+
   .section-offering-page .cor-th,
   .section-offering-page .cor-td,
   .section-offering-page .cor-signature-name,
@@ -7096,6 +7102,15 @@ body.page-profile-edit .student-content {
 /* Screen view: ensure signature spacing matches print */
 .section-offering-page .cor-signatures {
   margin-top: 100px !important;
+}
+
+/* Ensure class schedule table uses exact 0.833rem (10pt) in print */
+@media print {
+  .section-offering-page th.cor-table-title.cor-th,
+  .section-offering-page th,
+  .section-offering-page td {
+    font-size: 0.833rem !important;
+  }
 }
 
 
