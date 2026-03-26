@@ -185,3 +185,7 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/section-offering.js') }}"></script>
+@endpush
