@@ -842,7 +842,6 @@ select:hover {
   font-size: 11px;
   font-weight: 400;
   color: #000;
-}
   grid-template-columns: 1fr 240px;
   gap: 14px 20px;
 }
@@ -1219,7 +1218,8 @@ select:hover {
 .section-offering-page .cor-assessment-title {
   font-size: 12px;
   font-weight: bold !important;
-  margin: 0 0 10px 0;
+  margin: 0 0 0 0 !important;
+  margin-bottom: 0px !important;
   text-align: center;
   padding: 8px 0;
   color: black;
@@ -1299,6 +1299,14 @@ select:hover {
 .section-offering-page .cor-assess-amount {
   width: auto;
   text-align: right;
+}
+
+/* Vertically compress assessment table rows */
+.section-offering-page .cor-assessment-table th,
+.section-offering-page .cor-assessment-table td {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  line-height: 1.1 !important;
 }
 
 .section-offering-page .cor-cert-text {
