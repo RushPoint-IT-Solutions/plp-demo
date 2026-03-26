@@ -1158,7 +1158,7 @@ select:hover {
 .section-offering-page .cor-signatures {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 20px !important;
   padding: 12px 8px;
   margin-top: 100px !important;
 }
@@ -1197,7 +1197,7 @@ select:hover {
 /* Assessment and certification block */
 .section-offering-page .cor-assessment {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.05fr 0.95fr;
   gap: 15px;
   padding: 0;
   margin-top: 10px !important;
@@ -7056,4 +7056,46 @@ body.page-profile-edit .student-content {
   display: block;
   margin-top: 2px;
 }
+
+/* COR print and screen sync overrides (important to override aggressive print rules) */
+@media print {
+  .section-offering-page .cor-info-label,
+  .section-offering-page .cor-th,
+  .section-offering-page .cor-td,
+  .section-offering-page .cor-signature-name,
+  .section-offering-page .cor-signature-role {
+    font-size: inherit !important;
+  }
+
+  .section-offering-page .cor-signature-name,
+  .section-offering-page .cor-signature-role {
+    white-space: nowrap !important;
+    width: auto !important;
+  }
+
+  .section-offering-page .cor-signatures {
+    margin-top: 100px !important;
+    padding: 8px 0px !important;
+    display: flex !important;
+    justify-content: space-around !important;
+  }
+
+  .section-offering-page .cor-signature-left,
+  .section-offering-page .cor-signature-right {
+    width: 45% !important;
+    max-width: none !important;
+    text-align: center !important;
+  }
+
+  .section-offering-page .cor-assessment-right {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+/* Screen view: ensure signature spacing matches print */
+.section-offering-page .cor-signatures {
+  margin-top: 100px !important;
+}
+
 
