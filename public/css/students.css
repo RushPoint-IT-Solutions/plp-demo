@@ -818,6 +818,31 @@ select:hover {
 
 .filter-grid {
   display: grid;
+
+  /* Legend: professional document styling for correlation legend */
+}
+
+.cor-legend {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
+  margin-left: 20px;
+  color: #000;
+}
+
+.cor-legend-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: #000;
+}
+
+.cor-legend-item {
+  display: block;
+  margin-left: 60px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #000;
+}
   grid-template-columns: 1fr 240px;
   gap: 14px 20px;
 }
@@ -1019,7 +1044,7 @@ select:hover {
   justify-content: space-between;
   gap: 20px;
   padding: 12px 8px;
-  margin-top: 12px;
+  margin-top: 100px !important;
 }
 
 .section-offering-page .cor-signature-left,
@@ -1043,63 +1068,146 @@ select:hover {
   color: #000;
   text-transform: uppercase;
   margin: 0 0 5px 0;
+  border-bottom: 1px solid #000;
 }
 
 .section-offering-page .cor-signature-role {
   font-size: 12px;
-  color: #555;
+  color: #000 !important;
   margin: 0;
+  font-style: italic !important;
 }
 
 /* Assessment and certification block */
 .section-offering-page .cor-assessment {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 16px;
-  padding: 16px 12px 8px;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  padding: 0;
+  margin-top: 10px !important;
+}
+
+.section-offering-page .cor-assessment-left {
+  border: 4px double #000;
+  padding: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-left: 20px;
+}
+
+.section-offering-page .cor-assessment-right {
+  display: block;
+  margin-right: 20px;
 }
 
 .section-offering-page .cor-assessment-title {
   font-size: 12px;
-  font-weight: 700;
-  margin: 0 0 6px 0;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  text-align: center;
+  padding: 8px 0;
 }
 
 .section-offering-page .cor-assessment-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  font-weight: 700;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.section-offering-page .cor-assessment-table td {
-  border: 1px solid #000;
-  padding: 6px 10px;
+/* Header row (PARTICULARS / AMOUNT) - using first row as header */
+.section-offering-page .cor-assessment-table tbody tr:first-child {
+  border-top: 2.5px solid #000;
+  border-bottom: 2.5px solid #000;
 }
 
-.section-offering-page .cor-assess-amount {
-  width: 140px;
+.section-offering-page .cor-assessment-table tbody tr:first-child td {
+  padding: 8px 10px;
+  border: none;
+  font-weight: bold;
+}
+
+.section-offering-page .cor-assessment-table tbody tr:first-child td:first-child {
+  text-align: left;
+}
+
+.section-offering-page .cor-assessment-table tbody tr:first-child td:last-child {
   text-align: right;
 }
 
-.section-offering-page .cor-indent {
-  padding-left: 24px;
+/* All other rows - no default borders */
+.section-offering-page .cor-assessment-table td {
+  border: none;
+  padding: 6px 10px;
+  color: #000;
+  font-weight: normal;
 }
 
-.section-offering-page .cor-double td {
-  border-top: 2px solid #000;
+.section-offering-page .cor-assessment-table td:first-child {
+  text-align: left;
+}
+
+.section-offering-page .cor-assessment-table td:last-child {
+  text-align: right;
+}
+
+/* Category headers (not indented) - bold, no indentation */
+.section-offering-page .cor-assessment-table tbody tr:not(.cor-double) td:not(.cor-indent) {
+  font-weight: bold;
+}
+
+/* Indented items - normal weight, 40px indentation */
+.section-offering-page .cor-assessment-table .cor-indent {
+  padding-left: 40px;
+  font-weight: normal;
+}
+
+/* Bold indented items (specific rows with strong tags) */
+.section-offering-page .cor-assessment-table .cor-indent strong {
+  font-weight: bold;
+}
+
+/* Total rows - 2.5px top and bottom borders */
+.section-offering-page .cor-assessment-table .cor-double {
+  border-top: 2.5px solid #000;
+  border-bottom: 2.5px solid #000;
+}
+
+.section-offering-page .cor-assessment-table .cor-double td {
+  padding: 8px 10px;
+  font-weight: bold;
+}
+
+.section-offering-page .cor-assess-amount {
+  width: auto;
+  text-align: right;
 }
 
 .section-offering-page .cor-cert-text {
   font-size: 12px;
   font-weight: 700;
   margin: 0 0 8px 0;
+  color: black;
 }
 
 .section-offering-page .cor-enrolled-box {
   border: 1px solid #000;
   padding: 10px;
   margin-top: 12px;
+  text-align: center;
+}
+
+.section-offering-page .cor-enrolled-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-offering-page .cor-enrolled-logo img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
 }
 
 .section-offering-page .cor-enrolled-title {
@@ -1107,6 +1215,7 @@ select:hover {
   font-weight: 700;
   text-align: center;
   margin: 0 0 6px 0;
+  color: #000;
 }
 
 .section-offering-page .cor-enrolled-label {
@@ -1114,12 +1223,14 @@ select:hover {
   font-weight: 800;
   text-align: center;
   margin: 0 0 6px 0;
+  color: #000;
 }
 
 .section-offering-page .cor-enrolled-note {
   font-size: 11px;
   text-align: center;
   margin: 0;
+  color: #000;
 }
 
 .section-offering-page .cor-legend {
@@ -1128,6 +1239,7 @@ select:hover {
   font-weight: 700;
   display: flex;
   gap: 16px;
+  margin: 10px 20px;
 }
 
 .section-offering-page .cor-legend-item {

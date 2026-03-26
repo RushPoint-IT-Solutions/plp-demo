@@ -136,19 +136,22 @@
                 <p class="cor-assessment-title">ASSESSMENT OF FEES</p>
                 <table class="cor-assessment-table">
                     <tbody>
+                        <tr><td><strong>PARTICULARS</strong></td><td class="cor-assess-amount"><strong>AMOUNT</strong></td></tr>
                         <tr><td>Tuition Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td class="cor-indent">Tuition Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td class="cor-indent">CW/ROTC TF</td><td class="cor-assess-amount"></td></tr>
-                        <tr class="cor-double"><td>Total Tuition Fee</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td class="cor-indent">Tuition Fee</td><td class="cor-assess-amount">17.00 x 50.00</td></tr>
+                        <tr><td class="cor-indent">CW/ROTC TF</td><td class="cor-assess-amount">3.00 x 50.00</td></tr>
+                        <tr class="cor-double"><td>Total Tuition Fee</td><td class="cor-assess-amount">1,000.00</td></tr>
                         <tr><td>Miscellaneous Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr class="cor-double"><td>Total Miscellaneous Fee</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td class="cor-indent">Miscellaneous Fee</td><td class="cor-assess-amount">300.00</td></tr>
+                        <tr class="cor-double"><td>Total Miscellaneous Fee</td><td class="cor-assess-amount">300.00</td></tr>
                         <tr><td>Laboratory Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr class="cor-double"><td>Total Laboratory Fee</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td>Old Account</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td>Current Account</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td>Contract / Petition Subject</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td>Midterm Due</td><td class="cor-assess-amount"></td></tr>
-                        <tr><td>Final Due</td><td class="cor-assess-amount"></td></tr>
+                        <tr><td class="cor-indent">Laboratory Fee</td><td class="cor-assess-amount">500.00</td></tr>
+                        <tr class="cor-double"><td>Total Laboratory Fee</td><td class="cor-assess-amount">500.00</td></tr>
+                        <tr><td>Old Account</td><td class="cor-assess-amount">-</td></tr>
+                        <tr><td>Current Account</td><td class="cor-assess-amount">1,800.00</td></tr>
+                        <tr><td class="cor-indent"><strong>Contract / Petition Subject</strong></td><td class="cor-assess-amount">.</td></tr>
+                        <tr><td class="cor-indent"><strong>Midterm Due</strong></td><td class="cor-assess-amount">.</td></tr>
+                        <tr><td class="cor-indent"><strong>Final Due</strong></td><td class="cor-assess-amount">.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -167,6 +170,9 @@
                 </div>
 
                 <div class="cor-enrolled-box">
+                    <div class="cor-enrolled-logo">
+                        <img src="{{ asset('img/logobg.png') }}" alt="School Logo">
+                    </div>
                     <p class="cor-enrolled-title">PAMANTASAN NG LUNGSOD NG PASIG<br>OFFICE OF THE UNIVERSITY REGISTRAR</p>
                     <p class="cor-enrolled-label">OFFICIALLY ENROLLED</p>
                     <p class="cor-enrolled-note">Present this certificate of registration for any claim or transaction that you engage in within the University.</p>
@@ -176,6 +182,7 @@
 
         <!-- Legend -->
         <div class="cor-legend">
+            <p class="cor-legend-title">LEGEND</p>
             <span class="cor-legend-item">* - Added Subjects</span>
             <span class="cor-legend-item">** - Officially Dropped Subjects</span>
         </div>
