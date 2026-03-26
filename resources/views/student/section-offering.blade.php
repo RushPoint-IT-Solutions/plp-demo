@@ -82,43 +82,34 @@
             </div>
         </div>
 
-        <style>
-        /* Table title moved into the table so borders join cleanly */
-        .cor-table{ border-collapse: collapse; width: 100%; color: #000; }
-        .cor-table th, .cor-table td{ border: 1px solid #000; padding: 8px; color: #000; }
-        .cor-table .cor-table-title{ text-align: center; font-weight: 700; background: #fff; color: #000; }
-        .cor-table .cor-th{ text-align: left; font-weight: 700; color: #000; }
-        .cor-total-label{ text-align: right; font-weight: 700; }
-        </style>
-
         <!-- Schedule Table -->
         <table class="cor-table">
             <thead>
                 <tr>
-                    <th class="cor-table-title" colspan="8">CLASS SCHEDULE</th>
+                    <th class="cor-table-title cor-th" colspan="8">CLASS SCHEDULE</th>
                 </tr>
                 <tr>
-                    <th class="cor-th">Subject Name</th>
-                    <th class="cor-th">Subject Description</th>
-                    <th class="cor-th">Section</th>
-                    <th class="cor-th">Units</th>
-                    <th class="cor-th">Room</th>
-                    <th class="cor-th">Days</th>
-                    <th class="cor-th">Time</th>
-                    <th class="cor-th">Pay Units</th>
+                    <th class="cor-th col-name">Subject Name</th>
+                    <th class="cor-th col-desc">Subject Description</th>
+                    <th class="cor-th col-section">Section</th>
+                    <th class="cor-th col-units">Units</th>
+                    <th class="cor-th col-room">Room</th>
+                    <th class="cor-th col-days">Days</th>
+                    <th class="cor-th col-time">Time</th>
+                    <th class="cor-th col-pay">Pay Units</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($subjects as $subject)
                 <tr>
-                    <td class="cor-td">{{ $subject->code }}</td>
-                    <td class="cor-td">{{ $subject->name }}</td>
-                    <td class="cor-td">{{ $subject->section ?? optional($student)->year_level }}</td>
-                    <td class="cor-td">{{ number_format($subject->units, 1) }}</td>
-                    <td class="cor-td">{{ $subject->room }}</td>
-                    <td class="cor-td">{{ $subject->days }}</td>
-                    <td class="cor-td">{{ $subject->time_range }}</td>
-                    <td class="cor-td">{{ number_format($subject->pay_units ?? $subject->units, 1) }}</td>
+                    <td class="cor-td col-name">{{ $subject->code }}</td>
+                    <td class="cor-td col-desc">{{ $subject->name }}</td>
+                    <td class="cor-td col-section">{{ $subject->section ?? optional($student)->year_level }}</td>
+                    <td class="cor-td col-units">{{ number_format($subject->units, 1) }}</td>
+                    <td class="cor-td col-room">{{ $subject->room }}</td>
+                    <td class="cor-td col-days">{{ $subject->days }}</td>
+                    <td class="cor-td col-time">{{ $subject->time_range }}</td>
+                    <td class="cor-td col-pay">{{ number_format($subject->pay_units ?? $subject->units, 1) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -127,14 +118,14 @@
                     $totalUnits = $subjects->sum('units');
                 @endphp
                 <tr>
-                    <td class="cor-td"></td>
-                    <td class="cor-td"></td>
-                    <td class="cor-td cor-total-label">TOTAL:</td>
-                    <td class="cor-td cor-total-value">{{ number_format($totalUnits, 2) }}</td>
-                    <td class="cor-td"></td>
-                    <td class="cor-td"></td>
-                    <td class="cor-td"></td>
-                    <td class="cor-td"></td>
+                    <td class="cor-td col-name"></td>
+                    <td class="cor-td col-desc"></td>
+                    <td class="cor-td col-section cor-total-label">TOTAL:</td>
+                    <td class="cor-td col-units cor-total-value">{{ number_format($totalUnits, 2) }}</td>
+                    <td class="cor-td col-room"></td>
+                    <td class="cor-td col-days"></td>
+                    <td class="cor-td col-time"></td>
+                    <td class="cor-td col-pay"></td>
                 </tr>
             </tfoot>
         </table>

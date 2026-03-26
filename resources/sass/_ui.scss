@@ -516,9 +516,21 @@
     margin: 0;
 }
 
+
+.section-offering-page {
+    --cor-col-name: 16%;
+    --cor-col-desc: 28%;
+    --cor-col-section: 10%;
+    --cor-col-units: 8%;
+    --cor-col-room: 8%;
+    --cor-col-days: 10%;
+    --cor-col-time: 12%;
+    --cor-col-pay: 8%;
+}
+
 .section-offering-page .cor-student-info {
     padding: 20px 42px;
-    border-bottom: 1px solid #000;
+    border-bottom: none;
 }
 
 .section-offering-page .cor-info-row {
@@ -527,16 +539,25 @@
     margin-bottom: 6px;
 }
 
+.section-offering-page .cor-info-row--grid {
+    display: grid;
+    grid-template-columns: calc(var(--cor-col-name) + var(--cor-col-desc)) var(--cor-col-section) 1fr;
+    column-gap: 24px;
+    align-items: start;
+}
+
 .section-offering-page .cor-info-row:last-child {
     margin-bottom: 0;
 }
 
-.section-offering-page .cor-info-group {
+.section-offering-page .cor-info-group,
+.section-offering-page .cor-info-col {
     display: flex;
     flex: 1;
     align-items: baseline;
     gap: 4px;
     min-width: 0;
+    flex-direction: column;
 }
 
 .section-offering-page .cor-info-label,
@@ -548,6 +569,12 @@
 
 .section-offering-page .cor-info-label {
     white-space: nowrap;
+}
+
+.section-offering-page .cor-info-row--scholar {
+    padding: 6px 0;
+    border-top: 1px dotted #000;
+    border-bottom: 1px dotted #000;
 }
 
 .section-offering-page .cor-schedule-header {
@@ -571,7 +598,8 @@
     margin-right: auto;
     margin-top: 14px;
     border-collapse: collapse;
-    border: 1px solid #000;
+    border-spacing: 0;
+    border: none;
 }
 
 .section-offering-page .cor-table thead {
@@ -591,10 +619,12 @@
 
 .section-offering-page .cor-th {
     text-align: center;
+    white-space: nowrap;
 }
 
 .section-offering-page .cor-td {
     text-align: left;
+    vertical-align: top;
 }
 
 .section-offering-page .cor-table .cor-th:first-child,
@@ -616,9 +646,31 @@
     border-bottom: 1px solid #000;
 }
 
-.section-offering-page .cor-td {
-    vertical-align: top;
+.section-offering-page .cor-table-title {
+    text-align: center;
+    font-weight: 700;
+    background: #fff;
+    color: #000;
+    border-top: none;
 }
+
+.section-offering-page .cor-table thead tr:first-child th {
+    border-top: none;
+}
+
+.section-offering-page .cor-total-label {
+    text-align: right;
+    font-weight: 700;
+}
+
+.section-offering-page .col-name { width: var(--cor-col-name); }
+.section-offering-page .col-desc { width: var(--cor-col-desc); }
+.section-offering-page .col-section { width: var(--cor-col-section); }
+.section-offering-page .col-units { width: var(--cor-col-units); }
+.section-offering-page .col-room { width: var(--cor-col-room); }
+.section-offering-page .col-days { width: var(--cor-col-days); }
+.section-offering-page .col-time { width: var(--cor-col-time); }
+.section-offering-page .col-pay { width: var(--cor-col-pay); }
 
 .section-offering-page .cor-td:nth-child(2) {
     white-space: normal;
