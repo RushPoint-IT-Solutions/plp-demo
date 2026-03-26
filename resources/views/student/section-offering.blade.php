@@ -177,6 +177,11 @@
                     <p class="cor-enrolled-label">OFFICIALLY ENROLLED</p>
                     <p class="cor-enrolled-note">Present this certificate of registration for any claim or transaction that you engage in within the University.</p>
                 </div>
+                <!-- Row 1: Notice Text -->
+                <p class='cor-notice-text'>Notice to all students</p>
+
+                <!-- Row 2: Semester Text -->
+                <p class='cor-semester-text'>1st Sem 2021 - 2022</p>
             </div>
         </div>
 
