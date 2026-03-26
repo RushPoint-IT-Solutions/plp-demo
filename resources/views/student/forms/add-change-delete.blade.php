@@ -16,19 +16,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form">
-        <div class="cor-header acd-header">
-            <div class="cor-header-left form-logo-left">
-                <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="cor-logo">
-            </div>
-            <div class="cor-header-center acd-header-center">
-                <p class="acd-school-name">PAMANTASAN NG LUNGSOD NG PASIG</p>
-                <p class="acd-office-name">OFFICE OF THE UNIVERSITY REGISTRAR</p>
-                <p class="acd-contact">Tel. Nos. 642-83-00</p>
-            </div>
-            <div class="cor-header-right"></div>
-        </div>
-
+        <div class="cor-container acd-form" style="margin-top: 2in;">
         <div class="acd-body">
             <p class="acd-form-number" style="margin: 0 0 8px; text-align: left;">PLPRO FORM NO.2</p>
             <div class="acd-meta-grid">

@@ -14,19 +14,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form cog-form">
-            <div class="cor-header cog-header">
-                <div class="cor-header-left form-logo-left">
-                    <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="cor-logo">
-                </div>
-                <div class="cor-header-center form-header-copy">
-                    <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
-                    <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
-                    <h2 class="cog-title-main">APPLICATION FOR CHANGE OF GRADE</h2>
-                </div>
-                <div class="cor-header-right cog-header-right"></div>
-            </div>
-
+        <div class="cor-container acd-form cog-form" style="margin-top: 2in;">
             <div class="cog-body">
                 <p class="cog-form-no-header" style="text-align: left; margin: 0 0 8px;">PLPRO FORM NO. 3F REVISED 2023</p>
                 <div class="comp-date-wrap">
