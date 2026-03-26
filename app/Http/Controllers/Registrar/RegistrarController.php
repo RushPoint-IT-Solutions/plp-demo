@@ -669,4 +669,20 @@ class RegistrarController extends Controller
     {
         return view('registrar.registrar-menu.forms.official-grade-report');
     }
+
+    /**
+     * Registrar > Forms > Permission to Cross-Enroll
+     */
+    public function formsPermissionCrossEnroll()
+    {
+        return view('registrar.registrar-menu.forms.permission-cross-enroll');
+    }
+
+    /**
+     * Registrar > Forms > Waiver for Cancellation of Enrollment
+     */
+    public function formsWaiverCancellation()
+    {
+        return view('registrar.registrar-menu.forms.waiver-cancellation');
+    }
 }

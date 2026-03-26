@@ -9,6 +9,8 @@
   function shouldSkipTable(table) {
     if (!table) return true;
     if (table.dataset.noAutoPager === '1') return true;
+    if (table.closest('.req-modal-overlay')) return true;
+    if (table.closest('[id$="PrintContainer"]')) return true;
     if (table.id && table.id.indexOf('cfg') === 0) return true;
     if (table.closest('.cfg-page')) return true;
     if (table.classList.contains('rep-doc-table')) return true;

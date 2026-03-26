@@ -30,6 +30,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'EdwardianEmbedded';
+    src: url('../fonts/Edwardian-Script-ITC-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ============================================================
    DIPLOMA – preview modal
    ============================================================ */
@@ -105,7 +113,7 @@ body.diploma-preview-open {
     text-align: center;
     margin-top: 4px;
     font-family: 'EnglishTowneEmbedded', 'UnifrakturMaguntia', 'MedievalSharp', serif;
-    font-size: clamp(2.8rem, 4vw, 3.8rem);
+    font-size: clamp(3.6rem, 5.2vw, 5rem);
     font-weight: 400;
     letter-spacing: 0.01em;
     line-height: 1.03;
@@ -115,6 +123,7 @@ body.diploma-preview-open {
 .dpl-presnts {
     text-align: center;
     font-family: 'Times New Roman', serif;
+    font-style: normal;
     font-size: 0.85rem;
     font-weight: 300;
     letter-spacing: 0.035em;
@@ -125,9 +134,9 @@ body.diploma-preview-open {
 /* Cursive / script lines */
 .dpl-script-line {
     text-align: center;
-    font-family: 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'Edwardian Script ITC', 'French Script MT', 'Script MT Bold', cursive;
+    font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: clamp(1.5rem, 2.3vw, 1.8rem);
+    font-size: clamp(1.333rem, 2.1vw, 1.633rem);
     margin: 2px 6px;
     line-height: 1.35;
 }
@@ -135,9 +144,9 @@ body.diploma-preview-open {
 /* "Given in Pasig City…" footer script line */
 .dpl-footer-line {
     text-align: center;
-    font-family: 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'Edwardian Script ITC', 'French Script MT', 'Script MT Bold', cursive;
+    font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: clamp(1.5rem, 2.3vw, 1.8rem);
+    font-size: clamp(1.333rem, 2.1vw, 1.633rem);
     line-height: 1.35;
     margin: 6px 16px 22px;
 }
@@ -187,6 +196,7 @@ body.diploma-preview-open {
 }
 
 .dpl-left-copy .dpl-left-note {
+    font-family: 'Times New Roman', serif;
     margin-bottom: 10px;
     font-style: italic;
     font-size: 0.7rem;
@@ -194,6 +204,7 @@ body.diploma-preview-open {
 }
 
 .dpl-left-copy .dpl-left-name {
+    font-family: 'Times New Roman', serif;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.02em;
@@ -203,9 +214,9 @@ body.diploma-preview-open {
 }
 
 .dpl-left-copy .dpl-left-role {
-    font-family: 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'Edwardian Script ITC', 'French Script MT', 'Script MT Bold', cursive;
+    font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: 1.35rem;
+    font-size: 1.183rem;
     margin-top: -2px;
     text-align: center;
     display: block;
@@ -226,6 +237,7 @@ body.diploma-preview-open {
 }
 
 .dpl-sign-item .name {
+    font-family: 'Times New Roman', serif;
     font-weight: 500;
     margin-bottom: 0;
     text-decoration: underline;
@@ -241,9 +253,9 @@ body.diploma-preview-open {
 }
 
 .dpl-sign-item .title {
-    font-family: 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'Edwardian Script ITC', 'French Script MT', 'Script MT Bold', cursive;
+    font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: 1.35rem;
+    font-size: 1.183rem;
     margin-top: 0;
 }
 
@@ -296,7 +308,7 @@ body.diploma-preview-open {
     body.diploma-printing #diplomaPrintContainer .dpl-footer-line,
     body.diploma-printing #diplomaPrintContainer .dpl-left-role,
     body.diploma-printing #diplomaPrintContainer .dpl-sign-item .title {
-        font-family: 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'Edwardian Script ITC', 'French Script MT', 'Script MT Bold', cursive;
+        font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     }
 
     body.diploma-printing #diplomaPrintContainer .dpl-print-page-break {
@@ -735,6 +747,12 @@ body.diploma-preview-open {
     justify-content: center;
 }
 
+body.hd-preview-open,
+body.pce-preview-open,
+body.wce-preview-open {
+    overflow: hidden;
+}
+
 /* ============================================================
    HONORABLE DISMISSAL – sheet (screen + print)
    ============================================================ */
@@ -955,12 +973,16 @@ body.diploma-preview-open {
 
 /* Fix clipped dropdown menus in table layout */
 #hdTable .apst-dropdown,
-#ogrTable .apst-dropdown {
+#ogrTable .apst-dropdown,
+#pceTable .apst-dropdown,
+#wceTable .apst-dropdown {
     position: fixed;
 }
 
 #hdTable input[type="checkbox"],
-#ogrTable input[type="checkbox"] {
+#ogrTable input[type="checkbox"],
+#pceTable input[type="checkbox"],
+#wceTable input[type="checkbox"] {
     -webkit-appearance: none;
     appearance: none;
     width: 18px;
@@ -976,18 +998,24 @@ body.diploma-preview-open {
 }
 
 #hdTable input[type="checkbox"]:hover,
-#ogrTable input[type="checkbox"]:hover {
+#ogrTable input[type="checkbox"]:hover,
+#pceTable input[type="checkbox"]:hover,
+#wceTable input[type="checkbox"]:hover {
     border-color: #006837;
 }
 
 #hdTable input[type="checkbox"]:focus-visible,
-#ogrTable input[type="checkbox"]:focus-visible {
+#ogrTable input[type="checkbox"]:focus-visible,
+#pceTable input[type="checkbox"]:focus-visible,
+#wceTable input[type="checkbox"]:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.2);
 }
 
 #hdTable input[type="checkbox"]:checked,
-#ogrTable input[type="checkbox"]:checked {
+#ogrTable input[type="checkbox"]:checked,
+#pceTable input[type="checkbox"]:checked,
+#wceTable input[type="checkbox"]:checked {
     background: #006837;
     border-color: #006837;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
@@ -997,7 +1025,9 @@ body.diploma-preview-open {
 }
 
 #hdTable input[type="checkbox"]:indeterminate,
-#ogrTable input[type="checkbox"]:indeterminate {
+#ogrTable input[type="checkbox"]:indeterminate,
+#pceTable input[type="checkbox"]:indeterminate,
+#wceTable input[type="checkbox"]:indeterminate {
     background: #ffffff;
     border-color: #006837;
     background-image: linear-gradient(#006837, #006837);
@@ -1007,13 +1037,17 @@ body.diploma-preview-open {
 }
 
 #hdTable thead input[type="checkbox"],
-#ogrTable thead input[type="checkbox"] {
+#ogrTable thead input[type="checkbox"],
+#pceTable thead input[type="checkbox"],
+#wceTable thead input[type="checkbox"] {
     border-color: #ffffff;
     background-color: rgba(255, 255, 255, 0.12);
 }
 
 #hdTable thead input[type="checkbox"]:checked,
-#ogrTable thead input[type="checkbox"]:checked {
+#ogrTable thead input[type="checkbox"]:checked,
+#pceTable thead input[type="checkbox"]:checked,
+#wceTable thead input[type="checkbox"]:checked {
     background: #ffffff;
     border-color: #ffffff;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='%23006837' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
@@ -1023,14 +1057,462 @@ body.diploma-preview-open {
 }
 
 #hdTable thead input[type="checkbox"]:hover,
-#ogrTable thead input[type="checkbox"]:hover {
+#ogrTable thead input[type="checkbox"]:hover,
+#pceTable thead input[type="checkbox"]:hover,
+#wceTable thead input[type="checkbox"]:hover {
     border-color: #ffffff;
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }
 
 #hdTable td > input[type="checkbox"]:checked::after,
 #ogrTable td > input[type="checkbox"]:checked::after,
+#pceTable td > input[type="checkbox"]:checked::after,
+#wceTable td > input[type="checkbox"]:checked::after,
 #hdTable thead input[type="checkbox"]:checked::after,
-#ogrTable thead input[type="checkbox"]:checked::after {
+#ogrTable thead input[type="checkbox"]:checked::after,
+#pceTable thead input[type="checkbox"]:checked::after,
+#wceTable thead input[type="checkbox"]:checked::after {
     content: none;
+}
+
+/* ============================================================
+   PERMISSION TO CROSS-ENROLL
+   ============================================================ */
+.pce-preview-modal-box {
+    width: min(96vw, 1100px);
+    max-width: min(96vw, 1100px);
+    max-height: 94vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.pce-preview-head {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid #d4ded7;
+    text-align: center;
+}
+
+.pce-preview-head h3 {
+    margin: 0;
+    color: #0f5132;
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.pce-preview-wrap {
+    padding: 14px;
+    background: #f3f4f6;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.pce-sheet {
+    width: min(8.5in, calc(98vw - 48px));
+    min-height: 11in;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #d4ded7;
+    box-shadow: 0 8px 20px rgba(10, 45, 28, 0.12);
+    color: #191919;
+    padding: 0.35in 0.5in 0.45in;
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.25;
+}
+
+.pce-header-space {
+    height: 1.55in;
+}
+
+.pce-form-no {
+    font-size: 8pt;
+    margin-bottom: 2px;
+}
+
+.pce-title {
+    font-size: 21pt;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-bottom: 10px;
+}
+
+.pce-date-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    margin-left: auto;
+    width: 150px;
+    gap: 2px;
+    margin-bottom: 14px;
+}
+
+.pce-date-line {
+    display: inline-flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    border-bottom: 1px solid #333;
+    height: 1em;
+}
+
+.pce-date-value {
+    font-size: 9pt;
+    line-height: 1;
+    transform: translateY(-1px);
+    white-space: nowrap;
+}
+
+.pce-date-label {
+    font-size: 8pt;
+}
+
+.pce-registrar-label {
+    font-size: 10pt;
+    margin-bottom: 8px;
+}
+
+.pce-registrar-lines {
+    width: 240px;
+    display: grid;
+    row-gap: 14px;
+    margin-bottom: 10px;
+}
+
+.pce-line {
+    border-bottom: 1px solid #333;
+    width: 100%;
+}
+
+.pce-body p {
+    margin: 0 0 8px;
+    font-size: 10pt;
+}
+
+.pce-fill,
+.pce-fill-short {
+    display: inline-block;
+    border-bottom: 1px solid #333;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+.pce-fill { min-width: 230px; }
+.pce-fill-short { min-width: 115px; }
+
+.pce-subject-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.pce-subject-table th {
+    font-size: 11pt;
+    text-align: center;
+    padding: 4px 0 8px;
+    border: none !important;
+    background: transparent !important;
+    color: #191919 !important;
+    font-weight: 700;
+}
+
+.pce-subject-table td {
+    border: none !important;
+    padding: 7px 0;
+}
+
+.registrar-body table.pce-subject-table thead tr,
+.registrar-body table.pce-subject-table thead th {
+    background: transparent !important;
+    color: #191919 !important;
+    border: none !important;
+}
+
+.pce-underline {
+    display: block;
+    width: 92%;
+    border-bottom: 1px solid #777;
+    height: 1em;
+    margin: 0 auto;
+}
+
+.pce-subject-table tbody td:first-child .pce-underline,
+.pce-subject-table tbody td:last-child .pce-underline {
+    width: 72%;
+}
+
+.pce-total-row {
+    margin-top: 10px;
+    text-align: right;
+    font-size: 11pt;
+}
+
+.pce-total-line {
+    display: inline-block;
+    min-width: 82px;
+    border-bottom: 1px solid #333;
+    height: 1em;
+    vertical-align: baseline;
+}
+
+.pce-sign-wrap {
+    margin-top: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.pce-respect {
+    margin-right: 52px;
+    margin-bottom: 24px;
+    font-size: 10pt;
+}
+
+.pce-sign-name {
+    width: 200px;
+    border-bottom: 1px solid #333;
+    text-align: center;
+    font-size: 10pt;
+    font-weight: 700;
+    padding-bottom: 1px;
+}
+
+.pce-sign-title {
+    width: 200px;
+    text-align: center;
+    font-size: 10pt;
+    margin-top: 2px;
+}
+
+.pce-foot {
+    margin-top: 20px;
+    font-size: 9pt;
+    font-style: italic;
+}
+
+.pce-print-date {
+    margin-top: 3px;
+    font-size: 8pt;
+    color: #555;
+}
+
+#pcePrintContainer {
+    display: none;
+}
+
+/* ============================================================
+   WAIVER CANCELLATION
+   ============================================================ */
+.wce-preview-modal-box {
+    width: min(96vw, 1100px);
+    max-width: min(96vw, 1100px);
+    max-height: 94vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.wce-preview-head {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid #d4ded7;
+    text-align: center;
+}
+
+.wce-preview-head h3 {
+    margin: 0;
+    color: #0f5132;
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.wce-preview-wrap {
+    padding: 14px;
+    background: #f3f4f6;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.wce-sheet {
+    width: min(8.5in, calc(98vw - 48px));
+    min-height: 11in;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #d4ded7;
+    box-shadow: 0 8px 20px rgba(10, 45, 28, 0.12);
+    color: #191919;
+    padding: 0.35in 0.5in 0.45in;
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.22;
+}
+
+.wce-header-space {
+    height: 1.55in;
+}
+
+.wce-form-no {
+    font-size: 10pt;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.wce-title {
+    font-size: 19pt;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.wce-address {
+    font-size: 12pt;
+    margin-bottom: 16px;
+}
+
+.wce-p {
+    margin: 0 0 12px;
+    font-size: 12pt;
+    text-indent: 32px;
+}
+
+.wce-fill,
+.wce-fill-short {
+    display: inline-block;
+    border-bottom: 1px solid #333;
+    font-weight: 700;
+    text-align: center;
+}
+
+.wce-fill { min-width: 210px; }
+.wce-fill-short { min-width: 120px; }
+
+.wce-grid-head {
+    display: grid;
+    grid-template-columns: 1.85fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 8px 0 6px;
+    font-size: 10pt;
+    font-weight: 700;
+}
+
+.wce-rec-head {
+    text-align: center;
+}
+
+.wce-item-row {
+    display: grid;
+    grid-template-columns: 1.85fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 2px;
+    align-items: center;
+}
+
+.wce-item {
+    font-size: 11pt;
+}
+
+.wce-line {
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid #333;
+    min-height: 1.1em;
+}
+
+.wce-sign-area {
+    margin-top: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.wce-vty {
+    margin-right: 58px;
+    margin-bottom: 26px;
+    font-size: 12pt;
+}
+
+.wce-sign-line {
+    width: 235px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 3px;
+}
+
+.wce-sign-caption {
+    width: 235px;
+    text-align: center;
+    font-size: 10pt;
+    font-style: italic;
+}
+
+.wce-noted {
+    margin-top: 18px;
+    font-size: 12pt;
+    font-weight: 700;
+}
+
+.wce-noted-line {
+    margin-top: 18px;
+    width: 180px;
+    border-bottom: 1px solid #333;
+}
+
+#wcePrintContainer {
+    display: none;
+}
+
+/* Keep list tables consistent with the standard green registrar header */
+#pceTable thead tr,
+#wceTable thead tr,
+#pceTable thead th,
+#wceTable thead th {
+    background: #006837 !important;
+    color: #ffffff !important;
+}
+
+@media print {
+    body.pce-printing .pf-page,
+    body.pce-printing .req-modal-overlay,
+    body.wce-printing .pf-page,
+    body.wce-printing .req-modal-overlay {
+        display: none !important;
+    }
+
+    body.pce-printing #pcePrintContainer,
+    body.wce-printing #wcePrintContainer {
+        display: block;
+        position: static;
+        background: #fff;
+    }
+
+    body.pce-printing #pcePrintContainer .pce-sheet,
+    body.wce-printing #wcePrintContainer .wce-sheet {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        box-shadow: none;
+        border: none;
+        padding: 0.2in 0.4in 0.3in;
+    }
+
+    body.pce-printing #pcePrintContainer .pce-print-page-break,
+    body.wce-printing #wcePrintContainer .wce-print-page-break {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    body.pce-printing #pcePrintContainer .pce-print-page-break:last-child,
+    body.wce-printing #wcePrintContainer .wce-print-page-break:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
 }

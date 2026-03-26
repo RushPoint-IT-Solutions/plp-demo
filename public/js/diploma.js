@@ -113,9 +113,22 @@ function diplomaPrintSheets(sheetHtmlList) {
     }).join('');
 
     document.body.classList.add('diploma-printing');
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function() {
+            setTimeout(function() {
+                window.print();
+            }, 120);
+        }).catch(function() {
+            setTimeout(function() {
+                window.print();
+            }, 200);
+        });
+        return;
+    }
+
     setTimeout(function() {
         window.print();
-    }, 120);
+    }, 220);
 }
 
 function diplomaPrintSelected() {
