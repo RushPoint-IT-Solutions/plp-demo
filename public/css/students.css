@@ -911,6 +911,7 @@ select:hover {
   grid-template-columns: 1fr 1fr 0.5fr;
   gap: 6px 20px;
   margin-bottom: 6px;
+  margin-top: 192px;
 }
 
 .section-offering-page .cor-info-col {
@@ -949,6 +950,11 @@ select:hover {
   margin: 0 auto 0;
   border-collapse: collapse;
   border: 1px solid #000;
+}
+
+/* Ensure any element using the ID 'cor-table' has no top margin */
+#cor-table {
+  margin-top: 0 !important;
 }
 
 .section-offering-page .cor-schedule-title-bar {
