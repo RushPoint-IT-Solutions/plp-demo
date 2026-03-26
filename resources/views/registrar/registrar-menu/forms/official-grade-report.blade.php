@@ -1,13 +1,13 @@
 @extends('layouts.registrar')
 
-@section('title', 'PLP - TOR')
-@section('page-title', 'TOR')
+@section('title', 'PLP - Official Grade Report')
+@section('page-title', 'OFFICIAL GRADE REPORT')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
     @media print {
-        @page { size: portrait; margin: 10mm; }
+        @page { size: portrait; margin: 8mm; }
     }
 </style>
 @endpush
@@ -40,6 +40,7 @@
                         <option>BSIT</option>
                         <option>BSED</option>
                         <option>BSBA</option>
+                        <option>BSN</option>
                     </select>
                 </div>
                 <div class="app-filter-group" style="flex:1;">
@@ -55,14 +56,14 @@
                     <label class="app-filter-label" style="text-transform: uppercase;">Section</label>
                     <select class="app-filter-select">
                         <option>-Select Section-</option>
+                        <option>BSIT 1B</option>
+                        <option>BSN 1-BENNER</option>
                         <option>BSCS 4A</option>
-                        <option>BSCS 4B</option>
-                        <option>BSIT 4A</option>
-                        <option>BSED 4A</option>
                     </select>
                 </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; margin-top:15px;">
+            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap: 8px;">
+                <button type="button" class="req-btn-save" style="min-width: 160px; font-weight: 700;" onclick="ogrPrintSelected()">Print Selected</button>
                 <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;">Set</button>
             </div>
         </div>
@@ -78,11 +79,11 @@
         </div>
 
         <div class="ga-table-wrap app-table-wrap">
-            <table id="torTable" class="ga-table app-table" style="min-width: 900px;">
+            <table id="ogrTable" class="ga-table app-table" style="min-width: 900px;">
                 <thead>
                     <tr>
                         <th style="width: 54px; text-align: center;">
-                            <input type="checkbox" id="torSelectAll" onchange="torToggleSelectAll(this)">
+                            <input type="checkbox" id="ogrSelectAll" onchange="ogrToggleSelectAll(this)">
                         </th>
                         <th>Student Number</th>
                         <th>Student Name</th>
@@ -92,22 +93,22 @@
                         <th style="text-align: center; width: 70px;">Action</th>
                     </tr>
                 </thead>
-                <tbody id="torTableBody">
+                <tbody id="ogrTableBody">
                     <tr data-row-id="1">
-                        <td style="text-align: center;"><input type="checkbox" class="tor-row-select" onchange="torSyncSelectAll()"></td>
-                        <td>2223A8137</td>
-                        <td><button type="button" class="doc-link-btn" onclick="torOpenPreview(1)">Mark Jay Bares</button></td>
-                        <td>BSCS</td>
-                        <td>Fourth</td>
-                        <td>BSCS 4A</td>
+                        <td style="text-align: center;"><input type="checkbox" class="ogr-row-select" onchange="ogrSyncSelectAll()"></td>
+                        <td>25-00414</td>
+                        <td><button type="button" class="doc-link-btn" onclick="ogrOpenPreview(1)">Abenes, Cristine Grace Bernaldez</button></td>
+                        <td>BSN</td>
+                        <td>First</td>
+                        <td>BSN 1-BENNER</td>
                         <td style="text-align:center;">
-                            <div class="apst-action-btn" data-tor-menu-toggle="torMenu-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="torMenu-1">
-                                <button type="button" onclick="torOpenEdit(1)">
+                            <div class="apst-action-btn" data-ogr-menu-toggle="ogrMenu-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                            <div class="apst-dropdown" id="ogrMenu-1">
+                                <button type="button" onclick="ogrOpenEdit(1)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                                     Edit
                                 </button>
-                                <button type="button" class="apst-del-btn" onclick="torOpenDelete(1)">
+                                <button type="button" class="apst-del-btn" onclick="ogrOpenDelete(1)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                     Delete
                                 </button>
@@ -115,41 +116,20 @@
                         </td>
                     </tr>
                     <tr data-row-id="2">
-                        <td style="text-align: center;"><input type="checkbox" class="tor-row-select" onchange="torSyncSelectAll()"></td>
-                        <td>2223A8139</td>
-                        <td><button type="button" class="doc-link-btn" onclick="torOpenPreview(2)">Andrea Jane Austero</button></td>
-                        <td>BSCS</td>
+                        <td style="text-align: center;"><input type="checkbox" class="ogr-row-select" onchange="ogrSyncSelectAll()"></td>
+                        <td>21-00010</td>
+                        <td><button type="button" class="doc-link-btn" onclick="ogrOpenPreview(2)">Cerado, Roileen I.</button></td>
+                        <td>BSIT</td>
                         <td>Fourth</td>
-                        <td>BSCS 4B</td>
+                        <td>BSIT 1B</td>
                         <td style="text-align:center;">
-                            <div class="apst-action-btn" data-tor-menu-toggle="torMenu-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="torMenu-2">
-                                <button type="button" onclick="torOpenEdit(2)">
+                            <div class="apst-action-btn" data-ogr-menu-toggle="ogrMenu-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                            <div class="apst-dropdown" id="ogrMenu-2">
+                                <button type="button" onclick="ogrOpenEdit(2)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                                     Edit
                                 </button>
-                                <button type="button" class="apst-del-btn" onclick="torOpenDelete(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-row-id="3">
-                        <td style="text-align: center;"><input type="checkbox" class="tor-row-select" onchange="torSyncSelectAll()"></td>
-                        <td>2324E0012</td>
-                        <td><button type="button" class="doc-link-btn" onclick="torOpenPreview(3)">Analyn Marbibi Rebosora</button></td>
-                        <td>BS Entrepreneurship</td>
-                        <td>Fourth</td>
-                        <td>BSENT 4A</td>
-                        <td style="text-align:center;">
-                            <div class="apst-action-btn" data-tor-menu-toggle="torMenu-3" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="torMenu-3">
-                                <button type="button" onclick="torOpenEdit(3)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                                    Edit
-                                </button>
-                                <button type="button" class="apst-del-btn" onclick="torOpenDelete(3)">
+                                <button type="button" class="apst-del-btn" onclick="ogrOpenDelete(2)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                     Delete
                                 </button>
@@ -159,67 +139,71 @@
                 </tbody>
             </table>
         </div>
-
     </div>
 </div>
 
-<div class="req-modal-overlay" id="torEditModal" style="display:none;" onclick="if(event.target===this) torCloseModal('torEditModal')">
+{{-- Edit Modal --}}
+<div class="req-modal-overlay" id="ogrEditModal" style="display:none;" onclick="if(event.target===this) ogrCloseModal('ogrEditModal')">
     <div class="req-modal-box" style="width: 560px;">
-        <h3 class="req-modal-title">EDIT TOR RECORD</h3>
+        <h3 class="req-modal-title">EDIT GRADE REPORT RECORD</h3>
         <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Student Number</label>
-                <input type="text" id="torEditNumber" class="req-modal-input">
+                <input type="text" id="ogrEditNumber" class="req-modal-input">
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Course</label>
-                <input type="text" id="torEditCourse" class="req-modal-input">
+                <input type="text" id="ogrEditCourse" class="req-modal-input">
             </div>
         </div>
         <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Student Name</label>
-                <input type="text" id="torEditName" class="req-modal-input">
+                <input type="text" id="ogrEditName" class="req-modal-input">
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Year</label>
-                <input type="text" id="torEditYear" class="req-modal-input">
+                <input type="text" id="ogrEditYear" class="req-modal-input">
             </div>
         </div>
         <div class="req-modal-actions" style="margin-top:14px;">
-            <button type="button" class="req-btn-cancel" onclick="torCloseModal('torEditModal')">Cancel</button>
-            <button type="button" class="req-btn-save" onclick="torSaveEdit()">Save</button>
+            <button type="button" class="req-btn-cancel" onclick="ogrCloseModal('ogrEditModal')">Cancel</button>
+            <button type="button" class="req-btn-save" onclick="ogrSaveEdit()">Save</button>
         </div>
     </div>
 </div>
 
-<div class="req-modal-overlay" id="torDeleteModal" style="display:none;" onclick="if(event.target===this) torCloseModal('torDeleteModal')">
+{{-- Delete Modal --}}
+<div class="req-modal-overlay" id="ogrDeleteModal" style="display:none;" onclick="if(event.target===this) ogrCloseModal('ogrDeleteModal')">
     <div class="req-modal-box" style="width: 440px;">
         <h3 class="req-modal-title">DELETE RECORD</h3>
-        <p style="font-size:0.9rem; color:#4b5563; margin: 8px 0 0; text-align:center;">Are you sure you want to delete this TOR record?</p>
+        <p style="font-size:0.9rem; color:#4b5563; margin: 8px 0 0; text-align:center;">Are you sure you want to delete this Grade Report record?</p>
         <div class="req-modal-actions" style="margin-top:16px; justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="torCloseModal('torDeleteModal')">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#b42318;" onclick="torConfirmDelete()">Delete</button>
+            <button type="button" class="req-btn-cancel" onclick="ogrCloseModal('ogrDeleteModal')">Cancel</button>
+            <button type="button" class="req-btn-save" style="background:#b42318;" onclick="ogrConfirmDelete()">Delete</button>
         </div>
     </div>
 </div>
 
-<div class="req-modal-overlay" id="torPreviewModal" style="display:none;" onclick="if(event.target===this) torClosePreview()">
-    <div class="req-modal-box tor-preview-modal-box">
-        <div class="tor-preview-head">
-            <h3>TOR PREVIEW</h3>
+{{-- Preview Modal --}}
+<div class="req-modal-overlay" id="ogrPreviewModal" style="display:none;" onclick="if(event.target===this) ogrClosePreview()">
+    <div class="req-modal-box ogr-preview-modal-box">
+        <div class="ogr-preview-head">
+            <h3>OFFICIAL GRADE REPORT PREVIEW</h3>
         </div>
-        <div class="tor-preview-wrap">
-            <div class="tor-sheet" id="torPreviewSheet"></div>
+        <div class="ogr-preview-wrap">
+            <div class="ogr-sheet" id="ogrPreviewSheet"></div>
         </div>
         <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:flex-end;">
-            <button type="button" class="req-btn-cancel" onclick="torClosePreview()">Close</button>
-            <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="torPrintPreview()">Print Form</button>
+            <button type="button" class="req-btn-cancel" onclick="ogrClosePreview()">Close</button>
+            <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="ogrPrintPreview()">Print Form</button>
         </div>
     </div>
 </div>
+
+<div id="ogrPrintContainer" aria-hidden="true"></div>
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/tor.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/official-grade-report.js') }}?v={{ time() }}"></script>
 @endpush
