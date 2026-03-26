@@ -1007,6 +1007,7 @@ select:hover {
   margin-right: auto;
   margin-top: 14px;
   border-collapse: collapse;
+  border: 1px solid #000;
 }
 
 .section-offering-page .cor-table thead {
@@ -1019,8 +1020,9 @@ select:hover {
   padding: 10px 12px;
   font-size: 12px;
   color: #000;
-  border: none;
   font-weight: 700;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
 }
 
 .section-offering-page .cor-th {
@@ -1042,11 +1044,12 @@ select:hover {
 }
 
 .section-offering-page .cor-table tbody tr {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #000;
 }
 
-.section-offering-page .cor-table tbody tr:last-child {
-  border-bottom: none;
+.section-offering-page .cor-table tfoot tr {
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
 }
 
 .section-offering-page .cor-td {
