@@ -110,7 +110,9 @@
 
 @push('scripts')
 <script>
-    var acEvents = [
+    var acEvents = @json($calendarRows ?? []);
+    if (!Array.isArray(acEvents) || acEvents.length === 0) {
+        acEvents = [
         {
             date: '2026-01-13',
             timeFrom: '08:00',
@@ -130,6 +132,7 @@
             postUntil: '2026-01-31'
         }
     ];
+    }
 
     function acEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {

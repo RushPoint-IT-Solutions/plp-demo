@@ -30,7 +30,7 @@ class RedirectIfAuthenticated
                         return redirect()->route('applicant.application-form');
                     case 'student':
                     default:
-                        return redirect()->route('student.access-module');
+                        return redirect()->route('student.grades');
                 }
             }
 

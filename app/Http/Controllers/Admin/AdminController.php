@@ -113,7 +113,7 @@ class AdminController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->route('student.access-module');
+            return redirect()->route('student.grades');
         }
 
         return back()->withErrors([

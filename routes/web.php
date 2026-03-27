@@ -237,6 +237,7 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
 */
 Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/load', 'Faculty\FacultyController@facultyLoad')->name('load');
+    Route::get('/load/download', 'Faculty\FacultyController@downloadLoad')->name('load.download');
     Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
     Route::get('/calendar', 'Faculty\FacultyController@calendar')->name('calendar');
     Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');

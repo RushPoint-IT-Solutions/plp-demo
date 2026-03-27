@@ -12,20 +12,32 @@ document.addEventListener("DOMContentLoaded", function() {
         "July", "August", "September", "October", "November", "December"
     ];
 
-    // Sample events & holidays — keyed by "YYYY-MM-DD"
-    const calendarEvents = {
-        "2026-03-09": { type: "holiday",  label: "Araw ng Kagitingan" },
-        "2026-03-17": { type: "event",    label: "University Foundation Day" },
-        "2026-03-20": { type: "event",    label: "Intramurals Opening" },
-        "2026-03-28": { type: "holiday",  label: "Maundy Thursday" },
-        "2026-04-01": { type: "holiday",  label: "Eid al-Fitr" },
-        "2026-04-09": { type: "holiday",  label: "Araw ng Kagitingan" },
-        "2026-04-14": { type: "event",    label: "Midterm Exams Start" },
-        "2026-04-25": { type: "event",    label: "Career Fair 2026" },
-        "2026-05-01": { type: "holiday",  label: "Labor Day" },
-        "2026-05-12": { type: "event",    label: "Final Exams Start" },
-        "2026-06-12": { type: "holiday",  label: "Independence Day" },
-    };
+    // Build events map from DB payload when available.
+    const calendarEvents = {};
+    const dbEvents = Array.isArray(window.calendarEventsData) ? window.calendarEventsData : [];
+
+    dbEvents.forEach(function (item) {
+        if (!item || !item.date || !item.label) return;
+        calendarEvents[item.date] = {
+            type: item.type === 'holiday' ? 'holiday' : 'event',
+            label: item.label
+        };
+    });
+
+    // Static fallback when DB has no events yet.
+    if (Object.keys(calendarEvents).length === 0) {
+        calendarEvents["2026-03-09"] = { type: "holiday", label: "Araw ng Kagitingan" };
+        calendarEvents["2026-03-17"] = { type: "event", label: "University Foundation Day" };
+        calendarEvents["2026-03-20"] = { type: "event", label: "Intramurals Opening" };
+        calendarEvents["2026-03-28"] = { type: "holiday", label: "Maundy Thursday" };
+        calendarEvents["2026-04-01"] = { type: "holiday", label: "Eid al-Fitr" };
+        calendarEvents["2026-04-09"] = { type: "holiday", label: "Araw ng Kagitingan" };
+        calendarEvents["2026-04-14"] = { type: "event", label: "Midterm Exams Start" };
+        calendarEvents["2026-04-25"] = { type: "event", label: "Career Fair 2026" };
+        calendarEvents["2026-05-01"] = { type: "holiday", label: "Labor Day" };
+        calendarEvents["2026-05-12"] = { type: "event", label: "Final Exams Start" };
+        calendarEvents["2026-06-12"] = { type: "holiday", label: "Independence Day" };
+    }
 
     function dateKey(y, m, d) {
         return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;

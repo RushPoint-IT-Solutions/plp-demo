@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Faculty;
 
 use App\Http\Controllers\Controller;
+use App\AcademicCalendarEvent;
 use App\Subject;
 use App\StudentSubjectGrade;
 use Illuminate\Http\Request;
@@ -45,6 +46,42 @@ class FacultyController extends Controller
     }
 
     /**
+     * Download faculty load/schedule as CSV.
+     */
+    public function downloadLoad()
+    {
+        $faculty = $this->currentFaculty();
+        $subjects = $this->subjectsForFaculty($faculty)->orderBy('code')->get();
+
+        $handle = fopen('php://temp', 'w+');
+        fputcsv($handle, ['Subject Code', 'Subject Description', 'Units', 'Days', 'Time', 'Room No.', 'Year & Section']);
+
+        foreach ($subjects as $subject) {
+            fputcsv($handle, [
+                (string) $subject->code,
+                (string) $subject->name,
+                number_format((float) $subject->units, 1),
+                str_replace(',', ', ', (string) $subject->days),
+                (string) $subject->formatted_time,
+                (string) $subject->room,
+                (string) $subject->year_section,
+            ]);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        $stamp = now()->format('Ymd_His');
+        $filename = 'faculty-load-' . $stamp . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
      * Class List – subjects with enrolled students.
      */
     public function classList()
@@ -73,7 +110,28 @@ class FacultyController extends Controller
      */
     public function calendar()
     {
-        return view('faculty.calendar');
+        $calendarEvents = [];
+
+        if (Schema::hasTable('academic_calendar_events')) {
+            $calendarEvents = AcademicCalendarEvent::query()
+                ->where('is_active', true)
+                ->orderBy('event_date')
+                ->get()
+                ->map(function ($event) {
+                    return [
+                        'date' => optional($event->event_date)->format('Y-m-d'),
+                        'type' => strtolower((string) $event->event_type) === 'holiday' ? 'holiday' : 'event',
+                        'label' => (string) $event->title,
+                    ];
+                })
+                ->filter(function ($event) {
+                    return !empty($event['date']) && !empty($event['label']);
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('faculty.calendar', compact('calendarEvents'));
     }
 
     /**
@@ -175,15 +233,24 @@ class FacultyController extends Controller
     /**
      * Faculty Evaluation – subjects with mean scores.
      */
-    public function evaluation()
+    public function evaluation(Request $request)
     {
-        $subjects = $this->subjectsForFaculty($this->currentFaculty())
+        $selectedSubjectId = (int) $request->query('subject_id', 0);
+
+        $subjectQuery = $this->subjectsForFaculty($this->currentFaculty());
+        if ($selectedSubjectId > 0) {
+            $subjectQuery->where('id', $selectedSubjectId);
+        }
+
+        $subjects = $subjectQuery
             ->with('evaluations')
             ->get();
 
         $evaluationDetails = [];
+        $hasEvaluationRows = false;
         foreach ($subjects as $subject) {
             foreach ($subject->evaluations as $eval) {
+                $hasEvaluationRows = true;
                 $base = (float) $eval->mean_score;
                 $criteria = [
                     ['label' => 'A. Commitment', 'score' => max(1, min(5, round($base - 0.1, 2)))],
@@ -205,6 +272,10 @@ class FacultyController extends Controller
             }
         }
 
-        return view('faculty.evaluation', compact('subjects', 'evaluationDetails'));
+        $subjectOptions = $this->subjectsForFaculty($this->currentFaculty())
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('faculty.evaluation', compact('subjects', 'evaluationDetails', 'subjectOptions', 'selectedSubjectId', 'hasEvaluationRows'));
     }
 }

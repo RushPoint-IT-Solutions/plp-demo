@@ -51,6 +51,7 @@ class DatabaseSeeder extends Seeder
             FacultyAuthSeeder::class,
             StudentSeeder::class,
             StudentFirstLoginDemoSeeder::class,
+            AcademicCalendarEventSeeder::class,
             SubjectSeeder::class,
             FacultySeeder::class,
             StudentDemoDataSeeder::class,
