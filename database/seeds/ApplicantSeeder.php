@@ -2,11 +2,14 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class ApplicantSeeder extends Seeder
 {
     public function run()
     {
+        $now = now();
+
         DB::table('applicants')->updateOrInsert(
             ['applicant_id' => '2526B0177'],
             [
@@ -47,8 +50,30 @@ class ApplicantSeeder extends Seeder
                 'exam_room'           => 'Room 201 - Main Building',
                 'exam_result_status'  => 'Pending',
                 'exam_score'          => null,
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ]
+        );
+
+        $applicant = DB::table('applicants')->where('applicant_id', '2526B0177')->first();
+        if (!$applicant) {
+            return;
+        }
+
+        DB::table('users')->updateOrInsert(
+            ['username' => '2526B0177'],
+            [
+                'name' => 'Andrea Jane Austero',
+                'email' => 'applicant.2526B0177@plp.local',
+                'password' => Hash::make('PLP-2526B0177'),
+                'module' => 'applicant',
+                'force_password_reset' => false,
+                'student_id' => null,
+                'faculty_id' => null,
+                'registrar_id' => null,
+                'applicant_id' => $applicant->id,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
         );
     }

@@ -5,15 +5,31 @@ namespace App\Http\Controllers\Applicant;
 use App\Http\Controllers\Controller;
 use App\Applicant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ApplicantController extends Controller
 {
-    // Demo: fixed applicant used throughout the portal
-    private const APPLICANT_ID = '2526B0177';
-
     private function getApplicant()
     {
-        return Applicant::where('applicant_id', self::APPLICANT_ID)->firstOrFail();
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(403, 'Unauthorized.');
+        }
+
+        if (is_null($user->applicant_id) && !empty($user->username)) {
+            $legacyApplicant = Applicant::where('applicant_id', $user->username)->first();
+            if ($legacyApplicant) {
+                $user->applicant_id = $legacyApplicant->id;
+                $user->save();
+            }
+        }
+
+        if (is_null($user->applicant_id)) {
+            abort(403, 'Applicant account is not linked yet.');
+        }
+
+        return Applicant::findOrFail($user->applicant_id);
     }
 
     /**

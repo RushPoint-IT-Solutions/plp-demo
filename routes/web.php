@@ -47,6 +47,7 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 */
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
+Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 
 /*
@@ -222,7 +223,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 | Applicant Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'force_password_reset'])->group(function () {
+Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
     Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
     Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');

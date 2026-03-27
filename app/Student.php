@@ -22,6 +22,14 @@ class Student extends Model
     }
 
     /**
+     * Linked user account for student login.
+     */
+    public function user()
+    {
+        return $this->hasOne(User::class, 'student_id');
+    }
+
+    /**
      * Helper: formatted school year + semester label.
      * e.g. "SY 2025-2026 2nd Semester"
      */

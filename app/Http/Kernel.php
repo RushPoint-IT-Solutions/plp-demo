@@ -61,6 +61,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'student.user' => \App\Http\Middleware\EnsureStudentModule::class,
+        'applicant.user' => \App\Http\Middleware\EnsureApplicantModule::class,
         'force_password_reset' => \App\Http\Middleware\ForcePasswordReset::class,
     ];
 }

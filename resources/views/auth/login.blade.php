@@ -8,7 +8,7 @@
         {{-- Module Title --}}
         <h2 class="login-card-title">{{ strtoupper($module) }} LOGIN</h2>
 
-        <form method="POST" action="{{ $module === 'student' ? route('student.login.submit') : (in_array($module, ['registrar', 'faculty']) ? route('module.login.submit') : route('demo.login')) }}">
+        <form method="POST" action="{{ $module === 'student' ? route('student.login.submit') : ($module === 'applicant' ? route('applicant.login.submit') : (in_array($module, ['registrar', 'faculty']) ? route('module.login.submit') : route('demo.login'))) }}">
             @csrf
 
             {{-- Pass the module through so we redirect to the right pages --}}
