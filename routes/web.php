@@ -144,11 +144,14 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         // Student Management
         Route::prefix('student-management')->name('student-mgmt.')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
+            Route::post('/student-enrollment', 'Registrar\RegistrarController@storeStudent')->name('student-enrollment.store');
             Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
         });
 
         // Faculty Management
         Route::prefix('faculty-management')->name('faculty-mgmt.')->group(function () {
+            Route::get('/faculty-create', 'Registrar\RegistrarController@facultyCreate')->name('faculty-create');
+            Route::post('/faculty-create', 'Registrar\RegistrarController@storeFaculty')->name('faculty-create.store');
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
         });

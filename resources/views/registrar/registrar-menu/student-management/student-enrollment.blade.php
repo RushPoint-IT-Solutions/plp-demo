@@ -5,6 +5,27 @@
 @section('body-class', 'page-student-enrollment')
 
 @section('content')
+
+@if(session('success'))
+    <div class="alert alert-success" style="padding: 15px; margin: 15px 0; background: #d4edda; color: #155724; border-radius: 4px;">
+        {{ session('success') }}
+        @if(session('success_password'))
+            <br><strong>Temporary Password:</strong> {{ session('success_password') }}
+            <br><em>Please provide this to the student. They will be forced to change it on their first login.</em>
+        @endif
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger" style="padding: 15px; margin: 15px 0; background: #f8d7da; color: #721c24; border-radius: 4px;">
+        <ul>
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="pf-page">
     <div id="seListView">
         <div class="se-toolbar">
@@ -330,41 +351,47 @@
     <div class="pf-modal-overlay" id="seAddStudentModal" style="display:none;">
         <div class="pf-modal-box" style="max-width:520px;">
             <div class="pf-modal-title">Add Student</div>
-            <div class="se-modal-grid">
-                <div class="se-modal-field">
-                    <label class="pf-modal-label">Student ID</label>
-                    <input type="text" id="seAddStudentId" class="pf-modal-input" placeholder="e.g. 2223A9001">
+            <form action="{{ route('registrar-menu.student-mgmt.student-enrollment.store') }}" method="POST">
+                @csrf
+                <div class="se-modal-grid">
+                    <div class="se-modal-field">
+                        <label class="pf-modal-label">Student ID</label>
+                        <input type="text" name="student_no" id="seAddStudentId" class="pf-modal-input" placeholder="e.g. 2223A9001" required>
+                    </div>
+                    <div class="se-modal-field">
+                        <label class="pf-modal-label">Student Name</label>
+                        <input type="text" name="name" id="seAddStudentName" class="pf-modal-input" placeholder="e.g. Juan Dela Cruz" required>
+                    </div>
+                    <div class="se-modal-field">
+                        <label class="pf-modal-label">Program</label>
+                        <select name="program" id="seAddStudentProgram" class="pf-modal-select" required>
+                            <option value="">Select Program</option>
+                            <option value="BSIT">BSIT</option>
+                            <option value="BSCS">BSCS</option>
+                            <option value="BSED">BSED</option>
+                            <option value="BSBA">BSBA</option>
+                            <option value="BSN">BSN</option>
+                        </select>
+                    </div>
+                    <div class="se-modal-field">
+                        <label class="pf-modal-label">Year Level</label>
+                        <select name="year_level" id="seAddStudentYear" class="pf-modal-select" required>
+                            <option value="">Select Year Level</option>
+                            <option value="First">First</option>
+                            <option value="Second">Second</option>
+                            <option value="Third">Third</option>
+                            <option value="Fourth">Fourth</option>
+                        </select>
+                    </div>
+                    <!-- Hidden requirements based on typical registrar input defaults -->
+                    <input type="hidden" name="school_year" value="{{ date('Y') }}-{{ date('Y')+1 }}">
+                    <input type="hidden" name="semester" value="1st Semester">
                 </div>
-                <div class="se-modal-field">
-                    <label class="pf-modal-label">Student Name</label>
-                    <input type="text" id="seAddStudentName" class="pf-modal-input" placeholder="e.g. Juan Dela Cruz">
+                <div class="pf-modal-actions" style="margin-top:14px;">
+                    <button type="button" class="pf-modal-btn-cancel" onclick="closeAddStudentModal()">Cancel</button>
+                    <button type="submit" class="pf-modal-btn-save">Save Student</button>
                 </div>
-                <div class="se-modal-field">
-                    <label class="pf-modal-label">Program</label>
-                    <select id="seAddStudentProgram" class="pf-modal-select">
-                        <option value="">Select Program</option>
-                        <option>BSIT</option>
-                        <option>BSCS</option>
-                        <option>BSED</option>
-                        <option>BSBA</option>
-                        <option>BSN</option>
-                    </select>
-                </div>
-                <div class="se-modal-field">
-                    <label class="pf-modal-label">Year Level</label>
-                    <select id="seAddStudentYear" class="pf-modal-select">
-                        <option value="">Select Year Level</option>
-                        <option>First</option>
-                        <option>Second</option>
-                        <option>Third</option>
-                        <option>Fourth</option>
-                    </select>
-                </div>
-            </div>
-            <div class="pf-modal-actions" style="margin-top:14px;">
-                <button type="button" class="pf-modal-btn-cancel" onclick="closeAddStudentModal()">Cancel</button>
-                <button type="button" class="pf-modal-btn-save" onclick="saveAddedStudent()">Save Student</button>
-            </div>
+            </form>
         </div>
     </div>
 

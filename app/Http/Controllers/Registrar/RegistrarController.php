@@ -11,6 +11,8 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use App\User;
+use Illuminate\Support\Facades\Hash;
 
 class RegistrarController extends Controller
 {
@@ -614,9 +616,75 @@ class RegistrarController extends Controller
         return view('registrar.registrar-menu.student-management.student-enrollment');
     }
 
+    public function storeStudent(Request $request)
+    {
+        $request->validate([
+            'student_no' => 'required|unique:students,student_no',
+            'name' => 'required|string',
+            'sex' => 'nullable|string',
+            'age' => 'nullable|integer',
+            'college' => 'nullable|string',
+            'program' => 'nullable|string',
+            'curriculum' => 'nullable|string',
+            'year_level' => 'nullable|string',
+            'scholarship' => 'nullable|string',
+            'school_year' => 'required|string',
+            'semester' => 'required|string',
+        ]);
+
+        $student = Student::create($request->all());
+
+        // Phase 3: Auto-generate User Account for First Login Flow
+        $defaultPass = 'PLP-' . $student->student_no;
+        
+        User::create([
+            'name' => $student->name,
+            'username' => $student->student_no,
+            'password' => Hash::make($defaultPass),
+            'module' => 'student',
+            'force_password_reset' => true,
+            'student_id' => $student->id,
+        ]);
+
+        return redirect()->route('registrar-menu.student-mgmt.student-enrollment')
+            ->with('success', 'Student profile created!')
+            ->with('success_password', $defaultPass);
+    }
+
     /**
      * Registrar > Faculty Management > Grading Sheet
      */
+    public function facultyCreate()
+    {
+        return view('registrar.registrar-menu.faculty-management.faculty-create');
+    }
+
+    public function storeFaculty(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|unique:faculties,code',
+            'name' => 'required|string',
+        ]);
+
+        $faculty = Faculty::create($request->all());
+
+        // Phase 3: Auto-generate User Account for First Login Flow
+        $defaultPass = 'PLP-' . $faculty->code;
+        
+        User::create([
+            'name' => $faculty->name,
+            'username' => $faculty->code,
+            'password' => Hash::make($defaultPass),
+            'module' => 'faculty',
+            'force_password_reset' => true,
+            'faculty_id' => $faculty->id,
+        ]);
+
+        return redirect()->route('registrar-menu.faculty-mgmt.faculty-create')
+            ->with('success', 'Faculty profile created!')
+            ->with('success_password', $defaultPass);
+    }
+
     public function gradingSheet()
     {
         return view('registrar.registrar-menu.faculty-management.grading-sheet');
