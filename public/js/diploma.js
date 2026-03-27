@@ -10,7 +10,7 @@ function diplomaEscHtml(value) {
 }
 
 function diplomaBuildPreviewTemplate(data) {
-    var programLabel = (data.program || '').toUpperCase();
+    var programLabel = (data.program || '').toUpperCase().replace(/\s+/g, ' ').trim();
     var degreeLine = 'Bachelor of Science in Entrepreneurship';
     var now = new Date();
     var day = now.getDate();
@@ -22,10 +22,21 @@ function diplomaBuildPreviewTemplate(data) {
     else if (day % 10 === 3 && day % 100 !== 13) suffix = 'rd';
     var formalIssueDate = day + suffix + ' of ' + month + ' ' + year;
 
-    if (programLabel === 'BSIT') degreeLine = 'Bachelor of Science in Information Technology';
-    if (programLabel === 'BSCS') degreeLine = 'Bachelor of Science in Computer Science';
-    if (programLabel === 'BSED') degreeLine = 'Bachelor of Secondary Education';
-    if (programLabel === 'BSBA') degreeLine = 'Bachelor of Science in Business Administration';
+    if (programLabel === 'BSIT' || programLabel.indexOf('INFORMATION TECHNOLOGY') !== -1) {
+        degreeLine = 'Bachelor of Science in Information Technology';
+    }
+    if (programLabel === 'BSCS' || programLabel.indexOf('COMPUTER SCIENCE') !== -1) {
+        degreeLine = 'Bachelor of Science in Computer Science';
+    }
+    if (programLabel === 'BSED' || programLabel.indexOf('SECONDARY EDUCATION') !== -1) {
+        degreeLine = 'Bachelor of Secondary Education';
+    }
+    if (programLabel === 'BSBA' || programLabel.indexOf('BUSINESS ADMINISTRATION') !== -1) {
+        degreeLine = 'Bachelor of Science in Business Administration';
+    }
+    if (programLabel === 'BS ENTREPRENEURSHIP' || programLabel === 'BSENT' || programLabel.indexOf('ENTREPRENEURSHIP') !== -1) {
+        degreeLine = 'Bachelor of Science in Entrepreneurship';
+    }
 
     return '' +
         '<div class="dpl-header-row">' +
@@ -150,6 +161,39 @@ function diplomaPrintSelected() {
     diplomaPrintSheets(sheets);
 }
 
+function diplomaOpenPreviewFromSelection() {
+    var checked = document.querySelector('#diplomaTableBody .diploma-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#diplomaTableBody tr[data-row-id]');
+    if (!row) return;
+    var rowId = row.getAttribute('data-row-id');
+    diplomaOpenPreview(rowId);
+}
+
+function diplomaOpenBlankPreview() {
+    var sheet = document.getElementById('diplomaPreviewSheet');
+    if (!sheet) return;
+
+    sheet.innerHTML = diplomaBuildPreviewTemplate({
+        studentNo: '',
+        studentName: '',
+        program: '',
+        year: '',
+        section: ''
+    });
+
+    document.getElementById('diplomaPreviewModal').style.display = 'flex';
+    document.body.classList.add('diploma-preview-open');
+}
+
+function diplomaFilterTable(query) {
+    var q = String(query || '').toLowerCase().trim();
+    document.querySelectorAll('#diplomaTableBody tr').forEach(function(row) {
+        var text = (row.textContent || '').toLowerCase();
+        row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
+    });
+    diplomaSyncSelectAll();
+}
+
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('diploma-printing');
     document.body.classList.remove('diploma-preview-open');
@@ -248,7 +292,10 @@ function diplomaSaveEdit() {
     var cells = row.querySelectorAll('td');
 
     if (cells[1]) cells[1].textContent = (document.getElementById('diplomaEditNumber').value || '').trim();
-    if (cells[2]) cells[2].textContent = (document.getElementById('diplomaEditName').value || '').trim();
+    if (cells[2]) {
+        var updatedName = (document.getElementById('diplomaEditName').value || '').trim();
+        cells[2].innerHTML = '<button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(' + diplomaEscHtml(diplomaCurrentRowId) + ')">' + diplomaEscHtml(updatedName) + '</button>';
+    }
     if (cells[3]) cells[3].textContent = (document.getElementById('diplomaEditCourse').value || '').trim();
     if (cells[4]) cells[4].textContent = (document.getElementById('diplomaEditYear').value || '').trim();
 

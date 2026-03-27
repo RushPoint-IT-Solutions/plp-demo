@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Registrar\Services;
 
 use App\Http\Controllers\Controller;
+use App\StudentProfile;
 
 class AdminToolsController extends Controller
 {
@@ -45,7 +46,18 @@ class AdminToolsController extends Controller
 
     public function studentProfile()
     {
-        return view('registrar.admin-tools.master-files.student-profile');
+        $studentNo = request('student_id');
+        $previewProfile = null;
+
+        if (!empty($studentNo)) {
+            $previewProfile = StudentProfile::where('student_no', $studentNo)->first();
+        }
+
+        if (!$previewProfile) {
+            $previewProfile = StudentProfile::orderBy('id')->first();
+        }
+
+        return view('registrar.admin-tools.master-files.student-profile', compact('previewProfile'));
     }
 
     public function studentGradeFile()

@@ -172,6 +172,37 @@ function ogrPrintSelected() {
     ogrPrintSheets(sheets);
 }
 
+function ogrOpenPreviewFromSelection() {
+    var checked = document.querySelector('#ogrTableBody .ogr-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#ogrTableBody tr[data-row-id]');
+    if (!row) return;
+    var rowId = row.getAttribute('data-row-id');
+    ogrOpenPreview(rowId);
+}
+
+function ogrOpenBlankPreview() {
+    var sheet = document.getElementById('ogrPreviewSheet');
+    if (!sheet) return;
+
+    var blankData = { studentNo:'', studentName:'', program:'', year:'', section:'' };
+    var blankMeta = {
+        address:'', birthday:'', section:'', course:'', schoolYear:'',
+        curriculum:'', studentType:'', yearLevel:'', residency:'', cwa:''
+    };
+
+    sheet.innerHTML = ogrBuildTemplate(blankData, [], blankMeta);
+    document.getElementById('ogrPreviewModal').style.display = 'flex';
+}
+
+function ogrFilterTable(query) {
+    var q = String(query || '').toLowerCase().trim();
+    document.querySelectorAll('#ogrTableBody tr').forEach(function(row) {
+        var text = (row.textContent || '').toLowerCase();
+        row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
+    });
+    ogrSyncSelectAll();
+}
+
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('ogr-printing');
     var pc = document.getElementById('ogrPrintContainer');

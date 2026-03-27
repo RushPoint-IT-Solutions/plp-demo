@@ -114,6 +114,10 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/unifast', 'Registrar\RegistrarController@reportsUnifast')->name('unifast');
+            Route::get('/oss-nstp-form', 'Registrar\RegistrarController@reportsOssNstpForm')->name('oss-nstp-form');
+        });
     });
 
     // Registrar menu sub-pages
@@ -157,6 +161,7 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
             Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
+            Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');

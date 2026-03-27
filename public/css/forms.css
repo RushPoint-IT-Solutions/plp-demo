@@ -136,9 +136,9 @@ body.diploma-preview-open {
     text-align: center;
     font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: clamp(1.333rem, 2.1vw, 1.633rem);
+    font-size: 1.5rem;
     margin: 2px 6px;
-    line-height: 1.35;
+    line-height: 1.32;
 }
 
 /* "Given in Pasig City…" footer script line */
@@ -146,7 +146,7 @@ body.diploma-preview-open {
     text-align: center;
     font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: clamp(1.333rem, 2.1vw, 1.633rem);
+    font-size: 1.5rem;
     line-height: 1.35;
     margin: 6px 16px 22px;
 }
@@ -156,7 +156,7 @@ body.diploma-preview-open {
     text-align: center;
     margin: 6px 0 0px;
     font-family: 'EnglishTowneEmbedded', 'UnifrakturMaguntia', 'MedievalSharp', serif;
-    font-size: clamp(2.5rem, 4vw, 3.2rem);
+    font-size: 3rem;
     line-height: 1.2;
     font-weight: 400;
 }
@@ -166,8 +166,8 @@ body.diploma-preview-open {
     text-align: center;
     margin-top: 4px;
     font-family: 'EnglishTowneEmbedded', 'UnifrakturMaguntia', 'MedievalSharp', serif;
-    font-size: clamp(2.3rem, 3.4vw, 2.8rem);
-    line-height: 1.16;
+    font-size: 2.6rem;
+    line-height: 1.14;
     font-weight: 400;
 }
 
@@ -216,7 +216,7 @@ body.diploma-preview-open {
 .dpl-left-copy .dpl-left-role {
     font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: 1.183rem;
+    font-size: 1.02rem;
     margin-top: -2px;
     text-align: center;
     display: block;
@@ -255,7 +255,7 @@ body.diploma-preview-open {
 .dpl-sign-item .title {
     font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
     font-style: normal;
-    font-size: 1.183rem;
+    font-size: 1.02rem;
     margin-top: 0;
 }
 
@@ -975,14 +975,16 @@ body.wce-preview-open {
 #hdTable .apst-dropdown,
 #ogrTable .apst-dropdown,
 #pceTable .apst-dropdown,
-#wceTable .apst-dropdown {
+#wceTable .apst-dropdown,
+#gcTable .apst-dropdown {
     position: fixed;
 }
 
 #hdTable input[type="checkbox"],
 #ogrTable input[type="checkbox"],
 #pceTable input[type="checkbox"],
-#wceTable input[type="checkbox"] {
+#wceTable input[type="checkbox"],
+#gcTable input[type="checkbox"] {
     -webkit-appearance: none;
     appearance: none;
     width: 18px;
@@ -1000,14 +1002,16 @@ body.wce-preview-open {
 #hdTable input[type="checkbox"]:hover,
 #ogrTable input[type="checkbox"]:hover,
 #pceTable input[type="checkbox"]:hover,
-#wceTable input[type="checkbox"]:hover {
+#wceTable input[type="checkbox"]:hover,
+#gcTable input[type="checkbox"]:hover {
     border-color: #006837;
 }
 
 #hdTable input[type="checkbox"]:focus-visible,
 #ogrTable input[type="checkbox"]:focus-visible,
 #pceTable input[type="checkbox"]:focus-visible,
-#wceTable input[type="checkbox"]:focus-visible {
+#wceTable input[type="checkbox"]:focus-visible,
+#gcTable input[type="checkbox"]:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.2);
 }
@@ -1015,7 +1019,8 @@ body.wce-preview-open {
 #hdTable input[type="checkbox"]:checked,
 #ogrTable input[type="checkbox"]:checked,
 #pceTable input[type="checkbox"]:checked,
-#wceTable input[type="checkbox"]:checked {
+#wceTable input[type="checkbox"]:checked,
+#gcTable input[type="checkbox"]:checked {
     background: #006837;
     border-color: #006837;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
@@ -1027,7 +1032,8 @@ body.wce-preview-open {
 #hdTable input[type="checkbox"]:indeterminate,
 #ogrTable input[type="checkbox"]:indeterminate,
 #pceTable input[type="checkbox"]:indeterminate,
-#wceTable input[type="checkbox"]:indeterminate {
+#wceTable input[type="checkbox"]:indeterminate,
+#gcTable input[type="checkbox"]:indeterminate {
     background: #ffffff;
     border-color: #006837;
     background-image: linear-gradient(#006837, #006837);
@@ -1039,7 +1045,8 @@ body.wce-preview-open {
 #hdTable thead input[type="checkbox"],
 #ogrTable thead input[type="checkbox"],
 #pceTable thead input[type="checkbox"],
-#wceTable thead input[type="checkbox"] {
+#wceTable thead input[type="checkbox"],
+#gcTable thead input[type="checkbox"] {
     border-color: #ffffff;
     background-color: rgba(255, 255, 255, 0.12);
 }
@@ -1047,7 +1054,8 @@ body.wce-preview-open {
 #hdTable thead input[type="checkbox"]:checked,
 #ogrTable thead input[type="checkbox"]:checked,
 #pceTable thead input[type="checkbox"]:checked,
-#wceTable thead input[type="checkbox"]:checked {
+#wceTable thead input[type="checkbox"]:checked,
+#gcTable thead input[type="checkbox"]:checked {
     background: #ffffff;
     border-color: #ffffff;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='%23006837' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
@@ -1059,7 +1067,8 @@ body.wce-preview-open {
 #hdTable thead input[type="checkbox"]:hover,
 #ogrTable thead input[type="checkbox"]:hover,
 #pceTable thead input[type="checkbox"]:hover,
-#wceTable thead input[type="checkbox"]:hover {
+#wceTable thead input[type="checkbox"]:hover,
+#gcTable thead input[type="checkbox"]:hover {
     border-color: #ffffff;
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }
@@ -1068,10 +1077,12 @@ body.wce-preview-open {
 #ogrTable td > input[type="checkbox"]:checked::after,
 #pceTable td > input[type="checkbox"]:checked::after,
 #wceTable td > input[type="checkbox"]:checked::after,
+#gcTable td > input[type="checkbox"]:checked::after,
 #hdTable thead input[type="checkbox"]:checked::after,
 #ogrTable thead input[type="checkbox"]:checked::after,
 #pceTable thead input[type="checkbox"]:checked::after,
-#wceTable thead input[type="checkbox"]:checked::after {
+#wceTable thead input[type="checkbox"]:checked::after,
+#gcTable thead input[type="checkbox"]:checked::after {
     content: none;
 }
 
@@ -1512,6 +1523,428 @@ body.wce-preview-open {
 
     body.pce-printing #pcePrintContainer .pce-print-page-break:last-child,
     body.wce-printing #wcePrintContainer .wce-print-page-break:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+}
+
+/* ============================================================
+   GRADUATION CLEARANCE
+   ============================================================ */
+.gc-preview-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2500;
+    background: rgba(16, 24, 40, 0.45);
+    padding: 16px;
+}
+
+.gc-preview-dialog {
+    width: min(980px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(16, 24, 40, 0.24);
+}
+
+.gc-preview-modal-box {
+    width: min(980px, calc(100vw - 32px)) !important;
+    max-width: min(980px, calc(100vw - 32px)) !important;
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(16, 24, 40, 0.24);
+    padding: 0;
+}
+
+.gc-preview-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #dbe3ec;
+    background: #fff;
+}
+
+.gc-preview-head {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid #d4ded7;
+    text-align: center;
+}
+
+.gc-preview-head h3 {
+    margin: 0;
+    color: #0f5132;
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.gc-preview-wrap {
+    padding: 14px;
+    background: #f3f4f6;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.gc-preview-title {
+    font-size: 1.02rem;
+    font-weight: 800;
+    color: #0f5132;
+    letter-spacing: 0.03em;
+}
+
+.gc-preview-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gc-preview-close {
+    border: 0;
+    background: #eef2f7;
+    color: #2b3f57;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.gc-sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #d4ded7;
+    box-shadow: 0 8px 20px rgba(10, 45, 28, 0.12);
+    color: #111827;
+    padding: 20mm 14mm 15mm;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', serif;
+    font-size: 11.2pt;
+    line-height: 1.18;
+}
+
+.gc-header-space {
+    height: 1.55in;
+}
+
+.gc-title {
+    text-align: left;
+    font-size: 12.6pt;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.gc-line-row {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 2px;
+    flex-wrap: nowrap;
+}
+
+.gc-label {
+    font-weight: 600;
+    font-size: 11.1pt;
+    white-space: nowrap;
+}
+
+.gc-label-fullname {
+    width: 76px;
+    flex: 0 0 76px;
+}
+
+.gc-blank {
+    display: inline-block;
+    height: 0.86em;
+    border-bottom: 1px solid #111;
+    vertical-align: baseline;
+    flex: 0 0 auto;
+}
+
+.gc-blank-name {
+    width: 365px;
+}
+
+.gc-blank-id {
+    width: 88px;
+}
+
+.gc-blank-college {
+    width: auto;
+}
+
+.gc-blank-program {
+    width: 185px;
+}
+
+.gc-blank-email {
+    width: auto;
+}
+
+.gc-blank-phone {
+    width: 185px;
+}
+
+.gc-label-id,
+.gc-label-right {
+    margin-left: auto;
+}
+
+.gc-line-row-dual {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content 185px;
+    align-items: baseline;
+    column-gap: 6px;
+    width: 100%;
+}
+
+.gc-line-row-dual .gc-label-right {
+    margin-left: 0;
+}
+
+.gc-line-row-dual .gc-blank-college,
+.gc-line-row-dual .gc-blank-email {
+    width: 100%;
+    min-width: 0;
+}
+
+.gc-line-row-dual .gc-blank-program,
+.gc-line-row-dual .gc-blank-phone {
+    width: 185px;
+    min-width: 185px;
+    max-width: 185px;
+}
+
+.gc-subhint {
+    font-size: 8.2pt;
+    text-align: left;
+    margin: 0 0 6px;
+}
+
+.gc-subhint-name {
+    margin-left: 81px;
+    width: 365px;
+    text-align: center;
+}
+
+.gc-req-title {
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.gc-req-sub {
+    margin: 1px 0 6px;
+    font-size: 10.5pt;
+}
+
+.gc-checklist {
+    margin-bottom: 6px;
+}
+
+.gc-check-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) 6px 158px minmax(0, 0.9fr);
+    align-items: center;
+    min-height: 25px;
+    margin-bottom: 3px;
+}
+
+.gc-check-left,
+.gc-check-office,
+.gc-check-line-wrap {
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.gc-check-gap {
+    height: 1px;
+}
+
+.gc-check-box {
+    width: 18px;
+    height: 13px;
+    border: 2px solid #111;
+    margin-right: 8px;
+    flex: 0 0 auto;
+}
+
+.gc-check-text {
+    font-size: 11.1pt;
+    line-height: 1.1;
+}
+
+.gc-check-office {
+    justify-content: flex-start;
+    padding-left: 0;
+    font-size: 10.9pt;
+    line-height: 1.12;
+}
+
+.gc-check-line-wrap {
+    padding-left: 0;
+    min-width: 0;
+    gap: 0;
+}
+
+.gc-office-colon {
+    display: inline-block;
+    margin-right: 2px;
+    font-size: 10.9pt;
+    line-height: 1;
+}
+
+.gc-check-line {
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid #111;
+    height: 0.88em;
+}
+
+.gc-declaration-title {
+    font-weight: 700;
+    margin: 6px 0 2px;
+}
+
+.gc-declaration {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 11.1pt;
+    margin-bottom: 5px;
+}
+
+.gc-blank-decl {
+    width: 245px;
+}
+
+.gc-sign-row {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-top: 2px;
+}
+
+.gc-blank-sign {
+    width: 260px;
+}
+
+.gc-blank-date {
+    width: 190px;
+}
+
+.gc-print-container {
+    display: none;
+}
+
+#gcPrintContainer {
+    display: none;
+}
+
+.gc-print-page-break {
+    page-break-after: always;
+}
+
+@media screen and (max-width: 860px) {
+    .gc-sheet {
+        width: 100%;
+        min-height: 0;
+        padding: 18mm 10mm;
+    }
+
+    .gc-check-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+        margin-bottom: 4px;
+    }
+
+    .gc-check-left,
+    .gc-check-office,
+    .gc-check-line-wrap {
+        padding-left: 0;
+    }
+
+    .gc-line-row,
+    .gc-sign-row {
+        flex-wrap: wrap;
+    }
+
+    .gc-label-id,
+    .gc-label-right {
+        margin-left: 0;
+    }
+}
+
+@media print {
+    body.gc-printing .pf-page,
+    body.gc-printing .req-modal-overlay,
+    body.gc-printing .gc-preview-modal {
+        display: none !important;
+    }
+
+    body.gc-printing .gc-print-container {
+        display: block !important;
+        position: static;
+        background: #fff;
+    }
+
+    body.gc-printing #gcPrintContainer {
+        display: block !important;
+        position: static;
+        background: #fff;
+    }
+
+    body.gc-printing .gc-sheet {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        box-shadow: none;
+        border: none;
+        padding-top: 20mm;
+        padding-right: 14mm;
+        padding-bottom: 15mm;
+        padding-left: 14mm;
+        box-sizing: border-box;
+        color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    body.gc-printing .gc-check-row {
+        grid-template-columns: minmax(0, 1.35fr) 6px 158px minmax(0, 0.9fr) !important;
+        align-items: center !important;
+        gap: 0 !important;
+        margin-bottom: 3px !important;
+    }
+
+    body.gc-printing .gc-check-left,
+    body.gc-printing .gc-check-office,
+    body.gc-printing .gc-check-line-wrap {
+        align-items: center !important;
+        padding-left: 0 !important;
+    }
+
+    body.gc-printing .gc-line-row,
+    body.gc-printing .gc-sign-row {
+        flex-wrap: nowrap !important;
+    }
+
+    body.gc-printing .gc-print-page-break:last-child {
         page-break-after: auto;
         break-after: auto;
     }

@@ -1556,3 +1556,167 @@
   color: inherit !important;
   font-weight: 800 !important;
 }
+
+/* Readonly Overrides */
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-top {
+    display: grid !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.7fr) minmax(0, 1.7fr) minmax(0, 0.95fr) 64px 140px;
+    gap: 6px 10px;
+    align-items: start;
+    margin-bottom: 8px;
+}
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-top > .spc-field {
+  min-width: 0;
+}
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-top > .spc-field .app-filter-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-top > .spc-field-sm {
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+}
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-top > .spc-photo-box {
+    width: 140px !important;
+    height: 140px;
+    min-height: 140px;
+    margin: 0;
+    position: relative;
+    z-index: 10;
+    background: #fff;
+}
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-contact,
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-birth,
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-address,
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-acad,
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-status,
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-transfer {
+    display: grid;
+    gap: 6px 8px;
+    margin-bottom: 6px;
+}
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
+.page-student-profile-config .spc-card.spc-readonly .app-filter-label { margin-bottom: 2px; display: block; }
+.page-student-profile-config .spc-card.spc-readonly .app-filter-input { min-height: 34px; box-sizing: border-box; }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-address .spc-checkline {
+    margin-top: 0;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+}
+@media (max-width: 1100px) {
+    .page-student-profile-config .spc-card.spc-readonly .spc-grid-top { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .page-student-profile-config .spc-card.spc-readonly .spc-grid-top .spc-photo-box { grid-column: span 2; justify-self: start; width: 124px !important; height: 124px !important; min-height: 124px !important; }
+}
+@media (max-width: 760px) {
+    .page-student-profile-config .spc-card.spc-readonly .spc-grid-top .spc-photo-box { width: 112px !important; height: 112px !important; min-height: 112px !important; }
+}
+.spc-card.spc-readonly .spc-readonly-banner {
+    margin: 0 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #14532d;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+.spc-card.spc-readonly .spc-photo-preview { display: block !important; object-fit: cover; width: 100%; height: 100%; border-radius: 6px; }
+.spc-card.spc-readonly .spc-photo-icon { display: none !important; }
+.spc-card.spc-layout-lock .spc-photo-icon { display: none !important; }
+.spc-card.spc-readonly .spc-readonly-note { margin: 0; font-size: 0.83rem; color: #4b5563; }
+.page-student-profile-config .spc-card.spc-readonly { padding: 12px; }
+.spc-card.spc-readonly .app-filter-input[readonly], .spc-card.spc-readonly .app-filter-input[disabled], .spc-card.spc-readonly .req-checkbox-input[disabled], .spc-card.spc-readonly .spc-photo-box { cursor: not-allowed; }
+.spc-card.spc-readonly .app-filter-input[readonly], .spc-card.spc-readonly .app-filter-input[disabled] { background: #eef3ef; color: #374151; }
+.spc-card.spc-readonly .spc-readonly-fieldset .app-filter-input { background: #e5e7eb !important; color: #6b7280 !important; border-color: #d1d5db !important; box-shadow: none !important; }
+.spc-card.spc-readonly .spc-photo-box { opacity: 0.82; pointer-events: none; }
+.spc-card.spc-readonly .spc-readonly-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+/* Editable layout lock for registrar profile page */
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.7fr) minmax(0, 1.7fr) minmax(0, 0.95fr) 64px 140px;
+  gap: 6px 10px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top > .spc-field {
+  min-width: 0;
+}
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top > .spc-field .app-filter-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top > .spc-field-sm {
+  width: 64px !important;
+  min-width: 64px !important;
+  max-width: 64px !important;
+}
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top > .spc-photo-box {
+  width: 140px !important;
+  height: 140px;
+  min-height: 140px;
+  margin: 0;
+  position: relative;
+  z-index: 10;
+  background: #fff;
+}
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-contact,
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-birth,
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address,
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad,
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-status,
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-transfer {
+  display: grid;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+}
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
+.page-student-profile-config .spc-card.spc-layout-lock .app-filter-label { margin-bottom: 2px; display: block; }
+.page-student-profile-config .spc-card.spc-layout-lock .app-filter-input { min-height: 34px; box-sizing: border-box; }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address .spc-checkline {
+  margin-top: 0;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+}
+@media (max-width: 1100px) {
+  .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top .spc-photo-box { grid-column: span 2; justify-self: start; width: 124px !important; height: 124px !important; min-height: 124px !important; }
+}
+@media (max-width: 760px) {
+  .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-top .spc-photo-box { width: 112px !important; height: 112px !important; min-height: 112px !important; }
+}
+
+/* Ensure action links look exactly like green action buttons in both config and app preview modes */
+.page-student-profile-config .spc-view-form-btn,
+.page-student-profile-app-preview .spc-view-form-btn {
+  text-decoration: none !important;
+}
+.page-student-profile-config .spc-view-form-btn:hover,
+.page-student-profile-config .spc-view-form-btn:focus,
+.page-student-profile-config .spc-view-form-btn:visited,
+.page-student-profile-app-preview .spc-view-form-btn:hover,
+.page-student-profile-app-preview .spc-view-form-btn:focus,
+.page-student-profile-app-preview .spc-view-form-btn:visited {
+  text-decoration: none !important;
+  color: #fff !important;
+}
