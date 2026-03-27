@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Registrar;
 
 use App\Applicant;
+use App\CancellationWaiver;
 use App\Course;
+use App\CrossEnrollmentRequest;
 use App\Department;
 use App\Faculty;
 use App\Student;
+use App\StudentSubjectGrade;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use App\User;
@@ -778,7 +782,103 @@ class RegistrarController extends Controller
      */
     public function formsOfficialGradeReport()
     {
-        return view('registrar.registrar-menu.forms.official-grade-report');
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(200)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+
+        $gradesByStudent = StudentSubjectGrade::query()
+            ->with('subject')
+            ->whereIn('student_id', $students->pluck('id')->all())
+            ->orderBy('student_id')
+            ->orderBy('subject_id')
+            ->get()
+            ->groupBy('student_id');
+
+        $gradeReportRows = [];
+        $subjectsByRow = [];
+        $metaByRow = [];
+
+        foreach ($students as $index => $student) {
+            $rowId = (string) ($index + 1);
+            $section = trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR'));
+            $gradeReportRows[] = [
+                'row_id' => $rowId,
+                'student_id' => $student->id,
+                'student_no' => $student->student_no,
+                'student_name' => $student->name,
+                'program' => $student->program ?: '-',
+                'year' => $student->year_level ?: '-',
+                'section' => $section,
+            ];
+
+            $subjects = ($gradesByStudent->get($student->id) ?: collect())->map(function ($grade) use ($section) {
+                $subject = $grade->subject;
+                return [
+                    'code' => $subject ? (string) $subject->code : '-',
+                    'desc' => $subject ? (string) $subject->name : '-',
+                    'section' => $subject && $subject->year_section ? (string) $subject->year_section : $section,
+                    'prof' => 'TBA',
+                    'grade' => $grade->final_average !== null ? (string) $grade->final_average : '-',
+                    'remarks' => $grade->remarks ?: '-',
+                    'reexam' => '',
+                    'units' => $subject && $subject->units !== null ? number_format((float) $subject->units, 2) : '0.00',
+                ];
+            })->values()->all();
+
+            $subjectsByRow[$rowId] = $subjects;
+            $metaByRow[$rowId] = [
+                'studentNo' => $student->student_no,
+                'studentName' => strtoupper((string) $student->name),
+                'address' => '-',
+                'birthday' => '-',
+                'section' => $section,
+                'course' => ($student->program ?: 'PROGRAM') . ' : ' . ($student->program ?: 'Program'),
+                'schoolYear' => (string) ($student->school_year ?: '2025-2026') . ' / ' . strtoupper((string) ($student->semester ?: 'First')),
+                'curriculum' => 'CURRENT',
+                'studentType' => 'REGULAR',
+                'yearLevel' => $student->year_level ?: '-',
+                'residency' => 'PR',
+                'cwa' => '-',
+            ];
+        }
+
+        return view('registrar.registrar-menu.forms.official-grade-report', compact('gradeReportRows', 'subjectsByRow', 'metaByRow'));
+    }
+
+    public function formsOfficialGradeReportData(Student $student): JsonResponse
+    {
+        $records = StudentSubjectGrade::query()
+            ->with('subject')
+            ->where('student_id', $student->id)
+            ->orderBy('subject_id')
+            ->get();
+
+        $subjects = $records->map(function ($grade) {
+            $subject = $grade->subject;
+            return [
+                'code' => $subject ? (string) $subject->code : '-',
+                'desc' => $subject ? (string) $subject->name : '-',
+                'section' => $subject && $subject->year_section ? (string) $subject->year_section : '-',
+                'prof' => 'TBA',
+                'grade' => $grade->final_average !== null ? (string) $grade->final_average : '-',
+                'remarks' => $grade->remarks ?: '-',
+                'reexam' => '',
+                'units' => $subject && $subject->units !== null ? number_format((float) $subject->units, 2) : '0.00',
+            ];
+        })->values();
+
+        return response()->json([
+            'ok' => true,
+            'student' => [
+                'id' => $student->id,
+                'student_no' => $student->student_no,
+                'name' => $student->name,
+                'program' => $student->program,
+                'year_level' => $student->year_level,
+            ],
+            'subjects' => $subjects,
+        ]);
     }
 
     /**
@@ -786,7 +886,67 @@ class RegistrarController extends Controller
      */
     public function formsPermissionCrossEnroll()
     {
-        return view('registrar.registrar-menu.forms.permission-cross-enroll');
+        $this->seedCrossEnrollRowsIfEmpty();
+
+        $crossEnrollRows = CrossEnrollmentRequest::query()
+            ->with('student')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('registrar.registrar-menu.forms.permission-cross-enroll', compact('crossEnrollRows'));
+    }
+
+    public function formsPermissionCrossEnrollStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+        ]);
+
+        $student = Student::findOrFail($validated['student_id']);
+
+        $record = CrossEnrollmentRequest::create([
+            'student_id' => $student->id,
+            'school_year' => $student->school_year,
+            'semester' => $student->semester,
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+            'status' => 'pending',
+        ]);
+
+        return response()->json(['ok' => true, 'id' => $record->id]);
+    }
+
+    public function formsPermissionCrossEnrollUpdate(Request $request, CrossEnrollmentRequest $crossEnrollmentRequest): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => 'required|string|max:40',
+            'name' => 'required|string|max:120',
+            'program' => 'nullable|string|max:80',
+            'year_level' => 'nullable|string|max:40',
+        ]);
+
+        $student = $crossEnrollmentRequest->student;
+        $student->student_no = trim($validated['student_no']);
+        $student->name = trim($validated['name']);
+        $student->program = isset($validated['program']) ? trim((string) $validated['program']) : $student->program;
+        $student->year_level = isset($validated['year_level']) ? trim((string) $validated['year_level']) : $student->year_level;
+        $student->save();
+
+        $crossEnrollmentRequest->update([
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function formsPermissionCrossEnrollDestroy(CrossEnrollmentRequest $crossEnrollmentRequest): JsonResponse
+    {
+        $crossEnrollmentRequest->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     /**
@@ -794,6 +954,106 @@ class RegistrarController extends Controller
      */
     public function formsWaiverCancellation()
     {
-        return view('registrar.registrar-menu.forms.waiver-cancellation');
+        $this->seedWaiverRowsIfEmpty();
+
+        $waiverRows = CancellationWaiver::query()
+            ->with('student')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('registrar.registrar-menu.forms.waiver-cancellation', compact('waiverRows'));
+    }
+
+    public function formsWaiverCancellationStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+        ]);
+
+        $student = Student::findOrFail($validated['student_id']);
+
+        $record = CancellationWaiver::create([
+            'student_id' => $student->id,
+            'school_year' => $student->school_year,
+            'semester' => $student->semester,
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+            'status' => 'pending',
+        ]);
+
+        return response()->json(['ok' => true, 'id' => $record->id]);
+    }
+
+    public function formsWaiverCancellationUpdate(Request $request, CancellationWaiver $cancellationWaiver): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => 'required|string|max:40',
+            'name' => 'required|string|max:120',
+            'program' => 'nullable|string|max:80',
+            'year_level' => 'nullable|string|max:40',
+        ]);
+
+        $student = $cancellationWaiver->student;
+        $student->student_no = trim($validated['student_no']);
+        $student->name = trim($validated['name']);
+        $student->program = isset($validated['program']) ? trim((string) $validated['program']) : $student->program;
+        $student->year_level = isset($validated['year_level']) ? trim((string) $validated['year_level']) : $student->year_level;
+        $student->save();
+
+        $cancellationWaiver->update([
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function formsWaiverCancellationDestroy(CancellationWaiver $cancellationWaiver): JsonResponse
+    {
+        $cancellationWaiver->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function seedCrossEnrollRowsIfEmpty(): void
+    {
+        if (CrossEnrollmentRequest::query()->exists()) {
+            return;
+        }
+
+        $students = Student::query()->orderBy('id')->limit(10)->get();
+        foreach ($students as $student) {
+            CrossEnrollmentRequest::create([
+                'student_id' => $student->id,
+                'school_year' => $student->school_year,
+                'semester' => $student->semester,
+                'program' => $student->program,
+                'year_level' => $student->year_level,
+                'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+                'status' => 'pending',
+            ]);
+        }
+    }
+
+    private function seedWaiverRowsIfEmpty(): void
+    {
+        if (CancellationWaiver::query()->exists()) {
+            return;
+        }
+
+        $students = Student::query()->orderBy('id')->limit(10)->get();
+        foreach ($students as $student) {
+            CancellationWaiver::create([
+                'student_id' => $student->id,
+                'school_year' => $student->school_year,
+                'semester' => $student->semester,
+                'program' => $student->program,
+                'year_level' => $student->year_level,
+                'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+                'status' => 'pending',
+            ]);
+        }
     }
 }

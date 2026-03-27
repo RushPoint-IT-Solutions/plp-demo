@@ -150,8 +150,15 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
+            Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
+            Route::post('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnrollStore')->name('permission-cross-enroll.store');
+            Route::put('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollUpdate')->name('permission-cross-enroll.update');
+            Route::delete('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollDestroy')->name('permission-cross-enroll.destroy');
             Route::get('/waiver-cancellation', 'Registrar\RegistrarController@formsWaiverCancellation')->name('waiver-cancellation');
+            Route::post('/waiver-cancellation', 'Registrar\RegistrarController@formsWaiverCancellationStore')->name('waiver-cancellation.store');
+            Route::put('/waiver-cancellation/{cancellationWaiver}', 'Registrar\RegistrarController@formsWaiverCancellationUpdate')->name('waiver-cancellation.update');
+            Route::delete('/waiver-cancellation/{cancellationWaiver}', 'Registrar\RegistrarController@formsWaiverCancellationDestroy')->name('waiver-cancellation.destroy');
         });
     });
 
@@ -170,17 +177,37 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('grading-academic')->name('grading-academic.')->group(function () {
             Route::get('/grading-system', 'Registrar\Services\GradingAcademicController@gradingSystem')->name('grading-system');
+            Route::post('/grading-system', 'Registrar\Services\GradingAcademicController@gradingSystemStore')->name('grading-system.store');
+            Route::put('/grading-system/{gradeRule}', 'Registrar\Services\GradingAcademicController@gradingSystemUpdate')->name('grading-system.update');
+            Route::delete('/grading-system/{gradeRule}', 'Registrar\Services\GradingAcademicController@gradingSystemDestroy')->name('grading-system.destroy');
             Route::get('/grading-periods', 'Registrar\Services\GradingAcademicController@gradingPeriods')->name('grading-periods');
+            Route::post('/grading-periods', 'Registrar\Services\GradingAcademicController@gradingPeriodsStore')->name('grading-periods.store');
+            Route::put('/grading-periods/{gradingPeriod}', 'Registrar\Services\GradingAcademicController@gradingPeriodsUpdate')->name('grading-periods.update');
+            Route::delete('/grading-periods/{gradingPeriod}', 'Registrar\Services\GradingAcademicController@gradingPeriodsDestroy')->name('grading-periods.destroy');
             Route::get('/grading-components', 'Registrar\Services\GradingAcademicController@gradingComponents')->name('grading-components');
+            Route::post('/grading-components', 'Registrar\Services\GradingAcademicController@gradingComponentsStore')->name('grading-components.store');
+            Route::put('/grading-components/{gradingComponent}', 'Registrar\Services\GradingAcademicController@gradingComponentsUpdate')->name('grading-components.update');
+            Route::delete('/grading-components/{gradingComponent}', 'Registrar\Services\GradingAcademicController@gradingComponentsDestroy')->name('grading-components.destroy');
             Route::get('/transmutation', 'Registrar\Services\GradingAcademicController@transmutation')->name('transmutation');
+            Route::post('/transmutation', 'Registrar\Services\GradingAcademicController@transmutationStore')->name('transmutation.store');
+            Route::put('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationUpdate')->name('transmutation.update');
+            Route::delete('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationDestroy')->name('transmutation.destroy');
             Route::get('/deficiency', 'Registrar\Services\GradingAcademicController@deficiency')->name('deficiency');
+            Route::post('/deficiency/students', 'Registrar\Services\GradingAcademicController@deficiencyStudentStore')->name('deficiency.students.store');
+            Route::get('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyRecords')->name('deficiency.records');
+            Route::post('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyStore')->name('deficiency.store');
+            Route::put('/deficiency/records/{studentDeficiency}', 'Registrar\Services\GradingAcademicController@deficiencyUpdate')->name('deficiency.update');
+            Route::delete('/deficiency/records/{studentDeficiency}', 'Registrar\Services\GradingAcademicController@deficiencyDestroy')->name('deficiency.destroy');
         });
 
         Route::prefix('reports-admin')->name('reports-admin.')->group(function () {
             Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
+            Route::post('/academic-reports/issue', 'Registrar\Services\ReportsAdminController@issueAcademicReport')->name('academic-reports.issue');
             Route::get('/guidance-reports', 'Registrar\Services\ReportsAdminController@guidanceReports')->name('guidance-reports');
             Route::get('/certifications', 'Registrar\Services\ReportsAdminController@certifications')->name('certifications');
+            Route::post('/certifications/issue', 'Registrar\Services\ReportsAdminController@issueCertification')->name('certifications.issue');
             Route::get('/tagging-of-graduates', 'Registrar\Services\ReportsAdminController@taggingOfGraduates')->name('tagging-of-graduates');
+            Route::put('/tagging-of-graduates/{student}', 'Registrar\Services\ReportsAdminController@taggingOfGraduatesUpdate')->name('tagging-of-graduates.update');
         });
 
         Route::prefix('student-account')->name('student-account.')->group(function () {
@@ -202,6 +229,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('access-management')->name('access-management.')->group(function () {
             Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
             Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');
+            Route::put('/report-access/{user}', 'Registrar\Services\AdminToolsController@reportAccessUpdate')->name('report-access.update');
         });
 
         Route::prefix('master-files')->name('master-files.')->group(function () {

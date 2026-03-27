@@ -30,6 +30,14 @@ class Student extends Model
     }
 
     /**
+     * Deficiency records linked to the student.
+     */
+    public function deficiencies()
+    {
+        return $this->hasMany(StudentDeficiency::class);
+    }
+
+    /**
      * Helper: formatted school year + semester label.
      * e.g. "SY 2025-2026 2nd Semester"
      */

@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Registrar\Services;
 
 use App\Http\Controllers\Controller;
+use App\ReportPermission;
 use App\AcademicCalendarEvent;
 use App\StudentProfile;
+use App\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 class AdminToolsController extends Controller
@@ -59,7 +63,67 @@ class AdminToolsController extends Controller
 
     public function reportAccess()
     {
-        return view('registrar.admin-tools.access-management.report-access');
+        $users = User::query()
+            ->orderBy('name')
+            ->limit(300)
+            ->get(['id', 'name', 'username', 'email', 'module']);
+
+        $permissionsByUser = collect();
+        if (Schema::hasTable('report_permissions')) {
+            $permissionsByUser = ReportPermission::query()
+                ->whereIn('user_id', $users->pluck('id')->all())
+                ->where('is_allowed', true)
+                ->get(['user_id', 'report_key'])
+                ->groupBy('user_id')
+                ->map(function ($rows) {
+                    return $rows->pluck('report_key')->values()->all();
+                });
+        }
+
+        $reportUsers = $users->map(function ($user) use ($permissionsByUser) {
+            $displayName = $user->name ?: $user->username;
+            return [
+                'id' => $user->id,
+                'name' => $displayName,
+                'email' => $user->email ?: '-',
+                'userType' => ucfirst((string) ($user->module ?: 'user')),
+                'reportType' => ucfirst((string) ($user->module ?: 'Academics')) . ' Report',
+                'permissions' => $permissionsByUser->get($user->id, []),
+            ];
+        })->values();
+
+        return view('registrar.admin-tools.access-management.report-access', compact('reportUsers'));
+    }
+
+    public function reportAccessUpdate(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'report_keys' => 'nullable|array',
+            'report_keys.*' => 'string|max:190',
+        ]);
+
+        $keys = collect($validated['report_keys'] ?? [])
+            ->map(function ($key) {
+                return trim((string) $key);
+            })
+            ->filter(function ($key) {
+                return $key !== '';
+            })
+            ->unique()
+            ->values();
+
+        ReportPermission::query()->where('user_id', $user->id)->delete();
+
+        foreach ($keys as $key) {
+            ReportPermission::create([
+                'user_id' => $user->id,
+                'report_key' => $key,
+                'report_type' => null,
+                'is_allowed' => true,
+            ]);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     // Master Files

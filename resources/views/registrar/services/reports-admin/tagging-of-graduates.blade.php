@@ -78,30 +78,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td style="text-align: center;">1</td>
-                        <td>2223A8137</td>
-                        <td>Mark Jay Bares</td>
-                        <td>BSCS</td>
-                        <td>Fourth</td>
-                        <td style="text-align: center;"><span class="ga-status-text ga-status-active">Active</span></td>
-                        <td style="text-align: center; color: #333; font-size: 0.85rem;">2026-06-25</td>
-                        <td style="text-align: center; color: #333; font-size: 0.85rem;">SO-2026-00123</td>
-                        <td style="text-align: center; color: #333; font-size: 0.85rem;">2026-07-01</td>
-                        <td style="text-align: center;"><span class="ga-status-text ga-status-suspend">Suspended</span></td>
+                    @forelse($students as $index => $student)
+                    @php($tag = $taggings->get($student->id))
+                    <tr data-student-id="{{ $student->id }}">
+                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td>{{ $student->student_no ?: '-' }}</td>
+                        <td>{{ $student->name }}</td>
+                        <td>{{ $student->program ?: '-' }}</td>
+                        <td>{{ $student->year_level ?: '-' }}</td>
+                        <td style="text-align: center;"><input type="checkbox" data-tag-is-graduate {{ $tag && $tag->is_graduate ? 'checked' : '' }}></td>
+                        <td style="text-align: center;"><input type="date" data-tag-date-graduated value="{{ $tag && $tag->date_graduated ? $tag->date_graduated->format('Y-m-d') : '' }}"></td>
+                        <td style="text-align: center;"><input type="text" data-tag-so-number value="{{ $tag ? $tag->so_number : '' }}" placeholder="SO Number" style="max-width: 140px;"></td>
+                        <td style="text-align: center;"><input type="date" data-tag-so-date value="{{ $tag && $tag->so_date ? $tag->so_date->format('Y-m-d') : '' }}"></td>
+                        <td style="text-align: center;">
+                            <label style="display:inline-flex; align-items:center; gap:6px;">
+                                <input type="checkbox" data-tag-suspend {{ $tag && $tag->suspend_account ? 'checked' : '' }}>
+                                <span>Suspended</span>
+                            </label>
+                            <button type="button" class="req-btn-save" style="margin-left:8px; min-width:72px;" data-tag-save>Save</button>
+                        </td>
                     </tr>
-                    <tr>
-                        <td style="text-align: center;">2</td>
-                        <td>2223A8139</td>
-                        <td>Andrea Jane Austero</td>
-                        <td>BSCS</td>
-                        <td>Fourth</td>
-                        <td style="text-align: center;"><span class="ga-status-text ga-status-graduated">Graduated</span></td>
-                        <td style="text-align: center; color: #333; font-size: 0.85rem;">2026-05-30</td>
-                        <td style="text-align: center; color: #333; font-size: 0.85rem;">SO-2026-00045</td>
-                        <td style="text-align: center; color: #333; font-size: 0.85rem;">2026-06-15</td>
-                        <td style="text-align: center;"><span class="ga-status-text ga-status-suspended">Suspended</span></td>
-                    </tr>
+                    @empty
+                    <tr><td colspan="10" style="text-align:center; color:#666;">No students found.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -109,3 +108,69 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var csrf = @json(csrf_token());
+    var updateTemplate = @json(route('registrar.services.reports-admin.tagging-of-graduates.update', ['student' => '__STUDENT__']));
+
+    function buildUrl(studentId) {
+        return String(updateTemplate).replace('__STUDENT__', String(studentId));
+    }
+
+    function requestJson(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function (response) {
+            if (!response.ok) {
+                return response.json().catch(function () { return {}; }).then(function (data) {
+                    var message = 'Unable to save graduate tagging.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            message = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(message);
+                });
+            }
+            return response.json().catch(function () { return { ok: true }; });
+        });
+    }
+
+    document.querySelectorAll('[data-tag-save]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var row = button.closest('tr[data-student-id]');
+            if (!row) return;
+            var studentId = row.getAttribute('data-student-id');
+            if (!studentId) return;
+
+            button.disabled = true;
+            requestJson(buildUrl(studentId), 'PUT', {
+                is_graduate: !!row.querySelector('[data-tag-is-graduate]').checked,
+                date_graduated: row.querySelector('[data-tag-date-graduated]').value || null,
+                so_number: row.querySelector('[data-tag-so-number]').value || null,
+                so_date: row.querySelector('[data-tag-so-date]').value || null,
+                suspend_account: !!row.querySelector('[data-tag-suspend]').checked
+            }).then(function () {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Graduate tagging saved.');
+                }
+            }).catch(function (error) {
+                alert(error.message || 'Unable to save graduate tagging.');
+            }).finally(function () {
+                button.disabled = false;
+            });
+        });
+    });
+});
+</script>
+@endpush

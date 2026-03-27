@@ -118,60 +118,35 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>2025-2026</td><td>First</td><td>BSIT</td><td><span class="ga-trans-chip">75.00</span></td><td><span class="ga-trans-chip">79.99</span></td><td><span class="ga-trans-chip">3.00</span></td><td>P</td><td class="ga-state-pass">Passed</td>
+                        @forelse($transmutationRules as $index => $rule)
+                        <tr data-transmutation-rule-id="{{ $rule->id }}">
+                            <td>{{ $rule->school_year }}</td>
+                            <td>{{ $rule->term }}</td>
+                            <td>{{ $rule->program }}</td>
+                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_from, 2) }}</span></td>
+                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_to, 2) }}</span></td>
+                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->transmuted_grade, 2) }}</span></td>
+                            <td>{{ $rule->code }}</td>
+                            <td class="{{ (stripos($rule->remarks, 'fail') !== false || strtoupper($rule->code) === 'F') ? 'ga-state-fail' : 'ga-state-pass' }}">{{ $rule->remarks }}</td>
                             <td>
-                                <div class="apst-action-btn" data-tm-menu-toggle="tmMenu0" aria-label="Open row actions" title="Actions">
+                                <div class="apst-action-btn" data-tm-menu-toggle="tmMenu{{ $index }}" aria-label="Open row actions" title="Actions">
                                     <span></span><span></span><span></span>
                                 </div>
-                                <div class="apst-dropdown" id="tmMenu0">
-                                    <button type="button" data-ga-open-action="edit" data-ga-item="BSIT 75-79.99" data-ga-row="0">
+                                <div class="apst-dropdown" id="tmMenu{{ $index }}">
+                                    <button type="button" data-ga-open-action="edit" data-ga-item="{{ $rule->program }} {{ $rule->initial_from }}-{{ $rule->initial_to }}" data-ga-id="{{ $rule->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         Edit
                                     </button>
-                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="BSIT 75-79.99" data-ga-row="0">
+                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="{{ $rule->program }} {{ $rule->initial_from }}-{{ $rule->initial_to }}" data-ga-id="{{ $rule->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                         Delete
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td>2025-2026</td><td>First</td><td>BSIT</td><td><span class="ga-trans-chip">80.00</span></td><td><span class="ga-trans-chip">84.99</span></td><td><span class="ga-trans-chip">2.50</span></td><td>P</td><td class="ga-state-pass">Passed</td>
-                            <td>
-                                <div class="apst-action-btn" data-tm-menu-toggle="tmMenu1" aria-label="Open row actions" title="Actions">
-                                    <span></span><span></span><span></span>
-                                </div>
-                                <div class="apst-dropdown" id="tmMenu1">
-                                    <button type="button" data-ga-open-action="edit" data-ga-item="BSIT 80-84.99" data-ga-row="1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                        Edit
-                                    </button>
-                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="BSIT 80-84.99" data-ga-row="1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                        Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2025-2026</td><td>First</td><td>BSIT</td><td><span class="ga-trans-chip">74.99</span></td><td><span class="ga-trans-chip">0.00</span></td><td><span class="ga-trans-chip">5.00</span></td><td>F</td><td class="ga-state-fail">Failed</td>
-                            <td>
-                                <div class="apst-action-btn" data-tm-menu-toggle="tmMenu2" aria-label="Open row actions" title="Actions">
-                                    <span></span><span></span><span></span>
-                                </div>
-                                <div class="apst-dropdown" id="tmMenu2">
-                                    <button type="button" data-ga-open-action="edit" data-ga-item="BSIT below 75" data-ga-row="2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                        Edit
-                                    </button>
-                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="BSIT below 75" data-ga-row="2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                        Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        @empty
+                        <tr><td colspan="9" class="text-center text-muted py-4">No transmutation rules found.</td></tr>
+                        @endforelse
                     </tbody>
             </table>
         </div>
@@ -275,6 +250,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var deleteModal = document.getElementById('gaTransmutationDeleteModal');
     var actionTitle = document.getElementById('gaTransmutationActionTitle');
     var deleteText = document.getElementById('gaTransmutationDeleteText');
+    var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+    var tmStoreUrl = @json(route('registrar.services.grading-academic.transmutation.store'));
+    var tmUpdateUrlTemplate = @json(route('registrar.services.grading-academic.transmutation.update', ['transmutationRule' => '__ID__']));
+    var tmDestroyUrlTemplate = @json(route('registrar.services.grading-academic.transmutation.destroy', ['transmutationRule' => '__ID__']));
     var nextMenuIndex = page.querySelectorAll('[data-tm-menu-toggle]').length;
     var activeRow = null;
     var activeAction = 'edit';
@@ -299,6 +278,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function cleanNumber(value) {
         return (value || '').trim();
+    }
+
+    function tmBuildUrl(template, id) {
+        return String(template).replace('__ID__', String(id));
+    }
+
+    function tmRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function (response) {
+            if (!response.ok) {
+                return response.json().catch(function () { return {}; }).then(function (data) {
+                    var firstError = 'Request failed.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            firstError = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(firstError);
+                });
+            }
+
+            return response.json().catch(function () { return { ok: true }; });
+        });
     }
 
     function setChip(cell, value) {
@@ -443,61 +454,73 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            var menuId = 'tmMenu' + nextMenuIndex;
-            nextMenuIndex += 1;
-            var tr = document.createElement('tr');
-            tr.innerHTML = '' +
-                '<td>' + sy + '</td>' +
-                '<td>' + term + '</td>' +
-                '<td>' + program + '</td>' +
-                '<td><span class="ga-trans-chip">' + from + '</span></td>' +
-                '<td><span class="ga-trans-chip">' + to + '</span></td>' +
-                '<td><span class="ga-trans-chip">' + grade + '</span></td>' +
-                '<td>' + code + '</td>' +
-                '<td class="' + ((remarks.toLowerCase().indexOf('fail') !== -1 || code.toUpperCase() === 'F') ? 'ga-state-fail' : 'ga-state-pass') + '">' + remarks + '</td>' +
-                '<td>' +
-                    '<div class="apst-action-btn" data-tm-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
-                    '<div class="apst-dropdown" id="' + menuId + '">' +
-                        '<button type="button" data-ga-open-action="edit" data-ga-item="' + program + ' ' + from + '-' + to + '"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>' +
-                        '<button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="' + program + ' ' + from + '-' + to + '"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>' +
-                    '</div>' +
-                '</td>';
-
-            table.querySelector('tbody').appendChild(tr);
-            if (typeof showRegistrarToast === 'function') {
-                showRegistrarToast('Transmutation rule added successfully.');
-            }
-            closeModal(document.getElementById('gaTransmutationNewModal'));
+            tmRequest(tmStoreUrl, 'POST', {
+                school_year: sy,
+                term: term,
+                program: program,
+                initial_from: from,
+                initial_to: to,
+                transmuted_grade: grade,
+                code: code,
+                remarks: remarks
+            }).then(function () {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Transmutation rule added successfully.');
+                }
+                window.location.reload();
+            }).catch(function (error) {
+                alert(error.message || 'Unable to save transmutation rule.');
+            });
             return;
         }
 
         if (event.target.matches('[data-ga-confirm-action]')) {
             if (activeAction === 'edit' && activeRow && activeRow.cells.length >= 9) {
-                activeRow.cells[0].textContent = (tmEditSy.value || '').trim();
-                activeRow.cells[1].textContent = (tmEditTerm.value || '').trim();
-                activeRow.cells[2].textContent = (tmEditProgram.value || '').trim();
-                setChip(activeRow.cells[3], cleanNumber(tmEditFrom.value));
-                setChip(activeRow.cells[4], cleanNumber(tmEditTo.value));
-                setChip(activeRow.cells[5], cleanNumber(tmEditGrade.value));
-                activeRow.cells[6].textContent = (tmEditCode.value || '').trim();
-                var remarks = (tmEditRemarks.value || '').trim();
-                activeRow.cells[7].textContent = remarks;
-                activeRow.cells[7].className = (remarks.toLowerCase().indexOf('fail') !== -1 || (tmEditCode.value || '').trim().toUpperCase() === 'F') ? 'ga-state-fail' : 'ga-state-pass';
-            }
+                var id = activeRow.getAttribute('data-transmutation-rule-id');
+                if (!id) {
+                    alert('Missing transmutation rule id.');
+                    return;
+                }
 
-            if (typeof showRegistrarToast === 'function') {
-                showRegistrarToast('Transmutation action completed.');
+                tmRequest(tmBuildUrl(tmUpdateUrlTemplate, id), 'PUT', {
+                    school_year: (tmEditSy.value || '').trim(),
+                    term: (tmEditTerm.value || '').trim(),
+                    program: (tmEditProgram.value || '').trim(),
+                    initial_from: cleanNumber(tmEditFrom.value),
+                    initial_to: cleanNumber(tmEditTo.value),
+                    transmuted_grade: cleanNumber(tmEditGrade.value),
+                    code: (tmEditCode.value || '').trim(),
+                    remarks: (tmEditRemarks.value || '').trim()
+                }).then(function () {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Transmutation rule updated successfully.');
+                    }
+                    window.location.reload();
+                }).catch(function (error) {
+                    alert(error.message || 'Unable to update transmutation rule.');
+                });
+            } else {
+                closeModal(actionModal);
             }
-            closeModal(actionModal);
             return;
         }
 
         if (event.target.matches('[data-ga-confirm-delete]')) {
             if (activeRow) {
-                activeRow.remove();
-            }
-            if (typeof showRegistrarToast === 'function') {
-                showRegistrarToast('Transmutation rule deleted successfully.');
+                var id = activeRow.getAttribute('data-transmutation-rule-id');
+                if (!id) {
+                    alert('Missing transmutation rule id.');
+                    return;
+                }
+
+                tmRequest(tmBuildUrl(tmDestroyUrlTemplate, id), 'DELETE').then(function () {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Transmutation rule deleted successfully.');
+                    }
+                    window.location.reload();
+                }).catch(function (error) {
+                    alert(error.message || 'Unable to delete transmutation rule.');
+                });
             }
             closeModal(deleteModal);
             return;

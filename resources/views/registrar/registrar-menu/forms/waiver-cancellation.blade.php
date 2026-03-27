@@ -88,48 +88,31 @@
                     </tr>
                 </thead>
                 <tbody id="wceTableBody">
-                    <tr data-row-id="1">
+                    @forelse($waiverRows as $record)
+                    <tr data-row-id="{{ $record->id }}">
                         <td style="text-align: center;"><input type="checkbox" class="wce-row-select" onchange="wceSyncSelectAll()"></td>
-                        <td>21-00010</td>
-                        <td><button type="button" class="doc-link-btn" onclick="wceOpenPreview(1)">Cerado, Roileen I.</button></td>
-                        <td>BSIT</td>
-                        <td>Fourth</td>
-                        <td>BSIT 4A</td>
+                        <td>{{ optional($record->student)->student_no ?: '-' }}</td>
+                        <td><button type="button" class="doc-link-btn" onclick="wceOpenPreview({{ $record->id }})">{{ optional($record->student)->name ?: '-' }}</button></td>
+                        <td>{{ $record->program ?: optional($record->student)->program ?: '-' }}</td>
+                        <td>{{ $record->year_level ?: optional($record->student)->year_level ?: '-' }}</td>
+                        <td>{{ $record->section ?: '-' }}</td>
                         <td style="text-align:center;">
-                            <div class="apst-action-btn" data-wce-menu-toggle="wceMenu-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="wceMenu-1">
-                                <button type="button" onclick="wceOpenEdit(1)">
+                            <div class="apst-action-btn" data-wce-menu-toggle="wceMenu-{{ $record->id }}" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                            <div class="apst-dropdown" id="wceMenu-{{ $record->id }}">
+                                <button type="button" onclick="wceOpenEdit({{ $record->id }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                                     Edit
                                 </button>
-                                <button type="button" class="apst-del-btn" onclick="wceOpenDelete(1)">
+                                <button type="button" class="apst-del-btn" onclick="wceOpenDelete({{ $record->id }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                     Delete
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    <tr data-row-id="2">
-                        <td style="text-align: center;"><input type="checkbox" class="wce-row-select" onchange="wceSyncSelectAll()"></td>
-                        <td>22-03124</td>
-                        <td><button type="button" class="doc-link-btn" onclick="wceOpenPreview(2)">Abenes, Cristine Grace Bernaldez</button></td>
-                        <td>BSCS</td>
-                        <td>Fourth</td>
-                        <td>BSCS 4A</td>
-                        <td style="text-align:center;">
-                            <div class="apst-action-btn" data-wce-menu-toggle="wceMenu-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="wceMenu-2">
-                                <button type="button" onclick="wceOpenEdit(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                                    Edit
-                                </button>
-                                <button type="button" class="apst-del-btn" onclick="wceOpenDelete(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @empty
+                    <tr><td colspan="7" style="text-align:center; color:#666;">No waiver records found.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -196,5 +179,12 @@
 @endsection
 
 @push('scripts')
+<script>
+window.wceConfig = {
+    csrfToken: @json(csrf_token()),
+    updateUrlTemplate: @json(route('registrar.registrar-menu.forms.waiver-cancellation.update', ['cancellationWaiver' => '__ID__'])),
+    destroyUrlTemplate: @json(route('registrar.registrar-menu.forms.waiver-cancellation.destroy', ['cancellationWaiver' => '__ID__']))
+};
+</script>
 <script src="{{ asset('js/waiver-cancellation.js') }}?v={{ time() }}"></script>
 @endpush
