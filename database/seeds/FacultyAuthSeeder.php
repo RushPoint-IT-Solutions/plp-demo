@@ -28,6 +28,7 @@ class FacultyAuthSeeder extends Seeder
                 'email' => 'faculty.demo@plp.local',
                 'password' => Hash::make('faculty'),
                 'module' => 'faculty',
+                'force_password_reset' => false,
                 'student_id' => null,
                 'faculty_id' => $faculty ? $faculty->id : null,
                 'registrar_id' => null,

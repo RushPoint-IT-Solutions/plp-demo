@@ -20,8 +20,18 @@ class RedirectIfAuthenticated
         if (Auth::guard($guard)->check()) {
             $user = Auth::guard($guard)->user();
 
-            if ($user && $user->module === 'student') {
-                return redirect()->route('student.section-offering');
+            if ($user) {
+                switch ($user->module) {
+                    case 'registrar':
+                        return redirect()->route('registrar.dashboard');
+                    case 'faculty':
+                        return redirect()->route('faculty.load');
+                    case 'applicant':
+                        return redirect()->route('applicant.application-form');
+                    case 'student':
+                    default:
+                        return redirect()->route('student.access-module');
+                }
             }
 
             return redirect('/home');

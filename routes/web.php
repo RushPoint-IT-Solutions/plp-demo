@@ -60,26 +60,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Module Login Routes
-|--------------------------------------------------------------------------
-| Each module (Registrar, Accounting, etc.) gets its own login page.
-| Student & Applicant also get their own login pages.
-*/
-Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module.login')
-    ->where('module', 'registrar|accounting|cashier|faculty|student|applicant');
-
-/*
-|--------------------------------------------------------------------------
-| Demo Login (No Backend Auth)
-|--------------------------------------------------------------------------
-| Clicking "Sign In" on any module login page just redirects straight
-| to that module's first page. No real authentication is performed.
-| Replace this with real auth when the backend team is ready.
-*/
-Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
-
-/*
-|--------------------------------------------------------------------------
 | Student Portal Routes
 |--------------------------------------------------------------------------
 */

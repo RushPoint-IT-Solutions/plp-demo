@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use App\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class RegistrarController extends Controller
@@ -632,21 +633,36 @@ class RegistrarController extends Controller
             'semester' => 'required|string',
         ]);
 
-        $student = Student::create($request->all());
+        $defaultPass = null;
 
-        // Phase 3: Auto-generate User Account for First Login Flow
-        $defaultPass = 'PLP-' . $student->student_no;
-        
-        User::create([
-            'name' => $student->name,
-            'username' => $student->student_no,
-            'password' => Hash::make($defaultPass),
-            'module' => 'student',
-            'force_password_reset' => true,
-            'student_id' => $student->id,
-        ]);
+        DB::transaction(function () use ($request, &$defaultPass) {
+            $student = Student::create($request->only([
+                'student_no',
+                'name',
+                'sex',
+                'age',
+                'college',
+                'program',
+                'curriculum',
+                'year_level',
+                'scholarship',
+                'school_year',
+                'semester',
+            ]));
 
-        return redirect()->route('registrar-menu.student-mgmt.student-enrollment')
+            $defaultPass = 'PLP-' . $student->student_no;
+
+            User::create([
+                'name' => $student->name,
+                'username' => $student->student_no,
+                'password' => Hash::make($defaultPass),
+                'module' => 'student',
+                'force_password_reset' => true,
+                'student_id' => $student->id,
+            ]);
+        });
+
+        return redirect()->route('registrar.registrar-menu.student-mgmt.student-enrollment')
             ->with('success', 'Student profile created!')
             ->with('success_password', $defaultPass);
     }
@@ -666,21 +682,24 @@ class RegistrarController extends Controller
             'name' => 'required|string',
         ]);
 
-        $faculty = Faculty::create($request->all());
+        $defaultPass = null;
 
-        // Phase 3: Auto-generate User Account for First Login Flow
-        $defaultPass = 'PLP-' . $faculty->code;
-        
-        User::create([
-            'name' => $faculty->name,
-            'username' => $faculty->code,
-            'password' => Hash::make($defaultPass),
-            'module' => 'faculty',
-            'force_password_reset' => true,
-            'faculty_id' => $faculty->id,
-        ]);
+        DB::transaction(function () use ($request, &$defaultPass) {
+            $faculty = Faculty::create($request->only(['code', 'name']));
 
-        return redirect()->route('registrar-menu.faculty-mgmt.faculty-create')
+            $defaultPass = 'PLP-' . $faculty->code;
+
+            User::create([
+                'name' => $faculty->name,
+                'username' => $faculty->code,
+                'password' => Hash::make($defaultPass),
+                'module' => 'faculty',
+                'force_password_reset' => true,
+                'faculty_id' => $faculty->id,
+            ]);
+        });
+
+        return redirect()->route('registrar.registrar-menu.faculty-mgmt.faculty-create')
             ->with('success', 'Faculty profile created!')
             ->with('success_password', $defaultPass);
     }

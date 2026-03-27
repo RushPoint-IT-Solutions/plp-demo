@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use App\User;
 use App\Registrar;
 use App\Faculty;
@@ -12,36 +11,50 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // 1. Create a Root Department
-        $department = Department::create([
+        // 1. Core records required by dependent seeders
+        Department::updateOrCreate(['code' => 'CS'], [
             'code' => 'CS',
             'description' => 'College of Computer Studies',
         ]);
 
-        // 2. Create a Root Faculty
-        $faculty = Faculty::create([
+        $faculty = Faculty::updateOrCreate(['code' => 'FAC-001'], [
             'code' => 'FAC-001',
-            'name' => 'John Doe',
+            'name' => 'Abejo, M.',
         ]);
 
-        // 3. Create a Root Registrar
-        $registrar = Registrar::create([
+        $registrar = Registrar::updateOrCreate(['code' => 'REG-001'], [
             'code' => 'REG-001',
             'name' => 'System Registrar',
             'email' => 'registrar@plp.edu.ph',
         ]);
 
-        // 4. Create the Root User Account
-        User::create([
+        // 2. Root admin account (not forced to reset) for immediate bootstrap access.
+        User::updateOrCreate(['username' => 'admin'], [
             'name' => 'System Registrar',
             'username' => 'admin',
             'email' => 'admin@plp.edu.ph',
             'password' => Hash::make('password'),
             'module' => 'registrar',
             'force_password_reset' => false,
+            'student_id' => null,
+            'faculty_id' => null,
             'registrar_id' => $registrar->id,
+            'applicant_id' => null,
+        ]);
+
+        // 3. Ensure fresh installs are fully testable with one command.
+        $this->call([
+            SemesterSeeder::class,
+            YearBlockSeeder::class,
+            ApplicantSeeder::class,
+            RegistrarAuthSeeder::class,
+            FacultyAuthSeeder::class,
+            StudentSeeder::class,
+            SubjectSeeder::class,
+            FacultySeeder::class,
+            StudentDemoDataSeeder::class,
         ]);
         
-        $this->command->info('Database seeded successfully with a root registrar user! Username: admin | Password: password');
+        $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student');
     }
 }

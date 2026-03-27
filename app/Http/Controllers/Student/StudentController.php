@@ -28,7 +28,7 @@ class StudentController extends Controller
             return Student::with('subjects')->where('student_no', $user->username)->first();
         }
 
-        return Student::with('subjects')->first();
+        return null; // Don't return a random student for demo purposes anymore.
     }
 
     /**

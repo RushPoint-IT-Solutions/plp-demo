@@ -30,7 +30,7 @@
     <div class="panel-box" style="padding: 20px; max-width: 600px;">
         <h3>Add New Faculty</h3>
         <hr>
-        <form action="{{ route('registrar-menu.faculty-mgmt.faculty-create.store') }}" method="POST">
+        <form action="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create.store') }}" method="POST">
             @csrf
             <div style="margin-bottom: 15px;">
                 <label style="display:block; font-weight:bold; margin-bottom:5px;">Faculty Code (e.g. FAC-002)</label>

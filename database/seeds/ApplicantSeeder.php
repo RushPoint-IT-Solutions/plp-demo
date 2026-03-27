@@ -45,7 +45,7 @@ class ApplicantSeeder extends Seeder
                 // Exam
                 'exam_date'           => '2026-04-10 08:00:00',
                 'exam_room'           => 'Room 201 - Main Building',
-                'exam_result_status'  => null,
+                'exam_result_status'  => 'Pending',
                 'exam_score'          => null,
                 'created_at'          => now(),
                 'updated_at'          => now(),

@@ -9,6 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    private function hasRequiredRoleLink(User $user, string $module): bool
+    {
+        switch ($module) {
+            case 'student':
+                return !is_null($user->student_id);
+            case 'faculty':
+                return !is_null($user->faculty_id);
+            case 'registrar':
+                return !is_null($user->registrar_id);
+            default:
+                return true;
+        }
+    }
+
     /**
      * Show the admin access module page.
      */
@@ -86,9 +100,20 @@ class AdminController extends Controller
         }
 
         if ($isAuthenticated) {
+            $user = Auth::user();
+            if (!$user || !$this->hasRequiredRoleLink($user, 'student')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'username' => 'Student account is not linked yet. Please contact the registrar.',
+                ])->withInput($request->only('username', 'remember'));
+            }
+
             $request->session()->regenerate();
 
-            return redirect()->route('student.section-offering');
+            return redirect()->route('student.access-module');
         }
 
         return back()->withErrors([
@@ -119,6 +144,17 @@ class AdminController extends Controller
         if (!$isAuthenticated) {
             return back()->withErrors([
                 'username' => 'Invalid ' . $module . ' credentials.',
+            ])->withInput($request->only('username', 'remember'));
+        }
+
+        $user = Auth::user();
+        if (!$user || !$this->hasRequiredRoleLink($user, $module)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'username' => ucfirst($module) . ' account is not linked yet. Please contact the administrator.',
             ])->withInput($request->only('username', 'remember'));
         }
 

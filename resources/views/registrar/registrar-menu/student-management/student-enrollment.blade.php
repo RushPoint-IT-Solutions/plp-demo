@@ -351,7 +351,7 @@
     <div class="pf-modal-overlay" id="seAddStudentModal" style="display:none;">
         <div class="pf-modal-box" style="max-width:520px;">
             <div class="pf-modal-title">Add Student</div>
-            <form action="{{ route('registrar-menu.student-mgmt.student-enrollment.store') }}" method="POST">
+            <form action="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment.store') }}" method="POST">
                 @csrf
                 <div class="se-modal-grid">
                     <div class="se-modal-field">

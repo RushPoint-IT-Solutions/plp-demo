@@ -4,22 +4,44 @@ namespace App\Http\Controllers\Faculty;
 
 use App\Http\Controllers\Controller;
 use App\Subject;
-use App\FacultyEvaluation;
 use App\StudentSubjectGrade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class FacultyController extends Controller
 {
-    // Demo: faculty name used to filter subjects
-    private const FACULTY = 'Abejo, M.';
+    private function currentFaculty()
+    {
+        $user = auth()->user();
+        if ($user && $user->faculty_id) {
+            return \App\Faculty::find($user->faculty_id);
+        }
+        return null;
+    }
+
+    private function subjectsForFaculty($faculty)
+    {
+        if (!$faculty) {
+            return Subject::whereRaw('1 = 0');
+        }
+
+        return Subject::where(function ($query) use ($faculty) {
+            $query->where('faculty_id', $faculty->id);
+
+            if (Schema::hasColumn('subjects', 'faculty')) {
+                $query->orWhere('faculty', $faculty->name);
+            }
+        });
+    }
 
     /**
      * Faculty Load – assigned subjects/schedule.
      */
     public function facultyLoad()
     {
-        $subjects = Subject::where('faculty', self::FACULTY)->get();
-        return view('faculty.faculty-load', compact('subjects'));
+        $faculty = $this->currentFaculty();
+        $subjects = $this->subjectsForFaculty($faculty)->get();
+        return view('faculty.faculty-load', compact('subjects', 'faculty'));
     }
 
     /**
@@ -27,7 +49,8 @@ class FacultyController extends Controller
      */
     public function classList()
     {
-        $subjects = Subject::where('faculty', self::FACULTY)
+        $faculty = $this->currentFaculty();
+        $subjects = $this->subjectsForFaculty($faculty)
             ->with('students')
             ->get();
 
@@ -58,7 +81,8 @@ class FacultyController extends Controller
      */
     public function gradingSheet()
     {
-        $subjects = Subject::where('faculty', self::FACULTY)
+        $faculty = $this->currentFaculty();
+        $subjects = $this->subjectsForFaculty($faculty)
             ->with(['students', 'studentGrades'])
             ->get();
 
@@ -104,7 +128,9 @@ class FacultyController extends Controller
             'grades' => 'required|array',
         ]);
 
-        $subject = Subject::with('students')->findOrFail($request->input('subject_id'));
+        $subject = $this->subjectsForFaculty($this->currentFaculty())
+            ->with('students')
+            ->findOrFail($request->input('subject_id'));
         $gradesInput = $request->input('grades', []);
 
         foreach ($subject->students as $student) {
@@ -151,7 +177,7 @@ class FacultyController extends Controller
      */
     public function evaluation()
     {
-        $subjects = Subject::where('faculty', self::FACULTY)
+        $subjects = $this->subjectsForFaculty($this->currentFaculty())
             ->with('evaluations')
             ->get();
 
