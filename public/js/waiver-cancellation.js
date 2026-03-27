@@ -122,6 +122,37 @@ function wcePrintSelected() {
     wcePrintSheets(sheets);
 }
 
+function wceOpenPreviewFromSelection() {
+    var checked = document.querySelector('#wceTableBody .wce-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#wceTableBody tr[data-row-id]');
+    if (!row) return;
+    var rowId = row.getAttribute('data-row-id');
+    wceOpenPreview(rowId);
+}
+
+function wceOpenBlankPreview() {
+    var sheet = document.getElementById('wcePreviewSheet');
+    if (!sheet) return;
+    sheet.innerHTML = wceBuildTemplate({
+        studentNo: '',
+        studentName: '',
+        program: '',
+        year: '',
+        section: ''
+    });
+    document.getElementById('wcePreviewModal').style.display = 'flex';
+    document.body.classList.add('wce-preview-open');
+}
+
+function wceFilterTable(query) {
+    var q = String(query || '').toLowerCase().trim();
+    document.querySelectorAll('#wceTableBody tr').forEach(function(row) {
+        var text = (row.textContent || '').toLowerCase();
+        row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
+    });
+    wceSyncSelectAll();
+}
+
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('wce-printing');
     document.body.classList.remove('wce-preview-open');

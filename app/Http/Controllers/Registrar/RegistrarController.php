@@ -311,6 +311,22 @@ class RegistrarController extends Controller
         ]);
     }
 
+    /**
+     * Process > Reports > UNIFAST
+     */
+    public function reportsUnifast()
+    {
+        return view('registrar.process.reports-unifast');
+    }
+
+    /**
+     * Process > Reports > OSS - NSTP Form
+     */
+    public function reportsOssNstpForm()
+    {
+        return view('registrar.process.reports-oss-nstp-form');
+    }
+
     private function buildMonthlyCounts(string $table, int $months): array
     {
         $fallback = $this->buildDemoMovingSeries($months, 45, 11, 5, (int) Carbon::now()->format('z') + 3);
@@ -652,6 +668,14 @@ class RegistrarController extends Controller
     public function formsDiploma()
     {
         return view('registrar.registrar-menu.forms.diploma');
+    }
+
+    /**
+     * Registrar > Forms > Graduation Clearance
+     */
+    public function formsGraduationClearance()
+    {
+        return view('registrar.registrar-menu.forms.graduation-clearance');
     }
 
     /**

@@ -63,6 +63,10 @@
                 </div>
             </div>
             <div style="display:flex; justify-content:flex-end; margin-top:15px; gap: 8px;">
+                <div style="margin-right:auto; min-width:260px; max-width:340px; width:100%;">
+                    <input type="text" class="app-filter-select" style="width:100%;" placeholder="Search student..." oninput="hdFilterTable(this.value)">
+                </div>
+                <button type="button" class="req-btn-save" style="min-width: 150px; font-weight: 700;" onclick="hdOpenBlankPreview()">Preview Form</button>
                 <button type="button" class="req-btn-save" style="min-width: 160px; font-weight: 700;" onclick="hdPrintSelected()">Print Selected</button>
                 <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;">Set</button>
             </div>

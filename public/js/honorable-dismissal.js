@@ -161,6 +161,36 @@ function hdPrintSelected() {
     hdPrintSheets(sheets);
 }
 
+function hdOpenPreviewFromSelection() {
+    var checked = document.querySelector('#hdTableBody .hd-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#hdTableBody tr[data-row-id]');
+    if (!row) return;
+    var rowId = row.getAttribute('data-row-id');
+    hdOpenPreview(rowId);
+}
+
+function hdOpenBlankPreview() {
+    var sheet = document.getElementById('hdPreviewSheet');
+    if (!sheet) return;
+
+    sheet.innerHTML = hdBuildTemplate(
+        { studentNo:'', studentName:'', program:'', year:'', section:'' },
+        { studentNo:'', studentName:'', program:'', hdNo:'', hdDate:'' }
+    );
+
+    document.getElementById('hdPreviewModal').style.display = 'flex';
+    document.body.classList.add('hd-preview-open');
+}
+
+function hdFilterTable(query) {
+    var q = String(query || '').toLowerCase().trim();
+    document.querySelectorAll('#hdTableBody tr').forEach(function(row) {
+        var text = (row.textContent || '').toLowerCase();
+        row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
+    });
+    hdSyncSelectAll();
+}
+
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('hd-printing');
     document.body.classList.remove('hd-preview-open');

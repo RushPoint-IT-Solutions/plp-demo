@@ -124,6 +124,37 @@ function pcePrintSelected() {
     pcePrintSheets(sheets);
 }
 
+function pceOpenPreviewFromSelection() {
+    var checked = document.querySelector('#pceTableBody .pce-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#pceTableBody tr[data-row-id]');
+    if (!row) return;
+    var rowId = row.getAttribute('data-row-id');
+    pceOpenPreview(rowId);
+}
+
+function pceOpenBlankPreview() {
+    var sheet = document.getElementById('pcePreviewSheet');
+    if (!sheet) return;
+    sheet.innerHTML = pceBuildTemplate({
+        studentNo: '',
+        studentName: '',
+        program: '',
+        year: '',
+        section: ''
+    });
+    document.getElementById('pcePreviewModal').style.display = 'flex';
+    document.body.classList.add('pce-preview-open');
+}
+
+function pceFilterTable(query) {
+    var q = String(query || '').toLowerCase().trim();
+    document.querySelectorAll('#pceTableBody tr').forEach(function(row) {
+        var text = (row.textContent || '').toLowerCase();
+        row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
+    });
+    pceSyncSelectAll();
+}
+
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('pce-printing');
     document.body.classList.remove('pce-preview-open');
