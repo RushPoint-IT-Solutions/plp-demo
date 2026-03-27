@@ -17,6 +17,8 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+Route::get('/password/setup', 'Auth\FirstLoginPasswordController@show')->name('password.first_reset');
+Route::post('/password/setup', 'Auth\FirstLoginPasswordController@update')->name('password.first_reset.update');
 
 Route::get('/home', 'HomeController@index')->name('home');
 
@@ -81,7 +83,7 @@ Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login'
 | Student Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('student')->name('student.')->middleware(['auth', 'student.user'])->group(function () {
+Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 'force_password_reset'])->group(function () {
     Route::get('/', function () {
         return view('student.access-module');
     })->name('access-module');
@@ -100,7 +102,7 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user'])
 | Registrar Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('registrar')->name('registrar.')->group(function () {
+Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
 
@@ -237,7 +239,7 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
 | Applicant Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('applicant')->name('applicant.')->group(function () {
+Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
     Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
     Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
@@ -249,7 +251,7 @@ Route::prefix('applicant')->name('applicant.')->group(function () {
 | Faculty Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('faculty')->name('faculty.')->group(function () {
+Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/load', 'Faculty\FacultyController@facultyLoad')->name('load');
     Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
     Route::get('/calendar', 'Faculty\FacultyController@calendar')->name('calendar');
