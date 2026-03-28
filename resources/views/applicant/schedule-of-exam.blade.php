@@ -9,16 +9,32 @@
         <div class="app-filter-row">
             <div class="app-filter-group" style="max-width: 260px;">
                 <label class="app-filter-label">Applicant ID</label>
-                <input type="text" class="app-filter-input" value="{{ $applicant->applicant_id }}">
+                <input type="text" class="app-filter-input" value="{{ $applicant->applicant_id }}" readonly>
             </div>
             <div class="app-filter-group" style="max-width: 260px;">
                 <label class="app-filter-label">Applicant Name</label>
-                <input type="text" class="app-filter-input" value="{{ $applicant->first_name }} {{ $applicant->last_name }}">
+                <input type="text" class="app-filter-input" value="{{ $applicant->first_name }} {{ $applicant->last_name }}" readonly>
             </div>
         </div>
     </div>
 
     <div class="student-table-wrapper applicant-content-shell applicant-content-shell-schedule">
+        <div class="applicant-permit-box" style="margin-bottom: 14px;">
+            <div class="applicant-reminders" style="padding-bottom: 6px;">
+                <p class="reminders-heading"><strong>EXAM SCHEDULE DETAILS</strong></p>
+                @if($applicant->exam_date)
+                    <ul>
+                        <li><strong>Date:</strong> {{ optional($applicant->exam_date)->format('F d, Y') }}</li>
+                        <li><strong>Time:</strong> {{ optional($applicant->exam_date)->format('h:i A') }}</li>
+                        <li><strong>Room:</strong> {{ $applicant->exam_room ?: 'TBA' }}</li>
+                        <li><strong>Status:</strong> {{ $applicant->exam_result_status ?: 'Pending' }}</li>
+                    </ul>
+                @else
+                    <p style="margin:0; color:#555;">Your exam schedule is not yet available. Please check back later.</p>
+                @endif
+            </div>
+        </div>
+
         <div class="applicant-permit-box applicant-permit-box-schedule">
             <div class="applicant-reminders applicant-reminders-schedule">
                 <p class="reminders-heading"><strong>REMINDERS:</strong></p>

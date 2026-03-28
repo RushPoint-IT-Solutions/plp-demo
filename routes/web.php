@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    return redirect('/access');
+});
+
+Route::get('/access', function () {
+    return view('student.access-module');
+})->name('access-module');
+
+Route::get('/admin', function () {
     return redirect('/admin/access');
 });
 
@@ -249,8 +257,17 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('master-files')->name('master-files.')->group(function () {
             Route::get('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFile')->name('faculty-file');
+            Route::post('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFileStore')->name('faculty-file.store');
+            Route::put('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileUpdate')->name('faculty-file.update');
+            Route::delete('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileDestroy')->name('faculty-file.destroy');
             Route::get('/student-profile', 'Registrar\Services\AdminToolsController@studentProfile')->name('student-profile');
+            Route::post('/student-profile', 'Registrar\Services\AdminToolsController@studentProfileStore')->name('student-profile.store');
+            Route::put('/student-profile/{masterStudentProfile}', 'Registrar\Services\AdminToolsController@studentProfileUpdate')->name('student-profile.update');
+            Route::delete('/student-profile/{masterStudentProfile}', 'Registrar\Services\AdminToolsController@studentProfileDestroy')->name('student-profile.destroy');
             Route::get('/student-grade-file', 'Registrar\Services\AdminToolsController@studentGradeFile')->name('student-grade-file');
+            Route::post('/student-grade-file', 'Registrar\Services\AdminToolsController@studentGradeFileStore')->name('student-grade-file.store');
+            Route::put('/student-grade-file/{masterStudentGradeFile}', 'Registrar\Services\AdminToolsController@studentGradeFileUpdate')->name('student-grade-file.update');
+            Route::delete('/student-grade-file/{masterStudentGradeFile}', 'Registrar\Services\AdminToolsController@studentGradeFileDestroy')->name('student-grade-file.destroy');
         });
 
         Route::prefix('student-maintenance')->name('student-maintenance.')->group(function () {

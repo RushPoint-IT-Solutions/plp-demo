@@ -327,14 +327,43 @@
 @push('scripts')
 @if(!$isConfigMode)
 <script>
-    var ffRows = [
-        { id: 'ff-1', code: '01A', name: 'Dela Cruz, Juan', department: 'Computer Studies', status: 'Active' },
-        { id: 'ff-2', code: '02A', name: 'Benedict, John', department: 'Computer Studies', status: 'Inactive' },
-        { id: 'ff-3', code: '03A', name: 'Rivera, Angelo', department: 'Engineering', status: 'Active' },
-        { id: 'ff-4', code: '04A', name: 'Austero, Andrea Jane', department: 'Engineering', status: 'Active' },
-        { id: 'ff-5', code: '05A', name: 'Santos, Maria', department: 'Information Systems', status: 'Inactive' },
-        { id: 'ff-6', code: '06A', name: 'Bares, Mark Jay', department: 'Computer Studies', status: 'Active' }
-    ];
+    var ffRows = @json($ffRows ?? []);
+    var ffCsrf = '{{ csrf_token() }}';
+    var ffApi = {
+        store: '{{ route('registrar.admin-tools.master-files.faculty-file.store') }}',
+        updateTemplate: '{{ route('registrar.admin-tools.master-files.faculty-file.update', ['masterFacultyFile' => '__ID__']) }}',
+        destroyTemplate: '{{ route('registrar.admin-tools.master-files.faculty-file.destroy', ['masterFacultyFile' => '__ID__']) }}'
+    };
+
+    function ffBuildUrl(template, id) {
+        return template.replace('__ID__', encodeURIComponent(String(id)));
+    }
+
+    function ffRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': ffCsrf,
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || data.ok === false) {
+                    var message = (data && data.message) ? data.message : 'Request failed.';
+                    if (data && data.errors) {
+                        var firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            });
+        });
+    }
 
     function ffEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -439,7 +468,7 @@
     }
 
     function ffOpenEditModal(id) {
-        var row = ffRows.find(function(item) { return item.id === id; });
+        var row = ffRows.find(function(item) { return String(item.id) === String(id); });
         if (!row) return;
 
         document.getElementById('ffFormTitle').textContent = 'EDIT FACULTY RECORD';
@@ -468,23 +497,31 @@
             return;
         }
 
-        if (!editingId) {
-            ffRows.unshift({
-                id: 'ff-' + Date.now(),
-                code: code,
-                name: name,
-                department: department,
-                status: status
-            });
-        } else {
-            ffRows = ffRows.map(function(item) {
-                if (item.id !== editingId) return item;
-                return { id: item.id, code: code, name: name, department: department, status: status };
-            });
-        }
+        var payload = {
+            code: code,
+            name: name,
+            department: department,
+            status: status
+        };
 
-        ffCloseFormModal();
-        ffRenderTable();
+        var request = !editingId
+            ? ffRequest(ffApi.store, 'POST', payload)
+            : ffRequest(ffBuildUrl(ffApi.updateTemplate, editingId), 'PUT', payload);
+
+        request.then(function(data) {
+            if (!editingId) {
+                ffRows.unshift(data.row);
+            } else {
+                ffRows = ffRows.map(function(item) {
+                    return String(item.id) === String(editingId) ? data.row : item;
+                });
+            }
+
+            ffCloseFormModal();
+            ffRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save faculty record.');
+        });
     }
 
     function ffOpenDeleteModal(id) {
@@ -499,9 +536,15 @@
 
     function ffConfirmDelete() {
         var id = document.getElementById('ffDeleteId').value;
-        ffRows = ffRows.filter(function(item) { return item.id !== id; });
-        ffCloseDeleteModal();
-        ffRenderTable();
+        ffRequest(ffBuildUrl(ffApi.destroyTemplate, id), 'DELETE', null).then(function() {
+            ffRows = ffRows.filter(function(item) {
+                return String(item.id) !== String(id);
+            });
+            ffCloseDeleteModal();
+            ffRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to delete faculty record.');
+        });
     }
 
     document.getElementById('ffSearchBtn').addEventListener('click', ffRenderTable);
@@ -524,7 +567,7 @@
         var row = event.target.closest('#ffTableBody tr[data-ff-id]');
         if (row && !event.target.closest('.apst-dropdown') && !event.target.closest('.apst-action-btn')) {
             var rowId = row.getAttribute('data-ff-id');
-            var selected = ffRows.find(function(item) { return item.id === rowId; });
+            var selected = ffRows.find(function(item) { return String(item.id) === String(rowId); });
             if (selected) {
                 var url = '{{ route('registrar.admin-tools.master-files.faculty-file') }}' +
                     '?view=config' +

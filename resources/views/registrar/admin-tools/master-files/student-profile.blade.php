@@ -477,14 +477,43 @@
 @if(!$isConfigMode && !$isApplicationMode)
 @push('scripts')
 <script>
-    var spRows = [
-        { id: 'sp-1', studentId: '2223A8137', name: 'Bares, Mark Jay', course: 'Bachelor of Science in Computer Science', yearLevel: 'Fourth' },
-        { id: 'sp-2', studentId: '2223A8138', name: 'Austero, Andrea Jane', course: 'Bachelor of Science in Computer Science', yearLevel: 'Fourth' },
-        { id: 'sp-3', studentId: '2223A8141', name: 'Dela Cruz, Juan', course: 'Bachelor of Science in Information Technology', yearLevel: 'Third' },
-        { id: 'sp-4', studentId: '2223A8148', name: 'Rivera, Angelo', course: 'Bachelor of Science in Computer Engineering', yearLevel: 'Second' },
-        { id: 'sp-5', studentId: '2223A8154', name: 'Santos, Maria', course: 'Bachelor of Science in Information Systems', yearLevel: 'Second' },
-        { id: 'sp-6', studentId: '2223A8160', name: 'Benedict, John', course: 'Bachelor of Science in Computer Science', yearLevel: 'First' }
-    ];
+    var spRows = @json($spRows ?? []);
+    var spCsrf = '{{ csrf_token() }}';
+    var spApi = {
+        store: '{{ route('registrar.admin-tools.master-files.student-profile.store') }}',
+        updateTemplate: '{{ route('registrar.admin-tools.master-files.student-profile.update', ['masterStudentProfile' => '__ID__']) }}',
+        destroyTemplate: '{{ route('registrar.admin-tools.master-files.student-profile.destroy', ['masterStudentProfile' => '__ID__']) }}'
+    };
+
+    function spBuildUrl(template, id) {
+        return template.replace('__ID__', encodeURIComponent(String(id)));
+    }
+
+    function spRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': spCsrf,
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || data.ok === false) {
+                    var message = (data && data.message) ? data.message : 'Request failed.';
+                    if (data && data.errors) {
+                        var firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            });
+        });
+    }
 
     function spEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -589,7 +618,7 @@
     }
 
     function spOpenEditModal(id) {
-        var row = spRows.find(function(item) { return item.id === id; });
+        var row = spRows.find(function(item) { return String(item.id) === String(id); });
         if (!row) return;
 
         document.getElementById('spFormTitle').textContent = 'EDIT STUDENT PROFILE';
@@ -618,29 +647,31 @@
             return;
         }
 
-        if (!editingId) {
-            spRows.unshift({
-                id: 'sp-' + Date.now(),
-                studentId: studentId,
-                name: name,
-                course: course,
-                yearLevel: yearLevel
-            });
-        } else {
-            spRows = spRows.map(function(item) {
-                if (item.id !== editingId) return item;
-                return {
-                    id: item.id,
-                    studentId: studentId,
-                    name: name,
-                    course: course,
-                    yearLevel: yearLevel
-                };
-            });
-        }
+        var payload = {
+            student_id: studentId,
+            name: name,
+            course: course,
+            year_level: yearLevel
+        };
 
-        spCloseFormModal();
-        spRenderTable();
+        var request = !editingId
+            ? spRequest(spApi.store, 'POST', payload)
+            : spRequest(spBuildUrl(spApi.updateTemplate, editingId), 'PUT', payload);
+
+        request.then(function(data) {
+            if (!editingId) {
+                spRows.unshift(data.row);
+            } else {
+                spRows = spRows.map(function(item) {
+                    return String(item.id) === String(editingId) ? data.row : item;
+                });
+            }
+
+            spCloseFormModal();
+            spRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save student profile.');
+        });
     }
 
     function spOpenDeleteModal(id) {
@@ -655,9 +686,15 @@
 
     function spConfirmDelete() {
         var id = document.getElementById('spDeleteId').value;
-        spRows = spRows.filter(function(item) { return item.id !== id; });
-        spCloseDeleteModal();
-        spRenderTable();
+        spRequest(spBuildUrl(spApi.destroyTemplate, id), 'DELETE', null).then(function() {
+            spRows = spRows.filter(function(item) {
+                return String(item.id) !== String(id);
+            });
+            spCloseDeleteModal();
+            spRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to delete student profile.');
+        });
     }
 
     document.getElementById('spSearchBtn').addEventListener('click', spRenderTable);
@@ -680,7 +717,7 @@
         var row = event.target.closest('#spTableBody tr[data-sp-id]');
         if (row && !event.target.closest('.apst-dropdown') && !event.target.closest('.apst-action-btn')) {
             var rowId = row.getAttribute('data-sp-id');
-            var selected = spRows.find(function(item) { return item.id === rowId; });
+            var selected = spRows.find(function(item) { return String(item.id) === String(rowId); });
             if (selected) {
                 var url = '{{ route('registrar.admin-tools.master-files.student-profile') }}' +
                     '?view=config' +

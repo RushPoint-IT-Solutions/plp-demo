@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Registrar\Services;
 
 use App\BedDay;
 use App\BedStudentStatus;
+use App\Faculty;
 use App\Http\Controllers\Controller;
+use App\MasterFacultyFile;
+use App\MasterStudentGradeFile;
+use App\MasterStudentProfileFile;
 use App\Student;
 use App\StudentUpdateRun;
 use App\SystemAnnouncement;
@@ -508,11 +512,110 @@ class AdminToolsController extends Controller
     // Master Files
     public function facultyFile()
     {
-        return view('registrar.admin-tools.master-files.faculty-file');
+        $ffRows = [];
+
+        if (Schema::hasTable('master_faculty_files')) {
+            if (MasterFacultyFile::query()->count() === 0) {
+                $this->seedMasterFacultyFiles();
+            }
+
+            $ffRows = MasterFacultyFile::query()
+                ->orderBy('name')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'code' => (string) $row->code,
+                        'name' => (string) $row->name,
+                        'department' => (string) $row->department,
+                        'status' => (string) $row->status,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('registrar.admin-tools.master-files.faculty-file', compact('ffRows'));
+    }
+
+    public function facultyFileStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:60|unique:master_faculty_files,code',
+            'name' => 'required|string|max:190',
+            'department' => 'required|string|max:190',
+            'status' => 'required|string|in:Active,Inactive',
+        ]);
+
+        $row = MasterFacultyFile::create($validated);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $row->id,
+                'code' => (string) $row->code,
+                'name' => (string) $row->name,
+                'department' => (string) $row->department,
+                'status' => (string) $row->status,
+            ],
+        ]);
+    }
+
+    public function facultyFileUpdate(Request $request, MasterFacultyFile $masterFacultyFile): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:60|unique:master_faculty_files,code,' . $masterFacultyFile->id,
+            'name' => 'required|string|max:190',
+            'department' => 'required|string|max:190',
+            'status' => 'required|string|in:Active,Inactive',
+        ]);
+
+        $masterFacultyFile->update($validated);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $masterFacultyFile->id,
+                'code' => (string) $masterFacultyFile->code,
+                'name' => (string) $masterFacultyFile->name,
+                'department' => (string) $masterFacultyFile->department,
+                'status' => (string) $masterFacultyFile->status,
+            ],
+        ]);
+    }
+
+    public function facultyFileDestroy(MasterFacultyFile $masterFacultyFile): JsonResponse
+    {
+        $masterFacultyFile->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     public function studentProfile()
     {
+        $spRows = [];
+
+        if (Schema::hasTable('master_student_profiles')) {
+            if (MasterStudentProfileFile::query()->count() === 0) {
+                $this->seedMasterStudentProfileFiles();
+            }
+
+            $spRows = MasterStudentProfileFile::query()
+                ->orderBy('student_name')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'studentId' => (string) $row->student_no,
+                        'name' => (string) $row->student_name,
+                        'course' => (string) $row->course,
+                        'yearLevel' => (string) $row->year_level,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
         $studentNo = request('student_id');
         $previewProfile = null;
 
@@ -524,12 +627,161 @@ class AdminToolsController extends Controller
             $previewProfile = StudentProfile::orderBy('id')->first();
         }
 
-        return view('registrar.admin-tools.master-files.student-profile', compact('previewProfile'));
+        return view('registrar.admin-tools.master-files.student-profile', compact('previewProfile', 'spRows'));
+    }
+
+    public function studentProfileStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|string|max:80|unique:master_student_profiles,student_no',
+            'name' => 'required|string|max:190',
+            'course' => 'required|string|max:190',
+            'year_level' => 'required|string|max:30',
+        ]);
+
+        $row = MasterStudentProfileFile::create([
+            'student_no' => $validated['student_id'],
+            'student_name' => $validated['name'],
+            'course' => $validated['course'],
+            'year_level' => $validated['year_level'],
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $row->id,
+                'studentId' => (string) $row->student_no,
+                'name' => (string) $row->student_name,
+                'course' => (string) $row->course,
+                'yearLevel' => (string) $row->year_level,
+            ],
+        ]);
+    }
+
+    public function studentProfileUpdate(Request $request, MasterStudentProfileFile $masterStudentProfile): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|string|max:80|unique:master_student_profiles,student_no,' . $masterStudentProfile->id,
+            'name' => 'required|string|max:190',
+            'course' => 'required|string|max:190',
+            'year_level' => 'required|string|max:30',
+        ]);
+
+        $masterStudentProfile->update([
+            'student_no' => $validated['student_id'],
+            'student_name' => $validated['name'],
+            'course' => $validated['course'],
+            'year_level' => $validated['year_level'],
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $masterStudentProfile->id,
+                'studentId' => (string) $masterStudentProfile->student_no,
+                'name' => (string) $masterStudentProfile->student_name,
+                'course' => (string) $masterStudentProfile->course,
+                'yearLevel' => (string) $masterStudentProfile->year_level,
+            ],
+        ]);
+    }
+
+    public function studentProfileDestroy(MasterStudentProfileFile $masterStudentProfile): JsonResponse
+    {
+        $masterStudentProfile->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     public function studentGradeFile()
     {
-        return view('registrar.admin-tools.master-files.student-grade-file');
+        $sgfRows = [];
+
+        if (Schema::hasTable('master_student_grade_files')) {
+            if (MasterStudentGradeFile::query()->count() === 0) {
+                $this->seedMasterStudentGradeFiles();
+            }
+
+            $sgfRows = MasterStudentGradeFile::query()
+                ->orderBy('student_name')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'studentId' => (string) $row->student_no,
+                        'name' => (string) $row->student_name,
+                        'course' => (string) $row->course,
+                        'yearLevel' => (string) $row->year_level,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('registrar.admin-tools.master-files.student-grade-file', compact('sgfRows'));
+    }
+
+    public function studentGradeFileStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|string|max:80|unique:master_student_grade_files,student_no',
+            'name' => 'required|string|max:190',
+            'course' => 'required|string|max:190',
+            'year_level' => 'required|string|max:30',
+        ]);
+
+        $row = MasterStudentGradeFile::create([
+            'student_no' => $validated['student_id'],
+            'student_name' => $validated['name'],
+            'course' => $validated['course'],
+            'year_level' => $validated['year_level'],
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $row->id,
+                'studentId' => (string) $row->student_no,
+                'name' => (string) $row->student_name,
+                'course' => (string) $row->course,
+                'yearLevel' => (string) $row->year_level,
+            ],
+        ]);
+    }
+
+    public function studentGradeFileUpdate(Request $request, MasterStudentGradeFile $masterStudentGradeFile): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|string|max:80|unique:master_student_grade_files,student_no,' . $masterStudentGradeFile->id,
+            'name' => 'required|string|max:190',
+            'course' => 'required|string|max:190',
+            'year_level' => 'required|string|max:30',
+        ]);
+
+        $masterStudentGradeFile->update([
+            'student_no' => $validated['student_id'],
+            'student_name' => $validated['name'],
+            'course' => $validated['course'],
+            'year_level' => $validated['year_level'],
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $masterStudentGradeFile->id,
+                'studentId' => (string) $masterStudentGradeFile->student_no,
+                'name' => (string) $masterStudentGradeFile->student_name,
+                'course' => (string) $masterStudentGradeFile->course,
+                'yearLevel' => (string) $masterStudentGradeFile->year_level,
+            ],
+        ]);
+    }
+
+    public function studentGradeFileDestroy(MasterStudentGradeFile $masterStudentGradeFile): JsonResponse
+    {
+        $masterStudentGradeFile->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     // Student Maintenance
@@ -896,6 +1148,99 @@ class AdminToolsController extends Controller
                 'no_payment' => false,
                 'no_section' => false,
             ]);
+        }
+    }
+
+    private function seedMasterFacultyFiles(): void
+    {
+        $facultyRows = Faculty::query()
+            ->orderBy('name')
+            ->limit(50)
+            ->get(['id', 'code', 'name']);
+
+        if ($facultyRows->count()) {
+            foreach ($facultyRows as $facultyRow) {
+                MasterFacultyFile::create([
+                    'code' => (string) ($facultyRow->code ?: ('FAC-' . str_pad((string) $facultyRow->id, 4, '0', STR_PAD_LEFT))),
+                    'name' => (string) $facultyRow->name,
+                    'department' => 'Computer Studies',
+                    'status' => 'Active',
+                ]);
+            }
+
+            return;
+        }
+
+        $fallbackRows = [
+            ['code' => '01A', 'name' => 'Dela Cruz, Juan', 'department' => 'Computer Studies', 'status' => 'Active'],
+            ['code' => '02A', 'name' => 'Benedict, John', 'department' => 'Computer Studies', 'status' => 'Inactive'],
+            ['code' => '03A', 'name' => 'Rivera, Angelo', 'department' => 'Engineering', 'status' => 'Active'],
+        ];
+
+        foreach ($fallbackRows as $row) {
+            MasterFacultyFile::create($row);
+        }
+    }
+
+    private function seedMasterStudentProfileFiles(): void
+    {
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(80)
+            ->get(['student_no', 'name', 'program', 'year_level']);
+
+        if ($students->count()) {
+            foreach ($students as $student) {
+                MasterStudentProfileFile::create([
+                    'student_no' => (string) $student->student_no,
+                    'student_name' => (string) $student->name,
+                    'course' => (string) ($student->program ?: 'Not Set'),
+                    'year_level' => (string) ($student->year_level ?: 'Not Set'),
+                ]);
+            }
+
+            return;
+        }
+
+        $fallbackRows = [
+            ['student_no' => '2223A8137', 'student_name' => 'Bares, Mark Jay', 'course' => 'Bachelor of Science in Computer Science', 'year_level' => 'Fourth'],
+            ['student_no' => '2223A8138', 'student_name' => 'Austero, Andrea Jane', 'course' => 'Bachelor of Science in Computer Science', 'year_level' => 'Fourth'],
+            ['student_no' => '2223A8141', 'student_name' => 'Dela Cruz, Juan', 'course' => 'Bachelor of Science in Information Technology', 'year_level' => 'Third'],
+        ];
+
+        foreach ($fallbackRows as $row) {
+            MasterStudentProfileFile::create($row);
+        }
+    }
+
+    private function seedMasterStudentGradeFiles(): void
+    {
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(80)
+            ->get(['student_no', 'name', 'program', 'year_level']);
+
+        if ($students->count()) {
+            foreach ($students as $student) {
+                MasterStudentGradeFile::create([
+                    'student_no' => (string) $student->student_no,
+                    'student_name' => (string) $student->name,
+                    'course' => (string) ($student->program ?: 'Not Set'),
+                    'year_level' => (string) ($student->year_level ?: 'Not Set'),
+                ]);
+            }
+
+            return;
+        }
+
+        $fallbackRows = [
+            ['student_no' => '2223A8137', 'student_name' => 'Bares, Mark Jay', 'course' => 'Bachelor of Science in Computer Science', 'year_level' => 'Fourth'],
+            ['student_no' => '2223A8138', 'student_name' => 'Austero, Andrea Jane', 'course' => 'Bachelor of Science in Computer Science', 'year_level' => 'Fourth'],
+            ['student_no' => '2223A8141', 'student_name' => 'Dela Cruz, Juan', 'course' => 'Bachelor of Science in Information Technology', 'year_level' => 'Third'],
+        ];
+
+        foreach ($fallbackRows as $row) {
+            MasterStudentGradeFile::create($row);
         }
     }
 }

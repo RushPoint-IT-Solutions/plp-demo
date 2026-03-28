@@ -110,14 +110,43 @@
 
 @push('scripts')
 <script>
-    var sgfRows = [
-        { id: 'sgf-1', studentId: '2223A8137', name: 'Bares, Mark Jay', course: 'Bachelor of Science in Computer Science', yearLevel: 'Fourth' },
-        { id: 'sgf-2', studentId: '2223A8138', name: 'Austero, Andrea Jane', course: 'Bachelor of Science in Computer Science', yearLevel: 'Fourth' },
-        { id: 'sgf-3', studentId: '2223A8141', name: 'Dela Cruz, Juan', course: 'Bachelor of Science in Information Technology', yearLevel: 'Third' },
-        { id: 'sgf-4', studentId: '2223A8148', name: 'Rivera, Angelo', course: 'Bachelor of Science in Computer Engineering', yearLevel: 'Second' },
-        { id: 'sgf-5', studentId: '2223A8154', name: 'Santos, Maria', course: 'Bachelor of Science in Information Systems', yearLevel: 'Second' },
-        { id: 'sgf-6', studentId: '2223A8160', name: 'Benedict, John', course: 'Bachelor of Science in Computer Science', yearLevel: 'First' }
-    ];
+    var sgfRows = @json($sgfRows ?? []);
+    var sgfCsrf = '{{ csrf_token() }}';
+    var sgfApi = {
+        store: '{{ route('registrar.admin-tools.master-files.student-grade-file.store') }}',
+        updateTemplate: '{{ route('registrar.admin-tools.master-files.student-grade-file.update', ['masterStudentGradeFile' => '__ID__']) }}',
+        destroyTemplate: '{{ route('registrar.admin-tools.master-files.student-grade-file.destroy', ['masterStudentGradeFile' => '__ID__']) }}'
+    };
+
+    function sgfBuildUrl(template, id) {
+        return template.replace('__ID__', encodeURIComponent(String(id)));
+    }
+
+    function sgfRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': sgfCsrf,
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || data.ok === false) {
+                    var message = (data && data.message) ? data.message : 'Request failed.';
+                    if (data && data.errors) {
+                        var firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            });
+        });
+    }
 
     function sgfEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -222,7 +251,7 @@
     }
 
     function sgfOpenEditModal(id) {
-        var row = sgfRows.find(function(item) { return item.id === id; });
+        var row = sgfRows.find(function(item) { return String(item.id) === String(id); });
         if (!row) return;
 
         document.getElementById('sgfFormTitle').textContent = 'EDIT STUDENT GRADE FILE RECORD';
@@ -251,29 +280,31 @@
             return;
         }
 
-        if (!editingId) {
-            sgfRows.unshift({
-                id: 'sgf-' + Date.now(),
-                studentId: studentId,
-                name: name,
-                course: course,
-                yearLevel: yearLevel
-            });
-        } else {
-            sgfRows = sgfRows.map(function(item) {
-                if (item.id !== editingId) return item;
-                return {
-                    id: item.id,
-                    studentId: studentId,
-                    name: name,
-                    course: course,
-                    yearLevel: yearLevel
-                };
-            });
-        }
+        var payload = {
+            student_id: studentId,
+            name: name,
+            course: course,
+            year_level: yearLevel
+        };
 
-        sgfCloseFormModal();
-        sgfRenderTable();
+        var request = !editingId
+            ? sgfRequest(sgfApi.store, 'POST', payload)
+            : sgfRequest(sgfBuildUrl(sgfApi.updateTemplate, editingId), 'PUT', payload);
+
+        request.then(function(data) {
+            if (!editingId) {
+                sgfRows.unshift(data.row);
+            } else {
+                sgfRows = sgfRows.map(function(item) {
+                    return String(item.id) === String(editingId) ? data.row : item;
+                });
+            }
+
+            sgfCloseFormModal();
+            sgfRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save student grade record.');
+        });
     }
 
     function sgfOpenDeleteModal(id) {
@@ -288,9 +319,15 @@
 
     function sgfConfirmDelete() {
         var id = document.getElementById('sgfDeleteId').value;
-        sgfRows = sgfRows.filter(function(item) { return item.id !== id; });
-        sgfCloseDeleteModal();
-        sgfRenderTable();
+        sgfRequest(sgfBuildUrl(sgfApi.destroyTemplate, id), 'DELETE', null).then(function() {
+            sgfRows = sgfRows.filter(function(item) {
+                return String(item.id) !== String(id);
+            });
+            sgfCloseDeleteModal();
+            sgfRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to delete student grade record.');
+        });
     }
 
     document.getElementById('sgfSearchBtn').addEventListener('click', sgfRenderTable);

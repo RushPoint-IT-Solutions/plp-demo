@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Applicant;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -202,6 +203,20 @@ class AdminController extends Controller
 
         if ($isAuthenticated) {
             $user = Auth::user();
+
+            if ($user && $user->module === 'applicant' && is_null($user->applicant_id)) {
+                $legacyApplicant = Applicant::query()
+                    ->where('applicant_id', $loginIdentifier)
+                    ->orWhere('applicant_id', $user->username)
+                    ->first();
+
+                if ($legacyApplicant) {
+                    $user->applicant_id = $legacyApplicant->id;
+                    $user->save();
+                    $user->refresh();
+                }
+            }
+
             if (!$user || $user->module !== 'applicant' || !$this->hasRequiredRoleLink($user, 'applicant')) {
                 Auth::logout();
                 $request->session()->invalidate();
