@@ -513,6 +513,9 @@ class AdminToolsController extends Controller
     public function facultyFile()
     {
         $ffRows = [];
+        $cfgFaculty = null;
+        $cfgFormState = [];
+        $cfgDetailRows = $this->defaultFacultyConfigSections();
 
         if (Schema::hasTable('master_faculty_files')) {
             if (MasterFacultyFile::query()->count() === 0) {
@@ -533,9 +536,40 @@ class AdminToolsController extends Controller
                 })
                 ->values()
                 ->all();
+
+            if (request('view') === 'config') {
+                $cfgId = request('id');
+                if (!empty($cfgId)) {
+                    $cfgFaculty = MasterFacultyFile::query()->find($cfgId);
+                }
+
+                if (!$cfgFaculty && request('code')) {
+                    $cfgFaculty = MasterFacultyFile::query()
+                        ->where('code', request('code'))
+                        ->first();
+                }
+
+                if ($cfgFaculty) {
+                    $payload = is_array($cfgFaculty->config_payload) ? $cfgFaculty->config_payload : [];
+                    $storedFormState = $payload['form_state'] ?? [];
+                    $storedSections = $payload['sections'] ?? [];
+
+                    if (is_array($storedFormState)) {
+                        $cfgFormState = $storedFormState;
+                    }
+
+                    if (is_array($storedSections)) {
+                        foreach ($cfgDetailRows as $sectionKey => $defaultRows) {
+                            if (isset($storedSections[$sectionKey]) && is_array($storedSections[$sectionKey])) {
+                                $cfgDetailRows[$sectionKey] = $storedSections[$sectionKey];
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        return view('registrar.admin-tools.master-files.faculty-file', compact('ffRows'));
+        return view('registrar.admin-tools.master-files.faculty-file', compact('ffRows', 'cfgFaculty', 'cfgFormState', 'cfgDetailRows'));
     }
 
     public function facultyFileStore(Request $request): JsonResponse
@@ -568,9 +602,23 @@ class AdminToolsController extends Controller
             'name' => 'required|string|max:190',
             'department' => 'required|string|max:190',
             'status' => 'required|string|in:Active,Inactive',
+            'config_payload' => 'nullable|array',
+            'config_payload.form_state' => 'nullable|array',
+            'config_payload.sections' => 'nullable|array',
         ]);
 
-        $masterFacultyFile->update($validated);
+        $updateData = [
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+            'department' => $validated['department'],
+            'status' => $validated['status'],
+        ];
+
+        if (array_key_exists('config_payload', $validated)) {
+            $updateData['config_payload'] = $validated['config_payload'];
+        }
+
+        $masterFacultyFile->update($updateData);
 
         return response()->json([
             'ok' => true,
@@ -1180,6 +1228,54 @@ class AdminToolsController extends Controller
         foreach ($fallbackRows as $row) {
             MasterFacultyFile::create($row);
         }
+    }
+
+    private function defaultFacultyConfigSections(): array
+    {
+        return [
+            'education' => [
+                [
+                    'level' => 'College',
+                    'schoolName' => 'Pamantasan ng Lungsod ng Pasig',
+                    'courseDegree' => 'BS Computer Science',
+                    'dateGraduated' => '04/15/2022',
+                ],
+                [
+                    'level' => 'Graduate Studies',
+                    'schoolName' => 'University of Makati',
+                    'courseDegree' => 'MIT',
+                    'dateGraduated' => '06/20/2025',
+                ],
+            ],
+            'registration' => [
+                [
+                    'name' => 'LET Professional Teacher',
+                    'rating' => '84.60',
+                    'date' => '09/24/2023',
+                ],
+            ],
+            'organization' => [
+                [
+                    'position' => 'Member',
+                    'name' => 'Philippine Society of IT Educators',
+                    'date' => '01/10/2024',
+                ],
+            ],
+            'work' => [
+                [
+                    'position' => 'IT Instructor',
+                    'company' => 'PLP Senior High Department',
+                    'date' => '08/01/2024',
+                ],
+            ],
+            'training' => [
+                [
+                    'title' => 'Outcomes-Based Education Seminar',
+                    'place' => 'Pasig City',
+                    'date' => '11/12/2024',
+                ],
+            ],
+        ];
     }
 
     private function seedMasterStudentProfileFiles(): void

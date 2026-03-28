@@ -13,5 +13,10 @@ class MasterFacultyFile extends Model
         'name',
         'department',
         'status',
+        'config_payload',
+    ];
+
+    protected $casts = [
+        'config_payload' => 'array',
     ];
 }

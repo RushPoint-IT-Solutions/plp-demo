@@ -6,10 +6,12 @@
 
 @php
     $isConfigMode = request('view') === 'config';
-    $cfgCode = request('code', '01A');
-    $cfgName = request('name', 'Dela Cruz, Juan');
-    $cfgDepartment = request('department', 'Computer Studies');
-    $cfgStatus = request('status', 'Active');
+    $cfgRow = $cfgFaculty ?? null;
+    $cfgId = request('id', optional($cfgRow)->id);
+    $cfgCode = request('code', optional($cfgRow)->code ?? '01A');
+    $cfgName = request('name', optional($cfgRow)->name ?? 'Dela Cruz, Juan');
+    $cfgDepartment = request('department', optional($cfgRow)->department ?? 'Computer Studies');
+    $cfgStatus = request('status', optional($cfgRow)->status ?? 'Active');
 @endphp
 
 
@@ -233,8 +235,8 @@
             </div>
 
             <div class="ffc-actions">
-                <button type="button" class="req-btn-cancel">Cancel</button>
-                <button type="button" class="pf-btn-new">Save</button>
+                <button type="button" class="req-btn-cancel" id="ffcCancelBtn">Cancel</button>
+                <button type="button" class="pf-btn-new" id="ffcSaveBtn">Save</button>
             </div>
         </section>
     </div>
@@ -571,6 +573,7 @@
             if (selected) {
                 var url = '{{ route('registrar.admin-tools.master-files.faculty-file') }}' +
                     '?view=config' +
+                    '&id=' + encodeURIComponent(selected.id || '') +
                     '&code=' + encodeURIComponent(selected.code || '') +
                     '&name=' + encodeURIComponent(selected.name || '') +
                     '&department=' + encodeURIComponent(selected.department || '') +
@@ -591,50 +594,11 @@
 </script>
 @else
 <script>
-    var ffcRows = {
-        education: [
-            {
-                level: 'College',
-                schoolName: 'Pamantasan ng Lungsod ng Pasig',
-                courseDegree: 'BS Computer Science',
-                dateGraduated: '04/15/2022'
-            },
-            {
-                level: 'Graduate Studies',
-                schoolName: 'University of Makati',
-                courseDegree: 'MIT',
-                dateGraduated: '06/20/2025'
-            }
-        ],
-        registration: [
-            {
-                name: 'LET Professional Teacher',
-                rating: '84.60',
-                date: '09/24/2023'
-            }
-        ],
-        organization: [
-            {
-                position: 'Member',
-                name: 'Philippine Society of IT Educators',
-                date: '01/10/2024'
-            }
-        ],
-        work: [
-            {
-                position: 'IT Instructor',
-                company: 'PLP Senior High Department',
-                date: '08/01/2024'
-            }
-        ],
-        training: [
-            {
-                title: 'Outcomes-Based Education Seminar',
-                place: 'Pasig City',
-                date: '11/12/2024'
-            }
-        ]
-    };
+    var ffcFacultyId = @json($cfgId ?? null);
+    var ffcCsrf = '{{ csrf_token() }}';
+    var ffcUpdateTemplate = '{{ route('registrar.admin-tools.master-files.faculty-file.update', ['masterFacultyFile' => '__ID__']) }}';
+    var ffcFormState = @json($cfgFormState ?? []);
+    var ffcRows = @json($cfgDetailRows ?? []);
 
     var ffcSections = {
         education: {
@@ -695,6 +659,68 @@
             var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
             return map[ch];
         });
+    }
+
+    function ffcBuildUrl(template, id) {
+        return template.replace('__ID__', encodeURIComponent(String(id)));
+    }
+
+    function ffcRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': ffcCsrf,
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || data.ok === false) {
+                    var message = (data && data.message) ? data.message : 'Request failed.';
+                    if (data && data.errors) {
+                        var firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            });
+        });
+    }
+
+    function ffcGetPersistableElements() {
+        return Array.prototype.slice.call(document.querySelectorAll('.ffc-card input, .ffc-card select, .ffc-card textarea'));
+    }
+
+    function ffcApplyFormState() {
+        var state = ffcFormState || {};
+        ffcGetPersistableElements().forEach(function(element, index) {
+            var key = element.id ? ('id:' + element.id) : ('idx:' + index);
+            if (!(key in state)) return;
+
+            if (element.type === 'checkbox' || element.type === 'radio') {
+                element.checked = !!state[key];
+            } else {
+                element.value = state[key] == null ? '' : String(state[key]);
+            }
+        });
+    }
+
+    function ffcCollectFormState() {
+        var state = {};
+        ffcGetPersistableElements().forEach(function(element, index) {
+            var key = element.id ? ('id:' + element.id) : ('idx:' + index);
+            if (element.type === 'checkbox' || element.type === 'radio') {
+                state[key] = !!element.checked;
+            } else {
+                state[key] = element.value == null ? '' : String(element.value);
+            }
+        });
+
+        return state;
     }
 
     function ffcBuildActionMenu(section, index) {
@@ -873,6 +899,37 @@
         ffcRenderSection(section);
     }
 
+    function ffcSaveFacultyConfig() {
+        if (!ffcFacultyId) {
+            alert('Faculty record not found. Please return to list and open a record again.');
+            return;
+        }
+
+        var payload = {
+            code: (document.getElementById('ffcFacultyCode').value || '').trim(),
+            name: (document.getElementById('ffcFacultyName').value || '').trim(),
+            department: (document.getElementById('ffcOffice').value || '').trim(),
+            status: document.getElementById('ffcFacultyStatusTop').value || 'Active',
+            config_payload: {
+                form_state: ffcCollectFormState(),
+                sections: ffcRows
+            }
+        };
+
+        if (!payload.code || !payload.name || !payload.department) {
+            alert('Faculty Code, Faculty Name, and Office Department are required.');
+            return;
+        }
+
+        ffcRequest(ffcBuildUrl(ffcUpdateTemplate, ffcFacultyId), 'PUT', payload).then(function(data) {
+            ffcFacultyId = data.row.id;
+            ffcFormState = payload.config_payload.form_state;
+            alert('Faculty profile saved successfully.');
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save faculty profile.');
+        });
+    }
+
     document.addEventListener('click', function(event) {
         var addBtn = event.target.closest('[data-ffc-add]');
         if (addBtn) {
@@ -908,9 +965,15 @@
         }
     });
 
+    document.getElementById('ffcSaveBtn').addEventListener('click', ffcSaveFacultyConfig);
+    document.getElementById('ffcCancelBtn').addEventListener('click', function() {
+        window.location.href = '{{ route('registrar.admin-tools.master-files.faculty-file') }}';
+    });
+
     window.addEventListener('scroll', ffcCloseActionMenus, true);
 
     ffcRenderAllSections();
+    ffcApplyFormState();
 </script>
 @endif
 @endpush
