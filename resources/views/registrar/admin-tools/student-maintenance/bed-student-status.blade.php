@@ -23,31 +23,37 @@
                 <div class="bs-field" style="min-width: 120px; flex: 1 1 120px;">
                     <label class="bs-toolbar-label" for="bsSchoolYear">School Year</label>
                     <select id="bsSchoolYear" class="app-filter-select">
-                        <option>2025-2026</option>
-                        <option>2026-2027</option>
+                        <option value="">All</option>
+                        @foreach(($bsSchoolYears ?? []) as $sy)
+                            <option value="{{ $sy }}">{{ $sy }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="bs-field" style="min-width: 100px; flex: 1 1 100px;">
                     <label class="bs-toolbar-label" for="bsTerm">Term</label>
                     <select id="bsTerm" class="app-filter-select">
-                        <option>First</option>
-                        <option>Second</option>
+                        <option value="">All</option>
+                        @foreach(($bsTerms ?? []) as $term)
+                            <option value="{{ $term }}">{{ $term }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="bs-field" style="min-width: 100px; flex: 1 1 100px;">
                     <label class="bs-toolbar-label" for="bsGradeLevel">Grade</label>
                     <select id="bsGradeLevel" class="app-filter-select">
                         <option value="">-yr level-</option>
-                        <option value="Fourth">Fourth</option>
+                        @foreach(($bsYearLevels ?? []) as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="bs-field" style="min-width: 90px; flex: 1 1 90px;">
                     <label class="bs-toolbar-label" for="bsSection">Section</label>
                     <select id="bsSection" class="app-filter-select">
                         <option value="">-sections-</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
+                        @foreach(($bsSections ?? []) as $section)
+                            <option value="{{ $section }}">{{ $section }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <button type="button" class="pf-btn-new" id="bsSearchBtn">Apply</button>
@@ -168,14 +174,42 @@
 
 @push('scripts')
 <script>
-    var bsRows = [
-        { id: 'bs-1', studentId: '2223A8137', name: 'Bares, Mark Jay', course: 'Bachelor of Science in Computer Science', yearLevel: 'Fourth', section: 'A' },
-        { id: 'bs-2', studentId: '2223A8138', name: 'Austero, Andrea Jane', course: 'Bachelor of Science in Computer Science', yearLevel: 'Fourth', section: 'A' },
-        { id: 'bs-3', studentId: '2223A8141', name: 'Dela Cruz, Juan', course: 'Bachelor of Science in Information Technology', yearLevel: 'Third', section: 'B' },
-        { id: 'bs-4', studentId: '2223A8148', name: 'Rivera, Angelo', course: 'Bachelor of Science in Computer Engineering', yearLevel: 'Second', section: 'C' },
-        { id: 'bs-5', studentId: '2223A8154', name: 'Santos, Maria', course: 'Bachelor of Science in Information Systems', yearLevel: 'Second', section: 'B' },
-        { id: 'bs-6', studentId: '2223A8160', name: 'Benedict, John', course: 'Bachelor of Science in Computer Science', yearLevel: 'First', section: 'A' }
-    ];
+    var bsRows = @json($bsRows ?? []);
+    var bsUpdateTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-student-status.update', ['bedStudentStatus' => '__ID__']) }}';
+    var bsDeleteTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-student-status.destroy', ['bedStudentStatus' => '__ID__']) }}';
+
+    function bsBuildUrl(template, id) {
+        return template.replace('__ID__', String(id));
+    }
+
+    async function bsRequestJson(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
+        }
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process BED Student Status request.'
+            );
+        }
+
+        return json;
+    }
 
     function bsEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -186,13 +220,21 @@
 
     function bsGetFilteredRows() {
         var query = (document.getElementById('bsSearch').value || '').toLowerCase();
+        var schoolYear = document.getElementById('bsSchoolYear').value;
+        var term = document.getElementById('bsTerm').value;
         var grade = document.getElementById('bsGradeLevel').value;
         var section = document.getElementById('bsSection').value;
+        var noPaymentOnly = document.getElementById('bsNoPayment').checked;
+        var noSectionOnly = document.getElementById('bsNoSection').checked;
         return bsRows.filter(function(row) {
             var queryMatch = !query || row.studentId.toLowerCase().indexOf(query) !== -1 || row.name.toLowerCase().indexOf(query) !== -1;
+            var syMatch = !schoolYear || row.schoolYear === schoolYear;
+            var termMatch = !term || row.term === term;
             var gradeMatch = !grade || row.yearLevel === grade;
             var sectionMatch = !section || row.section === section;
-            return queryMatch && gradeMatch && sectionMatch;
+            var noPaymentMatch = !noPaymentOnly || !!row.noPayment;
+            var noSectionMatch = !noSectionOnly || !!row.noSection;
+            return queryMatch && syMatch && termMatch && gradeMatch && sectionMatch && noPaymentMatch && noSectionMatch;
         });
     }
 
@@ -389,7 +431,7 @@
         document.getElementById('bsEditModal').style.display = 'none';
     }
 
-    function bsSaveEdit() {
+    async function bsSaveEdit() {
         var id = document.getElementById('bsEditId').value;
         var studentId = (document.getElementById('bsEditStudentId').value || '').trim();
         var name = (document.getElementById('bsEditName').value || '').trim();
@@ -402,15 +444,32 @@
             return;
         }
 
+        try {
+            await bsRequestJson(bsBuildUrl(bsUpdateTemplate, id), 'PUT', {
+                student_id: studentId,
+                name: name,
+                course: course,
+                year_level: yearLevel,
+                section: section
+            });
+        } catch (error) {
+            alert(error.message || 'Unable to update BED Student Status record.');
+            return;
+        }
+
         bsRows = bsRows.map(function(item) {
-            if (item.id !== id) return item;
+            if (String(item.id) !== String(id)) return item;
             return {
                 id: item.id,
                 studentId: studentId,
                 name: name,
                 course: course,
                 yearLevel: yearLevel,
-                section: section
+                section: section,
+                schoolYear: item.schoolYear,
+                term: item.term,
+                noPayment: item.noPayment,
+                noSection: item.noSection
             };
         });
 
@@ -428,9 +487,16 @@
         document.getElementById('bsDeleteModal').style.display = 'none';
     }
 
-    function bsConfirmDelete() {
+    async function bsConfirmDelete() {
         var id = document.getElementById('bsDeleteId').value;
-        bsRows = bsRows.filter(function(item) { return item.id !== id; });
+        try {
+            await bsRequestJson(bsBuildUrl(bsDeleteTemplate, id), 'DELETE');
+        } catch (error) {
+            alert(error.message || 'Unable to delete BED Student Status record.');
+            return;
+        }
+
+        bsRows = bsRows.filter(function(item) { return String(item.id) !== String(id); });
         bsCloseDeleteModal();
         bsRenderTable();
     }
@@ -444,6 +510,10 @@
     });
     document.getElementById('bsGradeLevel').addEventListener('change', bsRenderTable);
     document.getElementById('bsSection').addEventListener('change', bsRenderTable);
+    document.getElementById('bsSchoolYear').addEventListener('change', bsRenderTable);
+    document.getElementById('bsTerm').addEventListener('change', bsRenderTable);
+    document.getElementById('bsNoPayment').addEventListener('change', bsRenderTable);
+    document.getElementById('bsNoSection').addEventListener('change', bsRenderTable);
 
     document.getElementById('bsExportPdfBtn').addEventListener('click', bsExportPdf);
     document.getElementById('bsExportXlsBtn').addEventListener('click', bsExportXls);

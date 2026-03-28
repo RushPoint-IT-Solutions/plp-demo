@@ -38,8 +38,10 @@
                 <div class="su-field">
                     <label class="app-filter-label" for="suUserName">Operator</label>
                     <select id="suUserName" class="app-filter-select">
-                        <option>User Name</option>
-                        <option>Registrar 1</option>
+                        <option value="">User Name</option>
+                        @foreach(($operatorOptions ?? []) as $operator)
+                            <option value="{{ $operator }}">{{ $operator }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -50,8 +52,9 @@
                     <label class="app-filter-label" for="suCourse">Course</label>
                     <select id="suCourse" class="app-filter-select">
                         <option value="">-Select Course-</option>
-                        <option>BSCS</option>
-                        <option>BSIT</option>
+                        @foreach(($courseOptions ?? []) as $course)
+                            <option value="{{ $course }}">{{ $course }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="su-field">
@@ -178,6 +181,53 @@
 <script>
     var suActiveCard = null;
     var suLoadingTimers = {};
+    var suRunUrl = '{{ route('registrar.admin-tools.student-maintenance.student-update.run') }}';
+
+    function suBuildPayload(actionName) {
+        return {
+            action_name: actionName || 'Action',
+            run_mode: document.getElementById('suRunMode').value,
+            school_year: document.getElementById('suSY').value,
+            term: document.getElementById('suTerm').value,
+            period: (document.getElementById('suPeriod').value || '').trim(),
+            operator: document.getElementById('suUserName').value,
+            course: document.getElementById('suCourse').value,
+            year_level: document.getElementById('suYrLevel').value,
+            section: document.getElementById('suSection').value,
+            student_no: (document.getElementById('suStudentNo').value || '').trim(),
+            include_unpaid_only: document.getElementById('suCheckPaidOnly').checked,
+            active_only: document.getElementById('suActiveOnly').checked
+        };
+    }
+
+    async function suRequestJson(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
+        }
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process student update action.'
+            );
+        }
+
+        return json;
+    }
 
     function suOpenConfirmModal(actionName) {
         document.getElementById('suPendingAction').value = actionName || '';
@@ -227,17 +277,28 @@
         }, 1000);
     }
 
-    function suConfirmRun() {
+    async function suConfirmRun() {
         var actionName = document.getElementById('suPendingAction').value || 'selected action';
+
+        if (actionName !== 'System Configuration Save' && !document.getElementById('suRiskAcknowledge').checked) {
+            alert('Please confirm the risk acknowledgement before running this action.');
+            return;
+        }
+
         suCloseConfirmModal();
 
         suSetCardLoading(suActiveCard, true);
-        setTimeout(function() {
+        try {
+            var result = await suRequestJson(suRunUrl, 'POST', suBuildPayload(actionName));
             suSetCardLoading(suActiveCard, false);
-            document.getElementById('suDoneText').textContent = actionName + ' processed successfully.';
+            document.getElementById('suDoneText').textContent = actionName + ' processed successfully. Affected students: ' + (result.affected_count || 0) + '.';
             document.getElementById('suDoneModal').style.display = 'flex';
             suActiveCard = null;
-        }, 1200);
+        } catch (error) {
+            suSetCardLoading(suActiveCard, false);
+            alert(error.message || 'Unable to process action.');
+            suActiveCard = null;
+        }
     }
 
     document.getElementById('suSaveBtn').addEventListener('click', function() {

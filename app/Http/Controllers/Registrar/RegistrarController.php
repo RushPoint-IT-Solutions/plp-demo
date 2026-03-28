@@ -747,6 +747,8 @@ class RegistrarController extends Controller
                 'studentName' => (string) $student->name,
                 'program' => (string) ($student->program ?: '-'),
                 'yearLevel' => (string) ($student->year_level ?: '-'),
+                'schoolYear' => (string) ($student->school_year ?: ''),
+                'term' => (string) ($student->semester ?: ''),
             ];
         })->values()->all();
 
@@ -773,12 +775,40 @@ class RegistrarController extends Controller
             $setting = AlumniTrackerSetting::query()->latest('id')->first();
         }
 
+        $alumniSchoolYears = collect($alumniRows)
+            ->pluck('schoolYear')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $alumniTerms = collect($alumniRows)
+            ->pluck('term')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
         $alumniConfig = [
             'schoolYear' => $setting ? (string) $setting->school_year : (string) ($students->first()->school_year ?? '2025-2026'),
             'term' => $setting ? (string) $setting->term : (string) ($students->first()->semester ?? 'Second'),
         ];
 
-        return view('registrar.registrar-menu.alumni-tracker', compact('alumniRows', 'alumniPrograms', 'alumniYearLevels', 'alumniConfig'));
+        if (!in_array($alumniConfig['schoolYear'], $alumniSchoolYears, true)) {
+            $alumniSchoolYears[] = $alumniConfig['schoolYear'];
+        }
+        if (!in_array($alumniConfig['term'], $alumniTerms, true)) {
+            $alumniTerms[] = $alumniConfig['term'];
+        }
+
+        if (!count($alumniSchoolYears)) {
+            $alumniSchoolYears = ['2025-2026'];
+        }
+        if (!count($alumniTerms)) {
+            $alumniTerms = ['First', 'Second', 'Summer'];
+        }
+
+        return view('registrar.registrar-menu.alumni-tracker', compact('alumniRows', 'alumniPrograms', 'alumniYearLevels', 'alumniConfig', 'alumniSchoolYears', 'alumniTerms'));
     }
 
     public function alumniTrackerSaveConfig(Request $request): JsonResponse

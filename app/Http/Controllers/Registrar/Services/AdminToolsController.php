@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Registrar\Services;
 
+use App\BedDay;
+use App\BedStudentStatus;
 use App\Http\Controllers\Controller;
+use App\Student;
+use App\StudentUpdateRun;
 use App\SystemAnnouncement;
 use App\SystemGradePosting;
 use App\SystemSchoolSemester;
@@ -531,17 +535,235 @@ class AdminToolsController extends Controller
     // Student Maintenance
     public function bedStudentStatus()
     {
-        return view('registrar.admin-tools.student-maintenance.bed-student-status');
+        $bsRows = [];
+
+        if (Schema::hasTable('bed_student_statuses')) {
+            if (BedStudentStatus::query()->count() === 0) {
+                $this->seedBedStudentStatuses();
+            }
+
+            $bsRows = BedStudentStatus::query()
+                ->orderBy('student_name')
+                ->limit(500)
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'studentId' => (string) $row->student_no,
+                        'name' => (string) $row->student_name,
+                        'course' => (string) ($row->course ?: '-'),
+                        'yearLevel' => (string) ($row->year_level ?: '-'),
+                        'section' => (string) ($row->section ?: ''),
+                        'schoolYear' => (string) ($row->school_year ?: ''),
+                        'term' => (string) ($row->term ?: ''),
+                        'noPayment' => (bool) $row->no_payment,
+                        'noSection' => (bool) $row->no_section,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        $bsSchoolYears = collect($bsRows)->pluck('schoolYear')->filter()->unique()->values()->all();
+        $bsTerms = collect($bsRows)->pluck('term')->filter()->unique()->values()->all();
+        $bsYearLevels = collect($bsRows)->pluck('yearLevel')->filter(function ($value) {
+            return trim((string) $value) !== '' && $value !== '-';
+        })->unique()->values()->all();
+        $bsSections = collect($bsRows)->pluck('section')->filter()->unique()->values()->all();
+
+        if (!count($bsSchoolYears)) {
+            $bsSchoolYears = ['2025-2026'];
+        }
+        if (!count($bsTerms)) {
+            $bsTerms = ['First', 'Second'];
+        }
+
+        return view('registrar.admin-tools.student-maintenance.bed-student-status', compact('bsRows', 'bsSchoolYears', 'bsTerms', 'bsYearLevels', 'bsSections'));
+    }
+
+    public function bedStudentStatusUpdate(Request $request, BedStudentStatus $bedStudentStatus): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|string|max:80',
+            'name' => 'required|string|max:190',
+            'course' => 'required|string|max:190',
+            'year_level' => 'required|string|max:30',
+            'section' => 'nullable|string|max:20',
+        ]);
+
+        $bedStudentStatus->update([
+            'student_no' => $validated['student_id'],
+            'student_name' => $validated['name'],
+            'course' => $validated['course'],
+            'year_level' => $validated['year_level'],
+            'section' => $validated['section'] ?? null,
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function bedStudentStatusDestroy(BedStudentStatus $bedStudentStatus): JsonResponse
+    {
+        $bedStudentStatus->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     public function bedDays()
     {
-        return view('registrar.admin-tools.student-maintenance.bed-days');
+        $bedDayRows = [];
+
+        if (Schema::hasTable('bed_days')) {
+            if (BedDay::query()->count() === 0) {
+                $this->seedBedDays();
+            }
+
+            $bedDayRows = BedDay::query()
+                ->orderByDesc('id')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'sy' => (string) $row->school_year,
+                        'sem' => (string) $row->semester,
+                        'month' => (string) $row->month_name,
+                        'days' => (string) $row->number_of_days,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('registrar.admin-tools.student-maintenance.bed-days', compact('bedDayRows'));
+    }
+
+    public function bedDaysStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:30',
+            'month_name' => 'required|string|max:30',
+            'number_of_days' => 'required|integer|min:0|max:31',
+        ]);
+
+        $row = BedDay::create($validated);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $row->id,
+                'sy' => (string) $row->school_year,
+                'sem' => (string) $row->semester,
+                'month' => (string) $row->month_name,
+                'days' => (string) $row->number_of_days,
+            ],
+        ]);
+    }
+
+    public function bedDaysUpdate(Request $request, BedDay $bedDay): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:30',
+            'month_name' => 'required|string|max:30',
+            'number_of_days' => 'required|integer|min:0|max:31',
+        ]);
+
+        $bedDay->update($validated);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function bedDaysDestroy(BedDay $bedDay): JsonResponse
+    {
+        $bedDay->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     public function studentUpdate()
     {
-        return view('registrar.admin-tools.student-maintenance.student-update');
+        $courseOptions = Student::query()
+            ->whereNotNull('program')
+            ->where('program', '<>', '')
+            ->distinct()
+            ->orderBy('program')
+            ->pluck('program')
+            ->values()
+            ->all();
+
+        $operatorOptions = User::query()
+            ->whereIn('module', ['registrar', 'admin'])
+            ->orderBy('name')
+            ->limit(100)
+            ->pluck('name')
+            ->filter()
+            ->values()
+            ->all();
+
+        return view('registrar.admin-tools.student-maintenance.student-update', compact('courseOptions', 'operatorOptions'));
+    }
+
+    public function studentUpdateRun(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'action_name' => 'required|string|max:80',
+            'run_mode' => 'nullable|string|max:40',
+            'school_year' => 'nullable|string|max:30',
+            'term' => 'nullable|string|max:30',
+            'period' => 'nullable|string|max:80',
+            'operator' => 'nullable|string|max:120',
+            'course' => 'nullable|string|max:120',
+            'year_level' => 'nullable|string|max:30',
+            'section' => 'nullable|string|max:20',
+            'student_no' => 'nullable|string|max:80',
+            'include_unpaid_only' => 'nullable|boolean',
+            'active_only' => 'nullable|boolean',
+        ]);
+
+        $query = Student::query();
+
+        if (!empty($validated['school_year'])) {
+            $query->where('school_year', $validated['school_year']);
+        }
+        if (!empty($validated['term'])) {
+            $query->where('semester', $validated['term']);
+        }
+        if (!empty($validated['course'])) {
+            $query->where('program', $validated['course']);
+        }
+        if (!empty($validated['year_level'])) {
+            $query->where('year_level', $validated['year_level']);
+        }
+        if (!empty($validated['student_no'])) {
+            $query->where('student_no', $validated['student_no']);
+        }
+
+        $affectedCount = (int) $query->count();
+
+        if (Schema::hasTable('student_update_runs')) {
+            StudentUpdateRun::create([
+                'action_name' => $validated['action_name'],
+                'run_mode' => $validated['run_mode'] ?? null,
+                'school_year' => $validated['school_year'] ?? null,
+                'term' => $validated['term'] ?? null,
+                'period' => $validated['period'] ?? null,
+                'operator' => $validated['operator'] ?? null,
+                'course' => $validated['course'] ?? null,
+                'year_level' => $validated['year_level'] ?? null,
+                'section' => $validated['section'] ?? null,
+                'student_no' => $validated['student_no'] ?? null,
+                'include_unpaid_only' => (bool) ($validated['include_unpaid_only'] ?? false),
+                'active_only' => (bool) ($validated['active_only'] ?? false),
+                'affected_count' => $affectedCount,
+            ]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'affected_count' => $affectedCount,
+            'message' => 'Action processed successfully.',
+        ]);
     }
 
     private function mapAcademicCalendarRow(AcademicCalendarEvent $event): array
@@ -639,6 +861,41 @@ class AdminToolsController extends Controller
 
         foreach ($rows as $row) {
             SystemAnnouncement::create($row);
+        }
+    }
+
+    private function seedBedDays(): void
+    {
+        $rows = [
+            ['school_year' => '2025-2026', 'semester' => 'First', 'month_name' => 'January', 'number_of_days' => 20],
+            ['school_year' => '2025-2026', 'semester' => 'First', 'month_name' => 'February', 'number_of_days' => 19],
+            ['school_year' => '2025-2026', 'semester' => 'Second', 'month_name' => 'June', 'number_of_days' => 22],
+        ];
+
+        foreach ($rows as $row) {
+            BedDay::create($row);
+        }
+    }
+
+    private function seedBedStudentStatuses(): void
+    {
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(40)
+            ->get(['student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+
+        foreach ($students as $index => $student) {
+            BedStudentStatus::create([
+                'student_no' => (string) $student->student_no,
+                'student_name' => (string) $student->name,
+                'course' => (string) ($student->program ?: '-'),
+                'year_level' => (string) ($student->year_level ?: '-'),
+                'section' => ['A', 'B', 'C'][$index % 3],
+                'school_year' => (string) ($student->school_year ?: '2025-2026'),
+                'term' => (string) ($student->semester ?: 'First'),
+                'no_payment' => false,
+                'no_section' => false,
+            ]);
         }
     }
 }

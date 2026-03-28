@@ -26,17 +26,17 @@
                 <div class="at-config-item">
                     <span class="at-config-inline-label">School Year:</span>
                     <select id="atSchoolYear" class="app-filter-select" style="width:100%;">
-                        <option value="2025-2026">2025-2026</option>
-                        <option value="2024-2025">2024-2025</option>
-                        <option value="2023-2024">2023-2024</option>
+                        @foreach(($alumniSchoolYears ?? []) as $schoolYear)
+                            <option value="{{ $schoolYear }}" @if(($alumniConfig['schoolYear'] ?? '') === $schoolYear) selected @endif>{{ $schoolYear }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Term:</span>
                     <select id="atTerm" class="app-filter-select" style="width:100%;">
-                        <option value="First" @if(($alumniConfig['term'] ?? '') === 'First') selected @endif>First</option>
-                        <option value="Second" @if(($alumniConfig['term'] ?? '') === 'Second') selected @endif>Second</option>
-                        <option value="Summer" @if(($alumniConfig['term'] ?? '') === 'Summer') selected @endif>Summer</option>
+                        @foreach(($alumniTerms ?? ['First', 'Second', 'Summer']) as $term)
+                            <option value="{{ $term }}" @if(($alumniConfig['term'] ?? '') === $term) selected @endif>{{ $term }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="at-config-action">
@@ -127,6 +127,8 @@ function atNormalize(value) {
 function atGetFilteredRows() {
     var searchInput = document.getElementById('atSearchInput');
     var searchValue = atNormalize(searchInput ? searchInput.value : '');
+    var schoolYear = document.getElementById('atSchoolYear').value;
+    var term = document.getElementById('atTerm').value;
     var program = document.getElementById('atProgram').value;
     var yearLevel = document.getElementById('atYearLevel').value;
     var sortBy = document.getElementById('atSortBy').value;
@@ -136,9 +138,11 @@ function atGetFilteredRows() {
         var matchSearch = !searchValue ||
             atNormalize(row.studentNo).indexOf(searchValue) !== -1 ||
             atNormalize(row.studentName).indexOf(searchValue) !== -1;
+        var matchSchoolYear = !schoolYear || row.schoolYear === schoolYear;
+        var matchTerm = !term || row.term === term;
         var matchProgram = !program || row.program === program;
         var matchYear = !yearLevel || row.yearLevel === yearLevel;
-        return matchSearch && matchProgram && matchYear;
+        return matchSearch && matchSchoolYear && matchTerm && matchProgram && matchYear;
     });
 
     filtered.sort(function(a, b) {
@@ -207,8 +211,54 @@ async function saveAlumniConfig() {
         if (typeof showRegistrarToast === 'function') {
             showRegistrarToast('System configuration saved successfully.', 'success');
         }
+        atRenderTable();
     } catch (error) {
         alert(error.message || 'Unable to save alumni tracker configuration.');
+    }
+}
+
+function atGenerateReport() {
+    var rows = atGetFilteredRows();
+    if (!rows.length) {
+        alert('No records found for the selected filters.');
+        return;
+    }
+
+    var csvRows = [
+        ['No.', 'Student ID', 'Student Name', 'Program', 'Year Level', 'School Year', 'Term']
+    ];
+
+    rows.forEach(function(row, idx) {
+        csvRows.push([
+            String(idx + 1),
+            String(row.studentNo || ''),
+            String(row.studentName || ''),
+            String(row.program || ''),
+            String(row.yearLevel || ''),
+            String(row.schoolYear || ''),
+            String(row.term || '')
+        ]);
+    });
+
+    var csvContent = csvRows.map(function(cols) {
+        return cols.map(function(value) {
+            return '"' + String(value).replace(/"/g, '""') + '"';
+        }).join(',');
+    }).join('\n');
+
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    var datePart = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = 'alumni-tracker-report-' + datePart + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    if (typeof showRegistrarToast === 'function') {
+        showRegistrarToast('Alumni report generated successfully.', 'success');
     }
 }
 
@@ -222,14 +272,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('atSchoolYear').value = atConfig.schoolYear || '2025-2026';
     document.getElementById('atTerm').value = atConfig.term || 'Second';
 
-    ['atProgram', 'atYearLevel', 'atSortBy', 'atSortOrder'].forEach(function(id) {
+    ['atSchoolYear', 'atTerm', 'atProgram', 'atYearLevel', 'atSortBy', 'atSortOrder'].forEach(function(id) {
         var element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', atRenderTable);
         }
     });
 
-    document.getElementById('atGenerateBtn').addEventListener('click', atRenderTable);
+    document.getElementById('atGenerateBtn').addEventListener('click', atGenerateReport);
     atRenderTable();
 });
 </script>

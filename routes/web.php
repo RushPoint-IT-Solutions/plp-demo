@@ -255,8 +255,14 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('student-maintenance')->name('student-maintenance.')->group(function () {
             Route::get('/bed-student-status', 'Registrar\Services\AdminToolsController@bedStudentStatus')->name('bed-student-status');
+            Route::put('/bed-student-status/{bedStudentStatus}', 'Registrar\Services\AdminToolsController@bedStudentStatusUpdate')->name('bed-student-status.update');
+            Route::delete('/bed-student-status/{bedStudentStatus}', 'Registrar\Services\AdminToolsController@bedStudentStatusDestroy')->name('bed-student-status.destroy');
             Route::get('/bed-days', 'Registrar\Services\AdminToolsController@bedDays')->name('bed-days');
+            Route::post('/bed-days', 'Registrar\Services\AdminToolsController@bedDaysStore')->name('bed-days.store');
+            Route::put('/bed-days/{bedDay}', 'Registrar\Services\AdminToolsController@bedDaysUpdate')->name('bed-days.update');
+            Route::delete('/bed-days/{bedDay}', 'Registrar\Services\AdminToolsController@bedDaysDestroy')->name('bed-days.destroy');
             Route::get('/student-update', 'Registrar\Services\AdminToolsController@studentUpdate')->name('student-update');
+            Route::post('/student-update/run', 'Registrar\Services\AdminToolsController@studentUpdateRun')->name('student-update.run');
         });
     });
 });
