@@ -111,9 +111,14 @@
 @push('scripts')
 <script>
     var acEvents = @json($calendarRows ?? []);
+    var acStoreUrl = '{{ route('registrar.admin-tools.system-config.academic-calendar.store') }}';
+    var acUpdateTemplate = '{{ route('registrar.admin-tools.system-config.academic-calendar.update', ['academicCalendarEvent' => '__ID__']) }}';
+    var acDeleteTemplate = '{{ route('registrar.admin-tools.system-config.academic-calendar.destroy', ['academicCalendarEvent' => '__ID__']) }}';
+
     if (!Array.isArray(acEvents) || acEvents.length === 0) {
         acEvents = [
         {
+            id: null,
             date: '2026-01-13',
             timeFrom: '08:00',
             timeTo: '10:00',
@@ -123,6 +128,7 @@
             postUntil: '2026-01-20'
         },
         {
+            id: null,
             date: '2026-01-27',
             timeFrom: '09:00',
             timeTo: '11:00',
@@ -132,6 +138,43 @@
             postUntil: '2026-01-31'
         }
     ];
+    }
+
+    function acUpdateUrl(id) {
+        return acUpdateTemplate.replace('__ID__', String(id));
+    }
+
+    function acDeleteUrl(id) {
+        return acDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    async function acApiRequest(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
+        }
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process academic calendar event.'
+            );
+        }
+
+        return json;
     }
 
     function acEscapeHtml(value) {
@@ -293,7 +336,7 @@
         document.getElementById('acEventModal').style.display = 'none';
     }
 
-    function acSaveEvent() {
+    async function acSaveEvent() {
         var datePostUntil = document.getElementById('acDatePostUntil').value;
         var payload = {
             date: datePostUntil,
@@ -311,10 +354,27 @@
         }
 
         var indexValue = document.getElementById('acEditingIndex').value;
-        if (indexValue === '') {
-            acEvents.unshift(payload);
-        } else {
-            acEvents[parseInt(indexValue, 10)] = payload;
+        try {
+            if (indexValue === '') {
+                var createRes = await acApiRequest(acStoreUrl, 'POST', payload);
+                acEvents.unshift(createRes.row || payload);
+            } else {
+                var index = parseInt(indexValue, 10);
+                var current = acEvents[index];
+                if (!current) {
+                    throw new Error('Event record not found.');
+                }
+
+                if (current.id) {
+                    var updateRes = await acApiRequest(acUpdateUrl(current.id), 'PUT', payload);
+                    acEvents[index] = updateRes.row || acEvents[index];
+                } else {
+                    acEvents[index] = payload;
+                }
+            }
+        } catch (error) {
+            alert(error.message || 'Unable to save event.');
+            return;
         }
 
         acCloseEventModal();
@@ -331,11 +391,23 @@
         document.getElementById('acDeleteModal').style.display = 'none';
     }
 
-    function acConfirmDelete() {
+    async function acConfirmDelete() {
         var index = parseInt(document.getElementById('acDeleteIndex').value, 10);
-        if (!isNaN(index)) {
-            acEvents.splice(index, 1);
+        if (isNaN(index) || !acEvents[index]) {
+            acCloseDeleteModal();
+            return;
         }
+
+        try {
+            if (acEvents[index].id) {
+                await acApiRequest(acDeleteUrl(acEvents[index].id), 'DELETE');
+            }
+            acEvents.splice(index, 1);
+        } catch (error) {
+            alert(error.message || 'Unable to delete event.');
+            return;
+        }
+
         acCloseDeleteModal();
         acRenderTable();
     }

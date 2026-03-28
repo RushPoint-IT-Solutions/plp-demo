@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Registrar;
 
 use App\Applicant;
+use App\AlumniTrackerSetting;
 use App\CancellationWaiver;
 use App\Course;
 use App\CrossEnrollmentRequest;
@@ -734,7 +735,75 @@ class RegistrarController extends Controller
      */
     public function alumniTracker()
     {
-        return view('registrar.registrar-menu.alumni-tracker');
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+
+        $alumniRows = $students->map(function ($student) {
+            return [
+                'id' => $student->id,
+                'studentNo' => (string) $student->student_no,
+                'studentName' => (string) $student->name,
+                'program' => (string) ($student->program ?: '-'),
+                'yearLevel' => (string) ($student->year_level ?: '-'),
+            ];
+        })->values()->all();
+
+        $alumniPrograms = collect($alumniRows)
+            ->pluck('program')
+            ->filter(function ($value) {
+                return trim((string) $value) !== '' && $value !== '-';
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $alumniYearLevels = collect($alumniRows)
+            ->pluck('yearLevel')
+            ->filter(function ($value) {
+                return trim((string) $value) !== '' && $value !== '-';
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $setting = null;
+        if (Schema::hasTable('alumni_tracker_settings')) {
+            $setting = AlumniTrackerSetting::query()->latest('id')->first();
+        }
+
+        $alumniConfig = [
+            'schoolYear' => $setting ? (string) $setting->school_year : (string) ($students->first()->school_year ?? '2025-2026'),
+            'term' => $setting ? (string) $setting->term : (string) ($students->first()->semester ?? 'Second'),
+        ];
+
+        return view('registrar.registrar-menu.alumni-tracker', compact('alumniRows', 'alumniPrograms', 'alumniYearLevels', 'alumniConfig'));
+    }
+
+    public function alumniTrackerSaveConfig(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'term' => 'required|string|max:30',
+        ]);
+
+        if (Schema::hasTable('alumni_tracker_settings')) {
+            $setting = AlumniTrackerSetting::query()->latest('id')->first();
+            if ($setting) {
+                $setting->update([
+                    'school_year' => $validated['school_year'],
+                    'term' => $validated['term'],
+                ]);
+            } else {
+                AlumniTrackerSetting::create([
+                    'school_year' => $validated['school_year'],
+                    'term' => $validated['term'],
+                ]);
+            }
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     /**

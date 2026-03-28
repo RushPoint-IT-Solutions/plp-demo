@@ -191,47 +191,15 @@
 
 @push('scripts')
 <script>
-    var cfgSchoolSem = [
-        { sy: '2025-2026', semester: 'Second' },
-        { sy: '2025-2026', semester: 'First' },
-        { sy: '2026-2027', semester: 'First' },
-        { sy: '2026-2027', semester: 'Second' },
-        { sy: '2026-2027', semester: 'Summer' },
-        { sy: '2027-2028', semester: 'First' },
-        { sy: '2027-2028', semester: 'Second' },
-        { sy: '2028-2029', semester: 'First' },
-        { sy: '2028-2029', semester: 'Second' },
-        { sy: '2028-2029', semester: 'Summer' },
-        { sy: '2029-2030', semester: 'First' },
-        { sy: '2029-2030', semester: 'Second' },
-        { sy: '2029-2030', semester: 'Summer' },
-        { sy: '2030-2031', semester: 'First' },
-        { sy: '2030-2031', semester: 'Second' },
-        { sy: '2030-2031', semester: 'Summer' }
-    ];
+    var cfgSchoolSem = @json($schoolSemRows ?? []);
+    var cfgGradePosting = @json($gradePostingRows ?? []);
 
-    var cfgGradePosting = [
-        { sy: '2025-2026', semester: 'Second', period: 'Prelim', dateFrom: '2026-01-19' },
-        { sy: '2025-2026', semester: 'Second', period: 'Midterm', dateFrom: '2025-09-26' },
-        { sy: '2025-2026', semester: 'Second', period: 'Pre-Final', dateFrom: '2025-11-15' },
-        { sy: '2025-2026', semester: 'Second', period: 'Final', dateFrom: '2025-12-20' },
-        { sy: '2026-2027', semester: 'First', period: 'Prelim', dateFrom: '2026-08-28' },
-        { sy: '2026-2027', semester: 'First', period: 'Midterm', dateFrom: '2026-10-10' },
-        { sy: '2026-2027', semester: 'First', period: 'Pre-Final', dateFrom: '2026-11-20' },
-        { sy: '2026-2027', semester: 'First', period: 'Final', dateFrom: '2026-12-18' },
-        { sy: '2026-2027', semester: 'Second', period: 'Prelim', dateFrom: '2027-01-21' },
-        { sy: '2026-2027', semester: 'Second', period: 'Midterm', dateFrom: '2027-03-03' },
-        { sy: '2026-2027', semester: 'Second', period: 'Pre-Final', dateFrom: '2027-04-11' },
-        { sy: '2026-2027', semester: 'Second', period: 'Final', dateFrom: '2027-05-28' },
-        { sy: '2027-2028', semester: 'First', period: 'Prelim', dateFrom: '2027-08-27' },
-        { sy: '2027-2028', semester: 'First', period: 'Midterm', dateFrom: '2027-10-08' },
-        { sy: '2027-2028', semester: 'First', period: 'Pre-Final', dateFrom: '2027-11-19' },
-        { sy: '2027-2028', semester: 'First', period: 'Final', dateFrom: '2027-12-17' },
-        { sy: '2027-2028', semester: 'Second', period: 'Prelim', dateFrom: '2028-01-22' },
-        { sy: '2027-2028', semester: 'Second', period: 'Midterm', dateFrom: '2028-03-07' },
-        { sy: '2027-2028', semester: 'Second', period: 'Pre-Final', dateFrom: '2028-04-18' },
-        { sy: '2027-2028', semester: 'Second', period: 'Final', dateFrom: '2028-05-30' }
-    ];
+    var cfgSchoolSemStoreUrl = '{{ route('registrar.admin-tools.system-config.configuration.school-sem.store') }}';
+    var cfgSchoolSemUpdateTemplate = '{{ route('registrar.admin-tools.system-config.configuration.school-sem.update', ['systemSchoolSemester' => '__ID__']) }}';
+    var cfgSchoolSemDeleteTemplate = '{{ route('registrar.admin-tools.system-config.configuration.school-sem.destroy', ['systemSchoolSemester' => '__ID__']) }}';
+    var cfgGradePostingStoreUrl = '{{ route('registrar.admin-tools.system-config.configuration.grade-posting.store') }}';
+    var cfgGradePostingUpdateTemplate = '{{ route('registrar.admin-tools.system-config.configuration.grade-posting.update', ['systemGradePosting' => '__ID__']) }}';
+    var cfgGradePostingDeleteTemplate = '{{ route('registrar.admin-tools.system-config.configuration.grade-posting.destroy', ['systemGradePosting' => '__ID__']) }}';
 
     var cfgRegistration = [
         { school: 'All School', course: 'All Courses', yearLevel: 'All Year', status: 'All Status', dateFrom: '2025-11-15', dateTo: '2026-01-31' },
@@ -267,6 +235,55 @@
         gradePosting: null,
         registration: null
     };
+
+    function cfgGetCsrfToken() {
+        return '{{ csrf_token() }}';
+    }
+
+    function cfgSchoolSemUpdateUrl(id) {
+        return cfgSchoolSemUpdateTemplate.replace('__ID__', String(id));
+    }
+
+    function cfgSchoolSemDeleteUrl(id) {
+        return cfgSchoolSemDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    function cfgGradePostingUpdateUrl(id) {
+        return cfgGradePostingUpdateTemplate.replace('__ID__', String(id));
+    }
+
+    function cfgGradePostingDeleteUrl(id) {
+        return cfgGradePostingDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    async function cfgApiRequest(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': cfgGetCsrfToken()
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
+        }
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process request.'
+            );
+        }
+
+        return json;
+    }
 
     function cfgEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -323,7 +340,10 @@
     function cfgOpenEditSchoolSem(index) {
         var item = cfgSchoolSem[index];
         if (!item) return;
-        cfgEditState.schoolSem = index;
+        cfgEditState.schoolSem = {
+            id: item.id || null,
+            index: index
+        };
         document.getElementById('cfgSSTitle').textContent = 'EDIT SCHOOL YEAR AND SEMESTER';
         document.getElementById('cfgSSSaveBtn').textContent = 'Update';
         document.getElementById('cfgSSYear').value = item.sy || '';
@@ -334,7 +354,10 @@
     function cfgOpenEditGradePosting(index) {
         var item = cfgGradePosting[index];
         if (!item) return;
-        cfgEditState.gradePosting = index;
+        cfgEditState.gradePosting = {
+            id: item.id || null,
+            index: index
+        };
         document.getElementById('cfgGPTitle').textContent = 'EDIT GRADE POSTING';
         document.getElementById('cfgGPSaveBtn').textContent = 'Update';
         document.getElementById('cfgGPYear').value = item.sy || '';
@@ -475,8 +498,25 @@
         menu.classList.add('open');
     }
 
-    function cfgDeleteRow(group, index) {
+    async function cfgDeleteRow(group, index) {
         var data = cfgDataByGroup(group);
+        var row = data[index];
+        if (!row) {
+            return;
+        }
+
+        try {
+            if (group === 'schoolSem' && row.id) {
+                await cfgApiRequest(cfgSchoolSemDeleteUrl(row.id), 'DELETE');
+            }
+            if (group === 'gradePosting' && row.id) {
+                await cfgApiRequest(cfgGradePostingDeleteUrl(row.id), 'DELETE');
+            }
+        } catch (error) {
+            alert(error.message || 'Unable to delete record.');
+            return;
+        }
+
         data.splice(index, 1);
         cfgPager[group].page = Math.min(cfgPager[group].page, cfgMaxPage(group));
         cfgCloseActionMenus();
@@ -558,25 +598,46 @@
         cfgRenderRegistration();
     }
 
-    function cfgSaveSchoolSem() {
+    async function cfgSaveSchoolSem() {
         var sy = (document.getElementById('cfgSSYear').value || '').trim();
         var semester = document.getElementById('cfgSSSemester').value;
         if (!sy || !semester) {
             alert('Please complete School Year and Semester.');
             return;
         }
-        if (cfgEditState.schoolSem === null) {
-            cfgSchoolSem.unshift({ sy: sy, semester: semester });
-            cfgPager.schoolSem.page = 1;
-        } else {
-            cfgSchoolSem[cfgEditState.schoolSem] = { sy: sy, semester: semester };
+
+        var payload = {
+            school_year: sy,
+            semester: semester
+        };
+
+        try {
+            if (cfgEditState.schoolSem === null) {
+                var createRes = await cfgApiRequest(cfgSchoolSemStoreUrl, 'POST', payload);
+                cfgSchoolSem.unshift(createRes.row || { sy: sy, semester: semester });
+                cfgPager.schoolSem.page = 1;
+            } else if (cfgEditState.schoolSem.id) {
+                var updateRes = await cfgApiRequest(cfgSchoolSemUpdateUrl(cfgEditState.schoolSem.id), 'PUT', payload);
+                var updateIndex = cfgSchoolSem.findIndex(function(item) {
+                    return String(item.id) === String(cfgEditState.schoolSem.id);
+                });
+                if (updateIndex >= 0) {
+                    cfgSchoolSem[updateIndex] = updateRes.row || cfgSchoolSem[updateIndex];
+                }
+            } else {
+                cfgSchoolSem[cfgEditState.schoolSem.index] = { sy: sy, semester: semester };
+            }
             cfgEditState.schoolSem = null;
+        } catch (error) {
+            alert(error.message || 'Unable to save school year and semester.');
+            return;
         }
+
         cfgCloseModal('cfgSchoolSemModal');
         cfgRenderAll();
     }
 
-    function cfgSaveGradePosting() {
+    async function cfgSaveGradePosting() {
         var payload = {
             sy: (document.getElementById('cfgGPYear').value || '').trim(),
             semester: document.getElementById('cfgGPSemester').value,
@@ -587,13 +648,36 @@
             alert('Please complete all Grade Posting fields.');
             return;
         }
-        if (cfgEditState.gradePosting === null) {
-            cfgGradePosting.unshift(payload);
-            cfgPager.gradePosting.page = 1;
-        } else {
-            cfgGradePosting[cfgEditState.gradePosting] = payload;
+
+        var requestPayload = {
+            school_year: payload.sy,
+            semester: payload.semester,
+            period: payload.period,
+            date_from: payload.dateFrom
+        };
+
+        try {
+            if (cfgEditState.gradePosting === null) {
+                var createRes = await cfgApiRequest(cfgGradePostingStoreUrl, 'POST', requestPayload);
+                cfgGradePosting.unshift(createRes.row || payload);
+                cfgPager.gradePosting.page = 1;
+            } else if (cfgEditState.gradePosting.id) {
+                var updateRes = await cfgApiRequest(cfgGradePostingUpdateUrl(cfgEditState.gradePosting.id), 'PUT', requestPayload);
+                var updateIndex = cfgGradePosting.findIndex(function(item) {
+                    return String(item.id) === String(cfgEditState.gradePosting.id);
+                });
+                if (updateIndex >= 0) {
+                    cfgGradePosting[updateIndex] = updateRes.row || cfgGradePosting[updateIndex];
+                }
+            } else {
+                cfgGradePosting[cfgEditState.gradePosting.index] = payload;
+            }
             cfgEditState.gradePosting = null;
+        } catch (error) {
+            alert(error.message || 'Unable to save grade posting.');
+            return;
         }
+
         cfgCloseModal('cfgGradePostingModal');
         cfgRenderAll();
     }

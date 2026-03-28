@@ -140,6 +140,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         // Alumni Tracker
         Route::prefix('alumni')->name('alumni.')->group(function () {
             Route::get('/tracker', 'Registrar\RegistrarController@alumniTracker')->name('tracker');
+            Route::put('/tracker/config', 'Registrar\RegistrarController@alumniTrackerSaveConfig')->name('tracker.config');
         });
 
         // Forms
@@ -221,13 +222,27 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     Route::prefix('admin-tools')->name('admin-tools.')->group(function () {
         Route::prefix('system-config')->name('system-config.')->group(function () {
             Route::get('/configuration', 'Registrar\Services\AdminToolsController@configuration')->name('configuration');
+            Route::post('/configuration/school-sem', 'Registrar\Services\AdminToolsController@configurationSchoolSemStore')->name('configuration.school-sem.store');
+            Route::put('/configuration/school-sem/{systemSchoolSemester}', 'Registrar\Services\AdminToolsController@configurationSchoolSemUpdate')->name('configuration.school-sem.update');
+            Route::delete('/configuration/school-sem/{systemSchoolSemester}', 'Registrar\Services\AdminToolsController@configurationSchoolSemDestroy')->name('configuration.school-sem.destroy');
+            Route::post('/configuration/grade-posting', 'Registrar\Services\AdminToolsController@configurationGradePostingStore')->name('configuration.grade-posting.store');
+            Route::put('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingUpdate')->name('configuration.grade-posting.update');
+            Route::delete('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingDestroy')->name('configuration.grade-posting.destroy');
             Route::get('/admission-config', 'Registrar\Services\AdminToolsController@admissionConfig')->name('admission-config');
             Route::get('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendar')->name('academic-calendar');
+            Route::post('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendarStore')->name('academic-calendar.store');
+            Route::put('/academic-calendar/{academicCalendarEvent}', 'Registrar\Services\AdminToolsController@academicCalendarUpdate')->name('academic-calendar.update');
+            Route::delete('/academic-calendar/{academicCalendarEvent}', 'Registrar\Services\AdminToolsController@academicCalendarDestroy')->name('academic-calendar.destroy');
             Route::get('/announcement', 'Registrar\Services\AdminToolsController@announcement')->name('announcement');
+            Route::post('/announcement', 'Registrar\Services\AdminToolsController@announcementStore')->name('announcement.store');
+            Route::put('/announcement/{systemAnnouncement}', 'Registrar\Services\AdminToolsController@announcementUpdate')->name('announcement.update');
+            Route::delete('/announcement/{systemAnnouncement}', 'Registrar\Services\AdminToolsController@announcementDestroy')->name('announcement.destroy');
         });
 
         Route::prefix('access-management')->name('access-management.')->group(function () {
             Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
+            Route::put('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsUpdate')->name('user-accounts.update');
+            Route::delete('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsDestroy')->name('user-accounts.destroy');
             Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');
             Route::put('/report-access/{user}', 'Registrar\Services\AdminToolsController@reportAccessUpdate')->name('report-access.update');
         });
