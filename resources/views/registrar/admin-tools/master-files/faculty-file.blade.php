@@ -140,7 +140,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Educational Background</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="education">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="education" onclick="ffcOpenItemModal('education')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -160,7 +160,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Professional Registration</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="registration">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="registration" onclick="ffcOpenItemModal('registration')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -179,7 +179,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Professional Organization</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="organization">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="organization" onclick="ffcOpenItemModal('organization')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -198,7 +198,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Work Experience</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="work">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="work" onclick="ffcOpenItemModal('work')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -217,7 +217,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Trainings/Seminar Attended</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="training">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="training" onclick="ffcOpenItemModal('training')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -726,10 +726,10 @@
     function ffcBuildActionMenu(section, index) {
         var menuId = 'ffcMenu_' + section + '_' + index;
         return '' +
-            '<div class="apst-action-btn" data-ffc-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
+            '<div class="apst-action-btn" data-ffc-menu-toggle="' + menuId + '" onclick="ffcToggleActionMenu(\'' + menuId + '\', this); event.stopPropagation();" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
             '<div class="apst-dropdown" id="' + menuId + '">' +
-                '<button type="button" data-ffc-edit="' + section + '" data-ffc-index="' + index + '"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>' +
-                '<button type="button" class="apst-del-btn" data-ffc-delete="' + section + '" data-ffc-index="' + index + '"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
+                '<button type="button" data-ffc-edit="' + section + '" data-ffc-index="' + index + '" onclick="ffcOpenItemModal(\'' + section + '\',' + index + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>' +
+                '<button type="button" class="apst-del-btn" data-ffc-delete="' + section + '" data-ffc-index="' + index + '" onclick="ffcOpenDeleteModal(\'' + section + '\',' + index + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
             '</div>';
     }
 
@@ -931,20 +931,23 @@
     }
 
     document.addEventListener('click', function(event) {
-        var addBtn = event.target.closest('[data-ffc-add]');
+        var target = event.target && event.target.nodeType === 3 ? event.target.parentElement : event.target;
+        if (!target || !target.closest) return;
+
+        var addBtn = target.closest('[data-ffc-add]');
         if (addBtn) {
             ffcOpenItemModal(addBtn.getAttribute('data-ffc-add'));
             return;
         }
 
-        var menuToggle = event.target.closest('[data-ffc-menu-toggle]');
+        var menuToggle = target.closest('[data-ffc-menu-toggle]');
         if (menuToggle) {
             event.stopPropagation();
             ffcToggleActionMenu(menuToggle.getAttribute('data-ffc-menu-toggle'), menuToggle);
             return;
         }
 
-        var editBtn = event.target.closest('[data-ffc-edit]');
+        var editBtn = target.closest('[data-ffc-edit]');
         if (editBtn) {
             var editSection = editBtn.getAttribute('data-ffc-edit');
             var editIndex = Number(editBtn.getAttribute('data-ffc-index'));
@@ -952,7 +955,7 @@
             return;
         }
 
-        var deleteBtn = event.target.closest('[data-ffc-delete]');
+        var deleteBtn = target.closest('[data-ffc-delete]');
         if (deleteBtn) {
             var deleteSection = deleteBtn.getAttribute('data-ffc-delete');
             var deleteIndex = Number(deleteBtn.getAttribute('data-ffc-index'));
@@ -960,15 +963,22 @@
             return;
         }
 
-        if (!event.target.closest('.apst-dropdown')) {
+        if (!target.closest('.apst-dropdown')) {
             ffcCloseActionMenus();
         }
     });
 
-    document.getElementById('ffcSaveBtn').addEventListener('click', ffcSaveFacultyConfig);
-    document.getElementById('ffcCancelBtn').addEventListener('click', function() {
-        window.location.href = '{{ route('registrar.admin-tools.master-files.faculty-file') }}';
-    });
+    var ffcSaveBtn = document.getElementById('ffcSaveBtn');
+    if (ffcSaveBtn) {
+        ffcSaveBtn.addEventListener('click', ffcSaveFacultyConfig);
+    }
+
+    var ffcCancelBtn = document.getElementById('ffcCancelBtn');
+    if (ffcCancelBtn) {
+        ffcCancelBtn.addEventListener('click', function() {
+            window.location.href = '{{ route('registrar.admin-tools.master-files.faculty-file') }}';
+        });
+    }
 
     window.addEventListener('scroll', ffcCloseActionMenus, true);
 
