@@ -6216,6 +6216,119 @@ select:hover {
   color: #e65100;
 }
 
+/* Registrar dashboard page-scoped interactive menu + modal styles */
+.page-registrar-dashboard .reg-more-wrap {
+  position: relative;
+  z-index: 20;
+}
+
+.page-registrar-dashboard .reg-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 150px;
+  padding: 6px;
+  border: 1px solid #d6dee8;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  z-index: 80;
+}
+
+.page-registrar-dashboard .reg-more-menu[hidden] {
+  display: none;
+}
+
+.page-registrar-dashboard .reg-more-action {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: #1f2937;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.page-registrar-dashboard .reg-more-action:hover {
+  background: #eef7f0;
+  color: #006837;
+}
+
+.page-registrar-dashboard .reg-more-action.danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.page-registrar-dashboard .reg-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 60;
+  display: none;
+}
+
+.page-registrar-dashboard .reg-menu-backdrop.is-active {
+  display: block;
+}
+
+.page-registrar-dashboard .reg-announce-card,
+.page-registrar-dashboard .reg-schedule-card,
+.page-registrar-dashboard .reg-dash-bottom,
+.page-registrar-dashboard .reg-announce-item,
+.page-registrar-dashboard .reg-sched-item {
+  overflow: visible;
+}
+
+.page-registrar-dashboard .reg-sched-section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 5px 12px;
+  margin-bottom: 8px;
+}
+
+.page-registrar-dashboard .reg-sched-section-tag::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.page-registrar-dashboard .reg-sched-section-tag-priority {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
+.page-registrar-dashboard .reg-sched-section-tag-priority::before {
+  background: #f97316;
+}
+
+.page-registrar-dashboard .reg-sched-section-tag-other {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.page-registrar-dashboard .reg-sched-section-tag-other::before {
+  background: #2563eb;
+}
+
+.page-registrar-dashboard .reg-sched-item.is-done {
+  opacity: 0.65;
+}
+
+.page-registrar-dashboard .reg-sched-item.is-done .reg-sched-name {
+  text-decoration: line-through;
+}
+
 .app-process-page {
   padding: 4px 0;
 }

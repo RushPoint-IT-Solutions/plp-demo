@@ -22,9 +22,36 @@
 .msg-table {
     min-width: 700px; /* Forces scrolling on small screens */
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #d6dee8;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
 }
 .msg-table th, .msg-table td {
     white-space: nowrap;
+    padding: 10px 12px;
+}
+
+.msg-table thead th {
+    background: #f3f5f7;
+    color: #334155;
+    font-weight: 700;
+    border-bottom: 1px solid #d6dee8;
+}
+
+.msg-table tbody td {
+    color: #475569;
+    border-bottom: 1px solid #d6dee8;
+}
+
+.msg-table tbody tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.msg-table tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 @media (max-width: 900px) {
