@@ -6,6 +6,52 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
+    .frm-action-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .frm-search-wrap {
+        margin-right: auto;
+        min-width: 260px;
+        max-width: 340px;
+        width: 100%;
+    }
+
+    .frm-action-btn {
+        min-width: 120px;
+        font-weight: 700;
+        flex: 0 0 auto;
+    }
+
+    @media (max-width: 991.98px) {
+        .frm-action-row {
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .frm-search-wrap {
+            margin-right: 0;
+            min-width: 0;
+            max-width: none;
+            flex: 1 1 100%;
+        }
+
+        .frm-action-btn {
+            flex: 1 1 calc(50% - 4px);
+            min-width: 0;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .frm-action-btn {
+            flex-basis: 100%;
+        }
+    }
+
     @media print {
         @page { size: portrait; margin: 8mm; }
     }
@@ -62,13 +108,13 @@
                     </select>
                 </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap: 8px;">
-                <div style="margin-right:auto; min-width:260px; max-width:340px; width:100%;">
+            <div class="frm-action-row">
+                <div class="frm-search-wrap">
                     <input type="text" class="app-filter-select" style="width:100%;" placeholder="Search student..." oninput="wceFilterTable(this.value)">
                 </div>
-                <button type="button" class="req-btn-save" style="min-width: 150px; font-weight: 700;" onclick="wceOpenBlankPreview()">Preview Form</button>
-                <button type="button" class="req-btn-save" style="min-width: 160px; font-weight: 700;" onclick="wcePrintSelected()">Print Selected</button>
-                <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;">Set</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="wceOpenBlankPreview()">Preview Form</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="wcePrintSelected()">Print Selected</button>
+                <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
         </div>
 

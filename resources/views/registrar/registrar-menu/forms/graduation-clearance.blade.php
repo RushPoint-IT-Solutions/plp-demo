@@ -6,6 +6,52 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
+    .gc-action-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .gc-search-wrap {
+        margin-right: auto;
+        min-width: 260px;
+        max-width: 340px;
+        width: 100%;
+    }
+
+    .gc-action-btn {
+        min-width: 120px;
+        font-weight: 700;
+        flex: 0 0 auto;
+    }
+
+    @media (max-width: 991.98px) {
+        .gc-action-row {
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .gc-search-wrap {
+            margin-right: 0;
+            min-width: 0;
+            max-width: none;
+            flex: 1 1 100%;
+        }
+
+        .gc-action-btn {
+            flex: 1 1 calc(50% - 4px);
+            min-width: 0;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .gc-action-btn {
+            flex-basis: 100%;
+        }
+    }
+
     @media print {
         @page { size: A4 portrait; margin: 0; }
     }
@@ -62,13 +108,13 @@
                     </select>
                 </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap: 8px;">
-                <div style="margin-right:auto; min-width:260px; max-width:340px; width:100%;">
+            <div class="gc-action-row">
+                <div class="gc-search-wrap">
                     <input type="text" class="app-filter-select" style="width:100%;" placeholder="Search student..." oninput="gcFilterTable(this.value)">
                 </div>
-                <button type="button" class="req-btn-save" style="min-width: 150px; font-weight: 700;" onclick="gcOpenBlankPreview()">Preview Form</button>
-                <button type="button" class="req-btn-save" style="min-width: 150px; font-weight: 700;" onclick="gcPrintSelected()">Print Selected</button>
-                <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;" onclick="gcPrintForm()">Print Form</button>
+                <button type="button" class="req-btn-save gc-action-btn" onclick="gcOpenBlankPreview()">Preview Form</button>
+                <button type="button" class="req-btn-save gc-action-btn" onclick="gcPrintSelected()">Print Selected</button>
+                <button type="button" class="req-btn-save gc-action-btn" onclick="gcPrintForm()">Print Form</button>
             </div>
         </div>
 

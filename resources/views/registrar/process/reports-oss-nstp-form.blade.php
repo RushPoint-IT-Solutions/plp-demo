@@ -51,6 +51,56 @@
         font-size: 0.82rem;
     }
 
+    .rp-action-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .rp-search-wrap {
+        margin-right: auto;
+        min-width: 280px;
+        max-width: 360px;
+        width: 100%;
+    }
+
+    .rp-action-btn {
+        min-width: 130px;
+        font-weight: 700;
+        flex: 0 0 auto;
+    }
+
+    .rp-action-btn-download {
+        min-width: 150px;
+    }
+
+    @media (max-width: 991.98px) {
+        .rp-action-row {
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .rp-search-wrap {
+            margin-right: 0;
+            min-width: 0;
+            max-width: none;
+            flex: 1 1 100%;
+        }
+
+        .rp-action-btn {
+            flex: 1 1 calc(50% - 4px);
+            min-width: 0;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .rp-action-btn {
+            flex-basis: 100%;
+        }
+    }
+
 </style>
 @endpush
 
@@ -84,13 +134,13 @@
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap:8px; align-items:center;">
-                <div style="margin-right:auto; min-width:280px; max-width:360px; width:100%;">
+            <div class="rp-action-row">
+                <div class="rp-search-wrap">
                     <input type="text" class="app-filter-select" id="nstpSearch" style="width:100%;" placeholder="Search serial no., surname, first name, email...">
                 </div>
                 <input type="file" id="nstpImportInput" accept=".csv,text/csv" style="display:none;">
-                <button type="button" class="req-btn-save" style="min-width:130px; font-weight:700; background:#fff; color:#006837; border:1px solid #006837;" onclick="triggerNstpImport()">Import CSV</button>
-                <button type="button" class="req-btn-save" style="min-width:150px; font-weight:700;" onclick="nstpExportCsv()">Download CSV</button>
+                <button type="button" class="req-btn-save rp-action-btn" style="background:#fff; color:#006837; border:1px solid #006837;" onclick="triggerNstpImport()">Import CSV</button>
+                <button type="button" class="req-btn-save rp-action-btn rp-action-btn-download" onclick="nstpExportCsv()">Download CSV</button>
             </div>
         </div>
 
