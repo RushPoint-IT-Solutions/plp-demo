@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
     @media print {
-        @page { size: portrait; margin: 10mm; }
+        @page { size: A4 portrait; margin: 10mm; }
     }
 </style>
 @endpush
@@ -212,12 +212,21 @@
         <div class="tor-preview-wrap">
             <div class="tor-sheet" id="torPreviewSheet"></div>
         </div>
-        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:flex-end;">
+        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="req-btn-cancel" id="torPrevPageBtn" onclick="torPrevPage()">Prev</button>
+                <span id="torPageIndicator" style="font-size:0.84rem; font-weight:700; color:#111827; min-width:84px; text-align:center;">1 / 4</span>
+                <button type="button" class="req-btn-cancel" id="torNextPageBtn" onclick="torNextPage()">Next</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
             <button type="button" class="req-btn-cancel" onclick="torClosePreview()">Close</button>
             <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="torPrintPreview()">Print Form</button>
+            </div>
         </div>
     </div>
 </div>
+
+<div id="torPrintContainer" aria-hidden="true"></div>
 @endsection
 
 @push('scripts')

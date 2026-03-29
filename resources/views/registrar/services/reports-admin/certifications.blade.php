@@ -60,6 +60,34 @@
                 <button class="rep-btn" onclick="openReportModal('Certificate of Permit to Study Grades')">Certificate of Permit to Study Grades</button>
             </div>
         </div>
+
+        <div class="rep-group-card" style="margin-top: 10px;">
+            <div class="rep-group-title" style="color: #1e3a5f; font-size: 1.1rem;">Recent Issued Certificates</div>
+            <div class="ga-table-wrap app-table-wrap">
+                <table class="ga-table app-table" style="min-width: 720px;">
+                    <thead>
+                        <tr>
+                            <th>Date Issued</th>
+                            <th>Student</th>
+                            <th>Certificate Type</th>
+                            <th>Issued By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse(($recentCertificates ?? collect()) as $record)
+                        <tr>
+                            <td>{{ optional($record->date_issued)->format('m/d/Y') ?: '-' }}</td>
+                            <td>{{ optional($record->student)->student_no }} - {{ optional($record->student)->name }}</td>
+                            <td>{{ $record->certificate_type }}</td>
+                            <td>{{ $record->issued_by ?: '-' }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="4" style="text-align:center; color:#666;">No issued certificates yet.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -71,7 +99,12 @@
         <div class="req-modal-fields" style="display:flex; flex-direction:column; gap:12px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Student ID / Name</label>
-                <input type="text" class="req-modal-input" id="repStudent" placeholder="Enter student...">
+                <select class="req-modal-input" id="repStudentId">
+                    <option value="">Select student...</option>
+                    @foreach(($students ?? collect()) as $student)
+                    <option value="{{ $student->id }}">{{ $student->student_no }} - {{ $student->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Purpose of Request</label>
@@ -108,6 +141,38 @@
 
 @push('scripts')
 <script>
+    var repIssueConfig = {
+        csrfToken: @json(csrf_token()),
+        issueUrl: @json(route('registrar.services.reports-admin.certifications.issue'))
+    };
+
+    function requestJson(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': repIssueConfig.csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.json().catch(function() { return {}; }).then(function(data) {
+                    var message = 'Unable to issue certification.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            message = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(message);
+                });
+            }
+            return response.json().catch(function() { return { ok: true }; });
+        });
+    }
+
     function escHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
             var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -163,13 +228,31 @@
 
     function generateReport() {
         var title = document.getElementById('repModalTitle').dataset.rawTitle || document.getElementById('repModalTitle').innerText;
-        var student = document.getElementById('repStudent').value.trim() || 'Juan Dela Cruz (2022-00123)';
+        var studentSelect = document.getElementById('repStudentId');
+        var studentId = studentSelect ? studentSelect.value : '';
+        var student = studentSelect && studentSelect.options[studentSelect.selectedIndex] ? studentSelect.options[studentSelect.selectedIndex].text : '';
+        if (!student) {
+            student = 'Juan Dela Cruz (2022-00123)';
+        }
         var purpose = document.getElementById('repPurpose').value.trim() || 'Employment Requirement';
         var dateIssued = document.getElementById('repDate').value || new Date().toISOString().slice(0, 10);
 
         document.getElementById('repPreviewSheet').innerHTML = buildDocumentTemplate(title, student, purpose, dateIssued);
         closeReportModal();
         document.getElementById('repPreviewModal').style.display = 'flex';
+
+        if (studentId) {
+            requestJson(repIssueConfig.issueUrl, 'POST', {
+                student_id: studentId,
+                certificate_type: title,
+                purpose: purpose,
+                date_issued: dateIssued
+            }).then(function() {
+                window.location.reload();
+            }).catch(function(error) {
+                alert(error.message || 'Unable to log issued certification.');
+            });
+        }
     }
 
     function printPreviewDocument() {

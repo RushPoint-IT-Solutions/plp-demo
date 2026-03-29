@@ -38,7 +38,7 @@
     </div>
 
     <div class="faculty-load-actions">
-        <a href="#" class="btn-faculty-download">Download Schedule</a>
+        <a href="{{ route('faculty.load.download') }}" class="btn-faculty-download">Download Schedule</a>
     </div>
 
 </div>

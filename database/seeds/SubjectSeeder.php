@@ -7,6 +7,9 @@ class SubjectSeeder extends Seeder
 {
     public function run()
     {
+        $now = now();
+        $faculty = DB::table('faculties')->where('code', 'FAC-001')->first();
+
         $subjects = [
             [
                 'code'           => 'SAM125',
@@ -16,7 +19,7 @@ class SubjectSeeder extends Seeder
                 'time_start'     => '01:00PM',
                 'time_end'       => '02:00PM',
                 'room'           => '5',
-                'faculty'        => 'Abejo, M.',
+                'faculty_id'     => $faculty ? $faculty->id : null,
                 'year_section'   => '4-B',
                 'course'         => 'BSCS',
                 'grading_status' => 'Submitted',
@@ -31,7 +34,7 @@ class SubjectSeeder extends Seeder
                 'time_start'     => '04:00PM',
                 'time_end'       => '05:00PM',
                 'room'           => '2',
-                'faculty'        => 'Abejo, M.',
+                'faculty_id'     => $faculty ? $faculty->id : null,
                 'year_section'   => '4-B',
                 'course'         => 'BSCS',
                 'grading_status' => 'Open For Encoding',
@@ -46,7 +49,7 @@ class SubjectSeeder extends Seeder
                 'time_start'     => '08:00AM',
                 'time_end'       => '10:00AM',
                 'room'           => '1',
-                'faculty'        => 'Abejo, M.',
+                'faculty_id'     => $faculty ? $faculty->id : null,
                 'year_section'   => '4-A',
                 'course'         => 'BSIT',
                 'grading_status' => 'Open For Encoding',
@@ -61,7 +64,7 @@ class SubjectSeeder extends Seeder
                 'time_start'     => '03:00PM',
                 'time_end'       => '05:00PM',
                 'room'           => '8',
-                'faculty'        => 'Abejo, M.',
+                'faculty_id'     => $faculty ? $faculty->id : null,
                 'year_section'   => '1-C',
                 'course'         => 'BSCS',
                 'grading_status' => 'Open For Encoding',
@@ -78,21 +81,26 @@ class SubjectSeeder extends Seeder
                     'school_year' => $subject['school_year'],
                 ],
                 array_merge($subject, [
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ])
             );
         }
 
-        // Enrol student id=1 into all subjects
+        // Enrol the baseline seeded student into all subjects.
+        $student = DB::table('students')->where('student_no', '1234567891012')->first();
+        if (!$student) {
+            return;
+        }
+
         $subjectIds = DB::table('subjects')
             ->whereIn('code', array_column($subjects, 'code'))
             ->pluck('id');
 
         foreach ($subjectIds as $subjectId) {
             DB::table('student_subject')->updateOrInsert(
-                ['student_id' => 1, 'subject_id' => $subjectId],
-                ['student_id' => 1, 'subject_id' => $subjectId]
+                ['student_id' => $student->id, 'subject_id' => $subjectId],
+                ['student_id' => $student->id, 'subject_id' => $subjectId]
             );
         }
     }

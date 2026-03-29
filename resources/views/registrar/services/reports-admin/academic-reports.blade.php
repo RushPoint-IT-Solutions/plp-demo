@@ -33,6 +33,14 @@
         </div>
 
         <div class="rep-group-card" style="margin-top: 10px;">
+            <div class="rep-grid-3">
+                <div class="rep-btn" style="cursor: default; text-align:left;"><strong>Total Students:</strong> {{ $summary['total_students'] ?? 0 }}</div>
+                <div class="rep-btn" style="cursor: default; text-align:left;"><strong>Passing Students:</strong> {{ $summary['passing_students'] ?? 0 }}</div>
+                <div class="rep-btn" style="cursor: default; text-align:left;"><strong>Failing Students:</strong> {{ $summary['failing_students'] ?? 0 }}</div>
+            </div>
+        </div>
+
+        <div class="rep-group-card" style="margin-top: 10px;">
             <div class="rep-group-title" style="color: #1e3a5f; font-size: 1.3rem;">FACULTY REPORTS</div>
             <div class="rep-grid-3">
                 <button class="rep-btn" onclick="openReportModal('Instructor and faculty summary loaded workload / subject')">Instructor and faculty summary loaded workload / subject</button>
@@ -74,7 +82,12 @@
         <div class="req-modal-fields" style="display:flex; flex-direction:column; gap:12px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Student ID / Name</label>
-                <input type="text" class="req-modal-input" id="repStudent" placeholder="Enter student...">
+                <select class="req-modal-input" id="repStudentId">
+                    <option value="">Select student...</option>
+                    @foreach(($students ?? collect()) as $student)
+                    <option value="{{ $student->id }}">{{ $student->student_no }} - {{ $student->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Purpose of Request</label>
@@ -111,6 +124,38 @@
 
 @push('scripts')
 <script>
+    var repIssueConfig = {
+        csrfToken: @json(csrf_token()),
+        issueUrl: @json(route('registrar.services.reports-admin.academic-reports.issue'))
+    };
+
+    function requestJson(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': repIssueConfig.csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.json().catch(function() { return {}; }).then(function(data) {
+                    var message = 'Unable to issue report.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            message = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(message);
+                });
+            }
+            return response.json().catch(function() { return { ok: true }; });
+        });
+    }
+
     function escHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
             var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -166,13 +211,29 @@
 
     function generateReport() {
         var title = document.getElementById('repModalTitle').dataset.rawTitle || document.getElementById('repModalTitle').innerText;
-        var student = document.getElementById('repStudent').value.trim() || 'Juan Dela Cruz (2022-00123)';
+        var studentSelect = document.getElementById('repStudentId');
+        var studentId = studentSelect ? studentSelect.value : '';
+        var student = studentSelect && studentSelect.options[studentSelect.selectedIndex] ? studentSelect.options[studentSelect.selectedIndex].text : '';
+        if (!student) {
+            student = 'Juan Dela Cruz (2022-00123)';
+        }
         var purpose = document.getElementById('repPurpose').value.trim() || 'Employment Requirement';
         var dateIssued = document.getElementById('repDate').value || new Date().toISOString().slice(0, 10);
 
         document.getElementById('repPreviewSheet').innerHTML = buildDocumentTemplate(title, student, purpose, dateIssued);
         closeReportModal();
         document.getElementById('repPreviewModal').style.display = 'flex';
+
+        if (studentId) {
+            requestJson(repIssueConfig.issueUrl, 'POST', {
+                student_id: studentId,
+                report_type: title,
+                purpose: purpose,
+                date_issued: dateIssued
+            }).catch(function(error) {
+                alert(error.message || 'Unable to log issued report.');
+            });
+        }
     }
 
     function printPreviewDocument() {

@@ -6,6 +6,8 @@
 @section('content')
 <div class="profile-page">
 
+    @php($app = $applicant ?? null)
+
     @if(session('success'))
     <div class="applicant-alert applicant-alert-success">{{ session('success') }}</div>
     @endif
@@ -44,7 +46,7 @@
                         <div class="setup-row">
                             <div class="setup-col setup-col--w-280">
                                 <label class="setup-label">LRN</label>
-                                <input type="text" class="setup-input" placeholder="LRN" name="lrn" value="{{ old('lrn') }}">
+                                <input type="text" class="setup-input" placeholder="LRN" name="lrn" value="{{ old('lrn', optional($app)->lrn) }}">
                             </div>
                         </div>
                     </div>
@@ -71,82 +73,82 @@
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Lastname</label>
-                        <input type="text" class="setup-input" placeholder="Last Name" name="last_name" value="{{ old('last_name') }}">
+                        <input type="text" class="setup-input" placeholder="Last Name" name="last_name" value="{{ old('last_name', optional($app)->last_name) }}">
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">First Name</label>
-                        <input type="text" class="setup-input" placeholder="First Name" name="first_name" value="{{ old('first_name') }}">
+                        <input type="text" class="setup-input" placeholder="First Name" name="first_name" value="{{ old('first_name', optional($app)->first_name) }}">
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Middle Name</label>
-                        <input type="text" class="setup-input" placeholder="Middle Name" name="middle_name" value="{{ old('middle_name') }}">
+                        <input type="text" class="setup-input" placeholder="Middle Name" name="middle_name" value="{{ old('middle_name', optional($app)->middle_name) }}">
                     </div>
                     <div class="setup-col setup-col-sm">
                         <label class="setup-label">Suffix</label>
-                        <input type="text" class="setup-input" placeholder="Suffix" name="suffix" value="{{ old('suffix') }}">
+                        <input type="text" class="setup-input" placeholder="Suffix" name="suffix" value="{{ old('suffix', optional($app)->suffix) }}">
                     </div>
                 </div>
 
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Nickname</label>
-                        <input type="text" class="setup-input" placeholder="Nickname" name="nickname" value="{{ old('nickname') }}">
+                        <input type="text" class="setup-input" placeholder="Nickname" name="nickname" value="{{ old('nickname', optional($app)->nickname) }}">
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Gender</label>
                         <div class="setup-radio-group">
-                            <label class="setup-radio"><input type="radio" name="gender" value="Male" {{ old('gender') === 'Male' ? 'checked' : '' }}> Male</label>
-                            <label class="setup-radio"><input type="radio" name="gender" value="Female" {{ old('gender') === 'Female' ? 'checked' : '' }}> Female</label>
+                            <label class="setup-radio"><input type="radio" name="gender" value="Male" {{ old('gender', optional($app)->gender) === 'Male' ? 'checked' : '' }}> Male</label>
+                            <label class="setup-radio"><input type="radio" name="gender" value="Female" {{ old('gender', optional($app)->gender) === 'Female' ? 'checked' : '' }}> Female</label>
                         </div>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Nationality</label>
                         <select name="nationality" class="setup-input setup-select">
                             @foreach(['Filipino','American','Japanese','Korean','Chinese','Other'] as $nat)
-                            <option value="{{ $nat }}" {{ old('nationality') === $nat ? 'selected' : '' }}>{{ $nat }}</option>
+                            <option value="{{ $nat }}" {{ old('nationality', optional($app)->nationality) === $nat ? 'selected' : '' }}>{{ $nat }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Religion</label>
                         <select name="religion" class="setup-input setup-select">
-                            <option value="" disabled {{ !old('religion') ? 'selected' : '' }}>Select religion</option>
+                            <option value="" disabled {{ !old('religion', optional($app)->religion) ? 'selected' : '' }}>Select religion</option>
                             @foreach(['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'] as $rel)
-                            <option value="{{ $rel }}" {{ old('religion') === $rel ? 'selected' : '' }}>{{ $rel }}</option>
+                            <option value="{{ $rel }}" {{ old('religion', optional($app)->religion) === $rel ? 'selected' : '' }}>{{ $rel }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Date of Birth</label>
-                        <input type="date" name="date_of_birth" class="setup-input" id="dobField" value="{{ old('date_of_birth') }}">
+                        <input type="date" name="date_of_birth" class="setup-input" id="dobField" value="{{ old('date_of_birth', optional(optional($app)->date_of_birth)->format('Y-m-d')) }}">
                     </div>
                 </div>
 
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Place of Birth</label>
-                        <input type="text" name="place_of_birth" class="setup-input" placeholder="Place of Birth" value="{{ old('place_of_birth') }}">
+                        <input type="text" name="place_of_birth" class="setup-input" placeholder="Place of Birth" value="{{ old('place_of_birth', optional($app)->place_of_birth) }}">
                     </div>
                     <div class="setup-col setup-col-sm">
                         <label class="setup-label">Age</label>
-                        <input type="number" name="age" class="setup-input" id="ageField" placeholder="Age" value="{{ old('age') }}" readonly tabindex="-1">
+                        <input type="number" name="age" class="setup-input" id="ageField" placeholder="Age" value="{{ old('age', optional($app)->age) }}" readonly tabindex="-1">
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Civil Status</label>
                         <select name="civil_status" class="setup-input setup-select">
-                            <option value="" disabled {{ !old('civil_status') ? 'selected' : '' }}>Select status</option>
+                            <option value="" disabled {{ !old('civil_status', optional($app)->civil_status) ? 'selected' : '' }}>Select status</option>
                             @foreach(['Single','Married','Widowed'] as $c)
-                            <option value="{{ $c }}" {{ old('civil_status') === $c ? 'selected' : '' }}>{{ $c }}</option>
+                            <option value="{{ $c }}" {{ old('civil_status', optional($app)->civil_status) === $c ? 'selected' : '' }}>{{ $c }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Mobile Number</label>
-                        <input type="text" name="mobile_number" class="setup-input" placeholder="Mobile Number" value="{{ old('mobile_number') }}" maxlength="11" inputmode="numeric">
+                        <input type="text" name="mobile_number" class="setup-input" placeholder="Mobile Number" value="{{ old('mobile_number', optional($app)->mobile_number) }}" maxlength="11" inputmode="numeric">
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Email Address</label>
-                        <input type="email" name="email_address" class="setup-input" placeholder="Email Address" value="{{ old('email_address') }}">
+                        <input type="email" name="email_address" class="setup-input" placeholder="Email Address" value="{{ old('email_address', optional($app)->email_address) }}">
                     </div>
                 </div>
             </div>
@@ -161,15 +163,15 @@
                 <div class="setup-row">
                     <div class="setup-col setup-col--flex-3">
                         <label class="setup-label">Street</label>
-                        <input type="text" name="present_street" id="present_street" class="setup-input" placeholder="Street" value="{{ old('present_street') }}">
+                        <input type="text" name="present_street" id="present_street" class="setup-input" placeholder="Street" value="{{ old('present_street', optional($app)->present_street) }}">
                     </div>
                     <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Barangay</label>
-                        <input type="text" name="present_barangay" id="present_barangay" class="setup-input" placeholder="Barangay" value="{{ old('present_barangay') }}">
+                        <input type="text" name="present_barangay" id="present_barangay" class="setup-input" placeholder="Barangay" value="{{ old('present_barangay', optional($app)->present_barangay) }}">
                     </div>
                     <div class="setup-col setup-col--flex-1">
                         <label class="setup-label">Zipcode</label>
-                        <input type="text" name="present_zipcode" id="present_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('present_zipcode') }}">
+                        <input type="text" name="present_zipcode" id="present_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('present_zipcode', optional($app)->present_zipcode) }}">
                     </div>
                 </div>
 
@@ -196,7 +198,7 @@
 
                 <div class="setup-same-address">
                     <label class="setup-checkbox-label" for="sameAsPresent">
-                        <input type="checkbox" id="sameAsPresent" name="same_as_present" value="1" {{ old('same_as_present') ? 'checked' : '' }}>
+                        <input type="checkbox" id="sameAsPresent" name="same_as_present" value="1" {{ old('same_as_present', optional($app)->same_as_present) ? 'checked' : '' }}>
                         Same as Present Address
                     </label>
                 </div>
@@ -206,15 +208,15 @@
                 <div class="setup-row" id="permanentAddressFields">
                     <div class="setup-col setup-col--flex-3">
                         <label class="setup-label">Street</label>
-                        <input type="text" name="permanent_street" id="permanent_street" class="setup-input" placeholder="Street" value="{{ old('permanent_street') }}">
+                        <input type="text" name="permanent_street" id="permanent_street" class="setup-input" placeholder="Street" value="{{ old('permanent_street', optional($app)->permanent_street) }}">
                     </div>
                     <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Barangay</label>
-                        <input type="text" name="permanent_barangay" id="permanent_barangay" class="setup-input" placeholder="Barangay" value="{{ old('permanent_barangay') }}">
+                        <input type="text" name="permanent_barangay" id="permanent_barangay" class="setup-input" placeholder="Barangay" value="{{ old('permanent_barangay', optional($app)->permanent_barangay) }}">
                     </div>
                     <div class="setup-col setup-col--flex-1">
                         <label class="setup-label">Zipcode</label>
-                        <input type="text" name="permanent_zipcode" id="permanent_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('permanent_zipcode') }}">
+                        <input type="text" name="permanent_zipcode" id="permanent_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('permanent_zipcode', optional($app)->permanent_zipcode) }}">
                     </div>
                 </div>
 
@@ -416,12 +418,12 @@
 @push('scripts')
 <script>
     var applicantAddressDraft = {
-        present_region: {{ json_encode(old('present_region')) }},
-        present_province: {{ json_encode(old('present_province')) }},
-        present_municipality: {{ json_encode(old('present_municipality')) }},
-        permanent_region: {{ json_encode(old('permanent_region')) }},
-        permanent_province: {{ json_encode(old('permanent_province')) }},
-        permanent_municipality: {{ json_encode(old('permanent_municipality')) }}
+        present_region: {{ json_encode(old('present_region', optional($app)->present_region)) }},
+        present_province: {{ json_encode(old('present_province', optional($app)->present_province)) }},
+        present_municipality: {{ json_encode(old('present_municipality', optional($app)->present_municipality)) }},
+        permanent_region: {{ json_encode(old('permanent_region', optional($app)->permanent_region)) }},
+        permanent_province: {{ json_encode(old('permanent_province', optional($app)->permanent_province)) }},
+        permanent_municipality: {{ json_encode(old('permanent_municipality', optional($app)->permanent_municipality)) }}
     };
 </script>
 <script src="{{ asset('js/applicant-form.js') }}"></script>

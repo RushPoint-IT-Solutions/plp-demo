@@ -114,13 +114,43 @@
 
 @push('scripts')
 <script>
-    var bdRows = [
-        { id: 'bd-1', sy: '2025-2026', sem: 'First', month: 'January', days: '20' },
-        { id: 'bd-2', sy: '2025-2026', sem: 'First', month: 'February', days: '19' },
-        { id: 'bd-3', sy: '2025-2026', sem: 'Second', month: 'June', days: '22' },
-        { id: 'bd-4', sy: '2025-2026', sem: 'Second', month: 'July', days: '23' },
-        { id: 'bd-5', sy: '2026-2027', sem: 'First', month: 'August', days: '21' }
-    ];
+    var bdRows = @json($bedDayRows ?? []);
+    var bdStoreUrl = '{{ route('registrar.admin-tools.student-maintenance.bed-days.store') }}';
+    var bdUpdateTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-days.update', ['bedDay' => '__ID__']) }}';
+    var bdDeleteTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-days.destroy', ['bedDay' => '__ID__']) }}';
+
+    function bdBuildUrl(template, id) {
+        return template.replace('__ID__', String(id));
+    }
+
+    async function bdRequestJson(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
+        }
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process BED Days request.'
+            );
+        }
+
+        return json;
+    }
 
     function bdEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -197,7 +227,7 @@
             html = '<tr><td colspan="6" class="sc-empty-row">No data listed.</td></tr>';
         }
 
-        tbody.innerHTML = html + '<tr class="bd-total-row"><td colspan="6">Total Students: <strong>' + bdRows.length + '</strong></td></tr>';
+        tbody.innerHTML = html + '<tr class="bd-total-row"><td colspan="6">Total Records: <strong>' + bdRows.length + '</strong></td></tr>';
     }
 
     function bdOpenEditModal(id) {
@@ -216,7 +246,7 @@
         document.getElementById('bdEditModal').style.display = 'none';
     }
 
-    function bdSaveEdit() {
+    async function bdSaveEdit() {
         var id = document.getElementById('bdEditId').value;
         var sy = (document.getElementById('bdEditSY').value || '').trim();
         var sem = document.getElementById('bdEditSem').value;
@@ -228,8 +258,20 @@
             return;
         }
 
+        try {
+            await bdRequestJson(bdBuildUrl(bdUpdateTemplate, id), 'PUT', {
+                school_year: sy,
+                semester: sem,
+                month_name: month,
+                number_of_days: parseInt(days, 10)
+            });
+        } catch (error) {
+            alert(error.message || 'Unable to update BED Days record.');
+            return;
+        }
+
         bdRows = bdRows.map(function(item) {
-            if (item.id !== id) return item;
+            if (String(item.id) !== String(id)) return item;
             return { id: item.id, sy: sy, sem: sem, month: month, days: days };
         });
 
@@ -247,14 +289,21 @@
         document.getElementById('bdDeleteModal').style.display = 'none';
     }
 
-    function bdConfirmDelete() {
+    async function bdConfirmDelete() {
         var id = document.getElementById('bdDeleteId').value;
-        bdRows = bdRows.filter(function(item) { return item.id !== id; });
+        try {
+            await bdRequestJson(bdBuildUrl(bdDeleteTemplate, id), 'DELETE');
+        } catch (error) {
+            alert(error.message || 'Unable to delete BED Days record.');
+            return;
+        }
+
+        bdRows = bdRows.filter(function(item) { return String(item.id) !== String(id); });
         bdCloseDeleteModal();
         bdRenderTable();
     }
 
-    document.getElementById('bdSaveBtn').addEventListener('click', function() {
+    document.getElementById('bdSaveBtn').addEventListener('click', async function() {
         var month = (document.getElementById('bdMonth').value || '').trim();
         var days = (document.getElementById('bdDays').value || '').trim();
         if (!month || !days) {
@@ -262,13 +311,27 @@
             return;
         }
 
-        bdRows.unshift({
-            id: 'bd-' + Date.now(),
-            sy: document.getElementById('bdSY').value,
-            sem: document.getElementById('bdSem').value,
-            month: month,
-            days: days
-        });
+        var payload = {
+            school_year: document.getElementById('bdSY').value,
+            semester: document.getElementById('bdSem').value,
+            month_name: month,
+            number_of_days: parseInt(days, 10)
+        };
+
+        try {
+            var result = await bdRequestJson(bdStoreUrl, 'POST', payload);
+            bdRows.unshift(result.row || {
+                id: Date.now(),
+                sy: payload.school_year,
+                sem: payload.semester,
+                month: payload.month_name,
+                days: String(payload.number_of_days)
+            });
+        } catch (error) {
+            alert(error.message || 'Unable to save BED Days record.');
+            return;
+        }
+
         document.getElementById('bdMonth').value = '';
         document.getElementById('bdDays').value = '';
         bdRenderTable();

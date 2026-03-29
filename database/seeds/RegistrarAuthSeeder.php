@@ -29,6 +29,7 @@ class RegistrarAuthSeeder extends Seeder
                 'email' => 'registrar.demo@plp.local',
                 'password' => Hash::make('registrar'),
                 'module' => 'registrar',
+                'force_password_reset' => false,
                 'student_id' => null,
                 'faculty_id' => null,
                 'registrar_id' => $registrar ? $registrar->id : null,

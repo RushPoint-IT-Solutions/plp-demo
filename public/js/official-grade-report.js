@@ -38,6 +38,14 @@ var ogrDemoMeta = {
     '2': { studentNo:'21-00010', studentName:'CERADO, ROILEEN I.', address:'326 CAPTAIN HENRY JAVIER ST. ORANBO PASIG CITY', birthday:'JUN 29 2002 10:27AM', section:'BSIT 1B', course:'BSIT : BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY', schoolYear:'2021-2022 / 1ST SEMESTER', curriculum:'2021', studentType:'OLD', yearLevel:'4', residency:'PR', cwa:'1.40' }
 };
 
+if (window.ogrSubjectsByRow && typeof window.ogrSubjectsByRow === 'object') {
+    ogrDemoSubjects = window.ogrSubjectsByRow;
+}
+
+if (window.ogrMetaByRow && typeof window.ogrMetaByRow === 'object') {
+    ogrDemoMeta = window.ogrMetaByRow;
+}
+
 function ogrBuildTemplate(data, subjects, meta) {
     /* space at top for pre-printed header on yellow paper */
     var headerSpace = '<div class="ogr-header-space"></div>';

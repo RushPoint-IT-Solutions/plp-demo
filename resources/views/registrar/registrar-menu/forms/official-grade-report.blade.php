@@ -98,48 +98,31 @@
                     </tr>
                 </thead>
                 <tbody id="ogrTableBody">
-                    <tr data-row-id="1">
+                    @forelse($gradeReportRows as $row)
+                    <tr data-row-id="{{ $row['row_id'] }}" data-student-id="{{ $row['student_id'] }}">
                         <td style="text-align: center;"><input type="checkbox" class="ogr-row-select" onchange="ogrSyncSelectAll()"></td>
-                        <td>25-00414</td>
-                        <td><button type="button" class="doc-link-btn" onclick="ogrOpenPreview(1)">Abenes, Cristine Grace Bernaldez</button></td>
-                        <td>BSN</td>
-                        <td>First</td>
-                        <td>BSN 1-BENNER</td>
+                        <td>{{ $row['student_no'] }}</td>
+                        <td><button type="button" class="doc-link-btn" onclick="ogrOpenPreview({{ $row['row_id'] }})">{{ $row['student_name'] }}</button></td>
+                        <td>{{ $row['program'] }}</td>
+                        <td>{{ $row['year'] }}</td>
+                        <td>{{ $row['section'] }}</td>
                         <td style="text-align:center;">
-                            <div class="apst-action-btn" data-ogr-menu-toggle="ogrMenu-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="ogrMenu-1">
-                                <button type="button" onclick="ogrOpenEdit(1)">
+                            <div class="apst-action-btn" data-ogr-menu-toggle="ogrMenu-{{ $row['row_id'] }}" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                            <div class="apst-dropdown" id="ogrMenu-{{ $row['row_id'] }}">
+                                <button type="button" onclick="ogrOpenEdit({{ $row['row_id'] }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                                     Edit
                                 </button>
-                                <button type="button" class="apst-del-btn" onclick="ogrOpenDelete(1)">
+                                <button type="button" class="apst-del-btn" onclick="ogrOpenDelete({{ $row['row_id'] }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                     Delete
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    <tr data-row-id="2">
-                        <td style="text-align: center;"><input type="checkbox" class="ogr-row-select" onchange="ogrSyncSelectAll()"></td>
-                        <td>21-00010</td>
-                        <td><button type="button" class="doc-link-btn" onclick="ogrOpenPreview(2)">Cerado, Roileen I.</button></td>
-                        <td>BSIT</td>
-                        <td>Fourth</td>
-                        <td>BSIT 1B</td>
-                        <td style="text-align:center;">
-                            <div class="apst-action-btn" data-ogr-menu-toggle="ogrMenu-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="ogrMenu-2">
-                                <button type="button" onclick="ogrOpenEdit(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                                    Edit
-                                </button>
-                                <button type="button" class="apst-del-btn" onclick="ogrOpenDelete(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @empty
+                    <tr><td colspan="7" style="text-align:center; color:#666;">No students available.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -209,5 +192,9 @@
 @endsection
 
 @push('scripts')
+<script>
+window.ogrSubjectsByRow = @json($subjectsByRow ?? []);
+window.ogrMetaByRow = @json($metaByRow ?? []);
+</script>
 <script src="{{ asset('js/official-grade-report.js') }}?v={{ time() }}"></script>
 @endpush

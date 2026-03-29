@@ -28,68 +28,30 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    @forelse($gradeRules as $index => $rule)
+                    <tr data-grade-rule-id="{{ $rule->id }}">
                         <td>
-                            <div class="apst-action-btn" data-gs-menu-toggle="gsMenu0" aria-label="Open row actions" title="Actions">
+                            <div class="apst-action-btn" data-gs-menu-toggle="gsMenu{{ $index }}" aria-label="Open row actions" title="Actions">
                                 <span></span><span></span><span></span>
                             </div>
-                            <div class="apst-dropdown" id="gsMenu0">
-                                <button type="button" data-ga-open-action="edit" data-ga-item="INC">
+                            <div class="apst-dropdown" id="gsMenu{{ $index }}">
+                                <button type="button" data-ga-open-action="edit" data-ga-item="{{ $rule->code }}" data-ga-id="{{ $rule->id }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     Edit
                                 </button>
-                                <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="INC">
+                                <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="{{ $rule->code }}" data-ga-id="{{ $rule->id }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                     Delete
                                 </button>
                             </div>
                         </td>
-                            <td>INC</td>
-                            <td>N/A</td>
-                            <td>No Appearance</td>
+                        <td>{{ $rule->code }}</td>
+                        <td>{{ $rule->grade ?: 'N/A' }}</td>
+                        <td>{{ $rule->remarks }}</td>
                     </tr>
-                    <tr>
-                        <td>
-                            <div class="apst-action-btn" data-gs-menu-toggle="gsMenu1" aria-label="Open row actions" title="Actions">
-                                <span></span><span></span><span></span>
-                            </div>
-                            <div class="apst-dropdown" id="gsMenu1">
-                                <button type="button" data-ga-open-action="edit" data-ga-item="FDA"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                                <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="FDA"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                            </div>
-                        </td>
-                            <td>FDA</td>
-                            <td>FDA</td>
-                            <td>Failure Due To Absences</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="apst-action-btn" data-gs-menu-toggle="gsMenu2" aria-label="Open row actions" title="Actions">
-                                <span></span><span></span><span></span>
-                            </div>
-                            <div class="apst-dropdown" id="gsMenu2">
-                                <button type="button" data-ga-open-action="edit" data-ga-item="P"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                                <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="P"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                            </div>
-                        </td>
-                            <td>P</td>
-                            <td>1.0-3.0</td>
-                            <td>Passed</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="apst-action-btn" data-gs-menu-toggle="gsMenu3" aria-label="Open row actions" title="Actions">
-                                <span></span><span></span><span></span>
-                            </div>
-                            <div class="apst-dropdown" id="gsMenu3">
-                                <button type="button" data-ga-open-action="edit" data-ga-item="F"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                                <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="F"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                            </div>
-                        </td>
-                            <td>F</td>
-                            <td>5.0</td>
-                            <td>Failed</td>
-                    </tr>
+                    @empty
+                    <tr><td colspan="4" class="text-center text-muted py-4">No grading rules found.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -186,9 +148,45 @@ document.addEventListener('DOMContentLoaded', function () {
     var newGradeCode = document.getElementById('gaNewGradeCode');
     var newGradeValue = document.getElementById('gaNewGradeValue');
     var newGradeRemarks = document.getElementById('gaNewGradeRemarks');
+    var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+    var gsStoreUrl = @json(route('registrar.services.grading-academic.grading-system.store'));
+    var gsUpdateUrlTemplate = @json(route('registrar.services.grading-academic.grading-system.update', ['gradeRule' => '__ID__']));
+    var gsDestroyUrlTemplate = @json(route('registrar.services.grading-academic.grading-system.destroy', ['gradeRule' => '__ID__']));
     var nextMenuIndex = page.querySelectorAll('[data-gs-menu-toggle]').length;
     var activeRow = null;
     var activeAction = 'edit';
+
+    function gsBuildUrl(template, id) {
+        return String(template).replace('__ID__', String(id));
+    }
+
+    function gsRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function (response) {
+            if (!response.ok) {
+                return response.json().catch(function () { return {}; }).then(function (data) {
+                    var firstError = 'Request failed.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            firstError = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(firstError);
+                });
+            }
+
+            return response.json().catch(function () { return { ok: true }; });
+        });
+    }
 
     function closeActionMenus() {
         page.querySelectorAll('.apst-dropdown.open').forEach(function (menu) {
@@ -247,18 +245,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function buildActionCell(item, menuId) {
+    function buildActionCell(item, menuId, id) {
         return '' +
             '<td>' +
                 '<div class="apst-action-btn" data-gs-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions">' +
                     '<span></span><span></span><span></span>' +
                 '</div>' +
                 '<div class="apst-dropdown" id="' + menuId + '">' +
-                    '<button type="button" data-ga-open-action="edit" data-ga-item="' + item + '">' +
+                    '<button type="button" data-ga-open-action="edit" data-ga-item="' + item + '" data-ga-id="' + id + '">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
                         'Edit' +
                     '</button>' +
-                    '<button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="' + item + '">' +
+                    '<button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="' + item + '" data-ga-id="' + id + '">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
                         'Delete' +
                     '</button>' +
@@ -338,6 +336,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 var code = newGradeCode ? newGradeCode.value.trim() : '';
                 var grade = newGradeValue ? newGradeValue.value.trim() : '';
                 var remarks = newGradeRemarks ? newGradeRemarks.value.trim() : '';
+                var selectedPeriods = [];
+                page.querySelectorAll('.ga-new-period-check:checked').forEach(function (checkbox) {
+                    selectedPeriods.push(checkbox.value);
+                });
 
                 if (!code || !remarks) {
                     if (typeof showRegistrarToast === 'function') {
@@ -346,32 +348,42 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                var menuId = 'gsMenu' + nextMenuIndex;
-                nextMenuIndex += 1;
-                var tr = document.createElement('tr');
-                tr.innerHTML = buildActionCell(code, menuId) +
-                    '<td>' + code + '</td>' +
-                    '<td>' + (grade || 'N/A') + '</td>' +
-                    '<td>' + remarks + '</td>';
-                table.querySelector('tbody').appendChild(tr);
-
-                if (typeof showRegistrarToast === 'function') {
-                    showRegistrarToast('Grading period added successfully.');
-                }
-                closeModal(document.getElementById('gaNewPeriodModal'));
-                filterRows();
+                gsRequest(gsStoreUrl, 'POST', {
+                    code: code,
+                    grade: grade || null,
+                    remarks: remarks,
+                    periods: selectedPeriods
+                }).then(function () {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Grading rule added successfully.');
+                    }
+                    window.location.reload();
+                }).catch(function (error) {
+                    alert(error.message || 'Unable to save grading rule.');
+                });
                 return;
             }
 
             if (event.target.matches('[data-ga-confirm-action]') && actionModal && actionModal.style.display === 'flex') {
                 if (activeAction === 'edit' && activeRow && activeRow.cells.length >= 4) {
-                    activeRow.cells[1].textContent = actionGradeCode ? actionGradeCode.value.trim() : activeRow.cells[1].textContent;
-                    activeRow.cells[2].textContent = actionGradeValue ? actionGradeValue.value.trim() : activeRow.cells[2].textContent;
-                    activeRow.cells[3].textContent = actionRemarks ? actionRemarks.value.trim() : activeRow.cells[3].textContent;
-                    if (typeof showRegistrarToast === 'function') {
-                        showRegistrarToast('Grading rule updated successfully.');
+                    var id = activeRow.getAttribute('data-grade-rule-id');
+                    if (!id) {
+                        alert('Missing grade rule id.');
+                        return;
                     }
-                    closeModal(actionModal);
+
+                    gsRequest(gsBuildUrl(gsUpdateUrlTemplate, id), 'PUT', {
+                        code: actionGradeCode ? actionGradeCode.value.trim() : '',
+                        grade: actionGradeValue ? actionGradeValue.value.trim() : '',
+                        remarks: actionRemarks ? actionRemarks.value.trim() : ''
+                    }).then(function () {
+                        if (typeof showRegistrarToast === 'function') {
+                            showRegistrarToast('Grading rule updated successfully.');
+                        }
+                        window.location.reload();
+                    }).catch(function (error) {
+                        alert(error.message || 'Unable to update grading rule.');
+                    });
                     return;
                 }
             }
@@ -384,10 +396,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (event.target.matches('[data-ga-confirm-delete]')) {
             if (activeRow) {
-                activeRow.remove();
-                if (typeof showRegistrarToast === 'function') {
-                    showRegistrarToast('Grading rule deleted successfully.');
+                var id = activeRow.getAttribute('data-grade-rule-id');
+                if (!id) {
+                    alert('Missing grade rule id.');
+                    return;
                 }
+
+                gsRequest(gsBuildUrl(gsDestroyUrlTemplate, id), 'DELETE').then(function () {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Grading rule deleted successfully.');
+                    }
+                    window.location.reload();
+                }).catch(function (error) {
+                    alert(error.message || 'Unable to delete grading rule.');
+                });
             }
             closeModal(deleteModal);
             return;

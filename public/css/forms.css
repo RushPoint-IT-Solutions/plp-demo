@@ -373,8 +373,9 @@ body.diploma-preview-open {
    TOR – preview modal
    ============================================================ */
 .tor-preview-modal-box {
-    width: min(94vw, 1080px);
-    max-height: 92vh;
+    width: min(99vw, 1460px);
+    max-width: min(99vw, 1460px);
+    max-height: 95vh;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -396,55 +397,87 @@ body.diploma-preview-open {
 }
 
 .tor-preview-wrap {
-    padding: 14px;
+    padding: 12px 16px 18px;
     background: #f3f4f6;
     overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#torPreviewModal .tor-preview-wrap .tor-sheet {
+    transform: none;
+    margin: 0 auto 22px;
+}
+
+body.tor-preview-open {
+    overflow: hidden;
 }
 
 /* ============================================================
    TOR – sheet
    ============================================================ */
 .tor-sheet {
-    width: 900px;
-    min-height: 1140px;
+    width: 210mm;
+    min-height: 297mm;
     margin: 0 auto;
     background: #ffffff;
     border: 1px solid #d4ded7;
     box-shadow: 0 8px 20px rgba(10, 45, 28, 0.12);
-    padding: 38px 44px;
+    padding: 24px 44px;
     color: #1f2937;
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: Arial, Helvetica, sans-serif;
     position: relative;
+    box-sizing: border-box;
 }
 
-.tor-sheet h4 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.08rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 800;
+.tor-sheet-page {
+    min-height: 277mm;
 }
 
-.tor-sheet .meta {
-    margin-top: 10px;
-    text-align: center;
-    font-size: 0.88rem;
-    color: #4b5563;
+.tor-sheet-page.tor-print-page-break {
+    margin-bottom: 22px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #d1d5db;
 }
 
-.tor-blank-area {
-    margin-top: 28px;
-    border: 2px dashed #9ca3af;
-    min-height: 900px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: #6b7280;
-    font-size: 0.94rem;
-    line-height: 1.8;
-    padding: 24px;
+.tor-grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+}
+.tor-grades-table th {
+    text-align: left;
+    border-bottom: 1px solid #000;
+    padding: 4px;
+}
+.tor-grades-table td {
+    padding: 4px;
+    vertical-align: top;
+}
+
+.registrar-body table.tor-grades-table thead tr,
+.registrar-body table.tor-grades-table thead th {
+    background: #ffffff !important;
+    color: #111827 !important;
+}
+
+.registrar-body table.tor-ledger-table thead tr,
+.registrar-body table.tor-ledger-table thead th {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border-color: #111111 !important;
+}
+
+.registrar-body table.tor-ledger-table th,
+.registrar-body table.tor-ledger-table td {
+    border-color: #111111 !important;
+}
+
+#torPrintContainer {
+    display: none;
 }
 
 /* ============================================================
@@ -452,12 +485,18 @@ body.diploma-preview-open {
    ============================================================ */
 @media (max-width: 900px) {
     .tor-sheet {
-        min-height: 980px;
+        width: 100%;
+        min-height: auto;
         padding: 24px 18px;
     }
 
-    .tor-blank-area {
-        min-height: 780px;
+    #torPreviewModal .tor-preview-wrap {
+        padding: 12px;
+    }
+
+    #torPreviewModal .tor-preview-wrap .tor-sheet {
+        transform: none;
+        margin: 0 auto 18px;
     }
 }
 
@@ -668,6 +707,29 @@ body.diploma-preview-open {
    OFFICIAL GRADE REPORT – print
    ============================================================ */
 @media print {
+    html,
+    body.tor-printing {
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    body.tor-printing * {
+        visibility: hidden !important;
+    }
+
+    body.tor-printing #torPrintContainer,
+    body.tor-printing #torPrintContainer * {
+        visibility: visible !important;
+    }
+
+    body.tor-printing #torPrintContainer {
+        position: absolute !important;
+        top: 0;
+        left: 0;
+        width: 100%;
+        overflow: visible !important;
+    }
+
     body.ogr-printing .pf-page,
     body.ogr-printing .req-modal-overlay { display: none !important; }
 
@@ -696,14 +758,50 @@ body.diploma-preview-open {
         background: #fff;
     }
 
+    body.tor-printing #torPrintContainer,
+    body.tor-printing #torPrintContainer * {
+        box-sizing: border-box;
+    }
+
     body.tor-printing #torPrintContainer .tor-sheet {
         width: 100%;
         max-width: 100%;
         background: #fff;
-        padding: 0 40px 30px;
+        padding: 0 26px 18px;
         margin: 0;
         box-shadow: none;
         border: none;
+        min-height: auto;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    body.tor-printing #torPrintContainer .tor-sheet:not(:last-child) {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    body.tor-printing #torPrintContainer .tor-sheet-page,
+    body.tor-printing #torPrintContainer .tor-page-content {
+        min-height: auto;
+        height: auto;
+    }
+
+    body.tor-printing #torPrintContainer .tor-sheet:not(:first-child) {
+        page-break-before: always;
+        break-before: page;
+    }
+
+    body.tor-printing #torPrintContainer .tor-print-page-break {
+        page-break-after: always;
+        break-after: page;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    body.tor-printing #torPrintContainer .tor-print-page-break:last-child {
+        page-break-after: auto;
+        break-after: auto;
     }
     body.ogr-printing #ogrPrintContainer .ogr-print-page-break {
         page-break-after: always;

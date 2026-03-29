@@ -28,6 +28,16 @@ class LoginController extends Controller
     protected $redirectTo = '/home';
 
     /**
+     * Get the login username to be used by the controller.
+     *
+     * @return string
+     */
+    public function username()
+    {
+        return 'username';
+    }
+
+    /**
      * Create a new controller instance.
      *
      * @return void
@@ -35,6 +45,28 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Where to redirect users after successful login.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function authenticated(\Illuminate\Http\Request $request, $user)
+    {
+        switch ($user->module) {
+            case 'registrar':
+                return redirect()->route('registrar.dashboard');
+            case 'faculty':
+                return redirect()->route('faculty.load');
+            case 'applicant':
+                return redirect()->route('applicant.application-form');
+            case 'student':
+            default:
+                return redirect()->route('student.access-module');
+        }
     }
 
     /**

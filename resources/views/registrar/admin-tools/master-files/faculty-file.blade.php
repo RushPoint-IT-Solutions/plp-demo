@@ -6,10 +6,12 @@
 
 @php
     $isConfigMode = request('view') === 'config';
-    $cfgCode = request('code', '01A');
-    $cfgName = request('name', 'Dela Cruz, Juan');
-    $cfgDepartment = request('department', 'Computer Studies');
-    $cfgStatus = request('status', 'Active');
+    $cfgRow = $cfgFaculty ?? null;
+    $cfgId = request('id', optional($cfgRow)->id);
+    $cfgCode = request('code', optional($cfgRow)->code ?? '01A');
+    $cfgName = request('name', optional($cfgRow)->name ?? 'Dela Cruz, Juan');
+    $cfgDepartment = request('department', optional($cfgRow)->department ?? 'Computer Studies');
+    $cfgStatus = request('status', optional($cfgRow)->status ?? 'Active');
 @endphp
 
 
@@ -138,7 +140,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Educational Background</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="education">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="education" onclick="ffcOpenItemModal('education')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -158,7 +160,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Professional Registration</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="registration">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="registration" onclick="ffcOpenItemModal('registration')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -177,7 +179,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Professional Organization</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="organization">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="organization" onclick="ffcOpenItemModal('organization')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -196,7 +198,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Work Experience</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="work">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="work" onclick="ffcOpenItemModal('work')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -215,7 +217,7 @@
 
             <div class="ffc-list-head">
                 <h4 class="ffc-list-title">Trainings/Seminar Attended</h4>
-                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="training">+ Add</button>
+                <button type="button" class="pf-btn-new ffc-add-btn" data-ffc-add="training" onclick="ffcOpenItemModal('training')">+ Add</button>
             </div>
 
             <div class="app-table-wrap ffc-table-wrap">
@@ -233,8 +235,8 @@
             </div>
 
             <div class="ffc-actions">
-                <button type="button" class="req-btn-cancel">Cancel</button>
-                <button type="button" class="pf-btn-new">Save</button>
+                <button type="button" class="req-btn-cancel" id="ffcCancelBtn">Cancel</button>
+                <button type="button" class="pf-btn-new" id="ffcSaveBtn">Save</button>
             </div>
         </section>
     </div>
@@ -327,14 +329,43 @@
 @push('scripts')
 @if(!$isConfigMode)
 <script>
-    var ffRows = [
-        { id: 'ff-1', code: '01A', name: 'Dela Cruz, Juan', department: 'Computer Studies', status: 'Active' },
-        { id: 'ff-2', code: '02A', name: 'Benedict, John', department: 'Computer Studies', status: 'Inactive' },
-        { id: 'ff-3', code: '03A', name: 'Rivera, Angelo', department: 'Engineering', status: 'Active' },
-        { id: 'ff-4', code: '04A', name: 'Austero, Andrea Jane', department: 'Engineering', status: 'Active' },
-        { id: 'ff-5', code: '05A', name: 'Santos, Maria', department: 'Information Systems', status: 'Inactive' },
-        { id: 'ff-6', code: '06A', name: 'Bares, Mark Jay', department: 'Computer Studies', status: 'Active' }
-    ];
+    var ffRows = @json($ffRows ?? []);
+    var ffCsrf = '{{ csrf_token() }}';
+    var ffApi = {
+        store: '{{ route('registrar.admin-tools.master-files.faculty-file.store') }}',
+        updateTemplate: '{{ route('registrar.admin-tools.master-files.faculty-file.update', ['masterFacultyFile' => '__ID__']) }}',
+        destroyTemplate: '{{ route('registrar.admin-tools.master-files.faculty-file.destroy', ['masterFacultyFile' => '__ID__']) }}'
+    };
+
+    function ffBuildUrl(template, id) {
+        return template.replace('__ID__', encodeURIComponent(String(id)));
+    }
+
+    function ffRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': ffCsrf,
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || data.ok === false) {
+                    var message = (data && data.message) ? data.message : 'Request failed.';
+                    if (data && data.errors) {
+                        var firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            });
+        });
+    }
 
     function ffEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -439,7 +470,7 @@
     }
 
     function ffOpenEditModal(id) {
-        var row = ffRows.find(function(item) { return item.id === id; });
+        var row = ffRows.find(function(item) { return String(item.id) === String(id); });
         if (!row) return;
 
         document.getElementById('ffFormTitle').textContent = 'EDIT FACULTY RECORD';
@@ -468,23 +499,31 @@
             return;
         }
 
-        if (!editingId) {
-            ffRows.unshift({
-                id: 'ff-' + Date.now(),
-                code: code,
-                name: name,
-                department: department,
-                status: status
-            });
-        } else {
-            ffRows = ffRows.map(function(item) {
-                if (item.id !== editingId) return item;
-                return { id: item.id, code: code, name: name, department: department, status: status };
-            });
-        }
+        var payload = {
+            code: code,
+            name: name,
+            department: department,
+            status: status
+        };
 
-        ffCloseFormModal();
-        ffRenderTable();
+        var request = !editingId
+            ? ffRequest(ffApi.store, 'POST', payload)
+            : ffRequest(ffBuildUrl(ffApi.updateTemplate, editingId), 'PUT', payload);
+
+        request.then(function(data) {
+            if (!editingId) {
+                ffRows.unshift(data.row);
+            } else {
+                ffRows = ffRows.map(function(item) {
+                    return String(item.id) === String(editingId) ? data.row : item;
+                });
+            }
+
+            ffCloseFormModal();
+            ffRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save faculty record.');
+        });
     }
 
     function ffOpenDeleteModal(id) {
@@ -499,9 +538,15 @@
 
     function ffConfirmDelete() {
         var id = document.getElementById('ffDeleteId').value;
-        ffRows = ffRows.filter(function(item) { return item.id !== id; });
-        ffCloseDeleteModal();
-        ffRenderTable();
+        ffRequest(ffBuildUrl(ffApi.destroyTemplate, id), 'DELETE', null).then(function() {
+            ffRows = ffRows.filter(function(item) {
+                return String(item.id) !== String(id);
+            });
+            ffCloseDeleteModal();
+            ffRenderTable();
+        }).catch(function(error) {
+            alert(error.message || 'Unable to delete faculty record.');
+        });
     }
 
     document.getElementById('ffSearchBtn').addEventListener('click', ffRenderTable);
@@ -524,10 +569,11 @@
         var row = event.target.closest('#ffTableBody tr[data-ff-id]');
         if (row && !event.target.closest('.apst-dropdown') && !event.target.closest('.apst-action-btn')) {
             var rowId = row.getAttribute('data-ff-id');
-            var selected = ffRows.find(function(item) { return item.id === rowId; });
+            var selected = ffRows.find(function(item) { return String(item.id) === String(rowId); });
             if (selected) {
                 var url = '{{ route('registrar.admin-tools.master-files.faculty-file') }}' +
                     '?view=config' +
+                    '&id=' + encodeURIComponent(selected.id || '') +
                     '&code=' + encodeURIComponent(selected.code || '') +
                     '&name=' + encodeURIComponent(selected.name || '') +
                     '&department=' + encodeURIComponent(selected.department || '') +
@@ -548,50 +594,11 @@
 </script>
 @else
 <script>
-    var ffcRows = {
-        education: [
-            {
-                level: 'College',
-                schoolName: 'Pamantasan ng Lungsod ng Pasig',
-                courseDegree: 'BS Computer Science',
-                dateGraduated: '04/15/2022'
-            },
-            {
-                level: 'Graduate Studies',
-                schoolName: 'University of Makati',
-                courseDegree: 'MIT',
-                dateGraduated: '06/20/2025'
-            }
-        ],
-        registration: [
-            {
-                name: 'LET Professional Teacher',
-                rating: '84.60',
-                date: '09/24/2023'
-            }
-        ],
-        organization: [
-            {
-                position: 'Member',
-                name: 'Philippine Society of IT Educators',
-                date: '01/10/2024'
-            }
-        ],
-        work: [
-            {
-                position: 'IT Instructor',
-                company: 'PLP Senior High Department',
-                date: '08/01/2024'
-            }
-        ],
-        training: [
-            {
-                title: 'Outcomes-Based Education Seminar',
-                place: 'Pasig City',
-                date: '11/12/2024'
-            }
-        ]
-    };
+    var ffcFacultyId = @json($cfgId ?? null);
+    var ffcCsrf = '{{ csrf_token() }}';
+    var ffcUpdateTemplate = '{{ route('registrar.admin-tools.master-files.faculty-file.update', ['masterFacultyFile' => '__ID__']) }}';
+    var ffcFormState = @json($cfgFormState ?? []);
+    var ffcRows = @json($cfgDetailRows ?? []);
 
     var ffcSections = {
         education: {
@@ -654,13 +661,75 @@
         });
     }
 
+    function ffcBuildUrl(template, id) {
+        return template.replace('__ID__', encodeURIComponent(String(id)));
+    }
+
+    function ffcRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': ffcCsrf,
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                if (!response.ok || data.ok === false) {
+                    var message = (data && data.message) ? data.message : 'Request failed.';
+                    if (data && data.errors) {
+                        var firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            message = data.errors[firstKey][0];
+                        }
+                    }
+                    throw new Error(message);
+                }
+                return data;
+            });
+        });
+    }
+
+    function ffcGetPersistableElements() {
+        return Array.prototype.slice.call(document.querySelectorAll('.ffc-card input, .ffc-card select, .ffc-card textarea'));
+    }
+
+    function ffcApplyFormState() {
+        var state = ffcFormState || {};
+        ffcGetPersistableElements().forEach(function(element, index) {
+            var key = element.id ? ('id:' + element.id) : ('idx:' + index);
+            if (!(key in state)) return;
+
+            if (element.type === 'checkbox' || element.type === 'radio') {
+                element.checked = !!state[key];
+            } else {
+                element.value = state[key] == null ? '' : String(state[key]);
+            }
+        });
+    }
+
+    function ffcCollectFormState() {
+        var state = {};
+        ffcGetPersistableElements().forEach(function(element, index) {
+            var key = element.id ? ('id:' + element.id) : ('idx:' + index);
+            if (element.type === 'checkbox' || element.type === 'radio') {
+                state[key] = !!element.checked;
+            } else {
+                state[key] = element.value == null ? '' : String(element.value);
+            }
+        });
+
+        return state;
+    }
+
     function ffcBuildActionMenu(section, index) {
         var menuId = 'ffcMenu_' + section + '_' + index;
         return '' +
-            '<div class="apst-action-btn" data-ffc-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
+            '<div class="apst-action-btn" data-ffc-menu-toggle="' + menuId + '" onclick="ffcToggleActionMenu(\'' + menuId + '\', this); event.stopPropagation();" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
             '<div class="apst-dropdown" id="' + menuId + '">' +
-                '<button type="button" data-ffc-edit="' + section + '" data-ffc-index="' + index + '"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>' +
-                '<button type="button" class="apst-del-btn" data-ffc-delete="' + section + '" data-ffc-index="' + index + '"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
+                '<button type="button" data-ffc-edit="' + section + '" data-ffc-index="' + index + '" onclick="ffcOpenItemModal(\'' + section + '\',' + index + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>' +
+                '<button type="button" class="apst-del-btn" data-ffc-delete="' + section + '" data-ffc-index="' + index + '" onclick="ffcOpenDeleteModal(\'' + section + '\',' + index + ')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
             '</div>';
     }
 
@@ -830,21 +899,55 @@
         ffcRenderSection(section);
     }
 
+    function ffcSaveFacultyConfig() {
+        if (!ffcFacultyId) {
+            alert('Faculty record not found. Please return to list and open a record again.');
+            return;
+        }
+
+        var payload = {
+            code: (document.getElementById('ffcFacultyCode').value || '').trim(),
+            name: (document.getElementById('ffcFacultyName').value || '').trim(),
+            department: (document.getElementById('ffcOffice').value || '').trim(),
+            status: document.getElementById('ffcFacultyStatusTop').value || 'Active',
+            config_payload: {
+                form_state: ffcCollectFormState(),
+                sections: ffcRows
+            }
+        };
+
+        if (!payload.code || !payload.name || !payload.department) {
+            alert('Faculty Code, Faculty Name, and Office Department are required.');
+            return;
+        }
+
+        ffcRequest(ffcBuildUrl(ffcUpdateTemplate, ffcFacultyId), 'PUT', payload).then(function(data) {
+            ffcFacultyId = data.row.id;
+            ffcFormState = payload.config_payload.form_state;
+            alert('Faculty profile saved successfully.');
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save faculty profile.');
+        });
+    }
+
     document.addEventListener('click', function(event) {
-        var addBtn = event.target.closest('[data-ffc-add]');
+        var target = event.target && event.target.nodeType === 3 ? event.target.parentElement : event.target;
+        if (!target || !target.closest) return;
+
+        var addBtn = target.closest('[data-ffc-add]');
         if (addBtn) {
             ffcOpenItemModal(addBtn.getAttribute('data-ffc-add'));
             return;
         }
 
-        var menuToggle = event.target.closest('[data-ffc-menu-toggle]');
+        var menuToggle = target.closest('[data-ffc-menu-toggle]');
         if (menuToggle) {
             event.stopPropagation();
             ffcToggleActionMenu(menuToggle.getAttribute('data-ffc-menu-toggle'), menuToggle);
             return;
         }
 
-        var editBtn = event.target.closest('[data-ffc-edit]');
+        var editBtn = target.closest('[data-ffc-edit]');
         if (editBtn) {
             var editSection = editBtn.getAttribute('data-ffc-edit');
             var editIndex = Number(editBtn.getAttribute('data-ffc-index'));
@@ -852,7 +955,7 @@
             return;
         }
 
-        var deleteBtn = event.target.closest('[data-ffc-delete]');
+        var deleteBtn = target.closest('[data-ffc-delete]');
         if (deleteBtn) {
             var deleteSection = deleteBtn.getAttribute('data-ffc-delete');
             var deleteIndex = Number(deleteBtn.getAttribute('data-ffc-index'));
@@ -860,14 +963,27 @@
             return;
         }
 
-        if (!event.target.closest('.apst-dropdown')) {
+        if (!target.closest('.apst-dropdown')) {
             ffcCloseActionMenus();
         }
     });
 
+    var ffcSaveBtn = document.getElementById('ffcSaveBtn');
+    if (ffcSaveBtn) {
+        ffcSaveBtn.addEventListener('click', ffcSaveFacultyConfig);
+    }
+
+    var ffcCancelBtn = document.getElementById('ffcCancelBtn');
+    if (ffcCancelBtn) {
+        ffcCancelBtn.addEventListener('click', function() {
+            window.location.href = '{{ route('registrar.admin-tools.master-files.faculty-file') }}';
+        });
+    }
+
     window.addEventListener('scroll', ffcCloseActionMenus, true);
 
     ffcRenderAllSections();
+    ffcApplyFormState();
 </script>
 @endif
 @endpush

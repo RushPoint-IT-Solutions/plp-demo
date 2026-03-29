@@ -57,6 +57,9 @@
 </div>
 
 @push('scripts')
+<script>
+    window.calendarEventsData = @json($calendarEvents ?? []);
+</script>
 <script src="{{ asset('js/student-events.js') }}"></script>
 @endpush
 @endsection

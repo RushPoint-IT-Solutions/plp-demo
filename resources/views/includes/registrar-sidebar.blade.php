@@ -120,6 +120,7 @@
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
+                        <a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-create') ? 'active' : '' }}">Add New Faculty</a>
                         <a href="{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.grading-sheet') ? 'active' : '' }}">Grading Sheet</a>
                         <a href="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.evaluation') ? 'active' : '' }}">Evaluation</a>
                     </div>

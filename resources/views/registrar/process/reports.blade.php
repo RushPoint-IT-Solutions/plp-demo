@@ -86,7 +86,7 @@
         <div class="rp-main-grid">
             <div class="rp-panel rp-table-panel">
                 <div class="rp-table-wrap">
-                    <table class="rp-table" id="rpStudentsTable">
+                    <table class="rp-table" id="rpStudentsTable" data-no-auto-pager="1">
                         <thead>
                             <tr>
                                 <th>Student Name</th>

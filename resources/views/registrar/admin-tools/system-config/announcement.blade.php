@@ -109,24 +109,47 @@
 
 @push('scripts')
 <script>
-    var anItems = [
-        {
-            from: '2026-01-13',
-            to: '2026-01-31',
-            title: 'Academic Year 2025-2026 (First Semester) Midterm Examination: October 25 - 28, 2025',
-            type: 'Everyone',
-            program: 'All Programs',
-            content: 'Please be advised that the Midterm Examination for the First Semester shall run from October 25 to 28, 2025. Students are expected to settle all requirements before the schedule.'
-        },
-        {
-            from: '2026-01-06',
-            to: '2026-01-08',
-            title: 'Final Examinations for Academic Year 2025-2026 (2nd Semester)',
-            type: 'Everyone',
-            program: 'All Programs',
-            content: 'Final examinations will be conducted from January 6 to January 8, 2026. Kindly monitor official department announcements for room assignments.'
+    var anItems = @json($announcementRows ?? []);
+    var anStoreUrl = '{{ route('registrar.admin-tools.system-config.announcement.store') }}';
+    var anUpdateTemplate = '{{ route('registrar.admin-tools.system-config.announcement.update', ['systemAnnouncement' => '__ID__']) }}';
+    var anDeleteTemplate = '{{ route('registrar.admin-tools.system-config.announcement.destroy', ['systemAnnouncement' => '__ID__']) }}';
+
+    function anUpdateUrl(id) {
+        return anUpdateTemplate.replace('__ID__', String(id));
+    }
+
+    function anDeleteUrl(id) {
+        return anDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    async function anApiRequest(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
         }
-    ];
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process announcement.'
+            );
+        }
+
+        return json;
+    }
 
     function anEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -262,7 +285,7 @@
         document.getElementById('anModal').style.display = 'none';
     }
 
-    function anSaveAnnouncement() {
+    async function anSaveAnnouncement() {
         var payload = {
             title: document.getElementById('anTitle').value.trim(),
             from: document.getElementById('anFrom').value,
@@ -278,10 +301,27 @@
         }
 
         var indexValue = document.getElementById('anEditingIndex').value;
-        if (indexValue === '') {
-            anItems.unshift(payload);
-        } else {
-            anItems[parseInt(indexValue, 10)] = payload;
+        try {
+            if (indexValue === '') {
+                var createRes = await anApiRequest(anStoreUrl, 'POST', payload);
+                anItems.unshift(createRes.row || payload);
+            } else {
+                var index = parseInt(indexValue, 10);
+                var current = anItems[index];
+                if (!current) {
+                    throw new Error('Announcement record not found.');
+                }
+
+                if (current.id) {
+                    var updateRes = await anApiRequest(anUpdateUrl(current.id), 'PUT', payload);
+                    anItems[index] = updateRes.row || anItems[index];
+                } else {
+                    anItems[index] = payload;
+                }
+            }
+        } catch (error) {
+            alert(error.message || 'Unable to save announcement.');
+            return;
         }
 
         anCloseModal();
@@ -298,11 +338,23 @@
         document.getElementById('anDeleteModal').style.display = 'none';
     }
 
-    function anConfirmDelete() {
+    async function anConfirmDelete() {
         var index = parseInt(document.getElementById('anDeleteIndex').value, 10);
-        if (!isNaN(index)) {
-            anItems.splice(index, 1);
+        if (isNaN(index) || !anItems[index]) {
+            anCloseDeleteModal();
+            return;
         }
+
+        try {
+            if (anItems[index].id) {
+                await anApiRequest(anDeleteUrl(anItems[index].id), 'DELETE');
+            }
+            anItems.splice(index, 1);
+        } catch (error) {
+            alert(error.message || 'Unable to delete announcement.');
+            return;
+        }
+
         anCloseDeleteModal();
         anRenderTable();
     }

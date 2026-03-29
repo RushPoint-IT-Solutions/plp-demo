@@ -29,4 +29,9 @@ class Applicant extends Model
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'applicant_id');
+    }
 }

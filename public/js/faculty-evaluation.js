@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     var openLinks = document.querySelectorAll('.faculty-eval-open');
+    var subjectSelect = document.getElementById('evalSubjectSelect');
     var modalElement = document.getElementById('facultyEvaluationModal');
     var modalBody = document.getElementById('evalModalBody');
 
@@ -43,4 +44,19 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.show();
         });
     });
+
+    if (subjectSelect) {
+        subjectSelect.addEventListener('change', function () {
+            var next = subjectSelect.value;
+            var targetUrl = new URL(window.location.href);
+
+            if (!next) {
+                targetUrl.searchParams.delete('subject_id');
+            } else {
+                targetUrl.searchParams.set('subject_id', next);
+            }
+
+            window.location.href = targetUrl.toString();
+        });
+    }
 });

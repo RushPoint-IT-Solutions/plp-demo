@@ -16,7 +16,7 @@
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                 </span>
-                <input type="text" class="pf-search-input" placeholder="Search Student ID / Name">
+                <input id="atSearchInput" type="text" class="pf-search-input" placeholder="Search Student ID / Name">
             </div>
         </div>
 
@@ -25,18 +25,18 @@
             <div class="at-config-grid">
                 <div class="at-config-item">
                     <span class="at-config-inline-label">School Year:</span>
-                    <select class="app-filter-select" style="width:100%;">
-                        <option value="2025-2026">2025-2026</option>
-                        <option value="2024-2025">2024-2025</option>
-                        <option value="2023-2024">2023-2024</option>
+                    <select id="atSchoolYear" class="app-filter-select" style="width:100%;">
+                        @foreach(($alumniSchoolYears ?? []) as $schoolYear)
+                            <option value="{{ $schoolYear }}" @if(($alumniConfig['schoolYear'] ?? '') === $schoolYear) selected @endif>{{ $schoolYear }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Term:</span>
-                    <select class="app-filter-select" style="width:100%;">
-                        <option value="First">First</option>
-                        <option value="Second" selected>Second</option>
-                        <option value="Summer">Summer</option>
+                    <select id="atTerm" class="app-filter-select" style="width:100%;">
+                        @foreach(($alumniTerms ?? ['First', 'Second', 'Summer']) as $term)
+                            <option value="{{ $term }}" @if(($alumniConfig['term'] ?? '') === $term) selected @endif>{{ $term }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="at-config-action">
@@ -50,45 +50,42 @@
         <div class="sched-filter-row at-filter-row">
             <div class="sched-filter-group at-filter-group at-program-group">
                 <span class="app-filter-label">Program</span>
-                <select class="app-filter-select" style="width:100%;">
+                <select id="atProgram" class="app-filter-select" style="width:100%;">
                     <option value="">Select Course</option>
-                    <option>BSIT</option>
-                    <option>BSCS</option>
-                    <option>BSED</option>
-                    <option>BSBA</option>
-                    <option>BSN</option>
+                    @foreach(($alumniPrograms ?? []) as $program)
+                        <option value="{{ $program }}">{{ $program }}</option>
+                    @endforeach
                 </select>
             </div>
 
             <div class="sched-filter-group at-filter-group">
                 <span class="app-filter-label">Year Level</span>
-                <select class="app-filter-select" style="width:100%;">
+                <select id="atYearLevel" class="app-filter-select" style="width:100%;">
                     <option value="">Select Year Level</option>
-                    <option>First</option>
-                    <option>Second</option>
-                    <option>Third</option>
-                    <option>Fourth</option>
+                    @foreach(($alumniYearLevels ?? []) as $yearLevel)
+                        <option value="{{ $yearLevel }}">{{ $yearLevel }}</option>
+                    @endforeach
                 </select>
             </div>
 
             <div class="sched-filter-group at-filter-group at-sort-group">
                 <span class="app-filter-label">Sort By</span>
                 <div class="at-sort-row">
-                    <select class="app-filter-select" style="width:100%;">
-                        <option>Student ID</option>
-                        <option>Student Name</option>
-                        <option>Program</option>
-                        <option>Year Level</option>
+                    <select id="atSortBy" class="app-filter-select" style="width:100%;">
+                        <option value="studentNo">Student ID</option>
+                        <option value="studentName">Student Name</option>
+                        <option value="program">Program</option>
+                        <option value="yearLevel">Year Level</option>
                     </select>
-                    <select class="app-filter-select" style="width:100%;">
-                        <option>Ascending</option>
-                        <option>Descending</option>
+                    <select id="atSortOrder" class="app-filter-select" style="width:100%;">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
                     </select>
                 </div>
             </div>
 
             <div class="at-filter-action">
-                <button type="button" class="pf-btn-new">Generate Report</button>
+                <button type="button" class="pf-btn-new" id="atGenerateBtn">Generate Report</button>
             </div>
         </div>
     </div>
@@ -104,39 +101,7 @@
                     <th>Year Level</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>2223A8137</td>
-                    <td><a href="#">Bares, Mark Jay</a></td>
-                    <td>Bachelor of Science in Computer Science</td>
-                    <td>Fourth</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>2223A8139</td>
-                    <td><a href="#">Dela Cruz, Juan</a></td>
-                    <td>Bachelor of Science in Computer Science</td>
-                    <td>Fourth</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>2223A8139</td>
-                    <td><a href="#">Austero, Andrea Jane</a></td>
-                    <td>Bachelor of Science in Computer Science</td>
-                    <td>Fourth</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>2223A8140</td>
-                    <td><a href="#">Santos, Maria</a></td>
-                    <td>Bachelor of Science in Computer Science</td>
-                    <td>Fourth</td>
-                </tr>
-                <tr class="at-total-row">
-                    <td colspan="5" class="at-total-cell" style="text-align:left !important;color:#006837 !important;background:#f8fcf9 !important;font-weight:700 !important;">Total Students: <strong>4</strong></td>
-                </tr>
-            </tbody>
+            <tbody id="atTableBody"></tbody>
         </table>
     </div>
 </div>
@@ -144,10 +109,178 @@
 
 @push('scripts')
 <script>
-function saveAlumniConfig() {
-    if (typeof showRegistrarToast === 'function') {
-        showRegistrarToast('System configuration saved successfully.', 'success');
+var atRows = @json($alumniRows ?? []);
+var atConfig = @json($alumniConfig ?? ['schoolYear' => '2025-2026', 'term' => 'Second']);
+var atSaveConfigUrl = '{{ route('registrar.registrar-menu.alumni.tracker.config') }}';
+
+function atEscapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return map[ch];
+    });
+}
+
+function atNormalize(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function atGetFilteredRows() {
+    var searchInput = document.getElementById('atSearchInput');
+    var searchValue = atNormalize(searchInput ? searchInput.value : '');
+    var schoolYear = document.getElementById('atSchoolYear').value;
+    var term = document.getElementById('atTerm').value;
+    var program = document.getElementById('atProgram').value;
+    var yearLevel = document.getElementById('atYearLevel').value;
+    var sortBy = document.getElementById('atSortBy').value;
+    var sortOrder = document.getElementById('atSortOrder').value;
+
+    var filtered = atRows.filter(function(row) {
+        var matchSearch = !searchValue ||
+            atNormalize(row.studentNo).indexOf(searchValue) !== -1 ||
+            atNormalize(row.studentName).indexOf(searchValue) !== -1;
+        var matchSchoolYear = !schoolYear || row.schoolYear === schoolYear;
+        var matchTerm = !term || row.term === term;
+        var matchProgram = !program || row.program === program;
+        var matchYear = !yearLevel || row.yearLevel === yearLevel;
+        return matchSearch && matchSchoolYear && matchTerm && matchProgram && matchYear;
+    });
+
+    filtered.sort(function(a, b) {
+        var aVal = atNormalize(a[sortBy]);
+        var bVal = atNormalize(b[sortBy]);
+        if (aVal < bVal) return sortOrder === 'desc' ? 1 : -1;
+        if (aVal > bVal) return sortOrder === 'desc' ? -1 : 1;
+        return 0;
+    });
+
+    return filtered;
+}
+
+function atRenderTable() {
+    var body = document.getElementById('atTableBody');
+    if (!body) return;
+
+    var filtered = atGetFilteredRows();
+
+    if (!filtered.length) {
+        body.innerHTML = '<tr><td colspan="5" class="sc-empty-row">No students found.</td></tr>';
+        return;
+    }
+
+    var rowsHtml = filtered.map(function(row, idx) {
+        return '' +
+            '<tr>' +
+                '<td>' + (idx + 1) + '</td>' +
+                '<td>' + atEscapeHtml(row.studentNo) + '</td>' +
+                '<td><a href="#">' + atEscapeHtml(row.studentName) + '</a></td>' +
+                '<td>' + atEscapeHtml(row.program) + '</td>' +
+                '<td>' + atEscapeHtml(row.yearLevel) + '</td>' +
+            '</tr>';
+    }).join('');
+
+    rowsHtml += '' +
+        '<tr class="at-total-row">' +
+            '<td colspan="5" class="at-total-cell" style="text-align:left !important;color:#006837 !important;background:#f8fcf9 !important;font-weight:700 !important;">Total Students: <strong>' + filtered.length + '</strong></td>' +
+        '</tr>';
+
+    body.innerHTML = rowsHtml;
+}
+
+async function saveAlumniConfig() {
+    var payload = {
+        school_year: document.getElementById('atSchoolYear').value,
+        term: document.getElementById('atTerm').value
+    };
+
+    try {
+        var response = await fetch(atSaveConfigUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        var json = await response.json();
+        if (!response.ok || json.ok === false) {
+            throw new Error(json.message || 'Unable to save alumni tracker configuration.');
+        }
+
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast('System configuration saved successfully.', 'success');
+        }
+        atRenderTable();
+    } catch (error) {
+        alert(error.message || 'Unable to save alumni tracker configuration.');
     }
 }
+
+function atGenerateReport() {
+    var rows = atGetFilteredRows();
+    if (!rows.length) {
+        alert('No records found for the selected filters.');
+        return;
+    }
+
+    var csvRows = [
+        ['No.', 'Student ID', 'Student Name', 'Program', 'Year Level', 'School Year', 'Term']
+    ];
+
+    rows.forEach(function(row, idx) {
+        csvRows.push([
+            String(idx + 1),
+            String(row.studentNo || ''),
+            String(row.studentName || ''),
+            String(row.program || ''),
+            String(row.yearLevel || ''),
+            String(row.schoolYear || ''),
+            String(row.term || '')
+        ]);
+    });
+
+    var csvContent = csvRows.map(function(cols) {
+        return cols.map(function(value) {
+            return '"' + String(value).replace(/"/g, '""') + '"';
+        }).join(',');
+    }).join('\n');
+
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    var datePart = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = 'alumni-tracker-report-' + datePart + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    if (typeof showRegistrarToast === 'function') {
+        showRegistrarToast('Alumni report generated successfully.', 'success');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var searchInput = document.getElementById('atSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.addEventListener('input', atRenderTable);
+    }
+
+    document.getElementById('atSchoolYear').value = atConfig.schoolYear || '2025-2026';
+    document.getElementById('atTerm').value = atConfig.term || 'Second';
+
+    ['atSchoolYear', 'atTerm', 'atProgram', 'atYearLevel', 'atSortBy', 'atSortOrder'].forEach(function(id) {
+        var element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', atRenderTable);
+        }
+    });
+
+    document.getElementById('atGenerateBtn').addEventListener('click', atGenerateReport);
+    atRenderTable();
+});
 </script>
 @endpush

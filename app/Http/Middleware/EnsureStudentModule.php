@@ -14,7 +14,7 @@ class EnsureStudentModule
     {
         $user = Auth::user();
 
-        if (!$user || $user->module !== 'student') {
+        if (!$user || $user->module !== 'student' || is_null($user->student_id)) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

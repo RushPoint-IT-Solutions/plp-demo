@@ -1,6 +1,38 @@
 /* waiver-cancellation.js - Waiver for Cancellation of Enrollment form page logic */
 
 var wceCurrentRowId = null;
+var wceConfig = window.wceConfig || {};
+
+function wceBuildUrl(template, id) {
+    return String(template || '').replace('__ID__', String(id));
+}
+
+function wceRequestJson(url, method, payload) {
+    return fetch(url, {
+        method: method,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': wceConfig.csrfToken || '',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: payload ? JSON.stringify(payload) : null
+    }).then(function(response) {
+        if (!response.ok) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                var message = 'Request failed.';
+                if (data && data.errors) {
+                    var firstKey = Object.keys(data.errors)[0];
+                    if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                        message = data.errors[firstKey][0];
+                    }
+                }
+                throw new Error(message);
+            });
+        }
+        return response.json().catch(function() { return { ok: true }; });
+    });
+}
 
 function wceEsc(v) {
     return String(v || '').replace(/[&<>"']/g, function(c) {
@@ -247,13 +279,37 @@ function wceSaveEdit() {
     var row = wceGetRow(wceCurrentRowId);
     if (!row) return;
     var cells = row.querySelectorAll('td');
+    var studentNo = (document.getElementById('wceEditNumber').value || '').trim();
+    var studentName = (document.getElementById('wceEditName').value || '').trim();
+    var program = (document.getElementById('wceEditCourse').value || '').trim();
+    var yearLevel = (document.getElementById('wceEditYear').value || '').trim();
 
-    if (cells[1]) cells[1].textContent = (document.getElementById('wceEditNumber').value || '').trim();
-    if (cells[2]) cells[2].textContent = (document.getElementById('wceEditName').value || '').trim();
-    if (cells[3]) cells[3].textContent = (document.getElementById('wceEditCourse').value || '').trim();
-    if (cells[4]) cells[4].textContent = (document.getElementById('wceEditYear').value || '').trim();
+    var finish = function() {
+        if (cells[1]) cells[1].textContent = studentNo;
+        if (cells[2]) {
+            cells[2].innerHTML = '<button type="button" class="doc-link-btn" onclick="wceOpenPreview(' + wceCurrentRowId + ')">' + wceEsc(studentName) + '</button>';
+        }
+        if (cells[3]) cells[3].textContent = program;
+        if (cells[4]) cells[4].textContent = yearLevel;
+        if (cells[5]) cells[5].textContent = ((program || 'PROGRAM') + ' ' + (yearLevel || 'YEAR')).trim();
+        wceCloseModal('wceEditModal');
+    };
 
-    wceCloseModal('wceEditModal');
+    if (!wceConfig.updateUrlTemplate) {
+        finish();
+        return;
+    }
+
+    wceRequestJson(wceBuildUrl(wceConfig.updateUrlTemplate, wceCurrentRowId), 'PUT', {
+        student_no: studentNo,
+        name: studentName,
+        program: program,
+        year_level: yearLevel
+    }).then(function() {
+        finish();
+    }).catch(function(error) {
+        alert(error.message || 'Unable to update waiver record.');
+    });
 }
 
 function wceOpenDelete(rowId) {
@@ -263,9 +319,22 @@ function wceOpenDelete(rowId) {
 
 function wceConfirmDelete() {
     var row = wceGetRow(wceCurrentRowId);
-    if (row) row.remove();
-    wceSyncSelectAll();
-    wceCloseModal('wceDeleteModal');
+    var finish = function() {
+        if (row) row.remove();
+        wceSyncSelectAll();
+        wceCloseModal('wceDeleteModal');
+    };
+
+    if (!wceConfig.destroyUrlTemplate) {
+        finish();
+        return;
+    }
+
+    wceRequestJson(wceBuildUrl(wceConfig.destroyUrlTemplate, wceCurrentRowId), 'DELETE').then(function() {
+        finish();
+    }).catch(function(error) {
+        alert(error.message || 'Unable to delete waiver record.');
+    });
 }
 
 document.addEventListener('click', function(event) {

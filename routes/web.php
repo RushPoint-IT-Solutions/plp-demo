@@ -13,10 +13,20 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    return redirect('/access');
+});
+
+Route::get('/access', function () {
+    return view('student.access-module');
+})->name('access-module');
+
+Route::get('/admin', function () {
     return redirect('/admin/access');
 });
 
 Auth::routes();
+Route::get('/password/setup', 'Auth\FirstLoginPasswordController@show')->name('password.first_reset');
+Route::post('/password/setup', 'Auth\FirstLoginPasswordController@update')->name('password.first_reset.update');
 
 Route::get('/home', 'HomeController@index')->name('home');
 
@@ -45,6 +55,7 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 */
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
+Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 
 /*
@@ -58,30 +69,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Module Login Routes
-|--------------------------------------------------------------------------
-| Each module (Registrar, Accounting, etc.) gets its own login page.
-| Student & Applicant also get their own login pages.
-*/
-Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module.login')
-    ->where('module', 'registrar|accounting|cashier|faculty|student|applicant');
-
-/*
-|--------------------------------------------------------------------------
-| Demo Login (No Backend Auth)
-|--------------------------------------------------------------------------
-| Clicking "Sign In" on any module login page just redirects straight
-| to that module's first page. No real authentication is performed.
-| Replace this with real auth when the backend team is ready.
-*/
-Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
-
-/*
-|--------------------------------------------------------------------------
 | Student Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('student')->name('student.')->middleware(['auth', 'student.user'])->group(function () {
+Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 'force_password_reset'])->group(function () {
     Route::get('/', function () {
         return view('student.access-module');
     })->name('access-module');
@@ -100,7 +91,7 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user'])
 | Registrar Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('registrar')->name('registrar.')->group(function () {
+Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
 
@@ -142,11 +133,14 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         // Student Management
         Route::prefix('student-management')->name('student-mgmt.')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
+            Route::post('/student-enrollment', 'Registrar\RegistrarController@storeStudent')->name('student-enrollment.store');
             Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
         });
 
         // Faculty Management
         Route::prefix('faculty-management')->name('faculty-mgmt.')->group(function () {
+            Route::get('/faculty-create', 'Registrar\RegistrarController@facultyCreate')->name('faculty-create');
+            Route::post('/faculty-create', 'Registrar\RegistrarController@storeFaculty')->name('faculty-create.store');
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
         });
@@ -154,6 +148,7 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         // Alumni Tracker
         Route::prefix('alumni')->name('alumni.')->group(function () {
             Route::get('/tracker', 'Registrar\RegistrarController@alumniTracker')->name('tracker');
+            Route::put('/tracker/config', 'Registrar\RegistrarController@alumniTrackerSaveConfig')->name('tracker.config');
         });
 
         // Forms
@@ -164,8 +159,15 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
+            Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
+            Route::post('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnrollStore')->name('permission-cross-enroll.store');
+            Route::put('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollUpdate')->name('permission-cross-enroll.update');
+            Route::delete('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollDestroy')->name('permission-cross-enroll.destroy');
             Route::get('/waiver-cancellation', 'Registrar\RegistrarController@formsWaiverCancellation')->name('waiver-cancellation');
+            Route::post('/waiver-cancellation', 'Registrar\RegistrarController@formsWaiverCancellationStore')->name('waiver-cancellation.store');
+            Route::put('/waiver-cancellation/{cancellationWaiver}', 'Registrar\RegistrarController@formsWaiverCancellationUpdate')->name('waiver-cancellation.update');
+            Route::delete('/waiver-cancellation/{cancellationWaiver}', 'Registrar\RegistrarController@formsWaiverCancellationDestroy')->name('waiver-cancellation.destroy');
         });
     });
 
@@ -184,17 +186,37 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
 
         Route::prefix('grading-academic')->name('grading-academic.')->group(function () {
             Route::get('/grading-system', 'Registrar\Services\GradingAcademicController@gradingSystem')->name('grading-system');
+            Route::post('/grading-system', 'Registrar\Services\GradingAcademicController@gradingSystemStore')->name('grading-system.store');
+            Route::put('/grading-system/{gradeRule}', 'Registrar\Services\GradingAcademicController@gradingSystemUpdate')->name('grading-system.update');
+            Route::delete('/grading-system/{gradeRule}', 'Registrar\Services\GradingAcademicController@gradingSystemDestroy')->name('grading-system.destroy');
             Route::get('/grading-periods', 'Registrar\Services\GradingAcademicController@gradingPeriods')->name('grading-periods');
+            Route::post('/grading-periods', 'Registrar\Services\GradingAcademicController@gradingPeriodsStore')->name('grading-periods.store');
+            Route::put('/grading-periods/{gradingPeriod}', 'Registrar\Services\GradingAcademicController@gradingPeriodsUpdate')->name('grading-periods.update');
+            Route::delete('/grading-periods/{gradingPeriod}', 'Registrar\Services\GradingAcademicController@gradingPeriodsDestroy')->name('grading-periods.destroy');
             Route::get('/grading-components', 'Registrar\Services\GradingAcademicController@gradingComponents')->name('grading-components');
+            Route::post('/grading-components', 'Registrar\Services\GradingAcademicController@gradingComponentsStore')->name('grading-components.store');
+            Route::put('/grading-components/{gradingComponent}', 'Registrar\Services\GradingAcademicController@gradingComponentsUpdate')->name('grading-components.update');
+            Route::delete('/grading-components/{gradingComponent}', 'Registrar\Services\GradingAcademicController@gradingComponentsDestroy')->name('grading-components.destroy');
             Route::get('/transmutation', 'Registrar\Services\GradingAcademicController@transmutation')->name('transmutation');
+            Route::post('/transmutation', 'Registrar\Services\GradingAcademicController@transmutationStore')->name('transmutation.store');
+            Route::put('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationUpdate')->name('transmutation.update');
+            Route::delete('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationDestroy')->name('transmutation.destroy');
             Route::get('/deficiency', 'Registrar\Services\GradingAcademicController@deficiency')->name('deficiency');
+            Route::post('/deficiency/students', 'Registrar\Services\GradingAcademicController@deficiencyStudentStore')->name('deficiency.students.store');
+            Route::get('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyRecords')->name('deficiency.records');
+            Route::post('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyStore')->name('deficiency.store');
+            Route::put('/deficiency/records/{studentDeficiency}', 'Registrar\Services\GradingAcademicController@deficiencyUpdate')->name('deficiency.update');
+            Route::delete('/deficiency/records/{studentDeficiency}', 'Registrar\Services\GradingAcademicController@deficiencyDestroy')->name('deficiency.destroy');
         });
 
         Route::prefix('reports-admin')->name('reports-admin.')->group(function () {
             Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
+            Route::post('/academic-reports/issue', 'Registrar\Services\ReportsAdminController@issueAcademicReport')->name('academic-reports.issue');
             Route::get('/guidance-reports', 'Registrar\Services\ReportsAdminController@guidanceReports')->name('guidance-reports');
             Route::get('/certifications', 'Registrar\Services\ReportsAdminController@certifications')->name('certifications');
+            Route::post('/certifications/issue', 'Registrar\Services\ReportsAdminController@issueCertification')->name('certifications.issue');
             Route::get('/tagging-of-graduates', 'Registrar\Services\ReportsAdminController@taggingOfGraduates')->name('tagging-of-graduates');
+            Route::put('/tagging-of-graduates/{student}', 'Registrar\Services\ReportsAdminController@taggingOfGraduatesUpdate')->name('tagging-of-graduates.update');
         });
 
         Route::prefix('student-account')->name('student-account.')->group(function () {
@@ -208,26 +230,56 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
     Route::prefix('admin-tools')->name('admin-tools.')->group(function () {
         Route::prefix('system-config')->name('system-config.')->group(function () {
             Route::get('/configuration', 'Registrar\Services\AdminToolsController@configuration')->name('configuration');
+            Route::post('/configuration/school-sem', 'Registrar\Services\AdminToolsController@configurationSchoolSemStore')->name('configuration.school-sem.store');
+            Route::put('/configuration/school-sem/{systemSchoolSemester}', 'Registrar\Services\AdminToolsController@configurationSchoolSemUpdate')->name('configuration.school-sem.update');
+            Route::delete('/configuration/school-sem/{systemSchoolSemester}', 'Registrar\Services\AdminToolsController@configurationSchoolSemDestroy')->name('configuration.school-sem.destroy');
+            Route::post('/configuration/grade-posting', 'Registrar\Services\AdminToolsController@configurationGradePostingStore')->name('configuration.grade-posting.store');
+            Route::put('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingUpdate')->name('configuration.grade-posting.update');
+            Route::delete('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingDestroy')->name('configuration.grade-posting.destroy');
             Route::get('/admission-config', 'Registrar\Services\AdminToolsController@admissionConfig')->name('admission-config');
             Route::get('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendar')->name('academic-calendar');
+            Route::post('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendarStore')->name('academic-calendar.store');
+            Route::put('/academic-calendar/{academicCalendarEvent}', 'Registrar\Services\AdminToolsController@academicCalendarUpdate')->name('academic-calendar.update');
+            Route::delete('/academic-calendar/{academicCalendarEvent}', 'Registrar\Services\AdminToolsController@academicCalendarDestroy')->name('academic-calendar.destroy');
             Route::get('/announcement', 'Registrar\Services\AdminToolsController@announcement')->name('announcement');
+            Route::post('/announcement', 'Registrar\Services\AdminToolsController@announcementStore')->name('announcement.store');
+            Route::put('/announcement/{systemAnnouncement}', 'Registrar\Services\AdminToolsController@announcementUpdate')->name('announcement.update');
+            Route::delete('/announcement/{systemAnnouncement}', 'Registrar\Services\AdminToolsController@announcementDestroy')->name('announcement.destroy');
         });
 
         Route::prefix('access-management')->name('access-management.')->group(function () {
             Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
+            Route::put('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsUpdate')->name('user-accounts.update');
+            Route::delete('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsDestroy')->name('user-accounts.destroy');
             Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');
+            Route::put('/report-access/{user}', 'Registrar\Services\AdminToolsController@reportAccessUpdate')->name('report-access.update');
         });
 
         Route::prefix('master-files')->name('master-files.')->group(function () {
             Route::get('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFile')->name('faculty-file');
+            Route::post('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFileStore')->name('faculty-file.store');
+            Route::put('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileUpdate')->name('faculty-file.update');
+            Route::delete('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileDestroy')->name('faculty-file.destroy');
             Route::get('/student-profile', 'Registrar\Services\AdminToolsController@studentProfile')->name('student-profile');
+            Route::post('/student-profile', 'Registrar\Services\AdminToolsController@studentProfileStore')->name('student-profile.store');
+            Route::put('/student-profile/{masterStudentProfile}', 'Registrar\Services\AdminToolsController@studentProfileUpdate')->name('student-profile.update');
+            Route::delete('/student-profile/{masterStudentProfile}', 'Registrar\Services\AdminToolsController@studentProfileDestroy')->name('student-profile.destroy');
             Route::get('/student-grade-file', 'Registrar\Services\AdminToolsController@studentGradeFile')->name('student-grade-file');
+            Route::post('/student-grade-file', 'Registrar\Services\AdminToolsController@studentGradeFileStore')->name('student-grade-file.store');
+            Route::put('/student-grade-file/{masterStudentGradeFile}', 'Registrar\Services\AdminToolsController@studentGradeFileUpdate')->name('student-grade-file.update');
+            Route::delete('/student-grade-file/{masterStudentGradeFile}', 'Registrar\Services\AdminToolsController@studentGradeFileDestroy')->name('student-grade-file.destroy');
         });
 
         Route::prefix('student-maintenance')->name('student-maintenance.')->group(function () {
             Route::get('/bed-student-status', 'Registrar\Services\AdminToolsController@bedStudentStatus')->name('bed-student-status');
+            Route::put('/bed-student-status/{bedStudentStatus}', 'Registrar\Services\AdminToolsController@bedStudentStatusUpdate')->name('bed-student-status.update');
+            Route::delete('/bed-student-status/{bedStudentStatus}', 'Registrar\Services\AdminToolsController@bedStudentStatusDestroy')->name('bed-student-status.destroy');
             Route::get('/bed-days', 'Registrar\Services\AdminToolsController@bedDays')->name('bed-days');
+            Route::post('/bed-days', 'Registrar\Services\AdminToolsController@bedDaysStore')->name('bed-days.store');
+            Route::put('/bed-days/{bedDay}', 'Registrar\Services\AdminToolsController@bedDaysUpdate')->name('bed-days.update');
+            Route::delete('/bed-days/{bedDay}', 'Registrar\Services\AdminToolsController@bedDaysDestroy')->name('bed-days.destroy');
             Route::get('/student-update', 'Registrar\Services\AdminToolsController@studentUpdate')->name('student-update');
+            Route::post('/student-update/run', 'Registrar\Services\AdminToolsController@studentUpdateRun')->name('student-update.run');
         });
     });
 });
@@ -237,7 +289,7 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
 | Applicant Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('applicant')->name('applicant.')->group(function () {
+Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
     Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
     Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
@@ -249,8 +301,9 @@ Route::prefix('applicant')->name('applicant.')->group(function () {
 | Faculty Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('faculty')->name('faculty.')->group(function () {
+Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/load', 'Faculty\FacultyController@facultyLoad')->name('load');
+    Route::get('/load/download', 'Faculty\FacultyController@downloadLoad')->name('load.download');
     Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
     Route::get('/calendar', 'Faculty\FacultyController@calendar')->name('calendar');
     Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');

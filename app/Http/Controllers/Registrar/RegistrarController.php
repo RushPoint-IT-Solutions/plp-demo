@@ -3,14 +3,22 @@
 namespace App\Http\Controllers\Registrar;
 
 use App\Applicant;
+use App\AlumniTrackerSetting;
+use App\CancellationWaiver;
 use App\Course;
+use App\CrossEnrollmentRequest;
 use App\Department;
 use App\Faculty;
 use App\Student;
+use App\StudentSubjectGrade;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use App\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class RegistrarController extends Controller
 {
@@ -614,9 +622,93 @@ class RegistrarController extends Controller
         return view('registrar.registrar-menu.student-management.student-enrollment');
     }
 
+    public function storeStudent(Request $request)
+    {
+        $request->validate([
+            'student_no' => 'required|unique:students,student_no',
+            'name' => 'required|string',
+            'sex' => 'nullable|string',
+            'age' => 'nullable|integer',
+            'college' => 'nullable|string',
+            'program' => 'nullable|string',
+            'curriculum' => 'nullable|string',
+            'year_level' => 'nullable|string',
+            'scholarship' => 'nullable|string',
+            'school_year' => 'required|string',
+            'semester' => 'required|string',
+        ]);
+
+        $defaultPass = null;
+
+        DB::transaction(function () use ($request, &$defaultPass) {
+            $student = Student::create($request->only([
+                'student_no',
+                'name',
+                'sex',
+                'age',
+                'college',
+                'program',
+                'curriculum',
+                'year_level',
+                'scholarship',
+                'school_year',
+                'semester',
+            ]));
+
+            $defaultPass = 'PLP-' . $student->student_no;
+
+            User::create([
+                'name' => $student->name,
+                'username' => $student->student_no,
+                'password' => Hash::make($defaultPass),
+                'module' => 'student',
+                'force_password_reset' => true,
+                'student_id' => $student->id,
+            ]);
+        });
+
+        return redirect()->route('registrar.registrar-menu.student-mgmt.student-enrollment')
+            ->with('success', 'Student profile created!')
+            ->with('success_password', $defaultPass);
+    }
+
     /**
      * Registrar > Faculty Management > Grading Sheet
      */
+    public function facultyCreate()
+    {
+        return view('registrar.registrar-menu.faculty-management.faculty-create');
+    }
+
+    public function storeFaculty(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|unique:faculties,code',
+            'name' => 'required|string',
+        ]);
+
+        $defaultPass = null;
+
+        DB::transaction(function () use ($request, &$defaultPass) {
+            $faculty = Faculty::create($request->only(['code', 'name']));
+
+            $defaultPass = 'PLP-' . $faculty->code;
+
+            User::create([
+                'name' => $faculty->name,
+                'username' => $faculty->code,
+                'password' => Hash::make($defaultPass),
+                'module' => 'faculty',
+                'force_password_reset' => true,
+                'faculty_id' => $faculty->id,
+            ]);
+        });
+
+        return redirect()->route('registrar.registrar-menu.faculty-mgmt.faculty-create')
+            ->with('success', 'Faculty profile created!')
+            ->with('success_password', $defaultPass);
+    }
+
     public function gradingSheet()
     {
         return view('registrar.registrar-menu.faculty-management.grading-sheet');
@@ -643,7 +735,105 @@ class RegistrarController extends Controller
      */
     public function alumniTracker()
     {
-        return view('registrar.registrar-menu.alumni-tracker');
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+
+        $alumniRows = $students->map(function ($student) {
+            return [
+                'id' => $student->id,
+                'studentNo' => (string) $student->student_no,
+                'studentName' => (string) $student->name,
+                'program' => (string) ($student->program ?: '-'),
+                'yearLevel' => (string) ($student->year_level ?: '-'),
+                'schoolYear' => (string) ($student->school_year ?: ''),
+                'term' => (string) ($student->semester ?: ''),
+            ];
+        })->values()->all();
+
+        $alumniPrograms = collect($alumniRows)
+            ->pluck('program')
+            ->filter(function ($value) {
+                return trim((string) $value) !== '' && $value !== '-';
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $alumniYearLevels = collect($alumniRows)
+            ->pluck('yearLevel')
+            ->filter(function ($value) {
+                return trim((string) $value) !== '' && $value !== '-';
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $setting = null;
+        if (Schema::hasTable('alumni_tracker_settings')) {
+            $setting = AlumniTrackerSetting::query()->latest('id')->first();
+        }
+
+        $alumniSchoolYears = collect($alumniRows)
+            ->pluck('schoolYear')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $alumniTerms = collect($alumniRows)
+            ->pluck('term')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $alumniConfig = [
+            'schoolYear' => $setting ? (string) $setting->school_year : (string) ($students->first()->school_year ?? '2025-2026'),
+            'term' => $setting ? (string) $setting->term : (string) ($students->first()->semester ?? 'Second'),
+        ];
+
+        if (!in_array($alumniConfig['schoolYear'], $alumniSchoolYears, true)) {
+            $alumniSchoolYears[] = $alumniConfig['schoolYear'];
+        }
+        if (!in_array($alumniConfig['term'], $alumniTerms, true)) {
+            $alumniTerms[] = $alumniConfig['term'];
+        }
+
+        if (!count($alumniSchoolYears)) {
+            $alumniSchoolYears = ['2025-2026'];
+        }
+        if (!count($alumniTerms)) {
+            $alumniTerms = ['First', 'Second', 'Summer'];
+        }
+
+        return view('registrar.registrar-menu.alumni-tracker', compact('alumniRows', 'alumniPrograms', 'alumniYearLevels', 'alumniConfig', 'alumniSchoolYears', 'alumniTerms'));
+    }
+
+    public function alumniTrackerSaveConfig(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'term' => 'required|string|max:30',
+        ]);
+
+        if (Schema::hasTable('alumni_tracker_settings')) {
+            $setting = AlumniTrackerSetting::query()->latest('id')->first();
+            if ($setting) {
+                $setting->update([
+                    'school_year' => $validated['school_year'],
+                    'term' => $validated['term'],
+                ]);
+            } else {
+                AlumniTrackerSetting::create([
+                    'school_year' => $validated['school_year'],
+                    'term' => $validated['term'],
+                ]);
+            }
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     /**
@@ -691,7 +881,103 @@ class RegistrarController extends Controller
      */
     public function formsOfficialGradeReport()
     {
-        return view('registrar.registrar-menu.forms.official-grade-report');
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(200)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+
+        $gradesByStudent = StudentSubjectGrade::query()
+            ->with('subject')
+            ->whereIn('student_id', $students->pluck('id')->all())
+            ->orderBy('student_id')
+            ->orderBy('subject_id')
+            ->get()
+            ->groupBy('student_id');
+
+        $gradeReportRows = [];
+        $subjectsByRow = [];
+        $metaByRow = [];
+
+        foreach ($students as $index => $student) {
+            $rowId = (string) ($index + 1);
+            $section = trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR'));
+            $gradeReportRows[] = [
+                'row_id' => $rowId,
+                'student_id' => $student->id,
+                'student_no' => $student->student_no,
+                'student_name' => $student->name,
+                'program' => $student->program ?: '-',
+                'year' => $student->year_level ?: '-',
+                'section' => $section,
+            ];
+
+            $subjects = ($gradesByStudent->get($student->id) ?: collect())->map(function ($grade) use ($section) {
+                $subject = $grade->subject;
+                return [
+                    'code' => $subject ? (string) $subject->code : '-',
+                    'desc' => $subject ? (string) $subject->name : '-',
+                    'section' => $subject && $subject->year_section ? (string) $subject->year_section : $section,
+                    'prof' => 'TBA',
+                    'grade' => $grade->final_average !== null ? (string) $grade->final_average : '-',
+                    'remarks' => $grade->remarks ?: '-',
+                    'reexam' => '',
+                    'units' => $subject && $subject->units !== null ? number_format((float) $subject->units, 2) : '0.00',
+                ];
+            })->values()->all();
+
+            $subjectsByRow[$rowId] = $subjects;
+            $metaByRow[$rowId] = [
+                'studentNo' => $student->student_no,
+                'studentName' => strtoupper((string) $student->name),
+                'address' => '-',
+                'birthday' => '-',
+                'section' => $section,
+                'course' => ($student->program ?: 'PROGRAM') . ' : ' . ($student->program ?: 'Program'),
+                'schoolYear' => (string) ($student->school_year ?: '2025-2026') . ' / ' . strtoupper((string) ($student->semester ?: 'First')),
+                'curriculum' => 'CURRENT',
+                'studentType' => 'REGULAR',
+                'yearLevel' => $student->year_level ?: '-',
+                'residency' => 'PR',
+                'cwa' => '-',
+            ];
+        }
+
+        return view('registrar.registrar-menu.forms.official-grade-report', compact('gradeReportRows', 'subjectsByRow', 'metaByRow'));
+    }
+
+    public function formsOfficialGradeReportData(Student $student): JsonResponse
+    {
+        $records = StudentSubjectGrade::query()
+            ->with('subject')
+            ->where('student_id', $student->id)
+            ->orderBy('subject_id')
+            ->get();
+
+        $subjects = $records->map(function ($grade) {
+            $subject = $grade->subject;
+            return [
+                'code' => $subject ? (string) $subject->code : '-',
+                'desc' => $subject ? (string) $subject->name : '-',
+                'section' => $subject && $subject->year_section ? (string) $subject->year_section : '-',
+                'prof' => 'TBA',
+                'grade' => $grade->final_average !== null ? (string) $grade->final_average : '-',
+                'remarks' => $grade->remarks ?: '-',
+                'reexam' => '',
+                'units' => $subject && $subject->units !== null ? number_format((float) $subject->units, 2) : '0.00',
+            ];
+        })->values();
+
+        return response()->json([
+            'ok' => true,
+            'student' => [
+                'id' => $student->id,
+                'student_no' => $student->student_no,
+                'name' => $student->name,
+                'program' => $student->program,
+                'year_level' => $student->year_level,
+            ],
+            'subjects' => $subjects,
+        ]);
     }
 
     /**
@@ -699,7 +985,67 @@ class RegistrarController extends Controller
      */
     public function formsPermissionCrossEnroll()
     {
-        return view('registrar.registrar-menu.forms.permission-cross-enroll');
+        $this->seedCrossEnrollRowsIfEmpty();
+
+        $crossEnrollRows = CrossEnrollmentRequest::query()
+            ->with('student')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('registrar.registrar-menu.forms.permission-cross-enroll', compact('crossEnrollRows'));
+    }
+
+    public function formsPermissionCrossEnrollStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+        ]);
+
+        $student = Student::findOrFail($validated['student_id']);
+
+        $record = CrossEnrollmentRequest::create([
+            'student_id' => $student->id,
+            'school_year' => $student->school_year,
+            'semester' => $student->semester,
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+            'status' => 'pending',
+        ]);
+
+        return response()->json(['ok' => true, 'id' => $record->id]);
+    }
+
+    public function formsPermissionCrossEnrollUpdate(Request $request, CrossEnrollmentRequest $crossEnrollmentRequest): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => 'required|string|max:40',
+            'name' => 'required|string|max:120',
+            'program' => 'nullable|string|max:80',
+            'year_level' => 'nullable|string|max:40',
+        ]);
+
+        $student = $crossEnrollmentRequest->student;
+        $student->student_no = trim($validated['student_no']);
+        $student->name = trim($validated['name']);
+        $student->program = isset($validated['program']) ? trim((string) $validated['program']) : $student->program;
+        $student->year_level = isset($validated['year_level']) ? trim((string) $validated['year_level']) : $student->year_level;
+        $student->save();
+
+        $crossEnrollmentRequest->update([
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function formsPermissionCrossEnrollDestroy(CrossEnrollmentRequest $crossEnrollmentRequest): JsonResponse
+    {
+        $crossEnrollmentRequest->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     /**
@@ -707,6 +1053,106 @@ class RegistrarController extends Controller
      */
     public function formsWaiverCancellation()
     {
-        return view('registrar.registrar-menu.forms.waiver-cancellation');
+        $this->seedWaiverRowsIfEmpty();
+
+        $waiverRows = CancellationWaiver::query()
+            ->with('student')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('registrar.registrar-menu.forms.waiver-cancellation', compact('waiverRows'));
+    }
+
+    public function formsWaiverCancellationStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+        ]);
+
+        $student = Student::findOrFail($validated['student_id']);
+
+        $record = CancellationWaiver::create([
+            'student_id' => $student->id,
+            'school_year' => $student->school_year,
+            'semester' => $student->semester,
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+            'status' => 'pending',
+        ]);
+
+        return response()->json(['ok' => true, 'id' => $record->id]);
+    }
+
+    public function formsWaiverCancellationUpdate(Request $request, CancellationWaiver $cancellationWaiver): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => 'required|string|max:40',
+            'name' => 'required|string|max:120',
+            'program' => 'nullable|string|max:80',
+            'year_level' => 'nullable|string|max:40',
+        ]);
+
+        $student = $cancellationWaiver->student;
+        $student->student_no = trim($validated['student_no']);
+        $student->name = trim($validated['name']);
+        $student->program = isset($validated['program']) ? trim((string) $validated['program']) : $student->program;
+        $student->year_level = isset($validated['year_level']) ? trim((string) $validated['year_level']) : $student->year_level;
+        $student->save();
+
+        $cancellationWaiver->update([
+            'program' => $student->program,
+            'year_level' => $student->year_level,
+            'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function formsWaiverCancellationDestroy(CancellationWaiver $cancellationWaiver): JsonResponse
+    {
+        $cancellationWaiver->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function seedCrossEnrollRowsIfEmpty(): void
+    {
+        if (CrossEnrollmentRequest::query()->exists()) {
+            return;
+        }
+
+        $students = Student::query()->orderBy('id')->limit(10)->get();
+        foreach ($students as $student) {
+            CrossEnrollmentRequest::create([
+                'student_id' => $student->id,
+                'school_year' => $student->school_year,
+                'semester' => $student->semester,
+                'program' => $student->program,
+                'year_level' => $student->year_level,
+                'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+                'status' => 'pending',
+            ]);
+        }
+    }
+
+    private function seedWaiverRowsIfEmpty(): void
+    {
+        if (CancellationWaiver::query()->exists()) {
+            return;
+        }
+
+        $students = Student::query()->orderBy('id')->limit(10)->get();
+        foreach ($students as $student) {
+            CancellationWaiver::create([
+                'student_id' => $student->id,
+                'school_year' => $student->school_year,
+                'semester' => $student->semester,
+                'program' => $student->program,
+                'year_level' => $student->year_level,
+                'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+                'status' => 'pending',
+            ]);
+        }
     }
 }

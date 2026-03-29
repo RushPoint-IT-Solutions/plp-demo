@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Student;
 use App\StudentProfile;
+use App\AcademicCalendarEvent;
 use App\Subject;
 use App\Semester;
 use App\Course;
@@ -12,6 +13,7 @@ use App\YearBlock;
 use App\StudentSubjectGrade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 
 class StudentController extends Controller
@@ -28,7 +30,7 @@ class StudentController extends Controller
             return Student::with('subjects')->where('student_no', $user->username)->first();
         }
 
-        return Student::with('subjects')->first();
+        return null; // Don't return a random student for demo purposes anymore.
     }
 
     /**
@@ -119,7 +121,28 @@ class StudentController extends Controller
      */
     public function events()
     {
-        return view('student.events');
+        $calendarEvents = [];
+
+        if (Schema::hasTable('academic_calendar_events')) {
+            $calendarEvents = AcademicCalendarEvent::query()
+                ->where('is_active', true)
+                ->orderBy('event_date')
+                ->get()
+                ->map(function ($event) {
+                    return [
+                        'date' => optional($event->event_date)->format('Y-m-d'),
+                        'type' => strtolower((string) $event->event_type) === 'holiday' ? 'holiday' : 'event',
+                        'label' => (string) $event->title,
+                    ];
+                })
+                ->filter(function ($event) {
+                    return !empty($event['date']) && !empty($event['label']);
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('student.events', compact('calendarEvents'));
     }
 
     /**

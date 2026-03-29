@@ -1,6 +1,38 @@
 /* permission-cross-enroll.js - Permission to Cross-Enroll form page logic */
 
 var pceCurrentRowId = null;
+var pceConfig = window.pceConfig || {};
+
+function pceBuildUrl(template, id) {
+    return String(template || '').replace('__ID__', String(id));
+}
+
+function pceRequestJson(url, method, payload) {
+    return fetch(url, {
+        method: method,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': pceConfig.csrfToken || '',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: payload ? JSON.stringify(payload) : null
+    }).then(function(response) {
+        if (!response.ok) {
+            return response.json().catch(function() { return {}; }).then(function(data) {
+                var message = 'Request failed.';
+                if (data && data.errors) {
+                    var firstKey = Object.keys(data.errors)[0];
+                    if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                        message = data.errors[firstKey][0];
+                    }
+                }
+                throw new Error(message);
+            });
+        }
+        return response.json().catch(function() { return { ok: true }; });
+    });
+}
 
 function pceEsc(v) {
     return String(v || '').replace(/[&<>"']/g, function(c) {
@@ -249,13 +281,37 @@ function pceSaveEdit() {
     var row = pceGetRow(pceCurrentRowId);
     if (!row) return;
     var cells = row.querySelectorAll('td');
+    var studentNo = (document.getElementById('pceEditNumber').value || '').trim();
+    var studentName = (document.getElementById('pceEditName').value || '').trim();
+    var program = (document.getElementById('pceEditCourse').value || '').trim();
+    var yearLevel = (document.getElementById('pceEditYear').value || '').trim();
 
-    if (cells[1]) cells[1].textContent = (document.getElementById('pceEditNumber').value || '').trim();
-    if (cells[2]) cells[2].textContent = (document.getElementById('pceEditName').value || '').trim();
-    if (cells[3]) cells[3].textContent = (document.getElementById('pceEditCourse').value || '').trim();
-    if (cells[4]) cells[4].textContent = (document.getElementById('pceEditYear').value || '').trim();
+    var finish = function() {
+        if (cells[1]) cells[1].textContent = studentNo;
+        if (cells[2]) {
+            cells[2].innerHTML = '<button type="button" class="doc-link-btn" onclick="pceOpenPreview(' + pceCurrentRowId + ')">' + pceEsc(studentName) + '</button>';
+        }
+        if (cells[3]) cells[3].textContent = program;
+        if (cells[4]) cells[4].textContent = yearLevel;
+        if (cells[5]) cells[5].textContent = ((program || 'PROGRAM') + ' ' + (yearLevel || 'YEAR')).trim();
+        pceCloseModal('pceEditModal');
+    };
 
-    pceCloseModal('pceEditModal');
+    if (!pceConfig.updateUrlTemplate) {
+        finish();
+        return;
+    }
+
+    pceRequestJson(pceBuildUrl(pceConfig.updateUrlTemplate, pceCurrentRowId), 'PUT', {
+        student_no: studentNo,
+        name: studentName,
+        program: program,
+        year_level: yearLevel
+    }).then(function() {
+        finish();
+    }).catch(function(error) {
+        alert(error.message || 'Unable to update cross-enroll record.');
+    });
 }
 
 function pceOpenDelete(rowId) {
@@ -265,9 +321,22 @@ function pceOpenDelete(rowId) {
 
 function pceConfirmDelete() {
     var row = pceGetRow(pceCurrentRowId);
-    if (row) row.remove();
-    pceSyncSelectAll();
-    pceCloseModal('pceDeleteModal');
+    var finish = function() {
+        if (row) row.remove();
+        pceSyncSelectAll();
+        pceCloseModal('pceDeleteModal');
+    };
+
+    if (!pceConfig.destroyUrlTemplate) {
+        finish();
+        return;
+    }
+
+    pceRequestJson(pceBuildUrl(pceConfig.destroyUrlTemplate, pceCurrentRowId), 'DELETE').then(function() {
+        finish();
+    }).catch(function(error) {
+        alert(error.message || 'Unable to delete cross-enroll record.');
+    });
 }
 
 document.addEventListener('click', function(event) {

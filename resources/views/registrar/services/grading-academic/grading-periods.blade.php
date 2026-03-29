@@ -44,32 +44,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        @forelse($gradingPeriods as $index => $period)
+                        <tr data-grading-period-id="{{ $period->id }}">
                             <td>
-                                <div class="apst-action-btn" data-gp-menu-toggle="gpMenu0" aria-label="Open row actions" title="Actions">
+                                <div class="apst-action-btn" data-gp-menu-toggle="gpMenu{{ $index }}" aria-label="Open row actions" title="Actions">
                                     <span></span><span></span><span></span>
                                 </div>
-                                <div class="apst-dropdown" id="gpMenu0">
-                                    <button type="button" data-ga-open-action="edit" data-ga-item="BSCS 3A">
+                                <div class="apst-dropdown" id="gpMenu{{ $index }}">
+                                    <button type="button" data-ga-open-action="edit" data-ga-item="{{ $period->section_subject_faculty }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         Edit
                                     </button>
-                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="BSCS 3A">
+                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="{{ $period->section_subject_faculty }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                         Delete
                                     </button>
                                 </div>
                             </td>
-                            <td>BSCS 3A / CS301 / MARASIGAN</td>
-                            <td>Prelim</td>
-                            <td>Written/Seatwork</td>
-                            <td>30</td>
-                            <td>03/01/2026</td>
-                            <td>03/30/2026</td>
-                            <td>08:00</td>
-                            <td>Weighted</td>
-                            <td><label class="ga-check ga-check-tight"><input type="checkbox" checked disabled> Yes</label></td>
+                            <td>{{ $period->section_subject_faculty }}</td>
+                            <td>{{ $period->period }}</td>
+                            <td>{{ $period->description }}</td>
+                            <td>{{ rtrim(rtrim(number_format((float) $period->percentage, 2, '.', ''), '0'), '.') }}</td>
+                            <td>{{ optional($period->start_date)->format('m/d/Y') ?: '-' }}</td>
+                            <td>{{ optional($period->end_date)->format('m/d/Y') ?: '-' }}</td>
+                            <td>{{ $period->start_time ?: '-' }}</td>
+                            <td>{{ $period->grading_computation }}</td>
+                            <td><label class="ga-check ga-check-tight"><input type="checkbox" {{ $period->use_grades_library ? 'checked' : '' }} disabled> {{ $period->use_grades_library ? 'Yes' : 'No' }}</label></td>
                         </tr>
+                        @empty
+                        <tr><td colspan="10" style="text-align:center; color:#666;">No grading periods found.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
         </div>
@@ -173,17 +177,17 @@
                 <div class="req-modal-fields" style="margin-top:10px;">
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">START DATE</label>
-                        <input type="text" class="req-modal-input" id="gaEditStartDate" placeholder="mm/dd/yyyy">
+                        <input type="date" class="req-modal-input" id="gaEditStartDate">
                     </div>
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">END DATE</label>
-                        <input type="text" class="req-modal-input" id="gaEditEndDate" placeholder="mm/dd/yyyy">
+                        <input type="date" class="req-modal-input" id="gaEditEndDate">
                     </div>
                 </div>
                 <div class="req-modal-fields" style="margin-top:10px;">
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">START TIME</label>
-                        <input type="text" class="req-modal-input" id="gaEditStartTime" placeholder="00:00">
+                        <input type="time" class="req-modal-input" id="gaEditStartTime">
                     </div>
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">GRADING COMPUTATION</label>
@@ -245,6 +249,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var editStartTime = document.getElementById('gaEditStartTime');
     var editComputation = document.getElementById('gaEditComputation');
     var editUseGradesLib = document.getElementById('gaEditUseGradesLib');
+    var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+    var gpStoreUrl = @json(route('registrar.services.grading-academic.grading-periods.store'));
+    var gpUpdateUrlTemplate = @json(route('registrar.services.grading-academic.grading-periods.update', ['gradingPeriod' => '__ID__']));
+    var gpDestroyUrlTemplate = @json(route('registrar.services.grading-academic.grading-periods.destroy', ['gradingPeriod' => '__ID__']));
     var nextMenuIndex = page.querySelectorAll('[data-gp-menu-toggle]').length;
     var activeRow = null;
     var activeAction = 'edit';
@@ -267,6 +275,48 @@ document.addEventListener('DOMContentLoaded', function () {
         var parts = value.split('-');
         if (parts.length !== 3) return value;
         return parts[1] + '/' + parts[2] + '/' + parts[0];
+    }
+
+    function toInputDate(value) {
+        if (!value || value === '-') return '';
+        if (value.indexOf('T') !== -1) {
+            return value.substring(0, 10);
+        }
+        var parts = value.split('/');
+        if (parts.length !== 3) return value;
+        return parts[2] + '-' + parts[0].padStart(2, '0') + '-' + parts[1].padStart(2, '0');
+    }
+
+    function gpBuildUrl(template, id) {
+        return String(template).replace('__ID__', String(id));
+    }
+
+    function gpRequest(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function (response) {
+            if (!response.ok) {
+                return response.json().catch(function () { return {}; }).then(function (data) {
+                    var message = 'Request failed.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            message = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(message);
+                });
+            }
+
+            return response.json().catch(function () { return { ok: true }; });
+        });
     }
 
     function buildActionCell(item, menuId) {
@@ -391,8 +441,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (editPeriod) editPeriod.value = (activeRow.cells[2].textContent || '').trim();
                 if (editDescription) editDescription.value = (activeRow.cells[3].textContent || '').trim();
                 if (editPercentage) editPercentage.value = (activeRow.cells[4].textContent || '').trim();
-                if (editStartDate) editStartDate.value = (activeRow.cells[5].textContent || '').trim();
-                if (editEndDate) editEndDate.value = (activeRow.cells[6].textContent || '').trim();
+                if (editStartDate) editStartDate.value = toInputDate((activeRow.cells[5].textContent || '').trim());
+                if (editEndDate) editEndDate.value = toInputDate((activeRow.cells[6].textContent || '').trim());
                 if (editStartTime) editStartTime.value = (activeRow.cells[7].textContent || '').trim();
                 if (editComputation) editComputation.value = (activeRow.cells[8].textContent || '').trim();
                 if (editUseGradesLib) {
@@ -432,56 +482,76 @@ document.addEventListener('DOMContentLoaded', function () {
             var computationValue = addComputation ? addComputation.value : '';
             var useLibChecked = addUseGradesLib ? addUseGradesLib.checked : false;
 
-            var menuId = 'gpMenu' + nextMenuIndex;
-            nextMenuIndex += 1;
-            var tr = document.createElement('tr');
-            tr.innerHTML = buildActionCell(rowName, menuId) +
-                '<td>' + rowName + '</td>' +
-                '<td>' + periodValue + '</td>' +
-                '<td>' + descriptionValue + '</td>' +
-                '<td>' + percentageValue + '</td>' +
-                '<td>' + startDateValue + '</td>' +
-                '<td>' + endDateValue + '</td>' +
-                '<td>' + startTimeValue + '</td>' +
-                '<td>' + computationValue + '</td>' +
-                '<td><label class="ga-check ga-check-tight"><input type="checkbox"' + (useLibChecked ? ' checked' : '') + ' disabled> ' + (useLibChecked ? 'Yes' : 'No') + '</label></td>';
-
-            table.querySelector('tbody').appendChild(tr);
-            if (typeof showRegistrarToast === 'function') {
-                showRegistrarToast('Period record added successfully.');
-            }
-            closeModal(document.getElementById('gaPeriodsAddModal'));
+            gpRequest(gpStoreUrl, 'POST', {
+                section_subject_faculty: rowName,
+                period: periodValue,
+                description: descriptionValue,
+                percentage: percentageValue,
+                start_date: addStartDate ? addStartDate.value : null,
+                end_date: addEndDate ? addEndDate.value : null,
+                start_time: startTimeValue || null,
+                grading_computation: computationValue,
+                use_grades_library: useLibChecked
+            }).then(function () {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Period record added successfully.');
+                }
+                window.location.reload();
+            }).catch(function (error) {
+                alert(error.message || 'Unable to save period record.');
+            });
             return;
         }
 
         if (event.target.matches('[data-ga-save], [data-ga-confirm-action]')) {
             if (event.target.matches('[data-ga-confirm-action]') && activeAction === 'edit' && activeRow && activeRow.cells.length >= 10) {
-                activeRow.cells[1].textContent = editSectionSubjectFaculty ? editSectionSubjectFaculty.value.trim() : activeRow.cells[1].textContent;
-                activeRow.cells[2].textContent = editPeriod ? editPeriod.value.trim() : activeRow.cells[2].textContent;
-                activeRow.cells[3].textContent = editDescription ? editDescription.value.trim() : activeRow.cells[3].textContent;
-                activeRow.cells[4].textContent = editPercentage ? editPercentage.value.trim() : activeRow.cells[4].textContent;
-                activeRow.cells[5].textContent = editStartDate ? editStartDate.value.trim() : activeRow.cells[5].textContent;
-                activeRow.cells[6].textContent = editEndDate ? editEndDate.value.trim() : activeRow.cells[6].textContent;
-                activeRow.cells[7].textContent = editStartTime ? editStartTime.value.trim() : activeRow.cells[7].textContent;
-                activeRow.cells[8].textContent = editComputation ? editComputation.value.trim() : activeRow.cells[8].textContent;
+                var recordId = activeRow.getAttribute('data-grading-period-id');
+                if (!recordId) {
+                    alert('Missing grading period id.');
+                    return;
+                }
 
-                var useLibChecked = editUseGradesLib ? editUseGradesLib.checked : false;
-                activeRow.cells[9].innerHTML = '<label class="ga-check ga-check-tight"><input type="checkbox"' + (useLibChecked ? ' checked' : '') + ' disabled> ' + (useLibChecked ? 'Yes' : 'No') + '</label>';
+                gpRequest(gpBuildUrl(gpUpdateUrlTemplate, recordId), 'PUT', {
+                    section_subject_faculty: editSectionSubjectFaculty ? editSectionSubjectFaculty.value.trim() : '',
+                    period: editPeriod ? editPeriod.value.trim() : '',
+                    description: editDescription ? editDescription.value.trim() : '',
+                    percentage: editPercentage ? editPercentage.value.trim() : 0,
+                    start_date: editStartDate ? editStartDate.value : null,
+                    end_date: editEndDate ? editEndDate.value : null,
+                    start_time: editStartTime ? editStartTime.value : null,
+                    grading_computation: editComputation ? editComputation.value.trim() : '',
+                    use_grades_library: editUseGradesLib ? editUseGradesLib.checked : false
+                }).then(function () {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Grading period updated successfully.');
+                    }
+                    window.location.reload();
+                }).catch(function (error) {
+                    alert(error.message || 'Unable to update grading period.');
+                });
+                return;
             }
 
-            if (typeof showRegistrarToast === 'function') {
-                showRegistrarToast('Grading periods action completed.');
-            }
             closeModal(event.target.closest('.req-modal-overlay'));
             return;
         }
 
         if (event.target.matches('[data-ga-confirm-delete]')) {
             if (activeRow && table) {
-                activeRow.remove();
-            }
-            if (typeof showRegistrarToast === 'function') {
-                showRegistrarToast('Period record deleted successfully.');
+                var recordId = activeRow.getAttribute('data-grading-period-id');
+                if (!recordId) {
+                    alert('Missing grading period id.');
+                    return;
+                }
+
+                gpRequest(gpBuildUrl(gpDestroyUrlTemplate, recordId), 'DELETE').then(function () {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Period record deleted successfully.');
+                    }
+                    window.location.reload();
+                }).catch(function (error) {
+                    alert(error.message || 'Unable to delete grading period.');
+                });
             }
             closeModal(deleteModal);
         }

@@ -158,12 +158,11 @@
 
 @push('scripts')
 <script>
-    var raUsers = [
-        { name: 'Bares, Mark Jay', email: 'test@gmail.com', userType: 'Registrar', reportType: 'Academics Report' },
-        { name: 'Austero, Andrea Jane', email: 'test@gmail.com', userType: 'Registrar', reportType: 'Academics Report' },
-        { name: 'Santos, Maria', email: 'maria.santos@plp.edu.ph', userType: 'Faculty', reportType: 'Faculty Report' },
-        { name: 'Dela Cruz, Juan', email: 'juan.delacruz@plp.edu.ph', userType: 'Accounting', reportType: 'Enrollment Report' }
-    ];
+    var raUsers = @json($reportUsers ?? []);
+    var raConfig = {
+        csrfToken: @json(csrf_token()),
+        updateUrlTemplate: @json(route('registrar.admin-tools.access-management.report-access.update', ['user' => '__USER__']))
+    };
 
     var raActiveIndex = null;
 
@@ -171,6 +170,78 @@
         return String(value || '').replace(/[&<>"']/g, function(ch) {
             var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
             return map[ch];
+        });
+    }
+
+    function raBuildUrl(template, token, value) {
+        return String(template || '').replace(token, String(value));
+    }
+
+    function raRequestJson(url, method, payload) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': raConfig.csrfToken || '',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.json().catch(function() { return {}; }).then(function(data) {
+                    var message = 'Request failed.';
+                    if (data && data.errors) {
+                        var keys = Object.keys(data.errors);
+                        if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
+                            message = data.errors[keys[0]][0];
+                        }
+                    }
+                    throw new Error(message);
+                });
+            }
+
+            return response.json().catch(function() { return { ok: true }; });
+        });
+    }
+
+    function raSetPermissionsState(keys) {
+        var selected = {};
+        (keys || []).forEach(function(key) {
+            selected[String(key)] = true;
+        });
+
+        document.querySelectorAll('.ra-group-list input[type="checkbox"]').forEach(function(input) {
+            var label = (input.parentElement ? input.parentElement.textContent : '').trim();
+            input.checked = !!selected[label];
+        });
+
+        [
+            { master: 'raCheckEnrollment', list: 'raEnrollmentList' },
+            { master: 'raCheckOther', list: 'raOtherList' },
+            { master: 'raCheckStudent', list: 'raStudentList' },
+            { master: 'raCheckFaculty', list: 'raFacultyList' }
+        ].forEach(function(group) {
+            var master = document.getElementById(group.master);
+            var list = document.getElementById(group.list);
+            if (!master || !list) return;
+
+            var items = list.querySelectorAll('input[type="checkbox"]');
+            var checked = 0;
+            items.forEach(function(item) {
+                if (item.checked) checked += 1;
+            });
+            master.checked = checked === items.length && items.length > 0;
+            master.indeterminate = checked > 0 && checked < items.length;
+        });
+        raSyncGlobalToggle();
+    }
+
+    function raCollectSelectedPermissions() {
+        return Array.from(document.querySelectorAll('.ra-group-list input[type="checkbox"]:checked')).map(function(input) {
+            return (input.parentElement ? input.parentElement.textContent : '').trim();
+        }).filter(function(text) {
+            return text.length > 0;
         });
     }
 
@@ -290,6 +361,7 @@
         if (!user) return;
         raActiveIndex = index;
         document.getElementById('raModalUserMeta').textContent = 'User: ' + user.name + ' | Type: ' + user.userType;
+        raSetPermissionsState(user.permissions || []);
         document.getElementById('raAccessModal').style.display = 'flex';
     }
 
@@ -299,10 +371,24 @@
     }
 
     function raSaveAccess() {
-        raCloseAccessModal();
-        if (typeof showRegistrarToast === 'function') {
-            showRegistrarToast('Report access updated successfully.');
+        if (raActiveIndex === null || !raUsers[raActiveIndex]) {
+            raCloseAccessModal();
+            return;
         }
+
+        var user = raUsers[raActiveIndex];
+        var keys = raCollectSelectedPermissions();
+        var url = raBuildUrl(raConfig.updateUrlTemplate, '__USER__', user.id);
+
+        raRequestJson(url, 'PUT', { report_keys: keys }).then(function() {
+            user.permissions = keys;
+            raCloseAccessModal();
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast('Report access updated successfully.');
+            }
+        }).catch(function(error) {
+            alert(error.message || 'Unable to save report access.');
+        });
     }
 
     document.getElementById('raSearchBtn').addEventListener('click', raRenderTable);

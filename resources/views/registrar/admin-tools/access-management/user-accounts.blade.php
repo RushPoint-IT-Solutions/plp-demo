@@ -144,15 +144,49 @@
 
 @push('scripts')
 <script>
-    var uaUsers = [
-        { userId: '2223A8137', lastName: 'Bares', firstName: 'Mark Jay', fullName: 'Mark Jay Bares', userType: 'Student', inactive: false },
-        { userId: '2223A8139', lastName: 'Austero', firstName: 'Andrea Jane', fullName: 'Andrea Jane Austero', userType: 'Student', inactive: false },
-        { userId: 'REG001', lastName: 'Santos', firstName: 'Maria', fullName: 'Maria Santos', userType: 'Registrar', inactive: false },
-        { userId: 'STAFF100', lastName: 'Dela Cruz', firstName: 'Juan', fullName: 'Juan Dela Cruz', userType: 'Staff', inactive: true }
-    ];
+    var uaUsers = @json($accountUsers ?? []);
+    var uaUpdateTemplate = '{{ route('registrar.admin-tools.access-management.user-accounts.update', ['user' => '__ID__']) }}';
+    var uaDeleteTemplate = '{{ route('registrar.admin-tools.access-management.user-accounts.destroy', ['user' => '__ID__']) }}';
 
     var uaSelectedUserId = '';
-    var uaPendingDeleteUserId = '';
+    var uaPendingDeletePk = '';
+
+    function uaUpdateUrl(id) {
+        return uaUpdateTemplate.replace('__ID__', String(id));
+    }
+
+    function uaDeleteUrl(id) {
+        return uaDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    async function uaApiRequest(url, method, payload) {
+        var response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: payload ? JSON.stringify(payload) : null
+        });
+
+        var json = {};
+        try {
+            json = await response.json();
+        } catch (e) {
+            json = {};
+        }
+
+        if (!response.ok || json.ok === false) {
+            throw new Error(
+                (json.message) ||
+                (json.errors && Object.values(json.errors)[0] && Object.values(json.errors)[0][0]) ||
+                'Unable to process account request.'
+            );
+        }
+
+        return json;
+    }
 
     function uaEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -165,9 +199,9 @@
         return String(value || '').trim().toLowerCase();
     }
 
-    function uaBuildDeleteAction(userId) {
+    function uaBuildDeleteAction(pk) {
         return '' +
-            '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-id="' + uaEscapeHtml(userId) + '" title="Delete">' +
+            '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-pk="' + uaEscapeHtml(pk) + '" title="Delete">' +
                 '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
             '</button>';
     }
@@ -229,7 +263,7 @@
                     '<td>' + uaEscapeHtml(user.fullName) + '</td>' +
                     '<td>' + uaEscapeHtml(user.userType) + '</td>' +
                     '<td>' + uaBuildStatusBadge(user.inactive) + '</td>' +
-                    '<td style="text-align:center;">' + uaBuildDeleteAction(user.userId) + '</td>' +
+                    '<td style="text-align:center;">' + uaBuildDeleteAction(user.pk) + '</td>' +
                 '</tr>';
         }).join('');
 
@@ -288,32 +322,39 @@
         return false;
     }
 
-    function uaOpenDeleteModal(userId) {
-        var user = uaUsers.find(function(item) { return item.userId === userId; });
+    function uaOpenDeleteModal(userPk) {
+        var user = uaUsers.find(function(item) { return String(item.pk) === String(userPk); });
         if (!user) return;
-        uaPendingDeleteUserId = user.userId;
+        uaPendingDeletePk = user.pk;
         document.getElementById('uaDeleteModalText').textContent = 'Are you sure you want to delete account for ' + user.fullName + '?';
         document.getElementById('uaDeleteModal').style.display = 'flex';
     }
 
     function uaCloseDeleteModal() {
-        uaPendingDeleteUserId = '';
+        uaPendingDeletePk = '';
         document.getElementById('uaDeleteModal').style.display = 'none';
     }
 
-    function uaConfirmDelete() {
-        if (!uaPendingDeleteUserId) {
+    async function uaConfirmDelete() {
+        if (!uaPendingDeletePk) {
             uaCloseDeleteModal();
             return;
         }
 
-        var index = uaUsers.findIndex(function(item) { return item.userId === uaPendingDeleteUserId; });
+        var index = uaUsers.findIndex(function(item) { return String(item.pk) === String(uaPendingDeletePk); });
         if (index === -1) {
             uaCloseDeleteModal();
             return;
         }
 
         var user = uaUsers[index];
+        try {
+            await uaApiRequest(uaDeleteUrl(user.pk), 'DELETE');
+        } catch (error) {
+            alert(error.message || 'Unable to delete account.');
+            return;
+        }
+
         uaUsers.splice(index, 1);
         if (uaSelectedUserId === user.userId) {
             uaSelectedUserId = '';
@@ -371,7 +412,7 @@
 
     document.getElementById('uaCancelBtn').addEventListener('click', uaResetForm);
 
-    document.getElementById('uaSaveBtn').addEventListener('click', function() {
+    document.getElementById('uaSaveBtn').addEventListener('click', async function() {
         var typedId = uaNormalize(document.getElementById('uaFormUserId').value);
         if (!typedId) {
             alert('Please enter a User ID first.');
@@ -384,10 +425,22 @@
             return;
         }
 
-        user.fullName = (document.getElementById('uaFormName').value || '').trim() || user.fullName;
-        user.inactive = document.getElementById('uaInactive').checked;
-        uaFillCredentials(user);
-        alert('Account credentials updated.');
+        var payload = {
+            user_id: (document.getElementById('uaFormUserId').value || '').trim(),
+            full_name: (document.getElementById('uaFormName').value || '').trim(),
+            password: (document.getElementById('uaFormPassword').value || '').trim(),
+            inactive: document.getElementById('uaInactive').checked
+        };
+
+        try {
+            var response = await uaApiRequest(uaUpdateUrl(user.pk), 'PUT', payload);
+            var updated = response.row || user;
+            Object.assign(user, updated);
+            uaFillCredentials(user);
+            alert('Account credentials updated.');
+        } catch (error) {
+            alert(error.message || 'Unable to update account.');
+        }
     });
 
     document.getElementById('uaFormUserId').addEventListener('keydown', function(event) {
@@ -416,10 +469,10 @@
     });
 
     document.addEventListener('click', function(event) {
-        var deleteBtn = event.target.closest('[data-ua-delete-user-id]');
+        var deleteBtn = event.target.closest('[data-ua-delete-user-pk]');
         if (deleteBtn) {
             event.stopPropagation();
-            uaOpenDeleteModal(deleteBtn.getAttribute('data-ua-delete-user-id'));
+            uaOpenDeleteModal(deleteBtn.getAttribute('data-ua-delete-user-pk'));
             return;
         }
 
