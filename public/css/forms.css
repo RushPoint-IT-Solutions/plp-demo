@@ -20,6 +20,90 @@
 }
 
 /* ============================================================
+   Shared toolbar responsiveness (Forms + Reports)
+   ============================================================ */
+.gc-action-row,
+.frm-action-row,
+.rp-action-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.gc-search-wrap,
+.frm-search-wrap {
+    margin-right: auto;
+    min-width: 260px;
+    max-width: 340px;
+    width: 100%;
+}
+
+.rp-search-wrap {
+    margin-right: auto;
+    min-width: 280px;
+    max-width: 360px;
+    width: 100%;
+}
+
+.gc-action-btn,
+.frm-action-btn,
+.rp-action-btn {
+    min-width: 120px;
+    font-weight: 700;
+    flex: 0 0 auto;
+}
+
+.rp-action-btn-download {
+    min-width: 150px;
+}
+
+.rp-action-btn-outline {
+    background: #fff;
+    color: #006837;
+    border: 1px solid #006837;
+}
+
+.frm-search-input,
+.rp-search-input {
+    width: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .gc-action-row,
+    .frm-action-row,
+    .rp-action-row {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .gc-search-wrap,
+    .frm-search-wrap,
+    .rp-search-wrap {
+        margin-right: 0;
+        min-width: 0;
+        max-width: none;
+        flex: 1 1 100%;
+    }
+
+    .gc-action-btn,
+    .frm-action-btn,
+    .rp-action-btn {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .gc-action-btn,
+    .frm-action-btn,
+    .rp-action-btn {
+        flex-basis: 100%;
+    }
+}
+
+/* ============================================================
    DIPLOMA – fonts
    ============================================================ */
 @font-face {
