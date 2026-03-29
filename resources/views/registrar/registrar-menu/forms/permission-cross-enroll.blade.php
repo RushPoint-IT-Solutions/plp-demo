@@ -62,13 +62,13 @@
                     </select>
                 </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap: 8px;">
-                <div style="margin-right:auto; min-width:260px; max-width:340px; width:100%;">
-                    <input type="text" class="app-filter-select" style="width:100%;" placeholder="Search student..." oninput="pceFilterTable(this.value)">
+            <div class="frm-action-row">
+                <div class="frm-search-wrap">
+                    <input type="text" class="app-filter-select frm-search-input" placeholder="Search student..." oninput="pceFilterTable(this.value)">
                 </div>
-                <button type="button" class="req-btn-save" style="min-width: 150px; font-weight: 700;" onclick="pceOpenBlankPreview()">Preview Form</button>
-                <button type="button" class="req-btn-save" style="min-width: 160px; font-weight: 700;" onclick="pcePrintSelected()">Print Selected</button>
-                <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;">Set</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="pceOpenBlankPreview()">Preview Form</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="pcePrintSelected()">Print Selected</button>
+                <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
         </div>
 

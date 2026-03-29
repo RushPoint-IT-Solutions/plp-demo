@@ -87,13 +87,13 @@
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap:8px; align-items:center;">
-                <div style="margin-right:auto; min-width:280px; max-width:360px; width:100%;">
-                    <input type="text" class="app-filter-select" id="unifastSearch" style="width:100%;" placeholder="Search student no., name, place of birth...">
+            <div class="rp-action-row">
+                <div class="rp-search-wrap">
+                    <input type="text" class="app-filter-select rp-search-input" id="unifastSearch" placeholder="Search student no., name, place of birth...">
                 </div>
                 <input type="file" id="unifastImportInput" accept=".csv,text/csv" style="display:none;">
-                <button type="button" class="req-btn-save" style="min-width:130px; font-weight:700; background:#fff; color:#006837; border:1px solid #006837;" onclick="triggerUnifastImport()">Import CSV</button>
-                <button type="button" class="req-btn-save" style="min-width:150px; font-weight:700;" onclick="unifastExportCsv()">Download CSV</button>
+                <button type="button" class="req-btn-save rp-action-btn rp-action-btn-outline" onclick="triggerUnifastImport()">Import CSV</button>
+                <button type="button" class="req-btn-save rp-action-btn rp-action-btn-download" onclick="unifastExportCsv()">Download CSV</button>
             </div>
         </div>
 
