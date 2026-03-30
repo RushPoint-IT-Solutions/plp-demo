@@ -1,10 +1,7 @@
 ---
 name: "form-validator"
 description: "Form Request validation for Laravel 5.7."
-applyTo:
-  - "app/Http/Requests/*"
-  - "app/Http/Controllers/*"
-version: "1.0-legacy"
+
 
 ---
 

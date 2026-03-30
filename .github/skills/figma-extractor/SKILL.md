@@ -1,10 +1,7 @@
 ---
 name: "figma-extractor"
 description: "Extract colors, spacing, components from Figma to Bootstrap 4."
-applyTo:
-  - "resources/assets/sass/_variables.scss"
-  - "resources/views/*"
-version: "1.0-legacy"
+
 
 ---
 

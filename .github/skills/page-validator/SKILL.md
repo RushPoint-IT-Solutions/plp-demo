@@ -1,10 +1,7 @@
 ---
 name: "page-validator"
 description: "Verify every page fully working before task complete."
-applyTo:
-  - "resources/views/*"
-  - "app/Http/Controllers/*"
-version: "1.0-legacy"
+
 
 ---
 

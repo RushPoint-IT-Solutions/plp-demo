@@ -1,9 +1,7 @@
 ---
 name: "git-version-control"
 description: "Git Workflow  Enforces safe commits and pushes to the single branch uwis-michael-merge."
-applyTo:
-  - "**/*"
-version: "1.0-legacy"
+
 
 ---
 

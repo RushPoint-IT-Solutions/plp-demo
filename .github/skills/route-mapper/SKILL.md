@@ -1,10 +1,7 @@
 ---
 name: "route-mapper"
 description: "Map all routes, controllers, views, relationships."
-applyTo:
-  - "routes/web.php"
-  - "app/Http/Controllers/*"
-version: "1.0-legacy"
+
 
 ---
 

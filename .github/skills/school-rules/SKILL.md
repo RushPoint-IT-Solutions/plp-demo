@@ -1,10 +1,7 @@
 ---
 name: "school-rules"
 description: "Philippine University grading system (1.00-5.00)."
-applyTo:
-  - "app/Models/Grade.php"
-  - "app/Http/Controllers/GradeController.php"
-version: "1.0-legacy"
+
 
 ---
 

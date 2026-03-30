@@ -1,10 +1,7 @@
 ---
 name: "backup-guardian"
 description: "Automated database backups with cloud storage."
-applyTo:
-  - "config/backup.php"
-  - "storage/app/backups/*"
-version: "1.0-legacy"
+
 
 ---
 

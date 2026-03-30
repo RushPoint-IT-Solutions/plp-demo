@@ -1,10 +1,7 @@
 ---
 name: "notification-engine"
 description: "Automated notifications for parents/students."
-applyTo:
-  - "app/Notifications/*"
-  - "config/mail.php"
-version: "1.0-legacy"
+
 
 ---
 

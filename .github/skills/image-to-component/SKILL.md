@@ -1,10 +1,7 @@
 ---
 name: "image-to-component"
 description: "Convert UI screenshots to Bootstrap 4 components."
-applyTo:
-  - "resources/views/*"
-  - "resources/assets/sass/components/*"
-version: "1.0-legacy"
+
 
 ---
 

@@ -1,10 +1,7 @@
 ---
 name: "migration-manager"
 description: "Create and manage Laravel 5.7 migrations safely  one logical change per migration, never edit run migrations, prefer additive changes."
-applyTo:
-  - "database/migrations/*"
-  - "app/Models/*"
-version: "1.0-legacy"
+
 
 ---
 

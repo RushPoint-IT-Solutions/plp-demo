@@ -1,10 +1,7 @@
 ---
 name: "ui-animator"
 description: "CSS transitions and jQuery animations for UI elements."
-applyTo:
-  - "resources/assets/sass/components/*"
-  - "resources/assets/js/*"
-version: "1.0-legacy"
+
 
 ---
 

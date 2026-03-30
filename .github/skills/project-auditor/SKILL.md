@@ -11,11 +11,7 @@ name: "project-auditor"
 ---
 name: "project-auditor"
 description: "Code cleanup, deduplication, and quality enforcement."
-applyTo:
-  - "resources/assets/sass/*"
-  - "resources/views/*"
-  - "public/*"
-version: "1.0-legacy"
+
 ---
 
 # Skill 08: Project Auditor

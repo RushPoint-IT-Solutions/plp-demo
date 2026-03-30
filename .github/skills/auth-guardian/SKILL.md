@@ -1,11 +1,7 @@
 ---
 name: "auth-guardian"
 description: "Multi-role authentication with Gates & Policies for Laravel 5.7."
-applyTo:
-  - "app/Http/Controllers/*"
-  - "app/Policies/*"
-  - "config/auth.php"
-version: "1.0-legacy"
+
 
 ---
 

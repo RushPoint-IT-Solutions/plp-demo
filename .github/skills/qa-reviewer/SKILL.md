@@ -1,14 +1,8 @@
 ---
 name: "qa-reviewer"
-version: "1.0-legacy"
-description: "QA Reviewer  vulnerability scans and legacy-security checks for Laravel 5.7 / PHP 7.1."
-applyTo:
-  - "app/Http/Controllers/*"
-  - "routes/*"
-  - "resources/views/*"
-  - "config/*"
 
----
+description: "QA Reviewer  vulnerability scans and legacy-security checks for Laravel 5.7 / PHP 7.1."
+
 
 # Skill 04: QA Reviewer
 

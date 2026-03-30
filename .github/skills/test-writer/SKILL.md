@@ -1,10 +1,7 @@
 ---
 name: "test-writer"
 description: "PHPUnit tests for Laravel 5.7 (80% coverage required)."
-applyTo:
-  - "tests/Feature/*"
-  - "tests/Unit/*"
-version: "1.0-legacy"
+
 
 ---
 

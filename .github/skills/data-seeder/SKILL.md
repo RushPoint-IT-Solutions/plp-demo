@@ -1,11 +1,7 @@
 ---
 name: "data-seeder"
 description: "Safe database seeding with production protection."
-applyTo:
-  - "database/seeds/*"
-  - "database/factories/*"
-  - ".env"
-version: "1.0-legacy"
+
 
 ---
 

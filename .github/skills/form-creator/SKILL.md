@@ -1,10 +1,7 @@
 ---
 name: "form-creator"
 description: "Convert form screenshots to Laravel Blade forms."
-applyTo:
-  - "resources/views/forms/*"
-  - "app/Http/Requests/*"
-version: "1.0-legacy"
+
 
 ---
 

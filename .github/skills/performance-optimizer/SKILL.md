@@ -1,10 +1,7 @@
 ---
 name: "performance-optimizer"
 description: "Prevent slow queries and optimize page loads."
-applyTo:
-    - "app/Models/*"
-    - "app/Http/Controllers/*"
-version: "1.0-legacy"
+
 
 ---
 

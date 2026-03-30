@@ -1,9 +1,7 @@
 ---
 name: "task-planner"
 description: "Task Planner  Architect role: produces Job Sheets for Worker AI."
-applyTo:
-  - "**/*"
-version: "1.0-legacy"
+
 
 ---
 

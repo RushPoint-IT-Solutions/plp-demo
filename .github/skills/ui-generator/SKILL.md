@@ -1,10 +1,7 @@
 ---
 name: "ui-generator"
 description: "Bootstrap 4 UI generation from designs/screenshots."
-applyTo:
-  - "resources/views/*"
-  - "resources/assets/sass/*"
-version: "1.0-legacy"
+
 
 ---
 

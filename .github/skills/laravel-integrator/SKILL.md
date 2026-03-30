@@ -1,12 +1,7 @@
 ---
 name: "laravel-integrator"
 description: "Laravel integrator  Routes  Controllers  Views (Blade); validation, security, MCP checks."
-applyTo:
-  - "routes/*"
-  - "app/Http/Controllers/*"
-  - "app/Services/*"
-  - "resources/views/*"
-version: "1.0-legacy"
+
 
 ---
 

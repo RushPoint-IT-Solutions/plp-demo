@@ -1,10 +1,7 @@
 ---
 name: "printable-form-generator"
 description: "Print-ready HTML/CSS for forms and certificates."
-applyTo:
-  - "resources/views/printables/*"
-  - "resources/assets/sass/print.scss"
-version: "1.0-legacy"
+
 
 ---
 

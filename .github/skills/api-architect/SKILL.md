@@ -1,10 +1,7 @@
 ---
 name: "api-architect"
 description: "API endpoints for future mobile parent app."
-applyTo:
-  - "routes/api.php"
-  - "app/Http/Controllers/Api/*"
-version: "1.0-legacy"
+
 
 ---
 
