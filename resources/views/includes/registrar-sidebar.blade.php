@@ -33,8 +33,10 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
+                <a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application</a>
                 <a href="{{ route('registrar.process.citizenship') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.citizenship') ? 'active' : '' }}">Citizenship</a>
                 <a href="{{ route('registrar.process.religion') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion') ? 'active' : '' }}">Religion</a>
+                <a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>
                 <a href="{{ route('registrar.process.batch-upload') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.batch-upload') ? 'active' : '' }}">Batch Upload Image</a>
                 <a href="{{ route('registrar.process.document-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.document-list') ? 'active' : '' }}">Document List</a>
                 <a href="{{ route('registrar.process.requirements') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.requirements') ? 'active' : '' }}">Requirements</a>
@@ -81,9 +83,7 @@
                         <a href="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.program-file') ? 'active' : '' }}">Program File</a>
                         <a href="{{ route('registrar.registrar-menu.academic-master.subject-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.subject-file') ? 'active' : '' }}">Subject File</a>
                         <a href="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.pre-requisites') ? 'active' : '' }}">Pre-requisites</a>
-                        {{-- Hidden: Letter Grade Setup (pending confirmation)
                         <a href="{{ route('registrar.registrar-menu.academic-master.letter-grade') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.letter-grade') ? 'active' : '' }}">Letter Grade Setup</a>
-                        --}}
                     </div>
                 </div>
 
