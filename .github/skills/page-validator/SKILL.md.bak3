@@ -1,0 +1,59 @@
+---
+name: "page-validator"
+description: "Verify every page fully working before task complete."
+applyTo:
+  - "resources/views/*"
+  - "app/Http/Controllers/*"
+version: "1.0-legacy"
+
+---
+
+# Skill 21: Page Validator
+
+## ðŸ— LEGACY STACK CONTEXT (CRITICAL)
+- **Framework:** Laravel 5.7 ONLY (Requires PHP 7.1+ syntax).
+- **Frontend:** Bootstrap 4, Vue 2, jQuery.
+- **Build Tool:** Laravel Mix (`webpack.mix.js`). Run via `npm run dev`. NO Vite.
+
+## ðŸš« Explicitly Forbidden PHP 8+ Features
+- `match` expressions
+- Union types (e.g., `string|int`)
+- Nullsafe operator (`?->`)
+- Named arguments
+- Constructor property promotion
+- Arrow functions (`fn() =>`)
+- Typed properties
+- Null-coalescing assignment (`??=`)
+
+## âœ… Validation Checklist
+
+### Visual Elements
+â–¡ Text renders correctly
+â–¡ Images load (no broken links)
+â–¡ Colors match design
+
+### Responsiveness Test
+â–¡ 320px (iPhone SE)
+â–¡ 768px (iPad)
+â–¡ 1920px (Desktop)
+
+### Form Validation
+â–¡ Required fields enforced
+â–¡ Error messages display
+â–¡ CSRF token present
+
+### Performance
+â–¡ Page loads under 2 seconds
+â–¡ Under 20 database queries
+â–¡ Zero console errors
+
+## ðŸ§° MCP Integration
+- **Playwright MCP:** Screenshot at 320px, 768px, 1920px.
+- **MySQL MCP:** Check query count via Debugbar.
+
+## ðŸš¨ Escalation Protocol
+- If any checklist item fails, STOP and output:
+`âš ï¸ ESCALATION REQUIRED. Page validation failed: <detail>.`
+
+## ðŸ›‘ STOP COMMAND
+Output `WAITING_FOR_HUMAN_OK` when the file is generated.

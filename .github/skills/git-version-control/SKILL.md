@@ -1,0 +1,108 @@
+---
+name: "git-version-control"
+description: "Git Workflow  Enforces safe commits and pushes to the single branch uwis-michael-merge."
+applyTo:
+  - "**/*"
+version: "1.0-legacy"
+
+---
+
+# Skill 02: Git Version Control
+
+## Purpose
+Keep the repository clean and safe by working exclusively on the `uwis-michael-merge` branch. No extra branches are created.
+
+## Legacy Stack Context (CRITICAL)
+- **Framework:** Laravel 5.7 ONLY (Requires PHP 7.1+ syntax).
+- **Frontend:** Bootstrap 4, Vue 2, jQuery.
+- **Build Tool:** Laravel Mix (`webpack.mix.js`). Run via `npm run dev` or `npm run watch`. NO Vite.
+- **Database:** XAMPP MySQL.
+
+## Forbidden PHP 8+ Features
+- `match` expressions
+- Union types (e.g., `string|int`)
+- Nullsafe operator (`?->`)
+- Named arguments
+- Constructor property promotion
+- Arrow functions (`fn() =>`)
+- Typed properties
+- Null-coalescing assignment (`??=`)
+
+## Git Safety Protocol (BEFORE EVERY COMMIT)
+AI Workers MUST follow these steps. NEVER use interactive commands (like `git add -p`) as they will hang the terminal.
+
+### Step 1: Check state & sync
+```bash
+git status --porcelain
+git fetch origin uwis-michael-merge
+git checkout uwis-michael-merge
+git pull --rebase origin uwis-michael-merge
+```
+
+### Step 2: Stage files explicitly (NO interactive add)
+```bash
+#  WRONG - Interactive command that will hang
+git add -p
+```
+
+```bash
+#  CORRECT - Explicit file staging (stage only exact files changed)
+git add app/Student.php
+git add resources/views/students/index.blade.php
+```
+
+### Step 3: Atomic commit (one feature = one commit)
+```bash
+git commit -m "feat: add student model with migration"
+```
+
+### Commit message conventions
+| Type | Use Case | Example |
+|---|---|---|
+| feat: | New feature | feat: add student registration form |
+| fix: | Bug fix | fix: resolve grade calculation error |
+| refactor: | Code restructuring | refactor: extract validation to FormRequest |
+| docs: | Documentation | docs: update README with setup instructions |
+| test: | Tests added/modified | test: add PHPUnit test for login |
+| chore: | Maintenance | chore: update dependencies |
+
+### Step 4: Push to the only branch
+```bash
+git push origin uwis-michael-merge
+```
+
+## Rollback Procedures (If Something Breaks)
+```bash
+# Find the last good commit
+git log --oneline
+
+# Reset to that commit (keep changes staged or discard)
+git reset --soft <commit-hash>   # keep changes as staged
+# OR
+git reset --hard <commit-hash>   # discard all changes after that commit
+
+# Force push (only if you are sure and have coordinated with the team)
+git push origin uwis-michael-merge --force
+```
+
+## MCP Integration (GitHub MCP)
+GitHub MCP: Verify branch state before operations.
+
+Commands:
+```text
+github list_branches         # Confirm current branches and presence of uwis-michael-merge
+github list_commits --limit 5  # Verify recent commits
+```
+
+Worker MUST report branch name and current commit hash before any push operation.
+
+## Escalation Protocol
+If merge conflicts are detected or a push fails, STOP and output:
+
+```
+ ESCALATION REQUIRED. Git operation failed: <detail>. Architect review needed.
+```
+
+## STOP COMMAND
+Output `WAITING_FOR_HUMAN_OK` when the file is generated.
+

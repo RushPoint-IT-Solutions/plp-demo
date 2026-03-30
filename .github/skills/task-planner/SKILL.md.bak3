@@ -1,0 +1,60 @@
+---
+name: "task-planner"
+description: "Task Planner â€” Architect role: produces Job Sheets for Worker AI."
+applyTo:
+  - "**/*"
+version: "1.0-legacy"
+
+---
+
+# Skill 01: Task Planner (Architect Role)
+
+## ðŸŽ¯ Purpose
+Big AI creates Job Sheets. Small AI executes one step at a time.
+
+## ðŸ— LEGACY STACK CONTEXT (CRITICAL)
+- **Framework:** Laravel 5.7 ONLY (Requires PHP 7.1+ syntax).
+- **Frontend:** Bootstrap 4, Vue 2, jQuery. (Use `ml-auto`/`mr-auto`, NOT `ms-auto`).
+- **Build Tool:** Laravel Mix (`webpack.mix.js`). Run via `npm run dev` or `npm run watch`. NO Vite.
+- **Database:** XAMPP MySQL.
+
+## ðŸš« Explicitly Forbidden PHP 8+ Features
+- `match` expressions
+- Union types (e.g., `string|int`)
+- Nullsafe operator (`?->`)
+- Named arguments
+- Constructor property promotion
+- Arrow functions (`fn() =>`)
+- Typed properties
+- Null-coalescing assignment (`??=`)
+
+## ðŸ” Authentication
+- Use: `php artisan make:auth` (Laravel 5.7 standard)
+- DO NOT use: Laravel Breeze, Jetstream, or newer scaffolding packages
+
+## ðŸ§° MCP Integration (Required for Every Job Sheet)
+- **Filesystem MCP:** Scan project structure before generating code; verify target files exist and report exact paths/line numbers.
+- **MySQL MCP:** Verify database schema before running migrations or seeding (e.g., required tables/columns exist).
+- **Playwright MCP (optional):** Run basic UI checks (responsive breakpoints, header presence, XSS test flows).
+- Worker MUST report findings with exact file paths, line numbers, and sample requests/payloads used.
+
+## ðŸ§  Context Router
+For every step, specify exactly 1 or 2 `.github/skills/` files the Worker is allowed to read.
+
+## ðŸ“‹ Job Sheet Template
+---
+## ðŸ“‹ JOB SHEET: [Task Name]
+### Step X/XX: [Action Verb + Target File]
+- **File:** `#path/to/file.ext`
+- **Required Skills:** `.github/skills/03-laravel-integrator.md`
+- **Command/Action:** [Exact code change]
+- **Expected Output / Verification:** [What success looks like; tests or commands to run]
+- **STOP:** WAITING_FOR_HUMAN_OK
+---
+
+## ðŸš¨ Escalation Protocol
+- If MCP checks fail (missing files/tables/columns), STOP and output:
+`âš ï¸ ESCALATION REQUIRED. Missing file/table/column: <detail>. Architect review needed.`
+
+## ðŸ›‘ STOP COMMAND
+Output `WAITING_FOR_HUMAN_OK` when the file is generated.

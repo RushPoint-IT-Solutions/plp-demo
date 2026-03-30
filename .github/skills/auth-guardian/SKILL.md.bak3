@@ -1,0 +1,59 @@
+---
+name: "auth-guardian"
+description: "Multi-role authentication with Gates & Policies for Laravel 5.7."
+applyTo:
+  - "app/Http/Controllers/*"
+  - "app/Policies/*"
+  - "config/auth.php"
+version: "1.0-legacy"
+
+---
+
+# Skill 05: Auth Guardian
+
+## ðŸ— LEGACY STACK CONTEXT (CRITICAL)
+- **Framework:** Laravel 5.7 ONLY (Requires PHP 7.1+ syntax).
+- **Frontend:** Bootstrap 4, Vue 2, jQuery.
+- **Build Tool:** Laravel Mix (`webpack.mix.js`). Run via `npm run dev`. NO Vite.
+- **Auth:** `php artisan make:auth` (Laravel 5.7 standard) â€” DO NOT use Breeze/Jetstream
+
+## ðŸš« Explicitly Forbidden PHP 8+ Features
+- `match` expressions
+- Union types (e.g., `string|int`)
+- Nullsafe operator (`?->`)
+- Named arguments
+- Constructor property promotion
+- Arrow functions (`fn() =>`)
+- Typed properties
+- Null-coalescing assignment (`??=`)
+
+## ðŸ‘¥ User Roles
+| Role | Access Level | 2FA Required |
+|------|--------------|--------------|
+| Admin | Full system access | âœ… Yes |
+| Teacher | Class/grade management | âŒ No |
+| Student | View own grades/attendance | âŒ No |
+| Parent | View children's data | âŒ No |
+
+## ðŸ” Gates & Policies (MANDATORY)
+Every controller action MUST have:
+```php
+// In Controller
+$this->authorize('view', $student);
+
+// In Policy class
+public function view(User $user, Student $student) {
+    return $user->id === $student->user_id || $user->hasRole('admin');
+}
+```
+
+## ðŸ§° MCP Integration
+- **Filesystem MCP:** Read `config/auth.php`, verify Policy files exist.
+- **MySQL MCP:** Verify roles table exists.
+
+## ðŸš¨ Escalation Protocol
+- If policies missing or auth misconfigured, STOP and output:
+`âš ï¸ ESCALATION REQUIRED. Auth/Policy issue: <detail>. Architect review needed.`
+
+## ðŸ›‘ STOP COMMAND
+Output `WAITING_FOR_HUMAN_OK` when the file is generated.

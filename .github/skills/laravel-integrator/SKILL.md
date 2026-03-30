@@ -1,0 +1,52 @@
+---
+name: "laravel-integrator"
+description: "Laravel integrator  Routes  Controllers  Views (Blade); validation, security, MCP checks."
+applyTo:
+  - "routes/*"
+  - "app/Http/Controllers/*"
+  - "app/Services/*"
+  - "resources/views/*"
+version: "1.0-legacy"
+
+---
+
+# Skill 03: Laravel Integrator
+
+##  LEGACY STACK CONTEXT (CRITICAL)
+- **Framework:** Laravel 5.7 ONLY (Requires PHP 7.1+ syntax).
+- **Frontend:** Bootstrap 4, Vue 2, jQuery. (Use `ml-auto`/`mr-auto`, NOT `ms-auto`).
+- **Build Tool:** Laravel Mix (`webpack.mix.js`). Run via `npm run dev` or `npm run watch`. NO Vite.
+- **Database:** XAMPP MySQL.
+
+##  Explicitly Forbidden PHP 8+ Features
+- `match` expressions
+- Union types (e.g., `string|int`)
+- Nullsafe operator (`?->`)
+- Named arguments
+- Constructor property promotion
+- Arrow functions (`fn() =>`)
+- Typed properties
+- Null-coalescing assignment (`??=`)
+
+##  Laravel 5.7 Directory Structure
+- JavaScript: `resources/assets/js/` (NOT `resources/js/`)
+- SASS: `resources/assets/sass/`
+- Build: `webpack.mix.js` (NOT `vite.config.js`)
+- Compile: `npm run dev` or `npm run production` (NO Vite)
+
+##  Connections: Routes  Controllers  Views (Blade)
+- Routes defined in `routes/web.php` should map to controller methods that return Blade views in `resources/views`.
+- Example patterns (Laravel 5.7 style):
+```php
+// routes/web.php
+Route::get('/students', 'StudentController@index');
+
+// app/Http/Controllers/StudentController.php
+class StudentController extends Controller
+{
+    public function index()
+    {
+        $students = Student::all();
+        return view('students.index', compact('students'));
+    }
+}
