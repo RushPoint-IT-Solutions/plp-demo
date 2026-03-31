@@ -112,6 +112,9 @@ class AdminController extends Controller
                 ])->withInput($request->only('username', 'remember'));
             }
 
+            // Ensure remember cookie is explicitly set for persistent login
+            Auth::login($user, $remember);
+
             $request->session()->regenerate();
 
             return redirect()->route('student.grades');
@@ -157,6 +160,9 @@ class AdminController extends Controller
                 'username' => ucfirst($module) . ' account is not linked yet. Please contact the administrator.',
             ])->withInput($request->only('username', 'remember'));
         }
+
+        // Ensure remember cookie is explicitly set for persistent login
+        Auth::login($user, $remember);
 
         $request->session()->regenerate();
 
@@ -226,6 +232,9 @@ class AdminController extends Controller
                     'username' => 'Applicant account is not linked yet. Please contact admissions.',
                 ])->withInput($request->only('username', 'remember'));
             }
+
+            // Ensure remember cookie is explicitly set for persistent login
+            Auth::login($user, $remember);
 
             $request->session()->regenerate();
 
