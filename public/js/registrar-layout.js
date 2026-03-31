@@ -37,3 +37,13 @@ if (overlay) {
         overlay.classList.remove('active');
     });
 }
+
+// Close any open sidebar dropdowns when clicking outside the sidebar
+document.addEventListener('click', function(e) {
+    // if click is outside the sidebar, close open dropdowns
+    if (!e.target.closest('.plp-sidebar')) {
+        document.querySelectorAll('.sidebar-dropdown.open, .sidebar-nested-dropdown.open').forEach(function(el) {
+            el.classList.remove('open');
+        });
+    }
+});

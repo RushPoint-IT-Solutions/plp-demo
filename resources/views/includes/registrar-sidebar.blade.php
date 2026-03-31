@@ -19,7 +19,7 @@
         </a>
 
         {{-- Process (Dropdown) - Vuesax linear/teacher icon --}}
-        <div class="sidebar-dropdown {{ request()->routeIs('registrar.process.*') ? 'open' : '' }}">
+        <div class="sidebar-dropdown">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.process.*') ? 'active' : '' }}">
                 {{-- Vuesax linear/teacher --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -40,7 +40,7 @@
                 <a href="{{ route('registrar.process.batch-upload') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.batch-upload') ? 'active' : '' }}">Batch Upload Image</a>
                 <a href="{{ route('registrar.process.document-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.document-list') ? 'active' : '' }}">Document List</a>
                 <a href="{{ route('registrar.process.requirements') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.requirements') ? 'active' : '' }}">Requirements</a>
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.process.reports') || request()->routeIs('registrar.process.reports.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.process.reports') || request()->routeIs('registrar.process.reports.*') ? 'active' : '' }}">
                         Reports
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -55,7 +55,7 @@
         </div>
 
         {{-- Registrar (Dropdown) - Vuesax linear/calendar --}}
-        <div class="sidebar-dropdown {{ (request()->routeIs('registrar.registrar-menu.*') && !request()->routeIs('registrar.registrar-menu.forms.*')) ? 'open' : '' }}">
+        <div class="sidebar-dropdown">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ (request()->routeIs('registrar.registrar-menu.*') && !request()->routeIs('registrar.registrar-menu.forms.*')) ? 'active' : '' }}">
                 {{-- Vuesax linear/calendar --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -74,7 +74,7 @@
             </a>
             <div class="sidebar-dropdown-menu">
                 {{-- Academic Master (nested sub-dropdown) --}}
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.academic-master.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.academic-master.*') ? 'active' : '' }}">
                         Academic Master
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -88,7 +88,7 @@
                 </div>
 
                 {{-- Scheduling --}}
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'active' : '' }}">
                         Scheduling
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -102,7 +102,7 @@
                 </div>
 
                 {{-- Student Management --}}
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.student-mgmt.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.student-mgmt.*') ? 'active' : '' }}">
                         Student Management
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -114,7 +114,7 @@
                 </div>
 
                 {{-- Faculty Management --}}
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.*') ? 'active' : '' }}">
                         Faculty Management
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -136,7 +136,7 @@
         </div>
 
         {{-- Services (Dropdown) - Vuesax linear/clipboard-text --}}
-        <div class="sidebar-dropdown {{ request()->routeIs('registrar.services.*') ? 'open' : '' }}">
+        <div class="sidebar-dropdown">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.services.*') ? 'active' : '' }}">
                 {{-- Vuesax linear/clipboard-text --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -151,7 +151,7 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.classroom-faculty.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.classroom-faculty.*') ? 'active' : '' }}">
                         Classroom &amp; Faculty
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -163,7 +163,7 @@
                     </div>
                 </div>
 
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.grading-academic.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.grading-academic.*') ? 'active' : '' }}">
                         Grading &amp; Academic
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -177,7 +177,7 @@
                     </div>
                 </div>
 
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.reports-admin.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.reports-admin.*') ? 'active' : '' }}">
                         Reports &amp; Admin
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -190,7 +190,7 @@
                     </div>
                 </div>
 
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.student-account.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.student-account.*') ? 'active' : '' }}">
                         Student &amp; Account
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -205,7 +205,7 @@
             </div>
 
             {{-- Forms (Top-level) --}}
-            <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'open' : '' }}">
+            <div class="sidebar-dropdown">
                 <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'active' : '' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M8 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -227,7 +227,7 @@
                     <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>
                     <a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver Cancellation</a>
 
-                    <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'open' : '' }}">
+                    <div class="sidebar-nested-dropdown">
                         <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'active' : '' }}">
                             Certificates
                             <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -242,7 +242,7 @@
             </div>
 
             {{-- Admin Tools (Dropdown) --}}
-        <div class="sidebar-dropdown {{ request()->routeIs('registrar.admin-tools.*') ? 'open' : '' }}">
+        <div class="sidebar-dropdown">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.admin-tools.*') ? 'active' : '' }}">
                 {{-- Vuesax calendar with number 8 --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -258,7 +258,7 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.system-config.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.system-config.*') ? 'active' : '' }}">
                         System Config
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -271,7 +271,7 @@
                     </div>
                 </div>
 
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.access-management.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.access-management.*') ? 'active' : '' }}">
                         Access Management
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -282,7 +282,7 @@
                     </div>
                 </div>
 
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.master-files.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.master-files.*') ? 'active' : '' }}">
                         Master Files
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -294,7 +294,7 @@
                     </div>
                 </div>
 
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.student-maintenance.*') ? 'open' : '' }}">
+                <div class="sidebar-nested-dropdown">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.student-maintenance.*') ? 'active' : '' }}">
                         Student Maintenance
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>

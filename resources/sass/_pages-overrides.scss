@@ -671,7 +671,7 @@ body.page-profile-view .pv-layout {
         flex-shrink: 0;
         transition: transform 0.3s ease;
     }
-    .sidebar-dropdown.open .sidebar-chevron {
+    .sidebar-dropdown.open > .sidebar-dropdown-toggle .sidebar-chevron {
         transform: rotate(180deg);
         color: $student-shell-green;
     }
@@ -681,6 +681,31 @@ body.page-profile-view .pv-layout {
     }
     .sidebar-dropdown.open .sidebar-dropdown-menu {
         display: flex;
+    }
+
+    .sidebar-nested-dropdown {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-nested-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .sidebar-nested-menu {
+        display: none;
+        flex-direction: column;
+    }
+
+    .sidebar-nested-dropdown.open .sidebar-nested-menu {
+        display: flex;
+    }
+
+    .sidebar-nested-dropdown.open > .sidebar-nested-toggle .sidebar-chevron {
+        transform: rotate(180deg);
     }
     .sidebar-sublink {
         display: block;

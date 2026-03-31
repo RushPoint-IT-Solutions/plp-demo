@@ -1,5 +1,4 @@
-@charset "UTF-8";
-@import url(https://fonts.googleapis.com/css?family=Nunito);
+@import url(https://fonts.googleapis.com/css?family=Nunito);@charset "UTF-8";
 
 :root {
   --plp-green: #006837;
@@ -293,7 +292,6 @@ button,
 [type=reset],
 [type=submit] {
   -webkit-appearance: button;
-  appearance: button;
 }
 
 button:not(:disabled),
@@ -353,18 +351,15 @@ progress {
 [type=search] {
   outline-offset: -2px;
   -webkit-appearance: none;
-  appearance: none;
 }
 
 [type=search]::-webkit-search-decoration {
   -webkit-appearance: none;
-  appearance: none;
 }
 
 ::-webkit-file-upload-button {
   font: inherit;
   -webkit-appearance: button;
-  appearance: button;
 }
 
 output {
