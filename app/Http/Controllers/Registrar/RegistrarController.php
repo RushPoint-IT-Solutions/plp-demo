@@ -1118,10 +1118,52 @@ class RegistrarController extends Controller
 
     /**
      * Registrar > Forms > Certificate of GWA
+     *
+     * If a Student is provided (route-model binding) compute the GWA and pass it to the view.
      */
-    public function formsCertificateGwa()
+    public function formsCertificateGwa(?\App\Student $student = null)
     {
-        return view('registrar.forms.certificates.certificate-gwa');
+        $gwa = null;
+
+        if ($student) {
+            $grades = StudentSubjectGrade::with('subject')
+                ->where('student_id', $student->id)
+                ->get();
+
+            $weightedSum = 0.0;
+            $unitsSum = 0.0;
+            $plainSum = 0.0;
+            $plainCount = 0;
+
+            foreach ($grades as $rec) {
+                if ($rec->final_average === null) {
+                    continue;
+                }
+                $avg = (float) $rec->final_average;
+                $units = 0.0;
+                if ($rec->relationLoaded('subject') && $rec->subject && isset($rec->subject->units) && is_numeric($rec->subject->units)) {
+                    $units = (float) $rec->subject->units;
+                }
+
+                if ($units > 0) {
+                    $weightedSum += $avg * $units;
+                    $unitsSum += $units;
+                } else {
+                    $plainSum += $avg;
+                    $plainCount++;
+                }
+            }
+
+            if ($unitsSum > 0) {
+                $gwa = round($weightedSum / $unitsSum, 2);
+            } elseif ($plainCount > 0) {
+                $gwa = round($plainSum / $plainCount, 2);
+            } else {
+                $gwa = null;
+            }
+        }
+
+        return view('registrar.forms.certificates.certificate-gwa', compact('student', 'gwa'));
     }
 
     /**

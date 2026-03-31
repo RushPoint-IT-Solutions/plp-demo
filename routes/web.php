@@ -171,6 +171,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
             // Certificates
             Route::prefix('certificates')->name('certificates.')->group(function () {
+                Route::get('/certificate-of-gwa/{student}', 'Registrar\\RegistrarController@formsCertificateGwa')->name('certificate-gwa.show');
                 Route::get('/certificate-of-gwa', 'Registrar\\RegistrarController@formsCertificateGwa')->name('certificate-gwa');
                 Route::get('/8c2-certificate-of-graduation', 'Registrar\\RegistrarController@formsCertificateGraduation8c2')->name('certificate-graduation-8c2');
                 Route::get('/8d2-certificate-of-honor', 'Registrar\\RegistrarController@formsCertificateHonor8d2')->name('certificate-honor-8d2');
