@@ -19,7 +19,7 @@
         </a>
 
         {{-- Process (Dropdown) - Vuesax linear/teacher icon --}}
-        <div class="sidebar-dropdown">
+        <div class="sidebar-dropdown {{ request()->routeIs('registrar.process.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.process.*') ? 'active' : '' }}">
                 {{-- Vuesax linear/teacher --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -55,7 +55,7 @@
         </div>
 
         {{-- Registrar (Dropdown) - Vuesax linear/calendar --}}
-        <div class="sidebar-dropdown">
+        <div class="sidebar-dropdown {{ (request()->routeIs('registrar.registrar-menu.*') && !request()->routeIs('registrar.registrar-menu.forms.*')) ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ (request()->routeIs('registrar.registrar-menu.*') && !request()->routeIs('registrar.registrar-menu.forms.*')) ? 'active' : '' }}">
                 {{-- Vuesax linear/calendar --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -136,7 +136,7 @@
         </div>
 
         {{-- Services (Dropdown) - Vuesax linear/clipboard-text --}}
-        <div class="sidebar-dropdown">
+        <div class="sidebar-dropdown {{ request()->routeIs('registrar.services.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.services.*') ? 'active' : '' }}">
                 {{-- Vuesax linear/clipboard-text --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -205,7 +205,7 @@
             </div>
 
             {{-- Forms (Top-level) --}}
-            <div class="sidebar-dropdown">
+            <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'open' : '' }}">
                 <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'active' : '' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M8 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -227,7 +227,7 @@
                     <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>
                     <a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver Cancellation</a>
 
-                    <div class="sidebar-nested-dropdown">
+                    <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'open' : '' }}">
                         <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'active' : '' }}">
                             Certificates
                             <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -238,11 +238,21 @@
                             <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') ? 'active' : '' }}">Form No. 8D-2 Certificate of Honor</a>
                         </div>
                     </div>
+
+                    <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'open' : '' }}">
+                        <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'active' : '' }}">
+                            Copy Of Grades (COG)
+                            <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </a>
+                        <div class="sidebar-nested-menu">
+                            <a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cog.copy-of-grades') ? 'active' : '' }}">Copy Of Grades (COG)</a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {{-- Admin Tools (Dropdown) --}}
-        <div class="sidebar-dropdown">
+        <div class="sidebar-dropdown {{ request()->routeIs('registrar.admin-tools.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.admin-tools.*') ? 'active' : '' }}">
                 {{-- Vuesax calendar with number 8 --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -312,14 +322,13 @@
 
     {{-- Log Out --}}
     <div class="sidebar-logout">
-        <a href="{{ route('logout') }}" class="sidebar-link logout-link"
-           onclick="event.preventDefault(); document.getElementById('registrar-logout-form').submit();">
+        <a href="{{ route('logout') }}" class="sidebar-link logout-link js-registrar-logout">
             <span>Log Out</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
             </svg>
         </a>
-        <form id="registrar-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        <form id="registrar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
             @csrf
         </form>
     </div>

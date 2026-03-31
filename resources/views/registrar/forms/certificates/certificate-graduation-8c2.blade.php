@@ -3,6 +3,10 @@
 @section('title', 'PLP - Form No. 8C-2 Certificate of Graduation')
 @section('page-title', 'Form No. 8C-2 Certificate of Graduation')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/certificate-graduation-8c2.css') }}?v={{ time() }}">
+@endpush
+
 @section('content')
 @php
     $studentModel = isset($student) ? $student : null;

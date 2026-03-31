@@ -1,0 +1,39 @@
+.registrar-body {
+    .cog-copy-of-grades {
+        color: #111;
+
+        .cog-sheet {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        .form-control {
+            box-shadow: none;
+        }
+
+        .cog-print-note {
+            font-size: 0.75rem;
+        }
+
+        @media print {
+            .cog-sheet {
+                border: 1px solid #000;
+                box-shadow: none;
+                margin: 0;
+                padding: 10mm !important;
+            }
+
+            .table,
+            .table td,
+            .table th {
+                color: #000 !important;
+                border-color: #000 !important;
+            }
+
+            .form-control {
+                color: #000;
+                border-bottom-color: #000 !important;
+            }
+        }
+    }
+}

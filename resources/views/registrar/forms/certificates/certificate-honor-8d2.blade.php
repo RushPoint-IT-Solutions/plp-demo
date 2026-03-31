@@ -3,6 +3,10 @@
 @section('title', 'PLP - Form No. 8D-2 Certificate of Honor')
 @section('page-title', 'Form No. 8D-2 Certificate of Honor')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/certificate-honor-8d2.css') }}?v={{ time() }}">
+@endpush
+
 @section('content')
 @php
     $studentModel = isset($student) ? $student : null;

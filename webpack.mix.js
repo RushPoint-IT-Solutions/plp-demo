@@ -18,4 +18,8 @@ mix.js('resources/js/app.js', 'public/js')
    .js('resources/js/registrar-faculty-loads.js', 'public/js')
    .sass('resources/sass/app.scss', 'public/css')
    .sass('resources/sass/style.scss', 'public/css')
+   .sass('resources/sass/certificate-gwa.scss', 'public/css')
+   .sass('resources/sass/certificate-graduation-8c2.scss', 'public/css')
+   .sass('resources/sass/certificate-honor-8d2.scss', 'public/css')
+   .sass('resources/sass/cog-copy-of-grades.scss', 'public/css')
    .sass('resources/sass/registrar-faculty-loads.scss', 'public/css');

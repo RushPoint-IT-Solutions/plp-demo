@@ -176,6 +176,11 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
                 Route::get('/8c2-certificate-of-graduation', 'Registrar\\RegistrarController@formsCertificateGraduation8c2')->name('certificate-graduation-8c2');
                 Route::get('/8d2-certificate-of-honor', 'Registrar\\RegistrarController@formsCertificateHonor8d2')->name('certificate-honor-8d2');
             });
+
+            // Copy Of Grades (COG)
+            Route::prefix('cog')->name('cog.')->group(function () {
+                Route::get('/copy-of-grades', 'Registrar\\RegistrarController@formsCopyOfGradesCog')->name('copy-of-grades');
+            });
         });
     });
 

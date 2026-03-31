@@ -1182,6 +1182,14 @@ class RegistrarController extends Controller
         return view('registrar.forms.certificates.certificate-honor-8d2');
     }
 
+    /**
+     * Registrar > Forms > Copy Of Grades (COG)
+     */
+    public function formsCopyOfGradesCog()
+    {
+        return view('registrar.forms.cog.copy-of-grades');
+    }
+
     private function seedCrossEnrollRowsIfEmpty(): void
     {
         if (CrossEnrollmentRequest::query()->exists()) {

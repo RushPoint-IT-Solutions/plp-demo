@@ -3,6 +3,10 @@
 @section('title', 'PLP - Certificate of GWA')
 @section('page-title', 'Certificate of GWA')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/certificate-gwa.css') }}?v={{ time() }}">
+@endpush
+
 @section('content')
 @php
     $studentName = optional($student)->name ? strtoupper(optional($student)->name) : 'STUDENT NAME';
