@@ -18,12 +18,9 @@
     },
     "figma": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-figma"
-      ],
+      "args": ["-y", "mcp-figma"],
       "env": {
-        "FIGMA_TOKEN": "${env:FIGMA_TOKEN}"
+        "FIGMA_API_TOKEN": "${env:FIGMA_TOKEN}",
       }
     },
     "github": {
@@ -38,7 +35,7 @@
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--headless=false", "--browser", "chromium"]
+      "args": ["-y", "@playwright/mcp@latest", "--browser", "chromium"]
     }
   }
 }
