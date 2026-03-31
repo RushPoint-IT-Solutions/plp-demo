@@ -1116,6 +1116,30 @@ class RegistrarController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * Registrar > Forms > Certificate of GWA
+     */
+    public function formsCertificateGwa()
+    {
+        return view('registrar.forms.certificates.certificate-gwa');
+    }
+
+    /**
+     * Registrar > Forms > Form No. 8C-2 Certificate of Graduation
+     */
+    public function formsCertificateGraduation8c2()
+    {
+        return view('registrar.forms.certificates.certificate-graduation-8c2');
+    }
+
+    /**
+     * Registrar > Forms > Form No. 8D-2 Certificate of Honor
+     */
+    public function formsCertificateHonor8d2()
+    {
+        return view('registrar.forms.certificates.certificate-honor-8d2');
+    }
+
     private function seedCrossEnrollRowsIfEmpty(): void
     {
         if (CrossEnrollmentRequest::query()->exists()) {
