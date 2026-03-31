@@ -1,0 +1,58 @@
+@page { size: A4; margin: 25mm 20mm; }
+
+@media print {
+  html, body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cert-container { page-break-inside: avoid; break-inside: avoid; }
+  .cert-body { page-break-inside: avoid; break-inside: avoid; }
+}
+
+.cert-container {
+  max-width: 180mm;
+  margin: 0 auto;
+  font-family: 'Times New Roman', Times, serif;
+  color: #000;
+  position: relative;
+}
+
+.cert-title {
+  font-size: 24pt;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 18mm;
+  line-height: 1.1;
+  margin-bottom: 6mm;
+}
+
+.cert-body {
+  font-size: 10pt;
+  line-height: 1.45;
+  margin: 0 10mm;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.student-name {
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: underline;
+}
+
+.cert-gwa { font-weight: 700; }
+
+.cert-sign { margin-top: 36mm; text-align: center; }
+
+.sig-line { display: inline-block; border-top: 1px solid #000; width: 60mm; height: 1px; margin-top: 12mm; }
+
+.cert-footnote { font-size: 9pt; position: absolute; left: 20mm; bottom: 18mm; color: #333; }
+
+/* Utility / BEM-like modifiers for elements previously using inline styles */
+.cert-body__p--center { text-align: center; }
+.cert-body__p--mb-lg { margin-bottom: 14mm; }
+.cert-sign__img { width: 60mm; height: auto; display: block; margin: 0 auto; }
+
+@media screen {
+  .cert-container { padding-bottom: 40mm; }
+}
