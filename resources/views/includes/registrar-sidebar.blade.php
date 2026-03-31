@@ -55,8 +55,8 @@
         </div>
 
         {{-- Registrar (Dropdown) - Vuesax linear/calendar --}}
-        <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.*') ? 'open' : '' }}">
-            <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.*') ? 'active' : '' }}">
+        <div class="sidebar-dropdown {{ (request()->routeIs('registrar.registrar-menu.*') && !request()->routeIs('registrar.registrar-menu.forms.*')) ? 'open' : '' }}">
+            <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ (request()->routeIs('registrar.registrar-menu.*') && !request()->routeIs('registrar.registrar-menu.forms.*')) ? 'active' : '' }}">
                 {{-- Vuesax linear/calendar --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M8 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
