@@ -40,17 +40,6 @@
                 <a href="{{ route('registrar.process.batch-upload') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.batch-upload') ? 'active' : '' }}">Batch Upload Image</a>
                 <a href="{{ route('registrar.process.document-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.document-list') ? 'active' : '' }}">Document List</a>
                 <a href="{{ route('registrar.process.requirements') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.requirements') ? 'active' : '' }}">Requirements</a>
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.process.reports') || request()->routeIs('registrar.process.reports.*') ? 'open' : '' }}">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.process.reports') || request()->routeIs('registrar.process.reports.*') ? 'active' : '' }}">
-                        Reports
-                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </a>
-                    <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.process.reports') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.process.reports') ? 'active' : '' }}">Overview</a>
-                        <a href="{{ route('registrar.process.reports.unifast') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.process.reports.unifast') ? 'active' : '' }}">UNIFAST</a>
-                        <a href="{{ route('registrar.process.reports.oss-nstp-form') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.process.reports.oss-nstp-form') ? 'active' : '' }}">OSS - NSTP Form</a>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -83,7 +72,6 @@
                         <a href="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.program-file') ? 'active' : '' }}">Program File</a>
                         <a href="{{ route('registrar.registrar-menu.academic-master.subject-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.subject-file') ? 'active' : '' }}">Subject File</a>
                         <a href="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.pre-requisites') ? 'active' : '' }}">Pre-requisites</a>
-                        <a href="{{ route('registrar.registrar-menu.academic-master.letter-grade') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.letter-grade') ? 'active' : '' }}">Letter Grade Setup</a>
                     </div>
                 </div>
 
