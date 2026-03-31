@@ -841,7 +841,7 @@ class RegistrarController extends Controller
      */
     public function formsPlaceholder()
     {
-        return view('registrar.registrar-menu.forms.placeholder');
+        return view('registrar.forms.placeholder');
     }
 
     /**
@@ -849,7 +849,7 @@ class RegistrarController extends Controller
      */
     public function formsTor()
     {
-        return view('registrar.registrar-menu.forms.tor');
+        return view('registrar.forms.tor');
     }
 
     /**
@@ -857,7 +857,7 @@ class RegistrarController extends Controller
      */
     public function formsDiploma()
     {
-        return view('registrar.registrar-menu.forms.diploma');
+        return view('registrar.forms.diploma');
     }
 
     /**
@@ -865,7 +865,7 @@ class RegistrarController extends Controller
      */
     public function formsGraduationClearance()
     {
-        return view('registrar.registrar-menu.forms.graduation-clearance');
+        return view('registrar.forms.graduation-clearance');
     }
 
     /**
@@ -873,7 +873,7 @@ class RegistrarController extends Controller
      */
     public function formsHonorableDismissal()
     {
-        return view('registrar.registrar-menu.forms.honorable-dismissal');
+        return view('registrar.forms.honorable-dismissal');
     }
 
     /**
@@ -942,7 +942,7 @@ class RegistrarController extends Controller
             ];
         }
 
-        return view('registrar.registrar-menu.forms.official-grade-report', compact('gradeReportRows', 'subjectsByRow', 'metaByRow'));
+        return view('registrar.forms.official-grade-report', compact('gradeReportRows', 'subjectsByRow', 'metaByRow'));
     }
 
     public function formsOfficialGradeReportData(Student $student): JsonResponse
@@ -992,7 +992,7 @@ class RegistrarController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        return view('registrar.registrar-menu.forms.permission-cross-enroll', compact('crossEnrollRows'));
+        return view('registrar.forms.permission-cross-enroll', compact('crossEnrollRows'));
     }
 
     public function formsPermissionCrossEnrollStore(Request $request): JsonResponse
@@ -1060,7 +1060,7 @@ class RegistrarController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        return view('registrar.registrar-menu.forms.waiver-cancellation', compact('waiverRows'));
+        return view('registrar.forms.waiver-cancellation', compact('waiverRows'));
     }
 
     public function formsWaiverCancellationStore(Request $request): JsonResponse

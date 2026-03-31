@@ -126,23 +126,7 @@
                     </div>
                 </div>
 
-                {{-- Forms --}}
-                <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'open' : '' }}">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'active' : '' }}">
-                        Forms
-                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </a>
-                    <div class="sidebar-nested-menu">
-                        {{-- <a href="{{ route('registrar.registrar-menu.forms.placeholder') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.placeholder') ? 'active' : '' }}">Form Templates</a> --}}
-                        <a href="{{ route('registrar.registrar-menu.forms.tor') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.tor') ? 'active' : '' }}">TOR</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.honorable-dismissal') ? 'active' : '' }}">Honorable Dismissal</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.official-grade-report') ? 'active' : '' }}">Official Grade Report</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver Cancellation</a>
-                    </div>
-                </div>
+                    {{-- Forms removed from Registrar submenu (moved to top-level) --}}
 
                 {{-- Alumni Tracker --}}
                 <a href="{{ route('registrar.registrar-menu.alumni.tracker') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.alumni.tracker') ? 'active' : '' }}">
@@ -218,9 +202,34 @@
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
 
-        {{-- Admin Tools (Dropdown) --}}
+            {{-- Forms (Top-level) --}}
+            <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'open' : '' }}">
+                <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'active' : '' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M8 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.5 9.09009H20.5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Forms</span>
+                    <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </a>
+                <div class="sidebar-dropdown-menu">
+                    <a href="{{ route('registrar.registrar-menu.forms.tor') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.tor') ? 'active' : '' }}">TOR</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.honorable-dismissal') ? 'active' : '' }}">Honorable Dismissal</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.official-grade-report') ? 'active' : '' }}">Official Grade Report</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver Cancellation</a>
+                </div>
+            </div>
+
+            {{-- Admin Tools (Dropdown) --}}
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.admin-tools.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.admin-tools.*') ? 'active' : '' }}">
                 {{-- Vuesax calendar with number 8 --}}
