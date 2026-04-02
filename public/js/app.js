@@ -49506,6 +49506,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /***/ }),
 
+/***/ "./resources/sass/cor-certificate-of-registration.scss":
+/*!*************************************************************!*\
+  !*** ./resources/sass/cor-certificate-of-registration.scss ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ "./resources/sass/registrar-faculty-loads.scss":
 /*!*****************************************************!*\
   !*** ./resources/sass/registrar-faculty-loads.scss ***!
@@ -49529,9 +49540,9 @@ document.addEventListener('DOMContentLoaded', function () {
 /***/ }),
 
 /***/ 0:
-/*!*******************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/registrar-faculty-loads.scss ***!
-  \*******************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/registrar-faculty-loads.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -49542,6 +49553,7 @@ __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certi
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cog-copy-of-grades.scss */"./resources/sass/cog-copy-of-grades.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
 module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
 
 

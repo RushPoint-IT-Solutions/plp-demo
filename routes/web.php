@@ -181,6 +181,11 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::prefix('cog')->name('cog.')->group(function () {
                 Route::get('/copy-of-grades', 'Registrar\\RegistrarController@formsCopyOfGradesCog')->name('copy-of-grades');
             });
+
+            // Certificate of Registration (COR)
+            Route::prefix('cor')->name('cor.')->group(function () {
+                Route::get('/certificate-of-registration', 'Registrar\\RegistrarController@formsCertificateOfRegistration')->name('certificate-of-registration');
+            });
         });
     });
 

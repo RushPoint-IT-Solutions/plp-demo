@@ -1190,6 +1190,88 @@ class RegistrarController extends Controller
         return view('registrar.forms.cog.copy-of-grades');
     }
 
+    /**
+     * Registrar > Forms > Certificate of Registration (COR)
+     */
+    public function formsCertificateOfRegistration(Request $request)
+    {
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level']);
+
+        $selectedStudentId = (int) $request->query('student_id', 0);
+
+        if ($selectedStudentId <= 0 && $students->isNotEmpty()) {
+            $selectedStudentId = (int) $students->first()->id;
+        }
+
+        $student = null;
+        if ($selectedStudentId > 0) {
+            $student = Student::with('subjects')->find($selectedStudentId);
+        }
+
+        $subjects = collect();
+        if ($student) {
+            $subjects = $student->subjects
+                ->sortBy(function ($subject) {
+                    return strtoupper((string) $subject->code);
+                })
+                ->values();
+        }
+
+        $totalUnits = (float) $subjects->sum(function ($subject) {
+            return is_numeric($subject->units) ? (float) $subject->units : 0;
+        });
+
+        $assessment = $this->buildCorAssessment($subjects, $totalUnits);
+
+        return view('registrar.forms.cor.certificate-of-registration', [
+            'students' => $students,
+            'selectedStudentId' => $selectedStudentId,
+            'student' => $student,
+            'subjects' => $subjects,
+            'totalUnits' => $totalUnits,
+            'assessment' => $assessment,
+        ]);
+    }
+
+    private function buildCorAssessment($subjects, float $totalUnits): array
+    {
+        $nstpUnits = (float) $subjects->sum(function ($subject) {
+            $code = strtoupper((string) $subject->code);
+            $name = strtoupper((string) $subject->name);
+
+            if (strpos($code, 'NSTP') !== false || strpos($name, 'CWTS') !== false || strpos($name, 'ROTC') !== false) {
+                return is_numeric($subject->units) ? (float) $subject->units : 0;
+            }
+
+            return 0;
+        });
+
+        $tuitionUnits = max($totalUnits - $nstpUnits, 0);
+        $perUnitRate = 50.0;
+        $miscellaneousFee = 300.0;
+        $laboratoryFee = 500.0;
+
+        $tuitionFee = $tuitionUnits * $perUnitRate;
+        $cwtsFee = $nstpUnits * $perUnitRate;
+        $totalTuitionFee = $tuitionFee + $cwtsFee;
+        $currentAccount = $totalTuitionFee + $miscellaneousFee + $laboratoryFee;
+
+        return [
+            'tuition_units' => $tuitionUnits,
+            'nstp_units' => $nstpUnits,
+            'per_unit_rate' => $perUnitRate,
+            'tuition_fee' => $tuitionFee,
+            'cwts_fee' => $cwtsFee,
+            'total_tuition_fee' => $totalTuitionFee,
+            'miscellaneous_fee' => $miscellaneousFee,
+            'laboratory_fee' => $laboratoryFee,
+            'current_account' => $currentAccount,
+        ];
+    }
+
     private function seedCrossEnrollRowsIfEmpty(): void
     {
         if (CrossEnrollmentRequest::query()->exists()) {
