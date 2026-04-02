@@ -48,11 +48,12 @@
         </form>
 
         <div class="loae-toolbar__actions">
-            <button type="button" id="loae-print-btn" class="btn btn-outline-secondary loae-toolbar__button">Print</button>
+            <button type="button" id="loae-print-btn" class="btn btn-success loae-toolbar__button">Print</button>
         </div>
     </div>
 
-    <article class="loae-sheet" aria-label="Application for Leave of Absence - Enrolled">
+    <div class="loae-a4-stage">
+    <article class="loae-sheet a4-wrapper" aria-label="Application for Leave of Absence - Enrolled">
         <p class="loae-form-no">PLPRO FORM NO. IH-2 Revised 2023</p>
         <h2 class="loae-title">APPLICATION FOR LEAVE OF ABSENCE - ENROLLED</h2>
 
@@ -61,14 +62,18 @@
             <span class="loae-date-caption">Date of Application</span>
         </div>
 
-        <p class="loae-paragraph">
-            I, <input type="text" class="loae-inline loae-inline--name" value="{{ $studentName }}">,
+        <p class="loae-paragraph loae-paragraph--sentence">
+            I,
+            <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('student_name', $studentName) }}"></span>,
             a student currently enrolled in Pamantasan ng Lungsod ng Pasig with student number
-            <input type="text" class="loae-inline loae-inline--student-no" value="{{ $studentNo }}">
-            under the BS <input type="text" class="loae-inline loae-inline--program" value="{{ $program }}"> Program,
-            hereby request for the withdrawal of my enrolment and application for a leave of absence effective this
-            <input type="text" class="loae-inline loae-inline--semester" value="{{ $semester }}"> sem AY
-            <input type="text" class="loae-inline loae-inline--sy" value="{{ $schoolYear }}"> due to the following reason(s):
+            <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('student_no', $studentNo) }}"></span>
+            under the BS
+            <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('program', $program) }}"></span>
+            Program, hereby request for the withdrawal of my enrolment and application for a leave of absence effective this
+            <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('semester', $semester) }}"></span>
+            sem AY
+            <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('school_year', $schoolYear) }}"></span>
+            due to the following reason(s):
         </p>
 
         <div class="loae-reasons">
@@ -230,13 +235,14 @@
             <p class="loae-readmission__title">PRESENT THIS FORM UPON READMISSION:</p>
             <p>
                 Student is eligible for readmission until
-                <input type="text" class="loae-inline loae-inline--date-small" value="">
+                <span class="loae-sentence-field loae-sentence-field--readmission"><input type="text" class="loae-inline" value="{{ old('readmission_until') }}"></span>
                 Semester AY
-                <input type="text" class="loae-inline loae-inline--date-small" value="">
+                <span class="loae-sentence-field loae-sentence-field--readmission"><input type="text" class="loae-inline" value="{{ old('readmission_semester_ay') }}"></span>
                 only.
             </p>
         </div>
     </article>
+    </div>
 </div>
 @endsection
 

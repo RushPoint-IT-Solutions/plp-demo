@@ -1,20 +1,35 @@
-$loae-border-color: #6f6f6f;
+$loae-border-color: #000;
 
 .registrar-body {
     .content-footer-wrap,
     .student-content {
         background: #fff;
+        overflow: visible;
     }
 
     .loae-page {
+        --loae-scale: 1;
+        --loae-zoom: 1;
         display: flex;
         flex-direction: column;
         gap: 18px;
-        color: #111;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0 auto;
+        color: #000;
         background: #fff;
         font-family: Arial, Helvetica, sans-serif;
         font-size: 10pt;
         line-height: 1.25;
+    }
+
+    .loae-a4-stage {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        overflow: visible;
     }
 
     .loae-toolbar {
@@ -22,7 +37,13 @@ $loae-border-color: #6f6f6f;
         justify-content: space-between;
         align-items: flex-end;
         gap: 12px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+    }
+
+    .loae-toolbar,
+    .loae-toolbar * {
+        font-size: 10pt !important;
+        color: #000;
     }
 
     .loae-toolbar__form {
@@ -30,23 +51,25 @@ $loae-border-color: #6f6f6f;
         align-items: flex-end;
         gap: 10px;
         flex: 1;
-        min-width: 320px;
+        min-width: 0;
     }
 
     .loae-toolbar__label {
         margin-bottom: 0.4rem;
-        font-size: 0.82rem;
+        font-size: 10pt !important;
         font-weight: 700;
         letter-spacing: 0.03em;
         text-transform: uppercase;
-        color: #1f2937;
+        color: #000;
     }
 
     .loae-toolbar__select {
         min-width: 340px;
         max-width: 620px;
-        border: 1px solid #adb5bd;
-        font-size: 0.88rem;
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: #fff !important;
+        font-size: 10pt !important;
         height: 38px;
     }
 
@@ -60,27 +83,52 @@ $loae-border-color: #6f6f6f;
     .loae-toolbar__button {
         height: 38px;
         min-width: 108px;
-        background: #fff;
-        border: 1px solid $loae-border-color;
-        color: #111;
+        background: #28a745;
+        border: 1px solid #28a745;
+        color: #fff;
         font-weight: 700;
+        font-size: 10pt !important;
     }
 
     .loae-toolbar__button:hover,
     .loae-toolbar__button:focus {
-        background: #f3f4f6;
-        border-color: #4b5563;
-        color: #111;
+        background: #218838;
+        border-color: #1e7e34;
+        color: #fff;
     }
 
     .loae-sheet {
-        width: 210mm;
-        min-height: 297mm;
+        width: 794px;
+        min-width: 794px;
+        min-height: 1123px;
         margin: 0 auto;
-        padding: 18mm 12mm 12mm;
+        padding: 1in;
+        box-sizing: border-box;
         border: 1px solid $loae-border-color;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         background: #fff;
+        transform-origin: top center;
+        zoom: var(--loae-zoom);
+    }
+
+    @supports not (zoom: 1) {
+        .loae-sheet {
+            transform: scale(var(--loae-scale));
+        }
+    }
+
+    .loae-sheet,
+    .loae-sheet * {
+        color: #000 !important;
+        font-size: 10pt !important;
+        border-color: #000 !important;
+    }
+
+    .loae-sheet input,
+    .loae-sheet textarea,
+    .loae-sheet select {
+        color: #000 !important;
+        border-color: #000 !important;
     }
 
     .loae-form-no {
@@ -99,15 +147,15 @@ $loae-border-color: #6f6f6f;
 
     .loae-date-row {
         display: flex;
-        justify-content: end;
-        align-items: end;
+        justify-content: flex-end;
+        align-items: flex-end;
         gap: 1px;
         margin-bottom: 12px;
     }
 
     .loae-date-row--stacked {
         flex-direction: column;
-        align-items: end;
+        align-items: flex-end;
     }
 
     .loae-date-caption {
@@ -120,7 +168,7 @@ $loae-border-color: #6f6f6f;
 
     .loae-date-input {
         border: 0;
-        border-bottom: 1px solid #7b7f85;
+        border-bottom: 1px solid #000;
         width: 220px;
         padding: 6px 0;
         text-align: center;
@@ -138,6 +186,33 @@ $loae-border-color: #6f6f6f;
         text-indent: 24px;
     }
 
+    .loae-paragraph--sentence {
+        display: block;
+        white-space: normal;
+        text-align: left;
+        text-indent: 0;
+        line-height: 1.45;
+    }
+
+    .loae-sentence-field {
+        display: inline-flex;
+        align-items: flex-end;
+        vertical-align: baseline;
+        margin: 0 2px;
+        min-width: 0;
+    }
+
+    .loae-sentence-field .loae-inline {
+        display: inline-block;
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 2ch;
+        max-width: none;
+        transition: width 0.1s;
+        border: 0;
+        border-bottom: 1px solid #000;
+    }
+
     .loae-paragraph--agreement {
         margin-top: 14px;
         text-indent: 0;
@@ -146,7 +221,7 @@ $loae-border-color: #6f6f6f;
     .loae-inline {
         display: inline-block;
         border: 0;
-        border-bottom: 1px solid #7b7f85;
+        border-bottom: 1px solid #000;
         padding: 0 2px;
         background: transparent;
         color: inherit;
@@ -156,31 +231,11 @@ $loae-border-color: #6f6f6f;
 
     .loae-inline:focus {
         outline: none;
-        border-bottom-color: #1f2937;
+        border-bottom-color: #000;
     }
 
     .loae-inline--center {
         text-align: center;
-    }
-
-    .loae-inline--name {
-        width: 270px;
-    }
-
-    .loae-inline--student-no {
-        width: 122px;
-    }
-
-    .loae-inline--program {
-        width: 260px;
-    }
-
-    .loae-inline--semester {
-        width: 78px;
-    }
-
-    .loae-inline--sy {
-        width: 122px;
     }
 
     .loae-inline--date {
@@ -205,8 +260,8 @@ $loae-border-color: #6f6f6f;
 
     .loae-reasons {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 5px 12px;
+        grid-template-columns: repeat(4, auto);
+        gap: 5px 5px;
         margin-bottom: 8px;
     }
 
@@ -219,9 +274,28 @@ $loae-border-color: #6f6f6f;
     }
 
     .loae-reason-item input[type='checkbox'] {
-        width: 13px;
-        height: 13px;
+        appearance: none;
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
         margin: 0;
+        border: 1px solid #000;
+        background: #fff;
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .loae-reason-item input[type='checkbox']:checked::after {
+        content: '';
+        position: absolute;
+        left: 2px;
+        top: 0;
+        width: 6px;
+        height: 9px;
+        border: solid #000;
+        border-width: 0 1px 1px 0;
+        transform: rotate(45deg);
     }
 
     .loae-reason-item--others {
@@ -251,9 +325,9 @@ $loae-border-color: #6f6f6f;
     .loae-divider--dotted {
         border-top: 4px dotted black;
     }
-
-        .loae-divider--dashed {
+    .loae-divider--dashed {
         border-top: 2px dashed black;
+
     }
 
     .loae-table-lead {
@@ -388,9 +462,28 @@ $loae-border-color: #6f6f6f;
     }
 
     .loae-inline-check input[type='checkbox'] {
+        appearance: none;
+        -webkit-appearance: none;
         width: 12px;
         height: 12px;
         margin: 0;
+        border: 1px solid #000;
+        background: #fff;
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .loae-inline-check input[type='checkbox']:checked::after {
+        content: '';
+        position: absolute;
+        left: 2px;
+        top: 0;
+        width: 6px;
+        height: 9px;
+        border: solid #000;
+        border-width: 0 1px 1px 0;
+        transform: rotate(45deg);
     }
 
     .loae-mini-table {
@@ -414,7 +507,7 @@ $loae-border-color: #6f6f6f;
     .loae-mini-input {
         width: 100%;
         border: 0;
-        border-bottom: 1px solid #7b7f85;
+        border-bottom: 1px solid #000;
         background: transparent;
         font: inherit;
         color: inherit;
@@ -424,7 +517,7 @@ $loae-border-color: #6f6f6f;
 
     .loae-mini-input:focus {
         outline: none;
-        border-bottom-color: #1f2937;
+        border-bottom-color: #000;
     }
 
     .loae-box--dean-metrics {
@@ -493,77 +586,6 @@ $loae-border-color: #6f6f6f;
         letter-spacing: 0.02em;
     }
 
-    @media (max-width: 991.98px) {
-        .loae-toolbar {
-            align-items: stretch;
-        }
-
-        .loae-toolbar__form {
-            min-width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .loae-toolbar__select {
-            min-width: 100%;
-        }
-
-        .loae-toolbar__actions {
-            width: 100%;
-            justify-content: flex-start;
-        }
-
-        .loae-sheet {
-            width: 100%;
-            min-height: auto;
-            padding: 16px 12px;
-        }
-
-        .loae-title {
-            font-size: 1.4rem;
-        }
-
-        .loae-reasons {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .loae-reason-item--others {
-            grid-column: span 2;
-        }
-
-        .loae-grid--two,
-        .loae-grid--four {
-            grid-template-columns: 1fr;
-        }
-
-        .loae-grid--attestation .loae-box,
-        .loae-grid--clearance .loae-box {
-            min-height: auto;
-        }
-
-        .loae-box {
-            margin-left: 0;
-        }
-    }
-
-    @media (max-width: 575.98px) {
-        .loae-reasons {
-            grid-template-columns: 1fr;
-        }
-
-        .loae-reason-item--others {
-            grid-column: span 1;
-        }
-
-        .loae-inline--name,
-        .loae-inline--program,
-        .loae-inline--others,
-        .loae-inline--signature,
-        .loae-inline--line,
-        .loae-inline--date {
-            width: 100%;
-            max-width: 100%;
-        }
-    }
 }
 
 @media print {
@@ -596,8 +618,8 @@ $loae-border-color: #6f6f6f;
 
     .registrar-body .loae-date-row--stacked {
         flex-direction: column !important;
-        align-items: end !important;
-        justify-content: end !important;
+        align-items: flex-end !important;
+        justify-content: flex-end !important;
     }
 
     .registrar-body .loae-date-row--stacked .loae-date-input {
@@ -634,9 +656,17 @@ $loae-border-color: #6f6f6f;
         overflow: visible !important;
     }
 
+    .registrar-body .loae-a4-stage {
+        width: 100% !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+
     .registrar-body .loae-page {
+        --loae-scale: 1 !important;
+        --loae-zoom: 1 !important;
         margin: 0 !important;
-        padding: 2in 1in 1in !important;
+        padding: 0 !important;
         gap: 0 !important;
         width: 100% !important;
         max-width: none !important;
@@ -644,13 +674,33 @@ $loae-border-color: #6f6f6f;
     }
 
     .registrar-body .loae-sheet {
-        width: 100% !important;
+        width: auto !important;
+        min-width: 0 !important;
         min-height: auto !important;
         margin: 0 !important;
-        padding: 0 !important;
-        border: 0 !important;
+        padding: 2in 1in 1in 1in !important;
+        zoom: 1 !important;
+        transform: none !important;
+        border: none !important;
         box-shadow: none !important;
         background: #fff !important;
+        box-sizing: border-box !important;
+    }
+
+    .registrar-body .loae-sheet input,
+    .registrar-body .loae-sheet textarea,
+    .registrar-body .loae-sheet select {
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .registrar-body .loae-sheet .loae-inline,
+    .registrar-body .loae-sheet .loae-mini-input,
+    .registrar-body .loae-sheet .loae-date-input {
+        border: 0 !important;
+        border-bottom: 1px solid #000 !important;
     }
 
     .registrar-body .loae-reasons {
