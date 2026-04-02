@@ -125,14 +125,14 @@
 
         <div class="loae-divider loae-divider--dotted"></div>
 
-        <div class="loae-grid loae-grid--two">
-            <section class="loae-box">
+        <div class="loae-grid loae-grid--two loae-grid--attestation">
+            <section class="loae-box loae-box--dsa">
                 <p>This is to attest that the student did not commit any offenses stipulated in the student manual nor make any derogatory act contrary to the university's name, reputation and ideals.</p>
                 <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
                 <p class="loae-sign-role">DSA Director</p>
             </section>
 
-            <section class="loae-box">
+            <section class="loae-box loae-box--guidance">
                 <p class="loae-box-title">FOR FAMILY PROBLEMS/WORK/FINANCIAL CONSTRAINTS REASONS ONLY:</p>
                 <p>Counseled:</p>
                 <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
@@ -140,8 +140,8 @@
             </section>
         </div>
 
-        <div class="loae-grid loae-grid--two loae-grid--stacked">
-            <section class="loae-box">
+        <div class="loae-grid loae-grid--two loae-grid--stacked loae-grid--clearance">
+            <section class="loae-box loae-box--medical">
                 <p class="loae-box-title">FOR MEDICAL CONDITION/PREGNANCY REASONS ONLY:</p>
                 <p>Student's Health Condition: <input type="text" class="loae-inline loae-inline--line" value=""></p>
                 <p>REMARKS: <label class="loae-inline-check"><input type="checkbox"> LOA NECESSARY</label> <label class="loae-inline-check"><input type="checkbox"> LOA NOT NECESSARY</label></p>
@@ -149,7 +149,7 @@
                 <p class="loae-sign-role">Medical Officer</p>
             </section>
 
-            <section class="loae-box">
+            <section class="loae-box loae-box--unavailability">
                 <p class="loae-box-title">FOR UNAVAILABILITY OF SUBJECT REASON ONLY:</p>
                 <p>This is to attest that the student has no subject to enroll this semester.</p>
                 <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>

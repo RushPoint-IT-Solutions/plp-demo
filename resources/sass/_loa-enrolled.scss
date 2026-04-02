@@ -1,9 +1,17 @@
+$loae-border-color: #6f6f6f;
+
 .registrar-body {
+    .content-footer-wrap,
+    .student-content {
+        background: #fff;
+    }
+
     .loae-page {
         display: flex;
         flex-direction: column;
         gap: 18px;
         color: #111;
+        background: #fff;
         font-family: Arial, Helvetica, sans-serif;
         font-size: 10pt;
         line-height: 1.25;
@@ -52,17 +60,17 @@
     .loae-toolbar__button {
         height: 38px;
         min-width: 108px;
-        background: var(--plp-green);
-        border-color: var(--plp-green);
-        color: #fff;
+        background: #fff;
+        border: 1px solid $loae-border-color;
+        color: #111;
         font-weight: 700;
     }
 
     .loae-toolbar__button:hover,
     .loae-toolbar__button:focus {
-        background: var(--plp-green-dark);
-        border-color: var(--plp-green-dark);
-        color: #fff;
+        background: #f3f4f6;
+        border-color: #4b5563;
+        color: #111;
     }
 
     .loae-sheet {
@@ -70,7 +78,7 @@
         min-height: 297mm;
         margin: 0 auto;
         padding: 18mm 12mm 12mm;
-        border: 1px solid #9ca3af;
+        border: 1px solid $loae-border-color;
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
         background: #fff;
     }
@@ -230,13 +238,13 @@
     .loae-grade-table {
         width: 100%;
         border-collapse: collapse;
-        border: 1px solid #94a3b8;
+        border: 1px solid $loae-border-color;
         margin-bottom: 10px;
     }
 
     .loae-grade-table th,
     .loae-grade-table td {
-        border: 1px solid #94a3b8;
+        border: 1px solid $loae-border-color;
         padding: 4px 5px;
         font-size: 0.7rem;
         vertical-align: middle;
@@ -284,11 +292,12 @@
     }
 
     .loae-box {
-        border: 1px solid #94a3b8;
+        border: 1px solid $loae-border-color;
         padding: 8px;
         min-height: 88px;
         margin-left: -1px;
         margin-top: -1px;
+        background: #fff;
     }
 
     .loae-grid > .loae-box:first-child {
@@ -298,6 +307,25 @@
     .loae-box p {
         margin: 2px 0;
         line-height: 1.3;
+    }
+
+    .loae-grid--attestation .loae-box,
+    .loae-grid--clearance .loae-box {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .loae-grid--attestation .loae-box {
+        min-height: 146px;
+    }
+
+    .loae-grid--clearance .loae-box {
+        min-height: 128px;
+    }
+
+    .loae-grid--attestation .loae-sign-line,
+    .loae-grid--clearance .loae-sign-line {
+        margin-top: auto;
     }
 
     .loae-box-title {
@@ -347,9 +375,10 @@
     }
 
     .loae-mini-table td {
-        border: 1px solid #9ca3af;
+        border: 1px solid $loae-border-color;
         padding: 4px;
         vertical-align: middle;
+        background: #fff;
     }
 
     .loae-mini-table td:first-child {
@@ -382,6 +411,23 @@
         min-height: 198px;
     }
 
+    .loae-grid--staff .loae-sign-line {
+        text-align: center;
+    }
+
+    .loae-grid--staff .loae-sign-line .loae-inline--line {
+        width: 100%;
+        max-width: 145px;
+    }
+
+    .loae-box--recorded .loae-sign-date {
+        text-align: center;
+    }
+
+    .loae-box--recorded .loae-sign-date .loae-inline--date-small {
+        width: 70px;
+    }
+
     .loae-processed-label {
         margin-top: 8px;
         font-weight: 700;
@@ -397,9 +443,10 @@
     }
 
     .loae-readmission {
-        border: 1px solid #94a3b8;
+        border: 1px solid $loae-border-color;
         margin-top: 12px;
         padding: 8px 10px;
+        background: #fff;
     }
 
     .loae-readmission p {
@@ -453,6 +500,11 @@
             grid-template-columns: 1fr;
         }
 
+        .loae-grid--attestation .loae-box,
+        .loae-grid--clearance .loae-box {
+            min-height: auto;
+        }
+
         .loae-box {
             margin-left: 0;
         }
@@ -494,6 +546,8 @@
         margin: 0 !important;
         padding: 0 !important;
         background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .registrar-body .plp-sidebar,
@@ -546,10 +600,42 @@
         background: #fff !important;
     }
 
-    .registrar-body .loae-sheet,
-    .registrar-body .loae-sheet * {
-        font-size: 10pt !important;
-        line-height: 1.25 !important;
+    .registrar-body .loae-reasons {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+
+    .registrar-body .loae-reason-item--others {
+        grid-column: span 2 !important;
+    }
+
+    .registrar-body .loae-grid--two {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .registrar-body .loae-grid--four {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+
+    .registrar-body .loae-grid > .loae-box {
+        margin-left: -1px !important;
+        margin-top: -1px !important;
+    }
+
+    .registrar-body .loae-grid > .loae-box:first-child {
+        margin-left: 0 !important;
+    }
+
+    .registrar-body .loae-grid--staff .loae-sign-line {
+        text-align: center !important;
+    }
+
+    .registrar-body .loae-grid--staff .loae-sign-line .loae-inline--line {
+        width: 100% !important;
+        max-width: 145px !important;
+    }
+
+    .registrar-body .loae-box--recorded .loae-sign-date .loae-inline--date-small {
+        width: 70px !important;
     }
 
     .registrar-body .loae-grid,
