@@ -2209,6 +2209,215 @@ select.req-modal-input {
     background: #fafafa;
 }
 
+.applicant-panel {
+    .apc-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .apc-panel-filter {
+        margin-bottom: 12px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .apc-panel-filter .app-filter-row {
+        gap: 12px;
+    }
+
+    .app-row-checkbox {
+        width: 15px;
+        height: 15px;
+        accent-color: #0a813c;
+        cursor: pointer;
+    }
+
+    .apc-col-check {
+        width: 36px;
+        text-align: center;
+    }
+
+    .apc-input,
+    .apc-select {
+        width: 100%;
+        min-height: 34px;
+        border: 1px solid #ccd6dd;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 13px;
+        color: #2f3a45;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.2s;
+
+        &:focus {
+            border-color: #0a813c;
+        }
+    }
+
+    .apc-input--grade {
+        max-width: 100px;
+    }
+
+    .apc-input--date {
+        max-width: 145px;
+        min-width: 120px;
+        text-transform: uppercase;
+    }
+
+    .apc-dimension-subrow td:first-child {
+        padding-left: 28px;
+        color: #4b5b68;
+    }
+
+    .apc-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 74px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .apc-pill--pending {
+        background: #fff6df;
+        color: #8a6412;
+    }
+
+    .apc-grid {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .apc-grid--three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .apc-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .apc-field--wide {
+        grid-column: span 1;
+    }
+
+    .apc-field--date-save {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    .apc-field--date-save > div {
+        flex: 1;
+    }
+
+    .apc-field--save-only {
+        .apc-save-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    }
+
+    .apc-label {
+        margin: 0;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #006837;
+    }
+
+    .apc-banner {
+        margin-top: 10px;
+        padding: 8px 10px;
+        border: 1px solid #c7e8d5;
+        border-radius: 6px;
+        background: #f2fbf6;
+        color: #0a813c;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .apc-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .apc-actions--between {
+        justify-content: space-between;
+    }
+
+    .apc-btn {
+        min-width: 108px;
+        border-radius: 999px;
+        border: 1px solid #0a813c;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .apc-btn--save {
+        background: #0a813c;
+        color: #fff;
+
+        &:hover {
+            background: #076b31;
+            border-color: #076b31;
+        }
+    }
+
+    .apc-btn--ghost {
+        background: #fff;
+        color: #0a813c;
+
+        &:hover {
+            background: #edf8f1;
+        }
+    }
+}
+
+@media (max-width: 991px) {
+    .applicant-panel {
+        .apc-grid--three {
+            grid-template-columns: 1fr;
+        }
+
+        .apc-card {
+            padding: 14px;
+        }
+
+        .apc-field--date-save,
+        .apc-field--save-only .apc-save-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .apc-actions,
+        .apc-actions--between {
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+    }
+}
+
 // ΓöÇ Schedule of Exam panel
 .sched-exam-card {
     background: #fff;
