@@ -13,6 +13,8 @@
   gap: 18px;
   color: #111;
   font-family: "Arial Narrow", Arial, sans-serif;
+  font-size: 12pt;
+  line-height: 1.2;
 }
 
 .registrar-body .cor-registrar-toolbar {
@@ -100,26 +102,26 @@
 .registrar-body .cor-registrar-info-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr 0.65fr;
-  -moz-column-gap: 24px;
-       column-gap: 24px;
-  row-gap: 5px;
+  -moz-column-gap: 14px;
+       column-gap: 14px;
+  row-gap: 2px;
 }
 
 .registrar-body .cor-registrar-info-col {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .registrar-body .cor-registrar-info-line {
   display: flex;
-  gap: 8px;
-  font-size: 11px;
-  line-height: 1.35;
+  gap: 4px;
+  font-size: 12pt;
+  line-height: 1.2;
 }
 
 .registrar-body .cor-registrar-info-label {
-  min-width: 106px;
+  min-width: 92px;
   font-style: italic;
   color: #1f2937;
 }
@@ -136,13 +138,13 @@
 }
 
 .registrar-body .cor-registrar-scholarship-line {
-  margin-top: 7px;
-  padding: 5px 0;
+  margin-top: 4px;
+  padding: 3px 0;
   border-top: 1px dashed #6b7280;
   border-bottom: 1px solid #6b7280;
   display: flex;
-  gap: 8px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 12pt;
 }
 
 .registrar-body .cor-registrar-info-value--emphasis {
@@ -152,16 +154,25 @@
 .registrar-body .cor-registrar-table {
   width: 100%;
   border-collapse: collapse;
-  border: 2px solid #111;
+  border: 1px solid #111;
   margin-bottom: 10px;
 }
 
 .registrar-body .cor-registrar-table th,
 .registrar-body .cor-registrar-table td {
-  border: 1px solid #111;
-  padding: 5px 6px;
-  font-size: 11px;
-  line-height: 1.18;
+  border: 0;
+  padding: 2px 4px;
+  font-size: 12pt;
+  line-height: 1.2;
+}
+
+.registrar-body .cor-registrar-table thead tr:first-child th {
+  border-bottom: 1px solid #111;
+}
+
+.registrar-body .cor-registrar-table thead tr:last-child th {
+  border-top: 1px solid #111;
+  border-bottom: 1px solid #111;
 }
 
 .registrar-body .cor-registrar-table th {
@@ -179,8 +190,8 @@
 }
 
 .registrar-body .cor-registrar-table-title {
-  font-size: 13px;
-  letter-spacing: 0.02em;
+  font-size: 12pt;
+  letter-spacing: 0;
   background: #fff !important;
   color: #111 !important;
 }
@@ -195,6 +206,7 @@
 
 .registrar-body .cor-registrar-table__numeric {
   text-align: right;
+  white-space: nowrap;
 }
 
 .registrar-body .cor-registrar-table__empty {
@@ -213,6 +225,10 @@
   font-weight: 700;
 }
 
+.registrar-body .cor-registrar-table tfoot td {
+  border-top: 1px solid #111;
+}
+
 .registrar-body .cor-registrar-assessment {
   display: grid;
   grid-template-columns: 58% 42%;
@@ -223,10 +239,10 @@
 
 .registrar-body .cor-registrar-assessment__title {
   margin: 0 0 4px;
-  font-size: 17px;
+  font-size: 12pt;
   font-weight: 700;
   text-align: center;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .registrar-body .cor-registrar-assessment__table {
@@ -235,11 +251,14 @@
 }
 
 .registrar-body .cor-registrar-assessment__table td {
-  border-top: 1px solid #111;
-  border-bottom: 1px solid #111;
-  font-size: 11px;
+  border: 0;
+  font-size: 12pt;
   line-height: 1.2;
-  padding: 4px 0;
+  padding: 2px 0;
+}
+
+.registrar-body .cor-registrar-assessment__table tr > td:first-child:not(.cor-registrar-assessment__indent) {
+  font-weight: 700;
 }
 
 .registrar-body .cor-registrar-assessment__amount {
@@ -252,22 +271,26 @@
 .registrar-body .cor-registrar-assessment__indent {
   padding-left: 20px !important;
   font-style: italic;
+  font-weight: 400 !important;
+}
+
+.registrar-body .cor-registrar-assessment__rule td {
+  border-top: 1px solid #111;
+  border-bottom: 1px solid #111;
 }
 
 .registrar-body .cor-registrar-assessment__double td,
 .registrar-body .cor-registrar-assessment__double {
-  border-top: 2px solid #111;
-  border-bottom: 2px solid #111;
   font-weight: 700;
 }
 
 .registrar-body .cor-registrar-assessment__current {
-  font-size: 19px;
+  font-size: 12pt;
 }
 
 .registrar-body .cor-registrar-certification {
   margin: 34px 0 0;
-  font-size: 14px;
+  font-size: 12pt;
   line-height: 1.4;
   text-align: center;
 }
@@ -288,14 +311,14 @@
   margin: 0;
   padding-top: 2px;
   border-top: 1px solid #111;
-  font-size: 12px;
+  font-size: 12pt;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .registrar-body .cor-registrar-signature-role {
   margin: 2px 0 0;
-  font-size: 11px;
+  font-size: 12pt;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -303,7 +326,7 @@
 .registrar-body .cor-registrar-notice {
   margin-top: 70px;
   text-align: center;
-  font-size: 15px;
+  font-size: 12pt;
   line-height: 1.35;
 }
 
@@ -322,7 +345,7 @@
 }
 
 .registrar-body .cor-registrar-legend {
-  font-size: 12px;
+  font-size: 12pt;
   line-height: 1.25;
 }
 
@@ -344,7 +367,7 @@
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12pt;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -360,6 +383,47 @@
 .registrar-body .cor-registrar-printed-meta__editable:focus {
   outline: 1px solid #6b7280;
   outline-offset: 2px;
+}
+
+.registrar-body {
+  /* Keep COR table layout isolated from global registrar table rules. */
+}
+
+.registrar-body .cor-registrar-table {
+  border: 1px solid #111 !important;
+}
+
+.registrar-body .cor-registrar-table thead tr,
+.registrar-body .cor-registrar-table thead th {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+.registrar-body .cor-registrar-table th,
+.registrar-body .cor-registrar-table td {
+  border: 0 !important;
+}
+
+.registrar-body .cor-registrar-table thead tr:first-child th,
+.registrar-body .cor-registrar-table thead tr:last-child th,
+.registrar-body .cor-registrar-table tfoot td {
+  border-top: 1px solid #111 !important;
+  border-bottom: 1px solid #111 !important;
+}
+
+.registrar-body .cor-registrar-table tbody td {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  text-align: center;
+}
+
+.registrar-body .cor-registrar-assessment__table td {
+  border: 0 !important;
+}
+
+.registrar-body .cor-registrar-assessment__table .cor-registrar-assessment__rule td {
+  border-top: 1px solid #111 !important;
+  border-bottom: 1px solid #111 !important;
 }
 
 @media (max-width: 991.98px) {
@@ -492,8 +556,9 @@
 
   .registrar-body .cor-registrar-info-grid {
     grid-template-columns: 1.4fr 1fr 0.65fr !important;
-    -moz-column-gap: 24px !important;
-         column-gap: 24px !important;
+    -moz-column-gap: 14px !important;
+         column-gap: 14px !important;
+    row-gap: 2px !important;
   }
 
   .registrar-body .cor-registrar-assessment {

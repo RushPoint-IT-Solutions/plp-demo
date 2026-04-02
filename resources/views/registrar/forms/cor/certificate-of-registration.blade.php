@@ -146,17 +146,17 @@
                 <h2 class="cor-registrar-assessment__title">ASSESSMENT OF FEES</h2>
                 <table class="cor-registrar-assessment__table">
                     <tbody>
-                        <tr><td><strong>PARTICULARS</strong></td><td class="cor-registrar-assessment__amount"><strong>AMOUNT</strong></td></tr>
+                        <tr class="cor-registrar-assessment__rule"><td><strong>PARTICULARS</strong></td><td class="cor-registrar-assessment__amount"><strong>AMOUNT</strong></td></tr>
                         <tr><td>TUITION FEE</td><td class="cor-registrar-assessment__amount"></td></tr>
                         <tr><td class="cor-registrar-assessment__indent">TUITION FEE</td><td class="cor-registrar-assessment__amount">{{ $tuitionUnits }} x {{ $perUnitRate }}</td></tr>
                         <tr><td class="cor-registrar-assessment__indent">CWTS/ROTC TF</td><td class="cor-registrar-assessment__amount">{{ $nstpUnits }} x {{ $perUnitRate }}</td></tr>
-                        <tr class="cor-registrar-assessment__double"><td>TOTAL TUITION FEE</td><td class="cor-registrar-assessment__amount">{{ $totalTuitionFee }}</td></tr>
+                        <tr class="cor-registrar-assessment__rule cor-registrar-assessment__double"><td>TOTAL TUITION FEE</td><td class="cor-registrar-assessment__amount">{{ $totalTuitionFee }}</td></tr>
                         <tr><td>MISCELLANEOUS FEE</td><td class="cor-registrar-assessment__amount"></td></tr>
                         <tr><td class="cor-registrar-assessment__indent">MISCELLANEOUS FEE</td><td class="cor-registrar-assessment__amount">{{ $miscellaneousFee }}</td></tr>
-                        <tr class="cor-registrar-assessment__double"><td>TOTAL MISCELLANEOUS FEE</td><td class="cor-registrar-assessment__amount">{{ $miscellaneousFee }}</td></tr>
+                        <tr class="cor-registrar-assessment__rule cor-registrar-assessment__double"><td>TOTAL MISCELLANEOUS FEE</td><td class="cor-registrar-assessment__amount">{{ $miscellaneousFee }}</td></tr>
                         <tr><td>LABORATORY FEE</td><td class="cor-registrar-assessment__amount"></td></tr>
                         <tr><td class="cor-registrar-assessment__indent">LABORATORY FEE</td><td class="cor-registrar-assessment__amount">{{ $laboratoryFee }}</td></tr>
-                        <tr class="cor-registrar-assessment__double"><td>TOTAL LABORATORY FEE</td><td class="cor-registrar-assessment__amount">{{ $laboratoryFee }}</td></tr>
+                        <tr class="cor-registrar-assessment__rule cor-registrar-assessment__double"><td>TOTAL LABORATORY FEE</td><td class="cor-registrar-assessment__amount">{{ $laboratoryFee }}</td></tr>
                         <tr><td>OLD ACCOUNT</td><td class="cor-registrar-assessment__amount">-</td></tr>
                         <tr><td><strong>CURRENT ACCOUNT</strong></td><td class="cor-registrar-assessment__amount cor-registrar-assessment__current"><strong>{{ $currentAccount }}</strong></td></tr>
                         <tr><td class="cor-registrar-assessment__indent">CONTRACT / PETITION SUBJECT</td><td class="cor-registrar-assessment__amount">-</td></tr>
