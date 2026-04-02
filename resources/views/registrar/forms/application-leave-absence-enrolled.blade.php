@@ -204,13 +204,16 @@
 
             <section class="loae-box loae-box--recorded">
                 <p>Recorded:</p>
-                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
+                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line loae-recorded-college" value=""></p>
                 <p class="loae-sign-role">College Secretary</p>
-                <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small" value=""></p>
+                <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small loae-recorded-date" value=""></p>
+
+                <div class="loae-record-divider" aria-hidden="true"></div>
+
                 <p class="loae-processed-label">Processed in UIS:</p>
-                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
+                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line loae-recorded-frontdesk" value=""></p>
                 <p class="loae-sign-role">Front-Desk Officer</p>
-                <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small" value=""></p>
+                <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small loae-recorded-frontdate" value=""></p>
             </section>
         </div>
 

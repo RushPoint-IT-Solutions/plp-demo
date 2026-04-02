@@ -629,20 +629,52 @@ $loae-border-color: #000;
         }
     }
 
-    .loae-grid--staff .loae-box--recorded .loae-sign-line .loae-inline--line,
-    .loae-grid--staff .loae-box--recorded .loae-sign-date .loae-inline--date-small {
-        width: 120px;
+    /* Recorded section: add a visual divider and set specific signature widths */
+    .loae-box--recorded {
+        position: relative;
+    }
+
+    /* divider between College Secretary block and 'Processed in UIS' area */
+    .loae-box--recorded .loae-record-divider {
+        border-top: 1px solid #000;
+        /* remove side gaps caused by .loae-box padding so divider aligns with box borders */
+        width: calc(100% + 16px);
+        margin: 8px 0;
+        margin-left: -8px;
+        margin-right: -8px;
+        box-sizing: border-box;
+        display: block;
+        height: 0;
+    }
+
+    /* College Secretary signature (short-medium line) */
+    .loae-box--recorded .loae-sign-line .loae-recorded-college {
+        max-width: 200px;
+        box-sizing: border-box;
+        display: inline-block;
+    }
+
+    /* Date under College Secretary should be shorter */
+    .loae-box--recorded .loae-sign-date .loae-recorded-date {
+        width: 80px;
         max-width: 120px;
         box-sizing: border-box;
         display: inline-block;
     }
 
-    .loae-box--recorded .loae-sign-date {
-        text-align: center;
+    /* Front-Desk Officer signature should be longer */
+    .loae-box--recorded .loae-sign-line .loae-recorded-frontdesk {
+        max-width: 260px;
+        box-sizing: border-box;
+        display: inline-block;
     }
 
-    .loae-box--recorded .loae-sign-date .loae-inline--date-small {
-        width: 70px;
+    /* Date for Front-Desk area */
+    .loae-box--recorded .loae-sign-date .loae-recorded-frontdate {
+        width: 80px;
+        max-width: 160px;
+        box-sizing: border-box;
+        display: inline-block;
     }
 
     .mt-auto-mod {
@@ -650,8 +682,10 @@ $loae-border-color: #000;
     }
 
     .loae-processed-label {
-        margin-top: 8px;
+        margin-top: 12px;
         font-weight: 700;
+        /* keep label clear from divider */
+        padding-top: 6px;
     }
 
     .loae-grid--requirements {
@@ -723,12 +757,45 @@ $loae-border-color: #000;
         width: 220px !important;
     }
 
-    .registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-line .loae-inline--line,
-    .registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-date .loae-inline--date-small {
-        width: 120px !important;
-        max-width: 120px !important;
+    /* Print-safe widths for recorded section (override any other rules) */
+    .registrar-body .loae-box--recorded .loae-sign-line .loae-recorded-college {
+        width: 200px !important;
+        max-width: 200px !important;
         box-sizing: border-box !important;
         display: inline-block !important;
+    }
+
+    .registrar-body .loae-box--recorded .loae-sign-date .loae-recorded-date {
+        width: 80px !important;
+        max-width: 80px !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+
+    .registrar-body .loae-box--recorded .loae-sign-line .loae-recorded-frontdesk {
+        width: 260px !important;
+        max-width: 260px !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+
+    .registrar-body .loae-box--recorded .loae-sign-date .loae-recorded-frontdate {
+        width: 160px !important;
+        max-width: 160px !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+
+    /* Ensure divider spans full width in print as well (no side gaps) */
+    .registrar-body .loae-box--recorded .loae-record-divider {
+        border-top: 1px solid #000 !important;
+        width: calc(100% + 16px) !important;
+        margin: 8px 0 !important;
+        margin-left: -8px !important;
+        margin-right: -8px !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        height: 0 !important;
     }
 
     .registrar-body .student-layout,
