@@ -9,16 +9,23 @@ function gcEsc(v) {
 function gcGetRowDataFromRow(row) {
     if (!row) return null;
     var cells = row.querySelectorAll('td');
+    var rowType = String(row.getAttribute('data-form-type') || '').trim().toLowerCase();
+    var typeFromCell = (cells[4] ? cells[4].textContent : '').trim().toLowerCase();
+    var normalizedType = rowType || (typeFromCell.indexOf('board') !== -1 && typeFromCell.indexOf('non') === -1 ? 'board' : 'non-board');
     return {
         studentNo: (cells[1] ? cells[1].textContent : '').trim(),
         studentName: (cells[2] ? cells[2].textContent : '').trim(),
         program: (cells[3] ? cells[3].textContent : '').trim(),
-        year: (cells[4] ? cells[4].textContent : '').trim(),
-        section: (cells[5] ? cells[5].textContent : '').trim()
+        year: (cells[5] ? cells[5].textContent : '').trim(),
+        section: (cells[6] ? cells[6].textContent : '').trim(),
+        formType: normalizedType
     };
 }
 
-function gcBuildTemplate() {
+function gcBuildTemplate(data) {
+    var model = data || {};
+    var isBoardType = String(model.formType || 'non-board') === 'board';
+
     var requirements = [
         {
             text: 'Completed all required course work<br>(NSTP, PE, All other mandated courses)',
@@ -46,7 +53,8 @@ function gcBuildTemplate() {
         },
         {
             text: 'Accomplished and Submitted Student\'s<br>Evaluation of Implemented Intervention Form<br>For AY 2024 - 2025',
-            office: 'University Research Office'
+            office: 'University Research Office',
+            showCheck: isBoardType
         },
         {
             text: 'Submitted all required documents',
@@ -55,11 +63,16 @@ function gcBuildTemplate() {
     ];
 
     var rows = requirements.map(function(item) {
+        var withCheck = item.showCheck !== false;
+        var rowClass = withCheck ? 'gc-check-row' : 'gc-check-row gc-check-row-office-only';
+        var leftHtml = withCheck
+            ? '<span class="gc-check-box"></span><span class="gc-check-text">' + item.text + '</span>'
+            : '';
+
         return '' +
-            '<div class="gc-check-row">' +
+            '<div class="' + rowClass + '">' +
                 '<div class="gc-check-left">' +
-                    '<span class="gc-check-box"></span>' +
-                    '<span class="gc-check-text">' + item.text + '</span>' +
+                    leftHtml +
                 '</div>' +
                 '<div class="gc-check-gap"></div>' +
                 '<div class="gc-check-office">' + item.office + '</div>' +
@@ -115,9 +128,13 @@ function gcBuildTemplate() {
 }
 
 function gcOpenPreview() {
+    var firstRow = document.querySelector('#gcTableBody tr');
+    var firstData = gcGetRowDataFromRow(firstRow);
+    var previewData = firstData || { formType: 'non-board' };
+
     var sheet = document.getElementById('gcPreviewSheet');
     if (!sheet) return;
-    sheet.innerHTML = gcBuildTemplate();
+    sheet.innerHTML = gcBuildTemplate(previewData);
 
     var wrap = document.querySelector('#gcPreviewModal .gc-preview-wrap');
     if (wrap) {
@@ -131,15 +148,59 @@ function gcOpenPreview() {
 }
 
 function gcOpenPreviewFromRow(trigger) {
-    gcOpenPreview();
+    var row = trigger ? trigger.closest('tr') : null;
+    var rowData = gcGetRowDataFromRow(row);
+    var sheet = document.getElementById('gcPreviewSheet');
+    if (!sheet) return;
+
+    sheet.innerHTML = gcBuildTemplate(rowData || { formType: 'non-board' });
+
+    var wrap = document.querySelector('#gcPreviewModal .gc-preview-wrap');
+    if (wrap) {
+        wrap.scrollTop = 0;
+        wrap.scrollLeft = 0;
+    }
+
+    var modal = document.getElementById('gcPreviewModal');
+    if (modal) modal.style.display = 'flex';
+    document.body.classList.add('gc-preview-open');
 }
 
 function gcOpenPreviewFromSelection() {
-    gcOpenPreview();
+    var checked = document.querySelector('#gcTableBody .gc-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#gcTableBody tr');
+    var rowData = gcGetRowDataFromRow(row);
+    var sheet = document.getElementById('gcPreviewSheet');
+    if (!sheet) return;
+
+    sheet.innerHTML = gcBuildTemplate(rowData || { formType: 'non-board' });
+
+    var wrap = document.querySelector('#gcPreviewModal .gc-preview-wrap');
+    if (wrap) {
+        wrap.scrollTop = 0;
+        wrap.scrollLeft = 0;
+    }
+
+    var modal = document.getElementById('gcPreviewModal');
+    if (modal) modal.style.display = 'flex';
+    document.body.classList.add('gc-preview-open');
 }
 
 function gcOpenBlankPreview() {
-    gcOpenPreview();
+    var sheet = document.getElementById('gcPreviewSheet');
+    if (!sheet) return;
+
+    sheet.innerHTML = gcBuildTemplate({ formType: 'non-board' });
+
+    var wrap = document.querySelector('#gcPreviewModal .gc-preview-wrap');
+    if (wrap) {
+        wrap.scrollTop = 0;
+        wrap.scrollLeft = 0;
+    }
+
+    var modal = document.getElementById('gcPreviewModal');
+    if (modal) modal.style.display = 'flex';
+    document.body.classList.add('gc-preview-open');
 }
 
 function gcClosePreview() {
@@ -157,8 +218,8 @@ function gcPrintSheet(html) {
 }
 
 function gcPrintPreview() {
-    var html = gcBuildTemplate();
     var sheet = document.getElementById('gcPreviewSheet');
+    var html = sheet ? sheet.innerHTML : gcBuildTemplate({ formType: 'non-board' });
     if (sheet) {
         sheet.innerHTML = html;
     }
@@ -173,9 +234,11 @@ function gcPrintSelected() {
     }
 
     var html = '';
-    selected.forEach(function(_, i) {
+    selected.forEach(function(cb, i) {
+        var row = cb.closest('tr');
+        var rowData = gcGetRowDataFromRow(row) || { formType: 'non-board' };
         var pageBreak = i < selected.length - 1 ? ' gc-print-page-break' : '';
-        html += '<div class="gc-sheet' + pageBreak + '">' + gcBuildTemplate() + '</div>';
+        html += '<div class="gc-sheet' + pageBreak + '">' + gcBuildTemplate(rowData) + '</div>';
     });
 
     var container = document.getElementById('gcPrintContainer');
@@ -209,7 +272,10 @@ function gcSyncSelectAll() {
 }
 
 function gcPrintForm() {
-    gcPrintSheet(gcBuildTemplate());
+    var checked = document.querySelector('#gcTableBody .gc-row-select:checked');
+    var row = checked ? checked.closest('tr') : document.querySelector('#gcTableBody tr');
+    var rowData = gcGetRowDataFromRow(row) || { formType: 'non-board' };
+    gcPrintSheet(gcBuildTemplate(rowData));
 }
 
 function gcFilterTable(query) {

@@ -49557,16 +49557,16 @@ document.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\app.js */"./resources/js/app.js");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-gwa.scss */"./resources/sass/certificate-gwa.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cog-copy-of-grades.scss */"./resources/sass/cog-copy-of-grades.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
-__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\loa-enrolled.scss */"./resources/sass/loa-enrolled.scss");
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\app.js */"./resources/js/app.js");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\certificate-gwa.scss */"./resources/sass/certificate-gwa.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\cog-copy-of-grades.scss */"./resources/sass/cog-copy-of-grades.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
+__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\loa-enrolled.scss */"./resources/sass/loa-enrolled.scss");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
 
 
 /***/ })

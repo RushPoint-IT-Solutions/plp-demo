@@ -40,6 +40,29 @@ function wceEsc(v) {
     });
 }
 
+function wceFormatSection(program, yearLevel) {
+    var programCode = String(program || '').trim();
+    var yearRaw = String(yearLevel || '').trim();
+
+    var numericYear = '';
+    var digitMatch = yearRaw.match(/\d+/);
+    if (digitMatch && digitMatch[0]) {
+        numericYear = digitMatch[0];
+    } else {
+        var lowerYear = yearRaw.toLowerCase();
+        if (lowerYear === 'first') numericYear = '1';
+        else if (lowerYear === 'second') numericYear = '2';
+        else if (lowerYear === 'third') numericYear = '3';
+        else if (lowerYear === 'fourth') numericYear = '4';
+    }
+
+    if (!programCode || !numericYear) {
+        return ((programCode || 'PROGRAM') + ' ' + (yearRaw || 'YEAR')).trim();
+    }
+
+    return programCode + ' -' + numericYear + 'A';
+}
+
 function wceBuildTemplate(data) {
     var now = new Date();
     var ay = '2025-2026';
@@ -97,8 +120,8 @@ function wceGetRowData(rowId) {
         studentNo: (cells[1] ? cells[1].textContent : '').trim(),
         studentName: (cells[2] ? cells[2].textContent : '').trim(),
         program: (cells[3] ? cells[3].textContent : '').trim(),
-        year: (cells[4] ? cells[4].textContent : '').trim(),
-        section: (cells[5] ? cells[5].textContent : '').trim()
+        year: (cells[5] ? cells[5].textContent : '').trim(),
+        section: (cells[6] ? cells[6].textContent : '').trim()
     };
 }
 
@@ -271,7 +294,7 @@ function wceOpenEdit(rowId) {
     document.getElementById('wceEditNumber').value = (cells[1] ? cells[1].textContent : '').trim();
     document.getElementById('wceEditName').value = (cells[2] ? cells[2].textContent : '').trim();
     document.getElementById('wceEditCourse').value = (cells[3] ? cells[3].textContent : '').trim();
-    document.getElementById('wceEditYear').value = (cells[4] ? cells[4].textContent : '').trim();
+    document.getElementById('wceEditYear').value = (cells[5] ? cells[5].textContent : '').trim();
     wceOpenModal('wceEditModal');
 }
 
@@ -283,6 +306,7 @@ function wceSaveEdit() {
     var studentName = (document.getElementById('wceEditName').value || '').trim();
     var program = (document.getElementById('wceEditCourse').value || '').trim();
     var yearLevel = (document.getElementById('wceEditYear').value || '').trim();
+    var sectionValue = wceFormatSection(program, yearLevel);
 
     var finish = function() {
         if (cells[1]) cells[1].textContent = studentNo;
@@ -290,8 +314,8 @@ function wceSaveEdit() {
             cells[2].innerHTML = '<button type="button" class="doc-link-btn" onclick="wceOpenPreview(' + wceCurrentRowId + ')">' + wceEsc(studentName) + '</button>';
         }
         if (cells[3]) cells[3].textContent = program;
-        if (cells[4]) cells[4].textContent = yearLevel;
-        if (cells[5]) cells[5].textContent = ((program || 'PROGRAM') + ' ' + (yearLevel || 'YEAR')).trim();
+        if (cells[5]) cells[5].textContent = yearLevel;
+        if (cells[6]) cells[6].textContent = sectionValue;
         wceCloseModal('wceEditModal');
     };
 

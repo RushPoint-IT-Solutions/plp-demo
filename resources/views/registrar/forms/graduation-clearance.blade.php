@@ -82,32 +82,36 @@
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
+                        <th style="width: 140px;">Form Type</th>
                         <th>Year</th>
                         <th>Section</th>
                     </tr>
                 </thead>
                 <tbody id="gcTableBody">
-                    <tr>
+                    <tr data-form-type="non-board">
                         <td style="text-align: center;"><input type="checkbox" class="gc-row-select" onchange="gcSyncSelectAll()"></td>
                         <td>2122B0104</td>
                         <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">Jhon Mark Samson</button></td>
                         <td>BSIT</td>
+                        <td>Non-Board</td>
                         <td>Fourth</td>
                         <td>BSIT 4A</td>
                     </tr>
-                    <tr>
+                    <tr data-form-type="board">
                         <td style="text-align: center;"><input type="checkbox" class="gc-row-select" onchange="gcSyncSelectAll()"></td>
                         <td>2122B0115</td>
                         <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">Mary Ann dela Cruz</button></td>
                         <td>BSED</td>
+                        <td>Board</td>
                         <td>Fourth</td>
                         <td>BSED 4A</td>
                     </tr>
-                    <tr>
+                    <tr data-form-type="non-board">
                         <td style="text-align: center;"><input type="checkbox" class="gc-row-select" onchange="gcSyncSelectAll()"></td>
                         <td>2324E0012</td>
                         <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">Analyn Marbibi Rebosora</button></td>
                         <td>BS Entrepreneurship</td>
+                        <td>Non-Board</td>
                         <td>Fourth</td>
                         <td>BSENT 4A</td>
                     </tr>

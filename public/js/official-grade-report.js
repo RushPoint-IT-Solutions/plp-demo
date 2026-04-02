@@ -46,7 +46,25 @@ if (window.ogrMetaByRow && typeof window.ogrMetaByRow === 'object') {
     ogrDemoMeta = window.ogrMetaByRow;
 }
 
+function ogrResolveCurriculum(meta) {
+    var curriculumRaw = String((meta && meta.curriculum) || '').trim();
+    var schoolYearRaw = String((meta && meta.schoolYear) || '').trim();
+
+    if (curriculumRaw && curriculumRaw.toUpperCase() !== 'CURRENT') {
+        return curriculumRaw;
+    }
+
+    var yearMatch = schoolYearRaw.match(/\b(20\d{2})\b/);
+    if (yearMatch && yearMatch[1]) {
+        return yearMatch[1];
+    }
+
+    return String(new Date().getFullYear());
+}
+
 function ogrBuildTemplate(data, subjects, meta) {
+    var curriculumDisplay = ogrResolveCurriculum(meta);
+
     /* space at top for pre-printed header on yellow paper */
     var headerSpace = '<div class="ogr-header-space"></div>';
 
@@ -69,7 +87,7 @@ function ogrBuildTemplate(data, subjects, meta) {
         '</div>' +
         '<div class="ogr-info-col">' +
             '<div class="ogr-info-row"><span class="ogr-info-label">School Year</span><span class="ogr-info-sep">:</span><span class="ogr-info-val">' + ogrEsc(meta.schoolYear) + '</span></div>' +
-            '<div class="ogr-info-row"><span class="ogr-info-label">Curriculum</span><span class="ogr-info-sep">:</span><span class="ogr-info-val">' + ogrEsc(meta.curriculum) + '</span></div>' +
+            '<div class="ogr-info-row"><span class="ogr-info-label">Curriculum</span><span class="ogr-info-sep">:</span><span class="ogr-info-val">' + ogrEsc(curriculumDisplay) + '</span></div>' +
             '<div class="ogr-info-row"><span class="ogr-info-label">Student Type</span><span class="ogr-info-sep">:</span><span class="ogr-info-val">' + ogrEsc(meta.studentType) + '</span></div>' +
             '<div class="ogr-info-row"><span class="ogr-info-label">Year Level</span><span class="ogr-info-sep">:</span><span class="ogr-info-val">' + ogrEsc(meta.yearLevel) + '</span></div>' +
             '<div class="ogr-info-row"><span class="ogr-info-label">Residency</span><span class="ogr-info-sep">:</span><span class="ogr-info-val">' + ogrEsc(meta.residency) + '</span></div>' +
