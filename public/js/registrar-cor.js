@@ -81,107 +81,114 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./resources/js/student-sidebar-dropdown.js":
-/*!**************************************************!*\
-  !*** ./resources/js/student-sidebar-dropdown.js ***!
-  \**************************************************/
+/***/ "./resources/js/registrar-cor.js":
+/*!***************************************!*\
+  !*** ./resources/js/registrar-cor.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
 document.addEventListener('DOMContentLoaded', function () {
-  function syncLaoPrintCheckboxState() {
-    document.querySelectorAll('.loa-check').forEach(function (label) {
-      var checkbox = label.querySelector('input[type="checkbox"]');
-      if (!checkbox) {
-        return;
-      }
-      label.setAttribute('data-print-checked', checkbox.checked ? 'true' : 'false');
-    });
+  var printButton = document.getElementById('cor-registrar-print');
+  var printedByInput = document.getElementById('cor-printed-by-input');
+  var printedByValue = document.getElementById('cor-printed-by-value');
+  var timePrintedValue = document.getElementById('cor-time-printed');
+  var datePrintedValue = document.getElementById('cor-date-printed');
+  function pad(value) {
+    return value < 10 ? '0' + value : String(value);
   }
-  function syncPrintableInputState() {
-    document.querySelectorAll('.acd-inline-input').forEach(function (input) {
-      var hasValue = input.value && input.value.trim().length > 0;
-      input.classList.toggle('has-value', hasValue);
-    });
+  function formatDate(date) {
+    return pad(date.getMonth() + 1) + '/' + pad(date.getDate()) + '/' + date.getFullYear();
   }
-  function fitAcdFormCanvas() {
-    var page = document.querySelector('.acd-page');
-    var canvas = document.querySelector('.acd-canvas');
-    var form = document.querySelector('.acd-form');
-    if (!page || !canvas || !form) {
+  function formatTime(date) {
+    var hours = date.getHours();
+    var meridian = hours >= 12 ? 'pm' : 'am';
+    var displayHour = hours % 12;
+    if (displayHour === 0) {
+      displayHour = 12;
+    }
+    return displayHour + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + meridian;
+  }
+  function syncPrintedBy() {
+    if (!printedByValue) {
       return;
     }
-    var baseWidth = form.offsetWidth;
-    var baseHeight = form.offsetHeight;
-    var actions = canvas.querySelector('.acd-actions');
-    var actionsHeight = actions ? actions.offsetHeight + 8 : 0;
-    var availableWidth = Math.max(page.clientWidth - 12, 320);
-    var scale = Math.min(1, availableWidth / baseWidth);
-    canvas.style.setProperty('--acd-scale', scale.toFixed(4));
-    canvas.style.width = baseWidth * scale + 'px';
-    canvas.style.minWidth = baseWidth * scale + 'px';
-    canvas.style.height = baseHeight * scale + actionsHeight + 'px';
+    var currentValue = printedByInput ? printedByInput.value : '';
+    currentValue = currentValue ? currentValue.trim() : '';
+    printedByValue.textContent = currentValue !== '' ? currentValue : 'Registrar User';
   }
-  document.querySelectorAll('.sidebar-dropdown-toggle').forEach(function (toggle) {
-    toggle.addEventListener('click', function (e) {
-      e.preventDefault();
-      var dropdown = this.closest('.sidebar-dropdown');
-      if (!dropdown) {
-        return;
-      }
-      dropdown.classList.toggle('open');
-    });
+  function updatePrintedTimestamp() {
+    var now = new Date();
+    if (timePrintedValue) {
+      timePrintedValue.textContent = formatTime(now);
+    }
+    if (datePrintedValue) {
+      datePrintedValue.textContent = formatDate(now);
+    }
+  }
+  syncPrintedBy();
+  updatePrintedTimestamp();
+  if (printedByInput) {
+    printedByInput.addEventListener('input', syncPrintedBy);
+    printedByInput.addEventListener('change', syncPrintedBy);
+  }
+  window.addEventListener('beforeprint', function () {
+    syncPrintedBy();
+    updatePrintedTimestamp();
   });
-  var printBtn = document.getElementById('acd-print-btn');
-  if (printBtn) {
-    printBtn.addEventListener('click', function () {
-      syncLaoPrintCheckboxState();
-      syncPrintableInputState();
+  if (window.matchMedia) {
+    var mediaQueryList = window.matchMedia('print');
+    if (mediaQueryList && mediaQueryList.addListener) {
+      mediaQueryList.addListener(function (event) {
+        var isPrintMode = event && typeof event.matches === 'boolean' ? event.matches : mediaQueryList.matches;
+        if (isPrintMode) {
+          syncPrintedBy();
+          updatePrintedTimestamp();
+        }
+      });
+    }
+  }
+  if (printButton) {
+    printButton.addEventListener('click', function () {
+      syncPrintedBy();
+      updatePrintedTimestamp();
       window.print();
     });
   }
-  window.addEventListener('beforeprint', function () {
-    syncLaoPrintCheckboxState();
-    syncPrintableInputState();
-  });
-  document.addEventListener('input', function (event) {
-    var target = event.target;
-    if (!target || target.matches('.acd-inline-input') === false) {
-      return;
-    }
-    syncPrintableInputState();
-  });
-  document.addEventListener('change', function (event) {
-    var target = event.target;
-    if (!target || target.matches('.loa-check input[type="checkbox"]') === false) {
-      if (target && target.matches('.acd-inline-input')) {
-        syncPrintableInputState();
+
+  // Auto-submit COR student selector when user picks a student
+  var studentSelect = document.getElementById('cor-student-id');
+  if (studentSelect) {
+    studentSelect.addEventListener('change', function () {
+      // don't submit when no value selected
+      if (!studentSelect.value) {
+        return;
       }
-      return;
-    }
-    syncLaoPrintCheckboxState();
-  });
-  fitAcdFormCanvas();
-  window.addEventListener('resize', fitAcdFormCanvas);
-  syncLaoPrintCheckboxState();
-  syncPrintableInputState();
+
+      // If the select is inside a form, submit that form (GET reload)
+      var form = studentSelect.form;
+      if (form) {
+        form.submit();
+      }
+    });
+  }
 });
 
 /***/ }),
 
-/***/ 2:
-/*!********************************************************!*\
-  !*** multi ./resources/js/student-sidebar-dropdown.js ***!
-  \********************************************************/
+/***/ 4:
+/*!*********************************************!*\
+  !*** multi ./resources/js/registrar-cor.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\student-sidebar-dropdown.js */"./resources/js/student-sidebar-dropdown.js");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\registrar-cor.js */"./resources/js/registrar-cor.js");
 
 
 /***/ })

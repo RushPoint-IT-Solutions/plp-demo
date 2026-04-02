@@ -1118,10 +1118,52 @@ class RegistrarController extends Controller
 
     /**
      * Registrar > Forms > Certificate of GWA
+     *
+     * If a Student is provided (route-model binding) compute the GWA and pass it to the view.
      */
-    public function formsCertificateGwa()
+    public function formsCertificateGwa(?\App\Student $student = null)
     {
-        return view('registrar.forms.certificates.certificate-gwa');
+        $gwa = null;
+
+        if ($student) {
+            $grades = StudentSubjectGrade::with('subject')
+                ->where('student_id', $student->id)
+                ->get();
+
+            $weightedSum = 0.0;
+            $unitsSum = 0.0;
+            $plainSum = 0.0;
+            $plainCount = 0;
+
+            foreach ($grades as $rec) {
+                if ($rec->final_average === null) {
+                    continue;
+                }
+                $avg = (float) $rec->final_average;
+                $units = 0.0;
+                if ($rec->relationLoaded('subject') && $rec->subject && isset($rec->subject->units) && is_numeric($rec->subject->units)) {
+                    $units = (float) $rec->subject->units;
+                }
+
+                if ($units > 0) {
+                    $weightedSum += $avg * $units;
+                    $unitsSum += $units;
+                } else {
+                    $plainSum += $avg;
+                    $plainCount++;
+                }
+            }
+
+            if ($unitsSum > 0) {
+                $gwa = round($weightedSum / $unitsSum, 2);
+            } elseif ($plainCount > 0) {
+                $gwa = round($plainSum / $plainCount, 2);
+            } else {
+                $gwa = null;
+            }
+        }
+
+        return view('registrar.forms.certificates.certificate-gwa', compact('student', 'gwa'));
     }
 
     /**
@@ -1138,6 +1180,96 @@ class RegistrarController extends Controller
     public function formsCertificateHonor8d2()
     {
         return view('registrar.forms.certificates.certificate-honor-8d2');
+    }
+
+    /**
+     * Registrar > Forms > Copy Of Grades (COG)
+     */
+    public function formsCopyOfGradesCog()
+    {
+        return view('registrar.forms.cog.copy-of-grades');
+    }
+
+    /**
+     * Registrar > Forms > Certificate of Registration (COR)
+     */
+    public function formsCertificateOfRegistration(Request $request)
+    {
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level']);
+
+        $selectedStudentId = (int) $request->query('student_id', 0);
+
+        if ($selectedStudentId <= 0 && $students->isNotEmpty()) {
+            $selectedStudentId = (int) $students->first()->id;
+        }
+
+        $student = null;
+        if ($selectedStudentId > 0) {
+            $student = Student::with('subjects')->find($selectedStudentId);
+        }
+
+        $subjects = collect();
+        if ($student) {
+            $subjects = $student->subjects
+                ->sortBy(function ($subject) {
+                    return strtoupper((string) $subject->code);
+                })
+                ->values();
+        }
+
+        $totalUnits = (float) $subjects->sum(function ($subject) {
+            return is_numeric($subject->units) ? (float) $subject->units : 0;
+        });
+
+        $assessment = $this->buildCorAssessment($subjects, $totalUnits);
+
+        return view('registrar.forms.cor.certificate-of-registration', [
+            'students' => $students,
+            'selectedStudentId' => $selectedStudentId,
+            'student' => $student,
+            'subjects' => $subjects,
+            'totalUnits' => $totalUnits,
+            'assessment' => $assessment,
+        ]);
+    }
+
+    private function buildCorAssessment($subjects, float $totalUnits): array
+    {
+        $nstpUnits = (float) $subjects->sum(function ($subject) {
+            $code = strtoupper((string) $subject->code);
+            $name = strtoupper((string) $subject->name);
+
+            if (strpos($code, 'NSTP') !== false || strpos($name, 'CWTS') !== false || strpos($name, 'ROTC') !== false) {
+                return is_numeric($subject->units) ? (float) $subject->units : 0;
+            }
+
+            return 0;
+        });
+
+        $tuitionUnits = max($totalUnits - $nstpUnits, 0);
+        $perUnitRate = 50.0;
+        $miscellaneousFee = 300.0;
+        $laboratoryFee = 500.0;
+
+        $tuitionFee = $tuitionUnits * $perUnitRate;
+        $cwtsFee = $nstpUnits * $perUnitRate;
+        $totalTuitionFee = $tuitionFee + $cwtsFee;
+        $currentAccount = $totalTuitionFee + $miscellaneousFee + $laboratoryFee;
+
+        return [
+            'tuition_units' => $tuitionUnits,
+            'nstp_units' => $nstpUnits,
+            'per_unit_rate' => $perUnitRate,
+            'tuition_fee' => $tuitionFee,
+            'cwts_fee' => $cwtsFee,
+            'total_tuition_fee' => $totalTuitionFee,
+            'miscellaneous_fee' => $miscellaneousFee,
+            'laboratory_fee' => $laboratoryFee,
+            'current_account' => $currentAccount,
+        ];
     }
 
     private function seedCrossEnrollRowsIfEmpty(): void

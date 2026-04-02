@@ -1,0 +1,126 @@
+@page {
+    size: A4;
+    margin: 25mm 20mm;
+}
+
+.registrar-body {
+    .certificate-gwa {
+        position: relative;
+        max-width: 180mm;
+        min-height: 250mm;
+        margin: 0 auto;
+        padding: 20mm 14mm 22mm;
+        background: #fff;
+        border: 1px solid #e6e6e6;
+        box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+        color: #000;
+        font-family: 'Times New Roman', Times, serif;
+        overflow: hidden;
+
+        @media print {
+            width: 180mm;
+            min-height: 257mm;
+            margin: 0;
+            padding: 18mm 12mm 18mm;
+            border: 0;
+            box-shadow: none;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        @include down(768px) {
+            padding: 16mm 10mm 20mm;
+        }
+    }
+
+    .certificate-gwa__header {
+        text-align: center;
+    }
+
+    .certificate-gwa__title {
+        margin: 18mm 0 6mm;
+        font-size: 24pt;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .certificate-gwa__body {
+        width: 100%;
+        max-width: 160mm;
+        margin: 0 auto;
+        text-align: center;
+        font-size: 12pt;
+        line-height: 1.55;
+        letter-spacing: 0.01em;
+    }
+
+    .certificate-gwa__paragraph {
+        margin: 0 auto 10mm;
+    }
+
+    .certificate-gwa__paragraph--lead {
+        margin-bottom: 12mm;
+    }
+
+    .certificate-gwa__paragraph--request {
+        margin-bottom: 0;
+    }
+
+    .certificate-gwa__emphasis {
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: underline;
+    }
+
+    .certificate-gwa__gwa {
+        font-weight: 700;
+    }
+
+    .certificate-gwa__footer {
+        position: relative;
+        min-height: 76mm;
+        margin-top: 24mm;
+    }
+
+    .certificate-gwa__signature {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 2mm;
+        padding-top: 18mm;
+        text-align: center;
+    }
+
+    .certificate-gwa__signature-image {
+        display: block;
+        width: 60mm;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    .certificate-gwa__signature-line {
+        display: block;
+        width: 58mm;
+        height: 1px;
+        margin: 0 auto 10mm;
+        border-top: 1px solid #000;
+    }
+
+    .certificate-gwa__signatory-title {
+        font-size: 12pt;
+        line-height: 1.1;
+    }
+
+    .certificate-gwa__seal {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        font-size: 12pt;
+        line-height: 1.1;
+        color: #222;
+    }
+}
