@@ -190,14 +190,14 @@
             <section class="loae-box loae-box--approval">
                 <p><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA Approved</span></label></p>
                 <p><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA Disapproved</span></label></p>
-                <p class="loae-sign-line loae-sign-line--spaced"><input type="text" class="loae-inline loae-inline--line" value=""></p>
+                <p class="loae-sign-line loae-sign-line--spaced"><input type="text" class="loae-inline loae-inline--line mt-auto-mod" value=""></p>
                 <p class="loae-sign-role">College Dean</p>
                 <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small" value=""></p>
             </section>
 
             <section class="loae-box loae-box--noted">
                 <p>Noted:</p>
-                <p class="loae-sign-line loae-sign-line--spaced"><input type="text" class="loae-inline loae-inline--line" value=""></p>
+                <p class="loae-sign-line loae-sign-line--spaced"><input type="text" class="loae-inline loae-inline--line mt-auto-mod" value=""></p>
                 <p class="loae-sign-role">University Registrar</p>
                 <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small" value=""></p>
             </section>

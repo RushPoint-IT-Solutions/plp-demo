@@ -571,6 +571,7 @@
 
 .registrar-body .loae-mini-table td {
   border: 1px solid #000;
+  border-left: none;
   padding: 4px;
   vertical-align: middle;
   background: #fff;
@@ -598,6 +599,10 @@
 
 .registrar-body .loae-box--dean-metrics {
   grid-column: span 1;
+  border: 1px solid black;
+  border-right: none;
+  border-bottom: none;
+  padding: 0;
 }
 
 .registrar-body .loae-box--approval,
@@ -616,6 +621,39 @@
   box-sizing: border-box;
 }
 
+.registrar-body {
+  /* Ensure staff grid boxes align signature blocks to the bottom */
+}
+
+.registrar-body .loae-grid--staff {
+  /* align grid items to end so boxes sit at the bottom of the row */
+  align-items: end;
+  /* Make each staff box a column flex container so inner elements can use margin-top:auto */
+}
+
+.registrar-body .loae-grid--staff > .loae-box {
+  display: flex;
+  flex-direction: column;
+  /* allow the box to shrink/grow naturally within the grid */
+  min-height: 247px;
+}
+
+.registrar-body .loae-grid--staff {
+  /* Push the signature line (p.loae-sign-line) to the bottom of its box */
+}
+
+.registrar-body .loae-grid--staff .loae-sign-line {
+  margin-top: auto;
+}
+
+.registrar-body .loae-grid--staff {
+  /* Some inputs had a helper class that applied a fixed margin; neutralize it inside staff boxes */
+}
+
+.registrar-body .loae-grid--staff .loae-sign-line .mt-auto-mod {
+  margin-top: 0 !important;
+}
+
 .registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-line .loae-inline--line,
 .registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-date .loae-inline--date-small {
   width: 120px;
@@ -630,6 +668,10 @@
 
 .registrar-body .loae-box--recorded .loae-sign-date .loae-inline--date-small {
   width: 70px;
+}
+
+.registrar-body .mt-auto-mod {
+  margin-top: 130px;
 }
 
 .registrar-body .loae-processed-label {
@@ -667,6 +709,10 @@
     size: A4 portrait;
     margin: 0 !important;
 }
+
+  .loae-mini-table td {
+    border-left: 0.5px solid black !important;
+  }
 
   .loae-toolbar {
     display: none !important;
@@ -899,6 +945,27 @@
 
   .registrar-body .loae-box--guidance .loae-sign-role {
     text-align: right !important;
+  }
+
+  /* Ensure staff grid boxes behave as flex columns in print and push signature lines to bottom */
+
+  .registrar-body .loae-grid--staff {
+    align-items: end !important;
+  }
+
+  .registrar-body .loae-grid--staff > .loae-box {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 247px !important;
+    box-sizing: border-box !important;
+  }
+
+  .registrar-body .loae-grid--staff .loae-sign-line {
+    margin-top: auto !important;
+  }
+
+  .registrar-body .loae-grid--staff .loae-sign-line .mt-auto-mod {
+    margin-top: 0 !important;
   }
 }
 
