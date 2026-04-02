@@ -62,12 +62,12 @@
                     </select>
                 </div>
             </div>
-            <div class="frm-action-row">
-                <div class="frm-search-wrap">
-                    <input type="text" class="app-filter-select frm-search-input" placeholder="Search student..." oninput="diplomaFilterTable(this.value)">
+            <div style="display:flex; justify-content:flex-end; margin-top:15px; gap: 8px;">
+                <div style="margin-right:auto; min-width:260px; max-width:340px; width:100%;">
+                    <input type="text" class="app-filter-select" style="width:100%;" placeholder="Search student..." oninput="diplomaFilterTable(this.value)">
                 </div>
-                <button type="button" class="req-btn-save frm-action-btn" onclick="diplomaPrintSelected()">Print Selected</button>
-                <button type="button" class="req-btn-save frm-action-btn">Set</button>
+                <button type="button" class="req-btn-save" style="min-width: 160px; font-weight: 700;" onclick="diplomaPrintSelected()">Print Selected</button>
+                <button type="button" class="req-btn-save" style="min-width: 120px; font-weight: 700;">Set</button>
             </div>
         </div>
 
@@ -93,17 +93,24 @@
                         <th>Program</th>
                         <th>Year</th>
                         <th>Section</th>
+                        <th style="width: 140px;">Status</th>
                         <th style="text-align: center; width: 70px;">Action</th>
                     </tr>
                 </thead>
                 <tbody id="diplomaTableBody">
                     <tr data-row-id="1">
                         <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
-                        <td>2122B0104</td>
-                        <td><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(1)">Jhon Mark Samson</button></td>
-                        <td>BSIT</td>
-                        <td>Fourth</td>
-                        <td>BSIT 4A</td>
+                        <td class="diploma-cell-number">2122B0104</td>
+                        <td class="diploma-cell-name"><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(1)">Jhon Mark Samson</button></td>
+                        <td class="diploma-cell-program">BSIT</td>
+                        <td class="diploma-cell-year">Fourth</td>
+                        <td class="diploma-cell-section">BSIT 4A</td>
+                        <td>
+                            <select class="app-filter-select diploma-copy-select" onchange="diplomaHandleCopyChange(this)">
+                                <option value="print-1">Print 1</option>
+                                <option value="print-2" selected>Print 2</option>
+                            </select>
+                        </td>
                         <td style="text-align:center;">
                             <div class="apst-action-btn" data-diploma-menu-toggle="diplomaMenu-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
                             <div class="apst-dropdown" id="diplomaMenu-1">
@@ -120,11 +127,17 @@
                     </tr>
                     <tr data-row-id="2">
                         <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
-                        <td>2122B0115</td>
-                        <td><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(2)">Mary Ann dela Cruz</button></td>
-                        <td>BSED</td>
-                        <td>Fourth</td>
-                        <td>BSED 4A</td>
+                        <td class="diploma-cell-number">2122B0115</td>
+                        <td class="diploma-cell-name"><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(2)">Mary Ann dela Cruz</button></td>
+                        <td class="diploma-cell-program">BSED</td>
+                        <td class="diploma-cell-year">Fourth</td>
+                        <td class="diploma-cell-section">BSED 4A</td>
+                        <td>
+                            <select class="app-filter-select diploma-copy-select" onchange="diplomaHandleCopyChange(this)">
+                                <option value="print-1" selected>Print 1</option>
+                                <option value="print-2">Print 2</option>
+                            </select>
+                        </td>
                         <td style="text-align:center;">
                             <div class="apst-action-btn" data-diploma-menu-toggle="diplomaMenu-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
                             <div class="apst-dropdown" id="diplomaMenu-2">
@@ -141,11 +154,17 @@
                     </tr>
                     <tr data-row-id="3">
                         <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
-                        <td>2324E0012</td>
-                        <td><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(3)">Analyn Marbibi Rebosora</button></td>
-                        <td>BS Entrepreneurship</td>
-                        <td>Fourth</td>
-                        <td>BSENT 4A</td>
+                        <td class="diploma-cell-number">2324E0012</td>
+                        <td class="diploma-cell-name"><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(3)">Analyn Marbibi Rebosora</button></td>
+                        <td class="diploma-cell-program">BS Entrepreneurship</td>
+                        <td class="diploma-cell-year">Fourth</td>
+                        <td class="diploma-cell-section">BSENT 4A</td>
+                        <td>
+                            <select class="app-filter-select diploma-copy-select" onchange="diplomaHandleCopyChange(this)">
+                                <option value="print-1">Print 1</option>
+                                <option value="print-2" selected>Print 2</option>
+                            </select>
+                        </td>
                         <td style="text-align:center;">
                             <div class="apst-action-btn" data-diploma-menu-toggle="diplomaMenu-3" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
                             <div class="apst-dropdown" id="diplomaMenu-3">

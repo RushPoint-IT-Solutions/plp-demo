@@ -155,6 +155,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('forms')->name('forms.')->group(function () {
             Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
             Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
+            Route::get('/application-leave-of-absence-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
@@ -168,6 +169,24 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/waiver-cancellation', 'Registrar\RegistrarController@formsWaiverCancellationStore')->name('waiver-cancellation.store');
             Route::put('/waiver-cancellation/{cancellationWaiver}', 'Registrar\RegistrarController@formsWaiverCancellationUpdate')->name('waiver-cancellation.update');
             Route::delete('/waiver-cancellation/{cancellationWaiver}', 'Registrar\RegistrarController@formsWaiverCancellationDestroy')->name('waiver-cancellation.destroy');
+
+            // Certificates
+            Route::prefix('certificates')->name('certificates.')->group(function () {
+                Route::get('/certificate-of-gwa/{student}', 'Registrar\\RegistrarController@formsCertificateGwa')->name('certificate-gwa.show');
+                Route::get('/certificate-of-gwa', 'Registrar\\RegistrarController@formsCertificateGwa')->name('certificate-gwa');
+                Route::get('/8c2-certificate-of-graduation', 'Registrar\\RegistrarController@formsCertificateGraduation8c2')->name('certificate-graduation-8c2');
+                Route::get('/8d2-certificate-of-honor', 'Registrar\\RegistrarController@formsCertificateHonor8d2')->name('certificate-honor-8d2');
+            });
+
+            // Copy Of Grades (COG)
+            Route::prefix('cog')->name('cog.')->group(function () {
+                Route::get('/copy-of-grades', 'Registrar\\RegistrarController@formsCopyOfGradesCog')->name('copy-of-grades');
+            });
+
+            // Certificate of Registration (COR)
+            Route::prefix('cor')->name('cor.')->group(function () {
+                Route::get('/certificate-of-registration', 'Registrar\\RegistrarController@formsCertificateOfRegistration')->name('certificate-of-registration');
+            });
         });
     });
 

@@ -41,6 +41,22 @@ class AdminController extends Controller
      */
     public function moduleLogin($module)
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user && $user->module === $module && $this->hasRequiredRoleLink($user, $module)) {
+                $redirectMap = [
+                    'student' => 'student.grades',
+                    'applicant' => 'applicant.application-form',
+                    'registrar' => 'registrar.dashboard',
+                    'faculty' => 'faculty.load',
+                    'accounting' => 'admin.access-module',
+                    'cashier' => 'admin.access-module',
+                ];
+
+                return redirect()->route($redirectMap[$module] ?? 'admin.access-module');
+            }
+        }
+
         return view('auth.login', ['module' => $module]);
     }
 
@@ -112,6 +128,9 @@ class AdminController extends Controller
                 ])->withInput($request->only('username', 'remember'));
             }
 
+            // Ensure remember cookie is explicitly set for persistent login
+            Auth::login($user, $remember);
+
             $request->session()->regenerate();
 
             return redirect()->route('student.grades');
@@ -157,6 +176,9 @@ class AdminController extends Controller
                 'username' => ucfirst($module) . ' account is not linked yet. Please contact the administrator.',
             ])->withInput($request->only('username', 'remember'));
         }
+
+        // Ensure remember cookie is explicitly set for persistent login
+        Auth::login($user, $remember);
 
         $request->session()->regenerate();
 
@@ -226,6 +248,9 @@ class AdminController extends Controller
                     'username' => 'Applicant account is not linked yet. Please contact admissions.',
                 ])->withInput($request->only('username', 'remember'));
             }
+
+            // Ensure remember cookie is explicitly set for persistent login
+            Auth::login($user, $remember);
 
             $request->session()->regenerate();
 

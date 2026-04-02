@@ -82,6 +82,7 @@
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
+                        <th>Semester</th>
                         <th>Year</th>
                         <th>Section</th>
                         <th style="text-align: center; width: 70px;">Action</th>
@@ -89,13 +90,41 @@
                 </thead>
                 <tbody id="wceTableBody">
                     @forelse($waiverRows as $record)
+                    @php
+                        $displayProgram = $record->program ?: optional($record->student)->program ?: '';
+                        $displayYear = $record->year_level ?: optional($record->student)->year_level ?: '';
+                        $displaySection = $record->section ?: '-';
+
+                        if ($displayProgram !== '' && $displayYear !== '') {
+                            preg_match('/\d+/', (string) $displayYear, $yearMatches);
+                            $yearNumber = isset($yearMatches[0]) ? $yearMatches[0] : '';
+                            $yearLower = strtolower((string) $displayYear);
+
+                            if ($yearNumber === '') {
+                                if ($yearLower === 'first') {
+                                    $yearNumber = '1';
+                                } elseif ($yearLower === 'second') {
+                                    $yearNumber = '2';
+                                } elseif ($yearLower === 'third') {
+                                    $yearNumber = '3';
+                                } elseif ($yearLower === 'fourth') {
+                                    $yearNumber = '4';
+                                }
+                            }
+
+                            if ($yearNumber !== '') {
+                                $displaySection = trim($displayProgram) . ' -' . $yearNumber . 'A';
+                            }
+                        }
+                    @endphp
                     <tr data-row-id="{{ $record->id }}">
                         <td style="text-align: center;"><input type="checkbox" class="wce-row-select" onchange="wceSyncSelectAll()"></td>
                         <td>{{ optional($record->student)->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="wceOpenPreview({{ $record->id }})">{{ optional($record->student)->name ?: '-' }}</button></td>
-                        <td>{{ $record->program ?: optional($record->student)->program ?: '-' }}</td>
-                        <td>{{ $record->year_level ?: optional($record->student)->year_level ?: '-' }}</td>
-                        <td>{{ $record->section ?: '-' }}</td>
+                        <td>{{ $displayProgram ?: '-' }}</td>
+                        <td>{{ $record->semester ?: '-' }}</td>
+                        <td>{{ $displayYear ?: '-' }}</td>
+                        <td>{{ $displaySection }}</td>
                         <td style="text-align:center;">
                             <div class="apst-action-btn" data-wce-menu-toggle="wceMenu-{{ $record->id }}" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
                             <div class="apst-dropdown" id="wceMenu-{{ $record->id }}">
@@ -111,7 +140,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" style="text-align:center; color:#666;">No waiver records found.</td></tr>
+                    <tr><td colspan="8" style="text-align:center; color:#666;">No waiver records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

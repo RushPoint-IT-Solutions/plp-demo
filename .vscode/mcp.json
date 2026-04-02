@@ -1,0 +1,41 @@
+{
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:/Users/micha/Desktop/OJT/plp-demo"
+      ]
+    },
+    "mysql": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@benborla29/mcp-server-mysql",
+        "mysql://root:@localhost:3306/plp_demo"
+      ]
+    },
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "mcp-figma"],
+      "env": {
+        "FIGMA_API_TOKEN": "${env:FIGMA_TOKEN}",
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--browser", "chromium"]
+    }
+  }
+}

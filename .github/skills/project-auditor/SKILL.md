@@ -1,0 +1,59 @@
+---
+name: "project-auditor"
+
+---
+
+---
+
+### 08-project-auditor.md
+
+```markdown
+---
+name: "project-auditor"
+description: "Code cleanup, deduplication, and quality enforcement."
+
+---
+
+# Skill 08: Project Auditor
+
+##  LEGACY STACK CONTEXT (CRITICAL)
+- **Framework:** Laravel 5.7 ONLY (Requires PHP 7.1+ syntax).
+- **Frontend:** Bootstrap 4, Vue 2, jQuery.
+- **Build Tool:** Laravel Mix (`webpack.mix.js`). Run via `npm run dev`. NO Vite.
+
+##  Explicitly Forbidden PHP 8+ Features
+- `match` expressions
+- Union types (e.g., `string|int`)
+- Nullsafe operator (`?->`)
+- Named arguments
+- Constructor property promotion
+- Arrow functions (`fn() =>`)
+- Typed properties
+- Null-coalescing assignment (`??=`)
+
+##  Deduplication Rules
+
+### SASS Cleanup
+- Find duplicate hex codes  Extract to `resources/assets/sass/_variables.scss`
+- Split giant files into `base/`, `components/`, `pages/`
+
+### Blade Cleanup
+- Zero `<script>` tags inside `.blade.php`
+- Zero `<style>` tags inside `.blade.php`
+- Move JS to `resources/assets/js/`
+- Move CSS to `resources/assets/sass/`
+
+### Orphaned Files
+- Delete unused logos/images not referenced in code
+- Run: `grep -r "filename" resources/` to find references
+
+##  MCP Integration
+- **Filesystem MCP:** Scan for duplicate hex codes, orphaned files.
+- **MySQL MCP:** Verify no unused database tables.
+
+##  Escalation Protocol
+- Before deleting any file, STOP and output:
+` ESCALATION REQUIRED. Confirm file deletion: <filepath>. Human approval needed.`
+
+##  STOP COMMAND
+Output `WAITING_FOR_HUMAN_OK` when the file is generated.

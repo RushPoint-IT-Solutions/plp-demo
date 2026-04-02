@@ -21,7 +21,6 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}?v={{ time() }}">
 
     @stack('styles')
 </head>
@@ -67,7 +66,7 @@
 
                     {{-- Profile Avatar --}}
                     <a href="#" class="topbar-user">
-                        <div class="topbar-avatar-placeholder" style="width:36px;height:36px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;">
+                        <div class="topbar-avatar-placeholder topbar-avatar-placeholder--neutral">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
@@ -97,7 +96,7 @@
     <!-- Registrar Toast Notification -->
     <div id="registrar-toast" class="toast-notification">
         <span class="toast-message"></span>
-        <button class="toast-close" onclick="document.getElementById('registrar-toast').classList.remove('show')">&times;</button>
+        <button type="button" class="toast-close" id="registrar-toast-close">&times;</button>
     </div>
 
     <!-- Bootstrap JS -->
@@ -108,25 +107,6 @@
 
     <!-- Sidebar JS -->
     <script src="{{ asset('js/registrar-layout.js') }}"></script>
-
-    <!-- Registrar Table Pagination -->
-    <script src="{{ asset('js/registrar-table-pagination.js') }}?v={{ time() }}"></script>
-
-    <script>
-    function showRegistrarToast(message, type) {
-        var toast = document.getElementById('registrar-toast');
-        if (!toast) return;
-        var messageEl = toast.querySelector('.toast-message');
-        if (messageEl) messageEl.textContent = message;
-        toast.classList.remove('show', 'toast-error', 'toast-warning');
-        if (type === 'warning') toast.classList.add('toast-warning');
-        if (type === 'error') toast.classList.add('toast-error');
-        void toast.offsetWidth;
-        toast.classList.add('show');
-        if (toast._timer) clearTimeout(toast._timer);
-        toast._timer = setTimeout(function () { toast.classList.remove('show'); }, 3000);
-    }
-    </script>
 
     @stack('scripts')
 </body>
