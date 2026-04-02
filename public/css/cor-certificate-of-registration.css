@@ -13,7 +13,7 @@
   gap: 18px;
   color: #111;
   font-family: "Arial Narrow", Arial, sans-serif;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
 }
 
@@ -101,7 +101,7 @@
 
 .registrar-body .cor-registrar-info-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 0.65fr;
+  grid-template-columns: 1.2fr 1fr 0.8fr;
   -moz-column-gap: 14px;
        column-gap: 14px;
   row-gap: 2px;
@@ -116,7 +116,7 @@
 .registrar-body .cor-registrar-info-line {
   display: flex;
   gap: 4px;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
 }
 
@@ -144,7 +144,7 @@
   border-bottom: 1px solid #6b7280;
   display: flex;
   gap: 4px;
-  font-size: 12pt;
+  font-size: 10pt;
 }
 
 .registrar-body .cor-registrar-info-value--emphasis {
@@ -162,7 +162,7 @@
 .registrar-body .cor-registrar-table td {
   border: 0;
   padding: 2px 4px;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
 }
 
@@ -190,7 +190,7 @@
 }
 
 .registrar-body .cor-registrar-table-title {
-  font-size: 12pt;
+  font-size: 10pt;
   letter-spacing: 0;
   background: #fff !important;
   color: #111 !important;
@@ -239,7 +239,7 @@
 
 .registrar-body .cor-registrar-assessment__title {
   margin: 0 0 4px;
-  font-size: 12pt;
+  font-size: 10pt;
   font-weight: 700;
   text-align: center;
   letter-spacing: 0;
@@ -252,7 +252,7 @@
 
 .registrar-body .cor-registrar-assessment__table td {
   border: 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
   padding: 2px 0;
 }
@@ -285,12 +285,12 @@
 }
 
 .registrar-body .cor-registrar-assessment__current {
-  font-size: 12pt;
+  font-size: 10pt;
 }
 
 .registrar-body .cor-registrar-certification {
   margin: 34px 0 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.4;
   text-align: center;
 }
@@ -311,14 +311,14 @@
   margin: 0;
   padding-top: 2px;
   border-top: 1px solid #111;
-  font-size: 12pt;
+  font-size: 10pt;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .registrar-body .cor-registrar-signature-role {
   margin: 2px 0 0;
-  font-size: 12pt;
+  font-size: 10pt;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -326,7 +326,7 @@
 .registrar-body .cor-registrar-notice {
   margin-top: 70px;
   text-align: center;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.35;
 }
 
@@ -345,7 +345,7 @@
 }
 
 .registrar-body .cor-registrar-legend {
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.25;
 }
 
@@ -367,7 +367,7 @@
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 12pt;
+  font-size: 10pt;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -414,7 +414,6 @@
 .registrar-body .cor-registrar-table tbody td {
   border-left: 0 !important;
   border-right: 0 !important;
-  text-align: center;
 }
 
 .registrar-body .cor-registrar-assessment__table td {
@@ -544,6 +543,14 @@
     box-sizing: border-box !important;
   }
 
+  /* Force 10pt font-size for all COR elements in print view */
+
+  .registrar-body .cor-registrar-page,
+  .registrar-body .cor-registrar-page * {
+    font-size: 10pt !important;
+    line-height: 1.2 !important;
+  }
+
   .registrar-body .cor-registrar-sheet {
     width: 100% !important;
     min-height: auto !important;
@@ -555,7 +562,7 @@
   }
 
   .registrar-body .cor-registrar-info-grid {
-    grid-template-columns: 1.4fr 1fr 0.65fr !important;
+    grid-template-columns: 1.2fr 1fr 0.8fr !important;
     -moz-column-gap: 14px !important;
          column-gap: 14px !important;
     row-gap: 2px !important;
