@@ -91,24 +91,47 @@
 
 .registrar-body .loae-form-no {
   margin: 0 0 4px;
-  font-size: 0.8rem;
+  font-size: 10pt;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .registrar-body .loae-title {
   margin: 0 0 14px;
-  font-size: 1.9rem;
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
 .registrar-body .loae-date-row {
   display: flex;
-  justify-content: flex-end;
-  align-items: baseline;
-  gap: 8px;
+  justify-content: end;
+  align-items: end;
+  gap: 1px;
   margin-bottom: 12px;
+}
+
+.registrar-body .loae-date-row--stacked {
+  flex-direction: column;
+  align-items: end;
+}
+
+.registrar-body .loae-date-caption {
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: block;
+  text-align: center;
+  margin-right: 1.7rem;
+}
+
+.registrar-body .loae-date-input {
+  border: 0;
+  border-bottom: 1px solid #7b7f85;
+  width: 220px;
+  padding: 6px 0;
+  text-align: center;
+  background: transparent;
+  font: inherit;
 }
 
 .registrar-body .loae-date-label {
@@ -424,6 +447,15 @@
 .registrar-body .loae-grid--staff .loae-sign-line .loae-inline--line {
   width: 100%;
   max-width: 145px;
+  box-sizing: border-box;
+}
+
+.registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-line .loae-inline--line,
+.registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-date .loae-inline--date-small {
+  width: 120px;
+  max-width: 120px;
+  box-sizing: border-box;
+  display: inline-block;
 }
 
 .registrar-body .loae-box--recorded .loae-sign-date {
@@ -562,6 +594,24 @@
   .registrar-body .sidebar-overlay,
   .registrar-body #download-toast {
     display: none !important;
+  }
+
+  .registrar-body .loae-date-row--stacked {
+    flex-direction: column !important;
+    align-items: end !important;
+    justify-content: end !important;
+  }
+
+  .registrar-body .loae-date-row--stacked .loae-date-input {
+    width: 220px !important;
+  }
+
+  .registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-line .loae-inline--line,
+  .registrar-body .loae-grid--staff .loae-box--recorded .loae-sign-date .loae-inline--date-small {
+    width: 120px !important;
+    max-width: 120px !important;
+    box-sizing: border-box !important;
+    display: inline-block !important;
   }
 
   .registrar-body .student-layout,

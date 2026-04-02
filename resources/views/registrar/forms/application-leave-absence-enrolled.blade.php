@@ -56,9 +56,9 @@
         <p class="loae-form-no">PLPRO FORM NO. IH-2 Revised 2023</p>
         <h2 class="loae-title">APPLICATION FOR LEAVE OF ABSENCE - ENROLLED</h2>
 
-        <div class="loae-date-row">
-            <span class="loae-date-label">Date of Application</span>
-            <input type="text" class="loae-inline loae-inline--date loae-inline--center" value="{{ $applicationDate }}">
+        <div class="loae-date-row loae-date-row--stacked">
+            <input type="text" class="loae-inline loae-inline--date loae-inline--center loae-date-input" value="{{ $applicationDate }}">
+            <span class="loae-date-caption">Date of Application</span>
         </div>
 
         <p class="loae-paragraph">
