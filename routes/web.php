@@ -155,6 +155,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('forms')->name('forms.')->group(function () {
             Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
             Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
+            Route::get('/application-leave-of-absence-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');

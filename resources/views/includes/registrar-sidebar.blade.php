@@ -220,6 +220,7 @@
                 </a>
                 <div class="sidebar-dropdown-menu">
                     <a href="{{ route('registrar.registrar-menu.forms.tor') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.tor') ? 'active' : '' }}">TOR</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') ? 'active' : '' }}">Application for Leave of Absence - Enrolled</a>
                     <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
                     <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>
                     <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.honorable-dismissal') ? 'active' : '' }}">Honorable Dismissal</a>

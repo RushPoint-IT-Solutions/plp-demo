@@ -81,48 +81,49 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./resources/js/registrar-faculty-loads.js":
-/*!*************************************************!*\
-  !*** ./resources/js/registrar-faculty-loads.js ***!
-  \*************************************************/
+/***/ "./resources/js/registrar-loa-enrolled.js":
+/*!************************************************!*\
+  !*** ./resources/js/registrar-loa-enrolled.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-(function () {
-  function onReady(fn) {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', fn);
-    } else {
-      fn();
-    }
-  }
-  onReady(function () {
-    document.querySelectorAll('.rfl-row[data-href]').forEach(function (row) {
-      row.addEventListener('click', function (e) {
-        var target = e.target;
-        if (target && (target.tagName === 'A' || target.closest('a'))) return;
-        var href = row.getAttribute('data-href');
-        if (href) window.location.href = href;
-      });
+document.addEventListener('DOMContentLoaded', function () {
+  var studentSelect = document.getElementById('loae-student-id');
+  var printButton = document.getElementById('loae-print-btn');
+  if (studentSelect) {
+    studentSelect.addEventListener('change', function () {
+      if (!studentSelect.value) {
+        return;
+      }
+      var form = studentSelect.form;
+      if (form) {
+        form.submit();
+      }
     });
-  });
-})();
+  }
+  if (printButton) {
+    printButton.addEventListener('click', function () {
+      window.print();
+    });
+  }
+});
 
 /***/ }),
 
-/***/ 6:
-/*!*******************************************************!*\
-  !*** multi ./resources/js/registrar-faculty-loads.js ***!
-  \*******************************************************/
+/***/ 5:
+/*!******************************************************!*\
+  !*** multi ./resources/js/registrar-loa-enrolled.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\registrar-faculty-loads.js */"./resources/js/registrar-faculty-loads.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\registrar-loa-enrolled.js */"./resources/js/registrar-loa-enrolled.js");
 
 
 /***/ })

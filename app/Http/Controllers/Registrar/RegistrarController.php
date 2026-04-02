@@ -853,6 +853,79 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar > Forms > Application for Leave of Absence - Enrolled
+     */
+    public function formsApplicationLeaveAbsenceEnrolled(Request $request)
+    {
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+
+        $selectedStudentId = (int) $request->query('student_id', 0);
+        if ($selectedStudentId <= 0 && $students->isNotEmpty()) {
+            $selectedStudentId = (int) $students->first()->id;
+        }
+
+        $student = null;
+        if ($selectedStudentId > 0) {
+            $student = Student::find($selectedStudentId);
+        }
+
+        $gradeRows = collect();
+        if ($student) {
+            $gradeRows = StudentSubjectGrade::query()
+                ->with(['subject.facultyModel'])
+                ->where('student_id', $student->id)
+                ->orderBy('subject_id')
+                ->get()
+                ->map(function ($grade) use ($student) {
+                    $subject = $grade->subject;
+
+                    $section = $subject && $subject->year_section
+                        ? (string) $subject->year_section
+                        : trim(($student->program ?: '') . ' ' . ($student->year_level ?: ''));
+
+                    $semestralGradeRemarks = '';
+                    if ($grade->final_average !== null) {
+                        $semestralGradeRemarks = (string) $grade->final_average;
+                    }
+                    if (!empty($grade->remarks)) {
+                        $semestralGradeRemarks = trim($semestralGradeRemarks . ' ' . (string) $grade->remarks);
+                    }
+
+                    $professorName = '';
+                    if ($subject) {
+                        if (!empty($subject->faculty)) {
+                            $professorName = (string) $subject->faculty;
+                        } elseif ($subject->relationLoaded('facultyModel') && $subject->facultyModel) {
+                            $professorName = (string) $subject->facultyModel->name;
+                        }
+                    }
+
+                    return [
+                        'course_code' => $subject ? (string) $subject->code : '',
+                        'course_description' => $subject ? (string) $subject->name : '',
+                        'section' => $section,
+                        'midterm_grade' => $grade->midterm !== null ? (string) $grade->midterm : '',
+                        'final_grade' => $grade->final !== null ? (string) $grade->final : '',
+                        'semestral_grade_remarks' => $semestralGradeRemarks,
+                        'professor_name_signature' => $professorName,
+                    ];
+                })
+                ->values();
+        }
+
+        return view('registrar.forms.application-leave-absence-enrolled', [
+            'students' => $students,
+            'selectedStudentId' => $selectedStudentId,
+            'student' => $student,
+            'gradeRows' => $gradeRows,
+            'applicationDate' => Carbon::now()->format('F d, Y'),
+        ]);
+    }
+
+    /**
      * Registrar > Forms > Diploma
      */
     public function formsDiploma()
