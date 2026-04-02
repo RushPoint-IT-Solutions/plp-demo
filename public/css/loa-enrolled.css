@@ -257,7 +257,11 @@
 }
 
 .registrar-body .loae-divider--dotted {
-  border-top: 5px dotted #6b7280;
+  border-top: 4px dotted black;
+}
+
+.registrar-body .loae-divider--dashed {
+  border-top: 2px dashed black;
 }
 
 .registrar-body .loae-table-lead {

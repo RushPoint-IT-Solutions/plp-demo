@@ -224,6 +224,8 @@
             </section>
         </div>
 
+        <div class="loae-divider loae-divider--dashed"></div>
+
         <div class="loae-readmission">
             <p class="loae-readmission__title">PRESENT THIS FORM UPON READMISSION:</p>
             <p>

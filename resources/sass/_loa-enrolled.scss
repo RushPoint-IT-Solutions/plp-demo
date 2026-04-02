@@ -249,7 +249,11 @@ $loae-border-color: #6f6f6f;
     }
 
     .loae-divider--dotted {
-        border-top: 5px dotted #6b7280;
+        border-top: 4px dotted black;
+    }
+
+        .loae-divider--dashed {
+        border-top: 2px dashed black;
     }
 
     .loae-table-lead {
