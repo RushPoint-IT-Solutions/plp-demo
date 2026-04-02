@@ -44,9 +44,7 @@
                         alt="Registrar Signature"
                         class="certificate-gwa__signature-image"
                     >
-                @else
-                    <span class="certificate-gwa__signature-line" aria-hidden="true"></span>
-                @endif
+               @endif
 
                 <div class="certificate-gwa__signatory-title">University Registrar</div>
                 <!-- Registrar name/signature intentionally left blank per request -->

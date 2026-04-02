@@ -9,39 +9,86 @@
 
 .registrar-body .cog-copy-of-grades {
   color: #111;
+  font-size: 12pt;
+  line-height: 1.1;
 }
-
-.registrar-body .cog-copy-of-grades .cog-sheet {
+.registrar-body .cog-copy-of-grades .cog-sheet-column {
+  flex: 0 0 auto;
+  width: 210mm;
   max-width: 210mm;
-  margin: 0 auto;
+  padding-left: 0;
+  padding-right: 0;
 }
-
+.registrar-body .cog-copy-of-grades .cog-sheet {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 297mm;
+  box-sizing: border-box;
+}
+.registrar-body .cog-copy-of-grades .cog-grading-table th,
+.registrar-body .cog-copy-of-grades .cog-grading-table td {
+  background-color: #fff !important;
+  border-color: #000 !important;
+}
+.registrar-body .cog-copy-of-grades .cog-grading-table td[rowspan] {
+  vertical-align: middle;
+}
 .registrar-body .cog-copy-of-grades .form-control {
   box-shadow: none;
+  font-size: 12pt;
+  line-height: 1.1;
 }
-
 .registrar-body .cog-copy-of-grades .cog-print-note {
-  font-size: 0.75rem;
+  font-size: 12pt;
 }
-
+.registrar-body .cog-copy-of-grades .small {
+  font-size: 12pt;
+}
+.registrar-body .cog-copy-of-grades table,
+.registrar-body .cog-copy-of-grades th,
+.registrar-body .cog-copy-of-grades td,
+.registrar-body .cog-copy-of-grades input,
+.registrar-body .cog-copy-of-grades textarea,
+.registrar-body .cog-copy-of-grades select {
+  font-size: 12pt;
+  line-height: 1.1;
+}
 @media print {
+  .registrar-body .cog-copy-of-grades .cog-sheet-column {
+    width: 210mm;
+    max-width: 210mm;
+  }
   .registrar-body .cog-copy-of-grades .cog-sheet {
     border: 1px solid #000;
     box-shadow: none;
     margin: 0;
     padding: 10mm !important;
   }
-
   .registrar-body .cog-copy-of-grades .table,
   .registrar-body .cog-copy-of-grades .table td,
   .registrar-body .cog-copy-of-grades .table th {
     color: #000 !important;
     border-color: #000 !important;
   }
-
   .registrar-body .cog-copy-of-grades .form-control {
     color: #000;
     border-bottom-color: #000 !important;
   }
 }
+@media (max-width: 991.98px) {
+  .registrar-body .cog-copy-of-grades .cog-sheet-column {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .registrar-body .cog-copy-of-grades .cog-sheet {
+    min-height: auto;
+  }
+}
 
+@page {
+  size: A4;
+  margin: 10mm;
+}

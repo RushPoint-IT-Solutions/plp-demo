@@ -14,7 +14,7 @@
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-12 col-xl-10">
+        <div class="col-12 col-xl-10 cog-sheet-column">
             <div class="bg-white border border-dark p-3 cog-sheet">
                 <div class="border-top border-bottom border-dark py-2 mb-2">
                     <div class="text-center fw-bold text-uppercase">Student Data</div>
@@ -150,14 +150,15 @@
                     </table>
                 </div>
 
+                <div class="border-top border-bottom border-dark py-2 mb-2 cog-grading-heading">
+                    <div class="row align-items-center mx-0">
+                        <div class="col-9 text-center fw-bold text-uppercase">Grading System</div>
+                        <div class="col-3 text-center fw-bold text-uppercase">Remarks</div>
+                    </div>
+                </div>
+
                 <div class="table-responsive mb-2">
-                    <table class="table table-sm table-bordered border-dark mb-0">
-                        <thead>
-                            <tr>
-                                <th class="text-center text-uppercase" colspan="3">Grading System</th>
-                                <th class="text-center text-uppercase">Remarks</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-sm table-bordered border-dark mb-0 cog-grading-table">
                         <tbody>
                             <tr>
                                 <td>1.00 = 97.5-100</td>

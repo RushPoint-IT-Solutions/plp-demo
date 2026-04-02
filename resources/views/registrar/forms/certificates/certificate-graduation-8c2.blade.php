@@ -62,8 +62,6 @@
                         class="certificate-8c2__signature-image"
                     >
                 @endif
-
-                    <div class="certificate-8c2__signatory-name">MR. FEDERICO G. NUEVA</div>
                     <div class="certificate-8c2__signatory-title">University Registrar</div>
             </div>
 
