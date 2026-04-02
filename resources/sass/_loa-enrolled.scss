@@ -7,6 +7,11 @@ $loae-border-color: #000;
         overflow: visible;
     }
 
+    .counsel {
+        text-align: right !important;
+        margin-right: 5rem !important;
+    }
+
     .loae-page {
         --loae-scale: 1;
         --loae-zoom: 1;
@@ -102,7 +107,7 @@ $loae-border-color: #000;
         min-width: 794px;
         min-height: 1123px;
         margin: 0 auto;
-        padding: 1in;
+        padding: 0.5in;
         box-sizing: border-box;
         border: 1px solid $loae-border-color;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -120,7 +125,7 @@ $loae-border-color: #000;
     .loae-sheet,
     .loae-sheet * {
         color: #000 !important;
-        font-size: 10pt !important;
+        font-size: 8pt !important;
         border-color: #000 !important;
     }
 
@@ -129,6 +134,7 @@ $loae-border-color: #000;
     .loae-sheet select {
         color: #000 !important;
         border-color: #000 !important;
+        text-align: center;
     }
 
     .loae-form-no {
@@ -140,7 +146,7 @@ $loae-border-color: #000;
 
     .loae-title {
         margin: 0 0 14px;
-        font-size: 1.1rem;
+        font-size: 1.1rem !important;
         font-weight: 800;
         letter-spacing: 0.02em;
     }
@@ -247,11 +253,13 @@ $loae-border-color: #000;
     }
 
     .loae-inline--signature {
-        width: 340px;
+        width: 13rem;
     }
 
+
+
     .loae-inline--line {
-        width: 240px;
+        width: 100px;
     }
 
     .loae-inline--date-small {
@@ -298,6 +306,11 @@ $loae-border-color: #000;
         transform: rotate(45deg);
     }
 
+    .loae-rosc {
+        width: 200px !important;
+        margin-top: 26px
+    }
+
     .loae-reason-item--others {
         grid-column: span 2;
     }
@@ -305,6 +318,59 @@ $loae-border-color: #000;
     .loae-signature-block {
         margin-top: 14px;
         text-align: center;
+    }
+
+    .loae-DSA-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    /* DSA Director: short right-aligned signature line */
+    .loae-box--dsa .loae-sign-line {
+        margin: 0;
+        width: 100%;
+        text-align: right;
+    }
+
+    .loae-box--dsa .loae-sign-line .loae-inline--line {
+        width: 130px;
+        max-width: 160px;
+        box-sizing: border-box;
+        display: inline-block;
+    }
+
+    .loae-box--dsa .loae-sign-role {
+        text-align: right;
+        width: 100%;
+        margin-right: 2rem;
+    }
+
+    /* Guidance Counselor: short right-aligned signature line */
+    .loae-box--guidance .loae-sign-line {
+        margin: 0;
+        width: 100%;
+        text-align: right;
+    }
+
+    .loae-box--guidance .loae-sign-line .loae-inline--line {
+        width: 180px;
+        max-width: 180px;
+    
+
+    /* Ensure the 'Counseled:' paragraph in the guidance box aligns right */
+    .registrar-body .loae-box--guidance .counsel {
+        text-align: right !important;
+        margin-right: 5rem !important;
+    }
+        box-sizing: border-box;
+        display: inline-block;
+    }
+
+    .loae-box--guidance .loae-sign-role {
+        text-align: right;
+        width: 100%;
+        padding-right: 2rem;
     }
 
     .loae-caption {
@@ -331,8 +397,7 @@ $loae-border-color: #000;
     }
 
     .loae-table-lead {
-        margin: 0 0 6px;
-        font-weight: 600;
+        margin: 0 0 0px;
     }
 
     .loae-grade-table {
@@ -345,7 +410,6 @@ $loae-border-color: #000;
     .loae-grade-table th,
     .loae-grade-table td {
         border: 1px solid $loae-border-color;
-        padding: 4px 5px;
         font-size: 0.7rem;
         vertical-align: middle;
         background: #fff;
@@ -415,17 +479,13 @@ $loae-border-color: #000;
         flex-direction: column;
     }
 
-    .loae-grid--attestation .loae-box {
-        min-height: 146px;
-    }
-
     .loae-grid--clearance .loae-box {
         min-height: 128px;
     }
 
     .loae-grid--attestation .loae-sign-line,
     .loae-grid--clearance .loae-sign-line {
-        margin-top: auto;
+        margin-top: 5px;
     }
 
     .loae-box-title {
@@ -737,6 +797,14 @@ $loae-border-color: #000;
         max-width: 145px !important;
     }
 
+    /* Ensure registrar sign-line input inside unavailability block is 200px in print */
+    .registrar-body .loae-rosc .loae-inline--line {
+        width: 200px !important;
+        max-width: 200px !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+
     .registrar-body .loae-box--recorded .loae-sign-date .loae-inline--date-small {
         width: 70px !important;
     }
@@ -780,5 +848,38 @@ $loae-border-color: #000;
     .registrar-body .loae-reason-item input[type='checkbox']:checked + .loae-check-render::before,
     .registrar-body .loae-inline-check input[type='checkbox']:checked + .loae-check-render::before {
         content: "{✓}" !important;
+    }
+
+    /* Print overrides for DSA and Guidance signature lines */
+    .registrar-body .loae-box--dsa .loae-DSA-block {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+    }
+
+    .registrar-body .loae-box--dsa .loae-sign-line .loae-inline--line {
+        width: 130px !important;
+        max-width: 160px !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+
+    .registrar-body .loae-box--dsa .loae-sign-role {
+        text-align: right !important;
+    }
+
+    .registrar-body .loae-box--guidance .loae-sign-line {
+        text-align: right !important;
+    }
+
+    .registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
+        width: 160px !important;
+        max-width: 160px !important;
+        box-sizing: border-box !important;
+        display: inline-block !important;
+    }
+
+    .registrar-body .loae-box--guidance .loae-sign-role {
+        text-align: right !important;
     }
 }

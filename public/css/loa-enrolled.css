@@ -15,6 +15,11 @@
   overflow: visible;
 }
 
+.registrar-body .counsel {
+  text-align: right !important;
+  margin-right: 5rem !important;
+}
+
 .registrar-body .loae-page {
   --loae-scale: 1;
   --loae-zoom: 1;
@@ -110,7 +115,7 @@
   min-width: 794px;
   min-height: 1123px;
   margin: 0 auto;
-  padding: 1in;
+  padding: 0.5in;
   box-sizing: border-box;
   border: 1px solid #000;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -128,7 +133,7 @@
 .registrar-body .loae-sheet,
 .registrar-body .loae-sheet * {
   color: #000 !important;
-  font-size: 10pt !important;
+  font-size: 8pt !important;
   border-color: #000 !important;
 }
 
@@ -137,6 +142,7 @@
 .registrar-body .loae-sheet select {
   color: #000 !important;
   border-color: #000 !important;
+  text-align: center;
 }
 
 .registrar-body .loae-form-no {
@@ -148,7 +154,7 @@
 
 .registrar-body .loae-title {
   margin: 0 0 14px;
-  font-size: 1.1rem;
+  font-size: 1.1rem !important;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
@@ -255,11 +261,11 @@
 }
 
 .registrar-body .loae-inline--signature {
-  width: 340px;
+  width: 13rem;
 }
 
 .registrar-body .loae-inline--line {
-  width: 240px;
+  width: 100px;
 }
 
 .registrar-body .loae-inline--date-small {
@@ -307,6 +313,11 @@
   transform: rotate(45deg);
 }
 
+.registrar-body .loae-rosc {
+  width: 200px !important;
+  margin-top: 26px;
+}
+
 .registrar-body .loae-reason-item--others {
   grid-column: span 2;
 }
@@ -314,6 +325,67 @@
 .registrar-body .loae-signature-block {
   margin-top: 14px;
   text-align: center;
+}
+
+.registrar-body .loae-DSA-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.registrar-body {
+  /* DSA Director: short right-aligned signature line */
+}
+
+.registrar-body .loae-box--dsa .loae-sign-line {
+  margin: 0;
+  width: 100%;
+  text-align: right;
+}
+
+.registrar-body .loae-box--dsa .loae-sign-line .loae-inline--line {
+  width: 130px;
+  max-width: 160px;
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+.registrar-body .loae-box--dsa .loae-sign-role {
+  text-align: right;
+  width: 100%;
+  margin-right: 2rem;
+}
+
+.registrar-body {
+  /* Guidance Counselor: short right-aligned signature line */
+}
+
+.registrar-body .loae-box--guidance .loae-sign-line {
+  margin: 0;
+  width: 100%;
+  text-align: right;
+}
+
+.registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
+  width: 180px;
+  max-width: 180px;
+  /* Ensure the 'Counseled:' paragraph in the guidance box aligns right */
+}
+
+.registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line .registrar-body .loae-box--guidance .counsel {
+  text-align: right !important;
+  margin-right: 5rem !important;
+}
+
+.registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+.registrar-body .loae-box--guidance .loae-sign-role {
+  text-align: right;
+  width: 100%;
+  padding-right: 2rem;
 }
 
 .registrar-body .loae-caption {
@@ -340,8 +412,7 @@
 }
 
 .registrar-body .loae-table-lead {
-  margin: 0 0 6px;
-  font-weight: 600;
+  margin: 0 0 0px;
 }
 
 .registrar-body .loae-grade-table {
@@ -354,7 +425,6 @@
 .registrar-body .loae-grade-table th,
 .registrar-body .loae-grade-table td {
   border: 1px solid #000;
-  padding: 4px 5px;
   font-size: 0.7rem;
   vertical-align: middle;
   background: #fff;
@@ -424,17 +494,13 @@
   flex-direction: column;
 }
 
-.registrar-body .loae-grid--attestation .loae-box {
-  min-height: 146px;
-}
-
 .registrar-body .loae-grid--clearance .loae-box {
   min-height: 128px;
 }
 
 .registrar-body .loae-grid--attestation .loae-sign-line,
 .registrar-body .loae-grid--clearance .loae-sign-line {
-  margin-top: auto;
+  margin-top: 5px;
 }
 
 .registrar-body .loae-box-title {
@@ -745,6 +811,15 @@
     max-width: 145px !important;
   }
 
+  /* Ensure registrar sign-line input inside unavailability block is 200px in print */
+
+  .registrar-body .loae-rosc .loae-inline--line {
+    width: 200px !important;
+    max-width: 200px !important;
+    box-sizing: border-box !important;
+    display: inline-block !important;
+  }
+
   .registrar-body .loae-box--recorded .loae-sign-date .loae-inline--date-small {
     width: 70px !important;
   }
@@ -790,6 +865,40 @@
   .registrar-body .loae-reason-item input[type=checkbox]:checked + .loae-check-render::before,
   .registrar-body .loae-inline-check input[type=checkbox]:checked + .loae-check-render::before {
     content: "{\2713}" !important;
+  }
+
+  /* Print overrides for DSA and Guidance signature lines */
+
+  .registrar-body .loae-box--dsa .loae-DSA-block {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+  }
+
+  .registrar-body .loae-box--dsa .loae-sign-line .loae-inline--line {
+    width: 130px !important;
+    max-width: 160px !important;
+    box-sizing: border-box !important;
+    display: inline-block !important;
+  }
+
+  .registrar-body .loae-box--dsa .loae-sign-role {
+    text-align: right !important;
+  }
+
+  .registrar-body .loae-box--guidance .loae-sign-line {
+    text-align: right !important;
+  }
+
+  .registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
+    width: 160px !important;
+    max-width: 160px !important;
+    box-sizing: border-box !important;
+    display: inline-block !important;
+  }
+
+  .registrar-body .loae-box--guidance .loae-sign-role {
+    text-align: right !important;
   }
 }
 

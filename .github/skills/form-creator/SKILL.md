@@ -30,6 +30,7 @@ description: "Convert form screenshots to Laravel Blade forms with a fixed, non-
 
 ## 🛠️ Field Styling & Interactions
 - **Editable Fields:** All fields must be functional and editable `<input>`, `<textarea>`, or `<select>` tags.
+- **Auto-Expanding Table Cells:** For fields inside grid/table cells where text might wrap, do NOT use standard `<input>` tags. Use `<textarea rows="1">` with CSS `resize: none; overflow: hidden; height: auto;`. Apply JavaScript (inline or external) to auto-expand the vertical height based on content length so text is NEVER hidden. Example: `oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"`
 - **Custom Checkboxes:** Do NOT use default browser checkboxes. Style them to look exactly like `{ }` (brackets) in the print view while remaining clickable on the screen.
 
 ## 🎛️ Conditional Features (ONLY IF EXPLICITLY REQUESTED)

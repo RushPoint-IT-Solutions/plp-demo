@@ -133,13 +133,15 @@
         <div class="loae-grid loae-grid--two loae-grid--attestation">
             <section class="loae-box loae-box--dsa">
                 <p>This is to attest that the student did not commit any offenses stipulated in the student manual nor make any derogatory act contrary to the university's name, reputation and ideals.</p>
-                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
-                <p class="loae-sign-role">DSA Director</p>
+                <div class="loae-DSA-block">
+                    <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
+                    <p class="loae-sign-role">DSA Director</p>
+                </div>
             </section>
 
             <section class="loae-box loae-box--guidance">
                 <p class="loae-box-title">FOR FAMILY PROBLEMS/WORK/FINANCIAL CONSTRAINTS REASONS ONLY:</p>
-                <p>Counseled:</p>
+                <p class="counsel">Counseled:</p>
                 <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
                 <p class="loae-sign-role">Guidance Counselor</p>
             </section>
@@ -150,15 +152,23 @@
                 <p class="loae-box-title">FOR MEDICAL CONDITION/PREGNANCY REASONS ONLY:</p>
                 <p>Student's Health Condition: <input type="text" class="loae-inline loae-inline--line" value=""></p>
                 <p>REMARKS: <label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA NECESSARY</span></label> <label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA NOT NECESSARY</span></label></p>
-                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
-                <p class="loae-sign-role">Medical Officer</p>
+                <div class="row justify-content-end">
+                    <div class="col-auto">
+                        <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
+                        <p class="loae-sign-role">Medical Officer</p>
+                    </div>
+                </div>
             </section>
 
             <section class="loae-box loae-box--unavailability">
                 <p class="loae-box-title">FOR UNAVAILABILITY OF SUBJECT REASON ONLY:</p>
                 <p>This is to attest that the student has no subject to enroll this semester.</p>
-                <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
-                <p class="loae-sign-role">Registrar's Office College Secretary</p>
+                <div class="row justify-content-end">
+                    <div class="col-auto">
+                        <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line loae-rosc" value=""></p>
+                        <p class="loae-sign-role">Registrar's Office College Secretary</p>
+                    </div>
+                </div>
             </section>
         </div>
 
