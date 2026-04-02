@@ -216,7 +216,6 @@ $loae-border-color: #6f6f6f;
         gap: 6px;
         margin: 0;
         font-size: 0.95em;
-        font-weight: 600;
     }
 
     .loae-reason-item input[type='checkbox'] {
@@ -693,5 +692,39 @@ $loae-border-color: #6f6f6f;
     .registrar-body .loae-readmission {
         break-inside: avoid;
         page-break-inside: avoid;
+    }
+
+    /* Print-only checkbox replacement: show { } and {✓} when checked */
+    .registrar-body .loae-reason-item input[type='checkbox'],
+    .registrar-body .loae-inline-check input[type='checkbox'] {
+        position: absolute !important;
+        left: -9999px !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .registrar-body .loae-reason-item .loae-check-render,
+    .registrar-body .loae-inline-check .loae-check-render {
+        display: inline-block !important;
+        position: relative !important;
+        padding-left: 20px !important;
+    }
+
+    .registrar-body .loae-reason-item .loae-check-render::before,
+    .registrar-body .loae-inline-check .loae-check-render::before {
+        content: "{ }" !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        line-height: 1 !important;
+    }
+
+    .registrar-body .loae-reason-item input[type='checkbox']:checked + .loae-check-render::before,
+    .registrar-body .loae-inline-check input[type='checkbox']:checked + .loae-check-render::before {
+        content: "{✓}" !important;
     }
 }

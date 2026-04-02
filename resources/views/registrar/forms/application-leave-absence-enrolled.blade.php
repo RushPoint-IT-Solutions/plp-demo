@@ -72,13 +72,13 @@
         </p>
 
         <div class="loae-reasons">
-            <label class="loae-reason-item"><input type="checkbox"> medical condition</label>
-            <label class="loae-reason-item"><input type="checkbox"> financial constraint</label>
-            <label class="loae-reason-item"><input type="checkbox"> unavailability of subject</label>
-            <label class="loae-reason-item"><input type="checkbox"> work</label>
-            <label class="loae-reason-item"><input type="checkbox"> pregnancy</label>
-            <label class="loae-reason-item"><input type="checkbox"> family problem</label>
-            <label class="loae-reason-item loae-reason-item--others"><input type="checkbox"> others <input type="text" class="loae-inline loae-inline--others" value=""></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">medical condition</span></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">financial constraint</span></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">unavailability of subject</span></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">work</span></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">pregnancy</span></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">family problem</span></label>
+            <label class="loae-reason-item loae-reason-item--others"><input type="checkbox"><span class="loae-check-render">others</span> <input type="text" class="loae-inline loae-inline--others" value=""></label>
         </div>
 
         <p class="loae-paragraph loae-paragraph--agreement">
@@ -144,7 +144,7 @@
             <section class="loae-box loae-box--medical">
                 <p class="loae-box-title">FOR MEDICAL CONDITION/PREGNANCY REASONS ONLY:</p>
                 <p>Student's Health Condition: <input type="text" class="loae-inline loae-inline--line" value=""></p>
-                <p>REMARKS: <label class="loae-inline-check"><input type="checkbox"> LOA NECESSARY</label> <label class="loae-inline-check"><input type="checkbox"> LOA NOT NECESSARY</label></p>
+                <p>REMARKS: <label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA NECESSARY</span></label> <label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA NOT NECESSARY</span></label></p>
                 <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line" value=""></p>
                 <p class="loae-sign-role">Medical Officer</p>
             </section>
@@ -166,15 +166,15 @@
                         <tr><td>Max. Residency Yrs</td><td><input type="text" class="loae-mini-input" value=""></td></tr>
                         <tr><td>No. of Yrs Enrolled</td><td><input type="text" class="loae-mini-input" value=""></td></tr>
                         <tr><td>No. of Remaining Yrs</td><td><input type="text" class="loae-mini-input" value=""></td></tr>
-                        <tr><td>Will Require Extension of Residency Yrs</td><td><label class="loae-inline-check"><input type="checkbox"> Y</label><label class="loae-inline-check"><input type="checkbox"> N</label></td></tr>
-                        <tr><td>All subjects are still offered upon projected return</td><td><label class="loae-inline-check"><input type="checkbox"> Y</label><label class="loae-inline-check"><input type="checkbox"> N</label></td></tr>
+                        <tr><td>Will Require Extension of Residency Yrs</td><td><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">Y</span></label><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">N</span></label></td></tr>
+                        <tr><td>All subjects are still offered upon projected return</td><td><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">Y</span></label><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">N</span></label></td></tr>
                     </tbody>
                 </table>
             </section>
 
             <section class="loae-box loae-box--approval">
-                <p><label class="loae-inline-check"><input type="checkbox"> LOA Approved</label></p>
-                <p><label class="loae-inline-check"><input type="checkbox"> LOA Disapproved</label></p>
+                <p><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA Approved</span></label></p>
+                <p><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">LOA Disapproved</span></label></p>
                 <p class="loae-sign-line loae-sign-line--spaced"><input type="text" class="loae-inline loae-inline--line" value=""></p>
                 <p class="loae-sign-role">College Dean</p>
                 <p class="loae-sign-date">Date <input type="text" class="loae-inline loae-inline--date-small" value=""></p>
