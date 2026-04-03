@@ -197,6 +197,22 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Process > Exam Category
+     */
+    public function examCategory()
+    {
+        return view('registrar.process.exam-category');
+    }
+
+    /**
+     * Process > Exam List
+     */
+    public function examList()
+    {
+        return view('registrar.process.exam-list');
+    }
+
+    /**
      * Process > Batch Upload Image
      */
     public function batchUpload()
@@ -630,6 +646,14 @@ class RegistrarController extends Controller
     public function subjectFile()
     {
         return view('registrar.registrar-menu.academic-master.subject-file');
+    }
+
+    /**
+     * Registrar > Academic Master > Curriculum File
+     */
+    public function curriculumFile()
+    {
+        return view('registrar.registrar-menu.academic-master.curriculum-file');
     }
 
     /**

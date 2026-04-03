@@ -104,6 +104,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
+        Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
+        Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
@@ -120,6 +122,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
             Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
+            Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });
