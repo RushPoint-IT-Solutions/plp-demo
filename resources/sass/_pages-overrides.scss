@@ -133,9 +133,368 @@
     gap: 14px;
 }
 
+.setup-row--apply-program {
+    flex-wrap: nowrap;
+    gap: 12px;
+}
+
+.setup-col--apply-choice {
+    max-width: 220px;
+}
+
+.application-form-page {
+    .step-save-feedback {
+        margin-top: 6px;
+    }
+
+    .applicant-alert-error {
+        border: 1px solid #f3b7b7;
+        background: #fdeeee;
+        color: #8e2121;
+    }
+
+    .applicant-error-list {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .setup-row--stacked {
+        margin-bottom: 14px;
+    }
+
+    .setup-col--full {
+        flex: 0 0 100%;
+        min-width: 100%;
+    }
+
+    .setup-required {
+        color: #d94141;
+        font-weight: 700;
+    }
+
+    .setup-helper--tight {
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+
+    .setup-checkbox-label--inline-note {
+        align-items: flex-start;
+        gap: 10px;
+        line-height: 1.45;
+        color: #5a5a5a;
+        font-size: 0.8rem;
+
+        input[type='checkbox'] {
+            margin-top: 2px;
+        }
+    }
+
+    .submitted-intro-card {
+        min-height: 480px;
+        border-style: solid;
+    }
+
+    .submitted-intro-title-row {
+        margin-bottom: 14px;
+    }
+
+    .submitted-intro-title {
+        font-size: 12pt;
+        color: $plp-green;
+    }
+
+    .submitted-intro-text {
+        font-size: 12pt;
+        color: $text-primary;
+        line-height: 1.45;
+        margin-bottom: 16px;
+        max-width: 1120px;
+    }
+
+    .submitted-intro-note {
+        color: #ff4f4f;
+        font-size: 12pt;
+        line-height: 1.45;
+        margin-bottom: 14px;
+    }
+
+    .submitted-intro-note--bottom {
+        margin-top: 16px;
+        margin-bottom: 18px;
+        max-width: 1130px;
+    }
+
+    .submitted-credentials-box {
+        border: 2px solid $plp-green;
+        border-radius: 12px;
+        max-width: 690px;
+        margin: 0 auto;
+        padding: 20px 26px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+
+        p {
+            margin: 0;
+            font-size: 12pt;
+            color: #111;
+            line-height: 1.45;
+
+            span {
+                color: $plp-green;
+                font-weight: 700;
+            }
+        }
+    }
+
+    .submitted-continue-form {
+        display: flex;
+        justify-content: center;
+    }
+
+    .submitted-continue-btn {
+        min-width: 390px;
+        font-size: 12pt;
+    }
+
+    .submitted-header-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 14px;
+    }
+
+    .submitted-header-field {
+        flex: 0 0 240px;
+    }
+
+    .submitted-header-field--name {
+        flex: 0 0 300px;
+    }
+
+    .submitted-status-card {
+        border-style: solid;
+    }
+
+    .submitted-status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .submitted-panel-title {
+        text-align: center;
+        color: $plp-green;
+        font-family: $font-primary;
+        font-size: 1.35rem;
+        margin-bottom: 12px;
+        font-weight: 800;
+    }
+
+    .submitted-calendar-panel {
+        border: 1px solid #dbdbdb;
+        border-radius: 14px;
+        padding: 10px 12px 12px;
+    }
+
+    .submitted-status-summary {
+        border: 1px dashed #bcd2c4;
+        border-radius: 12px;
+        background: #f4f8f5;
+        padding: 18px 14px;
+        text-align: center;
+        margin-top: 6px;
+    }
+
+    .submitted-status-label {
+        margin: 0 0 8px;
+        color: #55685d;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .submitted-status-date {
+        margin: 0;
+        color: $plp-green;
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .submitted-status-note {
+        margin: 10px 0 0;
+        color: #4e5f55;
+        font-size: 0.92rem;
+        line-height: 1.4;
+    }
+
+    .submitted-calendar-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .submitted-calendar-nav {
+        border: 0;
+        background: transparent;
+        color: #2a2a2a;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        font-size: 1.35rem;
+        line-height: 1;
+        padding: 0;
+        cursor: pointer;
+
+        &:hover {
+            background: #e9efe9;
+        }
+    }
+
+    .submitted-calendar-select {
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid #d3d3d3;
+        padding: 0 10px;
+        font-size: 1.05rem;
+        color: #383838;
+        background: #fff;
+    }
+
+    .submitted-calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 1rem;
+        color: #8b8b8b;
+        margin-bottom: 4px;
+    }
+
+    .submitted-calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+    }
+
+    .submitted-calendar-day {
+        height: 38px;
+        border: 0;
+        background: transparent;
+        border-radius: 8px;
+        font-size: 1.05rem;
+        color: #2f2f2f;
+        cursor: pointer;
+
+        &:hover {
+            background: #edf3ed;
+        }
+    }
+
+    .submitted-calendar-day.is-muted {
+        color: #c7c7c7;
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+
+    .submitted-calendar-day.is-selected {
+        background: $plp-green;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .submitted-calendar-current {
+        margin-top: 12px;
+        font-size: 1.05rem;
+        color: #3a3a3a;
+    }
+
+    .submitted-assessment-panel {
+        background: #e5eeea;
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .submitted-assessment-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .submitted-assessment-item {
+        background: $plp-green;
+        color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        span {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        strong {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+    }
+}
+
 @include down(768px) {
     .setup-row--app-meta {
         flex-wrap: wrap;
+    }
+
+    .setup-row--apply-program {
+        flex-wrap: wrap;
+    }
+
+    .setup-col--apply-choice {
+        flex: 0 0 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    .application-form-page {
+        .submitted-header-row {
+            flex-wrap: wrap;
+        }
+
+        .submitted-header-field,
+        .submitted-header-field--name {
+            flex: 0 0 100%;
+        }
+
+        .submitted-status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .submitted-intro-text,
+        .submitted-intro-note,
+        .submitted-credentials-box p,
+        .submitted-panel-title,
+        .submitted-status-date,
+        .submitted-status-note,
+        .submitted-calendar-select,
+        .submitted-calendar-current,
+        .submitted-assessment-item span,
+        .submitted-assessment-item strong {
+            font-size: 1rem;
+        }
+
+        .submitted-continue-btn {
+            min-width: 220px;
+        }
+
+        .submitted-calendar-day {
+            height: 34px;
+            font-size: 0.95rem;
+        }
     }
 }
 
@@ -1241,16 +1600,34 @@ body.page-profile-view .pv-layout {
     svg { cursor: pointer; &:hover { color: #006837; } }
 }
 .reg-see-all {
-    display: block;
-    text-align: center;
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #006837;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    margin-top: auto;
+    padding: 8px 14px;
+    border: 1px solid #0a813c;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #0a813c;
+    line-height: 1;
     text-decoration: none;
-    &:hover { text-decoration: underline; }
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.reg-see-all:hover,
+.reg-see-all:focus,
+.reg-see-all:active,
+.reg-see-all:visited {
+    color: #0a813c;
+    text-decoration: none;
+}
+.reg-see-all:hover,
+.reg-see-all:focus {
+    background: #edf8f1;
+    border-color: #076b31;
+    outline: none;
 }
 .reg-sched-priority-label,
 .reg-sched-other-label {
@@ -2143,6 +2520,41 @@ select.req-modal-input {
     }
 }
 #apstTable td:first-child { position: relative; }
+#examListTable td:first-child,
+#examCategoryTable td:first-child { position: relative; }
+
+#examListTable .apst-dropdown,
+#examCategoryTable .apst-dropdown {
+    position: fixed;
+    z-index: 9999;
+}
+
+.exam-modal-delete-box {
+    min-width: 300px;
+}
+
+.exam-modal-delete-text {
+    font-size: 0.88rem;
+    color: #444;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.exam-modal-delete-title {
+    color: #c0392b;
+}
+
+.exam-modal-delete-actions {
+    justify-content: center;
+}
+
+.exam-btn-danger {
+    background: #c0392b;
+}
+
+.exam-btn-danger:hover {
+    background: #a93226;
+}
 
 // ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 // REGISTRAR ΓÇö Application Process: applicant detail panels
@@ -2239,6 +2651,81 @@ select.req-modal-input {
 
     .apc-col-check {
         width: 36px;
+        text-align: center;
+    }
+
+    #docsTable input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #9ca3af;
+        border-radius: 5px;
+        background: #ffffff;
+        display: inline-grid;
+        place-content: center;
+        vertical-align: middle;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #docsTable input[type="checkbox"]:hover {
+        border-color: #006837;
+    }
+
+    #docsTable input[type="checkbox"]:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.2);
+    }
+
+    #docsTable input[type="checkbox"]:checked {
+        background: #006837;
+        border-color: #006837;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 11px 9px;
+    }
+
+    #docsTable input[type="checkbox"]:indeterminate {
+        background: #ffffff;
+        border-color: #006837;
+        background-image: linear-gradient(#006837, #006837);
+        background-size: 10px 2px;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    #docsTable thead input[type="checkbox"] {
+        border-color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    #docsTable thead input[type="checkbox"]:checked {
+        background: #ffffff;
+        border-color: #ffffff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='%23006837' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 11px 9px;
+    }
+
+    #docsTable thead input[type="checkbox"]:hover {
+        border-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+    }
+
+    #docsTable td > input[type="checkbox"]:checked::after,
+    #docsTable thead input[type="checkbox"]:checked::after {
+        content: none;
+    }
+
+    .apc-col-check--tor {
+        width: 54px;
+        text-align: center;
+    }
+
+    .apc-check-cell {
         text-align: center;
     }
 
@@ -2536,5 +3023,236 @@ select.req-modal-input {
 body.page-profile-edit {
     .student-main-wrapper { overflow-y: auto !important; }
     .student-content { flex: none !important; }
+}
+
+/* Academic Calendar: keep Show Entries inline (SHOW [select] ENTRIES) */
+.pf-table-controls .pf-entries-control,
+.sc-table-head .pf-entries-control {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.sc-table-head .pf-entries-control.sc-show-entry {
+    display: inline-flex;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.pf-table-controls .pf-entries-control label,
+.pf-table-controls .pf-entries-control span,
+.sc-table-head .pf-entries-control.sc-show-entry label,
+.sc-table-head .pf-entries-control.sc-show-entry span {
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* Curriculum File */
+.cf-page {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cf-toolbar-card {
+    padding: 14px;
+}
+
+.cf-toolbar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.cf-filter-field,
+.cf-field-row,
+.cf-field-wide {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cf-toolbar-action,
+.cf-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cf-grid-two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cf-panel-card {
+    border: 1px solid #0f7b43;
+}
+
+.cf-panel-title {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: #0f7b43;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.cf-panel-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cf-field-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cf-subtitle {
+    color: #2f3a45;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+/* Configuration extended sections */
+.cfg-filter-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: end;
+}
+
+.cfg-filter-row-tight {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+}
+
+.cfg-filter-row-cutoff-reg {
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+.cfg-filter-row-cutoff-reg .cfg-filter-group:nth-child(5) {
+    grid-column: 1 / span 2;
+}
+
+.cfg-filter-row-cutoff-reg .cfg-filter-action {
+    grid-column: 3 / span 2;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.cfg-filter-row-cutoff-reg .cfg-filter-action .pf-btn-new {
+    width: auto;
+    min-width: 150px;
+    max-width: 180px;
+    white-space: nowrap;
+}
+
+.cfg-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.cfg-filter-group-wide {
+    grid-column: span 3;
+}
+
+.cfg-filter-action {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cfg-card .app-table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cfg-card .cfg-table {
+    table-layout: auto;
+    min-width: max-content;
+}
+
+.cfg-card .cfg-table thead th,
+.cfg-card .cfg-table tbody td {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+#cfgSignatureTable .apst-dropdown,
+#cfgCutoffDateTable .apst-dropdown,
+#cfgSectionCutoffTable .apst-dropdown,
+#cfgCutoffConfigTable .apst-dropdown,
+#cfgCurriculumDisplayTable .apst-dropdown {
+    position: fixed;
+}
+
+#cfgSignatureTable td:last-child .apst-action-btn,
+#cfgCutoffDateTable td:last-child .apst-action-btn,
+#cfgSectionCutoffTable td:last-child .apst-action-btn,
+#cfgCutoffConfigTable td:last-child .apst-action-btn,
+#cfgCurriculumDisplayTable td:last-child .apst-action-btn {
+    margin: 0 auto;
+}
+
+@media (max-width: 980px) {
+    .cf-toolbar-grid,
+    .cf-grid-two,
+    .cf-field-split,
+    .cfg-filter-row,
+    .cfg-filter-row-tight,
+    .cfg-filter-row-cutoff-reg {
+        grid-template-columns: 1fr;
+    }
+
+    .cfg-filter-group-wide {
+        grid-column: auto;
+    }
+
+    .cf-toolbar-action,
+    .cf-actions,
+    .cfg-filter-action {
+        justify-content: stretch;
+    }
+
+    .cf-toolbar-action .pf-btn-new,
+    .cf-actions .pf-btn-new,
+    .cfg-filter-action .pf-btn-new,
+    .cfg-filter-row-cutoff-reg .cfg-filter-action .pf-btn-new {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 1400px) {
+    .cfg-filter-row-cutoff-reg {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cfg-filter-row-cutoff-reg .cfg-filter-group:nth-child(5) {
+        grid-column: 1 / span 2;
+    }
+
+    .cfg-filter-row-cutoff-reg .cfg-filter-action {
+        grid-column: 3;
+    }
+}
+
+@media (max-width: 1150px) {
+    .cfg-filter-row-cutoff-reg {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cfg-filter-row-cutoff-reg .cfg-filter-group:nth-child(5),
+    .cfg-filter-row-cutoff-reg .cfg-filter-action {
+        grid-column: auto;
+    }
 }
 

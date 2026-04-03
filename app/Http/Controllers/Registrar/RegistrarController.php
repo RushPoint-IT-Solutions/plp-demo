@@ -95,7 +95,73 @@ class RegistrarController extends Controller
      */
     public function applicationProcess()
     {
-        return view('registrar.process.application-process');
+        $applicants = Applicant::query()
+            ->with('applicationPreference')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->limit(300)
+            ->get();
+
+        return view('registrar.process.application-process', compact('applicants'));
+    }
+
+    public function updateApplicantExamSchedule(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'exam_date' => 'required|date',
+            'exam_time' => 'required|date_format:H:i',
+            'exam_room' => 'required|string|max:190',
+        ]);
+
+        $examDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['exam_date'] . ' ' . $validated['exam_time']
+        );
+
+        $applicant->exam_date = $examDateTime;
+        $applicant->exam_room = $validated['exam_room'];
+        if (empty($applicant->exam_result_status)) {
+            $applicant->exam_result_status = 'Pending';
+        }
+        $applicant->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Exam schedule saved successfully.',
+            'row' => [
+                'id' => $applicant->id,
+                'applicant_id' => $applicant->applicant_id,
+                'exam_date' => optional($applicant->exam_date)->format('Y-m-d'),
+                'exam_time' => optional($applicant->exam_date)->format('H:i'),
+                'exam_room' => (string) ($applicant->exam_room ?? ''),
+                'exam_result_status' => (string) ($applicant->exam_result_status ?? 'Pending'),
+            ],
+        ]);
+    }
+
+    public function updateApplicantExamResult(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'exam_result_status' => 'required|in:Pending,Passed,Failed',
+            'exam_score' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $applicant->exam_result_status = $validated['exam_result_status'];
+        $applicant->exam_score = array_key_exists('exam_score', $validated)
+            ? $validated['exam_score']
+            : null;
+        $applicant->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Exam result saved successfully.',
+            'row' => [
+                'id' => $applicant->id,
+                'applicant_id' => $applicant->applicant_id,
+                'exam_result_status' => (string) ($applicant->exam_result_status ?? 'Pending'),
+                'exam_score' => $applicant->exam_score,
+            ],
+        ]);
     }
 
     /**
@@ -128,6 +194,22 @@ class RegistrarController extends Controller
     public function approvalStatus()
     {
         return view('registrar.process.approval-status');
+    }
+
+    /**
+     * Process > Exam Category
+     */
+    public function examCategory()
+    {
+        return view('registrar.process.exam-category');
+    }
+
+    /**
+     * Process > Exam List
+     */
+    public function examList()
+    {
+        return view('registrar.process.exam-list');
     }
 
     /**
@@ -564,6 +646,14 @@ class RegistrarController extends Controller
     public function subjectFile()
     {
         return view('registrar.registrar-menu.academic-master.subject-file');
+    }
+
+    /**
+     * Registrar > Academic Master > Curriculum File
+     */
+    public function curriculumFile()
+    {
+        return view('registrar.registrar-menu.academic-master.curriculum-file');
     }
 
     /**
@@ -1307,6 +1397,426 @@ class RegistrarController extends Controller
             'totalUnits' => $totalUnits,
             'assessment' => $assessment,
         ]);
+    }
+
+    /**
+     * Registrar > Forms > Citizen's Charter
+     */
+    public function formsCitizensCharter()
+    {
+        return view('registrar.forms.citizens-charter', [
+            'coverData' => [
+                'institution' => 'PAMANTASAN NG LUNGSOD NG PASIG',
+                'institution_sub' => '(University of Pasig City)',
+                'document_title' => "CITIZEN'S CHARTER (ENGLISH)",
+                'edition' => '2025 EDISYON',
+                'office' => 'OFFICE OF THE UNIVERSITY REGISTRAR',
+            ],
+            'charterPages' => $this->citizensCharterPages(),
+        ]);
+    }
+
+    /**
+     * Registrar > Forms > Request Form for F 137A
+     */
+    public function formsRequestFormF137a()
+    {
+        return view('registrar.forms.request-form-f-137a');
+    }
+
+    private function citizensCharterPages(): array
+    {
+        return [
+            [
+                'type' => 'transaction',
+                'title' => 'SUBMISSION OF ENTRANCE CREDENTIALS',
+                'lead' => 'Successful admission qualifiers must submit entrance credentials to the Registrar\'s Office to be eligible for registration.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) ADMISSION QUALIFIERS (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => '2 PCS 2X2 PICTURE', 'where' => ''],
+                    ['no' => '2', 'requirement' => 'REPORT CARD (GRADE 12) Form 138', 'where' => 'LAST SCHOOL ATTENDED'],
+                    ['no' => '3', 'requirement' => 'PSA BIRTH CERTIFICATE (PHOTOCOPY)', 'where' => 'PSA'],
+                    ['no' => '4', 'requirement' => '2 VALID ID OF PARENTS (PHOTOCOPY OF ANY OF THE FF:)', 'where' => ''],
+                    ['no' => '', 'requirement' => 'DRIVER\'S LICENSE', 'where' => 'LTO'],
+                    ['no' => '', 'requirement' => 'PASSPORT', 'where' => 'DFA'],
+                    ['no' => '', 'requirement' => 'PRC LICENSE', 'where' => 'PRC'],
+                    ['no' => '', 'requirement' => 'SSS ID', 'where' => 'SSS'],
+                    ['no' => '', 'requirement' => 'GSIS UMID ID', 'where' => 'GSIS'],
+                    ['no' => '', 'requirement' => 'VOTER\'S ID', 'where' => 'COMELEC'],
+                    ['no' => '', 'requirement' => 'TAXPAYER\'S ID', 'where' => 'BIR'],
+                    ['no' => '', 'requirement' => 'COMPANY ID', 'where' => 'REQUESTING PARTY\'S COMPANY'],
+                    ['no' => '', 'requirement' => 'POSTAL ID', 'where' => 'PHILPOST'],
+                ],
+                'steps' => [
+                    [
+                        'no' => '1',
+                        'client' => 'Student will submit all original docs & present photocopy to serve as receiving copy',
+                        'office' => 'Stamp & return the photocopied docs to certify that the office has received the requirements',
+                        'fees' => 'None',
+                        'time' => '7 minutes',
+                        'person' => 'Erran Gerald Pastorfide',
+                    ],
+                    [
+                        'no' => '2',
+                        'client' => '',
+                        'office' => 'Issuance of Letter Request for Form 137/TCR and Enrolment Slip with Student No.',
+                        'fees' => 'None',
+                        'time' => '3 minutes',
+                        'person' => 'Erran Gerald Pastorfide',
+                    ],
+                ],
+                'totals' => ['fees' => 'None', 'time' => ''],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'ENROLMENT OF NEW STUDENT',
+                'lead' => 'Students have to register the courses they will enroll before the start of every semester to be officially enlisted in classes.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Enrollment slip issued upon submission of entrance credentials', 'where' => "PLP Registrar's Office"],
+                ],
+                'steps' => [
+                    [
+                        'no' => '1',
+                        'client' => 'Proceed to respective colleges.',
+                        'office' => '(1) Tagging of curriculum (2) Advising of subjects to be taken (3) Issuance of assessment slip.',
+                        'fees' => 'None',
+                        'time' => '5 minutes',
+                        'person' => 'College Deans',
+                    ],
+                    [
+                        'no' => '2',
+                        'client' => "Proceed to Registrar's Office.",
+                        'office' => '(1) Print and issue Certificate of Registration.',
+                        'fees' => 'None',
+                        'time' => '1 minute',
+                        'person' => 'Erran Gerald Pastorfide',
+                    ],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '6 minutes'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'ENROLMENT OF OLD STUDENT',
+                'lead' => 'Students have to register the courses they will enroll before the start of every semester to be officially enlisted in classes.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Grade Report (Previous Semester)', 'where' => 'Respective Colleges'],
+                ],
+                'steps' => [
+                    [
+                        'no' => '1',
+                        'client' => 'Proceed to respective colleges.',
+                        'office' => '(1) Screen students still eligible for enrollment (2) Advising of courses to be taken (3) Issuance of Assessment Slip.',
+                        'fees' => 'None',
+                        'time' => '5 minutes',
+                        'person' => 'College Deans',
+                    ],
+                    [
+                        'no' => '2',
+                        'client' => 'Proceed to Finance Office for clearance (for students with balance only and AB Psychology students only).',
+                        'office' => '(1) Collection of fees (2) Tagging of payment in UIS.',
+                        'fees' => 'Varies',
+                        'time' => '10 minutes',
+                        'person' => 'Jenky Estayani',
+                    ],
+                    [
+                        'no' => '3',
+                        'client' => "Proceed to Registrar's Office for AB Psychology students.",
+                        'office' => '(1) Print and issue Certificate of Registration.',
+                        'fees' => 'None',
+                        'time' => '1 minute',
+                        'person' => 'Erran Gerald Pastorfide',
+                    ],
+                ],
+                'totals' => ['fees' => 'Varies', 'time' => '16 minutes'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'REQUEST FOR EXIT CLEARANCE',
+                'lead' => 'Students requesting credentials for transfer purposes need to secure exit clearance from key offices to ensure that students have no outstanding obligatios before they are issued credentials.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'School ID', 'where' => 'PLP Multimedia Office'],
+                    ['no' => '2', 'requirement' => 'Validated withdrawal of enrollment form (currently enrolled only)', 'where' => "Window 1, Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Proceed to Window 1 to secure Exit Clearance Form.', 'office' => 'Issue Exit Clearance Form.', 'fees' => 'None', 'time' => '1 minute', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Accomplish form and secure signatures of concerned offices and dean.', 'office' => 'Dean and administrative officers sign if student has no pending obligation.', 'fees' => 'None', 'time' => '30 minutes', 'person' => 'College Deans'],
+                    ['no' => '3', 'client' => "Submit form to Office of the Registrar.", 'office' => 'Screen and receive accomplished form.', 'fees' => 'None', 'time' => '1 minute', 'person' => 'Marilyn Garcia'],
+                    ['no' => '4', 'client' => '', 'office' => 'Record and process application for withdrawal in UIS (currently enrolled only).', 'fees' => 'None', 'time' => '2 minutes', 'person' => 'Erran Gerald Pastorfide'],
+                    ['no' => '5', 'client' => 'Receive validated copy of Exit Clearance Form.', 'office' => 'Validate and issue copy of Exit Clearance Form.', 'fees' => 'None', 'time' => '1 minute', 'person' => 'Marilyn Garcia'],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '35 minutes'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'ADJUSTMENT OF REGISTRATION',
+                'lead' => 'Students may add, delete, or change course schedule within the first week from the start of classes.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Latest Certificate of Registration', 'where' => "Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => "Secure Adjustment of Registration Form from Window 1 of Registrar's Office.", 'office' => 'Issue Adjustment of Registration Form.', 'fees' => '0.00', 'time' => '1 minute', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Accomplish the form and secure signatures of professors and dean.', 'office' => 'Faculty and administrative officers sign the form.', 'fees' => '0.00', 'time' => '30 minutes', 'person' => 'Faculty and Dean'],
+                    ['no' => '3', 'client' => "Submit form to Office of the Registrar.", 'office' => 'Screen and receive the accomplished Adjustment of Registration Form.', 'fees' => '0.00', 'time' => '1 minute', 'person' => 'Marilyn Garcia'],
+                    ['no' => '4', 'client' => '', 'office' => 'Record and process application for adjustment of Registration in UIS.', 'fees' => '0.00', 'time' => '1 minute', 'person' => 'Erran Gerald Pastorfide'],
+                    ['no' => '5', 'client' => 'Receive copy of validated Adjustment of Registration Form.', 'office' => 'Issue validated copy of Adjustment of Registration Form.', 'fees' => '0.00', 'time' => '1 minute', 'person' => 'Marilyn Garcia'],
+                ],
+                'totals' => ['fees' => '0.00', 'time' => '37 minutes'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'RETRIEVAL OF SUBMITTED ENTRANCE CREDENTIALS',
+                'lead' => "Freshmen who did not report to classes and wish to withdraw from the list of officially enrolled may secure waiver for cancellation of enrollment from the Registrar's Office until two weeks from the start of classes for them to retrieve their submitted enrollment requirements.",
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Receiving copy of submitted documents', 'where' => "Registrar's Office"],
+                    ['no' => '2', 'requirement' => 'Original copy of Letter Request for Form 137', 'where' => "Registrar's Office"],
+                    ['no' => '3', 'requirement' => 'Validated withdrawal of enrollment form (currently enrolled only)', 'where' => "Registrar's Office"],
+                    ['no' => '4', 'requirement' => 'Certificate of Registration (currently enrolled only)', 'where' => "Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Student will request for Cancellation of Enrolment at the Registrar\'s Office', 'office' => 'Records Officer will accomplish Waiver for Cancellation of Enrolment', 'fees' => 'None', 'time' => '5 mins', 'person' => 'Erran Gerald Pastorfide'],
+                    ['no' => '2', 'client' => 'Sign the Waiver and secure the original copy of submitted entrance credentials', 'office' => 'Issue the original copy of submitted entrance credentials and copy of the validated waiver for cancellation of enrollment', 'fees' => 'None', 'time' => '3 mins', 'person' => 'Erran Gerald Pastorfide'],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '8 mins'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'DROPPING OF COURSES',
+                'lead' => 'Students who enrolled in courses but failed to attend classes may apply for dropping of courses at least two weeks before the scheduled midterm examination to obtain an OD remark.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Certificate of Registration', 'where' => "PLP Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Secure a dropping form from the Registrar\'s Office', 'office' => 'Issue Dropping Form to students', 'fees' => 'None', 'time' => '5 mins', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Accomplish the form & secure the signature of the respective professor and Dean;', 'office' => 'Professors and Dean will sign the dropping form;', 'fees' => 'None', 'time' => '30 mins', 'person' => 'Faculty and Dean'],
+                    ['no' => '3', 'client' => 'Submit the form to Office of the Registrar together with the old COR', 'office' => 'Receive and screen the accomplished form and endorse documents to GPO for processing', 'fees' => 'None', 'time' => '1 min', 'person' => 'Marilyn Garcia'],
+                    ['no' => '4', 'client' => '', 'office' => 'Record and Process Application in UIS', 'fees' => 'None', 'time' => '1 min', 'person' => 'Erran Gerald Pastorfide'],
+                    ['no' => '5', 'client' => 'Receive copy of new Certificate of Registration and Validated Dropping Form', 'office' => 'Print and Issue new Certificate of Registration and Validated Dropping Form', 'fees' => 'None', 'time' => '1 min', 'person' => 'Marilyn Garcia'],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '38 min'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'COMPLETION OF GRADE',
+                'lead' => 'Removal of the "INC" grade must be done two weeks after the submission of semestral grades.
+After which the student shall be given a final grade based on his/her overall performance.
+Semestral/
+grade shall be based on the combined midterm grade and completion/final grade. The INC remarks
+will no longer reflect in student\'s scholastic records once completed. Uncompleted INC remarks
+will
+automatically be equivalent to a final grade of 5.00. The INC remarks will no longer reflect in
+student\'s
+scholastic records but instead shall be replaced with the computed Semestral grade.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Completion Form', 'where' => 'Attached in issued grade report'],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Submit the completion form (attached in the issued Grade Report) to the faculty concerned upon completion of the requirements for the subject.', 'office' => 'Faculty must sign and provide the semestral grade of the student. Dean will sign the completion form', 'fees' => 'None', 'time' => '15 mins', 'person' => 'Faculty-In-Charge/College Dean'],
+                    ['no' => '2', 'client' => 'Submit the accomplished completion form to the Registrar\'s Office', 'office' => 'Stamp and receive the accomplished form & forward to the Grades Processing Officer', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Marilyn Garcia'],
+                    ['no' => '3', 'client' => '', 'office' => 'Record and Process Application in UIS', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Erran Gerald Pastorfide'],
+                    ['no' => '4', 'client' => 'Secure new copy of Grade Report', 'office' => 'Print Grade Report and issue to student together with validated completion form', 'fees' => 'None', 'time' => '1 min', 'person' => 'Erran Gerald Pastorfide'],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '20 mins'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'LEAVE OF ABSENCE',
+                'lead' => 'A student may apply to withdraw from all courses or not enroll for a specified semester(s) by filing a leave of absence approved by the respective dean. Leave of Absence may be granted to a student only for a maximum of one academic year but may be renewed upon re-application by the student. Each student may be granted a maximum of only two (2) LOAs. A student who is officially under Leave of Absence is not allowed to enroll in any other Higher Educational Institution.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Certificate of Registration of last semester attended', 'where' => "Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Secure Application for Leave of Absence Form', 'office' => 'Issue Leave of Absence Form', 'fees' => 'None', 'time' => '1 min', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Proceed to College Secretary and present LOA form', 'office' => 'Assessment of grade and students\' case.', 'fees' => 'None', 'time' => '5 min', 'person' => "*Julie Ruth Malabanan Nursing/Hospitality Management\n\n*Annlyn Benito Business Administration\n\n*Elsaflor Silayan Electronics Engineering/Entrepreneurship/Accountancy/Psychology\n\n*Aivee Dela Cruz Elementary/Secondary Education\n\n*Jay Anne Santos Computer Science/Information Technology"],
+                    ['no' => '3', 'client' => 'Proceed to the Guidance Office/DSA/Medical Officer to secure signature', 'office' => 'Interview the student and sign the form', 'fees' => 'None', 'time' => '30 min', 'person' => 'Student Success Office'],
+                    ['no' => '4', 'client' => 'Secure approval from the Dean', 'office' => 'Sign the student\'s application form', 'fees' => 'None', 'time' => '1 min', 'person' => 'Respective Dean'],
+                    ['no' => '5', 'client' => 'Submit accomplished form to Registrar\'s Office', 'office' => 'Stamp and receive the accomplished form; deactivate student account', 'fees' => 'None', 'time' => '5 min', 'person' => 'Marilyn Garcia'],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '42 minutes'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'APPLICATION FOR READMISSION',
+                'lead' => 'Returning student must present the approved LOA form upon enrollment. The University has the right to refuse enrollment of students who wish to return but was not able to file his leave prior to his absence. Should his justification be merited, the effectivity of his return will be on the next semester from the period his application for readmission is approved.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Readmission Slip (issued during filing of LOA)', 'where' => "PLP Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Present issued Readmission Slip (issued during filing of LOA) to the Registrar\'s Office', 'office' => 'Activate account of student', 'fees' => 'None', 'time' => '5 mins', 'person' => "Marilyn Garcia\n\n*Julie Ruth Malabanan Nursing/Hospitality Management\n\n*Annlyn Benito Business Administration\n\n*Elsaflor Silayan Electronics Engineering/Entrepreneurship/Accountancy/Psychology\n\n*Aivee Dela Cruz Elementary/Secondary Education\n\n*Jay Anne Santos Computer Science/Information Technology"],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '5 minutes'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'CHANGE OF PERSONAL DATA',
+                'lead' => "Students with correction in birth certificate entries or change in address may apply for change of personal data at the Registrar's Office.",
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'University ID', 'where' => ''],
+                    ['no' => '2', 'requirement' => 'Certificate of Registration', 'where' => "PLP Registrar's Office"],
+                    ['no' => '3', 'requirement' => 'Corrected PSA Birth Certificate (for students changing birth entries)', 'where' => 'PSA Office'],
+                    ['no' => '4', 'requirement' => 'Barangay Clearance (for students applying for change of address)', 'where' => 'Respective Barangay'],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Secure a Correction/ Change of Birth Certificate Entries Form', 'office' => 'Issue Correction/ Change of Birth Certificate Entries Form', 'fees' => 'None', 'time' => '5 mins', 'person' => ''],
+                    ['no' => '2', 'client' => 'Submit the accomplished form and attach the corrected PSA Birth Certificate/Brgy Clearance', 'office' => 'Validate the documents and have the University Registrar approve the request', 'fees' => 'None', 'time' => '15 mins', 'person' => 'Erran Gerald Pastorfide'],
+                    ['no' => '3', 'client' => '', 'office' => 'Record and Process Application in UIS', 'fees' => 'None', 'time' => '2 min', 'person' => ''],
+                    ['no' => '4', 'client' => 'Secure copy of the Validated Application Form and New Copy of Certificate of Registration', 'office' => 'Issue copy of the Validated Application Form and New Copy of Certificate of Registration', 'fees' => 'None', 'time' => '1 min', 'person' => ''],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '23 mins'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'CHANGE OF GRADE',
+                'lead' => 'A student who has received a passing grade in a given course is not allowed a re-examination for the purpose of improving his grades. Changing of grade may be allowed only after the approval of the Academic Director and must be filed within two weeks from the submission of grade to the Office of the Registrar.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Class Record', 'where' => 'Faculty'],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Faculty must secure a Change of Grade Form from the Registrar\'s Office', 'office' => 'Issue Change of Grade Form', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Faculty-in-charge should accomplish the form', 'office' => '', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Faculty'],
+                    ['no' => '3', 'client' => 'Seek for the approval of the Dean of Faculty and Dean of student', 'office' => 'Sign the application form', 'fees' => 'None', 'time' => '5 mins', 'person' => 'College Dean'],
+                    ['no' => '4', 'client' => 'Submit the approved form to the Registrar\'s Office with the attached class record', 'office' => 'Stamp and receive the accomplished form & forward to the Records Section', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Marilyn Garcia'],
+                    ['no' => '5', 'client' => 'Endorse to Grades Processing Officer for recording in UIS', 'office' => '', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Federico Nueva'],
+                    ['no' => '6', 'client' => 'Student to secure copy of New Grade Report', 'office' => 'Print new Grade Report of student', 'fees' => 'None', 'time' => '2 mins', 'person' => 'Marilyn Garcia'],
+                    ['no' => '7', 'client' => 'Faculty to secure copy of approved Change of Grade form', 'office' => 'Issue approved/disapproved copy of Application for Change of Grade', 'fees' => 'None', 'time' => '1 min', 'person' => 'Marilyn Garcia'],
+                ],
+                'totals' => ['fees' => 'None', 'time' => '16 mins'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'REQUEST FOR STUDENT RECORDS',
+                'lead' => "Students may secure a copy of their credentials from the Registrar's Office.",
+                'meta' => [
+                    'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) STUDENT (2) AUTHORIZED REPRESENTATIVE OF THE PARTY CONCERNED',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Lacking Entrance Credentials', 'where' => 'Varies'],
+                    ['no' => '2', 'requirement' => 'Authorization Letter and ID (if requested by authorized representative)', 'where' => 'Requesting Student'],
+                    ['no' => '3', 'requirement' => 'Validated Clearance (for transferring students)', 'where' => "Registrar's Office"],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Secure a Application for Student Records (Google Form)', 'office' => 'Issued Google Form for Application for Student Records Form', 'fees' => 'None', 'time' => '1 min', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Proceed to College Secretary', 'office' => 'Evaluate student record and assess the fees to be paid by the student & endorse to the Finance Office', 'fees' => 'None', 'time' => '5 mins', 'person' => "*Julie Ruth Malabanan Nursing/Hospitality Management\n\n*Annlyn Benito Business Administration\n\n*Elsaflor Silayan Electronics Engineering/Entrepreneurship/Accountancy/Psychology\n\n*Aivee Dela Cruz Elementary/Secondary Education\n\n*Jay Anne Santos Computer Science/Information Technology"],
+                    ['no' => '3', 'client' => "Pay fees at the Cashier's Office", 'office' => 'Collect fees and issue receipt', 'fees' => '', 'time' => '5 mins', 'person' => 'Jenky Estayani'],
+                    ['no' => '', 'client' => 'Transcript of Record', 'office' => '', 'fees' => '100/page', 'time' => '5-7 working days', 'person' => ''],
+                    ['no' => '', 'client' => 'Copy of Grades', 'office' => '', 'fees' => '50/page', 'time' => '10 days', 'person' => ''],
+                    ['no' => '', 'client' => 'Honorable Dismissal', 'office' => '', 'fees' => '100.00', 'time' => '5 days', 'person' => ''],
+                    ['no' => '', 'client' => 'Certificate', 'office' => '', 'fees' => '50.00', 'time' => '5 days', 'person' => ''],
+                    ['no' => '', 'client' => 'Permanent Record Authentication or Document', 'office' => '', 'fees' => '100/PG', 'time' => '1 day', 'person' => ''],
+                    ['no' => '', 'client' => 'CAV Endorsement', 'office' => '', 'fees' => '80', 'time' => '1 day', 'person' => ''],
+                    ['no' => '4', 'client' => "Present receipt to the Registrar's Office and secure claim slip", 'office' => 'Receive the accomplished form and issue claim slip', 'fees' => 'none', 'time' => '5 mins', 'person' => 'Marilyn Garcia'],
+                ],
+                'totals' => ['fees' => 'Vaires', 'time' => 'Varies'],
+            ],
+            [
+                'type' => 'transaction',
+                'title' => 'REQUEST FOR COURSE VALIDATION / COURSE CREDITING',
+                'lead' => 'Transferees may request for course validation or course crediting.',
+                'meta' => [
+                    'OFFICE OR DIVISION' => 'DEAN/OFFICE/REGISTRAR OFFICE',
+                    'CLASSIFICATION' => 'SIMPLE',
+                    'TYPE OF TRANSACTION' => 'G2C',
+                    'WHO MAY AVAIL' => '(1) TRANSFEREE',
+                ],
+                'checklist' => [
+                    ['no' => '1', 'requirement' => 'Validation Permit', 'where' => "Registrar's Office"],
+                    ['no' => '2', 'requirement' => 'TOR', 'where' => 'Former School'],
+                    ['no' => '3', 'requirement' => 'Course Syllabus', 'where' => 'Former School'],
+                    ['no' => '4', 'requirement' => 'Course Description', 'where' => 'Former School'],
+                ],
+                'steps' => [
+                    ['no' => '1', 'client' => 'Secure validation permit from the OUR', 'office' => 'Issue validation permit', 'fees' => 'None', 'time' => '1 min', 'person' => 'Marilyn Garcia'],
+                    ['no' => '2', 'client' => 'Submit filled out validation permit and course syllabus/outline', 'office' => 'Validate the submitted form', 'fees' => 'None', 'time' => '1 day', 'person' => 'College Dean'],
+                    ['no' => '3', 'client' => 'Submit filled out validation permit and course syllabus/outline duly signed by the Dean', 'office' => 'Record and process the request of the transferee', 'fees' => 'None', 'time' => '1 day', 'person' => 'University Registrar'],
+                ],
+                'totals' => ['fees' => '0.00', 'time' => 'Varies'],
+            ],
+            [
+                'type' => 'feedback',
+                'heading' => 'FEEDBACK AND COMPLAINTS',
+                'title' => 'FEEDBACK AND COMPLAINTS MECHANISM',
+                'rows' => [
+                    ['label' => 'How To Send Feedback', 'value' => "\nFeedbacks and Suggestions are welcomed through our Suggestion Box situated near the Windows of the Registrar's Office or they may send us email at registrar@plpasig.edu.ph\n"],
+                    ['label' => 'How feedback is processed', 'value' => '1. Acknowledgement of Feedback and Suggestion\n\n2. Convey feedbacks to concerned personnel\n\n3. Deliberation of Feedbacks and Suggestions that may be adopted/Find possible solution for negative feedbacks\n\n4. Update sender on actions taken to respond to their feedback'],
+                    ['label' => 'How to file a complaint', 'value' => "Complaints must be sent in writing to the Registrar's Office either via snail mail, email or personally submitted to the office."],
+                    ['label' => 'How complaints are processed', 'value' => '1. Acknowledgement of Written Complaint\n\n2. Validation of Complaint/Investigation\n\n3. Respond with written solution/decision/ action taken within 48 hours from receipt of complaint.'],
+                    ['label' => 'Contact Information', 'value' => '\n<b>EMAIL</b>: \nregistrar@plpasig.edu.ph\n<b>NO</b>: (362) 8628-1014 local 110'],
+                ],
+            ],
+        ];
     }
 
     private function buildCorAssessment($subjects, float $totalUnits): array

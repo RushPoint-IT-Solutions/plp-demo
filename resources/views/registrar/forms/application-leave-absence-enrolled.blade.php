@@ -33,22 +33,38 @@
 @endphp
 
 <div class="loae-page">
-    <div class="loae-toolbar d-print-none">
-        <form method="GET" action="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="loae-toolbar__form">
-            <label for="loae-student-id" class="loae-toolbar__label">Student</label>
-            <select name="student_id" id="loae-student-id" class="form-select loae-toolbar__select">
-                @forelse($students as $optionStudent)
-                    <option value="{{ $optionStudent->id }}" {{ (int) $selectedStudentId === (int) $optionStudent->id ? 'selected' : '' }}>
-                        {{ $optionStudent->student_no }} - {{ $optionStudent->name }}
-                    </option>
-                @empty
-                    <option value="">No student records found</option>
-                @endforelse
-            </select>
-        </form>
+    <div class="loae-toolbar d-print-none mb-4">
+        <div class="form-row align-items-center">
 
-        <div class="loae-toolbar__actions">
-            <button type="button" id="loae-print-btn" class="btn btn-success loae-toolbar__button">Print</button>
+            <div class="col-auto pr-0 mb-2 mb-md-0">
+                <label for="loae-student-search" class="loae-toolbar__label font-weight-bold mb-0">STUDENT:</label>
+            </div>
+
+            <div class="col mb-2 mb-md-0">
+                <div class="loae-search-wrapper position-relative">
+                    <input type="text" id="loae-student-search"
+                        class="form-control loae-toolbar__search"
+                        placeholder="Search by ID or Name..."
+                        autocomplete="off">
+
+                    <input type="hidden" id="loae-student-id" name="student_id" value="{{ $selectedStudentId }}">
+
+                    <div class="loae-search-results d-none position-absolute w-100 bg-white border shadow-sm"
+                        id="loae-search-results" style="z-index: 1000; top: 100%;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-auto">
+                <div class="loae-toolbar__actions">
+                    <button type="button" id="loae-print-btn"
+                            class="btn btn-success btn-block d-md-inline-block loae-toolbar__button"
+                            onclick="window.print()">
+                        Print
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -261,4 +277,70 @@
 
 @push('scripts')
 <script src="{{ asset('js/registrar-loa-enrolled.js') }}?v={{ time() }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const allStudents = {!! json_encode($students->map(function($s) { return ['id' => $s->id, 'student_no' => $s->student_no, 'name' => $s->name, 'label' => $s->student_no . ' - ' . $s->name]; })) !!};
+        const searchInput = document.getElementById('loae-student-search');
+        const resultsContainer = document.getElementById('loae-search-results');
+        const studentIdInput = document.getElementById('loae-student-id');
+
+        // Initialize with selected student name
+        const selectedId = parseInt(studentIdInput.value) || 0;
+        if (selectedId > 0) {
+            const selectedStudent = allStudents.find(s => s.id === selectedId);
+            if (selectedStudent) {
+                searchInput.value = selectedStudent.label;
+            }
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length === 0) {
+                resultsContainer.classList.add('d-none');
+                return;
+            }
+
+            const filtered = allStudents.filter(s => 
+                s.student_no.toLowerCase().includes(query) || 
+                s.name.toLowerCase().includes(query)
+            ).slice(0, 10);
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = '<div class="loae-search-result-item">No students found</div>';
+            } else {
+                resultsContainer.innerHTML = filtered.map(s => 
+                    `<div class="loae-search-result-item" data-student-id="${s.id}" data-student-label="${s.label}">${s.label}</div>`
+                ).join('');
+            }
+            resultsContainer.classList.remove('d-none');
+        });
+
+        // Result selection
+        resultsContainer.addEventListener('click', function(e) {
+            const item = e.target.closest('.loae-search-result-item');
+            if (item) {
+                const studentId = item.getAttribute('data-student-id');
+                const studentLabel = item.getAttribute('data-student-label');
+                searchInput.value = studentLabel;
+                studentIdInput.value = studentId;
+                resultsContainer.classList.add('d-none');
+                // Auto-submit
+                window.location.href = '{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}?student_id=' + studentId;
+            }
+        });
+
+        // Close results on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.loae-search-wrapper')) {
+                resultsContainer.classList.add('d-none');
+            }
+        });
+
+        // Print button
+        document.getElementById('loae-print-btn').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
 @endpush

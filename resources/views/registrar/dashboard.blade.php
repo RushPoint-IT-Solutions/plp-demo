@@ -207,7 +207,7 @@
                 </div>
             </div>
 
-            <a href="#" class="reg-see-all" data-expanded="false">See All Announcement</a>
+            <a href="#" class="reg-see-all" data-expanded="false">See More Announcements</a>
         </div>
 
         {{-- Upcoming Schedule --}}

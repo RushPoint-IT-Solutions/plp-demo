@@ -17,12 +17,15 @@ class Applicant extends Model
         'permanent_street', 'permanent_barangay', 'permanent_zipcode',
         'permanent_municipality', 'permanent_province', 'permanent_region',
         'exam_date', 'exam_room', 'exam_result_status', 'exam_score',
+        'application_status', 'application_draft_step', 'application_submitted_at', 'application_portal_stage',
     ];
 
     protected $casts = [
         'date_of_birth'   => 'date',
         'exam_date'       => 'datetime',
         'same_as_present' => 'boolean',
+        'application_submitted_at' => 'datetime',
+        'application_portal_stage' => 'integer',
     ];
 
     public function getFullNameAttribute(): string
@@ -33,5 +36,20 @@ class Applicant extends Model
     public function user()
     {
         return $this->hasOne(User::class, 'applicant_id');
+    }
+
+    public function educationalBackground()
+    {
+        return $this->hasOne(ApplicantEducationalBackground::class);
+    }
+
+    public function familyBackground()
+    {
+        return $this->hasOne(ApplicantFamilyBackground::class);
+    }
+
+    public function applicationPreference()
+    {
+        return $this->hasOne(ApplicantApplicationPreference::class);
     }
 }

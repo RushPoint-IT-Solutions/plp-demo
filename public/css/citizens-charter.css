@@ -1,0 +1,525 @@
+:root {
+  --plp-green: #006837;
+  --plp-green-dark: #005028;
+  --plp-yellow: #ffd100;
+  --plp-white: #ffffff;
+  --plp-gray: #f5f5f5;
+  --plp-border: #cccccc;
+}
+
+.registrar-body .cc-page {
+  font-size: 10pt;
+  --cc-zoom: 1;
+  --cc-scale: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 100%;
+  color: #000;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.registrar-body .cc-pagination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eef2f5;
+  overflow-x: auto;
+}
+
+.registrar-body .cc-pagination-arrow {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #d7dde2;
+  color: #60656f;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.registrar-body .cc-pagination-arrow:hover,
+.registrar-body .cc-pagination-arrow:focus {
+  color: #005028;
+  border-color: #c7cfd6;
+  background: #fff;
+}
+
+.registrar-body .cc-pagination-arrow.disabled,
+.registrar-body .cc-pagination-arrow:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.registrar-body .cc-pagination {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  overflow: visible;
+}
+
+.registrar-body .cc-page-item {
+  margin: 0;
+}
+
+.registrar-body .cc-page-link {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #60656f;
+  font-size: 10pt;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.registrar-body .cc-page-link:hover,
+.registrar-body .cc-page-link:focus {
+  color: #005028;
+  background: rgba(0, 104, 55, 0.08);
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.registrar-body .cc-page-item.active .cc-page-link {
+  color: #fff;
+  background: var(--plp-green, #006837);
+  border-color: var(--plp-green, #006837);
+}
+
+.registrar-body .cc-page-item.active .cc-page-link:hover,
+.registrar-body .cc-page-item.active .cc-page-link:focus {
+  background: var(--plp-green-dark, #005028);
+  border-color: var(--plp-green-dark, #005028);
+  color: #fff;
+}
+
+.registrar-body .cc-page-item--ellipsis .cc-page-link {
+  border-radius: 0;
+  width: auto;
+  min-width: 20px;
+  background: transparent;
+  color: #60656f;
+  cursor: default;
+  padding: 0 2px;
+}
+
+.registrar-body .cc-stage {
+  width: 100%;
+  overflow: visible;
+}
+
+.registrar-body .cc-sheet {
+  width: 8.5in;
+  min-height: 13in;
+  margin: 0 auto;
+  padding: 0.35in 0.32in 0.28in;
+  box-sizing: border-box;
+  border: 1px solid #000;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform-origin: top center;
+  zoom: var(--cc-zoom);
+  display: none;
+}
+
+@supports not (zoom: 1) {
+  .registrar-body .cc-sheet {
+    transform: scale(var(--cc-scale));
+  }
+}
+
+.registrar-body .cc-sheet.is-active {
+  display: block;
+}
+
+.registrar-body .cc-doc-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.registrar-body .cc-doc-header h2 {
+  margin: 0;
+  font-size: 10pt;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #000;
+}
+
+.registrar-body .cc-doc-header p {
+  margin: 1px 0 0;
+  font-size: 10pt;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #000;
+}
+
+.registrar-body .cc-section {
+  margin-bottom: 7px;
+}
+
+.registrar-body .cc-transaction-title {
+  margin: 0;
+  font-size: 10pt;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.registrar-body .cc-lead {
+  margin: 2px 0 0;
+  font-size: 10pt;
+  line-height: 1.25;
+  font-style: italic;
+  color: #000;
+}
+
+.registrar-body .cc-meta-table,
+.registrar-body .cc-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.registrar-body .cc-meta-table {
+  margin-bottom: 8px;
+}
+
+.registrar-body .cc-meta-table th,
+.registrar-body .cc-meta-table td,
+.registrar-body .cc-grid-table th,
+.registrar-body .cc-grid-table td {
+  border: 1px solid #000;
+  padding: 3px 5px;
+  vertical-align: top;
+  color: #000;
+  font-size: 10pt;
+  line-height: 1.2;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.registrar-body .cc-meta-table th {
+  width: 32%;
+  text-transform: uppercase;
+  background: #c8c8c8;
+  font-size: 10pt;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.registrar-body .cc-grid-table {
+  margin-bottom: 8px;
+}
+
+.registrar-body {
+  /* Center the right column (WHERE TO SECURE) for checklist rows */
+}
+
+.registrar-body .cc-grid-table--checklist thead th:nth-child(3),
+.registrar-body .cc-grid-table--checklist tbody td:nth-child(3) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.registrar-body {
+  /* Right-align requirement text for the indented sub-rows (Driver's License ... Postal ID) */
+}
+
+.registrar-body .cc-grid-table--checklist tbody tr.cc-sub-row td:nth-child(2) {
+  text-align: right;
+  padding-right: 8px;
+}
+
+.registrar-body {
+  /* Center CLIENT STEPS, OFFICE ACTIONS, FEES and PROCESSING TIME columns horizontally and vertically for steps table */
+}
+
+.registrar-body .cc-grid-table--steps thead th:nth-child(2),
+.registrar-body .cc-grid-table--steps thead th:nth-child(3),
+.registrar-body .cc-grid-table--steps thead th.cc-col-fees,
+.registrar-body .cc-grid-table--steps thead th.cc-col-time,
+.registrar-body .cc-grid-table--steps tbody td:nth-child(2),
+.registrar-body .cc-grid-table--steps tbody td:nth-child(3),
+.registrar-body .cc-grid-table--steps tbody td:nth-child(4),
+.registrar-body .cc-grid-table--steps tbody td:nth-child(5) {
+  text-align: center;
+  vertical-align: middle;
+  /* ensure multiline content breaks and centers properly */
+  white-space: normal;
+}
+
+.registrar-body {
+  /* Space out bullet lines inside PERSON RESPONSIBLE cells */
+}
+
+.registrar-body .cc-grid-table--steps tbody td:nth-child(6) {
+  line-height: 1.5;
+  /* increase spacing for clearer separation between person entries */
+}
+
+.registrar-body .cc-grid-table--steps tbody td:nth-child(6) br {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.registrar-body {
+  /* For Change of Personal Data and Request for Student Records pages, center and middle-align the PERSON RESPONSIBLE cell (rowspan) */
+}
+
+.registrar-body .cc-sheet.cc-person-middle .cc-grid-table--steps tbody td:nth-child(6) {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.registrar-body {
+  /* Center the `#` column (header and body) across all grid tables */
+}
+
+.registrar-body .cc-grid-table thead th.cc-col-no,
+.registrar-body .cc-grid-table tbody td:nth-child(1) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.registrar-body .cc-grid-table thead th {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 10pt;
+  line-height: 1.15;
+  background: #c8c8c8;
+}
+
+.registrar-body .cc-col-no {
+  width: 8%;
+}
+
+.registrar-body .cc-col-fees {
+  width: 12%;
+}
+
+.registrar-body .cc-col-time {
+  width: 14%;
+}
+
+.registrar-body .cc-col-person {
+  width: 20%;
+}
+
+.registrar-body .cc-col-feedback-label {
+  width: 28%;
+}
+
+.registrar-body .cc-text-center {
+  text-align: center;
+}
+
+.registrar-body .cc-text-right {
+  text-align: right;
+}
+
+.registrar-body .cc-total-row td {
+  font-weight: 800;
+}
+
+.registrar-body .cc-feedback-label {
+  font-weight: 700;
+  background: #efefef;
+}
+
+.registrar-body .cc-grid-table--feedback .cc-feedback-head {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 10pt;
+  line-height: 1.15;
+  font-weight: 800;
+  background: var(--plp-green, #006837);
+  color: #fff;
+}
+
+.registrar-body .cc-grid-table--feedback .cc-feedback-label {
+  width: 44%;
+  font-weight: 400;
+  background: #fff;
+  vertical-align: middle;
+}
+
+.registrar-body .cc-grid-table--feedback .cc-feedback-value {
+  vertical-align: top;
+}
+
+.registrar-body .cc-cover-page {
+  display: none;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.registrar-body .cc-cover-page.is-active {
+  display: flex;
+}
+
+.registrar-body .cc-cover-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+  padding-top: 1.2in;
+  color: #000;
+}
+
+.registrar-body .cc-cover-logo {
+  width: 2.2in;
+  height: 2.2in;
+  -o-object-fit: contain;
+     object-fit: contain;
+  margin-bottom: 0.5in;
+}
+
+.registrar-body .cc-cover-school {
+  margin: 0;
+  font-size: 18pt;
+  line-height: 1.12;
+  font-weight: 900;
+  max-width: 5.6in;
+  text-transform: uppercase;
+}
+
+.registrar-body .cc-cover-school-sub {
+  margin: 3px 0 1.15in;
+  font-size: 10pt;
+  line-height: 1.2;
+  font-style: italic;
+}
+
+.registrar-body .cc-cover-title {
+  margin: 0;
+  font-size: 19pt;
+  line-height: 1.15;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.registrar-body .cc-cover-edition {
+  margin: 4px 0 1.15in;
+  font-size: 13pt;
+  line-height: 1.2;
+  font-style: italic;
+}
+
+.registrar-body .cc-cover-office {
+  margin: 0;
+  font-size: 15pt;
+  line-height: 1.2;
+  font-weight: 900;
+  text-transform: uppercase;
+  max-width: 6.1in;
+}
+
+@media print {
+@page {
+    size: 8.5in 13in;
+    margin: 0.5in;
+}
+
+  html,
+  body,
+  .container,
+  .container-fluid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .registrar-body .plp-sidebar,
+  .registrar-body .student-topbar,
+  .registrar-body .student-page-header,
+  .registrar-body .plp-footer,
+  .registrar-body .sidebar-overlay,
+  .registrar-body #download-toast,
+  .registrar-body .cc-pagination {
+    display: none !important;
+  }
+
+  .registrar-body .student-layout,
+  .registrar-body .student-main-wrapper,
+  .registrar-body .content-footer-wrap,
+  .registrar-body .student-content,
+  .registrar-body .cc-page,
+  .registrar-body .cc-stage {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+    box-sizing: border-box !important;
+  }
+
+  .registrar-body .cc-sheet,
+  .registrar-body .cc-cover-page {
+    display: block !important;
+    width: auto !important;
+    min-height: 12in !important;
+    margin: 0 0 0.15in !important;
+    padding: 0 !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    zoom: 1 !important;
+    transform: none !important;
+    page-break-after: always;
+    -moz-column-break-after: page;
+         break-after: page;
+    page-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+         break-inside: avoid;
+    background: #fff !important;
+  }
+
+  .registrar-body .cc-sheet:last-child {
+    page-break-after: auto;
+    -moz-column-break-after: auto;
+         break-after: auto;
+  }
+
+  .registrar-body .cc-sheet,
+  .registrar-body .cc-sheet * {
+    color: #000 !important;
+    border-color: #000 !important;
+    font-size: 10pt !important;
+    line-height: 1.2 !important;
+  }
+}
+

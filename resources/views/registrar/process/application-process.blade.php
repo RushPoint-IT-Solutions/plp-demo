@@ -86,7 +86,13 @@
 @section('content')
 
 {{-- ========== MAIN APPLICATION PROCESS VIEW ========== --}}
-<div class="app-process-page" id="appProcessPage">
+<div
+    class="app-process-page"
+    id="appProcessPage"
+    data-exam-schedule-url-template="{{ route('registrar.process.application.exam-schedule.update', ['applicant' => '__APPLICANT_ID__']) }}"
+    data-exam-result-url-template="{{ route('registrar.process.application.exam-result.update', ['applicant' => '__APPLICANT_ID__']) }}"
+    data-csrf-token="{{ csrf_token() }}"
+>
 
     {{-- Filter Bar --}}
     <div class="app-filter-bar">
@@ -157,24 +163,49 @@
                 </tr>
             </thead>
             <tbody>
-                <tr data-id="2223A8137" data-name="Mark Jay Bares">
-                    <td>1</td>
-                    <td>2223A8137</td>
-                    <td>Mark Jay Bares</td>
-                    <td>BSCS</td>
-                    <td>June 07, 2025</td>
-                    <td>June 07, 2025</td>
-                    <td><span class="app-status-accepted"><span class="app-status-dot"></span>Accepted</span></td>
+                @forelse($applicants as $index => $applicant)
+                @php
+                    $displayName = trim((string) $applicant->first_name . ' ' . (string) $applicant->last_name);
+                    $preference = optional($applicant->applicationPreference);
+                    $programLabel = 'N/A';
+                    if ($preference->apply_program === 'college') {
+                        $programLabel = 'College';
+                    } elseif ($preference->apply_program === 'senior_high') {
+                        $programLabel = $preference->apply_strand ?: 'Senior High';
+                    }
+
+                    $statusRaw = strtolower((string) ($applicant->exam_result_status ?: 'Pending'));
+                    $statusClass = 'app-status-pending';
+                    if ($statusRaw === 'passed') {
+                        $statusClass = 'app-status-accepted';
+                    }
+                    if ($statusRaw === 'failed') {
+                        $statusClass = 'app-status-rejected';
+                    }
+                @endphp
+                <tr
+                    data-pk="{{ $applicant->id }}"
+                    data-id="{{ $applicant->applicant_id }}"
+                    data-name="{{ e($displayName) }}"
+                    data-exam-date="{{ optional($applicant->exam_date)->format('Y-m-d') }}"
+                    data-exam-time="{{ optional($applicant->exam_date)->format('H:i') }}"
+                    data-exam-room="{{ e((string) ($applicant->exam_room ?? '')) }}"
+                    data-exam-result-status="{{ e((string) ($applicant->exam_result_status ?: 'Pending')) }}"
+                    data-exam-score="{{ $applicant->exam_score !== null ? $applicant->exam_score : '' }}"
+                >
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $applicant->applicant_id }}</td>
+                    <td>{{ $displayName ?: 'N/A' }}</td>
+                    <td>{{ $programLabel }}</td>
+                    <td>{{ optional($applicant->created_at)->format('M d, Y') ?: 'N/A' }}</td>
+                    <td>{{ optional($applicant->updated_at)->format('M d, Y') ?: 'N/A' }}</td>
+                    <td class="js-application-status"><span class="{{ $statusClass }}"><span class="app-status-dot"></span>{{ strtoupper($statusRaw) }}</span></td>
                 </tr>
-                <tr data-id="2223A8138" data-name="Andrea Jane Austero">
-                    <td>2</td>
-                    <td>2223A8138</td>
-                    <td>Andrea Jane Austero</td>
-                    <td>BSCS</td>
-                    <td>June 07, 2025</td>
-                    <td>June 07, 2025</td>
-                    <td><span class="app-status-accepted"><span class="app-status-dot"></span>Accepted</span></td>
+                @empty
+                <tr>
+                    <td colspan="7">No applicants found.</td>
                 </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
@@ -186,6 +217,7 @@
 
     {{-- Applicant ID + Name --}}
     <div class="appl-detail-header">
+        <input type="hidden" id="detailApplicantPk">
         <div class="appl-detail-field">
             <label>Applicant ID</label>
             <input type="text" id="detailApplicantId" readonly>
@@ -212,32 +244,22 @@
             <div class="sched-fields-row">
                 <div class="sched-field-group">
                     <label>Date</label>
-                    <select>
-                        <option value="">MM-DD-YYYY</option>
-                    </select>
+                    <input type="date" id="scheduleExamDate" class="app-filter-input" style="width:100%;">
                 </div>
                 <div class="sched-field-group">
                     <label>Time</label>
-                    <select>
-                        <option value="">00:00 AM</option>
-                        <option>07:00 AM</option>
-                        <option>08:00 AM</option>
-                        <option>09:00 AM</option>
-                        <option>10:00 AM</option>
-                        <option>01:00 PM</option>
-                        <option>02:00 PM</option>
-                        <option>03:00 PM</option>
-                    </select>
+                    <input type="time" id="scheduleExamTime" class="app-filter-input" style="width:100%;">
                 </div>
                 <div class="sched-field-group flex-grow">
                     <label>Venue</label>
-                    <input type="text" placeholder="Room #123">
+                    <input type="text" id="scheduleExamVenue" placeholder="Room #123">
                 </div>
             </div>
             <div class="sched-actions">
-                <button type="button" class="sched-btn-save">Save</button>
-                <button type="button" class="sched-btn-print">Print</button>
+                <button type="button" class="sched-btn-save" id="saveExamScheduleBtn">Save</button>
+                <button type="button" class="sched-btn-print" id="printExamScheduleBtn">Print</button>
             </div>
+            <div id="scheduleExamFeedback" style="margin: 8px 0 12px; color:#444;"></div>
             <div class="sched-reminders">
                 <p><strong>REMINDERS:</strong></p>
                 <ul>
@@ -268,7 +290,27 @@
 
     {{-- Exam Result --}}
     <div class="applicant-panel" id="panel-exam-result">
-        @include('registrar.process.panels.exam-result')
+        <div class="apc-card">
+            <div class="apc-grid apc-grid--three">
+                <div class="apc-field">
+                    <label class="apc-label">Result Status</label>
+                    <select class="apc-select" id="examResultStatus">
+                        <option value="Pending">Pending</option>
+                        <option value="Passed">Passed</option>
+                        <option value="Failed">Failed</option>
+                    </select>
+                </div>
+                <div class="apc-field">
+                    <label class="apc-label">Score</label>
+                    <input type="number" class="apc-input" id="examResultScore" min="0" max="100" step="0.01" placeholder="0 - 100" />
+                </div>
+                <div class="apc-field apc-field--save-only">
+                    <label class="apc-label">Action</label>
+                    <button type="button" class="apc-btn apc-btn--save" id="saveExamResultBtn">Save</button>
+                </div>
+            </div>
+            <div id="examResultFeedback" style="margin-top: 8px; color:#444;"></div>
+        </div>
     </div>
 
     {{-- Approval --}}

@@ -98,10 +98,14 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
         Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::put('/application/{applicant}/exam-schedule', 'Registrar\RegistrarController@updateApplicantExamSchedule')->name('application.exam-schedule.update');
+        Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
+        Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
+        Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
@@ -118,6 +122,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
             Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
+            Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });
@@ -162,6 +167,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
+            Route::get('/citizens-charter', 'Registrar\RegistrarController@formsCitizensCharter')->name('citizens-charter');
+            Route::get('/request-form-f-137a', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a');
             Route::post('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnrollStore')->name('permission-cross-enroll.store');
             Route::put('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollUpdate')->name('permission-cross-enroll.update');
             Route::delete('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollDestroy')->name('permission-cross-enroll.destroy');
@@ -310,6 +317,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 */
 Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
+    Route::post('/application-form/reset-progress', 'Applicant\ApplicantController@resetApplicationFormProgress')->name('application-form.reset-progress');
+    Route::post('/application-form/step-1', 'Applicant\ApplicantController@saveApplicationFormStep1')->name('application-form.step-1.save');
+    Route::post('/application-form/step-2', 'Applicant\ApplicantController@saveApplicationFormStep2')->name('application-form.step-2.save');
+    Route::post('/application-form/step-3', 'Applicant\ApplicantController@saveApplicationFormStep3')->name('application-form.step-3.save');
+    Route::post('/application-form/step-4', 'Applicant\ApplicantController@saveApplicationFormStep4')->name('application-form.step-4.save');
+    Route::post('/application-form/continue', 'Applicant\ApplicantController@continueApplicationForm')->name('application-form.continue');
     Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
     Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
     Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');

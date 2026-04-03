@@ -19,7 +19,7 @@
     </div>
 
     <div class="student-table-wrapper applicant-content-shell">
-        @if($applicant->exam_result_status)
+        @if($applicant->exam_date)
         <div class="applicant-result-box">
             <div class="result-status-badge result-{{ strtolower($applicant->exam_result_status) }}">
                 {{ strtoupper($applicant->exam_result_status) }}

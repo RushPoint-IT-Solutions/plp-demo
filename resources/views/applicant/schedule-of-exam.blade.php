@@ -30,7 +30,7 @@
                         <li><strong>Status:</strong> {{ $applicant->exam_result_status ?: 'Pending' }}</li>
                     </ul>
                 @else
-                    <p style="margin:0; color:#555;">Your exam schedule is not yet available. Please check back later.</p>
+                    <p style="margin:0; color:#555;">There is no schedule of exam yet.</p>
                 @endif
             </div>
         </div>

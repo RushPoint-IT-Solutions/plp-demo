@@ -97,7 +97,7 @@
             });
 
             seeAll.setAttribute('data-expanded', nextExpanded ? 'true' : 'false');
-            seeAll.textContent = nextExpanded ? 'Show Less Announcement' : 'See All Announcement';
+            seeAll.textContent = nextExpanded ? 'Show Less Announcements' : 'See More Announcements';
           });
         }
       }

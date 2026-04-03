@@ -76,6 +76,215 @@
         </section>
         --}}
 
+        <section class="cfg-card cfg-card-full">
+            <div class="cfg-card-head">
+                <h3>Names and Designation Signature</h3>
+            </div>
+            <div class="app-table-wrap">
+                <table id="cfgSignatureTable" class="app-table cfg-table">
+                    <thead>
+                        <tr>
+                            <th>Designation</th>
+                            <th>Name</th>
+                            <th>Signature</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Registrar</td>
+                            <td>Test</td>
+                            <td><input type="file" class="req-modal-input"></td>
+                            <td style="text-align:center;">
+                                <div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-signature-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                                <div class="apst-dropdown" id="cfgMenu-signature-1"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Accounting Head</td>
+                            <td>Test</td>
+                            <td><input type="file" class="req-modal-input"></td>
+                            <td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-signature-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-signature-2"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td>
+                        </tr>
+                        <tr>
+                            <td>Assistant Registrar</td>
+                            <td>Test</td>
+                            <td><input type="file" class="req-modal-input"></td>
+                            <td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-signature-3" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-signature-3"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="cfg-card cfg-card-full">
+            <div class="cfg-card-head">
+                <h3>Cut Off Date</h3>
+            </div>
+            <div class="cfg-filter-row">
+                <div class="cfg-filter-group">
+                    <label class="req-modal-label">Type</label>
+                    <select class="req-modal-input"><option>Faculty Loading</option><option>Enrollment</option></select>
+                </div>
+                <div class="cfg-filter-group">
+                    <label class="req-modal-label">SY</label>
+                    <input type="text" class="req-modal-input" value="2025-2026">
+                </div>
+                <div class="cfg-filter-group">
+                    <label class="req-modal-label">Semester</label>
+                    <select class="req-modal-input"><option>Second</option><option>First</option></select>
+                </div>
+                <div class="cfg-filter-group">
+                    <label class="req-modal-label">Cut Off Date</label>
+                    <input type="date" class="req-modal-input">
+                </div>
+                <div class="cfg-filter-action">
+                    <button type="button" class="pf-btn-new">Save</button>
+                </div>
+            </div>
+            <div class="app-table-wrap">
+                <table id="cfgCutoffDateTable" class="app-table cfg-table">
+                    <thead>
+                        <tr>
+                            <th>SY</th>
+                            <th>Sem</th>
+                            <th>Cut-off Date</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-2026</td>
+                            <td>Second</td>
+                            <td>02/10/26 - 02/10/2026</td>
+                            <td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-cutoff-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-cutoff-1"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td>
+                        </tr>
+                        <tr>
+                            <td>2025-2026</td>
+                            <td>First</td>
+                            <td>06/12/25 - 08/30/25</td>
+                            <td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-cutoff-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-cutoff-2"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="cfg-card cfg-card-full">
+            <div class="cfg-card-head">
+                <h3>Section Offering Cut Off</h3>
+            </div>
+            <div class="app-table-wrap">
+                <table id="cfgSectionCutoffTable" class="app-table cfg-table">
+                    <thead>
+                        <tr>
+                            <th>SY</th>
+                            <th>Sem</th>
+                            <th>Cut-off Date</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-2026</td>
+                            <td>Second</td>
+                            <td>02/12/26 - 02/12/2026</td>
+                            <td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-section-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-section-1"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="cfg-grid-top">
+            <section class="cfg-card">
+                <div class="cfg-card-head"><h3>Cut-off Registration</h3></div>
+                <div class="cfg-filter-row cfg-filter-row-tight cfg-filter-row-cutoff-reg">
+                    <div class="cfg-filter-group"><label class="req-modal-label">SY</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Semester</label><select class="req-modal-input"><option>Second</option><option>First</option></select></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Date</label><input type="date" class="req-modal-input"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Cut Off Date</label><input type="date" class="req-modal-input"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Student No.</label><input type="text" class="req-modal-input" placeholder="Student No."></div>
+                    <div class="cfg-filter-action"><button type="button" class="pf-btn-new">Cut Off Reg</button></div>
+                </div>
+            </section>
+
+            <section class="cfg-card">
+                <div class="cfg-card-head"><h3>Changing/Deleting/Adding Cut-off Config</h3></div>
+                <div class="cfg-filter-row cfg-filter-row-tight">
+                    <div class="cfg-filter-group"><label class="req-modal-label">SY</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Semester</label><select class="req-modal-input"><option>Second</option><option>First</option></select></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Cut-off Date</label><input type="date" class="req-modal-input"></div>
+                    <div class="cfg-filter-action"><button type="button" class="pf-btn-new">Update</button></div>
+                </div>
+                <div class="app-table-wrap">
+                    <table id="cfgCutoffConfigTable" class="app-table cfg-table">
+                        <thead><tr><th>SY</th><th>Semester</th><th>Cut-off Date</th><th style="text-align:center;">Action</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>2025-2026</td>
+                                <td>Second</td>
+                                <td>04/22/26</td>
+                                <td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-cutoffcfg-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-cutoffcfg-1"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="cfg-grid-top">
+            <section class="cfg-card">
+                <div class="cfg-card-head"><h3>Curriculum Evaluation Display</h3></div>
+                <div class="cfg-filter-row cfg-filter-row-tight">
+                    <div class="cfg-filter-group"><label class="req-modal-label">SY</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Semester</label><select class="req-modal-input"><option>Second</option><option>First</option></select></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Status</label><select class="req-modal-input"><option>Display</option><option>Hide</option></select></div>
+                    <div class="cfg-filter-action"><button type="button" class="pf-btn-new">Submit</button></div>
+                </div>
+                <div class="app-table-wrap">
+                    <table id="cfgCurriculumDisplayTable" class="app-table cfg-table">
+                        <thead><tr><th>AY</th><th>Semester</th><th>Status</th><th style="text-align:center;">Action</th></tr></thead>
+                        <tbody>
+                            <tr><td>2025-2026</td><td>Second</td><td>Display</td><td style="text-align:center;"><div class="apst-action-btn" data-cfg-menu-toggle="cfgMenu-curri-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="cfgMenu-curri-1"><button type="button">Edit</button><button type="button" class="apst-del-btn">Delete</button></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="cfg-card">
+                <div class="cfg-card-head"><h3>Report Details Tab</h3></div>
+                <div class="cfg-filter-row cfg-filter-row-tight">
+                    <div class="cfg-filter-group"><label class="req-modal-label">Region</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Division</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">School ID</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group cfg-filter-group-wide"><label class="req-modal-label">School Name</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group cfg-filter-group-wide"><label class="req-modal-label">Contact Details</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-action"><button type="button" class="pf-btn-new">Submit</button></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="cfg-grid-top">
+            <section class="cfg-card">
+                <div class="cfg-card-head"><h3>Overdue INC Final Grade</h3></div>
+                <div class="cfg-filter-row cfg-filter-row-tight">
+                    <div class="cfg-filter-group"><label class="req-modal-label">SY</label><input type="text" class="req-modal-input" value="2025-2026"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Semester</label><select class="req-modal-input"><option>First</option><option>Second</option></select></div>
+                    <div class="cfg-filter-action"><button type="button" class="pf-btn-new">Process</button></div>
+                </div>
+            </section>
+
+            <section class="cfg-card">
+                <div class="cfg-card-head"><h3>Email Sender</h3></div>
+                <div class="cfg-filter-row cfg-filter-row-tight">
+                    <div class="cfg-filter-group"><label class="req-modal-label">Email</label><input type="email" class="req-modal-input" placeholder="test@gmail.com"></div>
+                    <div class="cfg-filter-group"><label class="req-modal-label">Password</label><input type="password" class="req-modal-input" value="test"></div>
+                    <div class="cfg-filter-action"><button type="button" class="pf-btn-new">Save</button></div>
+                </div>
+            </section>
+        </div>
+
     </div>
 </div>
 
@@ -187,6 +396,28 @@
         </div>
     </div>
 </div>
+
+<div class="req-modal-overlay" id="cfgStaticEditModal" style="display:none;" onclick="if(event.target===this) cfgCloseModal('cfgStaticEditModal')">
+    <div class="req-modal-box cfg-modal-box">
+        <h3 class="req-modal-title">EDIT RECORD</h3>
+        <div class="sc-modal-grid" id="cfgStaticEditFields"></div>
+        <div class="req-modal-actions" style="margin-top:14px;">
+            <button type="button" class="req-btn-cancel" onclick="cfgCloseModal('cfgStaticEditModal')">Cancel</button>
+            <button type="button" class="req-btn-save" onclick="cfgSaveStaticEdit()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="req-modal-overlay" id="cfgStaticDeleteModal" style="display:none;" onclick="if(event.target===this) cfgCloseModal('cfgStaticDeleteModal')">
+    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
+        <h3 class="req-modal-title" style="color:#c0392b;">DELETE RECORD</h3>
+        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this record?</p>
+        <div class="req-modal-actions" style="justify-content:center;">
+            <button type="button" class="req-btn-cancel" onclick="cfgCloseModal('cfgStaticDeleteModal')">Cancel</button>
+            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="cfgConfirmStaticDelete()">Delete</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -234,6 +465,11 @@
         schoolSem: null,
         gradePosting: null,
         registration: null
+    };
+
+    var cfgStaticState = {
+        row: null,
+        editableIndexes: []
     };
 
     function cfgGetCsrfToken() {
@@ -484,18 +720,99 @@
         if (isOpen) return;
 
         var rect = trigger.getBoundingClientRect();
-        var spaceBelow = window.innerHeight - rect.bottom;
-        menu.style.left = 'auto';
-        menu.style.right = (window.innerWidth - rect.left + 4) + 'px';
-        if (spaceBelow < 120) {
-            menu.classList.add('drop-up');
-            menu.style.top = 'auto';
-            menu.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-        } else {
-            menu.style.top = rect.top + 'px';
-            menu.style.bottom = 'auto';
+        var estimatedWidth = 126;
+        var estimatedHeight = 92;
+        var left = rect.right + 8;
+        var top = rect.top;
+
+        if (left + estimatedWidth > window.innerWidth - 8) {
+            left = Math.max(8, window.innerWidth - estimatedWidth - 8);
         }
+
+        if ((window.innerHeight - rect.bottom) < estimatedHeight + 8) {
+            menu.classList.add('drop-up');
+            top = Math.max(8, rect.bottom - estimatedHeight);
+        }
+
+        menu.style.left = left + 'px';
+        menu.style.right = 'auto';
+        menu.style.top = top + 'px';
+        menu.style.bottom = 'auto';
         menu.classList.add('open');
+    }
+
+    function cfgInlineEditRow(row) {
+        cfgOpenStaticEditModal(row);
+    }
+
+    function cfgOpenStaticEditModal(row) {
+        if (!row) return;
+
+        var table = row.closest('table');
+        var headers = table ? table.querySelectorAll('thead th') : [];
+        var cells = row.querySelectorAll('td');
+        var fieldsWrap = document.getElementById('cfgStaticEditFields');
+        if (!fieldsWrap) return;
+
+        cfgStaticState.row = row;
+        cfgStaticState.editableIndexes = [];
+
+        var html = '';
+        for (var i = 0; i < cells.length - 1; i++) {
+            if (cells[i].querySelector('input[type="file"]')) {
+                continue;
+            }
+
+            var label = headers[i] ? (headers[i].textContent || '').trim() : ('Field ' + (i + 1));
+            var value = (cells[i].textContent || '').trim();
+            cfgStaticState.editableIndexes.push(i);
+
+            html += '' +
+                '<div class="req-modal-field-group">' +
+                    '<label class="req-modal-label">' + cfgEscapeHtml(label) + '</label>' +
+                    '<input type="text" class="req-modal-input" id="cfgStaticEditField' + i + '" value="' + cfgEscapeHtml(value) + '">' +
+                '</div>';
+        }
+
+        if (!html) {
+            html = '<p style="color:#6b7280; margin:0;">No editable fields for this row.</p>';
+        }
+
+        fieldsWrap.innerHTML = html;
+        cfgOpenModal('cfgStaticEditModal');
+    }
+
+    function cfgSaveStaticEdit() {
+        if (!cfgStaticState.row) {
+            cfgCloseModal('cfgStaticEditModal');
+            return;
+        }
+
+        var cells = cfgStaticState.row.querySelectorAll('td');
+        cfgStaticState.editableIndexes.forEach(function(index) {
+            var input = document.getElementById('cfgStaticEditField' + index);
+            if (!input || !cells[index]) return;
+            cells[index].textContent = (input.value || '').trim();
+        });
+
+        cfgCloseModal('cfgStaticEditModal');
+        cfgCloseActionMenus();
+    }
+
+    function cfgOpenStaticDeleteModal(row) {
+        if (!row) return;
+        cfgStaticState.row = row;
+        cfgOpenModal('cfgStaticDeleteModal');
+    }
+
+    function cfgConfirmStaticDelete() {
+        if (cfgStaticState.row) {
+            cfgStaticState.row.remove();
+        }
+
+        cfgStaticState.row = null;
+        cfgCloseModal('cfgStaticDeleteModal');
+        cfgCloseActionMenus();
     }
 
     async function cfgDeleteRow(group, index) {
@@ -711,6 +1028,18 @@
         if (toggle) {
             event.stopPropagation();
             cfgToggleActionMenu(toggle.getAttribute('data-cfg-menu-toggle'), toggle);
+            return;
+        }
+
+        var actionButton = event.target.closest('.apst-dropdown button');
+        if (actionButton && !actionButton.getAttribute('onclick')) {
+            event.preventDefault();
+            var row = actionButton.closest('tr');
+            if (actionButton.classList.contains('apst-del-btn')) {
+                cfgOpenStaticDeleteModal(row);
+            } else {
+                cfgOpenStaticEditModal(row);
+            }
             return;
         }
 

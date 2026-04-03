@@ -1,7 +1,6 @@
 ---
 name: "form-creator"
 description: "Convert form screenshots to Laravel Blade forms with a fixed, non-responsive 'zoom-out' A4 layout and fluid sentence-style inputs."
-
 ---
 
 # Skill 14: Form Creator
@@ -14,22 +13,33 @@ description: "Convert form screenshots to Laravel Blade forms with a fixed, non-
 ## 📐 Layout Constraints (Fixed "Zoom-Out" A4 Print Style)
 - **CRITICAL:** Forms must be STRICTLY FIXED-WIDTH (210mm) and NON-RESPONSIVE.
 - **1:1 Screenshot Match:** The HTML layout must be visually identical to the physical print view provided in the screenshot.
+- **Bootstrap 4 Utility-First Rule:** You MUST use Bootstrap 4 utility classes (e.g., `d-flex`, `mb-3`, `w-100`, `text-center`, `align-items-center`) for all spacing, layout, and typography. DO NOT write custom CSS or SCSS unless it is absolutely impossible to achieve the design (like specific A4 dimensions or highly custom borders) using Bootstrap 4 utilities.
 - **Fluid Inline Fields (The "Sentence" Rule):** For fields that appear inside a sentence (e.g., "I, ________, a student..."), do NOT use fixed widths. Use `display: flex` or `display: inline-flex` for the wrapper. The input should have `border: none; border-bottom: 1px solid black; flex-grow: 1;` so the line length adjusts dynamically to the text while filling the gap.
 - **No Responsive Classes:** Do NOT use Bootstrap's responsive grid classes (e.g., `col-sm-*`, `col-md-*`). Use fixed columns (e.g., `col-6`) or exact pixel widths to enforce placement.
 - **A4 Document Wrapper:** Wrap the entire form in `<div class="a4-wrapper">`.
   - **Screen Style:** `width: 210mm; min-height: 297mm; margin: 0 auto; background: white; padding: 1in; color: #000; font-size: 10pt; box-sizing: border-box; transform-origin: top center;`
-  - **Print Style (CSS @media print):** Force `padding: 2in 1in 1in 1in !important;`. This MUST overwrite the screen padding to ensure the top margin is exactly 2 inches on paper, not 3 or 4.
+  - **Print Style (CSS @media print):** Force `padding: 2in 0.5in 0 0.5in !important;`. This MUST overwrite the screen padding to ensure the top margin is exactly 2 inches on paper, with half-inch sides and 0 bottom margin.
+  - **Print Font Guard:** In `@media print`, force `.a4-wrapper, .a4-wrapper * { font-size: 8pt !important; line-height: 1.2 !important; }` so output is readable and consistent.
+  - **Print Scale Guard (Critical):** If screen view uses `zoom` or `transform` for viewport fit, reset print with `.a4-wrapper { zoom: 1 !important; transform: none !important; }`.
+  - **Global Print Override Guard:** Neutralize inherited framework print shrink rules (e.g., `body { min-width: 992px !important; }`) with `html, body, .container, .container-fluid { width: 100% !important; min-width: 0 !important; max-width: none !important; }` in `@media print`.
 - **Anti-Cropping & Screen Fit:** The form must NEVER be cropped horizontally. Ensure the 210mm width is ALWAYS fully visible. If the screen is smaller than 794px, use CSS `transform: scale()` or `zoom` to scale the entire `.a4-wrapper` down to fit the viewport.
+- **Zoom Reset Rule:** Any screen-only zoom/scale used for fit MUST be explicitly reset inside `@media print` to avoid tiny print output.
 - **No Stacking:** Elements must stay exactly where they are placed horizontally and must never collapse or stack vertically on mobile/small screens.
 
 ## 🎨 Typography, Colors & Borders
 - **Strict Black & White:** Everything must be strictly `#000` (black) for text, borders, and dividers unless a color is explicitly requested.
-- **Font Rules:** Use `font-size: 10pt !important;` for all text, labels, and inputs.
+- **Font Rules (Screen):** Use `font-size: 10pt !important;` for all text, labels, and inputs in normal screen view.
+- **Font Rules (Print):** Use `font-size: 8pt !important;` for all text, labels, and inputs inside `@media print`.
 - **Border Strictness:** Apply `border-color: #000 !important;` to all inputs and tables to override Bootstrap's default gray.
 - **Print View Border Removal:** Inside `@media print`, all form inputs (`input`, `textarea`, `select`) must have `border: none !important;` EXCEPT for the `border-bottom` used for fill-in-the-blank lines.
 
 ## 🛠️ Field Styling & Interactions
 - **Editable Fields:** All fields must be functional and editable `<input>`, `<textarea>`, or `<select>` tags.
+- **Smart Input Types & Frontend Validation:** Infer the required data type from the form's context. 
+  - If a field asks for an email, use `<input type="email">`.
+  - If it asks for a date, use `<input type="date">`.
+  - If it expects a number (like a phone number or ID), it must ONLY accept exactly 11 digits. Use `<input type="text" pattern="\d{11}" maxlength="11" title="Must be exactly 11 digits">` or `<input type="tel">` with the same pattern to enforce this frontend restriction.
+- **Backend Validation Sync:** When generating the `FormRequest`, ensure the validation rules strictly match the inferred frontend types (e.g., use `'email'`, `'digits:11'`, `'date'`, and `'required'` where visually appropriate).
 - **Auto-Expanding Table Cells:** For fields inside grid/table cells where text might wrap, do NOT use standard `<input>` tags. Use `<textarea rows="1">` with CSS `resize: none; overflow: hidden; height: auto;`. Apply JavaScript (inline or external) to auto-expand the vertical height based on content length so text is NEVER hidden. Example: `oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"`
 - **Custom Checkboxes:** Do NOT use default browser checkboxes. Style them to look exactly like `{ }` (brackets) in the print view while remaining clickable on the screen.
 
