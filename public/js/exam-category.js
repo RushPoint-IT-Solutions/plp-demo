@@ -34,6 +34,10 @@
     page.querySelectorAll('.apst-dropdown.open').forEach(function (menu) {
       menu.classList.remove('open');
       menu.classList.remove('drop-up');
+      menu.style.top = '';
+      menu.style.left = '';
+      menu.style.right = '';
+      menu.style.bottom = '';
     });
   }
 
@@ -44,6 +48,28 @@
     var isOpen = menu.classList.contains('open');
     closeMenus();
     if (isOpen) return;
+
+    var rect = trigger.getBoundingClientRect();
+    var estimatedWidth = 126;
+    var estimatedHeight = 92;
+    var left = rect.right + 8;
+    var top = rect.top;
+
+    if (left + estimatedWidth > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - estimatedWidth - 8);
+    }
+
+    if ((window.innerHeight - rect.bottom) < estimatedHeight + 8) {
+      menu.classList.add('drop-up');
+      top = Math.max(8, rect.bottom - estimatedHeight);
+    } else {
+      menu.style.bottom = 'auto';
+    }
+
+    menu.style.left = left + 'px';
+    menu.style.right = 'auto';
+    menu.style.top = top + 'px';
+    menu.style.bottom = 'auto';
 
     menu.classList.add('open');
   }
