@@ -65,7 +65,7 @@
                         </thead>
                         <tbody>
                             @foreach($page['checklist'] as $row)
-                                <tr>
+                                <tr @if(empty($row['no'])) class="cc-sub-row" @endif>
                                     <td class="cc-text-center">{{ $row['no'] }}</td>
                                     <td>{!! nl2br(e($row['requirement'])) !!}</td>
                                     <td>{!! nl2br(e(isset($row['where']) ? $row['where'] : '')) !!}</td>

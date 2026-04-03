@@ -178,6 +178,19 @@ $cc-muted: #efefef;
         margin-bottom: 8px;
     }
 
+    /* Center the right column (WHERE TO SECURE) for checklist rows */
+    .cc-grid-table--checklist thead th:nth-child(3),
+    .cc-grid-table--checklist tbody td:nth-child(3) {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Right-align requirement text for the indented sub-rows (Driver's License ... Postal ID) */
+    .cc-grid-table--checklist tbody tr.cc-sub-row td:nth-child(2) {
+        text-align: right;
+        padding-right: 8px;
+    }
+
     .cc-grid-table thead th {
         text-align: center;
         text-transform: uppercase;
