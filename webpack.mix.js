@@ -29,3 +29,19 @@ mix.js('resources/js/app.js', 'public/js')
    .sass('resources/sass/loa-enrolled.scss', 'public/css')
    .sass('resources/sass/citizens-charter.scss', 'public/css')
    .sass('resources/sass/registrar-faculty-loads.scss', 'public/css');
+
+   mix.browserSync({
+      proxy: '127.0.0.1:8000',
+      host: '127.0.0.1',
+      open: false,
+      notify: false,
+      files: [
+         'app/**/*.php',
+         'resources/views/**/*.php',
+         'routes/**/*.php',
+         'resources/js/**/*.js',
+         'resources/sass/**/*.scss',
+         'public/js/**/*.js',
+         'public/css/**/*.css'
+      ],
+   });

@@ -22,6 +22,18 @@
     </nav>
 
     <div class="cc-stage" id="cc-stage">
+        @php
+            $cc_render = function($s) {
+                $text = str_replace('\\n', "\n", (string) $s);
+                $escaped = e($text);
+                $unescaped = str_replace([
+                    '&lt;b&gt;', '&lt;/b&gt;', '&lt;strong&gt;', '&lt;/strong&gt;'
+                ], [
+                    '<b>', '</b>', '<strong>', '</strong>'
+                ], $escaped);
+                return nl2br($unescaped);
+            };
+        @endphp
         <article class="cc-sheet cc-cover-page" data-page-index="1">
             <div class="cc-cover-body">
                 <img src="{{ asset('img/logo.svg') }}" alt="PLP Logo" class="cc-cover-logo">
@@ -38,7 +50,7 @@
 
         @foreach($charterPages as $pageIndex => $page)
             @if($page['type'] === 'transaction')
-                <article class="cc-sheet" data-page-index="{{ $pageIndex + 2 }}">
+                <article class="cc-sheet {{ (isset($page['title']) && (strtoupper($page['title']) === 'CHANGE OF PERSONAL DATA' || strtoupper($page['title']) === 'REQUEST FOR STUDENT RECORDS')) ? 'cc-person-middle' : '' }}" data-page-index="{{ $pageIndex + 2 }}">
                     <header class="cc-doc-header">
                         <h2>CITIZEN'S CHARTER</h2>
                         <p>PLP REGISTRAR'S OFFICE</p>
@@ -46,7 +58,7 @@
 
                     <section class="cc-section">
                         <h3 class="cc-transaction-title">{{ $page['title'] }}</h3>
-                        <p class="cc-lead">{{ $page['lead'] }}</p>
+                        <p class="cc-lead">{!! $cc_render(isset($page['lead']) ? $page['lead'] : '') !!}</p>
                     </section>
 
                     <table class="cc-meta-table">
@@ -54,7 +66,7 @@
                             @foreach($page['meta'] as $label => $value)
                                 <tr>
                                     <th>{{ $label }}:</th>
-                                    <td>{{ $value }}</td>
+                                    <td>{!! $cc_render($value) !!}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -72,8 +84,8 @@
                             @foreach($page['checklist'] as $row)
                                 <tr @if(empty($row['no'])) class="cc-sub-row" @endif>
                                     <td class="cc-text-center">{{ $row['no'] }}</td>
-                                    <td>{!! nl2br(e($row['requirement'])) !!}</td>
-                                    <td>{!! nl2br(e(isset($row['where']) ? $row['where'] : '')) !!}</td>
+                                    <td>{!! $cc_render(isset($row['requirement']) ? $row['requirement'] : '') !!}</td>
+                                    <td>{!! $cc_render(isset($row['where']) ? $row['where'] : '') !!}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -91,14 +103,49 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($page['steps'] as $row)
+                            @php
+                                $mergePersonRows = (isset($page['title']) && in_array(strtoupper($page['title']), [
+                                    'CHANGE OF PERSONAL DATA',
+                                    'REQUEST FOR STUDENT RECORDS',
+                                ], true));
+                                $skipPersonCells = 0;
+                            @endphp
+
+                            @foreach($page['steps'] as $stepIndex => $row)
                                 <tr>
                                     <td class="cc-text-center">{{ $row['no'] }}</td>
-                                    <td>{!! nl2br(e($row['client'])) !!}</td>
-                                    <td>{!! nl2br(e($row['office'])) !!}</td>
-                                    <td class="cc-text-center">{!! nl2br(e($row['fees'])) !!}</td>
-                                    <td class="cc-text-center">{!! nl2br(e($row['time'])) !!}</td>
-                                    <td>{!! nl2br(e($row['person'])) !!}</td>
+                                    <td>{!! $cc_render(isset($row['client']) ? $row['client'] : '') !!}</td>
+                                    <td>{!! $cc_render(isset($row['office']) ? $row['office'] : '') !!}</td>
+                                    <td class="cc-text-center">{!! $cc_render(isset($row['fees']) ? $row['fees'] : '') !!}</td>
+                                    <td class="cc-text-center">{!! $cc_render(isset($row['time']) ? $row['time'] : '') !!}</td>
+
+                                    @if($mergePersonRows)
+                                        @php
+                                            $currentPerson = trim((string) (isset($row['person']) ? $row['person'] : ''));
+                                        @endphp
+
+                                        @if($skipPersonCells > 0)
+                                            @php $skipPersonCells--; @endphp
+                                        @elseif($currentPerson !== '')
+                                            @php
+                                                $personRowSpan = 1;
+                                                $stepCount = count($page['steps']);
+                                                for ($i = $stepIndex + 1; $i < $stepCount; $i++) {
+                                                    $nextPerson = trim((string) (isset($page['steps'][$i]['person']) ? $page['steps'][$i]['person'] : ''));
+                                                    if ($nextPerson !== '') {
+                                                        break;
+                                                    }
+                                                    $personRowSpan++;
+                                                }
+                                                $skipPersonCells = $personRowSpan - 1;
+                                            @endphp
+                                            <td @if($personRowSpan > 1) rowspan="{{ $personRowSpan }}" @endif>{!! $cc_render(isset($row['person']) ? $row['person'] : '') !!}</td>
+                                        @else
+                                            <td></td>
+                                        @endif
+                                    @else
+                                        <td>{!! $cc_render(isset($row['person']) ? $row['person'] : '') !!}</td>
+                                    @endif
                                 </tr>
                             @endforeach
                             <tr class="cc-total-row">
@@ -118,21 +165,18 @@
                     </header>
 
                     <section class="cc-section">
-                        <h3 class="cc-transaction-title">{{ $page['title'] }}</h3>
+                        <h3 class="cc-transaction-title">{{ isset($page['heading']) ? $page['heading'] : $page['title'] }}</h3>
                     </section>
 
                     <table class="cc-grid-table cc-grid-table--feedback">
-                        <thead>
-                            <tr>
-                                <th class="cc-col-feedback-label">TOPIC</th>
-                                <th>DETAILS</th>
-                            </tr>
-                        </thead>
                         <tbody>
+                            <tr>
+                                <th colspan="2" class="cc-feedback-head">{{ $page['title'] }}</th>
+                            </tr>
                             @foreach($page['rows'] as $row)
                                 <tr>
-                                    <td class="cc-feedback-label">{{ $row['label'] }}</td>
-                                    <td>{!! nl2br(e($row['value'])) !!}</td>
+                                    <td class="cc-col-feedback-label cc-feedback-label">{{ $row['label'] }}</td>
+                                    <td class="cc-feedback-value">{!! $cc_render(isset($row['value']) ? $row['value'] : '') !!}</td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -23,7 +23,9 @@
         "sass": "^1.15.2",
         "sass-loader": "^7.1.0",
         "vue": "^2.5.17",
-        "vue-template-compiler": "^2.7.16"
+        "vue-template-compiler": "^2.7.16",
+        "browser-sync": "^2.26.14",
+        "browser-sync-webpack-plugin": "^2.3.0"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.28.0",

@@ -246,6 +246,44 @@ $cc-pagination-text: #60656f;
         padding-right: 8px;
     }
 
+    /* Center CLIENT STEPS, OFFICE ACTIONS, FEES and PROCESSING TIME columns horizontally and vertically for steps table */
+    .cc-grid-table--steps thead th:nth-child(2),
+    .cc-grid-table--steps thead th:nth-child(3),
+    .cc-grid-table--steps thead th.cc-col-fees,
+    .cc-grid-table--steps thead th.cc-col-time,
+    .cc-grid-table--steps tbody td:nth-child(2),
+    .cc-grid-table--steps tbody td:nth-child(3),
+    .cc-grid-table--steps tbody td:nth-child(4),
+    .cc-grid-table--steps tbody td:nth-child(5) {
+        text-align: center;
+        vertical-align: middle;
+        /* ensure multiline content breaks and centers properly */
+        white-space: normal;
+    }
+
+    /* Space out bullet lines inside PERSON RESPONSIBLE cells */
+    .cc-grid-table--steps tbody td:nth-child(6) {
+        line-height: 1.5;
+        /* increase spacing for clearer separation between person entries */
+    }
+    .cc-grid-table--steps tbody td:nth-child(6) br {
+        display: block;
+        margin: 0.5rem 0;
+    }
+
+    /* For Change of Personal Data and Request for Student Records pages, center and middle-align the PERSON RESPONSIBLE cell (rowspan) */
+    .cc-sheet.cc-person-middle .cc-grid-table--steps tbody td:nth-child(6) {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    /* Center the `#` column (header and body) across all grid tables */
+    .cc-grid-table thead th.cc-col-no,
+    .cc-grid-table tbody td:nth-child(1) {
+        text-align: center;
+        vertical-align: middle;
+    }
+
     .cc-grid-table thead th {
         text-align: center;
         text-transform: uppercase;
@@ -289,6 +327,27 @@ $cc-pagination-text: #60656f;
     .cc-feedback-label {
         font-weight: 700;
         background: $cc-muted;
+    }
+
+    .cc-grid-table--feedback .cc-feedback-head {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 10pt;
+        line-height: 1.15;
+        font-weight: 800;
+        background: var(--plp-green, $cc-theme-green);
+        color: $cc-white;
+    }
+
+    .cc-grid-table--feedback .cc-feedback-label {
+        width: 44%;
+        font-weight: 400;
+        background: $cc-white;
+        vertical-align: middle;
+    }
+
+    .cc-grid-table--feedback .cc-feedback-value {
+        vertical-align: top;
     }
 
     .cc-cover-page {

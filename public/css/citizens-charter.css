@@ -252,6 +252,57 @@
   padding-right: 8px;
 }
 
+.registrar-body {
+  /* Center CLIENT STEPS, OFFICE ACTIONS, FEES and PROCESSING TIME columns horizontally and vertically for steps table */
+}
+
+.registrar-body .cc-grid-table--steps thead th:nth-child(2),
+.registrar-body .cc-grid-table--steps thead th:nth-child(3),
+.registrar-body .cc-grid-table--steps thead th.cc-col-fees,
+.registrar-body .cc-grid-table--steps thead th.cc-col-time,
+.registrar-body .cc-grid-table--steps tbody td:nth-child(2),
+.registrar-body .cc-grid-table--steps tbody td:nth-child(3),
+.registrar-body .cc-grid-table--steps tbody td:nth-child(4),
+.registrar-body .cc-grid-table--steps tbody td:nth-child(5) {
+  text-align: center;
+  vertical-align: middle;
+  /* ensure multiline content breaks and centers properly */
+  white-space: normal;
+}
+
+.registrar-body {
+  /* Space out bullet lines inside PERSON RESPONSIBLE cells */
+}
+
+.registrar-body .cc-grid-table--steps tbody td:nth-child(6) {
+  line-height: 1.5;
+  /* increase spacing for clearer separation between person entries */
+}
+
+.registrar-body .cc-grid-table--steps tbody td:nth-child(6) br {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.registrar-body {
+  /* For Change of Personal Data and Request for Student Records pages, center and middle-align the PERSON RESPONSIBLE cell (rowspan) */
+}
+
+.registrar-body .cc-sheet.cc-person-middle .cc-grid-table--steps tbody td:nth-child(6) {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.registrar-body {
+  /* Center the `#` column (header and body) across all grid tables */
+}
+
+.registrar-body .cc-grid-table thead th.cc-col-no,
+.registrar-body .cc-grid-table tbody td:nth-child(1) {
+  text-align: center;
+  vertical-align: middle;
+}
+
 .registrar-body .cc-grid-table thead th {
   text-align: center;
   text-transform: uppercase;
@@ -295,6 +346,27 @@
 .registrar-body .cc-feedback-label {
   font-weight: 700;
   background: #efefef;
+}
+
+.registrar-body .cc-grid-table--feedback .cc-feedback-head {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 10pt;
+  line-height: 1.15;
+  font-weight: 800;
+  background: var(--plp-green, #006837);
+  color: #fff;
+}
+
+.registrar-body .cc-grid-table--feedback .cc-feedback-label {
+  width: 44%;
+  font-weight: 400;
+  background: #fff;
+  vertical-align: middle;
+}
+
+.registrar-body .cc-grid-table--feedback .cc-feedback-value {
+  vertical-align: top;
 }
 
 .registrar-body .cc-cover-page {
