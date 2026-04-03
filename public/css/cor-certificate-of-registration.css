@@ -595,7 +595,7 @@
 
   .registrar-body .cor-registrar-page {
     margin: 0 !important;
-    padding: 2in 1in 1in !important;
+    padding: 2in 0.5in 0 0.5in !important;
     gap: 0 !important;
     width: 100% !important;
     max-width: none !important;
