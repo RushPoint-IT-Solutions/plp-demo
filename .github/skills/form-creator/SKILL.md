@@ -13,6 +13,7 @@ description: "Convert form screenshots to Laravel Blade forms with a fixed, non-
 ## 📐 Layout Constraints (Fixed "Zoom-Out" A4 Print Style)
 - **CRITICAL:** Forms must be STRICTLY FIXED-WIDTH (210mm) and NON-RESPONSIVE.
 - **1:1 Screenshot Match:** The HTML layout must be visually identical to the physical print view provided in the screenshot.
+- **Bootstrap 4 Utility-First Rule:** You MUST use Bootstrap 4 utility classes (e.g., `d-flex`, `mb-3`, `w-100`, `text-center`, `align-items-center`) for all spacing, layout, and typography. DO NOT write custom CSS or SCSS unless it is absolutely impossible to achieve the design (like specific A4 dimensions or highly custom borders) using Bootstrap 4 utilities.
 - **Fluid Inline Fields (The "Sentence" Rule):** For fields that appear inside a sentence (e.g., "I, ________, a student..."), do NOT use fixed widths. Use `display: flex` or `display: inline-flex` for the wrapper. The input should have `border: none; border-bottom: 1px solid black; flex-grow: 1;` so the line length adjusts dynamically to the text while filling the gap.
 - **No Responsive Classes:** Do NOT use Bootstrap's responsive grid classes (e.g., `col-sm-*`, `col-md-*`). Use fixed columns (e.g., `col-6`) or exact pixel widths to enforce placement.
 - **A4 Document Wrapper:** Wrap the entire form in `<div class="a4-wrapper">`.

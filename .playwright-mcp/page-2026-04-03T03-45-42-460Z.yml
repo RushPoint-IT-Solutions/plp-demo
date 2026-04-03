@@ -1,0 +1,485 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - img "PLP Logo" [ref=e5]
+      - img "PLP Text" [ref=e6]
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: http://localhost:8000/registrar/dashboard
+        - img [ref=e9]
+        - generic [ref=e11]: Dashboard
+      - generic [ref=e12]:
+        - link "Process" [ref=e13] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e14]
+          - generic [ref=e17]: Process
+          - img [ref=e18]
+        - text: • • • • • • •
+      - generic [ref=e20]:
+        - link "Registrar" [ref=e21] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e22]
+          - generic [ref=e24]: Registrar
+          - img [ref=e25]
+        - text: • • • • • • • • • • • • • • • • •
+      - generic [ref=e27]:
+        - link "Services" [ref=e28] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e29]
+          - generic [ref=e32]: Services
+          - img [ref=e33]
+        - text: • • • • • • • • • • • • • • • • • • •
+      - generic [ref=e35]:
+        - link "Forms" [ref=e36] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e37]
+          - generic [ref=e39]: Forms
+          - img [ref=e40]
+        - generic [ref=e42]:
+          - link "• TOR" [ref=e43] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/tor
+          - link "• Application Leave of Absence" [ref=e44] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/application-leave-of-absence-enrolled
+          - link "• Diploma" [ref=e45] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/diploma
+          - link "• Graduation Clearance" [ref=e46] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/graduation-clearance
+          - link "• Honorable Dismissal" [ref=e47] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/honorable-dismissal
+          - link "• Official Grade Report" [ref=e48] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/official-grade-report
+          - link "• Permission to Cross-Enroll" [ref=e49] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/permission-cross-enroll
+          - link "• Waiver Cancellation" [ref=e50] [cursor=pointer]:
+            - /url: http://localhost:8000/registrar/registrar-menu/forms/waiver-cancellation
+          - generic [ref=e51]:
+            - link "• Certificates" [ref=e52] [cursor=pointer]:
+              - /url: "#"
+              - text: • Certificates
+              - img [ref=e53]
+            - text: • • •
+          - generic [ref=e55]:
+            - link "• Copy Of Grades (COG)" [ref=e56] [cursor=pointer]:
+              - /url: "#"
+              - text: • Copy Of Grades (COG)
+              - img [ref=e57]
+            - text: •
+          - generic [ref=e59]:
+            - link "• Certificate of Registration (COR)" [ref=e60] [cursor=pointer]:
+              - /url: "#"
+              - text: • Certificate of Registration (COR)
+              - img [ref=e61]
+            - text: •
+      - generic [ref=e63]:
+        - link "Admin Tools" [ref=e64] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e65]:
+            - generic [ref=e67]: "8"
+          - generic [ref=e68]: Admin Tools
+          - img [ref=e69]
+        - text: • • • • • • • • • • • • • • •
+    - link "Log Out" [ref=e72] [cursor=pointer]:
+      - /url: http://localhost:8000/logout
+      - generic [ref=e73]: Log Out
+      - img [ref=e74]
+  - generic [ref=e76]:
+    - banner [ref=e77]:
+      - button "Toggle sidebar" [ref=e78] [cursor=pointer]:
+        - img [ref=e79]
+      - generic [ref=e80]:
+        - link "Notifications" [ref=e81] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e82]
+        - link "Messages" [ref=e85] [cursor=pointer]:
+          - /url: http://localhost:8000/registrar/messaging
+          - img [ref=e86]
+        - link [ref=e88] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e90]
+    - generic [ref=e93]:
+      - generic [ref=e94]: APPLICATION FOR LEAVE OF ABSENCE - ENROLLED
+      - main [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - generic [ref=e99]: Student
+              - combobox "Student" [ref=e100]:
+                - option "1234567891012 - Austero, Andrea Jane" [selected]
+                - option "2024003 - De Leon, Carlos"
+                - option "2025-000001 - Dela Cruz, Juan Miguel"
+                - option "2024004 - Flores, Patricia"
+                - option "2024005 - Garcia, Jose"
+                - option "2024006 - Mendoza, Ana"
+                - option "2024008 - Ramos, Cristina"
+                - option "2026A00001 - Reset, Student Demo"
+                - option "2024001 - Reyes, Juan Miguel"
+                - option "2024002 - Santos, Maria Clara"
+                - option "2024007 - Torres, Roberto"
+                - option "TRSTD260001 - Trash Student Entity 1"
+                - option "TRSTD260010 - Trash Student Entity 10"
+                - option "TRSTD260011 - Trash Student Entity 11"
+                - option "TRSTD260012 - Trash Student Entity 12"
+                - option "TRSTD260013 - Trash Student Entity 13"
+                - option "TRSTD260014 - Trash Student Entity 14"
+                - option "TRSTD260015 - Trash Student Entity 15"
+                - option "TRSTD260016 - Trash Student Entity 16"
+                - option "TRSTD260017 - Trash Student Entity 17"
+                - option "TRSTD260018 - Trash Student Entity 18"
+                - option "TRSTD260019 - Trash Student Entity 19"
+                - option "TRSTD260002 - Trash Student Entity 2"
+                - option "TRSTD260020 - Trash Student Entity 20"
+                - option "TRSTD260021 - Trash Student Entity 21"
+                - option "TRSTD260022 - Trash Student Entity 22"
+                - option "TRSTD260023 - Trash Student Entity 23"
+                - option "TRSTD260024 - Trash Student Entity 24"
+                - option "TRSTD260025 - Trash Student Entity 25"
+                - option "TRSTD260026 - Trash Student Entity 26"
+                - option "TRSTD260027 - Trash Student Entity 27"
+                - option "TRSTD260028 - Trash Student Entity 28"
+                - option "TRSTD260029 - Trash Student Entity 29"
+                - option "TRSTD260003 - Trash Student Entity 3"
+                - option "TRSTD260030 - Trash Student Entity 30"
+                - option "TRSTD260004 - Trash Student Entity 4"
+                - option "TRSTD260005 - Trash Student Entity 5"
+                - option "TRSTD260006 - Trash Student Entity 6"
+                - option "TRSTD260007 - Trash Student Entity 7"
+                - option "TRSTD260008 - Trash Student Entity 8"
+                - option "TRSTD260009 - Trash Student Entity 9"
+            - button "Print" [ref=e102] [cursor=pointer]
+          - article "Application for Leave of Absence - Enrolled" [ref=e104]:
+            - paragraph [ref=e105]: PLPRO FORM NO. IH-2 Revised 2023
+            - heading "APPLICATION FOR LEAVE OF ABSENCE - ENROLLED" [level=2] [ref=e106]
+            - generic [ref=e107]:
+              - textbox [ref=e108]: April 03, 2026
+              - generic [ref=e109]: Date of Application
+            - paragraph [ref=e110]:
+              - text: I,
+              - textbox [ref=e112]: Austero, Andrea Jane
+              - text: ", a student currently enrolled in Pamantasan ng Lungsod ng Pasig with student number"
+              - textbox [ref=e114]: "1234567891012"
+              - text: under the BS
+              - textbox [ref=e116]: BSIT
+              - text: Program, hereby request for the withdrawal of my enrolment and application for a leave of absence effective this
+              - textbox [ref=e118]: 2nd Semester
+              - text: sem AY
+              - textbox [ref=e120]: 2025-2026
+              - text: "due to the following reason(s):"
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - checkbox "medical condition" [ref=e123] [cursor=pointer]
+                - generic [ref=e124]: medical condition
+              - generic [ref=e125]:
+                - checkbox "financial constraint" [ref=e126] [cursor=pointer]
+                - generic [ref=e127]: financial constraint
+              - generic [ref=e128]:
+                - checkbox "unavailability of subject" [ref=e129] [cursor=pointer]
+                - generic [ref=e130]: unavailability of subject
+              - generic [ref=e131]:
+                - checkbox "work" [ref=e132] [cursor=pointer]
+                - generic [ref=e133]: work
+              - generic [ref=e134]:
+                - checkbox "pregnancy" [ref=e135] [cursor=pointer]
+                - generic [ref=e136]: pregnancy
+              - generic [ref=e137]:
+                - checkbox "family problem" [ref=e138] [cursor=pointer]
+                - generic [ref=e139]: family problem
+              - generic [ref=e140]:
+                - checkbox "others" [ref=e141] [cursor=pointer]
+                - generic [ref=e142]: others
+                - textbox [ref=e143]
+            - paragraph [ref=e144]: I hereby agree that should I fail to return to the University to resume my studies at the expiration of my leave of absence, and without an extension of such leave of absence approved in writing, I shall be dropped from the rolls of the University.
+            - generic [ref=e145]:
+              - textbox [ref=e146]: Austero, Andrea Jane
+              - paragraph [ref=e147]: Student Signature above printed name
+              - paragraph [ref=e148]:
+                - text: "Student No:"
+                - textbox [ref=e149]: "1234567891012"
+            - paragraph [ref=e151]: "The following grade/remarks will be accorded should the student pursue to file Leave of Absence:"
+            - table [ref=e152]:
+              - rowgroup [ref=e153]:
+                - row "COURSE CODE COURSE DESCRIPTION SECTION MIDTERM GRADE FINAL GRADE SEMESTRAL GRADE/REMARKS PROFESSOR'S NAME & SIGNATURE" [ref=e154]:
+                  - columnheader "COURSE CODE" [ref=e155]
+                  - columnheader "COURSE DESCRIPTION" [ref=e156]
+                  - columnheader "SECTION" [ref=e157]
+                  - columnheader "MIDTERM GRADE" [ref=e158]
+                  - columnheader "FINAL GRADE" [ref=e159]
+                  - columnheader "SEMESTRAL GRADE/REMARKS" [ref=e160]
+                  - columnheader "PROFESSOR'S NAME & SIGNATURE" [ref=e161]
+              - rowgroup [ref=e162]:
+                - row [ref=e163]:
+                  - cell [ref=e164]:
+                    - textbox [ref=e165]
+                  - cell [ref=e166]:
+                    - textbox [ref=e167]
+                  - cell [ref=e168]:
+                    - textbox [ref=e169]
+                  - cell [ref=e170]:
+                    - textbox [ref=e171]
+                  - cell [ref=e172]:
+                    - textbox [ref=e173]
+                  - cell [ref=e174]:
+                    - textbox [ref=e175]
+                  - cell [ref=e176]:
+                    - textbox [ref=e177]
+                - row [ref=e178]:
+                  - cell [ref=e179]:
+                    - textbox [ref=e180]
+                  - cell [ref=e181]:
+                    - textbox [ref=e182]
+                  - cell [ref=e183]:
+                    - textbox [ref=e184]
+                  - cell [ref=e185]:
+                    - textbox [ref=e186]
+                  - cell [ref=e187]:
+                    - textbox [ref=e188]
+                  - cell [ref=e189]:
+                    - textbox [ref=e190]
+                  - cell [ref=e191]:
+                    - textbox [ref=e192]
+                - row [ref=e193]:
+                  - cell [ref=e194]:
+                    - textbox [ref=e195]
+                  - cell [ref=e196]:
+                    - textbox [ref=e197]
+                  - cell [ref=e198]:
+                    - textbox [ref=e199]
+                  - cell [ref=e200]:
+                    - textbox [ref=e201]
+                  - cell [ref=e202]:
+                    - textbox [ref=e203]
+                  - cell [ref=e204]:
+                    - textbox [ref=e205]
+                  - cell [ref=e206]:
+                    - textbox [ref=e207]
+                - row [ref=e208]:
+                  - cell [ref=e209]:
+                    - textbox [ref=e210]
+                  - cell [ref=e211]:
+                    - textbox [ref=e212]
+                  - cell [ref=e213]:
+                    - textbox [ref=e214]
+                  - cell [ref=e215]:
+                    - textbox [ref=e216]
+                  - cell [ref=e217]:
+                    - textbox [ref=e218]
+                  - cell [ref=e219]:
+                    - textbox [ref=e220]
+                  - cell [ref=e221]:
+                    - textbox [ref=e222]
+                - row [ref=e223]:
+                  - cell [ref=e224]:
+                    - textbox [ref=e225]
+                  - cell [ref=e226]:
+                    - textbox [ref=e227]
+                  - cell [ref=e228]:
+                    - textbox [ref=e229]
+                  - cell [ref=e230]:
+                    - textbox [ref=e231]
+                  - cell [ref=e232]:
+                    - textbox [ref=e233]
+                  - cell [ref=e234]:
+                    - textbox [ref=e235]
+                  - cell [ref=e236]:
+                    - textbox [ref=e237]
+                - row [ref=e238]:
+                  - cell [ref=e239]:
+                    - textbox [ref=e240]
+                  - cell [ref=e241]:
+                    - textbox [ref=e242]
+                  - cell [ref=e243]:
+                    - textbox [ref=e244]
+                  - cell [ref=e245]:
+                    - textbox [ref=e246]
+                  - cell [ref=e247]:
+                    - textbox [ref=e248]
+                  - cell [ref=e249]:
+                    - textbox [ref=e250]
+                  - cell [ref=e251]:
+                    - textbox [ref=e252]
+                - row [ref=e253]:
+                  - cell [ref=e254]:
+                    - textbox [ref=e255]
+                  - cell [ref=e256]:
+                    - textbox [ref=e257]
+                  - cell [ref=e258]:
+                    - textbox [ref=e259]
+                  - cell [ref=e260]:
+                    - textbox [ref=e261]
+                  - cell [ref=e262]:
+                    - textbox [ref=e263]
+                  - cell [ref=e264]:
+                    - textbox [ref=e265]
+                  - cell [ref=e266]:
+                    - textbox [ref=e267]
+                - row [ref=e268]:
+                  - cell [ref=e269]:
+                    - textbox [ref=e270]
+                  - cell [ref=e271]:
+                    - textbox [ref=e272]
+                  - cell [ref=e273]:
+                    - textbox [ref=e274]
+                  - cell [ref=e275]:
+                    - textbox [ref=e276]
+                  - cell [ref=e277]:
+                    - textbox [ref=e278]
+                  - cell [ref=e279]:
+                    - textbox [ref=e280]
+                  - cell [ref=e281]:
+                    - textbox [ref=e282]
+            - generic [ref=e284]:
+              - generic [ref=e285]:
+                - paragraph [ref=e286]: This is to attest that the student did not commit any offenses stipulated in the student manual nor make any derogatory act contrary to the university's name, reputation and ideals.
+                - generic [ref=e287]:
+                  - paragraph [ref=e288]:
+                    - textbox [ref=e289]
+                  - paragraph [ref=e290]: DSA Director
+              - generic [ref=e291]:
+                - paragraph [ref=e292]: "FOR FAMILY PROBLEMS/WORK/FINANCIAL CONSTRAINTS REASONS ONLY:"
+                - paragraph [ref=e293]: "Counseled:"
+                - paragraph [ref=e294]:
+                  - textbox [ref=e295]
+                - paragraph [ref=e296]: Guidance Counselor
+            - generic [ref=e297]:
+              - generic [ref=e298]:
+                - paragraph [ref=e299]: "FOR MEDICAL CONDITION/PREGNANCY REASONS ONLY:"
+                - paragraph [ref=e300]:
+                  - text: "Student's Health Condition:"
+                  - textbox [ref=e301]
+                - paragraph [ref=e302]:
+                  - text: "REMARKS:"
+                  - generic [ref=e303]:
+                    - checkbox "LOA NECESSARY" [ref=e304] [cursor=pointer]
+                    - generic [ref=e305]: LOA NECESSARY
+                  - generic [ref=e306]:
+                    - checkbox "LOA NOT NECESSARY" [ref=e307] [cursor=pointer]
+                    - generic [ref=e308]: LOA NOT NECESSARY
+                - generic [ref=e310]:
+                  - paragraph [ref=e311]:
+                    - textbox [ref=e312]
+                  - paragraph [ref=e313]: Medical Officer
+              - generic [ref=e314]:
+                - paragraph [ref=e315]: "FOR UNAVAILABILITY OF SUBJECT REASON ONLY:"
+                - paragraph [ref=e316]: This is to attest that the student has no subject to enroll this semester.
+                - generic [ref=e318]:
+                  - paragraph [ref=e319]:
+                    - textbox [ref=e320]
+                  - paragraph [ref=e321]: Registrar's Office College Secretary
+            - generic [ref=e322]:
+              - generic [ref=e323]:
+                - paragraph [ref=e324]: "To be accomplished by the Dean:"
+                - table [ref=e325]:
+                  - rowgroup [ref=e326]:
+                    - row "No. of Failed and UD Grades" [ref=e327]:
+                      - cell "No. of Failed and UD Grades" [ref=e328]
+                      - cell [ref=e329]:
+                        - textbox [ref=e330]
+                    - row "Max. Residency Yrs" [ref=e331]:
+                      - cell "Max. Residency Yrs" [ref=e332]
+                      - cell [ref=e333]:
+                        - textbox [ref=e334]
+                    - row "No. of Yrs Enrolled" [ref=e335]:
+                      - cell "No. of Yrs Enrolled" [ref=e336]
+                      - cell [ref=e337]:
+                        - textbox [ref=e338]
+                    - row "No. of Remaining Yrs" [ref=e339]:
+                      - cell "No. of Remaining Yrs" [ref=e340]
+                      - cell [ref=e341]:
+                        - textbox [ref=e342]
+                    - row "Will Require Extension of Residency Yrs Y N" [ref=e343]:
+                      - cell "Will Require Extension of Residency Yrs" [ref=e344]
+                      - cell "Y N" [ref=e345]:
+                        - generic [ref=e346]:
+                          - checkbox "Y" [ref=e347] [cursor=pointer]
+                          - generic [ref=e348]: "Y"
+                        - generic [ref=e349]:
+                          - checkbox "N" [ref=e350] [cursor=pointer]
+                          - generic [ref=e351]: "N"
+                    - row "All subjects are still offered upon projected return Y N" [ref=e352]:
+                      - cell "All subjects are still offered upon projected return" [ref=e353]
+                      - cell "Y N" [ref=e354]:
+                        - generic [ref=e355]:
+                          - checkbox "Y" [ref=e356] [cursor=pointer]
+                          - generic [ref=e357]: "Y"
+                        - generic [ref=e358]:
+                          - checkbox "N" [ref=e359] [cursor=pointer]
+                          - generic [ref=e360]: "N"
+              - generic [ref=e361]:
+                - paragraph [ref=e362]:
+                  - generic [ref=e363]:
+                    - checkbox "LOA Approved" [ref=e364] [cursor=pointer]
+                    - generic [ref=e365]: LOA Approved
+                - paragraph [ref=e366]:
+                  - generic [ref=e367]:
+                    - checkbox "LOA Disapproved" [ref=e368] [cursor=pointer]
+                    - generic [ref=e369]: LOA Disapproved
+                - paragraph [ref=e370]:
+                  - textbox [ref=e371]
+                - paragraph [ref=e372]: College Dean
+                - paragraph [ref=e373]:
+                  - text: Date
+                  - textbox [ref=e374]
+              - generic [ref=e375]:
+                - paragraph [ref=e376]: "Noted:"
+                - paragraph [ref=e377]:
+                  - textbox [ref=e378]
+                - paragraph [ref=e379]: University Registrar
+                - paragraph [ref=e380]:
+                  - text: Date
+                  - textbox [ref=e381]
+              - generic [ref=e382]:
+                - paragraph [ref=e383]: "Recorded:"
+                - paragraph [ref=e384]:
+                  - textbox [ref=e385]
+                - paragraph [ref=e386]: College Secretary
+                - paragraph [ref=e387]:
+                  - text: Date
+                  - textbox [ref=e388]
+                - paragraph [ref=e390]: "Processed in UIS:"
+                - paragraph [ref=e391]:
+                  - textbox [ref=e392]
+                - paragraph [ref=e393]: Front-Desk Officer
+                - paragraph [ref=e394]:
+                  - text: Date
+                  - textbox [ref=e395]
+            - generic [ref=e396]:
+              - generic [ref=e397]:
+                - paragraph [ref=e398]: "Requirements:"
+                - paragraph [ref=e399]: For Medical Condition/Pregnancy
+                - paragraph [ref=e400]: "* Medical Certificate"
+                - paragraph [ref=e401]: "* Clearance from Medical Officer"
+              - generic [ref=e402]:
+                - paragraph [ref=e403]: "Requirements:"
+                - paragraph [ref=e404]: For Work
+                - paragraph [ref=e405]: "* Certificate of Employment"
+                - paragraph [ref=e406]: "* Clearance from Guidance Counselor"
+              - generic [ref=e407]:
+                - paragraph [ref=e408]: "Requirements:"
+                - paragraph [ref=e409]: For Unavailability of Subject
+                - paragraph [ref=e410]: "* Clearance from Reg. Off. College Secretary"
+              - generic [ref=e411]:
+                - paragraph [ref=e412]: "Requirements:"
+                - paragraph [ref=e413]: For Financial Constraint/Family Problem
+                - paragraph [ref=e414]: "* Clearance from Guidance Counselor"
+            - generic [ref=e416]:
+              - paragraph [ref=e417]: "PRESENT THIS FORM UPON READMISSION:"
+              - paragraph [ref=e418]:
+                - text: Student is eligible for readmission until
+                - textbox [ref=e420]
+                - text: Semester AY
+                - textbox [ref=e422]
+                - text: only.
+      - contentinfo [ref=e423]:
+        - generic [ref=e424]:
+          - paragraph [ref=e425]:
+            - generic [ref=e426]:
+              - text: Powered by
+              - img "RushPoint Logo" [ref=e427]
+            - generic [ref=e428]:
+              - text: from
+              - img "Obanana Logo" [ref=e429]
+              - strong [ref=e430]: Obanana
+              - text: .
+          - paragraph [ref=e431]: For questions and comments, email us at
+          - paragraph [ref=e432]:
+            - link "info@rushpoint.com.ph" [ref=e433] [cursor=pointer]:
+              - /url: mailto:info@rushpoint.com.ph
