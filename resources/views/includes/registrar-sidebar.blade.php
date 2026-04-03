@@ -215,6 +215,7 @@
                     <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.official-grade-report') ? 'active' : '' }}">Official Grade Report</a>
                     <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>
                     <a href="{{ route('registrar.registrar-menu.forms.citizens-charter') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.citizens-charter') ? 'active' : '' }}">Citizen's Charter</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.request-form-f-137a') ? 'active' : '' }}">Request Form for F 137A</a>
                     <a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver Cancellation</a>
 
                     <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'open' : '' }}">

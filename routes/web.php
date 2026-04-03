@@ -163,6 +163,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
             Route::get('/citizens-charter', 'Registrar\RegistrarController@formsCitizensCharter')->name('citizens-charter');
+            Route::get('/request-form-f-137a', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a');
             Route::post('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnrollStore')->name('permission-cross-enroll.store');
             Route::put('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollUpdate')->name('permission-cross-enroll.update');
             Route::delete('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollDestroy')->name('permission-cross-enroll.destroy');

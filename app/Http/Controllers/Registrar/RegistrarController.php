@@ -1326,6 +1326,14 @@ class RegistrarController extends Controller
         ]);
     }
 
+    /**
+     * Registrar > Forms > Request Form for F 137A
+     */
+    public function formsRequestFormF137a()
+    {
+        return view('registrar.forms.request-form-f-137a');
+    }
+
     private function citizensCharterPages(): array
     {
         return [

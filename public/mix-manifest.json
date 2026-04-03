@@ -9,11 +9,13 @@
     "/css/cor-certificate-of-registration.css": "/css/cor-certificate-of-registration.css",
     "/css/loa-enrolled.css": "/css/loa-enrolled.css",
     "/css/citizens-charter.css": "/css/citizens-charter.css",
+    "/css/request-form-f-137a.css": "/css/request-form-f-137a.css",
     "/css/registrar-faculty-loads.css": "/css/registrar-faculty-loads.css",
     "/js/registrar-citizens-charter.js": "/js/registrar-citizens-charter.js",
     "/js/registrar-cor.js": "/js/registrar-cor.js",
     "/js/registrar-faculty-loads.js": "/js/registrar-faculty-loads.js",
     "/js/registrar-loa-enrolled.js": "/js/registrar-loa-enrolled.js",
+    "/js/registrar-request-form-f137a.js": "/js/registrar-request-form-f137a.js",
     "/js/section-offering.js": "/js/section-offering.js",
     "/js/student-profile.js": "/js/student-profile.js",
     "/js/student-sidebar-dropdown.js": "/js/student-sidebar-dropdown.js"

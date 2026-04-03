@@ -18,6 +18,7 @@ mix.js('resources/js/app.js', 'public/js')
    .js('resources/js/registrar-cor.js', 'public/js')
    .js('resources/js/registrar-loa-enrolled.js', 'public/js')
    .js('resources/js/registrar-citizens-charter.js', 'public/js')
+   .js('resources/js/registrar-request-form-f137a.js', 'public/js')
    .js('resources/js/registrar-faculty-loads.js', 'public/js')
    .sass('resources/sass/app.scss', 'public/css')
    .sass('resources/sass/style.scss', 'public/css')
@@ -28,6 +29,7 @@ mix.js('resources/js/app.js', 'public/js')
    .sass('resources/sass/cor-certificate-of-registration.scss', 'public/css')
    .sass('resources/sass/loa-enrolled.scss', 'public/css')
    .sass('resources/sass/citizens-charter.scss', 'public/css')
+   .sass('resources/sass/request-form-f-137a.scss', 'public/css')
    .sass('resources/sass/registrar-faculty-loads.scss', 'public/css');
 
    mix.browserSync({

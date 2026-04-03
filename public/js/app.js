@@ -49550,6 +49550,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /***/ }),
 
+/***/ "./resources/sass/request-form-f-137a.scss":
+/*!*************************************************!*\
+  !*** ./resources/sass/request-form-f-137a.scss ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ "./resources/sass/style.scss":
 /*!***********************************!*\
   !*** ./resources/sass/style.scss ***!
@@ -49562,9 +49573,9 @@ document.addEventListener('DOMContentLoaded', function () {
 /***/ }),
 
 /***/ 0:
-/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/loa-enrolled.scss ./resources/sass/citizens-charter.scss ./resources/sass/registrar-faculty-loads.scss ***!
-  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/loa-enrolled.scss ./resources/sass/citizens-charter.scss ./resources/sass/request-form-f-137a.scss ./resources/sass/registrar-faculty-loads.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -49578,6 +49589,7 @@ __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cog-c
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\loa-enrolled.scss */"./resources/sass/loa-enrolled.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\citizens-charter.scss */"./resources/sass/citizens-charter.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\request-form-f-137a.scss */"./resources/sass/request-form-f-137a.scss");
 module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
 
 
