@@ -1,0 +1,340 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - img "PLP Logo" [ref=e5]
+      - img "PLP Text" [ref=e6]
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registrar/dashboard
+        - img [ref=e9]
+        - generic [ref=e11]: Dashboard
+      - generic [ref=e12]:
+        - link "Process" [ref=e13] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e14]
+          - generic [ref=e17]: Process
+          - img [ref=e18]
+        - text: • • • • • • • • • • •
+      - generic [ref=e20]:
+        - link "Registrar" [ref=e21] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e22]
+          - generic [ref=e24]: Registrar
+          - img [ref=e25]
+        - text: • • • • • • • • • • • • • • • • • •
+      - generic [ref=e27]:
+        - link "Services" [ref=e28] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e29]
+          - generic [ref=e32]: Services
+          - img [ref=e33]
+        - text: • • • • • • • • • • • • • • • • • • •
+      - generic [ref=e35]:
+        - link "Forms" [ref=e36] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e37]
+          - generic [ref=e39]: Forms
+          - img [ref=e40]
+        - generic [ref=e42]:
+          - link "• TOR" [ref=e43] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/tor
+          - link "• Application for Leave of Absence - Enrolled" [ref=e44] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/application-leave-of-absence-enrolled
+          - link "• Diploma" [ref=e45] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/diploma
+          - link "• Graduation Clearance" [ref=e46] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/graduation-clearance
+          - link "• Honorable Dismissal" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/honorable-dismissal
+          - link "• Official Grade Report" [ref=e48] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/official-grade-report
+          - link "• Permission to Cross-Enroll" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/permission-cross-enroll
+          - link "• Waiver Cancellation" [ref=e50] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/waiver-cancellation
+          - generic [ref=e51]:
+            - link "• Certificates" [ref=e52] [cursor=pointer]:
+              - /url: "#"
+              - text: • Certificates
+              - img [ref=e53]
+            - text: • • •
+          - generic [ref=e55]:
+            - link "• Copy Of Grades (COG)" [ref=e56] [cursor=pointer]:
+              - /url: "#"
+              - text: • Copy Of Grades (COG)
+              - img [ref=e57]
+            - text: •
+          - generic [ref=e59]:
+            - link "• Certificate of Registration (COR)" [ref=e60] [cursor=pointer]:
+              - /url: "#"
+              - text: • Certificate of Registration (COR)
+              - img [ref=e61]
+            - link "• Certificate of Registration (COR)" [ref=e64] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/registrar/registrar-menu/forms/cor/certificate-of-registration
+      - generic [ref=e65]:
+        - link "Admin Tools" [ref=e66] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e67]:
+            - generic [ref=e69]: "8"
+          - generic [ref=e70]: Admin Tools
+          - img [ref=e71]
+        - text: • • • • • • • • • • • • • • •
+    - link "Log Out" [ref=e74] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/logout
+      - generic [ref=e75]: Log Out
+      - img [ref=e76]
+  - generic [ref=e78]:
+    - banner [ref=e79]:
+      - generic [ref=e80]:
+        - link "Notifications" [ref=e81] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e82]
+        - link "Messages" [ref=e85] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/registrar/messaging
+          - img [ref=e86]
+        - link [ref=e88] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e90]
+    - generic [ref=e93]:
+      - generic [ref=e94]: CERTIFICATE OF REGISTRATION (COR)
+      - main [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - generic [ref=e99]: Student
+              - combobox "Student" [ref=e100]:
+                - option "1234567891012 - Austero, Andrea Jane" [selected]
+                - option "2024003 - De Leon, Carlos"
+                - option "2025-000001 - Dela Cruz, Juan Miguel"
+                - option "2024004 - Flores, Patricia"
+                - option "2024005 - Garcia, Jose"
+                - option "2024006 - Mendoza, Ana"
+                - option "2024008 - Ramos, Cristina"
+                - option "2026A00001 - Reset, Student Demo"
+                - option "2024001 - Reyes, Juan Miguel"
+                - option "2024002 - Santos, Maria Clara"
+                - option "2024007 - Torres, Roberto"
+                - option "TRSTD260001 - Trash Student Entity 1"
+                - option "TRSTD260010 - Trash Student Entity 10"
+                - option "TRSTD260011 - Trash Student Entity 11"
+                - option "TRSTD260012 - Trash Student Entity 12"
+                - option "TRSTD260013 - Trash Student Entity 13"
+                - option "TRSTD260014 - Trash Student Entity 14"
+                - option "TRSTD260015 - Trash Student Entity 15"
+                - option "TRSTD260016 - Trash Student Entity 16"
+                - option "TRSTD260017 - Trash Student Entity 17"
+                - option "TRSTD260018 - Trash Student Entity 18"
+                - option "TRSTD260019 - Trash Student Entity 19"
+                - option "TRSTD260002 - Trash Student Entity 2"
+                - option "TRSTD260020 - Trash Student Entity 20"
+                - option "TRSTD260021 - Trash Student Entity 21"
+                - option "TRSTD260022 - Trash Student Entity 22"
+                - option "TRSTD260023 - Trash Student Entity 23"
+                - option "TRSTD260024 - Trash Student Entity 24"
+                - option "TRSTD260025 - Trash Student Entity 25"
+                - option "TRSTD260026 - Trash Student Entity 26"
+                - option "TRSTD260027 - Trash Student Entity 27"
+                - option "TRSTD260028 - Trash Student Entity 28"
+                - option "TRSTD260029 - Trash Student Entity 29"
+                - option "TRSTD260003 - Trash Student Entity 3"
+                - option "TRSTD260030 - Trash Student Entity 30"
+                - option "TRSTD260004 - Trash Student Entity 4"
+                - option "TRSTD260005 - Trash Student Entity 5"
+                - option "TRSTD260006 - Trash Student Entity 6"
+                - option "TRSTD260007 - Trash Student Entity 7"
+                - option "TRSTD260008 - Trash Student Entity 8"
+                - option "TRSTD260009 - Trash Student Entity 9"
+            - button "Print" [ref=e102] [cursor=pointer]
+          - article "Certificate of Registration" [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e106]:
+                  - generic [ref=e107]:
+                    - generic [ref=e108]: "Enrollment No:"
+                    - generic [ref=e109]: "12232345431"
+                  - generic [ref=e110]:
+                    - generic [ref=e111]: "Student No:"
+                    - generic [ref=e112]: "1234567891012"
+                  - generic [ref=e113]:
+                    - generic [ref=e114]: "Student Name:"
+                    - generic [ref=e115]: Austero, Andrea Jane
+                  - generic [ref=e116]:
+                    - generic [ref=e117]: "Address:"
+                    - generic [ref=e118]: "-"
+                  - generic [ref=e119]:
+                    - generic [ref=e120]: "Course:"
+                    - generic [ref=e121]: BSIT
+                  - generic [ref=e122]:
+                    - generic [ref=e123]: "Department:"
+                    - generic [ref=e124]: "-"
+                - generic [ref=e125]:
+                  - generic [ref=e126]:
+                    - generic [ref=e127]: "Enrollment Date:"
+                    - generic [ref=e128]: 03/28/2026
+                  - generic [ref=e129]:
+                    - generic [ref=e130]: "Curriculum:"
+                    - generic [ref=e131]: BSIT 2018-2019
+                  - generic [ref=e132]:
+                    - generic [ref=e133]: "School Year:"
+                    - generic [ref=e134]: 2025-2026 / 2ND SEMESTER SEMESTER
+                - generic [ref=e135]:
+                  - generic [ref=e136]:
+                    - generic [ref=e137]: "Year Level:"
+                    - generic [ref=e138]: 4th Year
+                  - generic [ref=e139]:
+                    - generic [ref=e140]: "Student Type:"
+                    - generic [ref=e141]: Old Student
+              - generic [ref=e142]:
+                - generic [ref=e143]: "Scholarship/Grant:"
+                - generic [ref=e144]: FREE EDUCATION
+            - table [ref=e145]:
+              - rowgroup [ref=e155]:
+                - row "CLASS SCHEDULE" [ref=e156]:
+                  - columnheader "CLASS SCHEDULE" [ref=e157]
+                - row "SUBJECT NAME SUBJECT DESCRIPTION SECTION UNITS ROOM DAYS TIME PAY UNITS" [ref=e158]:
+                  - columnheader "SUBJECT NAME" [ref=e159]
+                  - columnheader "SUBJECT DESCRIPTION" [ref=e160]
+                  - columnheader "SECTION" [ref=e161]
+                  - columnheader "UNITS" [ref=e162]
+                  - columnheader "ROOM" [ref=e163]
+                  - columnheader "DAYS" [ref=e164]
+                  - columnheader "TIME" [ref=e165]
+                  - columnheader "PAY UNITS" [ref=e166]
+              - rowgroup [ref=e167]:
+                - row "OOP111 Object-Oriented Programming 4-B 3.00 2 T,F 04:00-05:00 PM 3.00" [ref=e168]:
+                  - cell "OOP111" [ref=e169]
+                  - cell "Object-Oriented Programming" [ref=e170]
+                  - cell "4-B" [ref=e171]
+                  - cell "3.00" [ref=e172]
+                  - cell "2" [ref=e173]
+                  - cell "T,F" [ref=e174]
+                  - cell "04:00-05:00 PM" [ref=e175]
+                  - cell "3.00" [ref=e176]
+                - row "SAM125 System Administration and Maintenance 4-B 3.00 5 M,Th 01:00-02:00 PM 3.00" [ref=e177]:
+                  - cell "SAM125" [ref=e178]
+                  - cell "System Administration and Maintenance" [ref=e179]
+                  - cell "4-B" [ref=e180]
+                  - cell "3.00" [ref=e181]
+                  - cell "5" [ref=e182]
+                  - cell "M,Th" [ref=e183]
+                  - cell "01:00-02:00 PM" [ref=e184]
+                  - cell "3.00" [ref=e185]
+                - row "SPI128 Social And Professional Issues 4-A 2.00 1 W,Th 08:00-10:00 AM 2.00" [ref=e186]:
+                  - cell "SPI128" [ref=e187]
+                  - cell "Social And Professional Issues" [ref=e188]
+                  - cell "4-A" [ref=e189]
+                  - cell "2.00" [ref=e190]
+                  - cell "1" [ref=e191]
+                  - cell "W,Th" [ref=e192]
+                  - cell "08:00-10:00 AM" [ref=e193]
+                  - cell "2.00" [ref=e194]
+                - row "UTS12 Understanding The Self 1-C 2.00 8 F,Th 03:00-05:00 PM 2.00" [ref=e195]:
+                  - cell "UTS12" [ref=e196]
+                  - cell "Understanding The Self" [ref=e197]
+                  - cell "1-C" [ref=e198]
+                  - cell "2.00" [ref=e199]
+                  - cell "8" [ref=e200]
+                  - cell "F,Th" [ref=e201]
+                  - cell "03:00-05:00 PM" [ref=e202]
+                  - cell "2.00" [ref=e203]
+              - rowgroup [ref=e204]:
+                - 'row "TOTAL: 10.00" [ref=e205]':
+                  - cell [ref=e206]
+                  - cell "TOTAL:" [ref=e207]
+                  - cell "10.00" [ref=e208]
+                  - cell [ref=e209]
+            - generic [ref=e210]:
+              - generic [ref=e211]:
+                - heading "ASSESSMENT OF FEES" [level=2] [ref=e212]
+                - table [ref=e213]:
+                  - rowgroup [ref=e214]:
+                    - row "PARTICULARS AMOUNT" [ref=e215]:
+                      - cell "PARTICULARS" [ref=e216]:
+                        - strong [ref=e217]: PARTICULARS
+                      - cell "AMOUNT" [ref=e218]:
+                        - strong [ref=e219]: AMOUNT
+                    - row "TUITION FEE" [ref=e220]:
+                      - cell "TUITION FEE" [ref=e221]
+                      - cell [ref=e222]
+                    - row "TUITION FEE 10.00 x 50.00" [ref=e223]:
+                      - cell "TUITION FEE" [ref=e224]
+                      - cell "10.00 x 50.00" [ref=e225]
+                    - row "CWTS/ROTC TF 0.00 x 50.00" [ref=e226]:
+                      - cell "CWTS/ROTC TF" [ref=e227]
+                      - cell "0.00 x 50.00" [ref=e228]
+                    - row "TOTAL TUITION FEE 500.00" [ref=e229]:
+                      - cell "TOTAL TUITION FEE" [ref=e230]
+                      - cell "500.00" [ref=e231]
+                    - row "MISCELLANEOUS FEE" [ref=e232]:
+                      - cell "MISCELLANEOUS FEE" [ref=e233]
+                      - cell [ref=e234]
+                    - row "MISCELLANEOUS FEE 300.00" [ref=e235]:
+                      - cell "MISCELLANEOUS FEE" [ref=e236]
+                      - cell "300.00" [ref=e237]
+                    - row "TOTAL MISCELLANEOUS FEE 300.00" [ref=e238]:
+                      - cell "TOTAL MISCELLANEOUS FEE" [ref=e239]
+                      - cell "300.00" [ref=e240]
+                    - row "LABORATORY FEE" [ref=e241]:
+                      - cell "LABORATORY FEE" [ref=e242]
+                      - cell [ref=e243]
+                    - row "LABORATORY FEE 500.00" [ref=e244]:
+                      - cell "LABORATORY FEE" [ref=e245]
+                      - cell "500.00" [ref=e246]
+                    - row "TOTAL LABORATORY FEE 500.00" [ref=e247]:
+                      - cell "TOTAL LABORATORY FEE" [ref=e248]
+                      - cell "500.00" [ref=e249]
+                    - row "OLD ACCOUNT -" [ref=e250]:
+                      - cell "OLD ACCOUNT" [ref=e251]
+                      - cell "-" [ref=e252]
+                    - row "CURRENT ACCOUNT 1,300.00" [ref=e253]:
+                      - cell "CURRENT ACCOUNT" [ref=e254]:
+                        - strong [ref=e255]: CURRENT ACCOUNT
+                      - cell "1,300.00" [ref=e256]:
+                        - strong [ref=e257]: 1,300.00
+                    - row "CONTRACT / PETITION SUBJECT -" [ref=e258]:
+                      - cell "CONTRACT / PETITION SUBJECT" [ref=e259]
+                      - cell "-" [ref=e260]
+                    - row "MIDTERM DUE -" [ref=e261]:
+                      - cell "MIDTERM DUE" [ref=e262]
+                      - cell "-" [ref=e263]
+                    - row "FINAL DUE -" [ref=e264]:
+                      - cell "FINAL DUE" [ref=e265]
+                      - cell "-" [ref=e266]
+              - generic [ref=e267]:
+                - paragraph [ref=e268]: This is to certify that the student whose name appears on this document is officially enrolled this term with subject load listed above.
+                - generic [ref=e269]:
+                  - generic [ref=e270]:
+                    - paragraph [ref=e271]: AUSTERO, ANDREA JANE
+                    - paragraph [ref=e272]: STUDENT SIGNATURE
+                  - generic [ref=e273]:
+                    - paragraph [ref=e274]: Prof. Federico G. Nueva
+                    - paragraph [ref=e275]: UNIVERSITY REGISTRAR
+                - generic [ref=e276]:
+                  - paragraph [ref=e277]: "Notice to all Students :"
+                  - paragraph [ref=e278]: Present this certificate of registration for any claim or transaction that you engage in within the University.
+            - generic [ref=e279]:
+              - generic [ref=e280]:
+                - paragraph [ref=e281]: LEGEND
+                - paragraph [ref=e282]: "* - Added Subject/s"
+                - paragraph [ref=e283]: "** - Officially Dropped Subject/s"
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - text: "Printed by:"
+                  - generic [ref=e286]: System Registrar
+                - generic [ref=e287]: "Time Printed: 10:59:06am"
+                - generic [ref=e288]: "Date Printed: 04/03/2026"
+      - contentinfo [ref=e289]:
+        - generic [ref=e290]:
+          - paragraph [ref=e291]:
+            - generic [ref=e292]:
+              - text: Powered by
+              - img "RushPoint Logo" [ref=e293]
+            - generic [ref=e294]:
+              - text: from
+              - img "Obanana Logo" [ref=e295]
+              - strong [ref=e296]: Obanana
+              - text: .
+          - paragraph [ref=e297]: For questions and comments, email us at
+          - paragraph [ref=e298]:
+            - link "info@rushpoint.com.ph" [ref=e299] [cursor=pointer]:
+              - /url: mailto:info@rushpoint.com.ph

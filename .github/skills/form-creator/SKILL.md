@@ -19,12 +19,17 @@ description: "Convert form screenshots to Laravel Blade forms with a fixed, non-
 - **A4 Document Wrapper:** Wrap the entire form in `<div class="a4-wrapper">`.
   - **Screen Style:** `width: 210mm; min-height: 297mm; margin: 0 auto; background: white; padding: 1in; color: #000; font-size: 10pt; box-sizing: border-box; transform-origin: top center;`
   - **Print Style (CSS @media print):** Force `padding: 2in 1in 1in 1in !important;`. This MUST overwrite the screen padding to ensure the top margin is exactly 2 inches on paper, not 3 or 4.
+  - **Print Font Guard:** In `@media print`, force `.a4-wrapper, .a4-wrapper * { font-size: 12pt !important; line-height: 1.2 !important; }` so output is readable and consistent.
+  - **Print Scale Guard (Critical):** If screen view uses `zoom` or `transform` for viewport fit, reset print with `.a4-wrapper { zoom: 1 !important; transform: none !important; }`.
+  - **Global Print Override Guard:** Neutralize inherited framework print shrink rules (e.g., `body { min-width: 992px !important; }`) with `html, body, .container, .container-fluid { width: 100% !important; min-width: 0 !important; max-width: none !important; }` in `@media print`.
 - **Anti-Cropping & Screen Fit:** The form must NEVER be cropped horizontally. Ensure the 210mm width is ALWAYS fully visible. If the screen is smaller than 794px, use CSS `transform: scale()` or `zoom` to scale the entire `.a4-wrapper` down to fit the viewport.
+- **Zoom Reset Rule:** Any screen-only zoom/scale used for fit MUST be explicitly reset inside `@media print` to avoid tiny print output.
 - **No Stacking:** Elements must stay exactly where they are placed horizontally and must never collapse or stack vertically on mobile/small screens.
 
 ## 🎨 Typography, Colors & Borders
 - **Strict Black & White:** Everything must be strictly `#000` (black) for text, borders, and dividers unless a color is explicitly requested.
-- **Font Rules:** Use `font-size: 10pt !important;` for all text, labels, and inputs.
+- **Font Rules (Screen):** Use `font-size: 10pt !important;` for all text, labels, and inputs in normal screen view.
+- **Font Rules (Print):** Use `font-size: 12pt !important;` for all text, labels, and inputs inside `@media print`.
 - **Border Strictness:** Apply `border-color: #000 !important;` to all inputs and tables to override Bootstrap's default gray.
 - **Print View Border Removal:** Inside `@media print`, all form inputs (`input`, `textarea`, `select`) must have `border: none !important;` EXCEPT for the `border-bottom` used for fill-in-the-blank lines.
 

@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <article class="cor-registrar-sheet" aria-label="Certificate of Registration">
+    <article class="cor-registrar-sheet a4-wrapper" aria-label="Certificate of Registration">
         <section class="cor-registrar-student-info">
             <div class="cor-registrar-info-grid">
                 <div class="cor-registrar-info-col">
@@ -83,6 +83,16 @@
         </section>
 
         <table class="cor-registrar-table">
+            <colgroup>
+                <col class="cor-registrar-col--code">
+                <col class="cor-registrar-col--description">
+                <col class="cor-registrar-col--section">
+                <col class="cor-registrar-col--units">
+                <col class="cor-registrar-col--room">
+                <col class="cor-registrar-col--days">
+                <col class="cor-registrar-col--time">
+                <col class="cor-registrar-col--pay-units">
+            </colgroup>
             <thead>
                 <tr>
                     <th colspan="8" class="cor-registrar-table-title">CLASS SCHEDULE</th>
@@ -200,8 +210,6 @@
                     <span
                         id="cor-printed-by-value"
                         class="cor-registrar-printed-meta__editable"
-                        contenteditable="true"
-                        spellcheck="false"
                         data-default="{{ $defaultPrintedBy }}"
                     >{{ $defaultPrintedBy }}</span>
                 </span>

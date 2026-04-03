@@ -1,0 +1,172 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - img "PLP Logo" [ref=e5]
+      - img "PLP Text" [ref=e6]
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registrar/dashboard
+        - img [ref=e9]
+        - generic [ref=e11]: Dashboard
+      - generic [ref=e12]:
+        - link "Process" [ref=e13] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e14]
+          - generic [ref=e17]: Process
+          - img [ref=e18]
+        - text: • • • • • • • • • • •
+      - generic [ref=e20]:
+        - link "Registrar" [ref=e21] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e22]
+          - generic [ref=e24]: Registrar
+          - img [ref=e25]
+        - text: • • • • • • • • • • • • • • • • • •
+      - generic [ref=e27]:
+        - link "Services" [ref=e28] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e29]
+          - generic [ref=e32]: Services
+          - img [ref=e33]
+        - text: • • • • • • • • • • • • • • • • • • •
+      - generic [ref=e35]:
+        - link "Forms" [ref=e36] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e37]
+          - generic [ref=e39]: Forms
+          - img [ref=e40]
+        - text: • • • • • • • • • • • • • • • •
+      - generic [ref=e42]:
+        - link "Admin Tools" [ref=e43] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e44]:
+            - generic [ref=e46]: "8"
+          - generic [ref=e47]: Admin Tools
+          - img [ref=e48]
+        - text: • • • • • • • • • • • • • • •
+    - link "Log Out" [ref=e51] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/logout
+      - generic [ref=e52]: Log Out
+      - img [ref=e53]
+  - generic [ref=e55]:
+    - banner [ref=e56]:
+      - generic [ref=e57]:
+        - link "Notifications" [ref=e58] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e59]
+        - link "Messages" [ref=e62] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/registrar/messaging
+          - img [ref=e63]
+        - link [ref=e65] [cursor=pointer]:
+          - /url: "#"
+          - img [ref=e67]
+    - generic [ref=e70]:
+      - generic [ref=e71]: DASHBOARD
+      - main [ref=e72]:
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]: Total Students
+              - generic [ref=e77]:
+                - generic [ref=e78]:
+                  - generic [ref=e79]: "41"
+                  - generic [ref=e80]:
+                    - generic [ref=e81]: 20 Men
+                    - generic [ref=e82]: 21 Women
+                - generic [ref=e83]:
+                  - img [ref=e84]:
+                    - generic [ref=e85]: +6.8%
+                    - generic [ref=e86]: ↑
+                  - generic [ref=e89]: +6.8% Past month
+            - generic [ref=e90]:
+              - generic [ref=e91]: Applicants
+              - generic [ref=e92]: "31"
+              - generic [ref=e93]: 1 Department
+            - generic [ref=e94]:
+              - generic [ref=e95]: Faculty
+              - generic [ref=e96]: "31"
+              - generic [ref=e97]: 1 Department
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e101]:
+                  - img [ref=e102]
+                  - text: Announcement
+                - generic [ref=e104] [cursor=pointer]:
+                  - img [ref=e105]
+                  - text: Today, 3 Apr 2026
+              - generic [ref=e107]:
+                - generic [ref=e109]:
+                  - generic [ref=e110]: Outing schedule for every departement
+                  - generic [ref=e111]: 5 Minutes ago
+                - button "Pinned" [pressed] [ref=e112] [cursor=pointer]:
+                  - img [ref=e113]
+                - button "More options" [ref=e117] [cursor=pointer]:
+                  - img [ref=e118]
+              - generic [ref=e122]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]: Meeting HR Department
+                  - generic [ref=e126]: Yesterday, 12:30 PM
+                - button "Pin" [ref=e127] [cursor=pointer]:
+                  - img [ref=e128]
+                - button "More options" [ref=e132] [cursor=pointer]:
+                  - img [ref=e133]
+              - generic [ref=e137]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]: IT Department need two more talents for UX/UI Designer position
+                  - generic [ref=e141]: Yesterday, 09:15 AM
+                - button "Pin" [ref=e142] [cursor=pointer]:
+                  - img [ref=e143]
+                - button "More options" [ref=e147] [cursor=pointer]:
+                  - img [ref=e148]
+              - link "See All Announcement" [ref=e152] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e153]:
+              - generic [ref=e154]:
+                - generic [ref=e155]:
+                  - img [ref=e156]
+                  - text: Upcoming Schedule
+                - generic [ref=e158] [cursor=pointer]:
+                  - img [ref=e159]
+                  - text: Today, 3 Apr 2026
+              - generic [ref=e162]: Priority Tasks
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]: Review candidate applications
+                  - generic [ref=e166]:
+                    - img [ref=e167]
+                    - text: Today · 11:30 AM
+                - button "More options" [ref=e171] [cursor=pointer]:
+                  - img [ref=e172]
+              - generic [ref=e176]: Other Tasks
+              - generic [ref=e177]:
+                - generic [ref=e178]:
+                  - generic [ref=e179]: Interview with candidates
+                  - generic [ref=e180]:
+                    - img [ref=e181]
+                    - text: Today · 10:30 AM
+                - button "More options" [ref=e185] [cursor=pointer]:
+                  - img [ref=e186]
+              - generic [ref=e190]:
+                - generic [ref=e191]:
+                  - generic [ref=e192]: Short meeting with product designer from IT Departement
+                  - generic [ref=e193]:
+                    - img [ref=e194]
+                    - text: Today · 09:15 AM
+                - button "More options" [ref=e198] [cursor=pointer]:
+                  - img [ref=e199]
+      - contentinfo [ref=e203]:
+        - generic [ref=e204]:
+          - paragraph [ref=e205]:
+            - generic [ref=e206]:
+              - text: Powered by
+              - img "RushPoint Logo" [ref=e207]
+            - generic [ref=e208]:
+              - text: from
+              - img "Obanana Logo" [ref=e209]
+              - strong [ref=e210]: Obanana
+              - text: .
+          - paragraph [ref=e211]: For questions and comments, email us at
+          - paragraph [ref=e212]:
+            - link "info@rushpoint.com.ph" [ref=e213] [cursor=pointer]:
+              - /url: mailto:info@rushpoint.com.ph

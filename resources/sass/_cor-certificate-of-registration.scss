@@ -5,7 +5,7 @@
         gap: 18px;
         color: #111;
         font-family: 'Arial Narrow', Arial, sans-serif;
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.2;
     }
 
@@ -81,6 +81,9 @@
         background: #fff;
         border: 1px solid #9ca3af;
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        box-sizing: border-box;
+        transform-origin: top center;
+        zoom: 1;
     }
 
     .cor-registrar-student-info {
@@ -103,7 +106,7 @@
     .cor-registrar-info-line {
         display: flex;
         gap: 4px;
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.2;
     }
 
@@ -131,7 +134,7 @@
         border-bottom: 1px solid #6b7280;
         display: flex;
         gap: 4px;
-        font-size: 10pt;
+        font-size: 8pt;
     }
 
     .cor-registrar-info-value--emphasis {
@@ -143,14 +146,48 @@
         border-collapse: collapse;
         border: 1px solid #111;
         margin-bottom: 10px;
+        table-layout: fixed;
+    }
+
+    .cor-registrar-col--code {
+        width: 12%;
+    }
+
+    .cor-registrar-col--description {
+        width: 29%;
+    }
+
+    .cor-registrar-col--section {
+        width: 8%;
+    }
+
+    .cor-registrar-col--units {
+        width: 8%;
+    }
+
+    .cor-registrar-col--room {
+        width: 7%;
+    }
+
+    .cor-registrar-col--days {
+        width: 9%;
+    }
+
+    .cor-registrar-col--time {
+        width: 17%;
+    }
+
+    .cor-registrar-col--pay-units {
+        width: 10%;
     }
 
     .cor-registrar-table th,
     .cor-registrar-table td {
         border: 0;
         padding: 2px 4px;
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.2;
+        vertical-align: top;
     }
 
     .cor-registrar-table thead tr:first-child th {
@@ -166,7 +203,9 @@
         font-weight: 700;
         text-transform: uppercase;
         text-align: center;
-        white-space: nowrap;
+        white-space: normal;
+        word-break: keep-all;
+        overflow-wrap: normal;
         background: #fff !important;
         color: #111 !important;
     }
@@ -177,18 +216,27 @@
     }
 
     .cor-registrar-table-title {
-        font-size: 10pt;
+        font-size: 8pt;
         letter-spacing: 0;
         background: #fff !important;
         color: #111 !important;
     }
 
-    .cor-registrar-table td {
-        vertical-align: top;
+    .cor-registrar-table td:nth-child(1),
+    .cor-registrar-table td:nth-child(3),
+    .cor-registrar-table td:nth-child(4),
+    .cor-registrar-table td:nth-child(5),
+    .cor-registrar-table td:nth-child(6),
+    .cor-registrar-table td:nth-child(7),
+    .cor-registrar-table td:nth-child(8) {
+        white-space: nowrap;
     }
 
     .cor-registrar-table__description {
         font-style: italic;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .cor-registrar-table__numeric {
@@ -225,7 +273,7 @@
 
     .cor-registrar-assessment__title {
         margin: 0 0 4px;
-        font-size: 10pt;
+        font-size: 8pt;
         font-weight: 700;
         text-align: center;
         letter-spacing: 0;
@@ -238,7 +286,7 @@
 
     .cor-registrar-assessment__table td {
         border: 0;
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.2;
         padding: 2px 0;
     }
@@ -271,12 +319,12 @@
     }
 
     .cor-registrar-assessment__current {
-        font-size: 10pt;
+        font-size: 8pt;
     }
 
     .cor-registrar-certification {
         margin: 34px 0 0;
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.4;
         text-align: left;
         text-indent: 4rem;
@@ -297,14 +345,14 @@
         margin: 0;
         padding-top: 2px;
         border-top: 1px solid #111;
-        font-size: 10pt;
+        font-size: 8pt;
         font-weight: 700;
         line-height: 1.2;
     }
 
     .cor-registrar-signature-role {
         margin: 2px 0 0;
-        font-size: 10pt;
+        font-size: 8pt;
         font-weight: 700;
         line-height: 1.2;
     }
@@ -312,7 +360,7 @@
     .cor-registrar-notice {
         margin-top: 70px;
         text-align: center;
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.35;
     }
 
@@ -334,7 +382,7 @@
     }
 
     .cor-registrar-legend {
-        font-size: 10pt;
+        font-size: 8pt;
         line-height: 1.25;
     }
 
@@ -356,7 +404,7 @@
         display: flex;
         justify-content: space-between;
         gap: 10px;
-        font-size: 10pt;
+        font-size: 8pt;
         font-weight: 600;
         line-height: 1.2;
     }
@@ -399,6 +447,7 @@
     .cor-registrar-table tbody td {
         border-left: 0 !important;
         border-right: 0 !important;
+        text-align: center;
     }
 
     .cor-registrar-assessment__table td {
@@ -410,64 +459,56 @@
         border-bottom: 1px solid #111 !important;
     }
 
-    @media (max-width: 991.98px) {
-        .cor-registrar-toolbar {
-            align-items: stretch;
+    @media (max-width: 1366px) {
+        .cor-registrar-sheet {
+            zoom: 0.92;
         }
+    }
 
-        .cor-registrar-toolbar__form {
-            min-width: 100%;
-            flex-wrap: wrap;
-            align-items: center;
+    @media (max-width: 1200px) {
+        .cor-registrar-sheet {
+            zoom: 0.82;
         }
+    }
 
-        .cor-registrar-toolbar__select {
-            min-width: 100%;
-            max-width: 100%;
-        }
-
-        .cor-registrar-toolbar__actions {
-            width: 100%;
-            align-items: center;
-            justify-content: flex-start;
+    @media (max-width: 1024px) {
+        .cor-registrar-page {
+            gap: 0;
         }
 
         .cor-registrar-sheet {
-            width: 100%;
-            min-height: auto;
-            padding: 22px 16px;
+            margin: 12px auto;
+            zoom: 0.72;
         }
+    }
 
-        .cor-registrar-info-grid {
-            grid-template-columns: 1fr;
-            row-gap: 10px;
+    @media (max-width: 900px) {
+        .cor-registrar-sheet {
+            zoom: 0.64;
         }
+    }
 
-        .cor-registrar-assessment {
-            grid-template-columns: 1fr;
-            row-gap: 22px;
+    @media (max-width: 768px) {
+        .cor-registrar-sheet {
+            zoom: 0.55;
         }
+    }
 
-        .cor-registrar-signatures {
-            margin-top: 26px;
+    @media (max-width: 575px) {
+        .cor-registrar-sheet {
+            zoom: 0.47;
         }
+    }
 
-        .cor-registrar-notice {
-            margin-top: 32px;
+    @media (max-width: 420px) {
+        .cor-registrar-sheet {
+            zoom: 0.42;
         }
+    }
 
-        .cor-registrar-footer {
-            margin-top: 28px;
-        }
-
-        .cor-registrar-legend__item {
-            padding-left: 0;
-        }
-
-        .cor-registrar-printed-meta {
-            margin-top: 22px;
-            flex-direction: column;
-            align-items: flex-start;
+    @media (max-width: 360px) {
+        .cor-registrar-sheet {
+            zoom: 0.39;
         }
     }
 }
@@ -487,6 +528,20 @@
         margin: 0 !important;
         padding: 0 !important;
         background: #fff !important;
+    }
+
+    html,
+    body,
+    body.registrar-body {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .registrar-body .container,
+    .registrar-body .container-fluid {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
     }
 
     .registrar-body .plp-sidebar,
@@ -527,12 +582,14 @@
         width: 100% !important;
         max-width: none !important;
         box-sizing: border-box !important;
+        zoom: 1 !important;
+        transform: none !important;
     }
 
-    /* Force 10pt font-size for all COR elements in print view */
+    /* Force 8pt font-size for all COR elements in print view */
     .registrar-body .cor-registrar-page,
     .registrar-body .cor-registrar-page * {
-        font-size: 10pt !important;
+        font-size: 8pt !important;
         line-height: 1.2 !important;
     }
 
@@ -544,6 +601,8 @@
         border: 0 !important;
         box-shadow: none !important;
         background: #fff !important;
+        zoom: 1 !important;
+        transform: none !important;
     }
     
     .cor-registrar-notice__title {

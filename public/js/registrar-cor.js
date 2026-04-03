@@ -95,7 +95,6 @@
 
 document.addEventListener('DOMContentLoaded', function () {
   var printButton = document.getElementById('cor-registrar-print');
-  var printedByInput = document.getElementById('cor-printed-by-input');
   var printedByValue = document.getElementById('cor-printed-by-value');
   var timePrintedValue = document.getElementById('cor-time-printed');
   var datePrintedValue = document.getElementById('cor-date-printed');
@@ -114,13 +113,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     return displayHour + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + meridian;
   }
-  function syncPrintedBy() {
+  function makeEditable() {
     if (!printedByValue) {
       return;
     }
-    var currentValue = printedByInput ? printedByInput.value : '';
-    currentValue = currentValue ? currentValue.trim() : '';
-    printedByValue.textContent = currentValue !== '' ? currentValue : 'Registrar User';
+    printedByValue.setAttribute('contenteditable', 'true');
+    printedByValue.setAttribute('spellcheck', 'false');
+    printedByValue.addEventListener('blur', function () {
+      var currentValue = printedByValue.textContent.trim();
+      if (currentValue === '') {
+        var defaultValue = printedByValue.getAttribute('data-default') || 'Registrar User';
+        printedByValue.textContent = defaultValue;
+      }
+    });
+    printedByValue.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        printedByValue.blur();
+      }
+    });
   }
   function updatePrintedTimestamp() {
     var now = new Date();
@@ -131,14 +142,9 @@ document.addEventListener('DOMContentLoaded', function () {
       datePrintedValue.textContent = formatDate(now);
     }
   }
-  syncPrintedBy();
+  makeEditable();
   updatePrintedTimestamp();
-  if (printedByInput) {
-    printedByInput.addEventListener('input', syncPrintedBy);
-    printedByInput.addEventListener('change', syncPrintedBy);
-  }
   window.addEventListener('beforeprint', function () {
-    syncPrintedBy();
     updatePrintedTimestamp();
   });
   if (window.matchMedia) {
@@ -147,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function () {
       mediaQueryList.addListener(function (event) {
         var isPrintMode = event && typeof event.matches === 'boolean' ? event.matches : mediaQueryList.matches;
         if (isPrintMode) {
-          syncPrintedBy();
           updatePrintedTimestamp();
         }
       });
@@ -155,7 +160,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   if (printButton) {
     printButton.addEventListener('click', function () {
-      syncPrintedBy();
       updatePrintedTimestamp();
       window.print();
     });
