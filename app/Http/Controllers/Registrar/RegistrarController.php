@@ -1496,7 +1496,7 @@ class RegistrarController extends Controller
             [
                 'type' => 'transaction',
                 'title' => 'RETRIEVAL OF SUBMITTED ENTRANCE CREDENTIALS',
-                'lead' => "Freshmen who did not report to classes and wish to withdraw from the list of officially enrolled may secure waiver for cancellation of enrollment from the Registrar's Office until two weeks from the start of classes.",
+                'lead' => "Freshmen who did not report to classes and wish to withdraw from the list of officially enrolled may secure waiver for cancellation of enrollment from the Registrar's Office until two weeks from the start of classes for them to retrieve their submitted enrollment requirements.",
                 'meta' => [
                     'OFFICE OR DIVISION' => "REGISTRAR'S OFFICE",
                     'CLASSIFICATION' => 'SIMPLE',

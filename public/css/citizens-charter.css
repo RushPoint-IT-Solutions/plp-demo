@@ -21,53 +21,104 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.registrar-body .cc-pagination {
+.registrar-body .cc-pagination-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-  border: 1px solid #000;
-  background: #fff;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eef2f5;
+  overflow-x: auto;
 }
 
-.registrar-body .cc-page-btn {
-  border: 1px solid #000;
+.registrar-body .cc-pagination-arrow {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #d7dde2;
+  color: #60656f;
   background: #fff;
-  color: #000;
-  font-weight: 700;
-  font-size: 10pt;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
   line-height: 1;
-  padding: 8px 10px;
-  min-width: 44px;
-  cursor: pointer;
 }
 
-.registrar-body .cc-page-btn:disabled {
-  opacity: 0.4;
+.registrar-body .cc-pagination-arrow:hover,
+.registrar-body .cc-pagination-arrow:focus {
+  color: #005028;
+  border-color: #c7cfd6;
+  background: #fff;
+}
+
+.registrar-body .cc-pagination-arrow.disabled,
+.registrar-body .cc-pagination-arrow:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.registrar-body .cc-page-btn--num.is-active {
-  background: #000;
-  color: #fff;
+.registrar-body .cc-pagination {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  overflow: visible;
 }
 
-.registrar-body .cc-page-numbers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.registrar-body .cc-page-item {
+  margin: 0;
+}
+
+.registrar-body .cc-page-link {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #60656f;
+  font-size: 10pt;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
 }
 
-.registrar-body .cc-page-indicator {
-  margin-left: 6px;
-  font-size: 10pt;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #000;
+.registrar-body .cc-page-link:hover,
+.registrar-body .cc-page-link:focus {
+  color: #005028;
+  background: rgba(0, 104, 55, 0.08);
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.registrar-body .cc-page-item.active .cc-page-link {
+  color: #fff;
+  background: var(--plp-green, #006837);
+  border-color: var(--plp-green, #006837);
+}
+
+.registrar-body .cc-page-item.active .cc-page-link:hover,
+.registrar-body .cc-page-item.active .cc-page-link:focus {
+  background: var(--plp-green-dark, #005028);
+  border-color: var(--plp-green-dark, #005028);
+  color: #fff;
+}
+
+.registrar-body .cc-page-item--ellipsis .cc-page-link {
+  border-radius: 0;
+  width: auto;
+  min-width: 20px;
+  background: transparent;
+  color: #60656f;
+  cursor: default;
+  padding: 0 2px;
 }
 
 .registrar-body .cc-stage {

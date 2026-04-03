@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var prevButton = document.getElementById('cc-prev');
     var nextButton = document.getElementById('cc-next');
     var pageNumbersWrap = document.getElementById('cc-page-numbers');
-    var pageIndicator = document.getElementById('cc-page-indicator');
 
     if (!pages.length || !stage) {
         return;
@@ -34,54 +33,117 @@ document.addEventListener('DOMContentLoaded', function () {
         pageRoot.style.setProperty('--cc-scale', scale.toFixed(4));
     }
 
-    function createPageButtons() {
+    function buildVisiblePageTokens(totalPages, activePage) {
+        if (totalPages <= 11) {
+            var all = [];
+            for (var i = 1; i <= totalPages; i += 1) {
+                all.push(i);
+            }
+            return all;
+        }
+
+        var visibleMap = {};
+
+        function addRange(start, end) {
+            for (var n = start; n <= end; n += 1) {
+                if (n >= 1 && n <= totalPages) {
+                    visibleMap[n] = true;
+                }
+            }
+        }
+
+        addRange(1, 2);
+        addRange(totalPages - 3, totalPages);
+        addRange(activePage - 2, activePage + 2);
+
+        var pagesSorted = Object.keys(visibleMap)
+            .map(function (value) {
+                return parseInt(value, 10);
+            })
+            .sort(function (a, b) {
+                return a - b;
+            });
+
+        var tokens = [];
+        var previous = 0;
+
+        pagesSorted.forEach(function (pageNumber) {
+            if (previous && pageNumber - previous > 1) {
+                if (pageNumber - previous === 2) {
+                    tokens.push(previous + 1);
+                } else {
+                    tokens.push('ellipsis');
+                }
+            }
+
+            tokens.push(pageNumber);
+            previous = pageNumber;
+        });
+
+        return tokens;
+    }
+
+    function renderPageButtons() {
         if (!pageNumbersWrap) {
             return;
         }
 
+        var activePage = currentIndex + 1;
+        var tokens = buildVisiblePageTokens(pages.length, activePage);
         pageNumbersWrap.innerHTML = '';
 
-        pages.forEach(function (page, index) {
+        tokens.forEach(function (token) {
+            var item = document.createElement('li');
+
+            if (token === 'ellipsis') {
+                item.className = 'page-item disabled cc-page-item cc-page-item--ellipsis';
+
+                var ellipsisSpan = document.createElement('span');
+                ellipsisSpan.className = 'page-link cc-page-link';
+                ellipsisSpan.textContent = '...';
+
+                item.appendChild(ellipsisSpan);
+                pageNumbersWrap.appendChild(item);
+                return;
+            }
+
+            var targetIndex = token - 1;
+            var isActive = targetIndex === currentIndex;
+
+            item.className = 'page-item cc-page-item cc-page-item--num' + (isActive ? ' active' : '');
+
             var button = document.createElement('button');
             button.type = 'button';
-            button.className = 'cc-page-btn cc-page-btn--num';
-            button.textContent = String(index + 1);
-            button.setAttribute('data-page-index', String(index));
-            button.setAttribute('aria-label', 'Go to page ' + (index + 1));
+            button.className = 'page-link cc-page-link';
+            button.textContent = String(token);
+            button.setAttribute('data-page-index', String(targetIndex));
+            button.setAttribute('aria-label', 'Go to page ' + token);
+
+            if (isActive) {
+                button.setAttribute('aria-current', 'page');
+            }
 
             button.addEventListener('click', function () {
-                currentIndex = index;
+                currentIndex = targetIndex;
                 updateView();
             });
 
-            pageNumbersWrap.appendChild(button);
+            item.appendChild(button);
+            pageNumbersWrap.appendChild(item);
         });
     }
 
     function updateButtons() {
         if (prevButton) {
-            prevButton.disabled = currentIndex === 0;
+            var prevDisabled = currentIndex === 0;
+            prevButton.disabled = prevDisabled;
+            prevButton.classList.toggle('disabled', prevDisabled);
         }
 
         if (nextButton) {
-            nextButton.disabled = currentIndex === pages.length - 1;
-        }
-
-        if (pageNumbersWrap) {
-            var buttons = pageNumbersWrap.querySelectorAll('.cc-page-btn--num');
-            Array.prototype.forEach.call(buttons, function (button, index) {
-                var isActive = index === currentIndex;
-                button.classList.toggle('is-active', isActive);
-                if (isActive) {
-                    button.setAttribute('aria-current', 'page');
-                } else {
-                    button.removeAttribute('aria-current');
-                }
-            });
-        }
-
-        if (pageIndicator) {
-            pageIndicator.textContent = 'Page ' + (currentIndex + 1) + ' of ' + pages.length;
+            var nextDisabled = currentIndex === pages.length - 1;
+            nextButton.disabled = nextDisabled;
+            nextButton.classList.toggle('disabled', nextDisabled);
         }
     }
 
@@ -93,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateView() {
         updatePages();
+        renderPageButtons();
         updateButtons();
         syncScale();
     }
@@ -129,6 +192,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('afterprint', syncScale);
 
-    createPageButtons();
     updateView();
 });

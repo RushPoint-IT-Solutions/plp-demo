@@ -1,6 +1,10 @@
 $cc-black: #000;
 $cc-white: #fff;
 $cc-muted: #efefef;
+$cc-theme-green: #006837;
+$cc-theme-green-dark: #005028;
+$cc-pagination-shell: #eef2f5;
+$cc-pagination-text: #60656f;
 
 .registrar-body {
     .cc-page {
@@ -17,53 +21,104 @@ $cc-muted: #efefef;
         font-family: Arial, Helvetica, sans-serif;
     }
 
-    .cc-pagination {
+    .cc-pagination-wrap {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        padding: 8px 10px;
-        border: 1px solid $cc-black;
-        background: $cc-white;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: $cc-pagination-shell;
+        overflow-x: auto;
     }
 
-    .cc-page-btn {
-        border: 1px solid $cc-black;
+    .cc-pagination-arrow {
+        width: 34px;
+        min-width: 34px;
+        height: 34px;
+        padding: 0;
+        border-radius: 50%;
+        border: 1px solid #d7dde2;
+        color: $cc-pagination-text;
         background: $cc-white;
-        color: $cc-black;
-        font-weight: 700;
-        font-size: 10pt;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
         line-height: 1;
-        padding: 8px 10px;
-        min-width: 44px;
-        cursor: pointer;
     }
 
-    .cc-page-btn:disabled {
-        opacity: 0.4;
+    .cc-pagination-arrow:hover,
+    .cc-pagination-arrow:focus {
+        color: $cc-theme-green-dark;
+        border-color: #c7cfd6;
+        background: $cc-white;
+    }
+
+    .cc-pagination-arrow.disabled,
+    .cc-pagination-arrow:disabled {
+        opacity: 0.45;
         cursor: not-allowed;
     }
 
-    .cc-page-btn--num.is-active {
-        background: $cc-black;
-        color: $cc-white;
+    .cc-pagination {
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 4px;
+        overflow: visible;
     }
 
-    .cc-page-numbers {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
+    .cc-page-item {
+        margin: 0;
+    }
+
+    .cc-page-link {
+        width: 32px;
+        min-width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: $cc-pagination-text;
+        font-size: 10pt;
+        font-weight: 700;
+        line-height: 1;
+        display: inline-flex;
         justify-content: center;
         align-items: center;
     }
 
-    .cc-page-indicator {
-        margin-left: 6px;
-        font-size: 10pt;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        color: $cc-black;
+    .cc-page-link:hover,
+    .cc-page-link:focus {
+        color: $cc-theme-green-dark;
+        background: rgba(0, 104, 55, 0.08);
+        text-decoration: none;
+        box-shadow: none;
+    }
+
+    .cc-page-item.active .cc-page-link {
+        color: $cc-white;
+        background: var(--plp-green, $cc-theme-green);
+        border-color: var(--plp-green, $cc-theme-green);
+    }
+
+    .cc-page-item.active .cc-page-link:hover,
+    .cc-page-item.active .cc-page-link:focus {
+        background: var(--plp-green-dark, $cc-theme-green-dark);
+        border-color: var(--plp-green-dark, $cc-theme-green-dark);
+        color: $cc-white;
+    }
+
+    .cc-page-item--ellipsis .cc-page-link {
+        border-radius: 0;
+        width: auto;
+        min-width: 20px;
+        background: transparent;
+        color: $cc-pagination-text;
+        cursor: default;
+        padding: 0 2px;
     }
 
     .cc-stage {

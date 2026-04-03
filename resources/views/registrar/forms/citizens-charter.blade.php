@@ -9,12 +9,17 @@
 
 @section('content')
 <div class="cc-page" id="citizens-charter-page">
-    <div class="cc-pagination d-print-none" aria-label="Citizen's Charter page navigation">
-        <button type="button" class="cc-page-btn cc-page-btn--nav" id="cc-prev" aria-label="Previous page">Prev</button>
-        <div class="cc-page-numbers" id="cc-page-numbers"></div>
-        <button type="button" class="cc-page-btn cc-page-btn--nav" id="cc-next" aria-label="Next page">Next</button>
-        <span class="cc-page-indicator" id="cc-page-indicator" aria-live="polite"></span>
-    </div>
+    <nav class="cc-pagination-wrap d-print-none" aria-label="Citizen's Charter page navigation">
+        <button type="button" class="cc-pagination-arrow btn btn-light" id="cc-prev" aria-label="Previous page">
+            <span aria-hidden="true">&lsaquo;</span>
+        </button>
+
+        <ul class="pagination pagination-sm cc-pagination mb-0" id="cc-page-numbers"></ul>
+
+        <button type="button" class="cc-pagination-arrow btn btn-light" id="cc-next" aria-label="Next page">
+            <span aria-hidden="true">&rsaquo;</span>
+        </button>
+    </nav>
 
     <div class="cc-stage" id="cc-stage">
         <article class="cc-sheet cc-cover-page" data-page-index="1">
