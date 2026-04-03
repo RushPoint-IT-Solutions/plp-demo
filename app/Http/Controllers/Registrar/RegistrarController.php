@@ -131,6 +131,22 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Process > Exam Category
+     */
+    public function examCategory()
+    {
+        return view('registrar.process.exam-category');
+    }
+
+    /**
+     * Process > Exam List
+     */
+    public function examList()
+    {
+        return view('registrar.process.exam-list');
+    }
+
+    /**
      * Process > Batch Upload Image
      */
     public function batchUpload()

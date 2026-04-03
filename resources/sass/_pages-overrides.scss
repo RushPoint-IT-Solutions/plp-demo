@@ -1241,16 +1241,34 @@ body.page-profile-view .pv-layout {
     svg { cursor: pointer; &:hover { color: #006837; } }
 }
 .reg-see-all {
-    display: block;
-    text-align: center;
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #006837;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    margin-top: auto;
+    padding: 8px 14px;
+    border: 1px solid #0a813c;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #0a813c;
+    line-height: 1;
     text-decoration: none;
-    &:hover { text-decoration: underline; }
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.reg-see-all:hover,
+.reg-see-all:focus,
+.reg-see-all:active,
+.reg-see-all:visited {
+    color: #0a813c;
+    text-decoration: none;
+}
+.reg-see-all:hover,
+.reg-see-all:focus {
+    background: #edf8f1;
+    border-color: #076b31;
+    outline: none;
 }
 .reg-sched-priority-label,
 .reg-sched-other-label {
@@ -2143,6 +2161,35 @@ select.req-modal-input {
     }
 }
 #apstTable td:first-child { position: relative; }
+#examListTable td:first-child,
+#examCategoryTable td:first-child { position: relative; }
+
+.exam-modal-delete-box {
+    min-width: 300px;
+}
+
+.exam-modal-delete-text {
+    font-size: 0.88rem;
+    color: #444;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.exam-modal-delete-title {
+    color: #c0392b;
+}
+
+.exam-modal-delete-actions {
+    justify-content: center;
+}
+
+.exam-btn-danger {
+    background: #c0392b;
+}
+
+.exam-btn-danger:hover {
+    background: #a93226;
+}
 
 // ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 // REGISTRAR ΓÇö Application Process: applicant detail panels

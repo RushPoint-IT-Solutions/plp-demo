@@ -23,6 +23,9 @@
         });
     });
 
+    initDocumentsSubmittedPanel();
+    initApprovalPanel();
+
     function openApplicant(id, name) {
         document.getElementById('detailApplicantId').value = id;
         document.getElementById('detailApplicantName').value = name;
@@ -64,5 +67,60 @@
         if (linkEl) linkEl.classList.add('active');
 
         pageHeader.textContent = title;
+    }
+
+    function initApprovalPanel() {
+        var statusSelect = document.getElementById('approvalStatusSelect');
+        var dateInput = document.getElementById('approvalDateAccepted');
+        var banner = document.getElementById('approvalBanner');
+        if (!statusSelect || !dateInput || !banner) return;
+
+        function formatDate(date) {
+            var mm = String(date.getMonth() + 1).padStart(2, '0');
+            var dd = String(date.getDate()).padStart(2, '0');
+            var yyyy = date.getFullYear();
+            return mm + '/' + dd + '/' + yyyy;
+        }
+
+        function syncApprovalState() {
+            var status = statusSelect.value || '';
+            if (status === 'Accepted') {
+                dateInput.value = formatDate(new Date());
+            } else {
+                dateInput.value = '';
+            }
+            banner.textContent = 'Application, ' + status;
+        }
+
+        statusSelect.addEventListener('change', syncApprovalState);
+        syncApprovalState();
+    }
+
+    function initDocumentsSubmittedPanel() {
+        var header = document.getElementById('docsSelectAll');
+        var items = document.querySelectorAll('.docs-row-checkbox');
+        if (!header || !items.length) return;
+
+        function syncHeader() {
+            var checked = 0;
+            items.forEach(function (cb) {
+                if (cb.checked) checked++;
+            });
+            header.checked = checked === items.length;
+            header.indeterminate = checked > 0 && checked < items.length;
+        }
+
+        header.addEventListener('change', function () {
+            items.forEach(function (cb) {
+                cb.checked = header.checked;
+            });
+            syncHeader();
+        });
+
+        items.forEach(function (cb) {
+            cb.addEventListener('change', syncHeader);
+        });
+
+        syncHeader();
     }
 })();
