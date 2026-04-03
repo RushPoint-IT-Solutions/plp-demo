@@ -2667,6 +2667,14 @@ body.page-profile-edit {
 }
 
 /* Academic Calendar: keep Show Entries inline (SHOW [select] ENTRIES) */
+.pf-table-controls .pf-entries-control,
+.sc-table-head .pf-entries-control {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
 .sc-table-head .pf-entries-control.sc-show-entry {
     display: inline-flex;
     flex-direction: row !important;
@@ -2674,6 +2682,8 @@ body.page-profile-edit {
     gap: 8px;
 }
 
+.pf-table-controls .pf-entries-control label,
+.pf-table-controls .pf-entries-control span,
 .sc-table-head .pf-entries-control.sc-show-entry label,
 .sc-table-head .pf-entries-control.sc-show-entry span {
     margin: 0;
