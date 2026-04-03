@@ -120,6 +120,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
             Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
+            Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });

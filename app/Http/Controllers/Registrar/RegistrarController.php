@@ -583,6 +583,14 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar > Academic Master > Curriculum File
+     */
+    public function curriculumFile()
+    {
+        return view('registrar.registrar-menu.academic-master.curriculum-file');
+    }
+
+    /**
      * Registrar > Academic Master > Pre-requisites
      */
     public function preRequisites()

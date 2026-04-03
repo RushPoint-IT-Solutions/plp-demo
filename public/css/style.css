@@ -32412,6 +32412,231 @@ body.page-profile-edit .student-content {
   flex: none !important;
 }
 
+/* Academic Calendar: keep Show Entries inline (SHOW [select] ENTRIES) */
+
+.sc-table-head .pf-entries-control.sc-show-entry {
+  display: inline-flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-table-head .pf-entries-control.sc-show-entry label,
+.sc-table-head .pf-entries-control.sc-show-entry span {
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Curriculum File */
+
+.cf-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cf-toolbar-card {
+  padding: 14px;
+}
+
+.cf-toolbar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.cf-filter-field,
+.cf-field-row,
+.cf-field-wide {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cf-toolbar-action,
+.cf-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cf-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cf-panel-card {
+  border: 1px solid #0f7b43;
+}
+
+.cf-panel-title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: #0f7b43;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.cf-panel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cf-field-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cf-subtitle {
+  color: #2f3a45;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Configuration extended sections */
+
+.cfg-filter-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: end;
+}
+
+.cfg-filter-row-tight {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+}
+
+.cfg-filter-row-cutoff-reg {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+.cfg-filter-row-cutoff-reg .cfg-filter-group:nth-child(5) {
+  grid-column: 1/span 2;
+}
+
+.cfg-filter-row-cutoff-reg .cfg-filter-action {
+  grid-column: 3/span 2;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.cfg-filter-row-cutoff-reg .cfg-filter-action .pf-btn-new {
+  width: auto;
+  min-width: 150px;
+  max-width: 180px;
+  white-space: nowrap;
+}
+
+.cfg-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cfg-filter-group-wide {
+  grid-column: span 3;
+}
+
+.cfg-filter-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cfg-card .app-table-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cfg-card .cfg-table {
+  table-layout: auto;
+  min-width: -moz-max-content;
+  min-width: max-content;
+}
+
+.cfg-card .cfg-table thead th,
+.cfg-card .cfg-table tbody td {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+#cfgSignatureTable .apst-dropdown,
+#cfgCutoffDateTable .apst-dropdown,
+#cfgSectionCutoffTable .apst-dropdown,
+#cfgCutoffConfigTable .apst-dropdown,
+#cfgCurriculumDisplayTable .apst-dropdown {
+  position: fixed;
+}
+
+#cfgSignatureTable td:last-child .apst-action-btn,
+#cfgCutoffDateTable td:last-child .apst-action-btn,
+#cfgSectionCutoffTable td:last-child .apst-action-btn,
+#cfgCutoffConfigTable td:last-child .apst-action-btn,
+#cfgCurriculumDisplayTable td:last-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+@media (max-width: 980px) {
+  .cf-toolbar-grid,
+  .cf-grid-two,
+  .cf-field-split,
+  .cfg-filter-row,
+  .cfg-filter-row-tight,
+  .cfg-filter-row-cutoff-reg {
+    grid-template-columns: 1fr;
+  }
+
+  .cfg-filter-group-wide {
+    grid-column: auto;
+  }
+
+  .cf-toolbar-action,
+  .cf-actions,
+  .cfg-filter-action {
+    justify-content: stretch;
+  }
+
+  .cf-toolbar-action .pf-btn-new,
+  .cf-actions .pf-btn-new,
+  .cfg-filter-action .pf-btn-new,
+  .cfg-filter-row-cutoff-reg .cfg-filter-action .pf-btn-new {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1400px) {
+  .cfg-filter-row-cutoff-reg {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cfg-filter-row-cutoff-reg .cfg-filter-group:nth-child(5) {
+    grid-column: 1/span 2;
+  }
+
+  .cfg-filter-row-cutoff-reg .cfg-filter-action {
+    grid-column: 3;
+  }
+}
+
+@media (max-width: 1150px) {
+  .cfg-filter-row-cutoff-reg {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cfg-filter-row-cutoff-reg .cfg-filter-group:nth-child(5),
+  .cfg-filter-row-cutoff-reg .cfg-filter-action {
+    grid-column: auto;
+  }
+}
+
 /* Graduation Clearance checklist adjustments (UI parity with forms.css) */
 
 .gc-check-row.gc-check-row-office-only {
