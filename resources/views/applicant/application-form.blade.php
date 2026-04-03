@@ -4,65 +4,197 @@
 @section('page-title', 'APPLICATION FORM')
 
 @section('content')
-<div class="profile-page">
-
+<div class="profile-page application-form-page">
     @php($app = $applicant ?? null)
+    @php($edu = optional($app)->educationalBackground)
+    @php($family = optional($app)->familyBackground)
+    @php($pref = optional($app)->applicationPreference)
+    @php($activeStep = (int) old('active_step', max(1, min(4, (int) optional($app)->application_draft_step))))
+    @php($portalStage = (int) old('portal_stage', optional($app)->application_portal_stage))
+    @php($fallbackScheduleDate = now()->copy()->addWeek()->setTime(9, 0))
+    @php($calendarScheduleDate = optional($app)->exam_date ?: $fallbackScheduleDate)
+    @php($selectedCalendarDate = $calendarScheduleDate->format('Y-m-d'))
+    @php($startYear = now()->year)
+    @php($defaultSchoolYear = $startYear . '-' . ($startYear + 1))
 
     @if(session('success'))
     <div class="applicant-alert applicant-alert-success">{{ session('success') }}</div>
     @endif
 
-    <form action="{{ route('applicant.application-form.save') }}" method="POST" enctype="multipart/form-data" id="applicationForm">
+    @if($errors->any())
+    <div class="applicant-alert applicant-alert-error">
+        <ul class="applicant-error-list">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    @if(app()->environment('local') || config('app.debug'))
+    <div class="d-flex justify-content-end mb-2">
+        <form action="{{ route('applicant.application-form.reset-progress') }}" method="POST" onsubmit="return confirm('Reset application progress and step data for testing?');">
+            @csrf
+            <button type="submit" class="btn btn-warning btn-sm">Temporary Reset Test Data</button>
+        </form>
+    </div>
+    @endif
+
+    @if(optional($app)->application_status === 'submitted')
+        @if($portalStage < 1)
+        <div class="setup-form-container submitted-intro-card">
+            <div class="setup-section-header submitted-intro-title-row">
+                <h3 class="setup-section-title submitted-intro-title">Welcome, Applicant!</h3>
+            </div>
+
+            <p class="submitted-intro-text">
+                Your application will be evaluated. Please proceed to the Office of Admission for validation of your application.
+            </p>
+
+            <p class="submitted-intro-note">
+                Please take note of your username and password listed below:
+            </p>
+
+            <div class="submitted-credentials-box">
+                <p><span>Username:</span> {{ optional($app)->applicant_id }} (your applicant ID)</p>
+                <p><span>Default Password:</span> {{ strtoupper(optional($app)->last_name) }} (your last name)</p>
+            </div>
+
+            <p class="submitted-intro-note submitted-intro-note--bottom">
+                You can view the status of your application at any time by logging in using your username and password.
+            </p>
+
+            <form action="{{ route('applicant.application-form.continue') }}" method="POST" class="submitted-continue-form">
+                @csrf
+                <button type="submit" class="btn-setup-next submitted-continue-btn">Click Here To Continue</button>
+            </form>
+        </div>
+        @else
+        <div class="submitted-status-shell" id="applicationStatusCalendar" data-selected-date="{{ $selectedCalendarDate }}">
+            <div class="submitted-header-row">
+                <div class="submitted-header-field">
+                    <label class="setup-label">Applicant ID</label>
+                    <input type="text" class="setup-input" readonly value="{{ optional($app)->applicant_id }}">
+                </div>
+                <div class="submitted-header-field submitted-header-field--name">
+                    <label class="setup-label">Applicant Name</label>
+                    <input type="text" class="setup-input" readonly value="{{ trim(optional($app)->first_name . ' ' . optional($app)->last_name) }}">
+                </div>
+            </div>
+
+            <div class="setup-form-container submitted-status-card">
+                <div class="submitted-status-grid">
+                    <div class="submitted-calendar-panel">
+                        <h3 class="submitted-panel-title">APPLICATION STATUS</h3>
+
+                        <div class="submitted-calendar-toolbar">
+                            <button type="button" class="submitted-calendar-nav" data-calendar-nav="-1">&#8249;</button>
+                            <select id="statusCalendarMonth" class="submitted-calendar-select"></select>
+                            <select id="statusCalendarYear" class="submitted-calendar-select"></select>
+                            <button type="button" class="submitted-calendar-nav" data-calendar-nav="1">&#8250;</button>
+                        </div>
+
+                        <div class="submitted-calendar-weekdays">
+                            <span>Su</span>
+                            <span>Mo</span>
+                            <span>Tu</span>
+                            <span>We</span>
+                            <span>Th</span>
+                            <span>Fr</span>
+                            <span>Sa</span>
+                        </div>
+
+                        <div id="statusCalendarDays" class="submitted-calendar-days"></div>
+
+                        <p class="submitted-calendar-current">Highlighted Schedule: {{ $calendarScheduleDate->format('F j, Y') }}</p>
+                    </div>
+
+                    <div class="submitted-assessment-panel">
+                        <h3 class="submitted-panel-title">ASSESSMENT SCHEDULE</h3>
+                        <div class="submitted-assessment-box">
+                            <div class="submitted-assessment-item">
+                                <span>Date:</span>
+                                <strong>{{ $calendarScheduleDate->format('F d, Y') }}</strong>
+                            </div>
+                            <div class="submitted-assessment-item">
+                                <span>Time:</span>
+                                <strong>{{ $calendarScheduleDate->format('h:i A') }}</strong>
+                            </div>
+                            <div class="submitted-assessment-item">
+                                <span>Venue:</span>
+                                <strong>{{ optional($app)->exam_room ?: 'To be announced' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+    @else
+
+    <div id="stepSaveFeedback" class="applicant-alert applicant-alert-success step-save-feedback step-hidden"></div>
+
+    <form
+        action="{{ route('applicant.application-form.save') }}"
+        method="POST"
+        enctype="multipart/form-data"
+        id="applicationForm"
+        data-active-step="{{ $activeStep }}"
+        data-step1-url="{{ route('applicant.application-form.step-1.save') }}"
+        data-step2-url="{{ route('applicant.application-form.step-2.save') }}"
+        data-step3-url="{{ route('applicant.application-form.step-3.save') }}"
+        data-step4-url="{{ route('applicant.application-form.step-4.save') }}"
+    >
         @csrf
 
-        {{-- ===== STEP INDICATOR ===== --}}
+        <input type="hidden" name="active_step" id="activeStepInput" value="{{ $activeStep }}">
+        <input type="hidden" id="applicantAddressDraft" value="{{ e(json_encode([
+            'present_region' => old('present_region', optional($app)->present_region),
+            'present_province' => old('present_province', optional($app)->present_province),
+            'present_municipality' => old('present_municipality', optional($app)->present_municipality),
+            'permanent_region' => old('permanent_region', optional($app)->permanent_region),
+            'permanent_province' => old('permanent_province', optional($app)->permanent_province),
+            'permanent_municipality' => old('permanent_municipality', optional($app)->permanent_municipality),
+        ])) }}">
+
         <div class="setup-steps">
-            <div class="step-item active" data-step="1">
+            <div class="step-item {{ $activeStep === 1 ? 'active' : ($activeStep > 1 ? 'completed' : '') }}" data-step="1">
                 <div class="step-pill">Step 1</div>
             </div>
-            <div class="step-line"></div>
-            <div class="step-item" data-step="2">
+            <div class="step-line {{ $activeStep > 1 ? 'active' : '' }}"></div>
+            <div class="step-item {{ $activeStep === 2 ? 'active' : ($activeStep > 2 ? 'completed' : '') }}" data-step="2">
                 <div class="step-pill">Step 2</div>
             </div>
-            <div class="step-line"></div>
-            <div class="step-item" data-step="3">
+            <div class="step-line {{ $activeStep > 2 ? 'active' : '' }}"></div>
+            <div class="step-item {{ $activeStep === 3 ? 'active' : ($activeStep > 3 ? 'completed' : '') }}" data-step="3">
                 <div class="step-pill">Step 3</div>
             </div>
-            <div class="step-line"></div>
-            <div class="step-item" data-step="4">
+            <div class="step-line {{ $activeStep > 3 ? 'active' : '' }}"></div>
+            <div class="step-item {{ $activeStep === 4 ? 'active' : '' }}" data-step="4">
                 <div class="step-pill">Step 4</div>
             </div>
         </div>
 
-        {{-- ===== STEP 1: PERSONAL INFORMATION ===== --}}
-        <div class="setup-form-container step-panel" id="step-1">
+        <div class="setup-form-container step-panel{{ $activeStep !== 1 ? ' step-hidden' : '' }}" id="step-1">
             <div class="setup-section">
                 <div class="setup-personal-top">
                     <div class="setup-personal-left">
                         <div class="setup-section-header">
                             <h3 class="setup-section-title">Personal Information</h3>
                         </div>
-
-                        <div class="setup-row">
-                            <div class="setup-col setup-col--w-280">
-                                <label class="setup-label">LRN</label>
-                                <input type="text" class="setup-input" placeholder="LRN" name="lrn" value="{{ old('lrn', optional($app)->lrn) }}">
-                            </div>
-                        </div>
                     </div>
 
-                    {{-- Profile Picture --}}
                     <div class="setup-profile-photo">
                         <div class="profile-photo-square" id="profilePhotoPreview">
-                            @if(isset($applicant) && $applicant->photo)
-                                <img id="photoImg" src="{{ asset('storage/' . $applicant->photo) }}" alt="Photo" class="setup-photo-img">
+                            @if(!empty(optional($app)->photo))
+                            <img id="photoImg" src="{{ asset('storage/' . optional($app)->photo) }}" alt="Photo" class="setup-photo-img">
                             @else
-                                <svg class="profile-photo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                    <path d="M6 21v-1a6 6 0 0 1 12 0v1"/>
-                                </svg>
-                                <img id="photoImg" src="" alt="" class="setup-photo-img setup-photo-img--hidden">
+                            <svg class="profile-photo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="12" cy="10" r="3"/>
+                                <path d="M6 21v-1a6 6 0 0 1 12 0v1"/>
+                            </svg>
+                            <img id="photoImg" src="" alt="" class="setup-photo-img setup-photo-img--hidden">
                             @endif
                         </div>
                         <label class="profile-photo-btn" for="photoInput">Upload Photo</label>
@@ -73,11 +205,11 @@
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Lastname</label>
-                        <input type="text" class="setup-input" placeholder="Last Name" name="last_name" value="{{ old('last_name', optional($app)->last_name) }}">
+                        <input type="text" class="setup-input" placeholder="Last Name" name="last_name" value="{{ old('last_name', optional($app)->last_name) }}" required>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">First Name</label>
-                        <input type="text" class="setup-input" placeholder="First Name" name="first_name" value="{{ old('first_name', optional($app)->first_name) }}">
+                        <input type="text" class="setup-input" placeholder="First Name" name="first_name" value="{{ old('first_name', optional($app)->first_name) }}" required>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Middle Name</label>
@@ -97,13 +229,14 @@
                     <div class="setup-col">
                         <label class="setup-label">Gender</label>
                         <div class="setup-radio-group">
-                            <label class="setup-radio"><input type="radio" name="gender" value="Male" {{ old('gender', optional($app)->gender) === 'Male' ? 'checked' : '' }}> Male</label>
-                            <label class="setup-radio"><input type="radio" name="gender" value="Female" {{ old('gender', optional($app)->gender) === 'Female' ? 'checked' : '' }}> Female</label>
+                            <label class="setup-radio"><input type="radio" name="gender" value="Male" {{ old('gender', optional($app)->gender) === 'Male' ? 'checked' : '' }} required> Male</label>
+                            <label class="setup-radio"><input type="radio" name="gender" value="Female" {{ old('gender', optional($app)->gender) === 'Female' ? 'checked' : '' }} required> Female</label>
                         </div>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Nationality</label>
                         <select name="nationality" class="setup-input setup-select">
+                            <option value="">Select Nationality</option>
                             @foreach(['Filipino','American','Japanese','Korean','Chinese','Other'] as $nat)
                             <option value="{{ $nat }}" {{ old('nationality', optional($app)->nationality) === $nat ? 'selected' : '' }}>{{ $nat }}</option>
                             @endforeach
@@ -112,7 +245,7 @@
                     <div class="setup-col">
                         <label class="setup-label">Religion</label>
                         <select name="religion" class="setup-input setup-select">
-                            <option value="" disabled {{ !old('religion', optional($app)->religion) ? 'selected' : '' }}>Select religion</option>
+                            <option value="">Select religion</option>
                             @foreach(['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'] as $rel)
                             <option value="{{ $rel }}" {{ old('religion', optional($app)->religion) === $rel ? 'selected' : '' }}>{{ $rel }}</option>
                             @endforeach
@@ -120,7 +253,7 @@
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Date of Birth</label>
-                        <input type="date" name="date_of_birth" class="setup-input" id="dobField" value="{{ old('date_of_birth', optional(optional($app)->date_of_birth)->format('Y-m-d')) }}">
+                        <input type="date" name="date_of_birth" class="setup-input" id="dobField" value="{{ old('date_of_birth', optional(optional($app)->date_of_birth)->format('Y-m-d')) }}" required>
                     </div>
                 </div>
 
@@ -136,7 +269,7 @@
                     <div class="setup-col">
                         <label class="setup-label">Civil Status</label>
                         <select name="civil_status" class="setup-input setup-select">
-                            <option value="" disabled {{ !old('civil_status', optional($app)->civil_status) ? 'selected' : '' }}>Select status</option>
+                            <option value="">Select status</option>
                             @foreach(['Single','Married','Widowed'] as $c)
                             <option value="{{ $c }}" {{ old('civil_status', optional($app)->civil_status) === $c ? 'selected' : '' }}>{{ $c }}</option>
                             @endforeach
@@ -144,11 +277,11 @@
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Mobile Number</label>
-                        <input type="text" name="mobile_number" class="setup-input" placeholder="Mobile Number" value="{{ old('mobile_number', optional($app)->mobile_number) }}" maxlength="11" inputmode="numeric">
+                        <input type="tel" name="mobile_number" class="setup-input" placeholder="Mobile Number" value="{{ old('mobile_number', optional($app)->mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Email Address</label>
-                        <input type="email" name="email_address" class="setup-input" placeholder="Email Address" value="{{ old('email_address', optional($app)->email_address) }}">
+                        <input type="email" name="email_address" class="setup-input" placeholder="Email Address" value="{{ old('email_address', optional($app)->email_address) }}" required>
                     </div>
                 </div>
             </div>
@@ -163,34 +296,34 @@
                 <div class="setup-row">
                     <div class="setup-col setup-col--flex-3">
                         <label class="setup-label">Street</label>
-                        <input type="text" name="present_street" id="present_street" class="setup-input" placeholder="Street" value="{{ old('present_street', optional($app)->present_street) }}">
+                        <input type="text" name="present_street" id="present_street" class="setup-input" placeholder="Street" value="{{ old('present_street', optional($app)->present_street) }}" required>
                     </div>
                     <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Barangay</label>
-                        <input type="text" name="present_barangay" id="present_barangay" class="setup-input" placeholder="Barangay" value="{{ old('present_barangay', optional($app)->present_barangay) }}">
+                        <input type="text" name="present_barangay" id="present_barangay" class="setup-input" placeholder="Barangay" value="{{ old('present_barangay', optional($app)->present_barangay) }}" required>
                     </div>
                     <div class="setup-col setup-col--flex-1">
                         <label class="setup-label">Zipcode</label>
-                        <input type="text" name="present_zipcode" id="present_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('present_zipcode', optional($app)->present_zipcode) }}">
+                        <input type="text" name="present_zipcode" id="present_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('present_zipcode', optional($app)->present_zipcode) }}" required>
                     </div>
                 </div>
 
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Region</label>
-                        <select name="present_region" id="present_region" class="setup-input setup-select">
+                        <select name="present_region" id="present_region" class="setup-input setup-select" required>
                             <option value="" disabled selected>Choose Region</option>
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Province</label>
-                        <select name="present_province" id="present_province" class="setup-input setup-select">
+                        <select name="present_province" id="present_province" class="setup-input setup-select" required>
                             <option value="" disabled selected>Choose Province</option>
                         </select>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Municipality/City</label>
-                        <select name="present_municipality" id="present_municipality" class="setup-input setup-select">
+                        <select name="present_municipality" id="present_municipality" class="setup-input setup-select" required>
                             <option value="" disabled selected>Choose City/Municipality</option>
                         </select>
                     </div>
@@ -244,52 +377,62 @@
 
             <div class="setup-nav">
                 <div></div>
-                <button type="button" class="btn-setup-next" data-go-step="2">Next</button>
+                <button type="button" class="btn-setup-next" data-save-step="1" data-go-step="2">Next</button>
             </div>
         </div>
 
-        {{-- ===== STEP 2: EDUCATIONAL INFORMATION ===== --}}
-        <div class="setup-form-container step-panel step-hidden" id="step-2">
+        <div class="setup-form-container step-panel{{ $activeStep !== 2 ? ' step-hidden' : '' }}" id="step-2">
             <div class="setup-section">
                 <div class="setup-section-header">
                     <h3 class="setup-section-title">Educational Information</h3>
                 </div>
 
-                <div class="setup-row">
-                    <div class="setup-col setup-col--flex-2">
-                        <label class="setup-label">Last School Attended</label>
-                        <input type="text" name="last_school_attended" class="setup-input" placeholder="Last School Attended" value="{{ old('last_school_attended') }}">
+                <div class="setup-row setup-row--stacked">
+                    <div class="setup-col setup-col--full">
+                        <label class="setup-label">Junior School <span class="setup-required">*</span></label>
+                        <input type="text" name="junior_school" class="setup-input" placeholder="Junior High" value="{{ old('junior_school', optional($edu)->junior_school) }}" required>
                     </div>
-                    <div class="setup-col setup-col--flex-23">
-                        <label class="setup-label">School Address</label>
-                        <input type="text" name="school_address" class="setup-input" placeholder="School Address" value="{{ old('school_address') }}">
+                </div>
+
+                <div class="setup-row setup-row--stacked">
+                    <div class="setup-col setup-col--full">
+                        <label class="setup-label">Senior School <span class="setup-required">*</span></label>
+                        <input type="text" name="senior_school" id="seniorSchoolField" class="setup-input" placeholder="Senior High" value="{{ old('senior_school', optional($edu)->senior_school) }}" required>
+                        <p class="setup-helper setup-helper--tight">If not applicable, use the same information as Junior High School</p>
                     </div>
-                    <div class="setup-col setup-col--flex-08 setup-col--w-110">
-                        <label class="setup-label">School Type</label>
-                        <select class="setup-input setup-select">
-                            <option value="">Public</option>
-                            <option value="private">Private</option>
-                        </select>
+                </div>
+
+                <div class="setup-row setup-row--stacked">
+                    <div class="setup-col setup-col--full">
+                        <label class="setup-label">SHS Track Strand <span class="setup-required">*</span></label>
+                        <input type="text" name="shs_track_strand" class="setup-input" placeholder="SHS Strand" value="{{ old('shs_track_strand', optional($edu)->shs_track_strand) }}" required>
                     </div>
-                    <div class="setup-col setup-col-sm setup-col--w-90">
-                        <label class="setup-label">Year</label>
-                        <input type="text" class="setup-input" placeholder="Year">
+                </div>
+
+                <div class="setup-row setup-row--stacked">
+                    <div class="setup-col setup-col--full">
+                        <label class="setup-checkbox-label setup-checkbox-label--inline-note" for="noK12Toggle">
+                            <input type="checkbox" id="noK12Toggle" name="no_k12" value="1" {{ old('no_k12', optional($edu)->no_k12) ? 'checked' : '' }}>
+                            <span>Select this toggle if the student did not go through the K-12 Basic Education Curriculum implemented starting 2012 (e.g. old curriculum graduates, foreign students, ALS completers without LRN) or studied before implementation.</span>
+                        </label>
                     </div>
-                    <div class="setup-col setup-col--w-34">
-                        <label class="setup-label">&nbsp;</label>
-                        <button type="button" class="setup-mini-add" aria-label="Add school">+</button>
+                </div>
+
+                <div class="setup-row setup-row--stacked">
+                    <div class="setup-col setup-col--full">
+                        <label class="setup-label">Learner's Reference Number (LRN) <span class="setup-required">*</span></label>
+                        <input type="text" name="learner_reference_number" class="setup-input" placeholder="Must be exactly 12 digits (e.g. 123456789012)" value="{{ old('learner_reference_number', optional($edu)->learner_reference_number ?? optional($app)->lrn) }}" maxlength="12" inputmode="numeric" pattern="\d{12}" title="Must be exactly 12 digits" required>
                     </div>
                 </div>
             </div>
 
             <div class="setup-nav">
                 <button type="button" class="btn-setup-prev" data-go-step="1">Previous</button>
-                <button type="button" class="btn-setup-next" data-go-step="3">Next</button>
+                <button type="button" class="btn-setup-next" data-save-step="2" data-go-step="3">Next</button>
             </div>
         </div>
 
-        {{-- ===== STEP 3: FAMILY BACKGROUND ===== --}}
-        <div class="setup-form-container step-panel step-hidden" id="step-3">
+        <div class="setup-form-container step-panel{{ $activeStep !== 3 ? ' step-hidden' : '' }}" id="step-3">
             <div class="setup-section">
                 <div class="setup-section-header">
                     <h3 class="setup-section-title">Family Background</h3>
@@ -297,80 +440,85 @@
 
                 <h4 class="setup-subsection-title">Mother/Guardian</h4>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" placeholder="Last Name"></div>
-                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" placeholder="First Name"></div>
-                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" placeholder="Middle Name"></div>
+                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" name="mother_last_name" placeholder="Last Name" value="{{ old('mother_last_name', optional($family)->mother_last_name) }}"></div>
+                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" name="mother_first_name" placeholder="First Name" value="{{ old('mother_first_name', optional($family)->mother_first_name) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" name="mother_middle_name" placeholder="Middle Name" value="{{ old('mother_middle_name', optional($family)->mother_middle_name) }}"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Nationality</label><select class="setup-input setup-select"><option value="">Filipino</option></select></div>
-                    <div class="setup-col"><label class="setup-label">Religion</label><input type="text" class="setup-input" placeholder="Religion"></div>
-                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input"></div>
-                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="text" class="setup-input" placeholder="Mobile Number"></div>
+                    <div class="setup-col"><label class="setup-label">Nationality</label><input type="text" class="setup-input" name="mother_nationality" placeholder="Nationality" value="{{ old('mother_nationality', optional($family)->mother_nationality) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Religion</label><input type="text" class="setup-input" name="mother_religion" placeholder="Religion" value="{{ old('mother_religion', optional($family)->mother_religion) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="mother_date_of_birth" value="{{ old('mother_date_of_birth', optional(optional($family)->mother_date_of_birth)->format('Y-m-d')) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="mother_mobile_number" placeholder="Mobile Number" value="{{ old('mother_mobile_number', optional($family)->mother_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" placeholder="Occupation"></div>
-                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" placeholder="Company Address"></div>
-                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" placeholder="Estimated Monthly Income"></div>
+                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" name="mother_occupation" placeholder="Occupation" value="{{ old('mother_occupation', optional($family)->mother_occupation) }}"></div>
+                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" name="mother_company_address" placeholder="Company Address" value="{{ old('mother_company_address', optional($family)->mother_company_address) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" name="mother_estimated_monthly_income" placeholder="Estimated Monthly Income" value="{{ old('mother_estimated_monthly_income', optional($family)->mother_estimated_monthly_income) }}"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" placeholder="Residence Address"></div>
-                    <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" placeholder="Email Address"></div>
+                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" name="mother_residence_address" placeholder="Residence Address" value="{{ old('mother_residence_address', optional($family)->mother_residence_address) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" name="mother_email_address" placeholder="Email Address" value="{{ old('mother_email_address', optional($family)->mother_email_address) }}"></div>
                 </div>
 
                 <h4 class="setup-subsection-title setup-subsection-title--mt18">Father/Guardian</h4>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" placeholder="Last Name"></div>
-                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" placeholder="First Name"></div>
-                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" placeholder="Middle Name"></div>
+                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" name="father_last_name" placeholder="Last Name" value="{{ old('father_last_name', optional($family)->father_last_name) }}"></div>
+                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" name="father_first_name" placeholder="First Name" value="{{ old('father_first_name', optional($family)->father_first_name) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" name="father_middle_name" placeholder="Middle Name" value="{{ old('father_middle_name', optional($family)->father_middle_name) }}"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Nationality</label><select class="setup-input setup-select"><option value="">Filipino</option></select></div>
-                    <div class="setup-col"><label class="setup-label">Religion</label><input type="text" class="setup-input" placeholder="Religion"></div>
-                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input"></div>
-                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="text" class="setup-input" placeholder="Mobile Number"></div>
+                    <div class="setup-col"><label class="setup-label">Nationality</label><input type="text" class="setup-input" name="father_nationality" placeholder="Nationality" value="{{ old('father_nationality', optional($family)->father_nationality) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Religion</label><input type="text" class="setup-input" name="father_religion" placeholder="Religion" value="{{ old('father_religion', optional($family)->father_religion) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="father_date_of_birth" value="{{ old('father_date_of_birth', optional(optional($family)->father_date_of_birth)->format('Y-m-d')) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="father_mobile_number" placeholder="Mobile Number" value="{{ old('father_mobile_number', optional($family)->father_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" placeholder="Occupation"></div>
-                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" placeholder="Company Address"></div>
-                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" placeholder="Estimated Monthly Income"></div>
+                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" name="father_occupation" placeholder="Occupation" value="{{ old('father_occupation', optional($family)->father_occupation) }}"></div>
+                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" name="father_company_address" placeholder="Company Address" value="{{ old('father_company_address', optional($family)->father_company_address) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" name="father_estimated_monthly_income" placeholder="Estimated Monthly Income" value="{{ old('father_estimated_monthly_income', optional($family)->father_estimated_monthly_income) }}"></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" placeholder="Residence Address"></div>
-                    <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" placeholder="Email Address"></div>
+                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" name="father_residence_address" placeholder="Residence Address" value="{{ old('father_residence_address', optional($family)->father_residence_address) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" name="father_email_address" placeholder="Email Address" value="{{ old('father_email_address', optional($family)->father_email_address) }}"></div>
                 </div>
             </div>
 
             <div class="setup-nav">
                 <button type="button" class="btn-setup-prev" data-go-step="2">Previous</button>
-                <button type="button" class="btn-setup-next" data-go-step="4">Next</button>
+                <button type="button" class="btn-setup-next" data-save-step="3" data-go-step="4">Next</button>
             </div>
         </div>
 
-        {{-- ===== STEP 4: APPLYING FOR ===== --}}
-        <div class="setup-form-container step-panel step-hidden" id="step-4">
+        <div class="setup-form-container step-panel{{ $activeStep !== 4 ? ' step-hidden' : '' }}" id="step-4">
             <div class="setup-section">
                 <div class="setup-section-header">
                     <h3 class="setup-section-title">Applying For</h3>
                 </div>
 
-                <div class="setup-row">
+                <div class="setup-row setup-row--apply-program">
                     <div class="setup-col setup-col--flex-12 setup-col--w-180">
                         <label class="setup-label">Program Type</label>
                         <div class="setup-radio-group setup-radio-group--spaced">
-                            <label class="setup-radio"><input type="radio" name="apply_program" value="senior_high" checked> Senior High</label>
-                            <label class="setup-radio"><input type="radio" name="apply_program" value="college"> College</label>
+                            <label class="setup-radio"><input type="radio" name="apply_program" value="senior_high" {{ old('apply_program', optional($pref)->apply_program ?: 'senior_high') === 'senior_high' ? 'checked' : '' }} required> Senior High</label>
+                            <label class="setup-radio"><input type="radio" name="apply_program" value="college" {{ old('apply_program', optional($pref)->apply_program) === 'college' ? 'checked' : '' }} required> College</label>
                         </div>
                     </div>
-                    <div class="setup-col">
+                    <div class="setup-col setup-col--w-220 setup-col--apply-choice">
                         <label class="setup-label">Strand</label>
-                        <select class="setup-input setup-select">
+                        <select name="apply_strand" id="applyStrandSelect" class="setup-input setup-select">
                             <option value="">Select Strand</option>
+                            @foreach($strandOptions as $strand)
+                            <option value="{{ $strand }}" {{ old('apply_strand', optional($pref)->apply_strand) === $strand ? 'selected' : '' }}>{{ $strand }}</option>
+                            @endforeach
                         </select>
                     </div>
-                    <div class="setup-col">
+                    <div class="setup-col setup-col--w-220 setup-col--apply-choice">
                         <label class="setup-label">Course</label>
-                        <select class="setup-input setup-select">
+                        <select name="apply_course_id" id="applyCourseSelect" class="setup-input setup-select">
                             <option value="">Select Course</option>
+                            @foreach($collegeCourses as $course)
+                            <option value="{{ $course->id }}" {{ (string) old('apply_course_id', optional($pref)->apply_course_id) === (string) $course->id ? 'selected' : '' }}>{{ $course->code }} - {{ $course->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -378,54 +526,60 @@
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Entry Classification</label>
-                        <select class="setup-input setup-select"><option value="">Select School</option></select>
+                        <select name="entry_classification" class="setup-input setup-select" required>
+                            <option value="">Select Entry Classification</option>
+                            @foreach(['Regular Freshman', 'Transferee', 'Second Courser', 'Returnee'] as $entry)
+                            <option value="{{ $entry }}" {{ old('entry_classification', optional($pref)->entry_classification) === $entry ? 'selected' : '' }}>{{ $entry }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">Year Level</label>
-                        <select class="setup-input setup-select"><option value="">Year Level</option></select>
+                        <select name="year_level" class="setup-input setup-select" required>
+                            <option value="">Year Level</option>
+                            @foreach(['Grade 11', 'Grade 12', '1st Year', '2nd Year', '3rd Year', '4th Year'] as $year)
+                            <option value="{{ $year }}" {{ old('year_level', optional($pref)->year_level) === $year ? 'selected' : '' }}>{{ $year }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">Semester</label>
-                        <select class="setup-input setup-select"><option value="">First Semester</option></select>
+                        <select name="semester" class="setup-input setup-select" required>
+                            <option value="">Select Semester</option>
+                            @foreach(['First Semester', 'Second Semester', 'Summer'] as $sem)
+                            <option value="{{ $sem }}" {{ old('semester', optional($pref)->semester) === $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">School Year</label>
-                        <input type="text" class="setup-input" value="2025-2026" readonly>
+                        <input type="text" name="school_year" class="setup-input" value="{{ old('school_year', optional($pref)->school_year ?: $defaultSchoolYear) }}" required>
                     </div>
                 </div>
 
                 <div class="setup-row setup-row--app-meta">
                     <div class="setup-col setup-col-sm setup-col--w-220">
                         <label class="setup-label">Application Date</label>
-                        <input type="date" class="setup-input">
+                        <input type="date" name="application_date" class="setup-input" value="{{ old('application_date', optional(optional($pref)->application_date)->format('Y-m-d') ?: now()->format('Y-m-d')) }}" required>
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-160">
                         <label class="setup-label">Campus</label>
-                        <input type="text" class="setup-input" value="Pasig" readonly>
+                        <input type="text" name="campus" class="setup-input" value="{{ old('campus', optional($pref)->campus ?: 'Pasig') }}" required>
                     </div>
                 </div>
             </div>
 
             <div class="setup-nav">
                 <button type="button" class="btn-setup-prev" data-go-step="3">Previous</button>
-                <button type="submit" class="btn-setup-next">Submit</button>
+                <button type="submit" class="btn-setup-next" data-save-step="4">Save</button>
             </div>
         </div>
 
     </form>
+    @endif
 </div>
 
 @push('scripts')
-<script>
-    var applicantAddressDraft = {
-        present_region: {{ json_encode(old('present_region', optional($app)->present_region)) }},
-        present_province: {{ json_encode(old('present_province', optional($app)->present_province)) }},
-        present_municipality: {{ json_encode(old('present_municipality', optional($app)->present_municipality)) }},
-        permanent_region: {{ json_encode(old('permanent_region', optional($app)->permanent_region)) }},
-        permanent_province: {{ json_encode(old('permanent_province', optional($app)->permanent_province)) }},
-        permanent_municipality: {{ json_encode(old('permanent_municipality', optional($app)->permanent_municipality)) }}
-    };
-</script>
 <script src="{{ asset('js/applicant-form.js') }}"></script>
 @endpush
 @endsection

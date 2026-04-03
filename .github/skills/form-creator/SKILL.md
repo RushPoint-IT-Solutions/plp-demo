@@ -35,6 +35,11 @@ description: "Convert form screenshots to Laravel Blade forms with a fixed, non-
 
 ## 🛠️ Field Styling & Interactions
 - **Editable Fields:** All fields must be functional and editable `<input>`, `<textarea>`, or `<select>` tags.
+- **Smart Input Types & Frontend Validation:** Infer the required data type from the form's context. 
+  - If a field asks for an email, use `<input type="email">`.
+  - If it asks for a date, use `<input type="date">`.
+  - If it expects a number (like a phone number or ID), it must ONLY accept exactly 11 digits. Use `<input type="text" pattern="\d{11}" maxlength="11" title="Must be exactly 11 digits">` or `<input type="tel">` with the same pattern to enforce this frontend restriction.
+- **Backend Validation Sync:** When generating the `FormRequest`, ensure the validation rules strictly match the inferred frontend types (e.g., use `'email'`, `'digits:11'`, `'date'`, and `'required'` where visually appropriate).
 - **Auto-Expanding Table Cells:** For fields inside grid/table cells where text might wrap, do NOT use standard `<input>` tags. Use `<textarea rows="1">` with CSS `resize: none; overflow: hidden; height: auto;`. Apply JavaScript (inline or external) to auto-expand the vertical height based on content length so text is NEVER hidden. Example: `oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"`
 - **Custom Checkboxes:** Do NOT use default browser checkboxes. Style them to look exactly like `{ }` (brackets) in the print view while remaining clickable on the screen.
 

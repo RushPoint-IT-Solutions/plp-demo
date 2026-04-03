@@ -95,7 +95,73 @@ class RegistrarController extends Controller
      */
     public function applicationProcess()
     {
-        return view('registrar.process.application-process');
+        $applicants = Applicant::query()
+            ->with('applicationPreference')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->limit(300)
+            ->get();
+
+        return view('registrar.process.application-process', compact('applicants'));
+    }
+
+    public function updateApplicantExamSchedule(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'exam_date' => 'required|date',
+            'exam_time' => 'required|date_format:H:i',
+            'exam_room' => 'required|string|max:190',
+        ]);
+
+        $examDateTime = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['exam_date'] . ' ' . $validated['exam_time']
+        );
+
+        $applicant->exam_date = $examDateTime;
+        $applicant->exam_room = $validated['exam_room'];
+        if (empty($applicant->exam_result_status)) {
+            $applicant->exam_result_status = 'Pending';
+        }
+        $applicant->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Exam schedule saved successfully.',
+            'row' => [
+                'id' => $applicant->id,
+                'applicant_id' => $applicant->applicant_id,
+                'exam_date' => optional($applicant->exam_date)->format('Y-m-d'),
+                'exam_time' => optional($applicant->exam_date)->format('H:i'),
+                'exam_room' => (string) ($applicant->exam_room ?? ''),
+                'exam_result_status' => (string) ($applicant->exam_result_status ?? 'Pending'),
+            ],
+        ]);
+    }
+
+    public function updateApplicantExamResult(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'exam_result_status' => 'required|in:Pending,Passed,Failed',
+            'exam_score' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $applicant->exam_result_status = $validated['exam_result_status'];
+        $applicant->exam_score = array_key_exists('exam_score', $validated)
+            ? $validated['exam_score']
+            : null;
+        $applicant->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Exam result saved successfully.',
+            'row' => [
+                'id' => $applicant->id,
+                'applicant_id' => $applicant->applicant_id,
+                'exam_result_status' => (string) ($applicant->exam_result_status ?? 'Pending'),
+                'exam_score' => $applicant->exam_score,
+            ],
+        ]);
     }
 
     /**

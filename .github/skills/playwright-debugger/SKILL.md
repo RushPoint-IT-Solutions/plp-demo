@@ -1,13 +1,13 @@
 ---
 name: "playwright-debugger"
-description: "Automatically interact with a web page, check mobile responsiveness (iPhone SE), click buttons, fill forms, and report console errors and network failures."
+description: "Automatically interact with a web page, check mobile responsiveness (iPhone SE), click buttons, fill forms, report console errors, and clean up session data after debugging."
 ---
 
 # Playwright Debugger
 
 ## Purpose
 
-Use the Playwright MCP server to explore a web page, interact with controls, verify mobile responsiveness (specifically iPhone SE), capture JavaScript console errors and network failures, and produce a structured, actionable report.
+Use the Playwright MCP server to explore a web page, interact with controls, verify mobile responsiveness (specifically iPhone SE), capture JavaScript console errors and network failures, produce a structured, actionable report, and ensure all injected scripts and session data are cleaned up afterward.
 
 ## Known Test Credentials & Routing
 
@@ -35,7 +35,7 @@ When testing login portals, use the following pre-configured test credentials ba
 - Confirm the target URL and whether destructive actions (form submits, deletes, purchases) are permitted. Default: do NOT perform destructive actions.
 - Confirm whether autofill is allowed and whether additional test credentials will be provided beyond the pre-configured ones above (never use real credentials).
 
-## Workflow (steps 1–9)
+## Workflow (steps 1–10)
 
 1) Get inputs  
 - Prompt the user for:
@@ -154,6 +154,17 @@ When testing login portals, use the following pre-configured test credentials ba
 - Include raw console messages and stack traces when available.  
 - Include the structured report payload as machine-readable JSON where useful.
 
+10) Cleanup & Session Reset (CRITICAL)
+- Once the debugging and reporting are complete, you MUST clear all browser state (localStorage, sessionStorage, cookies) and remove injected scripts to ensure no test data, tokens, or UI modifications are left behind.
+    ```json
+    {
+      "tool": "browser_evaluate",
+      "params": {
+        "function": "() => { localStorage.clear(); sessionStorage.clear(); document.cookie.split(';').forEach(c => { document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); }); location.reload(); }"
+      }
+    }
+    ```
+
 ## Safety limits
   
 - Never enter real credentials; explicitly rely on the predefined test credentials listed at the top.  
@@ -162,6 +173,6 @@ When testing login portals, use the following pre-configured test credentials ba
 
 ## STOP COMMAND
 
-When the skill completes and the report is delivered, output exactly:
+When the skill completes, the cleanup is executed, and the report is delivered, output exactly:
 
 WAITING_FOR_HUMAN_OK

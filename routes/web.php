@@ -98,6 +98,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
         Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::put('/application/{applicant}/exam-schedule', 'Registrar\RegistrarController@updateApplicantExamSchedule')->name('application.exam-schedule.update');
+        Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
@@ -312,6 +314,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 */
 Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
+    Route::post('/application-form/reset-progress', 'Applicant\ApplicantController@resetApplicationFormProgress')->name('application-form.reset-progress');
+    Route::post('/application-form/step-1', 'Applicant\ApplicantController@saveApplicationFormStep1')->name('application-form.step-1.save');
+    Route::post('/application-form/step-2', 'Applicant\ApplicantController@saveApplicationFormStep2')->name('application-form.step-2.save');
+    Route::post('/application-form/step-3', 'Applicant\ApplicantController@saveApplicationFormStep3')->name('application-form.step-3.save');
+    Route::post('/application-form/step-4', 'Applicant\ApplicantController@saveApplicationFormStep4')->name('application-form.step-4.save');
+    Route::post('/application-form/continue', 'Applicant\ApplicantController@continueApplicationForm')->name('application-form.continue');
     Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
     Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
     Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');

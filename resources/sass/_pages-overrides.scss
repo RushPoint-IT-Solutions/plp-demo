@@ -133,9 +133,368 @@
     gap: 14px;
 }
 
+.setup-row--apply-program {
+    flex-wrap: nowrap;
+    gap: 12px;
+}
+
+.setup-col--apply-choice {
+    max-width: 220px;
+}
+
+.application-form-page {
+    .step-save-feedback {
+        margin-top: 6px;
+    }
+
+    .applicant-alert-error {
+        border: 1px solid #f3b7b7;
+        background: #fdeeee;
+        color: #8e2121;
+    }
+
+    .applicant-error-list {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .setup-row--stacked {
+        margin-bottom: 14px;
+    }
+
+    .setup-col--full {
+        flex: 0 0 100%;
+        min-width: 100%;
+    }
+
+    .setup-required {
+        color: #d94141;
+        font-weight: 700;
+    }
+
+    .setup-helper--tight {
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+
+    .setup-checkbox-label--inline-note {
+        align-items: flex-start;
+        gap: 10px;
+        line-height: 1.45;
+        color: #5a5a5a;
+        font-size: 0.8rem;
+
+        input[type='checkbox'] {
+            margin-top: 2px;
+        }
+    }
+
+    .submitted-intro-card {
+        min-height: 480px;
+        border-style: solid;
+    }
+
+    .submitted-intro-title-row {
+        margin-bottom: 14px;
+    }
+
+    .submitted-intro-title {
+        font-size: 12pt;
+        color: $plp-green;
+    }
+
+    .submitted-intro-text {
+        font-size: 12pt;
+        color: $text-primary;
+        line-height: 1.45;
+        margin-bottom: 16px;
+        max-width: 1120px;
+    }
+
+    .submitted-intro-note {
+        color: #ff4f4f;
+        font-size: 12pt;
+        line-height: 1.45;
+        margin-bottom: 14px;
+    }
+
+    .submitted-intro-note--bottom {
+        margin-top: 16px;
+        margin-bottom: 18px;
+        max-width: 1130px;
+    }
+
+    .submitted-credentials-box {
+        border: 2px solid $plp-green;
+        border-radius: 12px;
+        max-width: 690px;
+        margin: 0 auto;
+        padding: 20px 26px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+
+        p {
+            margin: 0;
+            font-size: 12pt;
+            color: #111;
+            line-height: 1.45;
+
+            span {
+                color: $plp-green;
+                font-weight: 700;
+            }
+        }
+    }
+
+    .submitted-continue-form {
+        display: flex;
+        justify-content: center;
+    }
+
+    .submitted-continue-btn {
+        min-width: 390px;
+        font-size: 12pt;
+    }
+
+    .submitted-header-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 14px;
+    }
+
+    .submitted-header-field {
+        flex: 0 0 240px;
+    }
+
+    .submitted-header-field--name {
+        flex: 0 0 300px;
+    }
+
+    .submitted-status-card {
+        border-style: solid;
+    }
+
+    .submitted-status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .submitted-panel-title {
+        text-align: center;
+        color: $plp-green;
+        font-family: $font-primary;
+        font-size: 1.35rem;
+        margin-bottom: 12px;
+        font-weight: 800;
+    }
+
+    .submitted-calendar-panel {
+        border: 1px solid #dbdbdb;
+        border-radius: 14px;
+        padding: 10px 12px 12px;
+    }
+
+    .submitted-status-summary {
+        border: 1px dashed #bcd2c4;
+        border-radius: 12px;
+        background: #f4f8f5;
+        padding: 18px 14px;
+        text-align: center;
+        margin-top: 6px;
+    }
+
+    .submitted-status-label {
+        margin: 0 0 8px;
+        color: #55685d;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .submitted-status-date {
+        margin: 0;
+        color: $plp-green;
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .submitted-status-note {
+        margin: 10px 0 0;
+        color: #4e5f55;
+        font-size: 0.92rem;
+        line-height: 1.4;
+    }
+
+    .submitted-calendar-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .submitted-calendar-nav {
+        border: 0;
+        background: transparent;
+        color: #2a2a2a;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        font-size: 1.35rem;
+        line-height: 1;
+        padding: 0;
+        cursor: pointer;
+
+        &:hover {
+            background: #e9efe9;
+        }
+    }
+
+    .submitted-calendar-select {
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid #d3d3d3;
+        padding: 0 10px;
+        font-size: 1.05rem;
+        color: #383838;
+        background: #fff;
+    }
+
+    .submitted-calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 1rem;
+        color: #8b8b8b;
+        margin-bottom: 4px;
+    }
+
+    .submitted-calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+    }
+
+    .submitted-calendar-day {
+        height: 38px;
+        border: 0;
+        background: transparent;
+        border-radius: 8px;
+        font-size: 1.05rem;
+        color: #2f2f2f;
+        cursor: pointer;
+
+        &:hover {
+            background: #edf3ed;
+        }
+    }
+
+    .submitted-calendar-day.is-muted {
+        color: #c7c7c7;
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+
+    .submitted-calendar-day.is-selected {
+        background: $plp-green;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .submitted-calendar-current {
+        margin-top: 12px;
+        font-size: 1.05rem;
+        color: #3a3a3a;
+    }
+
+    .submitted-assessment-panel {
+        background: #e5eeea;
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .submitted-assessment-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .submitted-assessment-item {
+        background: $plp-green;
+        color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        span {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        strong {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+    }
+}
+
 @include down(768px) {
     .setup-row--app-meta {
         flex-wrap: wrap;
+    }
+
+    .setup-row--apply-program {
+        flex-wrap: wrap;
+    }
+
+    .setup-col--apply-choice {
+        flex: 0 0 100%;
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    .application-form-page {
+        .submitted-header-row {
+            flex-wrap: wrap;
+        }
+
+        .submitted-header-field,
+        .submitted-header-field--name {
+            flex: 0 0 100%;
+        }
+
+        .submitted-status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .submitted-intro-text,
+        .submitted-intro-note,
+        .submitted-credentials-box p,
+        .submitted-panel-title,
+        .submitted-status-date,
+        .submitted-status-note,
+        .submitted-calendar-select,
+        .submitted-calendar-current,
+        .submitted-assessment-item span,
+        .submitted-assessment-item strong {
+            font-size: 1rem;
+        }
+
+        .submitted-continue-btn {
+            min-width: 220px;
+        }
+
+        .submitted-calendar-day {
+            height: 34px;
+            font-size: 0.95rem;
+        }
     }
 }
 
