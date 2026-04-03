@@ -103,10 +103,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JS -->
-    <script src="{{ asset('js/script.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}?v={{ file_exists(public_path('js/script.js')) ? filemtime(public_path('js/script.js')) : time() }}"></script>
 
     <!-- Sidebar JS -->
-    <script src="{{ asset('js/registrar-layout.js') }}"></script>
+    <script src="{{ asset('js/registrar-layout.js') }}?v={{ file_exists(public_path('js/registrar-layout.js')) ? filemtime(public_path('js/registrar-layout.js')) : time() }}"></script>
 
     @stack('scripts')
 </body>
