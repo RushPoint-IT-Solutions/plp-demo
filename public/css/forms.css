@@ -19,6 +19,14 @@
     color: #0a3c26;
 }
 
+.diploma-copy-select {
+    min-width: 120px;
+    height: 34px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 0.83rem;
+}
+
 /* ============================================================
    Shared toolbar responsiveness (Forms + Reports)
    ============================================================ */
@@ -343,6 +351,49 @@ body.diploma-preview-open {
     margin-top: 0;
 }
 
+.dpl-bottom-copy1 {
+    margin-top: 14px;
+    transform: translateX(120px);
+    display: block;
+}
+
+.dpl-copy1-grid {
+    max-width: 760px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 64px;
+    row-gap: 18px;
+}
+
+.dpl-copy1-sign {
+    text-align: center;
+}
+
+.dpl-copy1-line {
+    display: none;
+}
+
+.dpl-copy1-name {
+    font-family: 'Times New Roman', serif;
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.dpl-copy1-title {
+    font-family: 'EdwardianEmbedded', 'Edwardian Script ITC', 'Bickham Script Pro', 'Bickham Script Std', 'Kunstler Script', 'French Script MT', 'Script MT Bold', cursive;
+    font-size: 1.02rem;
+    line-height: 1.1;
+}
+
+.dpl-copy1-sign-center {
+    grid-column: 1 / span 2;
+    width: 55%;
+    justify-self: center;
+}
+
 /* Hidden print container (screen) */
 #diplomaPrintContainer {
     display: none;
@@ -424,6 +475,25 @@ body.diploma-preview-open {
         width: 390px;
         justify-self: start;
     }
+
+    body.diploma-printing #diplomaPrintContainer .dpl-bottom-copy1 {
+        transform: translateX(110px);
+        display: block;
+        margin-top: 12px;
+    }
+
+    body.diploma-printing #diplomaPrintContainer .dpl-copy1-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        max-width: 740px;
+        column-gap: 56px;
+        row-gap: 16px;
+    }
+
+    body.diploma-printing #diplomaPrintContainer .dpl-copy1-sign-center {
+        grid-column: 1 / span 2;
+        width: 55%;
+    }
 }
 
 /* ============================================================
@@ -450,6 +520,16 @@ body.diploma-preview-open {
     .dpl-left-copy {
         width: 100%;
         transform: none;
+    }
+
+    .dpl-copy1-grid {
+        grid-template-columns: 1fr;
+        row-gap: 14px;
+    }
+
+    .dpl-copy1-sign-center {
+        grid-column: auto;
+        width: 100%;
     }
 }
 
@@ -1997,6 +2077,26 @@ body.wce-preview-open {
     height: 0.88em;
 }
 
+.gc-check-row.gc-check-row-office-only {
+    min-height: 9px;
+    margin-top: -3px;
+    margin-bottom: -1px;
+}
+
+.gc-check-row.gc-check-row-office-only .gc-check-left {
+    min-height: 0;
+}
+
+.gc-check-row.gc-check-row-office-only .gc-check-office {
+    white-space: nowrap;
+    font-size: 10pt;
+    line-height: 0.95;
+}
+
+.gc-check-row.gc-check-row-office-only .gc-check-line-wrap {
+    align-items: center;
+}
+
 .gc-declaration-title {
     font-weight: 700;
     margin: 6px 0 2px;
@@ -2112,6 +2212,18 @@ body.wce-preview-open {
         align-items: center !important;
         gap: 0 !important;
         margin-bottom: 3px !important;
+    }
+
+    body.gc-printing .gc-check-row.gc-check-row-office-only {
+        min-height: 8px !important;
+        margin-top: -2px !important;
+        margin-bottom: -1px !important;
+    }
+
+    body.gc-printing .gc-check-row.gc-check-row-office-only .gc-check-office {
+        white-space: nowrap !important;
+        font-size: 9.8pt !important;
+        line-height: 0.95 !important;
     }
 
     body.gc-printing .gc-check-left,

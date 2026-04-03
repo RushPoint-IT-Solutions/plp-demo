@@ -79,14 +79,12 @@
                         <th rowspan="2">Course Code</th>
                         <th rowspan="2">Description</th>
                         <th rowspan="2">Faculty</th>
-                        <th colspan="4" class="gs-date-group-header">Date Posted</th>
+                        <th colspan="2" class="gs-date-group-header">Date Posted</th>
                         <th rowspan="2">Approved By</th>
                     </tr>
                     <tr class="gs-thead-sub">
-                        <th>Prelim</th>
                         <th>Midterm</th>
-                        <th>Pre- Final</th>
-                        <th>Finalized</th>
+                        <th>Final</th>
                     </tr>
                 </thead>
                 <tbody id="gsListBody">
@@ -141,10 +139,8 @@
                         <th>Name</th>
                         <th style="width:38px;">FDA</th>
                         <th style="width:38px;">NA</th>
-                        <th>PRELIM</th>
                         <th>MIDTERM</th>
-                        <th>PRE-FINAL</th>
-                        <th>FINALS</th>
+                        <th>FINAL</th>
                         <th>C Rating</th>
                         <th>F Rating</th>
                         <th>Remarks</th>

@@ -203,7 +203,7 @@
 
     {{-- Documents Submitted --}}
     <div class="applicant-panel" id="panel-documents-submitted">
-        <div class="under-dev-notice">Under Development</div>
+        @include('registrar.process.panels.documents-submitted')
     </div>
 
     {{-- Schedule of Exam --}}
@@ -263,22 +263,22 @@
 
     {{-- Medical Clearance --}}
     <div class="applicant-panel" id="panel-medical-clearance">
-        <div class="under-dev-notice">Under Development</div>
+        @include('registrar.process.panels.medical-clearance')
     </div>
 
     {{-- Exam Result --}}
     <div class="applicant-panel" id="panel-exam-result">
-        <div class="under-dev-notice">Under Development</div>
+        @include('registrar.process.panels.exam-result')
     </div>
 
     {{-- Approval --}}
     <div class="applicant-panel" id="panel-approval">
-        <div class="under-dev-notice">Under Development</div>
+        @include('registrar.process.panels.approval')
     </div>
 
     {{-- Application Status --}}
     <div class="applicant-panel" id="panel-application-status">
-        <div class="under-dev-notice">Under Development</div>
+        @include('registrar.process.panels.application-status')
     </div>
 
 </div>

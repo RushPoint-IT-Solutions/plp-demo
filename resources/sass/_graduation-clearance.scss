@@ -1,0 +1,35 @@
+/* Graduation Clearance checklist adjustments (UI parity with forms.css) */
+
+.gc-check-row.gc-check-row-office-only {
+    min-height: 9px;
+    margin-top: -3px;
+    margin-bottom: -1px;
+}
+
+.gc-check-row.gc-check-row-office-only .gc-check-left {
+    min-height: 0;
+}
+
+.gc-check-row.gc-check-row-office-only .gc-check-office {
+    white-space: nowrap;
+    font-size: 10pt;
+    line-height: 0.95;
+}
+
+.gc-check-row.gc-check-row-office-only .gc-check-line-wrap {
+    align-items: center;
+}
+
+@media print {
+    body.gc-printing .gc-check-row.gc-check-row-office-only {
+        min-height: 8px !important;
+        margin-top: -2px !important;
+        margin-bottom: -1px !important;
+    }
+
+    body.gc-printing .gc-check-row.gc-check-row-office-only .gc-check-office {
+        white-space: nowrap !important;
+        font-size: 9.8pt !important;
+        line-height: 0.95 !important;
+    }
+}

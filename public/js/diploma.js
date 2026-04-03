@@ -9,6 +9,52 @@ function diplomaEscHtml(value) {
     });
 }
 
+function diplomaGetCellText(row, selector) {
+    var cell = row ? row.querySelector(selector) : null;
+    return (cell ? cell.textContent : '').trim();
+}
+
+function diplomaBuildCopyOneBottom() {
+    return '' +
+        '<div class="dpl-bottom dpl-bottom-copy1">' +
+            '<div class="dpl-copy1-grid">' +
+                '<div class="dpl-copy1-sign dpl-copy1-sign-left">' +
+                    '<div class="dpl-copy1-line"></div>' +
+                    '<div class="dpl-copy1-name">PROF. MARIANO L. CHING</div>' +
+                    '<div class="dpl-copy1-title">University Registrar</div>' +
+                '</div>' +
+                '<div class="dpl-copy1-sign dpl-copy1-sign-right">' +
+                    '<div class="dpl-copy1-line"></div>' +
+                    '<div class="dpl-copy1-name">AMB. ROSALINDA V. TIRONA</div>' +
+                    '<div class="dpl-copy1-title">University President</div>' +
+                '</div>' +
+                '<div class="dpl-copy1-sign dpl-copy1-sign-center">' +
+                    '<div class="dpl-copy1-line"></div>' +
+                    '<div class="dpl-copy1-name">HON. ROBERT C. EUSEBIO</div>' +
+                    '<div class="dpl-copy1-title">Chairman, Board of Regents</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+}
+
+function diplomaBuildCopyTwoBottom() {
+    return '' +
+        '<div class="dpl-bottom dpl-bottom-copy2">' +
+            '<div class="dpl-left-copy">' +
+                '<div class="dpl-left-note">Certified text of the original:</div>' +
+                '<div class="dpl-left-name">FEDERICO C. NUEVA</div>' +
+                '<div class="dpl-left-role">University Registrar</div>' +
+            '</div>' +
+            '<div class="dpl-right-stack">' +
+                '<div class="dpl-signatures">' +
+                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">PROF. MARIANO L. CHING</span></div><div class="title">University Registrar</div></div>' +
+                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">AMB. ROSALINDA V. TIRONA</span></div><div class="title">University President</div></div>' +
+                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">HON. ROBERT C. EUSEBIO</span></div><div class="title">Chairman, Board of Regents</div></div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+}
+
 function diplomaBuildPreviewTemplate(data) {
     var programLabel = (data.program || '').toUpperCase().replace(/\s+/g, ' ').trim();
     var degreeLine = 'Bachelor of Science in Entrepreneurship';
@@ -38,10 +84,16 @@ function diplomaBuildPreviewTemplate(data) {
         degreeLine = 'Bachelor of Science in Entrepreneurship';
     }
 
+    var copyType = data.copyType === 'print-1' ? 'print-1' : 'print-2';
+    var bottomMarkup = copyType === 'print-1' ? diplomaBuildCopyOneBottom() : diplomaBuildCopyTwoBottom();
+    var govHeaderLines = copyType === 'print-1'
+        ? 'Republic of the Philippines<br>City Government of Pasig'
+        : 'City Government of Pasig<br>Republic of the Philippines';
+
     return '' +
         '<div class="dpl-header-row">' +
             '<div>' +
-                '<div class="dpl-gov-text">City Government of Pasig<br>Republic of the Philippines</div>' +
+                '<div class="dpl-gov-text">' + govHeaderLines + '</div>' +
                 '<div class="dpl-school-name">Pamantasan ng Lungsod ng Pasig</div>' +
             '</div>' +
         '</div>' +
@@ -58,34 +110,21 @@ function diplomaBuildPreviewTemplate(data) {
         '<p class="dpl-script-line" style="margin-top:0;">In testimony thereof, the seal of the University and the signatures of the Chairman of the</p>' +
         '<p class="dpl-script-line" style="margin-top:0;">Board of Regents, the University President, and the Registrar are hereunto affixed.</p>' +
         '<p class="dpl-footer-line">Given in Pasig City, Philippines this ' + diplomaEscHtml(formalIssueDate) + '.</p>' +
-
-        '<div class="dpl-bottom">' +
-            '<div class="dpl-left-copy">' +
-                '<div class="dpl-left-note">Certified text of the original:</div>' +
-                '<div class="dpl-left-name">FEDERICO C. NUEVA</div>' +
-                '<div class="dpl-left-role">University Registrar</div>' +
-            '</div>' +
-            '<div class="dpl-right-stack">' +
-                '<div class="dpl-signatures">' +
-                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">PROF. MARIANO L. CHING</span></div><div class="title">University Registrar</div></div>' +
-                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">AMB. ROSALINDA V. TIRONA</span></div><div class="title">University President</div></div>' +
-                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">HON. ROBERT C. EUSEBIO</span></div><div class="title">Chairman, Board of Regents</div></div>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
+        bottomMarkup;
 }
 
 function diplomaGetRowData(rowId) {
     var row = diplomaGetRow(rowId);
     if (!row) return null;
 
-    var cells = row.querySelectorAll('td');
+    var copySelect = row.querySelector('.diploma-copy-select');
     return {
-        studentNo: (cells[1] ? cells[1].textContent : '').trim(),
-        studentName: (cells[2] ? cells[2].textContent : '').trim(),
-        program: (cells[3] ? cells[3].textContent : '').trim(),
-        year: (cells[4] ? cells[4].textContent : '').trim(),
-        section: (cells[5] ? cells[5].textContent : '').trim(),
+        studentNo: diplomaGetCellText(row, '.diploma-cell-number'),
+        studentName: diplomaGetCellText(row, '.diploma-cell-name'),
+        program: diplomaGetCellText(row, '.diploma-cell-program'),
+        year: diplomaGetCellText(row, '.diploma-cell-year'),
+        section: diplomaGetCellText(row, '.diploma-cell-section'),
+        copyType: copySelect ? copySelect.value : 'print-2',
         issueDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     };
 }
@@ -194,6 +233,14 @@ function diplomaFilterTable(query) {
     diplomaSyncSelectAll();
 }
 
+function diplomaHandleCopyChange(selectEl) {
+    if (!selectEl) return;
+    var row = selectEl.closest('tr');
+    if (!row) return;
+
+    row.setAttribute('data-copy-type', selectEl.value || 'print-2');
+}
+
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('diploma-printing');
     document.body.classList.remove('diploma-preview-open');
@@ -278,26 +325,28 @@ function diplomaOpenEdit(rowId) {
     if (!row) return;
 
     diplomaCurrentRowId = rowId;
-    var cells = row.querySelectorAll('td');
-    document.getElementById('diplomaEditNumber').value = (cells[1] ? cells[1].textContent : '').trim();
-    document.getElementById('diplomaEditName').value = (cells[2] ? cells[2].textContent : '').trim();
-    document.getElementById('diplomaEditCourse').value = (cells[3] ? cells[3].textContent : '').trim();
-    document.getElementById('diplomaEditYear').value = (cells[4] ? cells[4].textContent : '').trim();
+    document.getElementById('diplomaEditNumber').value = diplomaGetCellText(row, '.diploma-cell-number');
+    document.getElementById('diplomaEditName').value = diplomaGetCellText(row, '.diploma-cell-name');
+    document.getElementById('diplomaEditCourse').value = diplomaGetCellText(row, '.diploma-cell-program');
+    document.getElementById('diplomaEditYear').value = diplomaGetCellText(row, '.diploma-cell-year');
     diplomaOpenModal('diplomaEditModal');
 }
 
 function diplomaSaveEdit() {
     var row = diplomaGetRow(diplomaCurrentRowId);
     if (!row) return;
-    var cells = row.querySelectorAll('td');
+    var numberCell = row.querySelector('.diploma-cell-number');
+    var nameCell = row.querySelector('.diploma-cell-name');
+    var programCell = row.querySelector('.diploma-cell-program');
+    var yearCell = row.querySelector('.diploma-cell-year');
 
-    if (cells[1]) cells[1].textContent = (document.getElementById('diplomaEditNumber').value || '').trim();
-    if (cells[2]) {
+    if (numberCell) numberCell.textContent = (document.getElementById('diplomaEditNumber').value || '').trim();
+    if (nameCell) {
         var updatedName = (document.getElementById('diplomaEditName').value || '').trim();
-        cells[2].innerHTML = '<button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(' + diplomaEscHtml(diplomaCurrentRowId) + ')">' + diplomaEscHtml(updatedName) + '</button>';
+        nameCell.innerHTML = '<button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(' + diplomaEscHtml(diplomaCurrentRowId) + ')">' + diplomaEscHtml(updatedName) + '</button>';
     }
-    if (cells[3]) cells[3].textContent = (document.getElementById('diplomaEditCourse').value || '').trim();
-    if (cells[4]) cells[4].textContent = (document.getElementById('diplomaEditYear').value || '').trim();
+    if (programCell) programCell.textContent = (document.getElementById('diplomaEditCourse').value || '').trim();
+    if (yearCell) yearCell.textContent = (document.getElementById('diplomaEditYear').value || '').trim();
 
     diplomaCloseModal('diplomaEditModal');
 }
@@ -328,3 +377,7 @@ document.addEventListener('click', function(event) {
 });
 
 window.addEventListener('scroll', diplomaCloseMenus, true);
+
+document.querySelectorAll('#diplomaTableBody .diploma-copy-select').forEach(function(selectEl) {
+    diplomaHandleCopyChange(selectEl);
+});
