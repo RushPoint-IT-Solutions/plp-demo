@@ -8,7 +8,7 @@
 }
 
 .registrar-body .cc-page {
-  font-size: 12pt;
+  font-size: 10pt;
   --cc-zoom: 1;
   --cc-scale: 1;
   display: flex;
@@ -37,7 +37,7 @@
   background: #fff;
   color: #000;
   font-weight: 700;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1;
   padding: 8px 10px;
   min-width: 44px;
@@ -64,7 +64,7 @@
 
 .registrar-body .cc-page-indicator {
   margin-left: 6px;
-  font-size: 12pt;
+  font-size: 10pt;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: #000;
@@ -106,7 +106,7 @@
 
 .registrar-body .cc-doc-header h2 {
   margin: 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.1;
   font-weight: 900;
   letter-spacing: 0.02em;
@@ -115,7 +115,7 @@
 
 .registrar-body .cc-doc-header p {
   margin: 1px 0 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
   font-weight: 700;
   color: #000;
@@ -127,7 +127,7 @@
 
 .registrar-body .cc-transaction-title {
   margin: 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
   font-weight: 900;
   letter-spacing: 0.02em;
@@ -137,7 +137,7 @@
 
 .registrar-body .cc-lead {
   margin: 2px 0 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.25;
   font-style: italic;
   color: #000;
@@ -162,7 +162,7 @@
   padding: 3px 5px;
   vertical-align: top;
   color: #000;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
   word-wrap: break-word;
   white-space: normal;
@@ -172,7 +172,7 @@
   width: 32%;
   text-transform: uppercase;
   background: #c8c8c8;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -204,8 +204,7 @@
 .registrar-body .cc-grid-table thead th {
   text-align: center;
   text-transform: uppercase;
-  font-size: 12pt;
-  font-weight: 800;
+  font-size: 10pt;
   line-height: 1.15;
   background: #c8c8c8;
 }
@@ -287,7 +286,7 @@
 
 .registrar-body .cc-cover-school-sub {
   margin: 3px 0 1.15in;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.2;
   font-style: italic;
 }
@@ -396,7 +395,7 @@
   .registrar-body .cc-sheet * {
     color: #000 !important;
     border-color: #000 !important;
-    font-size: 12pt !important;
+    font-size: 10pt !important;
     line-height: 1.2 !important;
   }
 }
