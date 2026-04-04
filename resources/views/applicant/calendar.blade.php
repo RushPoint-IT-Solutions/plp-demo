@@ -1,10 +1,10 @@
-@extends('layouts.faculty')
+@extends('layouts.applicant')
 
-@section('title', 'PLP - University Events Calendar')
+@section('title', 'PLP - Calendar')
 @section('page-title', 'UNIVERSITY EVENTS CALENDAR')
 
 @section('content')
-<div class="faculty-calendar-wrap events-page">
+<div class="faculty-calendar-wrap events-page applicant-consistent-page">
     <div class="cal-controls">
         <div class="cal-nav">
             <button class="cal-btn" id="prevMonthBtn" aria-label="Previous month">

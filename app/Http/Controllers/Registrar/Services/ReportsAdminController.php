@@ -18,7 +18,7 @@ class ReportsAdminController extends Controller
         $failingStudents = StudentSubjectGrade::query()
             ->whereNotNull('final_average')
             ->where('final_average', '>=', 3.0)
-            ->distinct('student_id')
+            ->distinct()
             ->count('student_id');
         $students = Student::query()->orderBy('name')->limit(200)->get(['id', 'student_no', 'name']);
 
@@ -51,8 +51,19 @@ class ReportsAdminController extends Controller
 
     public function taggingOfGraduates()
     {
-        $students = Student::query()->orderBy('name')->limit(300)->get(['id', 'student_no', 'name', 'program', 'year_level']);
-        $taggings = GraduateTagging::query()->whereIn('student_id', $students->pluck('id')->all())->get()->keyBy('student_id');
+        $students = Student::query()
+            ->orderBy('name')
+            ->paginate(10);
+
+        $studentIds = [];
+        foreach ($students->items() as $student) {
+            $studentIds[] = $student->id;
+        }
+
+        $taggings = GraduateTagging::query()
+            ->whereIn('student_id', $studentIds)
+            ->get()
+            ->keyBy('student_id');
 
         return view('registrar.services.reports-admin.tagging-of-graduates', compact('students', 'taggings'));
     }

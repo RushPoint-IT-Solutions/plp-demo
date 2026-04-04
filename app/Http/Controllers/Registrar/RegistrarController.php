@@ -99,8 +99,8 @@ class RegistrarController extends Controller
             ->with('applicationPreference')
             ->orderByDesc('updated_at')
             ->orderByDesc('id')
-            ->limit(300)
-            ->get();
+            ->paginate(10)
+            ->appends(request()->query());
 
         return view('registrar.process.application-process', compact('applicants'));
     }

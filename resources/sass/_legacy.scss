@@ -10961,6 +10961,26 @@ select.req-modal-input {
   font-size: 1rem;
 }
 
+.registrar-body #panel-exam-result .applicant-content-shell,
+.registrar-body #panel-exam-result .applicant-no-result,
+.registrar-body #panel-exam-result .applicant-result-box,
+.registrar-body #panel-exam-result .result-score {
+  text-align: center;
+}
+
+.registrar-body #panel-exam-result .applicant-result-box {
+  min-height: 310px;
+  justify-content: center;
+  align-items: center;
+}
+
+.registrar-body #panel-exam-result .applicant-no-result {
+  min-height: 310px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 1200px) {
   .applicant-section-title {
     font-size: 1.7rem;

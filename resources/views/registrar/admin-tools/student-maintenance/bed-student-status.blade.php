@@ -98,13 +98,7 @@
                 </table>
             </div>
 
-            <div class="bs-pager-row">
-                <div class="bs-page-list">
-                    <button type="button" class="bs-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
-                    <button type="button" class="bs-page-num active" aria-current="page">1</button>
-                    <button type="button" class="bs-page-btn" disabled aria-label="Next page">&rsaquo;</button>
-                </div>
-            </div>
+            <div class="app-table-pager"></div>
         </section>
     </div>
 </div>
@@ -177,6 +171,8 @@
     var bsRows = @json($bsRows ?? []);
     var bsUpdateTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-student-status.update', ['bedStudentStatus' => '__ID__']) }}';
     var bsDeleteTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-student-status.destroy', ['bedStudentStatus' => '__ID__']) }}';
+    var bsCurrentPage = 1;
+    var bsPageSize = 10;
 
     function bsBuildUrl(template, id) {
         return template.replace('__ID__', String(id));
@@ -283,6 +279,45 @@
         menu.classList.add('open');
     }
 
+    function bsRenderPager(totalRows) {
+        var mount = document.querySelector('.app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / bsPageSize));
+        if (bsCurrentPage > maxPage) {
+            bsCurrentPage = maxPage;
+        }
+
+        if (totalRows <= bsPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, bsCurrentPage - 2);
+        var end = Math.min(maxPage, bsCurrentPage + 2);
+        if (bsCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (bsCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === bsCurrentPage ? 'active' : '') + '" data-bs-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="BED student status pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-bs-page-prev="1" ' + (bsCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-bs-page-next="1" ' + (bsCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function bsRenderTable() {
         var tbody = document.getElementById('bsTableBody');
         if (!tbody) return;
@@ -291,11 +326,18 @@
 
         var rows = bsGetFilteredRows();
 
-        var html = rows.map(function(row, idx) {
+        var maxPage = Math.max(1, Math.ceil(rows.length / bsPageSize));
+        if (bsCurrentPage > maxPage) {
+            bsCurrentPage = 1;
+        }
+        var startIndex = (bsCurrentPage - 1) * bsPageSize;
+        var pageItems = rows.slice(startIndex, startIndex + bsPageSize);
+
+        var html = pageItems.map(function(row, idx) {
             var menuId = 'bsMenu' + idx;
             return '' +
                 '<tr>' +
-                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + (startIndex + idx + 1) + '</td>' +
                     '<td>' + bsEscapeHtml(row.studentId) + '</td>' +
                     '<td>' + bsEscapeHtml(row.name).toUpperCase() + '</td>' +
                     '<td>' + bsEscapeHtml(row.course) + '</td>' +
@@ -309,6 +351,7 @@
         }
 
         tbody.innerHTML = html + '<tr class="bs-total-row"><td colspan="6">Total Students: <strong>' + rows.length + '</strong></td></tr>';
+        bsRenderPager(rows.length);
     }
 
     function bsGetExportRows() {
@@ -501,19 +544,23 @@
         bsRenderTable();
     }
 
-    document.getElementById('bsSearchBtn').addEventListener('click', bsRenderTable);
+    document.getElementById('bsSearchBtn').addEventListener('click', function() {
+        bsCurrentPage = 1;
+        bsRenderTable();
+    });
     document.getElementById('bsSearch').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
+            bsCurrentPage = 1;
             bsRenderTable();
         }
     });
-    document.getElementById('bsGradeLevel').addEventListener('change', bsRenderTable);
-    document.getElementById('bsSection').addEventListener('change', bsRenderTable);
-    document.getElementById('bsSchoolYear').addEventListener('change', bsRenderTable);
-    document.getElementById('bsTerm').addEventListener('change', bsRenderTable);
-    document.getElementById('bsNoPayment').addEventListener('change', bsRenderTable);
-    document.getElementById('bsNoSection').addEventListener('change', bsRenderTable);
+    document.getElementById('bsGradeLevel').addEventListener('change', function() { bsCurrentPage = 1; bsRenderTable(); });
+    document.getElementById('bsSection').addEventListener('change', function() { bsCurrentPage = 1; bsRenderTable(); });
+    document.getElementById('bsSchoolYear').addEventListener('change', function() { bsCurrentPage = 1; bsRenderTable(); });
+    document.getElementById('bsTerm').addEventListener('change', function() { bsCurrentPage = 1; bsRenderTable(); });
+    document.getElementById('bsNoPayment').addEventListener('change', function() { bsCurrentPage = 1; bsRenderTable(); });
+    document.getElementById('bsNoSection').addEventListener('change', function() { bsCurrentPage = 1; bsRenderTable(); });
 
     document.getElementById('bsExportPdfBtn').addEventListener('click', bsExportPdf);
     document.getElementById('bsExportXlsBtn').addEventListener('click', bsExportXls);
@@ -545,6 +592,32 @@
 
     window.addEventListener('scroll', bsCloseActionMenus, true);
     window.addEventListener('scroll', bsCloseExportMenu, true);
+
+    document.querySelector('.app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-bs-page-prev]');
+        if (prev && bsCurrentPage > 1) {
+            bsCurrentPage -= 1;
+            bsRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-bs-page-next]');
+        if (next) {
+            var total = bsGetFilteredRows().length;
+            var maxPage = Math.max(1, Math.ceil(total / bsPageSize));
+            if (bsCurrentPage < maxPage) {
+                bsCurrentPage += 1;
+                bsRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-bs-page]');
+        if (pageBtn) {
+            bsCurrentPage = parseInt(pageBtn.getAttribute('data-bs-page'), 10) || 1;
+            bsRenderTable();
+        }
+    });
 
     bsRenderTable();
 </script>

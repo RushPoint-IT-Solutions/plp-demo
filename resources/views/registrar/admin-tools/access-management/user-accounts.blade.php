@@ -11,23 +11,23 @@
     <div class="ua-page">
         <section class="cfg-card ua-filter-card">
             <div class="ua-filter-layout">
-                <div class="ua-main-filters">
+                <div class="ua-main-filters" autocomplete="off">
                     <div class="ua-filter-grid">
                         <div class="ua-filter-item">
                             <label class="app-filter-label" for="uaStudentId">User ID</label>
-                            <input id="uaStudentId" type="text" class="app-filter-input" placeholder="Student ID">
+                            <input id="uaStudentId" type="text" class="app-filter-input" placeholder="Student ID" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
                         </div>
                         <div class="ua-filter-item">
                             <label class="app-filter-label" for="uaLastName">Last Name</label>
-                            <input id="uaLastName" type="text" class="app-filter-input" placeholder="Last Name">
+                            <input id="uaLastName" type="text" class="app-filter-input" placeholder="Last Name" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
                         </div>
                         <div class="ua-filter-item">
                             <label class="app-filter-label" for="uaFirstName">First Name</label>
-                            <input id="uaFirstName" type="text" class="app-filter-input" placeholder="First Name">
+                            <input id="uaFirstName" type="text" class="app-filter-input" placeholder="First Name" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
                         </div>
                         <div class="ua-filter-item ua-user-type">
                             <label class="app-filter-label" for="uaUserType">User Type</label>
-                            <select id="uaUserType" class="app-filter-select">
+                            <select id="uaUserType" class="app-filter-select" autocomplete="off">
                                 <option value="">All</option>
                                 <option value="Student">Student</option>
                                 <option value="Applicant">Applicant</option>
@@ -63,15 +63,9 @@
                     <tbody id="uaTableBody"></tbody>
                 </table>
             </div>
-            <div class="cfg-pagination ua-table-meta">
+            <div class="ua-table-meta">
                 <div class="ua-table-caption">Select a row or type a valid User ID to load Account Credentials.</div>
-                <div class="ua-table-page" aria-label="Pagination">
-                    <div class="ua-page-list">
-                        <button type="button" class="ua-page-btn" aria-label="Previous page" disabled>&lsaquo;</button>
-                        <button type="button" class="ua-page-num active" aria-current="page">1</button>
-                        <button type="button" class="ua-page-btn" aria-label="Next page" disabled>&rsaquo;</button>
-                    </div>
-                </div>
+                <div class="app-table-pager"></div>
             </div>
         </section>
 
@@ -150,6 +144,9 @@
 
     var uaSelectedUserId = '';
     var uaPendingDeletePk = '';
+    var uaCurrentPage = 1;
+    var uaPageSize = 10;
+    var uaFiltersApplied = false;
 
     function uaUpdateUrl(id) {
         return uaUpdateTemplate.replace('__ID__', String(id));
@@ -233,6 +230,12 @@
     }
 
     function uaGetFilteredUsers() {
+        if (!uaFiltersApplied) {
+            return uaUsers.map(function(user, index) {
+                return { user: user, index: index };
+            });
+        }
+
         var filters = uaGetFilters();
         return uaUsers
             .map(function(user, index) {
@@ -248,17 +251,64 @@
             });
     }
 
+    function uaRenderPager(totalRows) {
+        var mount = document.querySelector('.ua-table-meta .app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / uaPageSize));
+        if (uaCurrentPage > maxPage) {
+            uaCurrentPage = maxPage;
+        }
+
+        if (totalRows <= uaPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, uaCurrentPage - 2);
+        var end = Math.min(maxPage, uaCurrentPage + 2);
+        if (uaCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (uaCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === uaCurrentPage ? 'active' : '') + '" data-ua-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="User accounts pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-ua-page-prev="1" ' + (uaCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-ua-page-next="1" ' + (uaCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function uaRenderTable() {
         var body = document.getElementById('uaTableBody');
         if (!body) return;
 
-        var rows = uaGetFilteredUsers().map(function(item, rowIndex) {
+        var filtered = uaGetFilteredUsers();
+        var maxPage = Math.max(1, Math.ceil(filtered.length / uaPageSize));
+        if (uaCurrentPage > maxPage) {
+            uaCurrentPage = 1;
+        }
+        var startIndex = (uaCurrentPage - 1) * uaPageSize;
+        var pageItems = filtered.slice(startIndex, startIndex + uaPageSize);
+
+        var rows = pageItems.map(function(item, rowIndex) {
             var user = item.user;
             var index = item.index;
             var selectedClass = user.userId === uaSelectedUserId ? ' class="ua-selected-row"' : '';
             return '' +
                 '<tr data-ua-index="' + index + '" data-ua-user-id="' + uaEscapeHtml(user.userId) + '"' + selectedClass + '>' +
-                    '<td>' + (rowIndex + 1) + '</td>' +
+                    '<td>' + (startIndex + rowIndex + 1) + '</td>' +
                     '<td>' + uaEscapeHtml(user.userId) + '</td>' +
                     '<td>' + uaEscapeHtml(user.fullName) + '</td>' +
                     '<td>' + uaEscapeHtml(user.userType) + '</td>' +
@@ -272,6 +322,7 @@
         }
 
         body.innerHTML = rows;
+        uaRenderPager(filtered.length);
         uaHighlightSelectedRow();
     }
 
@@ -396,15 +447,64 @@
         document.getElementById('uaLastName').value = '';
         document.getElementById('uaFirstName').value = '';
         document.getElementById('uaUserType').value = '';
+        uaFiltersApplied = false;
+        uaCurrentPage = 1;
         uaRenderTable();
     }
 
     document.getElementById('uaSearchBtn').addEventListener('click', function() {
+        uaFiltersApplied = true;
+        uaCurrentPage = 1;
         uaRenderTable();
         var typedId = uaNormalize(document.getElementById('uaStudentId').value);
         if (typedId) {
             var match = uaUsers.find(function(user) { return uaNormalize(user.userId) === typedId; });
             if (match) uaFillCredentials(match);
+        }
+    });
+
+    ['uaStudentId', 'uaLastName', 'uaFirstName'].forEach(function(inputId) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('uaSearchBtn').click();
+            }
+        });
+    });
+
+    function uaForceResetFilters() {
+        document.getElementById('uaStudentId').value = '';
+        document.getElementById('uaLastName').value = '';
+        document.getElementById('uaFirstName').value = '';
+        document.getElementById('uaUserType').value = '';
+        uaFiltersApplied = false;
+    }
+
+    document.querySelector('.ua-table-meta .app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-ua-page-prev]');
+        if (prev && uaCurrentPage > 1) {
+            uaCurrentPage -= 1;
+            uaRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-ua-page-next]');
+        if (next) {
+            var total = uaGetFilteredUsers().length;
+            var maxPage = Math.max(1, Math.ceil(total / uaPageSize));
+            if (uaCurrentPage < maxPage) {
+                uaCurrentPage += 1;
+                uaRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-ua-page]');
+        if (pageBtn) {
+            uaCurrentPage = parseInt(pageBtn.getAttribute('data-ua-page'), 10) || 1;
+            uaRenderTable();
         }
     });
 
@@ -483,7 +583,21 @@
         }
     });
 
+    // Ensure browser autofill does not keep stale filter values across visits.
+    uaForceResetFilters();
+
+    // Some browsers apply credential autofill after script execution.
+    window.setTimeout(uaForceResetFilters, 80);
+    window.setTimeout(uaForceResetFilters, 320);
+    window.setTimeout(uaForceResetFilters, 900);
+    window.addEventListener('pageshow', function() {
+        uaForceResetFilters();
+        uaCurrentPage = 1;
+        uaRenderTable();
+    });
+
     uaSetSelectedSummary(null);
+    uaCurrentPage = 1;
     uaRenderTable();
 </script>
 @endpush

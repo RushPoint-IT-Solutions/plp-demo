@@ -51,13 +51,8 @@
                 </table>
             </div>
 
-            <div class="cfg-pagination ra-table-meta">
-                <div class="ra-page-list">
-                    <button type="button" class="ra-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
-                    <button type="button" class="ra-page-num active" aria-current="page">1</button>
-                    <button type="button" class="ra-page-btn" disabled aria-label="Next page">&rsaquo;</button>
-                </div>
-            </div>
+            <div class="ra-table-meta"></div>
+            <div class="app-table-pager"></div>
         </section>
     </div>
 </div>
@@ -165,6 +160,8 @@
     };
 
     var raActiveIndex = null;
+    var raCurrentPage = 1;
+    var raPageSize = 10;
 
     function raEscapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -264,11 +261,58 @@
             });
     }
 
+    function raRenderPager(totalRows) {
+        var mount = document.querySelector('.app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / raPageSize));
+        if (raCurrentPage > maxPage) {
+            raCurrentPage = maxPage;
+        }
+
+        if (totalRows <= raPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, raCurrentPage - 2);
+        var end = Math.min(maxPage, raCurrentPage + 2);
+        if (raCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (raCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === raCurrentPage ? 'active' : '') + '" data-ra-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="Report access pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-ra-page-prev="1" ' + (raCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-ra-page-next="1" ' + (raCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function raRenderTable() {
         var tbody = document.getElementById('raTableBody');
         if (!tbody) return;
 
-        var rows = raGetFilteredUsers().map(function(record) {
+        var filtered = raGetFilteredUsers();
+        var maxPage = Math.max(1, Math.ceil(filtered.length / raPageSize));
+        if (raCurrentPage > maxPage) {
+            raCurrentPage = 1;
+        }
+        var startIndex = (raCurrentPage - 1) * raPageSize;
+        var pageItems = filtered.slice(startIndex, startIndex + raPageSize);
+
+        var rows = pageItems.map(function(record) {
             var user = record.item;
             return '' +
                 '<tr>' +
@@ -288,6 +332,7 @@
         }
 
         tbody.innerHTML = rows;
+        raRenderPager(filtered.length);
     }
 
     function raSetGroupToggle(masterId, listId) {
@@ -391,14 +436,47 @@
         });
     }
 
-    document.getElementById('raSearchBtn').addEventListener('click', raRenderTable);
+    document.getElementById('raSearchBtn').addEventListener('click', function() {
+        raCurrentPage = 1;
+        raRenderTable();
+    });
     document.getElementById('raSearch').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
+            raCurrentPage = 1;
             raRenderTable();
         }
     });
-    document.getElementById('raReportType').addEventListener('change', raRenderTable);
+    document.getElementById('raReportType').addEventListener('change', function() {
+        raCurrentPage = 1;
+        raRenderTable();
+    });
+
+    document.querySelector('.app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-ra-page-prev]');
+        if (prev && raCurrentPage > 1) {
+            raCurrentPage -= 1;
+            raRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-ra-page-next]');
+        if (next) {
+            var total = raGetFilteredUsers().length;
+            var maxPage = Math.max(1, Math.ceil(total / raPageSize));
+            if (raCurrentPage < maxPage) {
+                raCurrentPage += 1;
+                raRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-ra-page]');
+        if (pageBtn) {
+            raCurrentPage = parseInt(pageBtn.getAttribute('data-ra-page'), 10) || 1;
+            raRenderTable();
+        }
+    });
 
     document.addEventListener('click', function(event) {
         var actionBtn = event.target.closest('[data-ra-index]');

@@ -1438,6 +1438,82 @@
   display: table-cell !important;
 }
 
+.registrar-body .page-services-faculty-loads .rfl-footer {
+  justify-content: flex-end !important;
+}
+
+.registrar-body .page-services-faculty-loads .rfl-pagination {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.registrar-body .page-services-faculty-loads .rfl-pagination nav,
+.registrar-body .page-services-faculty-loads .rfl-pagination .pagination {
+  margin: 0;
+}
+
+.registrar-body .app-table-pager {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.registrar-body .app-table-pager nav,
+.registrar-body .app-table-pager .pagination {
+  margin: 0;
+}
+
+.page-user-accounts .ua-table-meta {
+  flex-wrap: nowrap;
+}
+
+.page-user-accounts .ua-table-meta .app-table-pager {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.registrar-body .pagination {
+  gap: 6px;
+}
+
+.registrar-body .pagination .page-item .page-link {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid #ced7d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2d4b40;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.registrar-body .pagination .page-item .page-link:hover {
+  background: #f2f6f4;
+  border-color: #b7c8bf;
+  color: #27453a;
+}
+
+.registrar-body .pagination .page-item.active .page-link,
+.registrar-body .pagination .page-item.active .page-link:hover {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
+}
+
+.registrar-body .pagination .page-item.disabled .page-link {
+  opacity: .45;
+  background: #ffffff;
+  border-color: #ced7d2;
+  color: #2d4b40;
+}
+
 .registrar-body .app-table tr[class$="-total-row"]:hover,
 .registrar-body .app-table tr[class$="-totals-row"]:hover,
 .registrar-body .app-table tr[class*="-total-"][class$="-row"]:hover,

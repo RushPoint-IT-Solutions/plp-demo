@@ -325,6 +325,8 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
     Route::post('/application-form/continue', 'Applicant\ApplicantController@continueApplicationForm')->name('application-form.continue');
     Route::post('/application-form', 'Applicant\ApplicantController@saveApplicationForm')->name('application-form.save');
     Route::get('/schedule-of-exam', 'Applicant\ApplicantController@scheduleOfExam')->name('schedule-of-exam');
+    Route::get('/calendar', 'Applicant\ApplicantController@calendar')->name('calendar');
+    Route::get('/correspondence', 'Applicant\ApplicantController@correspondence')->name('correspondence');
     Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');
 });
 

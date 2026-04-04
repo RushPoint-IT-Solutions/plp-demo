@@ -6,6 +6,7 @@ use App\Applicant;
 use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
 use App\ApplicantFamilyBackground;
+use App\AcademicCalendarEvent;
 use App\Course;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveApplicantStep1Request;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class ApplicantController extends Controller
 {
@@ -571,6 +573,45 @@ class ApplicantController extends Controller
 
         return redirect()->route('applicant.application-form')
             ->with('success', 'Temporary reset complete. You can start from Step 1.');
+    }
+
+    /**
+     * Schedule of Exam – shows exam permit + reminders.
+     */
+    public function calendar()
+    {
+        $applicant = $this->getApplicant();
+        $calendarEvents = [];
+
+        if (Schema::hasTable('academic_calendar_events')) {
+            $calendarEvents = AcademicCalendarEvent::query()
+                ->where('is_active', true)
+                ->orderBy('event_date')
+                ->get()
+                ->map(function ($event) {
+                    return [
+                        'date' => optional($event->event_date)->format('Y-m-d'),
+                        'type' => strtolower((string) $event->event_type) === 'holiday' ? 'holiday' : 'event',
+                        'label' => (string) $event->title,
+                    ];
+                })
+                ->filter(function ($event) {
+                    return !empty($event['date']) && !empty($event['label']);
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('applicant.calendar', compact('applicant', 'calendarEvents'));
+    }
+
+    /**
+     * Correspondence – shows acceptance/review notice.
+     */
+    public function correspondence()
+    {
+        $applicant = $this->getApplicant()->load('applicationPreference.course');
+        return view('applicant.correspondence', compact('applicant'));
     }
 
     /**

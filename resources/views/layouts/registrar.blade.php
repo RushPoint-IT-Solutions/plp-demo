@@ -104,6 +104,7 @@
 
     <!-- Custom JS -->
     <script src="{{ asset('js/script.js') }}?v={{ file_exists(public_path('js/script.js')) ? filemtime(public_path('js/script.js')) : time() }}"></script>
+    <script src="{{ asset('js/registrar-table-pagination.js') }}?v={{ file_exists(public_path('js/registrar-table-pagination.js')) ? filemtime(public_path('js/registrar-table-pagination.js')) : time() }}"></script>
 
     <!-- Sidebar JS -->
     <script src="{{ asset('js/registrar-layout.js') }}?v={{ file_exists(public_path('js/registrar-layout.js')) ? filemtime(public_path('js/registrar-layout.js')) : time() }}"></script>

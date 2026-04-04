@@ -51,13 +51,7 @@
                 </table>
             </div>
 
-            <div class="bd-pager-row">
-                <div class="bd-page-list">
-                    <button type="button" class="bd-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
-                    <button type="button" class="bd-page-num active" aria-current="page">1</button>
-                    <button type="button" class="bd-page-btn" disabled aria-label="Next page">&rsaquo;</button>
-                </div>
-            </div>
+            <div class="app-table-pager"></div>
         </section>
     </div>
 </div>
@@ -118,6 +112,8 @@
     var bdStoreUrl = '{{ route('registrar.admin-tools.student-maintenance.bed-days.store') }}';
     var bdUpdateTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-days.update', ['bedDay' => '__ID__']) }}';
     var bdDeleteTemplate = '{{ route('registrar.admin-tools.student-maintenance.bed-days.destroy', ['bedDay' => '__ID__']) }}';
+    var bdCurrentPage = 1;
+    var bdPageSize = 10;
 
     function bdBuildUrl(template, id) {
         return template.replace('__ID__', String(id));
@@ -204,17 +200,63 @@
         menu.classList.add('open');
     }
 
+    function bdRenderPager(totalRows) {
+        var mount = document.querySelector('.app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / bdPageSize));
+        if (bdCurrentPage > maxPage) {
+            bdCurrentPage = maxPage;
+        }
+
+        if (totalRows <= bdPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, bdCurrentPage - 2);
+        var end = Math.min(maxPage, bdCurrentPage + 2);
+        if (bdCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (bdCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === bdCurrentPage ? 'active' : '') + '" data-bd-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="BED days pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-bd-page-prev="1" ' + (bdCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-bd-page-next="1" ' + (bdCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function bdRenderTable() {
         var tbody = document.getElementById('bdTableBody');
         if (!tbody) return;
 
         bdCloseActionMenus();
 
-        var html = bdRows.map(function(row, idx) {
+        var maxPage = Math.max(1, Math.ceil(bdRows.length / bdPageSize));
+        if (bdCurrentPage > maxPage) {
+            bdCurrentPage = 1;
+        }
+        var startIndex = (bdCurrentPage - 1) * bdPageSize;
+        var pageItems = bdRows.slice(startIndex, startIndex + bdPageSize);
+
+        var html = pageItems.map(function(row, idx) {
             var menuId = 'bdMenu' + idx;
             return '' +
                 '<tr>' +
-                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + (startIndex + idx + 1) + '</td>' +
                     '<td>' + bdEscapeHtml(row.sy) + '</td>' +
                     '<td>' + bdEscapeHtml(row.sem) + '</td>' +
                     '<td>' + bdEscapeHtml(row.month) + '</td>' +
@@ -228,6 +270,7 @@
         }
 
         tbody.innerHTML = html + '<tr class="bd-total-row"><td colspan="6">Total Records: <strong>' + bdRows.length + '</strong></td></tr>';
+        bdRenderPager(bdRows.length);
     }
 
     function bdOpenEditModal(id) {
@@ -351,6 +394,31 @@
     });
 
     window.addEventListener('scroll', bdCloseActionMenus, true);
+
+    document.querySelector('.app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-bd-page-prev]');
+        if (prev && bdCurrentPage > 1) {
+            bdCurrentPage -= 1;
+            bdRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-bd-page-next]');
+        if (next) {
+            var maxPage = Math.max(1, Math.ceil(bdRows.length / bdPageSize));
+            if (bdCurrentPage < maxPage) {
+                bdCurrentPage += 1;
+                bdRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-bd-page]');
+        if (pageBtn) {
+            bdCurrentPage = parseInt(pageBtn.getAttribute('data-bd-page'), 10) || 1;
+            bdRenderTable();
+        }
+    });
 
     bdRenderTable();
 </script>

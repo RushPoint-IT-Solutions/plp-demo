@@ -21,7 +21,7 @@ class FacultyLoadsController extends Controller
                     ->orWhere('name', 'like', '%' . $search . '%');
             })
             ->orderBy('name')
-            ->paginate(25)
+            ->paginate(10)
             ->appends($request->query());
 
         return view('registrar.services.classroom-faculty.faculty-loads.index', compact('faculties', 'search'));
@@ -55,8 +55,12 @@ class FacultyLoadsController extends Controller
 
         $assignedSubjects = Subject::query()
             ->where('faculty_id', $faculty->id)
-            ->when($selectedSchoolYear !== '', fn($q) => $q->where('school_year', $selectedSchoolYear))
-            ->when($selectedSemester !== '', fn($q) => $q->where('semester', $selectedSemester))
+            ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
+                return $q->where('school_year', $selectedSchoolYear);
+            })
+            ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
+                return $q->where('semester', $selectedSemester);
+            })
             ->orderByRaw('COALESCE(course, "")')
             ->orderByRaw('COALESCE(year_section, "")')
             ->orderBy('code')
@@ -64,8 +68,12 @@ class FacultyLoadsController extends Controller
 
         $availableSubjects = Subject::query()
             ->whereNull('faculty_id')
-            ->when($selectedSchoolYear !== '', fn($q) => $q->where('school_year', $selectedSchoolYear))
-            ->when($selectedSemester !== '', fn($q) => $q->where('semester', $selectedSemester))
+            ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
+                return $q->where('school_year', $selectedSchoolYear);
+            })
+            ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
+                return $q->where('semester', $selectedSemester);
+            })
             ->orderBy('code')
             ->get();
 

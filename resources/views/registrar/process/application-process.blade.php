@@ -150,7 +150,7 @@
 
     {{-- Table --}}
     <div class="app-table-wrap table-responsive">
-        <table class="app-table">
+        <table class="app-table" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th>#</th>
@@ -193,7 +193,7 @@
                     data-exam-result-status="{{ e((string) ($applicant->exam_result_status ?: 'Pending')) }}"
                     data-exam-score="{{ $applicant->exam_score !== null ? $applicant->exam_score : '' }}"
                 >
-                    <td>{{ $index + 1 }}</td>
+                    <td>{{ ($applicants->firstItem() ?? 1) + $index }}</td>
                     <td>{{ $applicant->applicant_id }}</td>
                     <td>{{ $displayName ?: 'N/A' }}</td>
                     <td>{{ $programLabel }}</td>
@@ -208,6 +208,10 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    <div class="app-table-pager">
+        {{ $applicants->links() }}
     </div>
 
 </div>
@@ -250,7 +254,7 @@
                     <label>Time</label>
                     <input type="time" id="scheduleExamTime" class="app-filter-input" style="width:100%;">
                 </div>
-                <div class="sched-field-group flex-grow">
+                <div class="sched-field-group sched-field-group--venue">
                     <label>Venue</label>
                     <input type="text" id="scheduleExamVenue" placeholder="Room #123">
                 </div>
@@ -290,26 +294,13 @@
 
     {{-- Exam Result --}}
     <div class="applicant-panel" id="panel-exam-result">
-        <div class="apc-card">
-            <div class="apc-grid apc-grid--three">
-                <div class="apc-field">
-                    <label class="apc-label">Result Status</label>
-                    <select class="apc-select" id="examResultStatus">
-                        <option value="Pending">Pending</option>
-                        <option value="Passed">Passed</option>
-                        <option value="Failed">Failed</option>
-                    </select>
-                </div>
-                <div class="apc-field">
-                    <label class="apc-label">Score</label>
-                    <input type="number" class="apc-input" id="examResultScore" min="0" max="100" step="0.01" placeholder="0 - 100" />
-                </div>
-                <div class="apc-field apc-field--save-only">
-                    <label class="apc-label">Action</label>
-                    <button type="button" class="apc-btn apc-btn--save" id="saveExamResultBtn">Save</button>
-                </div>
+        <div class="student-table-wrapper applicant-content-shell">
+            <div class="applicant-result-box" id="examResultCard" style="display:none;">
+                <div class="result-status-badge" id="examResultBadge">PENDING</div>
+                <p class="result-score" id="examResultScoreLine" style="display:none;">Score: <strong id="examResultScoreText"></strong></p>
+                <p class="result-score" id="examResultMessage" style="margin-top:8px;"></p>
             </div>
-            <div id="examResultFeedback" style="margin-top: 8px; color:#444;"></div>
+            <div class="applicant-no-result" id="examResultNoData" style="padding:20px; color:#555;">No exam result is available yet.</div>
         </div>
     </div>
 
