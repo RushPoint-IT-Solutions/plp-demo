@@ -154,6 +154,7 @@
         <div class="se-section">
             <div class="se-subject-title">Current Enrolled Subjects:</div>
             <div class="se-subject-tools">
+                <div class="se-current-section-inline">Section: <strong id="seCurrentSectionLabel">BSIT 4-A</strong></div>
                 <button type="button" id="seBtnCurrentEdit" class="se-tool-btn se-tool-btn-edit" onclick="openSubjectRowModal('edit', 'seChangeFromTable')">Edit Selected</button>
                 <button type="button" id="seBtnReplaceCatalog" class="pf-btn-new se-tool-btn" onclick="changeSelectedFromCatalog()" title="Replace one selected enrolled row using one selected catalog row">Replace With Catalog</button>
                 <button type="button" id="seBtnDropCurrent" class="se-tool-btn se-tool-btn-danger" onclick="dropSelectedCurrentSubjects()">Drop Selected</button>
@@ -177,7 +178,7 @@
                             <th>Description</th>
                             <th>Adjustment</th>
                             <th>Units</th>
-                            <th>Schedule (BlockSection-SectionCode-Schedule)</th>
+                            <th>Schedule</th>
                             <th>Enrolled by</th>
                         </tr>
                     </thead>
@@ -953,6 +954,74 @@ function splitScheduleEntries(rawValue) {
     });
 }
 
+function parseEnrolledScheduleEntry(entry) {
+    var clean = String(entry || '').replace(/\s+/g, ' ').trim();
+    var section = '';
+    var schedule = clean;
+
+    if (clean.indexOf('|') !== -1) {
+        var pipeParts = clean.split('|').map(function (part) { return part.trim(); });
+        if (pipeParts.length >= 3) {
+            section = pipeParts[1] || '';
+            schedule = pipeParts.slice(2).join(' | ').trim();
+        }
+    } else {
+        var dashParts = clean.split(/\s-\s/);
+        if (dashParts.length >= 3) {
+            section = (dashParts[1] || '').trim();
+            schedule = dashParts.slice(2).join(' - ').trim();
+        }
+    }
+
+    return {
+        section: section,
+        schedule: schedule || clean
+    };
+}
+
+function formatScheduleDisplayText(value) {
+    var text = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!text) return text;
+
+    // Format day token as "DAY - schedule" for cleaner readability.
+    if (/^[A-Z]{1,3}\s*-\s*/.test(text)) {
+        return text;
+    }
+
+    var m = text.match(/^([A-Z]{1,3})\s+(.+)$/);
+    if (m) {
+        return m[1] + ' - ' + m[2];
+    }
+
+    return text;
+}
+
+function updateEnrolledSectionBanner() {
+    var sectionLabel = document.getElementById('seCurrentSectionLabel');
+    if (!sectionLabel) return;
+
+    var rows = Array.from(document.querySelectorAll('#seChangeFromTable tbody tr')).filter(function (row) {
+        return !row.classList.contains('se-total-units-row') && !row.classList.contains('se-section-info-row');
+    });
+
+    var sectionText = 'N/A';
+
+    for (var i = 0; i < rows.length; i++) {
+        var scheduleCell = rows[i].children[5];
+        var raw = getScheduleTextFromCell(scheduleCell);
+        var entries = splitScheduleEntries(raw);
+        if (!entries.length) continue;
+
+        var parsed = parseEnrolledScheduleEntry(entries[0]);
+        if (parsed.section) {
+            sectionText = parsed.section;
+            break;
+        }
+    }
+
+    sectionLabel.textContent = sectionText;
+}
+
 function renderEnrolledScheduleCell(cell, rawValue) {
     if (!cell) return;
 
@@ -968,11 +1037,14 @@ function renderEnrolledScheduleCell(cell, rawValue) {
     }
 
     entries.forEach(function (entry) {
+        var parsed = parseEnrolledScheduleEntry(entry);
         var line = document.createElement('div');
         line.className = 'se-schedule-line';
-        line.textContent = entry;
+        line.textContent = formatScheduleDisplayText(parsed.schedule);
         cell.appendChild(line);
     });
+
+    updateEnrolledSectionBanner();
 }
 
 function renderCatalogScheduleCell(cell, rawValue) {
@@ -1042,7 +1114,7 @@ function getSelectedRows(tableId) {
     var table = getSubjectTable(tableId);
     if (!table) return [];
     return Array.from(table.querySelectorAll('tbody tr')).filter(function (row) {
-        if (row.classList.contains('se-total-units-row')) return false;
+        if (row.classList.contains('se-total-units-row') || row.classList.contains('se-section-info-row')) return false;
         var cb = row.querySelector('input[type="checkbox"]');
         return cb && cb.checked;
     });
@@ -1170,7 +1242,7 @@ function updateCurrentUnitsTotal() {
     var total = 0;
     var rows = table.querySelectorAll('tbody tr');
     rows.forEach(function (row) {
-        if (row.classList.contains('se-total-units-row')) return;
+        if (row.classList.contains('se-total-units-row') || row.classList.contains('se-section-info-row')) return;
         var unitsText = (row.children[4] && row.children[4].innerText || '0').trim();
         var units = parseFloat(unitsText);
         if (!isNaN(units)) total += units;
@@ -1328,6 +1400,7 @@ function sortEnrollmentRows() {
 updateEnrollmentTotal();
 filterCatalogRows();
 updateSubjectActionStates();
+updateEnrolledSectionBanner();
 
 (function formatInitialCurrentSchedules() {
     var rows = document.querySelectorAll('#seChangeFromTable tbody tr:not(.se-total-units-row)');
