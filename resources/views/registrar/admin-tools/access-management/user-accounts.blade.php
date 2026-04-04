@@ -32,8 +32,6 @@
                                 <option value="Student">Student</option>
                                 <option value="Applicant">Applicant</option>
                                 <option value="Registrar">Registrar</option>
-                                <option value="Accounting">Accounting</option>
-                                <option value="Cashier">Cashier</option>
                                 <option value="Faculty">Faculty</option>
                             </select>
                         </div>
@@ -87,16 +85,25 @@
                     <span class="ua-selected-label">User Type</span>
                     <span class="ua-selected-value" id="uaSelectedUserType">-</span>
                 </div>
+                <div class="ua-selected-item">
+                    <span class="ua-selected-label">Email</span>
+                    <span class="ua-selected-value" id="uaSelectedUserEmail">-</span>
+                </div>
+            </div>
+
+            <div class="ua-autofill-trap" aria-hidden="true">
+                <input type="text" tabindex="-1" autocomplete="username">
+                <input type="password" tabindex="-1" autocomplete="current-password">
             </div>
 
             <div class="ua-form-grid">
                 <label class="ua-form-label" for="uaFormUserId">User ID</label>
-                <input id="uaFormUserId" type="text" class="app-filter-input" placeholder="User ID">
+                <input id="uaFormUserId" type="text" class="app-filter-input" placeholder="User ID" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 <div class="ua-form-note">Type existing User ID and press Enter to auto-fill.</div>
 
                 <label class="ua-form-label" for="uaFormPassword">Password</label>
                 <div class="ua-password-wrap">
-                    <input id="uaFormPassword" type="password" class="app-filter-input" placeholder="Password">
+                    <input id="uaFormPassword" type="password" class="app-filter-input" placeholder="Password" name="ua_new_password_manual" autocomplete="new-password" readonly data-lpignore="true" data-1p-ignore="true">
                     <button type="button" class="ua-pass-toggle" id="uaPasswordToggle" aria-label="Show password" title="Show/Hide Password">
                         <svg class="ua-eye-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         <svg class="ua-eye-off" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-6.94"></path><path d="M1 1l22 22"></path><path d="M9.9 4.24A10.93 10.93 0 0 1 12 4c7 0 11 8 11 8a21.72 21.72 0 0 1-3.17 4.66"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path></svg>
@@ -104,8 +111,12 @@
                 </div>
                 <div class="ua-form-note">Note: leave it blank if there is no changes in his/her password.</div>
 
+                <label class="ua-form-label" for="uaFormEmail">Email</label>
+                <input id="uaFormEmail" type="email" class="app-filter-input" placeholder="Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <div class="ua-form-note">Email will auto-preview when you select a user account.</div>
+
                 <label class="ua-form-label" for="uaFormName">Full Name (LN, FN MI)</label>
-                <input id="uaFormName" type="text" class="app-filter-input" placeholder="Full Name">
+                <input id="uaFormName" type="text" class="app-filter-input" placeholder="Full Name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 <div class="ua-form-note">You can also type full name to find matching account.</div>
 
                 <label class="setup-checkbox-label ua-inactive-row" for="uaInactive">
@@ -120,6 +131,29 @@
                 <button type="button" class="req-btn-cancel" id="uaCancelBtn">Cancel</button>
                 <button type="button" class="req-btn-save" id="uaSaveBtn">Save</button>
             </div>
+        </section>
+
+        <section class="cfg-card ua-access-card" id="uaAccessCard" style="display:none;">
+            <div class="cfg-card-head">
+                <h3>Account Access Permissions</h3>
+            </div>
+            <div class="ua-access-meta">
+                <div class="ua-access-user-note" id="uaAccessUserNote">No user selected. Select a row to preview/edit access permissions.</div>
+                <div class="ua-access-copy-wrap">
+                    <label class="app-filter-label" for="uaCopyAccessFrom">Copy Access From</label>
+                    <select id="uaCopyAccessFrom" class="app-filter-select">
+                        <option value="">- select user -</option>
+                    </select>
+                    <button type="button" class="ua-copy-access-btn" id="uaCopyAccessBtn">Copy</button>
+                </div>
+            </div>
+
+            <div class="ua-access-quick-wrap">
+                <div class="ua-access-quick-title">Quick Access Options</div>
+                <div class="ua-access-quick-options" id="uaAccessQuickOptions"></div>
+            </div>
+            <div class="ua-access-grid" id="uaAccessGrid"></div>
+            <div class="ua-access-footnote">UI-only preview for now. Access values are kept in-page until backend mapping is wired.</div>
         </section>
     </div>
 </div>
@@ -147,6 +181,64 @@
     var uaCurrentPage = 1;
     var uaPageSize = 10;
     var uaFiltersApplied = false;
+    var uaAccessStateByUserId = {};
+    var uaAccessQuickToggleItems = [
+        'Accept Pre-requisite Subjects and Overload Units',
+        'Accept Student with balance (AMS Registration)',
+        'Can Add Elective Subjects (AMS Registration / Student Enrollment)',
+        'Accept Student with balance (Student Enrollment)',
+        'Student Enrollment Config',
+        'Faculty Loading Config',
+        'Can Override Deficiency',
+        'Can Accept Conflict Schedule',
+        'Can Change Professor (Grading Sheet Module)',
+        'Can Dissolved Section',
+        'Can approve gradesheet',
+        'Can delete/edit subject in student grade file',
+        'Can Delete/Edit Email Sender'
+    ];
+    var uaAccessGroups = [
+        {
+            key: 'process',
+            title: 'PROCESS',
+            items: [
+                'Application Process', 'Application Form', 'Documents Submitted', 'Schedule of Exam',
+                'Medical Clearance', 'Exam Result', 'Approval', 'Applicant Status',
+                'Citizenship', 'Religion', 'Exam Category', 'Exam List',
+                'Approval Status', 'Document List', 'Batch Image Upload', 'Schools',
+                'Admissions Report'
+            ]
+        },
+        {
+            key: 'registrar',
+            title: 'REGISTRAR',
+            items: [
+                'Program File', 'Subject File', 'Curriculum File', 'Pre-requisites', 'Room File',
+                'Section Offering', 'Pre-Registration', 'Slot Monitoring', 'Student Enrollment',
+                'Section Merging', 'Grading Sheet', 'Comments', 'Conducts', 'Evaluation',
+                'Clinic Records', 'Letter Grade Setup', 'STO Tracker', 'Alumni Tracker'
+            ]
+        },
+        {
+            key: 'services',
+            title: 'SERVICES',
+            items: [
+                'Messaging', 'Class List', 'Grading System', 'Grading Periods', 'Grading Components',
+                'Academic Reports', 'Faculty Loads', 'Change Password', 'Deficiency', 'Attendance',
+                'Student Discipline', 'Family', 'Transmutation', 'Certifications', 'Guidance Reports',
+                'Deans Reports', 'Senior High School Reports', 'Conduct Grades', 'Tagging of Graduates'
+            ]
+        },
+        {
+            key: 'admin_tools',
+            title: 'ADMIN TOOLS',
+            items: [
+                'Configuration', 'Admission Config', 'User Accounts', 'Faculty File', 'Academic Calendar',
+                'Student Profile', 'Student Grade File', 'Senior High School Enrollment', 'Report Access',
+                'BED Student Status', 'BED Days', 'Announcement', 'Student Update', 'Shipboard Training Enrollment'
+            ]
+        }
+    ];
 
     function uaUpdateUrl(id) {
         return uaUpdateTemplate.replace('__ID__', String(id));
@@ -225,18 +317,20 @@
             studentId: uaNormalize(document.getElementById('uaStudentId').value),
             lastName: uaNormalize(document.getElementById('uaLastName').value),
             firstName: uaNormalize(document.getElementById('uaFirstName').value),
-            userType: document.getElementById('uaUserType').value
+            userType: uaNormalize(document.getElementById('uaUserType').value)
         };
     }
 
     function uaGetFilteredUsers() {
-        if (!uaFiltersApplied) {
+        var filters = uaGetFilters();
+        var hasActiveFilters = !!(filters.studentId || filters.lastName || filters.firstName || filters.userType);
+
+        if (!hasActiveFilters) {
             return uaUsers.map(function(user, index) {
                 return { user: user, index: index };
             });
         }
 
-        var filters = uaGetFilters();
         return uaUsers
             .map(function(user, index) {
                 return { user: user, index: index };
@@ -246,7 +340,7 @@
                 var idMatch = !filters.studentId || uaNormalize(user.userId).indexOf(filters.studentId) !== -1;
                 var lastMatch = !filters.lastName || uaNormalize(user.lastName).indexOf(filters.lastName) !== -1;
                 var firstMatch = !filters.firstName || uaNormalize(user.firstName).indexOf(filters.firstName) !== -1;
-                var typeMatch = !filters.userType || user.userType === filters.userType;
+                var typeMatch = !filters.userType || uaNormalize(user.userType) === filters.userType;
                 return idMatch && lastMatch && firstMatch && typeMatch;
             });
     }
@@ -330,6 +424,7 @@
         document.getElementById('uaSelectedUserName').textContent = user ? user.fullName : '-';
         document.getElementById('uaSelectedUserId').textContent = user ? user.userId : '-';
         document.getElementById('uaSelectedUserType').textContent = user ? user.userType : '-';
+        document.getElementById('uaSelectedUserEmail').textContent = user && user.email ? user.email : '-';
     }
 
     function uaFillCredentials(user) {
@@ -337,10 +432,25 @@
         uaSelectedUserId = user.userId;
         document.getElementById('uaFormUserId').value = user.userId;
         document.getElementById('uaFormName').value = user.fullName;
+        document.getElementById('uaFormEmail').value = user.email || '';
         document.getElementById('uaFormPassword').value = '';
+        document.getElementById('uaFormPassword').readOnly = true;
         document.getElementById('uaInactive').checked = !!user.inactive;
         uaSetSelectedSummary(user);
+        uaRenderAccessView();
         uaHighlightSelectedRow();
+    }
+
+    function uaGetSelectedUser() {
+        if (!uaSelectedUserId) return null;
+        return uaUsers.find(function(item) {
+            return item && item.userId === uaSelectedUserId;
+        }) || null;
+    }
+
+    function uaCanManageAccess(user) {
+        var type = user && user.userType ? String(user.userType).toLowerCase() : '';
+        return type === 'registrar';
     }
 
     function uaSelectUserByIndex(index) {
@@ -412,7 +522,9 @@
             uaSetSelectedSummary(null);
             document.getElementById('uaFormUserId').value = '';
             document.getElementById('uaFormName').value = '';
+            document.getElementById('uaFormEmail').value = '';
             document.getElementById('uaFormPassword').value = '';
+            document.getElementById('uaFormPassword').readOnly = true;
             document.getElementById('uaInactive').checked = false;
         }
 
@@ -436,9 +548,13 @@
 
         document.getElementById('uaFormUserId').value = '';
         document.getElementById('uaFormName').value = '';
+        document.getElementById('uaFormEmail').value = '';
         document.getElementById('uaFormPassword').value = '';
+        document.getElementById('uaFormPassword').readOnly = true;
         document.getElementById('uaInactive').checked = false;
+        uaSelectedUserId = '';
         uaSetSelectedSummary(null);
+        uaRenderAccessView();
         uaRenderTable();
     }
 
@@ -447,13 +563,11 @@
         document.getElementById('uaLastName').value = '';
         document.getElementById('uaFirstName').value = '';
         document.getElementById('uaUserType').value = '';
-        uaFiltersApplied = false;
         uaCurrentPage = 1;
         uaRenderTable();
     }
 
     document.getElementById('uaSearchBtn').addEventListener('click', function() {
-        uaFiltersApplied = true;
         uaCurrentPage = 1;
         uaRenderTable();
         var typedId = uaNormalize(document.getElementById('uaStudentId').value);
@@ -462,6 +576,22 @@
             if (match) uaFillCredentials(match);
         }
     });
+
+    function uaApplyFiltersLive() {
+        uaCurrentPage = 1;
+        uaRenderTable();
+    }
+
+    ['uaStudentId', 'uaLastName', 'uaFirstName'].forEach(function(inputId) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('input', uaApplyFiltersLive);
+    });
+
+    var uaUserTypeFilter = document.getElementById('uaUserType');
+    if (uaUserTypeFilter) {
+        uaUserTypeFilter.addEventListener('change', uaApplyFiltersLive);
+    }
 
     ['uaStudentId', 'uaLastName', 'uaFirstName'].forEach(function(inputId) {
         var input = document.getElementById(inputId);
@@ -479,7 +609,6 @@
         document.getElementById('uaLastName').value = '';
         document.getElementById('uaFirstName').value = '';
         document.getElementById('uaUserType').value = '';
-        uaFiltersApplied = false;
     }
 
     document.querySelector('.ua-table-meta .app-table-pager').addEventListener('click', function(event) {
@@ -528,6 +657,7 @@
         var payload = {
             user_id: (document.getElementById('uaFormUserId').value || '').trim(),
             full_name: (document.getElementById('uaFormName').value || '').trim(),
+            email: (document.getElementById('uaFormEmail').value || '').trim(),
             password: (document.getElementById('uaFormPassword').value || '').trim(),
             inactive: document.getElementById('uaInactive').checked
         };
@@ -535,6 +665,9 @@
         try {
             var response = await uaApiRequest(uaUpdateUrl(user.pk), 'PUT', payload);
             var updated = response.row || user;
+            if (!updated.email && payload.email) {
+                updated.email = payload.email;
+            }
             Object.assign(user, updated);
             uaFillCredentials(user);
             alert('Account credentials updated.');
@@ -560,12 +693,210 @@
     document.getElementById('uaFormUserId').addEventListener('blur', uaFindByLookup);
     document.getElementById('uaFormName').addEventListener('blur', uaFindByLookup);
 
+    document.getElementById('uaFormPassword').addEventListener('focus', function() {
+        this.readOnly = false;
+    });
+
     document.getElementById('uaPasswordToggle').addEventListener('click', function() {
         var passInput = document.getElementById('uaFormPassword');
+        passInput.readOnly = false;
         var isHidden = passInput.type === 'password';
         passInput.type = isHidden ? 'text' : 'password';
         this.classList.toggle('is-visible', isHidden);
         this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+
+    function uaCreateBlankAccessState() {
+        var state = { quick: {}, groups: {} };
+
+        uaAccessQuickToggleItems.forEach(function(item) {
+            state.quick[item] = false;
+        });
+
+        uaAccessGroups.forEach(function(group) {
+            state.groups[group.key] = {};
+            group.items.forEach(function(itemName) {
+                state.groups[group.key][itemName] = { r: false, w: false };
+            });
+        });
+
+        return state;
+    }
+
+    function uaCloneAccessState(state) {
+        return JSON.parse(JSON.stringify(state));
+    }
+
+    function uaGetSelectedAccessState() {
+        if (!uaSelectedUserId) return null;
+        if (!uaAccessStateByUserId[uaSelectedUserId]) {
+            uaAccessStateByUserId[uaSelectedUserId] = uaCreateBlankAccessState();
+        }
+        return uaAccessStateByUserId[uaSelectedUserId];
+    }
+
+    function uaRenderCopyAccessOptions() {
+        var select = document.getElementById('uaCopyAccessFrom');
+        if (!select) return;
+
+        var options = ['<option value="">- select user -</option>'];
+        uaUsers.forEach(function(user) {
+            if (!user || !user.userId) return;
+            options.push('<option value="' + uaEscapeHtml(user.userId) + '">' + uaEscapeHtml(user.fullName + ' (' + user.userId + ')') + '</option>');
+        });
+        select.innerHTML = options.join('');
+    }
+
+    function uaRenderAccessQuickOptions(state, disabled) {
+        var mount = document.getElementById('uaAccessQuickOptions');
+        if (!mount) return;
+
+        var html = uaAccessQuickToggleItems.map(function(itemName, index) {
+            var checked = state && state.quick[itemName] ? 'checked' : '';
+            return '' +
+                '<label class="setup-checkbox-label ua-access-check">' +
+                    '<input type="checkbox" class="req-checkbox-input" data-ua-quick-index="' + index + '" ' + checked + (disabled ? ' disabled' : '') + '>' +
+                    '<span>' + uaEscapeHtml(itemName) + '</span>' +
+                '</label>';
+        }).join('');
+
+        mount.innerHTML = html;
+    }
+
+    function uaRenderAccessGrid(state, disabled) {
+        var mount = document.getElementById('uaAccessGrid');
+        if (!mount) return;
+
+        var html = uaAccessGroups.map(function(group) {
+            var rows = group.items.map(function(itemName) {
+                var itemState = state && state.groups[group.key] && state.groups[group.key][itemName] ? state.groups[group.key][itemName] : { r: false, w: false };
+                return '' +
+                    '<tr>' +
+                        '<td>' + uaEscapeHtml(itemName) + '</td>' +
+                        '<td class="ua-access-rw-col"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="r" ' + (itemState.r ? 'checked ' : '') + (disabled ? 'disabled' : '') + '></td>' +
+                        '<td class="ua-access-rw-col"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="w" ' + (itemState.w ? 'checked ' : '') + (disabled ? 'disabled' : '') + '></td>' +
+                    '</tr>';
+            }).join('');
+
+            return '' +
+                '<div class="ua-access-group">' +
+                    '<table class="ua-access-table" data-no-auto-pager="1" aria-label="' + uaEscapeHtml(group.title) + ' access table">' +
+                        '<thead>' +
+                            '<tr>' +
+                                '<th>' + uaEscapeHtml(group.title) + '</th>' +
+                                '<th class="ua-access-rw-col"><span class="ua-access-rw-head"><span class="ua-access-rw-text">R</span><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="r" ' + (disabled ? 'disabled' : '') + '></span></th>' +
+                                '<th class="ua-access-rw-col"><span class="ua-access-rw-head"><span class="ua-access-rw-text">W</span><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="w" ' + (disabled ? 'disabled' : '') + '></span></th>' +
+                            '</tr>' +
+                        '</thead>' +
+                        '<tbody>' + rows + '</tbody>' +
+                    '</table>' +
+                '</div>';
+        }).join('');
+
+        mount.innerHTML = html;
+    }
+
+    function uaRenderAccessView() {
+        var accessCard = document.getElementById('uaAccessCard');
+        var note = document.getElementById('uaAccessUserNote');
+        var selectedUser = uaGetSelectedUser();
+        var canManageAccess = uaCanManageAccess(selectedUser);
+
+        if (accessCard) {
+            accessCard.style.display = canManageAccess ? '' : 'none';
+        }
+
+        if (!canManageAccess) {
+            return;
+        }
+
+        var state = uaGetSelectedAccessState();
+        var disabled = !state;
+
+        if (note) {
+            note.textContent = disabled
+                ? 'No user selected. Select a row to preview/edit access permissions.'
+                : 'Editing access for ' + uaSelectedUserId + '.';
+        }
+
+        uaRenderAccessQuickOptions(state, disabled);
+        uaRenderAccessGrid(state, disabled);
+
+        // Safety cleanup in case shared auto-pager mounts were inserted before no-auto flags applied.
+        document.querySelectorAll('.ua-access-card .rtp-pagination, .ua-access-card .pf-pagination, .ua-access-card .app-table-pager').forEach(function(node) {
+            if (node && node.parentNode) {
+                node.parentNode.removeChild(node);
+            }
+        });
+    }
+
+    function uaHandleAccessInteractions(event) {
+        var state = uaGetSelectedAccessState();
+        if (!state) return;
+
+        var master = event.target.closest('[data-ua-group-master][data-ua-mode]');
+        if (master) {
+            var masterGroup = master.getAttribute('data-ua-group-master');
+            var masterMode = master.getAttribute('data-ua-mode');
+            var masterValue = !!master.checked;
+
+            if (state.groups[masterGroup]) {
+                Object.keys(state.groups[masterGroup]).forEach(function(itemName) {
+                    if (state.groups[masterGroup][itemName]) {
+                        state.groups[masterGroup][itemName][masterMode] = masterValue;
+                    }
+                });
+
+                document.querySelectorAll('[data-ua-group="' + masterGroup + '"][data-ua-mode="' + masterMode + '"]').forEach(function(box) {
+                    box.checked = masterValue;
+                });
+            }
+            return;
+        }
+
+        var quick = event.target.closest('[data-ua-quick-index]');
+        if (quick) {
+            var quickIndex = parseInt(quick.getAttribute('data-ua-quick-index'), 10);
+            if (!isNaN(quickIndex) && uaAccessQuickToggleItems[quickIndex]) {
+                state.quick[uaAccessQuickToggleItems[quickIndex]] = !!quick.checked;
+            }
+            return;
+        }
+
+        var rw = event.target.closest('[data-ua-group][data-ua-item][data-ua-mode]');
+        if (rw) {
+            var groupKey = rw.getAttribute('data-ua-group');
+            var itemName = rw.getAttribute('data-ua-item');
+            var mode = rw.getAttribute('data-ua-mode');
+            if (state.groups[groupKey] && state.groups[groupKey][itemName]) {
+                state.groups[groupKey][itemName][mode] = !!rw.checked;
+            }
+        }
+    }
+
+    document.getElementById('uaAccessQuickOptions').addEventListener('change', uaHandleAccessInteractions);
+    document.getElementById('uaAccessGrid').addEventListener('change', uaHandleAccessInteractions);
+
+    document.getElementById('uaCopyAccessBtn').addEventListener('click', function() {
+        var sourceId = document.getElementById('uaCopyAccessFrom').value;
+        var targetId = uaSelectedUserId;
+
+        if (!targetId) {
+            alert('Please select a target account first.');
+            return;
+        }
+        if (!sourceId) {
+            alert('Please select a source account to copy from.');
+            return;
+        }
+        if (sourceId === targetId) {
+            alert('Source and target accounts are the same.');
+            return;
+        }
+
+        var sourceState = uaAccessStateByUserId[sourceId] ? uaCloneAccessState(uaAccessStateByUserId[sourceId]) : uaCreateBlankAccessState();
+        uaAccessStateByUserId[targetId] = sourceState;
+        uaRenderAccessView();
     });
 
     document.addEventListener('click', function(event) {
@@ -583,22 +914,39 @@
         }
     });
 
+    function uaPreventCredentialAutofill() {
+        var passwordInput = document.getElementById('uaFormPassword');
+        if (passwordInput) {
+            passwordInput.value = '';
+            passwordInput.type = 'password';
+            passwordInput.readOnly = true;
+        }
+    }
+
     // Ensure browser autofill does not keep stale filter values across visits.
     uaForceResetFilters();
+    uaPreventCredentialAutofill();
 
     // Some browsers apply credential autofill after script execution.
     window.setTimeout(uaForceResetFilters, 80);
     window.setTimeout(uaForceResetFilters, 320);
     window.setTimeout(uaForceResetFilters, 900);
+    window.setTimeout(uaPreventCredentialAutofill, 80);
+    window.setTimeout(uaPreventCredentialAutofill, 320);
+    window.setTimeout(uaPreventCredentialAutofill, 900);
     window.addEventListener('pageshow', function() {
         uaForceResetFilters();
+        uaPreventCredentialAutofill();
         uaCurrentPage = 1;
         uaRenderTable();
+        uaRenderAccessView();
     });
 
+    uaRenderCopyAccessOptions();
     uaSetSelectedSummary(null);
     uaCurrentPage = 1;
     uaRenderTable();
+    uaRenderAccessView();
 </script>
 @endpush
 

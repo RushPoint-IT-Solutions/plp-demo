@@ -13453,6 +13453,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   white-space: nowrap;
 }
 
+.page-student-enrollment .se-current-section-inline {
+  margin-right: auto;
+  font-weight: 700;
+  color: #006837;
+  font-size: 0.84rem;
+  align-self: center;
+}
+
 .page-student-enrollment .se-tool-btn-edit {
   border: 1px solid #0f7b43;
   background: #fff;
@@ -13602,6 +13610,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   padding: 0;
   border: none;
   background: transparent;
+}
+
+.page-student-enrollment .se-schedule-section .so-weekly-card,
+.page-student-enrollment .se-schedule-section .so-weekly-code,
+.page-student-enrollment .se-schedule-section .so-weekly-section,
+.page-student-enrollment .se-schedule-section .so-weekly-time,
+.page-student-enrollment .se-schedule-section .so-weekly-room {
+  color: #ffffff !important;
 }
 
 .page-student-enrollment .se-schedule-head {
@@ -17633,8 +17649,8 @@ body.page-profile-edit .student-content {
 }
 
 .page-user-accounts .ua-selected-user {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -17644,14 +17660,27 @@ body.page-profile-edit .student-content {
   border-radius: 9px;
   padding: 9px 10px;
   background: #fbfdfc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-user-accounts .ua-selected-label {
+  font-size: 0.75rem;
+  color: #60756a;
+  font-weight: 600;
 }
 
 .page-user-accounts .ua-selected-value {
-  display: block;
-  margin-top: 4px;
+  display: inline;
+  margin-top: 0;
   font-size: 0.9rem;
   color: #173a2b;
   font-weight: 600;
+  text-align: right;
 }
 
 .page-user-accounts .ua-form-grid {
@@ -18231,6 +18260,32 @@ body.page-profile-edit .student-content {
   .page-student-update .su-grid-5,
   .page-student-update .su-task-meta {
     grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-selected-user {
+    display: grid;
+  }
+
+  .page-user-accounts .ua-selected-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-user-accounts .ua-selected-value {
+    text-align: left;
+  }
+
+  .page-user-accounts .ua-selected-user {
+    display: grid;
+  }
+
+  .page-user-accounts .ua-selected-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-user-accounts .ua-selected-value {
+    text-align: left;
   }
 
   .page-user-accounts .ua-bottom-actions,
@@ -26954,6 +27009,249 @@ body.page-profile-edit .student-content {
   color: #fff !important;
 }
 
+.page-user-accounts .ua-selected-user {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.page-user-accounts .ua-selected-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-user-accounts .ua-selected-label {
+  font-size: 0.75rem;
+  color: #60756a;
+  font-weight: 600;
+}
+
+.page-user-accounts .ua-selected-value {
+  display: inline;
+  margin-top: 0;
+  text-align: right;
+}
+
+.page-user-accounts .ua-autofill-trap {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.page-user-accounts .ua-access-card {
+  overflow: hidden;
+}
+
+.page-user-accounts .ua-access-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.page-user-accounts .ua-access-user-note {
+  font-size: 0.8rem;
+  color: #2f4e40;
+  font-weight: 600;
+}
+
+.page-user-accounts .ua-access-copy-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.page-user-accounts .ua-access-copy-wrap .app-filter-label {
+  margin: 0;
+}
+
+.page-user-accounts #uaCopyAccessFrom {
+  min-width: 210px;
+}
+
+.page-user-accounts .ua-copy-access-btn {
+  border: 1px solid #0f7b43;
+  background: #0f7b43;
+  color: #fff;
+  border-radius: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  font-weight: 600;
+}
+
+.page-user-accounts .ua-copy-access-btn:hover {
+  background: #0c6a39;
+  border-color: #0c6a39;
+}
+
+.page-user-accounts .ua-access-quick-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 14px;
+}
+
+.page-user-accounts .ua-access-quick-wrap {
+  border: 1px solid #d6e3dc;
+  background: #f8fcfa;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.page-user-accounts .ua-access-quick-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1f4d38;
+  margin-bottom: 8px;
+}
+
+.page-user-accounts .ua-access-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.81rem;
+  color: #2a4539;
+  margin: 0;
+}
+
+.page-user-accounts .ua-access-check input {
+  margin-top: 0;
+}
+
+.page-user-accounts .ua-access-grid {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.page-user-accounts .ua-access-group {
+  flex: 0 0 min(320px, 24%);
+  min-width: 280px;
+}
+
+.page-user-accounts .ua-access-card .rtp-pagination,
+.page-user-accounts .ua-access-card .pf-pagination,
+.page-user-accounts .ua-access-card .app-table-pager {
+  display: none !important;
+}
+
+.page-user-accounts .ua-access-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 1px solid #b9c9c0;
+}
+
+.page-user-accounts .ua-access-table thead th {
+  background: #1f6f36;
+  color: #fff;
+  border: 1px solid #b9c9c0;
+  padding: 6px 6px;
+  font-size: 0.79rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.page-user-accounts .ua-access-head-check {
+  margin-left: 0;
+  margin-right: 0;
+  vertical-align: middle;
+}
+
+.page-user-accounts .ua-access-table tbody td {
+  border: 1px solid #c8d4ce;
+  background: #f7faf8;
+  color: #163a2b;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+
+.page-user-accounts .ua-access-table tbody tr:nth-child(even) td {
+  background: #eff5f1;
+}
+
+.page-user-accounts .ua-access-rw-col {
+  width: 44px;
+  text-align: center;
+  vertical-align: middle;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.page-user-accounts .ua-access-rw-head {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+.page-user-accounts .ua-access-rw-text {
+  display: inline-block;
+  min-width: 10px;
+  text-align: center;
+}
+
+.page-user-accounts .ua-access-rw-col .req-checkbox-input,
+.page-user-accounts .ua-access-rw-head .req-checkbox-input {
+  margin: 0;
+}
+
+.page-user-accounts .ua-access-footnote {
+  margin-top: 10px;
+  font-size: 0.73rem;
+  color: #5f6f67;
+}
+
+@media (max-width: 900px) {
+  .page-user-accounts .ua-access-quick-options,
+  .page-user-accounts .ua-access-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-access-meta {
+    align-items: stretch;
+  }
+
+  .page-user-accounts .ua-selected-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-user-accounts .ua-selected-user {
+    display: grid;
+  }
+
+  .page-user-accounts .ua-selected-value {
+    text-align: left;
+  }
+
+  .page-user-accounts .ua-access-grid {
+    display: grid;
+    overflow-x: visible;
+  }
+
+  .page-user-accounts .ua-access-group {
+    flex: none;
+    min-width: 0;
+  }
+}
+
 .plp-header {
   background-color: var(--plp-green);
   width: 100%;
@@ -35105,8 +35403,8 @@ body.page-profile-edit .student-content {
 }
 
 .page-user-accounts .ua-selected-user {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -35116,14 +35414,27 @@ body.page-profile-edit .student-content {
   border-radius: 9px;
   padding: 9px 10px;
   background: #fbfdfc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-user-accounts .ua-selected-label {
+  font-size: 0.75rem;
+  color: #60756a;
+  font-weight: 600;
 }
 
 .page-user-accounts .ua-selected-value {
-  display: block;
-  margin-top: 4px;
+  display: inline;
+  margin-top: 0;
   font-size: 0.9rem;
   color: #173a2b;
   font-weight: 600;
+  text-align: right;
 }
 
 .page-user-accounts .ua-form-grid {
@@ -35700,6 +36011,19 @@ body.page-profile-edit .student-content {
   .page-student-update .su-grid-5,
   .page-student-update .su-task-meta {
     grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-selected-user {
+    display: grid;
+  }
+
+  .page-user-accounts .ua-selected-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-user-accounts .ua-selected-value {
+    text-align: left;
   }
 
   .page-user-accounts .ua-bottom-actions,
