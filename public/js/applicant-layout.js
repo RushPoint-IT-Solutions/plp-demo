@@ -15,4 +15,18 @@
         sidebar.classList.remove('sidebar-open');
         overlay.classList.remove('overlay-visible');
     });
+
+    var printExamBtn = document.getElementById('applicantPrintExamBtn');
+    if (printExamBtn) {
+        printExamBtn.addEventListener('click', function () {
+            window.print();
+        });
+    }
+
+    var saveExamBtn = document.getElementById('applicantSaveExamBtn');
+    if (saveExamBtn) {
+        saveExamBtn.addEventListener('click', function () {
+            saveExamBtn.blur();
+        });
+    }
 })();

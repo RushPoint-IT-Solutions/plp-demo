@@ -359,7 +359,6 @@ class AdminToolsController extends Controller
         $users = User::query()
             ->orderBy('name')
             ->orderBy('username')
-            ->limit(400)
             ->get(['id', 'username', 'name', 'module']);
 
         $statusMap = collect();
@@ -448,7 +447,6 @@ class AdminToolsController extends Controller
     {
         $users = User::query()
             ->orderBy('name')
-            ->limit(300)
             ->get(['id', 'name', 'username', 'email', 'module']);
 
         $permissionsByUser = collect();
@@ -844,7 +842,6 @@ class AdminToolsController extends Controller
 
             $bsRows = BedStudentStatus::query()
                 ->orderBy('student_name')
-                ->limit(500)
                 ->get()
                 ->map(function ($row) {
                     return [

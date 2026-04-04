@@ -64,6 +64,7 @@
                     </tbody>
                 </table>
             </div>
+            <div class="app-table-pager"></div>
         </div>
 
         <div id="dfStudentDetailView" style="display:none;">
@@ -167,6 +168,7 @@
                 </tbody>
             </table>
         </div>
+        <div class="app-table-pager"></div>
 
         </div> <!-- End dfStudentDetailView -->
 

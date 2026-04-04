@@ -6,12 +6,12 @@
 @section('content')
 <div class="app-process-page applicant-consistent-page">
     <div class="app-filter-bar">
-        <div class="app-filter-row">
-            <div class="app-filter-group" style="max-width: 260px;">
+        <div class="app-filter-row applicant-identity-row">
+            <div class="app-filter-group app-filter-group--compact">
                 <label class="app-filter-label">Applicant ID</label>
                 <input type="text" class="app-filter-input" value="{{ $applicant->applicant_id }}" readonly>
             </div>
-            <div class="app-filter-group" style="max-width: 260px;">
+            <div class="app-filter-group app-filter-group--compact app-filter-group--wide">
                 <label class="app-filter-label">Applicant Name</label>
                 <input type="text" class="app-filter-input" value="{{ $applicant->first_name }} {{ $applicant->last_name }}" readonly>
             </div>

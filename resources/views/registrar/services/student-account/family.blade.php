@@ -26,38 +26,38 @@
     }
 </style>
 <div class="pf-page">
-    <div class="svc-filter-panel mb-4 ga-card ga-filter-card sched-filter-bar">
+    <form method="GET" action="{{ route('registrar.services.student-account.family') }}" class="svc-filter-panel mb-4 ga-card ga-filter-card sched-filter-bar">
         <div class="svc-filter-grid ga-filter-grid ga-filter-grid-compact" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: end;">
             <div class="svc-filter-item">
                 <span class="app-filter-label">Student Name / ID</span>
-                <input type="text" class="app-filter-input pf-search-input" placeholder="Search Name, Student ID" style="width: 100%;">
+                <input type="text" name="q" class="app-filter-input pf-search-input" placeholder="Search Name, Student ID" style="width: 100%;" value="{{ $search ?? '' }}">
             </div>
 
             <div class="svc-filter-item">
                 <span class="app-filter-label">Parent Name</span>
-                <input type="text" class="app-filter-input pf-search-input" placeholder="Search Parent Name" style="width: 100%;">
+                <input type="text" name="parent_name" class="app-filter-input pf-search-input" placeholder="Search Parent Name" style="width: 100%;" value="{{ $parent ?? '' }}">
             </div>
 
             <div class="svc-filter-item">
                 <span class="app-filter-label">Year Level</span>
-                <select class="app-filter-select" style="width: 100%;">
+                <select name="year_level" class="app-filter-select" style="width: 100%;">
                     <option value="">Select Year Level...</option>
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                    <option value="Third">Third</option>
-                    <option value="Fourth" selected>Fourth</option>
+                    <option value="First" {{ ($yearLevel ?? '') === 'First' ? 'selected' : '' }}>First</option>
+                    <option value="Second" {{ ($yearLevel ?? '') === 'Second' ? 'selected' : '' }}>Second</option>
+                    <option value="Third" {{ ($yearLevel ?? '') === 'Third' ? 'selected' : '' }}>Third</option>
+                    <option value="Fourth" {{ ($yearLevel ?? '') === 'Fourth' ? 'selected' : '' }}>Fourth</option>
                 </select>
             </div>
 
             <div class="svc-filter-item" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                 <label class="setup-checkbox-label" style="color: #d32f2f; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 6px;">
-                    <input type="checkbox" id="showSiblings">
+                    <input type="checkbox" id="showSiblings" name="with_siblings" value="1" {{ !empty($withSiblings) ? 'checked' : '' }}>
                     <span>Note: Check this to see the siblings.</span>
                 </label>
-                <button type="button" class="pf-btn-new ga-btn ga-btn-primary" style="width: 100%;">Search</button>
+                <button type="submit" class="pf-btn-new ga-btn ga-btn-primary" style="width: 100%;">Search</button>
             </div>
         </div>
-    </div>
+    </form>
 
     <div class="svc-actions-row mb-3" style="justify-content: flex-end; gap: 12px; display: flex;">
         <button type="button" class="pf-btn-new ga-btn ga-btn-primary" style="display: flex; align-items: center; gap: 6px;" onclick="document.getElementById('famBatchModal').style.display='flex'">
@@ -71,7 +71,7 @@
     </div>
 
     <div class="student-table-wrapper table-responsive">
-        <table class="student-table registrar-table svc-table" id="familyTable">
+        <table class="student-table registrar-table svc-table" id="familyTable" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th>Family Code</th>
@@ -83,73 +83,41 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Dummy Data -->
-                <tr>
-                    <td>FAM-2023-001</td>
-                    <td>2023-00101</td>
-                    <td>Dela Cruz, Juan M.</td>
-                    <td>Yes</td>
-                    <td><span style="background-color: #e8f5e9; color: #006837; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Active</span></td>
-                    <td>
-                        <div class="apst-action-btn" data-gc-menu-toggle="menu1" aria-label="Open row actions" title="Actions">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="apst-dropdown" id="menu1">
-                            <button type="button" data-ga-open-action="edit" data-ga-item="edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                            <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="del"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>FAM-2023-001</td>
-                    <td>2024-00205</td>
-                    <td>Dela Cruz, Maria M.</td>
-                    <td>No</td>
-                    <td><span style="background-color: #e8f5e9; color: #006837; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Active</span></td>
-                    <td>
-                        <div class="apst-action-btn" data-gc-menu-toggle="menu2" aria-label="Open row actions" title="Actions">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="apst-dropdown" id="menu2">
-                            <button type="button" data-ga-open-action="edit" data-ga-item="edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                            <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="del"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>FAM-2022-088</td>
-                    <td>2022-04512</td>
-                    <td>Reyes, Mark R.</td>
-                    <td>Yes</td>
-                    <td><span style="background-color: #e8f5e9; color: #006837; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Active</span></td>
-                    <td>
-                        <div class="apst-action-btn" data-gc-menu-toggle="menu3" aria-label="Open row actions" title="Actions">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="apst-dropdown" id="menu3">
-                            <button type="button" data-ga-open-action="edit" data-ga-item="edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                            <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="del"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>FAM-2021-042</td>
-                    <td>2021-12345</td>
-                    <td>Santos, John L.</td>
-                    <td>Yes</td>
-                    <td><span style="background-color: #fff3e0; color: #e65100; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Inactive</span></td>
-                    <td>
-                        <div class="apst-action-btn" data-gc-menu-toggle="menu4" aria-label="Open row actions" title="Actions">
-                            <span></span><span></span><span></span>
-                        </div>
-                        <div class="apst-dropdown" id="menu4">
-                            <button type="button" data-ga-open-action="edit" data-ga-item="edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                            <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="del"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
-                        </div>
-                    </td>
-                </tr>
+                @forelse($familyRows as $idx => $row)
+                    <tr>
+                        <td>{{ $row->family_code }}</td>
+                        <td>{{ $row->student_no ?: 'N/A' }}</td>
+                        <td>{{ $row->display_name }}</td>
+                        <td>{{ $row->eldest_label }}</td>
+                        <td>
+                            @if($row->status_label === 'Active')
+                                <span style="background-color: #e8f5e9; color: #006837; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Active</span>
+                            @else
+                                <span style="background-color: #fff3e0; color: #e65100; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Inactive</span>
+                            @endif
+                        </td>
+                        <td>
+                            @php $menuId = 'family-menu-' . (($familyRows->firstItem() ?? 0) + $idx); @endphp
+                            <div class="apst-action-btn" data-gc-menu-toggle="{{ $menuId }}" aria-label="Open row actions" title="Actions">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <div class="apst-dropdown" id="{{ $menuId }}">
+                                <button type="button" data-ga-open-action="edit" data-ga-item="edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+                                <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="del"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No family records found.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
+    </div>
+
+    <div class="app-table-pager mt-3">
+        {{ $familyRows->links() }}
     </div>
 
     <!-- Modals -->

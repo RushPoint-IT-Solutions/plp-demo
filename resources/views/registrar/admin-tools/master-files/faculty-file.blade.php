@@ -55,13 +55,7 @@
                 </table>
             </div>
 
-            <div class="ff-pager-row">
-                <div class="ff-page-list">
-                    <button type="button" class="ff-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
-                    <button type="button" class="ff-page-num active" aria-current="page">1</button>
-                    <button type="button" class="ff-page-btn" disabled aria-label="Next page">&rsaquo;</button>
-                </div>
-            </div>
+            <div class="app-table-pager"></div>
         </section>
     </div>
 </div>
@@ -336,6 +330,8 @@
         updateTemplate: '{{ route('registrar.admin-tools.master-files.faculty-file.update', ['masterFacultyFile' => '__ID__']) }}',
         destroyTemplate: '{{ route('registrar.admin-tools.master-files.faculty-file.destroy', ['masterFacultyFile' => '__ID__']) }}'
     };
+    var ffCurrentPage = 1;
+    var ffPageSize = 10;
 
     function ffBuildUrl(template, id) {
         return template.replace('__ID__', encodeURIComponent(String(id)));
@@ -429,6 +425,45 @@
         menu.classList.add('open');
     }
 
+    function ffRenderPager(totalRows) {
+        var mount = document.querySelector('.app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / ffPageSize));
+        if (ffCurrentPage > maxPage) {
+            ffCurrentPage = maxPage;
+        }
+
+        if (totalRows <= ffPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, ffCurrentPage - 2);
+        var end = Math.min(maxPage, ffCurrentPage + 2);
+        if (ffCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (ffCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === ffCurrentPage ? 'active' : '') + '" data-ff-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="Faculty file pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-ff-page-prev="1" ' + (ffCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-ff-page-next="1" ' + (ffCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function ffRenderTable() {
         var tbody = document.getElementById('ffTableBody');
         if (!tbody) return;
@@ -436,12 +471,19 @@
         ffCloseActionMenus();
 
         var rows = ffGetFilteredRows();
-        var bodyRows = rows.map(function(row, idx) {
+        var maxPage = Math.max(1, Math.ceil(rows.length / ffPageSize));
+        if (ffCurrentPage > maxPage) {
+            ffCurrentPage = 1;
+        }
+        var startIndex = (ffCurrentPage - 1) * ffPageSize;
+        var pageItems = rows.slice(startIndex, startIndex + ffPageSize);
+
+        var bodyRows = pageItems.map(function(row, idx) {
             var statusClass = row.status === 'Active' ? 'ff-status-active' : 'ff-status-inactive';
             var menuId = 'ffMenu' + idx;
             return '' +
                 '<tr data-ff-id="' + ffEscapeHtml(row.id) + '">' +
-                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + (startIndex + idx + 1) + '</td>' +
                     '<td>' + ffEscapeHtml(row.code) + '</td>' +
                     '<td>' + ffEscapeHtml(row.name).toUpperCase() + '</td>' +
                     '<td>' + ffEscapeHtml(row.department) + '</td>' +
@@ -456,6 +498,7 @@
 
         tbody.innerHTML = bodyRows +
             '<tr class="ff-total-row"><td colspan="6">Total Records: <strong>' + rows.length + '</strong></td></tr>';
+        ffRenderPager(rows.length);
     }
 
     function ffOpenAddModal() {
@@ -549,10 +592,14 @@
         });
     }
 
-    document.getElementById('ffSearchBtn').addEventListener('click', ffRenderTable);
+    document.getElementById('ffSearchBtn').addEventListener('click', function() {
+        ffCurrentPage = 1;
+        ffRenderTable();
+    });
     document.getElementById('ffSearch').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
+            ffCurrentPage = 1;
             ffRenderTable();
         }
     });
@@ -589,6 +636,32 @@
     });
 
     window.addEventListener('scroll', ffCloseActionMenus, true);
+
+    document.querySelector('.app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-ff-page-prev]');
+        if (prev && ffCurrentPage > 1) {
+            ffCurrentPage -= 1;
+            ffRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-ff-page-next]');
+        if (next) {
+            var total = ffGetFilteredRows().length;
+            var maxPage = Math.max(1, Math.ceil(total / ffPageSize));
+            if (ffCurrentPage < maxPage) {
+                ffCurrentPage += 1;
+                ffRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-ff-page]');
+        if (pageBtn) {
+            ffCurrentPage = parseInt(pageBtn.getAttribute('data-ff-page'), 10) || 1;
+            ffRenderTable();
+        }
+    });
 
     ffRenderTable();
 </script>

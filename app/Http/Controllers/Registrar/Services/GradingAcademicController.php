@@ -295,7 +295,6 @@ class GradingAcademicController extends Controller
     {
         $students = Student::query()
             ->orderBy('name')
-            ->limit(100)
             ->get(['id', 'student_no', 'name', 'program', 'year_level']);
 
         $selectedStudent = $students->first();

@@ -49,20 +49,9 @@
             </div>
         </div>
 
-        <!-- Table controls -->
-        <div class="ga-table-controls" style="margin-bottom: 12px; display:flex; font-size: 0.85rem; font-weight: 600; color: #006837; align-items: center; gap: 8px;">
-            <span style="letter-spacing: 0.05em;">SHOW</span>
-            <select class="app-filter-select" style="width: auto; padding: 4px 28px 4px 12px; height: 32px; font-size: 0.85rem;">
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-            </select>
-            <span style="letter-spacing: 0.05em;">ENTRIES</span>
-        </div>
-
         <!-- Data Table -->
         <div class="ga-table-wrap app-table-wrap">
-            <table class="ga-table app-table" style="min-width: 1000px;">
+            <table class="ga-table app-table" style="min-width: 1000px;" data-no-auto-pager="1">
                 <thead>
                     <tr>
                         <th style="width: 50px; text-align: center;">#</th>
@@ -81,7 +70,7 @@
                     @forelse($students as $index => $student)
                     @php($tag = $taggings->get($student->id))
                     <tr data-student-id="{{ $student->id }}">
-                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td style="text-align: center;">{{ (($students->currentPage() - 1) * $students->perPage()) + $index + 1 }}</td>
                         <td>{{ $student->student_no ?: '-' }}</td>
                         <td>{{ $student->name }}</td>
                         <td>{{ $student->program ?: '-' }}</td>
@@ -104,6 +93,8 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="app-table-pager">{{ $students->links() }}</div>
 
     </div>
 </div>

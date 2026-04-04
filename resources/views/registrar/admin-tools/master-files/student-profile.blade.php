@@ -96,13 +96,7 @@
                 </table>
             </div>
 
-            <div class="sp-pager-row">
-                <div class="sp-page-list">
-                    <button type="button" class="sp-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
-                    <button type="button" class="sp-page-num active" aria-current="page">1</button>
-                    <button type="button" class="sp-page-btn" disabled aria-label="Next page">&rsaquo;</button>
-                </div>
-            </div>
+            <div class="app-table-pager"></div>
         </section>
     </div>
 </div>
@@ -484,6 +478,8 @@
         updateTemplate: '{{ route('registrar.admin-tools.master-files.student-profile.update', ['masterStudentProfile' => '__ID__']) }}',
         destroyTemplate: '{{ route('registrar.admin-tools.master-files.student-profile.destroy', ['masterStudentProfile' => '__ID__']) }}'
     };
+    var spCurrentPage = 1;
+    var spPageSize = 10;
 
     function spBuildUrl(template, id) {
         return template.replace('__ID__', encodeURIComponent(String(id)));
@@ -578,6 +574,45 @@
         menu.classList.add('open');
     }
 
+    function spRenderPager(totalRows) {
+        var mount = document.querySelector('.app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / spPageSize));
+        if (spCurrentPage > maxPage) {
+            spCurrentPage = maxPage;
+        }
+
+        if (totalRows <= spPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, spCurrentPage - 2);
+        var end = Math.min(maxPage, spCurrentPage + 2);
+        if (spCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (spCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === spCurrentPage ? 'active' : '') + '" data-sp-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="Student profile pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-sp-page-prev="1" ' + (spCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-sp-page-next="1" ' + (spCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function spRenderTable() {
         var tbody = document.getElementById('spTableBody');
         if (!tbody) return;
@@ -585,11 +620,18 @@
         spCloseActionMenus();
 
         var rows = spGetFilteredRows();
-        var bodyRows = rows.map(function(row, idx) {
+        var maxPage = Math.max(1, Math.ceil(rows.length / spPageSize));
+        if (spCurrentPage > maxPage) {
+            spCurrentPage = 1;
+        }
+        var startIndex = (spCurrentPage - 1) * spPageSize;
+        var pageItems = rows.slice(startIndex, startIndex + spPageSize);
+
+        var bodyRows = pageItems.map(function(row, idx) {
             var menuId = 'spMenu' + idx;
             return '' +
                 '<tr data-sp-id="' + spEscapeHtml(row.id) + '">' +
-                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + (startIndex + idx + 1) + '</td>' +
                     '<td>' + spEscapeHtml(row.studentId) + '</td>' +
                     '<td>' + spEscapeHtml(row.name).toUpperCase() + '</td>' +
                     '<td>' + spEscapeHtml(row.course) + '</td>' +
@@ -604,6 +646,7 @@
 
         tbody.innerHTML = bodyRows +
             '<tr class="sp-total-row"><td colspan="6">Total Students: <strong>' + rows.length + '</strong></td></tr>';
+        spRenderPager(rows.length);
     }
 
     function spOpenAddModal() {
@@ -697,10 +740,14 @@
         });
     }
 
-    document.getElementById('spSearchBtn').addEventListener('click', spRenderTable);
+    document.getElementById('spSearchBtn').addEventListener('click', function() {
+        spCurrentPage = 1;
+        spRenderTable();
+    });
     document.getElementById('spSearch').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
+            spCurrentPage = 1;
             spRenderTable();
         }
     });
@@ -736,6 +783,32 @@
     });
 
     window.addEventListener('scroll', spCloseActionMenus, true);
+
+    document.querySelector('.app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-sp-page-prev]');
+        if (prev && spCurrentPage > 1) {
+            spCurrentPage -= 1;
+            spRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-sp-page-next]');
+        if (next) {
+            var total = spGetFilteredRows().length;
+            var maxPage = Math.max(1, Math.ceil(total / spPageSize));
+            if (spCurrentPage < maxPage) {
+                spCurrentPage += 1;
+                spRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-sp-page]');
+        if (pageBtn) {
+            spCurrentPage = parseInt(pageBtn.getAttribute('data-sp-page'), 10) || 1;
+            spRenderTable();
+        }
+    });
 
     spRenderTable();
 </script>

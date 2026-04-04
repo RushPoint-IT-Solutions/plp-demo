@@ -47,13 +47,15 @@
     }
     &.profile-error-banner {
         background: #fdecea;
-        border-color: #c0392b;
+        padding: 14px 16px 16px;
+        max-width: 1080px;
+        margin: 0 auto;
         color: #7b0f0f;
         button { color: #c0392b; }
     }
 }
 
-.grades-scroll {
+        align-items: flex-start;
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -69,30 +71,39 @@
 
 @include down(991px) {
     .section-offering-page,
-    .grades-page,
+            font-size: 42px;
+            line-height: 1.04;
     .events-page,
     .profile-page {
         max-width: 100%;
     }
 }
 
-@include down(768px) {
+            margin: 5px 0 0;
     .section-offering-page,
     .grades-page,
     .events-page,
     .profile-page {
         padding-top: 0;
     }
+        font-size: 13px;
 }
+        margin-top: 6px;
 
 /* Applicant form helpers migrated from inline styles */
 .step-hidden {
+    .applicant-correspondence-divider {
+        height: 1px;
+        background: #0a813c;
+        margin: 12px 0 16px;
+    }
+
     display: none;
-}
+        padding: 0 2px 2px;
 
 .setup-photo-img {
     width: 100%;
-    height: 100%;
+        margin: 0 0 18px;
     object-fit: cover;
 }
 
@@ -109,7 +120,7 @@
     gap: 16px;
     margin-top: 4px;
 }
-
+        margin-top: 10px;
 .setup-col--flex-3 { flex: 3; }
 .setup-col--flex-23 { flex: 2.3; }
 .setup-col--flex-2 { flex: 2; }
@@ -147,29 +158,6 @@
         margin-top: 6px;
     }
 
-    .applicant-alert-error {
-        border: 1px solid #f3b7b7;
-        background: #fdeeee;
-        color: #8e2121;
-    }
-
-    .applicant-error-list {
-        margin: 0;
-        padding-left: 18px;
-    }
-
-    .setup-row--stacked {
-        margin-bottom: 14px;
-    }
-
-    .setup-col--full {
-        flex: 0 0 100%;
-        min-width: 100%;
-    }
-
-    .setup-required {
-        color: #d94141;
-        font-weight: 700;
     }
 
     .setup-helper--tight {
@@ -2946,6 +2934,16 @@ select.req-modal-input {
     select { min-width: 165px; padding-right: 10px; }
     &.flex-grow input[type="text"] { width: 100%; }
 }
+.sched-field-group--venue {
+    flex: 1 1 360px;
+    min-width: 260px;
+    max-width: 560px;
+
+    input[type="text"] {
+        width: 100%;
+        max-width: 100%;
+    }
+}
 .sched-actions {
     display: flex;
     gap: 14px;
@@ -2994,56 +2992,226 @@ select.req-modal-input {
     }
 }
 
+// Applicant - Schedule of Exam + Correspondence pages
+.applicant-identity-row {
+    .app-filter-group--compact {
+        max-width: 260px;
+    }
+
+    .app-filter-group--wide {
+        max-width: 360px;
+    }
+}
+
+.applicant-meta-bar {
+    background: #f6f6f6;
+    border: 1px solid #d7d7d7;
+    box-shadow: none;
+}
+
+.applicant-sched-card {
+    padding: 30px 32px;
+}
+
+.applicant-exam-result-card {
+    .apc-btn[disabled] {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+}
+
+.applicant-result-note {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #555;
+}
+
+.applicant-schedule-empty {
+    margin: 0 0 12px;
+    color: #4f4f4f;
+    font-size: 13px;
+}
+
+.applicant-correspondence-shell {
+    background: #fff;
+    border: 1px solid #0a813c;
+    border-radius: 10px;
+    padding: 14px 16px 16px;
+    margin: 0;
+    overflow: visible;
+}
+
+.applicant-correspondence-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0;
+}
+
+.applicant-correspondence-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+}
+
+.applicant-correspondence-meta {
+    flex: 1;
+
+    h3 {
+        margin: 0;
+        font-size: 48px;
+        line-height: 1.04;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        color: #1f1f1f;
+    }
+
+    p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #444;
+    }
+}
+
+.applicant-correspondence-date {
+    font-size: 13px;
+    color: #4d4d4d;
+    margin-top: 6px;
+    white-space: nowrap;
+}
+
+.applicant-correspondence-divider {
+    height: 1px;
+    background: #0a813c;
+    margin: 12px 0 16px;
+}
+
+.applicant-correspondence-body {
+    padding: 0 2px 2px;
+}
+
+.applicant-correspondence-body p {
+    margin: 0 0 18px;
+    line-height: 1.45;
+    color: #202020;
+}
+
+.applicant-ref-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #0a813c;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: #f4faf6;
+    font-weight: 700;
+    margin: 2px 0 14px;
+
+    .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #0a813c;
+        position: relative;
+
+        &:before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 2px;
+            width: 4px;
+            height: 7px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    }
+}
+
+.applicant-next-steps {
+    margin-top: 10px;
+
+    ol {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        color: #333;
+    }
+}
+
+@media (max-width: 991px) {
+    .sched-field-group--venue {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .applicant-correspondence-head {
+        flex-wrap: wrap;
+    }
+
+    .applicant-correspondence-meta h3 {
+        font-size: 22px;
+    }
+
+    .applicant-correspondence-date {
+        white-space: normal;
+    }
+}
+
 // ΓöÇ Applicant sidebar
 #applicantSidebar { display: none; }
 .appl-sidebar-back {
     display: flex;
     align-items: center;
+    .applicant-correspondence-divider {
+        height: 1px;
+        background: #0a813c;
+        margin: 12px 0 16px;
+    }
+
     gap: 12px;
-    padding: 11px 12px;
-    color: #fff;
+        padding: 0 2px 2px;
+    }
     font-size: 0.95rem;
     font-weight: 600;
-    cursor: pointer;
+        margin: 0 0 18px;
     background: rgba(255, 255, 255, 0.15);
     border: none;
     width: 100%;
     text-align: left;
-    border-radius: 8px;
-    transition: background 0.15s;
+    .applicant-ref-chip {
     letter-spacing: 0.03em;
     text-decoration: none;
     &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
     svg { width: 20px; height: 20px; flex-shrink: 0; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+        background: #f4faf6;
 // STUDENT ΓÇö Profile edit page layout overrides
 // ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #0a813c;
+            position: relative;
+
+            &:before {
+                content: '';
+                position: absolute;
+                left: 4px;
+                top: 2px;
+                width: 4px;
+                height: 7px;
+                border: solid #fff;
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg);
+            }
+        }
+    }
 body.page-profile-edit {
-    .student-main-wrapper { overflow-y: auto !important; }
-    .student-content { flex: none !important; }
-}
-
-/* Academic Calendar: keep Show Entries inline (SHOW [select] ENTRIES) */
-.pf-table-controls .pf-entries-control,
-.sc-table-head .pf-entries-control {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-}
-
-.sc-table-head .pf-entries-control.sc-show-entry {
-    display: inline-flex;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 8px;
-}
-
-.pf-table-controls .pf-entries-control label,
 .pf-table-controls .pf-entries-control span,
-.sc-table-head .pf-entries-control.sc-show-entry label,
+        margin-top: 10px;
 .sc-table-head .pf-entries-control.sc-show-entry span {
     margin: 0;
     white-space: nowrap;

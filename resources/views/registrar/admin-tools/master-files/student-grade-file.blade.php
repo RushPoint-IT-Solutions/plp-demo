@@ -45,13 +45,7 @@
                 </table>
             </div>
 
-            <div class="sgf-pager-row">
-                <div class="sgf-page-list">
-                    <button type="button" class="sgf-page-btn" disabled aria-label="Previous page">&lsaquo;</button>
-                    <button type="button" class="sgf-page-num active" aria-current="page">1</button>
-                    <button type="button" class="sgf-page-btn" disabled aria-label="Next page">&rsaquo;</button>
-                </div>
-            </div>
+            <div class="app-table-pager"></div>
         </section>
     </div>
 </div>
@@ -117,6 +111,8 @@
         updateTemplate: '{{ route('registrar.admin-tools.master-files.student-grade-file.update', ['masterStudentGradeFile' => '__ID__']) }}',
         destroyTemplate: '{{ route('registrar.admin-tools.master-files.student-grade-file.destroy', ['masterStudentGradeFile' => '__ID__']) }}'
     };
+    var sgfCurrentPage = 1;
+    var sgfPageSize = 10;
 
     function sgfBuildUrl(template, id) {
         return template.replace('__ID__', encodeURIComponent(String(id)));
@@ -211,6 +207,45 @@
         menu.classList.add('open');
     }
 
+    function sgfRenderPager(totalRows) {
+        var mount = document.querySelector('.app-table-pager');
+        if (!mount) return;
+
+        var maxPage = Math.max(1, Math.ceil(totalRows / sgfPageSize));
+        if (sgfCurrentPage > maxPage) {
+            sgfCurrentPage = maxPage;
+        }
+
+        if (totalRows <= sgfPageSize) {
+            mount.innerHTML = '';
+            return;
+        }
+
+        var start = Math.max(1, sgfCurrentPage - 2);
+        var end = Math.min(maxPage, sgfCurrentPage + 2);
+        if (sgfCurrentPage <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (sgfCurrentPage >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        var pageNums = '';
+        for (var p = start; p <= end; p += 1) {
+            pageNums += '<button type="button" class="rtp-page-num ' + (p === sgfCurrentPage ? 'active' : '') + '" data-sgf-page="' + p + '">' + p + '</button>';
+        }
+
+        mount.innerHTML = '' +
+            '<div class="rtp-pagination">' +
+                '<nav class="rtp-nav" aria-label="Student grade file pagination">' +
+                    '<div class="rtp-list" role="group" aria-label="Page controls">' +
+                        '<button type="button" class="rtp-page-btn" data-sgf-page-prev="1" ' + (sgfCurrentPage <= 1 ? 'disabled' : '') + '>&lt;</button>' +
+                        pageNums +
+                        '<button type="button" class="rtp-page-btn" data-sgf-page-next="1" ' + (sgfCurrentPage >= maxPage ? 'disabled' : '') + '>&gt;</button>' +
+                    '</div>' +
+                '</nav>' +
+            '</div>';
+    }
+
     function sgfRenderTable() {
         var tbody = document.getElementById('sgfTableBody');
         if (!tbody) return;
@@ -218,11 +253,18 @@
         sgfCloseActionMenus();
 
         var rows = sgfGetFilteredRows();
-        var bodyRows = rows.map(function(row, idx) {
+        var maxPage = Math.max(1, Math.ceil(rows.length / sgfPageSize));
+        if (sgfCurrentPage > maxPage) {
+            sgfCurrentPage = 1;
+        }
+        var startIndex = (sgfCurrentPage - 1) * sgfPageSize;
+        var pageItems = rows.slice(startIndex, startIndex + sgfPageSize);
+
+        var bodyRows = pageItems.map(function(row, idx) {
             var menuId = 'sgfMenu' + idx;
             return '' +
                 '<tr>' +
-                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + (startIndex + idx + 1) + '</td>' +
                     '<td>' + sgfEscapeHtml(row.studentId) + '</td>' +
                     '<td>' + sgfEscapeHtml(row.name).toUpperCase() + '</td>' +
                     '<td>' + sgfEscapeHtml(row.course) + '</td>' +
@@ -237,6 +279,7 @@
 
         tbody.innerHTML = bodyRows +
             '<tr class="sgf-total-row"><td colspan="6">Total Students: <strong>' + rows.length + '</strong></td></tr>';
+        sgfRenderPager(rows.length);
     }
 
     function sgfOpenAddModal() {
@@ -330,10 +373,14 @@
         });
     }
 
-    document.getElementById('sgfSearchBtn').addEventListener('click', sgfRenderTable);
+    document.getElementById('sgfSearchBtn').addEventListener('click', function() {
+        sgfCurrentPage = 1;
+        sgfRenderTable();
+    });
     document.getElementById('sgfSearch').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
+            sgfCurrentPage = 1;
             sgfRenderTable();
         }
     });
@@ -353,6 +400,32 @@
     });
 
     window.addEventListener('scroll', sgfCloseActionMenus, true);
+
+    document.querySelector('.app-table-pager').addEventListener('click', function(event) {
+        var prev = event.target.closest('[data-sgf-page-prev]');
+        if (prev && sgfCurrentPage > 1) {
+            sgfCurrentPage -= 1;
+            sgfRenderTable();
+            return;
+        }
+
+        var next = event.target.closest('[data-sgf-page-next]');
+        if (next) {
+            var total = sgfGetFilteredRows().length;
+            var maxPage = Math.max(1, Math.ceil(total / sgfPageSize));
+            if (sgfCurrentPage < maxPage) {
+                sgfCurrentPage += 1;
+                sgfRenderTable();
+            }
+            return;
+        }
+
+        var pageBtn = event.target.closest('[data-sgf-page]');
+        if (pageBtn) {
+            sgfCurrentPage = parseInt(pageBtn.getAttribute('data-sgf-page'), 10) || 1;
+            sgfRenderTable();
+        }
+    });
 
     sgfRenderTable();
 </script>

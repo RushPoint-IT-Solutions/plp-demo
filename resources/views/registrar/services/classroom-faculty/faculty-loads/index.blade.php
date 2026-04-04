@@ -30,7 +30,7 @@
     </div>
 
     <div class="app-table-wrap rfl-table-wrap">
-        <table class="app-table rfl-table" id="rflFacultyTable">
+        <table class="app-table rfl-table" id="rflFacultyTable" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th style="width:70px">#</th>
@@ -61,7 +61,7 @@
     </table>
 </div>
 
-<div class="rfl-footer">
+<div class="rfl-footer" style="display:flex;justify-content:flex-end;">
     <div class="rfl-pagination">{{ $faculties->links() }}</div>
 </div>
 </div>

@@ -29,10 +29,12 @@
     var saveExamScheduleBtn = document.getElementById('saveExamScheduleBtn');
     var printExamScheduleBtn = document.getElementById('printExamScheduleBtn');
 
-    var examResultStatus = document.getElementById('examResultStatus');
-    var examResultScore = document.getElementById('examResultScore');
-    var examResultFeedback = document.getElementById('examResultFeedback');
-    var saveExamResultBtn = document.getElementById('saveExamResultBtn');
+    var examResultCard = document.getElementById('examResultCard');
+    var examResultNoData = document.getElementById('examResultNoData');
+    var examResultBadge = document.getElementById('examResultBadge');
+    var examResultScoreLine = document.getElementById('examResultScoreLine');
+    var examResultScoreText = document.getElementById('examResultScoreText');
+    var examResultMessage = document.getElementById('examResultMessage');
 
     var selectedApplicantRow = null;
 
@@ -105,6 +107,45 @@
         return 'Unable to save changes right now.';
     }
 
+    function renderExamResultCardFromRow(row) {
+        if (!row || !examResultCard || !examResultNoData || !examResultBadge || !examResultScoreLine || !examResultScoreText || !examResultMessage) {
+            return;
+        }
+
+        var examDate = String(row.getAttribute('data-exam-date') || '').trim();
+        var status = normalizeStatus(row.getAttribute('data-exam-result-status'));
+        var score = String(row.getAttribute('data-exam-score') || '').trim();
+
+        if (!examDate) {
+            examResultCard.style.display = 'none';
+            examResultNoData.style.display = 'block';
+            examResultNoData.textContent = 'No exam result is available yet.';
+            return;
+        }
+
+        examResultNoData.style.display = 'none';
+        examResultCard.style.display = 'block';
+
+        examResultBadge.className = 'result-status-badge result-' + status.toLowerCase();
+        examResultBadge.textContent = status.toUpperCase();
+
+        if (score !== '') {
+            examResultScoreLine.style.display = 'block';
+            examResultScoreText.textContent = score;
+        } else {
+            examResultScoreLine.style.display = 'none';
+            examResultScoreText.textContent = '';
+        }
+
+        if (status === 'Passed') {
+            examResultMessage.textContent = 'Congratulations. Please proceed to admissions requirements processing.';
+        } else if (status === 'Failed') {
+            examResultMessage.textContent = 'You may contact admissions for guidance on the next application cycle.';
+        } else {
+            examResultMessage.textContent = 'Your exam has been recorded. Result release is still pending.';
+        }
+    }
+
     function sendPut(url, payload) {
         return fetch(url, {
             method: 'PUT',
@@ -153,15 +194,11 @@
             scheduleExamVenue.value = row.getAttribute('data-exam-room') || '';
         }
 
-        if (examResultStatus) {
-            examResultStatus.value = normalizeStatus(row.getAttribute('data-exam-result-status'));
-        }
-        if (examResultScore) {
-            examResultScore.value = row.getAttribute('data-exam-score') || '';
+        if (scheduleExamFeedback) {
+            scheduleExamFeedback.textContent = '';
         }
 
-        setFeedback(scheduleExamFeedback, '', false);
-        setFeedback(examResultFeedback, '', false);
+        renderExamResultCardFromRow(row);
     }
 
     function switchPanel(panelId, title, linkEl) {
@@ -277,51 +314,7 @@
         });
     }
 
-    if (saveExamResultBtn) {
-        saveExamResultBtn.addEventListener('click', function () {
-            var applicantPk = detailApplicantPk ? detailApplicantPk.value : '';
-            if (!selectedApplicantRow || !applicantPk) {
-                setFeedback(examResultFeedback, 'Select an applicant first.', true);
-                return;
-            }
-
-            var resultStatus = examResultStatus ? examResultStatus.value : 'Pending';
-            var scoreValue = examResultScore ? examResultScore.value : '';
-
-            if (scoreValue !== '') {
-                var scoreNumber = parseFloat(scoreValue);
-                if (isNaN(scoreNumber) || scoreNumber < 0 || scoreNumber > 100) {
-                    setFeedback(examResultFeedback, 'Score must be between 0 and 100.', true);
-                    return;
-                }
-            }
-
-            var endpoint = getUrlFromTemplate(examResultUrlTemplate, applicantPk);
-            if (!endpoint) {
-                setFeedback(examResultFeedback, 'Result endpoint is not configured.', true);
-                return;
-            }
-
-            saveExamResultBtn.disabled = true;
-            sendPut(endpoint, {
-                exam_result_status: resultStatus,
-                exam_score: scoreValue === '' ? null : scoreValue
-            }).then(function (data) {
-                saveExamResultBtn.disabled = false;
-
-                var rowData = data && data.row ? data.row : {};
-                var normalized = normalizeStatus(rowData.exam_result_status || resultStatus);
-                selectedApplicantRow.setAttribute('data-exam-result-status', normalized);
-                selectedApplicantRow.setAttribute('data-exam-score', rowData.exam_score === null || typeof rowData.exam_score === 'undefined' ? '' : String(rowData.exam_score));
-
-                renderStatusChip(selectedApplicantRow, normalized);
-                setFeedback(examResultFeedback, (data && data.message) ? data.message : 'Exam result saved successfully.', false);
-            }).catch(function (error) {
-                saveExamResultBtn.disabled = false;
-                setFeedback(examResultFeedback, getPayloadErrorMessage(error.payload || error), true);
-            });
-        });
-    }
+    // Exam result panel intentionally mirrors applicant-side display content.
 
     if (printExamScheduleBtn) {
         printExamScheduleBtn.addEventListener('click', function () {

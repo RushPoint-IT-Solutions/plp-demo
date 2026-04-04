@@ -1,10 +1,14 @@
 (function () {
   'use strict';
 
-  var PAGE_SIZE = 5;
+  var PAGE_SIZE = 10;
   var BUTTON_WINDOW = 5;
   var stateMap = new WeakMap();
   var watchedTables = new WeakSet();
+
+  function getTableWrap(table) {
+    return table.closest('.app-table-wrap, .student-table-wrapper, .table-responsive, .ga-table-wrap') || table.parentElement;
+  }
 
   function shouldSkipTable(table) {
     if (!table) return true;
@@ -12,7 +16,6 @@
     if (table.closest('.req-modal-overlay')) return true;
     if (table.closest('[id$="PrintContainer"]')) return true;
     if (table.id && table.id.indexOf('cfg') === 0) return true;
-    if (table.closest('.cfg-page')) return true;
     if (table.classList.contains('rep-doc-table')) return true;
     return false;
   }
@@ -39,12 +42,28 @@
   }
 
   function findPagerMount(table) {
-    var wrap = table.closest('.app-table-wrap, .student-table-wrapper, .table-responsive, .ga-table-wrap') || table.parentElement;
+    var wrap = getTableWrap(table);
     if (!wrap) return null;
 
-    var next = wrap.nextElementSibling;
-    if (next && (next.classList.contains('pf-pagination') || next.classList.contains('rtp-pagination'))) {
-      return next;
+    var probe = wrap.nextElementSibling;
+    var hops = 0;
+
+    while (probe && hops < 6) {
+      if (probe.classList && (probe.classList.contains('pf-pagination') || probe.classList.contains('rtp-pagination'))) {
+        return probe;
+      }
+
+      var nestedMount = probe.querySelector ? probe.querySelector('.app-table-pager') : null;
+      if (nestedMount && !nestedMount.querySelector('.pagination')) {
+        return nestedMount;
+      }
+
+      if (probe.classList && probe.classList.contains('app-table-pager') && !probe.querySelector('.pagination')) {
+        return probe;
+      }
+
+      probe = probe.nextElementSibling;
+      hops += 1;
     }
 
     var created = document.createElement('div');
@@ -73,6 +92,26 @@
     renderTable(table);
   }
 
+  function setPageById(tableId, mode, page) {
+    if (!tableId) return;
+    var table = document.getElementById(tableId);
+    if (!table) return;
+    var st = ensureState(table);
+    if (!st) return;
+
+    if (mode === 'prev') {
+      setPage(table, st.page - 1);
+      return;
+    }
+
+    if (mode === 'next') {
+      setPage(table, st.page + 1);
+      return;
+    }
+
+    setPage(table, page || 1);
+  }
+
   function buildPageButtons(table, st) {
     var start = Math.max(1, st.page - 2);
     var end = Math.min(st.maxPage, st.page + 2);
@@ -86,7 +125,7 @@
     var html = '';
     for (var p = start; p <= end; p += 1) {
       html += '<button type="button" class="rtp-page-num ' + (p === st.page ? 'active' : '') + '" ' +
-        (p === st.page ? 'aria-current="page"' : '') + ' data-rtp-page="' + p + '">' + p + '</button>';
+        (p === st.page ? 'aria-current="page"' : '') + ' data-rtp-page="' + p + '" ' + (table.id ? 'data-rtp-table="' + table.id + '"' : '') + '>' + p + '</button>';
     }
     return html;
   }
@@ -95,17 +134,30 @@
     var st = stateMap.get(table);
     if (!st || !st.mount) return;
 
+    if (st.maxPage <= 1) {
+      st.mount.innerHTML = '';
+      st.mount.style.display = 'none';
+      return;
+    }
+
+    st.mount.style.display = '';
+    if (table.id) {
+      st.mount.setAttribute('data-rtp-table', table.id);
+    }
+
     st.mount.classList.add('rtp-pagination');
     st.mount.innerHTML = '' +
       '<nav class="rtp-nav" aria-label="Table pagination">' +
         '<div class="rtp-list" role="group" aria-label="Page controls">' +
-          '<button type="button" class="rtp-page-btn" aria-label="Previous page" ' + (st.page <= 1 ? 'disabled' : '') + ' data-rtp-prev="1">&lt;</button>' +
+          '<button type="button" class="rtp-page-btn" aria-label="Previous page" ' + (st.page <= 1 ? 'disabled' : '') + ' data-rtp-prev="1" ' + (table.id ? 'data-rtp-table="' + table.id + '"' : '') + '>&lt;</button>' +
           buildPageButtons(table, st) +
-          '<button type="button" class="rtp-page-btn" aria-label="Next page" ' + (st.page >= st.maxPage ? 'disabled' : '') + ' data-rtp-next="1">&gt;</button>' +
+          '<button type="button" class="rtp-page-btn" aria-label="Next page" ' + (st.page >= st.maxPage ? 'disabled' : '') + ' data-rtp-next="1" ' + (table.id ? 'data-rtp-table="' + table.id + '"' : '') + '>&gt;</button>' +
         '</div>' +
       '</nav>';
 
     st.mount.onclick = function (event) {
+      event.stopPropagation();
+
       var prevBtn = event.target.closest('[data-rtp-prev]');
       if (prevBtn) {
         setPage(table, st.page - 1);
@@ -187,6 +239,13 @@
     });
   }
 
+  function refreshTableById(tableId, resetPage) {
+    var table = document.getElementById(tableId);
+    if (!table || shouldSkipTable(table)) return;
+    refreshTable(table, !!resetPage);
+    observeTable(table);
+  }
+
   function observeDocumentForTables() {
     var refreshTimer = null;
 
@@ -237,6 +296,13 @@
     initAutoPagination();
     observeDocumentForTables();
 
+    // Some pages populate table rows shortly after load via inline scripts.
+    // Retry a few times to ensure pagers attach to late-rendered rows.
+    window.setTimeout(initAutoPagination, 120);
+    window.setTimeout(initAutoPagination, 450);
+    window.setTimeout(initAutoPagination, 900);
+    window.setTimeout(initAutoPagination, 1800);
+
     window.addEventListener('load', function () {
       initAutoPagination();
       window.setTimeout(initAutoPagination, 300);
@@ -248,4 +314,28 @@
   } else {
     startAutoPagination();
   }
+
+  document.addEventListener('click', function (event) {
+    var prevBtn = event.target.closest('[data-rtp-prev][data-rtp-table]');
+    if (prevBtn) {
+      setPageById(prevBtn.getAttribute('data-rtp-table'), 'prev');
+      return;
+    }
+
+    var nextBtn = event.target.closest('[data-rtp-next][data-rtp-table]');
+    if (nextBtn) {
+      setPageById(nextBtn.getAttribute('data-rtp-table'), 'next');
+      return;
+    }
+
+    var pageBtn = event.target.closest('[data-rtp-page][data-rtp-table]');
+    if (pageBtn) {
+      setPageById(pageBtn.getAttribute('data-rtp-table'), 'page', parseInt(pageBtn.getAttribute('data-rtp-page'), 10) || 1);
+    }
+  });
+
+  window.registrarTablePagination = {
+    refreshAll: initAutoPagination,
+    refreshTableById: refreshTableById
+  };
 })();
