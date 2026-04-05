@@ -30,11 +30,6 @@ Route::post('/password/setup', 'Auth\FirstLoginPasswordController@update')->name
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-// Michael's placeholder routes
-Route::get('/applicant', function () {
-    return view('applicant.applicant-login-placeholder');
-});
-
 /*
 |--------------------------------------------------------------------------
 | Module Login Routes
@@ -57,6 +52,33 @@ Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login'
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
 Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
+
+/*
+|--------------------------------------------------------------------------
+| Public Applicant Onboarding Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('apply')->name('applicant.apply.')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('applicant.apply.welcome');
+    });
+    Route::get('/apply-welcome', 'Applicant\ApplicantOnboardingController@welcome')->name('welcome');
+    Route::post('/start', 'Applicant\ApplicantOnboardingController@start')->name('start');
+    Route::get('/basic-details', 'Applicant\ApplicantOnboardingController@basicDetails')->name('basic-details');
+    Route::post('/basic-details', 'Applicant\ApplicantOnboardingController@storeBasicDetails')->name('basic-details.store');
+    Route::get('/form-preview', 'Applicant\ApplicantOnboardingController@formPreview')->name('form-preview');
+    Route::post('/form-preview', 'Applicant\ApplicantOnboardingController@savePreviewForm')->name('form-preview.save');
+    Route::post('/form-preview/step-1', 'Applicant\ApplicantOnboardingController@savePreviewStep1')->name('form-preview.step-1.save');
+    Route::post('/form-preview/step-2', 'Applicant\ApplicantOnboardingController@savePreviewStep2')->name('form-preview.step-2.save');
+    Route::post('/form-preview/step-3', 'Applicant\ApplicantOnboardingController@savePreviewStep3')->name('form-preview.step-3.save');
+    Route::post('/form-preview/step-4', 'Applicant\ApplicantOnboardingController@savePreviewStep4')->name('form-preview.step-4.save');
+    Route::post('/form-preview/continue', 'Applicant\ApplicantOnboardingController@continuePreviewForm')->name('form-preview.continue');
+    Route::post('/form-preview/reset-progress', 'Applicant\ApplicantOnboardingController@resetPreviewForm')->name('form-preview.reset-progress');
+    Route::get('/preview/schedule-of-exam', 'Applicant\ApplicantOnboardingController@previewScheduleOfExam')->name('preview.schedule-of-exam');
+    Route::get('/preview/calendar', 'Applicant\ApplicantOnboardingController@previewCalendar')->name('preview.calendar');
+    Route::get('/preview/exam-result', 'Applicant\ApplicantOnboardingController@previewExamResult')->name('preview.exam-result');
+    Route::get('/preview/correspondence', 'Applicant\ApplicantOnboardingController@previewCorrespondence')->name('preview.correspondence');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +120,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
         Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::get('/application/{applicant}/form', 'Registrar\RegistrarController@applicantFormEditor')->name('application.form.edit');
+        Route::post('/application/{applicant}/form', 'Registrar\RegistrarController@saveApplicantFormFromRegistrar')->name('application.form.save');
+        Route::post('/application/{applicant}/form/step-1', 'Registrar\RegistrarController@saveApplicantFormStep1FromRegistrar')->name('application.form.step-1.save');
+        Route::post('/application/{applicant}/form/step-2', 'Registrar\RegistrarController@saveApplicantFormStep2FromRegistrar')->name('application.form.step-2.save');
+        Route::post('/application/{applicant}/form/step-3', 'Registrar\RegistrarController@saveApplicantFormStep3FromRegistrar')->name('application.form.step-3.save');
+        Route::post('/application/{applicant}/form/step-4', 'Registrar\RegistrarController@saveApplicantFormStep4FromRegistrar')->name('application.form.step-4.save');
         Route::put('/application/{applicant}/exam-schedule', 'Registrar\RegistrarController@updateApplicantExamSchedule')->name('application.exam-schedule.update');
         Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');

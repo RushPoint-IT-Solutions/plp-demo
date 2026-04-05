@@ -17,6 +17,7 @@
 
     var examScheduleUrlTemplate = appProcessPage.getAttribute('data-exam-schedule-url-template') || '';
     var examResultUrlTemplate = appProcessPage.getAttribute('data-exam-result-url-template') || '';
+    var formUrlTemplate = appProcessPage.getAttribute('data-form-url-template') || '';
 
     var detailApplicantPk = document.getElementById('detailApplicantPk');
     var detailApplicantId = document.getElementById('detailApplicantId');
@@ -35,6 +36,9 @@
     var examResultScoreLine = document.getElementById('examResultScoreLine');
     var examResultScoreText = document.getElementById('examResultScoreText');
     var examResultMessage = document.getElementById('examResultMessage');
+
+    var appFormEditorEmpty = document.getElementById('registrarAppFormEditorEmpty');
+    var appFormEditorFrame = document.getElementById('registrarAppFormEditorFrame');
 
     var selectedApplicantRow = null;
 
@@ -174,8 +178,10 @@
             return;
         }
 
+        var applicantPk = row.getAttribute('data-pk') || '';
+
         if (detailApplicantPk) {
-            detailApplicantPk.value = row.getAttribute('data-pk') || '';
+            detailApplicantPk.value = applicantPk;
         }
         if (detailApplicantId) {
             detailApplicantId.value = row.getAttribute('data-id') || '';
@@ -196,6 +202,17 @@
 
         if (scheduleExamFeedback) {
             scheduleExamFeedback.textContent = '';
+        }
+
+        if (appFormEditorFrame) {
+            var formUrl = getUrlFromTemplate(formUrlTemplate, applicantPk);
+            if (formUrl) {
+                appFormEditorFrame.setAttribute('src', formUrl);
+                appFormEditorFrame.style.display = 'block';
+                if (appFormEditorEmpty) {
+                    appFormEditorEmpty.style.display = 'none';
+                }
+            }
         }
 
         renderExamResultCardFromRow(row);

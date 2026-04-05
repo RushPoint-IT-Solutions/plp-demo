@@ -290,6 +290,16 @@
     color: #555;
 }
 
+.login-options .login-remember-check {
+    margin-bottom: 0;
+    font-size: 0.82rem;
+    color: #555;
+}
+
+.login-options .login-remember-check input[type="checkbox"] {
+    margin-top: 0;
+}
+
 .login-forgot {
     font-size: 0.82rem;
     color: #555;

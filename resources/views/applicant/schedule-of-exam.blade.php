@@ -1,4 +1,4 @@
-@extends('layouts.applicant')
+@extends(!empty($applicationFormEmbedded) ? 'layouts.applicant-embedded' : 'layouts.applicant')
 
 @section('title', 'PLP - Schedule of Exam')
 @section('page-title', 'SCHEDULE OF EXAM')

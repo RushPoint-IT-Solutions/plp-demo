@@ -89,6 +89,7 @@
 <div
     class="app-process-page"
     id="appProcessPage"
+    data-form-url-template="{{ route('registrar.process.application.form.edit', ['applicant' => '__APPLICANT_ID__']) }}"
     data-exam-schedule-url-template="{{ route('registrar.process.application.exam-schedule.update', ['applicant' => '__APPLICANT_ID__']) }}"
     data-exam-result-url-template="{{ route('registrar.process.application.exam-result.update', ['applicant' => '__APPLICANT_ID__']) }}"
     data-csrf-token="{{ csrf_token() }}"
@@ -234,7 +235,7 @@
 
     {{-- Application Form --}}
     <div class="applicant-panel" id="panel-application-form">
-        <div class="under-dev-notice">Under Development</div>
+        @include('registrar.process.panels.application-form')
     </div>
 
     {{-- Documents Submitted --}}

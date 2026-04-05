@@ -156,6 +156,8 @@
         return;
     }
 
+    var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
+
     function bindDigitsOnly(selector, maxLength) {
         document.querySelectorAll(selector).forEach(function (input) {
             function normalize() {
@@ -176,6 +178,10 @@
     }
 
     function validateStep(step) {
+        if (skipStepValidation) {
+            return true;
+        }
+
         var panel = document.getElementById('step-' + step);
         if (!panel) {
             return true;

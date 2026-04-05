@@ -1,4 +1,18 @@
 <aside class="plp-sidebar">
+    @php
+        $isPreviewPortal = !empty($previewPortalMode);
+        $previewPortalUnlocked = !empty($previewPortalUnlocked);
+        $portalUnlocked = $isPreviewPortal ? $previewPortalUnlocked : true;
+
+        $applicationFormUrl = $isPreviewPortal
+            ? route('applicant.apply.form-preview')
+            : route('applicant.application-form');
+
+        $applicationFormActive = $isPreviewPortal
+            ? request()->routeIs('applicant.apply.form-preview')
+            : request()->routeIs('applicant.application-form');
+    @endphp
+
     {{-- Logo + School Name --}}
     <div class="sidebar-brand">
         <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="sidebar-logo">
@@ -9,7 +23,7 @@
     <nav class="sidebar-nav">
 
         {{-- Application Form --}}
-        <a href="{{ route('applicant.application-form') }}" class="sidebar-link {{ request()->routeIs('applicant.application-form') ? 'active' : '' }}">
+        <a href="{{ $applicationFormUrl }}" class="sidebar-link {{ $applicationFormActive ? 'active' : '' }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -19,8 +33,10 @@
             <span>Application Form</span>
         </a>
 
+        @if($portalUnlocked)
+
         {{-- Schedule of Exam --}}
-        <a href="{{ route('applicant.schedule-of-exam') }}" class="sidebar-link {{ request()->routeIs('applicant.schedule-of-exam') ? 'active' : '' }}">
+        <a href="{{ $isPreviewPortal ? route('applicant.apply.preview.schedule-of-exam') : route('applicant.schedule-of-exam') }}" class="sidebar-link {{ $isPreviewPortal ? (request()->routeIs('applicant.apply.preview.schedule-of-exam') ? 'active' : '') : (request()->routeIs('applicant.schedule-of-exam') ? 'active' : '') }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -31,7 +47,7 @@
         </a>
 
         {{-- Calendar --}}
-        <a href="{{ route('applicant.calendar') }}" class="sidebar-link {{ request()->routeIs('applicant.calendar') ? 'active' : '' }}">
+        <a href="{{ $isPreviewPortal ? route('applicant.apply.preview.calendar') : route('applicant.calendar') }}" class="sidebar-link {{ $isPreviewPortal ? (request()->routeIs('applicant.apply.preview.calendar') ? 'active' : '') : (request()->routeIs('applicant.calendar') ? 'active' : '') }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M8 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M16 2V5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -45,7 +61,7 @@
         </a>
 
         {{-- Exam Result --}}
-        <a href="{{ route('applicant.exam-result') }}" class="sidebar-link {{ request()->routeIs('applicant.exam-result') ? 'active' : '' }}">
+        <a href="{{ $isPreviewPortal ? route('applicant.apply.preview.exam-result') : route('applicant.exam-result') }}" class="sidebar-link {{ $isPreviewPortal ? (request()->routeIs('applicant.apply.preview.exam-result') ? 'active' : '') : (request()->routeIs('applicant.exam-result') ? 'active' : '') }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -55,7 +71,7 @@
         </a>
 
         {{-- Application Status (Official Correspondence) --}}
-        <a href="{{ route('applicant.correspondence') }}" class="sidebar-link {{ request()->routeIs('applicant.correspondence') ? 'active' : '' }}">
+        <a href="{{ $isPreviewPortal ? route('applicant.apply.preview.correspondence') : route('applicant.correspondence') }}" class="sidebar-link {{ $isPreviewPortal ? (request()->routeIs('applicant.apply.preview.correspondence') ? 'active' : '') : (request()->routeIs('applicant.correspondence') ? 'active' : '') }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -64,8 +80,20 @@
             <span>Application Status</span>
         </a>
 
+        @endif
+
     </nav>
 
+    @if($isPreviewPortal && !$portalUnlocked)
+    <div class="sidebar-logout">
+        <a href="{{ route('applicant.apply.basic-details') }}" class="sidebar-link logout-link">
+            <span>Back</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+            </svg>
+        </a>
+    </div>
+    @elseif(!$isPreviewPortal || $portalUnlocked)
     {{-- Logout --}}
     <div class="sidebar-logout">
         <a href="{{ route('logout') }}" class="sidebar-link logout-link"
@@ -79,4 +107,5 @@
             @csrf
         </form>
     </div>
+    @endif
 </aside>

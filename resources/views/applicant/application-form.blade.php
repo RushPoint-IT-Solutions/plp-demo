@@ -1,4 +1,4 @@
-﻿@extends('layouts.applicant')
+﻿@extends(!empty($applicationFormEmbedded) ? 'layouts.applicant-embedded' : 'layouts.applicant')
 
 @section('title', 'PLP - Application Form')
 @section('page-title', 'APPLICATION FORM')
@@ -9,13 +9,26 @@
     @php($edu = optional($app)->educationalBackground)
     @php($family = optional($app)->familyBackground)
     @php($pref = optional($app)->applicationPreference)
-    @php($activeStep = (int) old('active_step', max(1, min(4, (int) optional($app)->application_draft_step))))
+    @php($defaultDraftStep = max(1, min(4, (int) optional($app)->application_draft_step)))
+    @php($defaultActiveStep = !empty($applicationFormEmbedded) ? 1 : $defaultDraftStep)
+    @php($activeStep = (int) old('active_step', $defaultActiveStep))
     @php($portalStage = (int) old('portal_stage', optional($app)->application_portal_stage))
     @php($fallbackScheduleDate = now()->copy()->addWeek()->setTime(9, 0))
     @php($calendarScheduleDate = optional($app)->exam_date ?: $fallbackScheduleDate)
     @php($selectedCalendarDate = $calendarScheduleDate->format('Y-m-d'))
     @php($startYear = now()->year)
     @php($defaultSchoolYear = $startYear . '-' . ($startYear + 1))
+    @php($routeParams = isset($formRouteParams) && is_array($formRouteParams) ? $formRouteParams : [])
+    @php($saveRouteName = isset($formRouteNames['save']) ? $formRouteNames['save'] : 'applicant.application-form.save')
+    @php($step1RouteName = isset($formRouteNames['step1']) ? $formRouteNames['step1'] : 'applicant.application-form.step-1.save')
+    @php($step2RouteName = isset($formRouteNames['step2']) ? $formRouteNames['step2'] : 'applicant.application-form.step-2.save')
+    @php($step3RouteName = isset($formRouteNames['step3']) ? $formRouteNames['step3'] : 'applicant.application-form.step-3.save')
+    @php($step4RouteName = isset($formRouteNames['step4']) ? $formRouteNames['step4'] : 'applicant.application-form.step-4.save')
+    @php($continueRouteName = isset($formRouteNames['continue']) ? $formRouteNames['continue'] : 'applicant.application-form.continue')
+    @php($resetRouteName = isset($formRouteNames['reset']) ? $formRouteNames['reset'] : 'applicant.application-form.reset-progress')
+    @php($showResetButton = isset($showResetButton) ? (bool) $showResetButton : true)
+    @php($forceEditable = isset($forceEditable) ? (bool) $forceEditable : false)
+    @php($skipPreviewStepValidation = !empty($previewPortalMode))
 
     @if(session('success'))
     <div class="applicant-alert applicant-alert-success">{{ session('success') }}</div>
@@ -31,16 +44,16 @@
     </div>
     @endif
 
-    @if(app()->environment('local') || config('app.debug'))
+    @if($showResetButton && (app()->environment('local') || config('app.debug')) && !empty($resetRouteName))
     <div class="d-flex justify-content-end mb-2">
-        <form action="{{ route('applicant.application-form.reset-progress') }}" method="POST" onsubmit="return confirm('Reset application progress and step data for testing?');">
+        <form action="{{ route($resetRouteName, $routeParams) }}" method="POST" onsubmit="return confirm('Reset application progress and step data for testing?');">
             @csrf
             <button type="submit" class="btn btn-warning btn-sm">Temporary Reset Test Data</button>
         </form>
     </div>
     @endif
 
-    @if(optional($app)->application_status === 'submitted')
+    @if(optional($app)->application_status === 'submitted' && !$forceEditable)
         @if($portalStage < 1)
         <div class="setup-form-container submitted-intro-card">
             <div class="setup-section-header submitted-intro-title-row">
@@ -56,15 +69,18 @@
             </p>
 
             <div class="submitted-credentials-box">
+                @php($isPreviewPortalMode = !empty($previewPortalMode))
+                @php($lastNameToken = strtolower((string) optional($app)->last_name))
+                @php($previewPasswordHint = 'plp123' . $lastNameToken)
                 <p><span>Username:</span> {{ optional($app)->applicant_id }} (your applicant ID)</p>
-                <p><span>Default Password:</span> {{ strtoupper(optional($app)->last_name) }} (your last name)</p>
+                <p><span>Default Password:</span> {{ $isPreviewPortalMode ? $previewPasswordHint : strtoupper(optional($app)->last_name) }}{{ $isPreviewPortalMode ? ' (plp123 + your last name)' : ' (your last name)' }}</p>
             </div>
 
             <p class="submitted-intro-note submitted-intro-note--bottom">
                 You can view the status of your application at any time by logging in using your username and password.
             </p>
 
-            <form action="{{ route('applicant.application-form.continue') }}" method="POST" class="submitted-continue-form">
+            <form action="{{ route($continueRouteName, $routeParams) }}" method="POST" class="submitted-continue-form">
                 @csrf
                 <button type="submit" class="btn-setup-next submitted-continue-btn">Click Here To Continue</button>
             </form>
@@ -135,15 +151,17 @@
     <div id="stepSaveFeedback" class="applicant-alert applicant-alert-success step-save-feedback step-hidden"></div>
 
     <form
-        action="{{ route('applicant.application-form.save') }}"
+        action="{{ route($saveRouteName, $routeParams) }}"
         method="POST"
         enctype="multipart/form-data"
         id="applicationForm"
         data-active-step="{{ $activeStep }}"
-        data-step1-url="{{ route('applicant.application-form.step-1.save') }}"
-        data-step2-url="{{ route('applicant.application-form.step-2.save') }}"
-        data-step3-url="{{ route('applicant.application-form.step-3.save') }}"
-        data-step4-url="{{ route('applicant.application-form.step-4.save') }}"
+        data-preview-skip-validation="{{ $skipPreviewStepValidation ? '1' : '0' }}"
+        data-step1-url="{{ route($step1RouteName, $routeParams) }}"
+        data-step2-url="{{ route($step2RouteName, $routeParams) }}"
+        data-step3-url="{{ route($step3RouteName, $routeParams) }}"
+        data-step4-url="{{ route($step4RouteName, $routeParams) }}"
+        @if($skipPreviewStepValidation) novalidate @endif
     >
         @csrf
 
