@@ -165,6 +165,19 @@
         margin-bottom: 0;
     }
 
+    .setup-required-legend {
+        margin: 10px 0 14px;
+        font-size: 0.8rem;
+        color: #5f6368;
+        font-weight: 600;
+    }
+
+    .setup-label.is-required::after {
+        content: ' *';
+        color: #d94141;
+        font-weight: 700;
+    }
+
     .setup-checkbox-label--inline-note {
         align-items: flex-start;
         gap: 10px;
@@ -200,37 +213,85 @@
     }
 
     .submitted-intro-note {
-        color: #ff4f4f;
-        font-size: 12pt;
+        color: #4e5f55;
+        font-size: 11pt;
         line-height: 1.45;
         margin-bottom: 14px;
+    }
+
+    .submitted-intro-list {
+        margin: 0 0 16px;
+        padding-left: 18px;
+        color: #3f4f46;
+        font-size: 0.95rem;
+        line-height: 1.45;
+
+        li {
+            margin-bottom: 6px;
+        }
     }
 
     .submitted-intro-note--bottom {
         margin-top: 16px;
         margin-bottom: 18px;
         max-width: 1130px;
+        text-align: center;
     }
 
     .submitted-credentials-box {
-        border: 2px solid $plp-green;
+        border: 1px solid #b9d9c7;
         border-radius: 12px;
-        max-width: 690px;
+        max-width: 760px;
         margin: 0 auto;
-        padding: 20px 26px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        padding: 18px 22px;
+        background: linear-gradient(180deg, #f6fbf8 0%, #ffffff 100%);
+        box-shadow: 0 6px 16px rgba(0, 104, 55, 0.1);
+    }
 
-        p {
-            margin: 0;
-            font-size: 12pt;
-            color: #111;
-            line-height: 1.45;
+    .submitted-credentials-title {
+        margin: 0 0 12px;
+        color: $plp-green;
+        font-size: 1.05rem;
+        font-weight: 800;
+    }
 
-            span {
-                color: $plp-green;
-                font-weight: 700;
-            }
+    .submitted-credentials-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+
+        li {
+            border: 1px dashed #b6d6c3;
+            border-radius: 10px;
+            background: #ffffff;
+            padding: 10px 12px;
         }
+    }
+
+    .submitted-credentials-label {
+        display: block;
+        color: #5f6368;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .submitted-credentials-value {
+        display: block;
+        margin-top: 3px;
+        color: #0f1720;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .submitted-credentials-note {
+        display: block;
+        margin-top: 3px;
+        color: #4e5f55;
+        font-size: 0.8rem;
     }
 
     .submitted-continue-form {
@@ -239,8 +300,8 @@
     }
 
     .submitted-continue-btn {
-        min-width: 390px;
-        font-size: 12pt;
+        min-width: 330px;
+        font-size: 0.98rem;
     }
 
     .submitted-header-row {
@@ -464,7 +525,10 @@
 
         .submitted-intro-text,
         .submitted-intro-note,
-        .submitted-credentials-box p,
+        .submitted-credentials-title,
+        .submitted-credentials-label,
+        .submitted-credentials-value,
+        .submitted-credentials-note,
         .submitted-panel-title,
         .submitted-status-date,
         .submitted-status-note,

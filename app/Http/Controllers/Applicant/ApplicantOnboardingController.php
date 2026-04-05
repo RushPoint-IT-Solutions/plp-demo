@@ -29,12 +29,12 @@ class ApplicantOnboardingController extends Controller
             'ack_terms.accepted' => 'Please agree to the Privacy Policy and Terms of Service to continue.',
         ]);
 
-        return redirect()->route('applicant.apply.basic-details');
+        return redirect()->route('applicant.apply.form-preview');
     }
 
     public function basicDetails()
     {
-        return view('applicant.apply-basic-details');
+        return redirect()->route('applicant.apply.form-preview');
     }
 
     public function storeBasicDetails(Request $request)
@@ -245,7 +245,7 @@ class ApplicantOnboardingController extends Controller
         $request->session()->forget('applicant_preview_applicant_id');
 
         return redirect()
-            ->route('applicant.apply.basic-details')
+            ->route('applicant.apply.form-preview')
             ->with('success', 'Preview form reset.');
     }
 

@@ -158,6 +158,44 @@
 
     var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
 
+    function findRequiredLabel(field) {
+        var container = field.closest('.setup-col, .setup-col-sm, .setup-col-toggle, .setup-col--full');
+        if (!container) {
+            container = field.closest('.setup-row');
+        }
+        if (!container) {
+            return null;
+        }
+
+        return container.querySelector('.setup-label');
+    }
+
+    function syncRequiredIndicators() {
+        form.querySelectorAll('.setup-label.is-required').forEach(function (label) {
+            label.classList.remove('is-required');
+        });
+
+        var grouped = {};
+        form.querySelectorAll('input[required], select[required], textarea[required]').forEach(function (field) {
+            if (field.disabled) {
+                return;
+            }
+
+            var type = (field.type || '').toLowerCase();
+            if ((type === 'radio' || type === 'checkbox') && field.name) {
+                if (grouped[field.name]) {
+                    return;
+                }
+                grouped[field.name] = true;
+            }
+
+            var label = findRequiredLabel(field);
+            if (label) {
+                label.classList.add('is-required');
+            }
+        });
+    }
+
     function bindDigitsOnly(selector, maxLength) {
         document.querySelectorAll(selector).forEach(function (input) {
             function normalize() {
@@ -445,6 +483,8 @@
         if (enabled) {
             copyAddressValues();
         }
+
+        syncRequiredIndicators();
     }
 
     if (sameCheck) {
@@ -505,12 +545,14 @@
         if (!noK12Toggle.checked) {
             seniorSchoolField.removeAttribute('readonly');
             seniorSchoolField.setAttribute('required', 'required');
+            syncRequiredIndicators();
             return;
         }
 
         seniorSchoolField.value = juniorSchoolField ? juniorSchoolField.value : '';
         seniorSchoolField.setAttribute('readonly', 'readonly');
         seniorSchoolField.removeAttribute('required');
+        syncRequiredIndicators();
     }
 
     if (noK12Toggle && seniorSchoolField) {
@@ -569,6 +611,8 @@
                 applyCourseSelect.value = '';
             }
         }
+
+        syncRequiredIndicators();
     }
 
     if (applyProgramRadios.length) {
@@ -577,6 +621,8 @@
         });
         syncProgramMode();
     }
+
+    syncRequiredIndicators();
 
     // Address cascading (region > province > municipality)
     function fillSelect(selectEl, items, placeholder) {
