@@ -64,16 +64,29 @@
                 Your application will be evaluated. Please proceed to the Office of Admission for validation of your application.
             </p>
 
-            <p class="submitted-intro-note">
-                Please take note of your username and password listed below:
-            </p>
+            <ul class="submitted-intro-list">
+                <li>Save your login credentials in a secure place.</li>
+                <li>Use these credentials to view your applicant portal updates.</li>
+                <li>Change your password after your first successful sign-in.</li>
+            </ul>
 
             <div class="submitted-credentials-box">
                 @php($isPreviewPortalMode = !empty($previewPortalMode))
                 @php($lastNameToken = strtolower((string) optional($app)->last_name))
                 @php($previewPasswordHint = 'plp123' . $lastNameToken)
-                <p><span>Username:</span> {{ optional($app)->applicant_id }} (your applicant ID)</p>
-                <p><span>Default Password:</span> {{ $isPreviewPortalMode ? $previewPasswordHint : strtoupper(optional($app)->last_name) }}{{ $isPreviewPortalMode ? ' (plp123 + your last name)' : ' (your last name)' }}</p>
+                <h4 class="submitted-credentials-title">Your Account Credentials</h4>
+                <ul class="submitted-credentials-list">
+                    <li>
+                        <span class="submitted-credentials-label">Username</span>
+                        <strong class="submitted-credentials-value">{{ optional($app)->applicant_id }}</strong>
+                        <small class="submitted-credentials-note">Use your Applicant ID when logging in.</small>
+                    </li>
+                    <li>
+                        <span class="submitted-credentials-label">Default Password</span>
+                        <strong class="submitted-credentials-value">{{ $isPreviewPortalMode ? $previewPasswordHint : strtoupper(optional($app)->last_name) }}</strong>
+                        <small class="submitted-credentials-note">{{ $isPreviewPortalMode ? 'Format: plp123 + your last name.' : 'Format: your last name.' }}</small>
+                    </li>
+                </ul>
             </div>
 
             <p class="submitted-intro-note submitted-intro-note--bottom">
@@ -82,7 +95,7 @@
 
             <form action="{{ route($continueRouteName, $routeParams) }}" method="POST" class="submitted-continue-form">
                 @csrf
-                <button type="submit" class="btn-setup-next submitted-continue-btn">Click Here To Continue</button>
+                <button type="submit" class="btn-setup-next submitted-continue-btn">Proceed To Applicant Portal</button>
             </form>
         </div>
         @else
@@ -191,6 +204,10 @@
             <div class="step-item {{ $activeStep === 4 ? 'active' : '' }}" data-step="4">
                 <div class="step-pill">Step 4</div>
             </div>
+        </div>
+
+        <div class="setup-required-legend">
+            <span class="setup-required">*</span> Required fields
         </div>
 
         <div class="setup-form-container step-panel{{ $activeStep !== 1 ? ' step-hidden' : '' }}" id="step-1">
@@ -407,14 +424,14 @@
 
                 <div class="setup-row setup-row--stacked">
                     <div class="setup-col setup-col--full">
-                        <label class="setup-label">Junior School <span class="setup-required">*</span></label>
+                        <label class="setup-label">Junior School</label>
                         <input type="text" name="junior_school" class="setup-input" placeholder="Junior High" value="{{ old('junior_school', optional($edu)->junior_school) }}" required>
                     </div>
                 </div>
 
                 <div class="setup-row setup-row--stacked">
                     <div class="setup-col setup-col--full">
-                        <label class="setup-label">Senior School <span class="setup-required">*</span></label>
+                        <label class="setup-label">Senior School</label>
                         <input type="text" name="senior_school" id="seniorSchoolField" class="setup-input" placeholder="Senior High" value="{{ old('senior_school', optional($edu)->senior_school) }}" required>
                         <p class="setup-helper setup-helper--tight">If not applicable, use the same information as Junior High School</p>
                     </div>
@@ -422,7 +439,7 @@
 
                 <div class="setup-row setup-row--stacked">
                     <div class="setup-col setup-col--full">
-                        <label class="setup-label">SHS Track Strand <span class="setup-required">*</span></label>
+                        <label class="setup-label">SHS Track Strand</label>
                         <input type="text" name="shs_track_strand" class="setup-input" placeholder="SHS Strand" value="{{ old('shs_track_strand', optional($edu)->shs_track_strand) }}" required>
                     </div>
                 </div>
@@ -438,7 +455,7 @@
 
                 <div class="setup-row setup-row--stacked">
                     <div class="setup-col setup-col--full">
-                        <label class="setup-label">Learner's Reference Number (LRN) <span class="setup-required">*</span></label>
+                        <label class="setup-label">Learner's Reference Number (LRN)</label>
                         <input type="text" name="learner_reference_number" class="setup-input" placeholder="Must be exactly 12 digits (e.g. 123456789012)" value="{{ old('learner_reference_number', optional($edu)->learner_reference_number ?? optional($app)->lrn) }}" maxlength="12" inputmode="numeric" pattern="\d{12}" title="Must be exactly 12 digits" required>
                     </div>
                 </div>
