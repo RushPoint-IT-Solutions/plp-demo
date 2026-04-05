@@ -56,6 +56,8 @@
                 <h3>Registration Period</h3>
                 <button type="button" class="pf-btn-new" onclick="cfgOpenAddRegistration()">Add</button>
             </div>
+
+            
             <div class="app-table-wrap">
                 <table id="cfgRegistrationTable" class="app-table cfg-table" style="min-width: 980px;">
                     <thead>

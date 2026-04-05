@@ -73,10 +73,10 @@
 
             {{-- Remember Me & Forgot Password --}}
             <div class="login-options">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="remember" id="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-                    <label class="form-check-label" for="remember">Remember me</label>
-                </div>
+                <label class="setup-checkbox-label login-remember-check" for="remember">
+                    <input type="checkbox" name="remember" id="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+                    <span>Remember me</span>
+                </label>
                 @if (Route::has('password.request'))
                     <div class="login-forgot">
                         Forgot Password? <a href="{{ route('password.request') }}">Click HERE</a>

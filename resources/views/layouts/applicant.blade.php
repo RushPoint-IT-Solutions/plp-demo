@@ -22,9 +22,34 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
 
+    @php($embeddedMode = !empty($applicationFormEmbedded))
+    @if($embeddedMode)
+    <style>
+        .applicant-body.applicant-embedded-mode .sidebar-overlay,
+        .applicant-body.applicant-embedded-mode .plp-sidebar,
+        .applicant-body.applicant-embedded-mode .student-topbar,
+        .applicant-body.applicant-embedded-mode footer {
+            display: none !important;
+        }
+
+        .applicant-body.applicant-embedded-mode .student-main-wrapper,
+        .applicant-body.applicant-embedded-mode .content-footer-wrap,
+        .applicant-body.applicant-embedded-mode .student-content {
+            margin-left: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+        }
+
+        .applicant-body.applicant-embedded-mode .student-page-header {
+            border-radius: 8px 8px 0 0;
+        }
+    </style>
+    @endif
+
     @stack('styles')
 </head>
-<body class="student-body student-portal-body applicant-body">
+<body class="student-body student-portal-body applicant-body{{ $embeddedMode ? ' applicant-embedded-mode' : '' }}">
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>

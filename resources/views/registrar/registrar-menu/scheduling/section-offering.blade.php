@@ -10,6 +10,10 @@
     {{-- Filter Bar --}}
     <div class="sched-filter-bar">
         <div class="sched-filter-row sched-filter-row-main so-filter-row">
+            <div class="sched-filter-group so-filter-search">
+                <span class="app-filter-label">Search Section</span>
+                <input type="text" class="app-filter-input" id="soSectionSearch" placeholder="Type section, adviser, or course" style="width:100%;">
+            </div>
             <div class="sched-filter-group so-filter-sy">
                 <span class="app-filter-label">School Year</span>
                 <select class="app-filter-select" id="soSY" style="width:100%;">
@@ -22,7 +26,7 @@
                 <span class="app-filter-label">Semester</span>
                 <select class="app-filter-select" id="soTerm" style="width:100%;">
                     <option value="First">First</option>
-                    <option value="Second">Second</option>
+                    <option value="Second" selected>Second</option>
                     <option value="Summer">Summer</option>
                 </select>
             </div>
@@ -38,15 +42,13 @@
             <div class="sched-filter-group so-filter-section">
                 <span class="app-filter-label">Section</span>
                 <select class="app-filter-select" id="soSection" style="width:100%;">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
+                    <option value="">All Sections</option>
                 </select>
             </div>
             <div class="sched-filter-group sched-filter-group-lg so-filter-program">
                 <span class="app-filter-label">Course</span>
                 <select class="app-filter-select" id="soProgram" style="width:100%;">
+                    <option value="">All Courses</option>
                     <option value="BSIT">BSIT</option>
                     <option value="BSCS">BSCS</option>
                     <option value="BSED">BSED</option>
@@ -58,11 +60,49 @@
         </div>
     </div>
 
+    {{-- Sections Directory --}}
+    <div class="so-card so-directory-card" id="soSectionListCard">
+        <div class="so-card-header">
+            <div class="so-card-title">Section Directory</div>
+            <div class="so-directory-header-actions">
+                <div class="so-directory-note" id="soDirectoryNote">Select a section to view subjects and weekly schedule.</div>
+                <button type="button" class="pf-btn-new so-add-btn" id="soOpenAddSection">Add Section</button>
+            </div>
+        </div>
+
+        <div class="student-table-wrapper table-responsive" id="soSectionTableWrap">
+            <table class="student-table registrar-table" id="soSectionTable">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Section</th>
+                        <th>School Year</th>
+                        <th>Semester</th>
+                        <th>Year Level</th>
+                        <th>Slots</th>
+                        <th>Adviser</th>
+                        <th>Subjects</th>
+                    </tr>
+                </thead>
+                <tbody id="soSectionListBody">
+                    {{-- JS-rendered rows --}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pf-pagination" id="soSectionPageInfo">
+            <span class="pf-page-info" id="soSectionPageText">Showing 0 sections</span>
+        </div>
+    </div>
+
     {{-- Section Offering Card --}}
     <div class="so-card" id="soCard" style="display:none;">
         <div class="so-card-header">
             <div class="so-card-title" id="soCardTitle">Section Offering: A</div>
-            <button type="button" class="pf-btn-new so-print-btn">Print Class Program</button>
+            <div class="so-card-header-actions">
+                <button type="button" class="pf-btn-clear so-back-btn" id="soBackToDirectory">Back to Directory</button>
+                <button type="button" class="pf-btn-new so-print-btn">Print Class Program</button>
+            </div>
         </div>
 
         <div class="student-table-wrapper table-responsive" id="soTableWrap">
@@ -98,6 +138,106 @@
         <div class="so-weekly-title">Class Schedule</div>
         <div class="so-weekly-scroll">
             <div class="so-weekly-grid" id="soWeeklyGrid"></div>
+        </div>
+    </div>
+
+    {{-- Add Section Modal --}}
+    <div class="so-modal" id="soAddSectionModal" aria-hidden="true">
+        <div class="so-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="soAddSectionTitle">
+            <div class="so-modal-header">
+                <h3 class="so-modal-title" id="soAddSectionTitle">Add Section</h3>
+                <button type="button" class="so-modal-close" id="soCloseAddSection" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="so-modal-body">
+                <div class="so-modal-grid">
+                    <div class="so-modal-field so-modal-col-6">
+                        <label for="soModalProgram">Program</label>
+                        <select id="soModalProgram" class="app-filter-select" style="width:100%;">
+                            <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
+                            <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                            <option value="BSED">BSED - Bachelor of Secondary Education</option>
+                            <option value="BSAT">BSAT - Bachelor of Science in Accounting Technology</option>
+                            <option value="BSN">BSN - Bachelor of Science in Nursing</option>
+                            <option value="BSET">BSET - Bachelor of Science in Engineering Technology</option>
+                        </select>
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-3">
+                        <label for="soModalSY">School Year</label>
+                        <input id="soModalSY" type="text" class="app-filter-input" placeholder="2026-2027">
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-3">
+                        <label for="soModalTerm">Term</label>
+                        <select id="soModalTerm" class="app-filter-select" style="width:100%;">
+                            <option value="First">First</option>
+                            <option value="Second" selected>Second</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-4">
+                        <label for="soModalYearLevel">Year Level</label>
+                        <select id="soModalYearLevel" class="app-filter-select" style="width:100%;">
+                            <option value="First">First Year</option>
+                            <option value="Second">Second Year</option>
+                            <option value="Third">Third Year</option>
+                            <option value="Fourth">Fourth Year</option>
+                        </select>
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-4">
+                        <label for="soModalSection">Section</label>
+                        <input id="soModalSection" type="text" class="app-filter-input" placeholder="A / B / C / D">
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-4">
+                        <label for="soModalSlots">Slots</label>
+                        <input id="soModalSlots" type="number" class="app-filter-input" min="1" max="80" value="30">
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-6">
+                        <label for="soModalAdviser">Adviser</label>
+                        <input id="soModalAdviser" type="text" class="app-filter-input" placeholder="Adviser name">
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-6">
+                        <label for="soModalDescription">Description</label>
+                        <input id="soModalDescription" type="text" class="app-filter-input" placeholder="Optional section notes">
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-12">
+                        <label>Curriculum Subjects</label>
+                        <div class="so-curriculum-picker">
+                            <div class="so-curriculum-list-wrap">
+                                <div class="so-curriculum-list-title">Available Subjects</div>
+                                <select id="soCurriculumAvailable" class="so-curriculum-list" multiple size="8" aria-label="Available curriculum subjects"></select>
+                            </div>
+
+                            <div class="so-curriculum-actions" aria-label="Move curriculum subjects">
+                                <button type="button" class="so-curriculum-btn" id="soCurriculumAdd" title="Add selected">Add &gt;</button>
+                                <button type="button" class="so-curriculum-btn" id="soCurriculumAddAll" title="Add all">Add All &gt;&gt;</button>
+                                <button type="button" class="so-curriculum-btn" id="soCurriculumRemove" title="Remove selected">&lt; Remove</button>
+                                <button type="button" class="so-curriculum-btn" id="soCurriculumRemoveAll" title="Remove all">&lt;&lt; Remove All</button>
+                            </div>
+
+                            <div class="so-curriculum-list-wrap">
+                                <div class="so-curriculum-list-title">Subjects Included</div>
+                                <select id="soCurriculumIncluded" class="so-curriculum-list" multiple size="8" aria-label="Curriculum subjects included in section"></select>
+                            </div>
+                        </div>
+                        <div class="so-curriculum-summary" id="soCurriculumSummary">0 subjects selected</div>
+                    </div>
+                </div>
+
+                <div class="so-modal-feedback" id="soModalFeedback"></div>
+            </div>
+
+            <div class="so-modal-footer">
+                <button type="button" class="so-modal-btn so-modal-btn-cancel" id="soCancelAddSection">Cancel</button>
+                <button type="button" class="so-modal-btn so-modal-btn-primary" id="soSaveAddSection">Save Section</button>
+            </div>
         </div>
     </div>
 </div>

@@ -225,6 +225,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
   if (!form) {
     return;
   }
+  var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
   function bindDigitsOnly(selector, maxLength) {
     document.querySelectorAll(selector).forEach(function (input) {
       function normalize() {
@@ -242,6 +243,9 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     });
   }
   function validateStep(step) {
+    if (skipStepValidation) {
+      return true;
+    }
     var panel = document.getElementById('step-' + step);
     if (!panel) {
       return true;
