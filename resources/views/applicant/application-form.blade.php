@@ -619,6 +619,6 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/applicant-form.js') }}"></script>
+<script src="{{ asset('js/applicant-form.js') }}?v={{ time() }}"></script>
 @endpush
 @endsection
