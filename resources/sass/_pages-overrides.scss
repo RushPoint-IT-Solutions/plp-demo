@@ -2048,6 +2048,27 @@ body.page-profile-view .pv-layout {
     }
     tbody tr:last-child td { border-bottom: none; }
 }
+
+// Keep application-process columns at natural width on small screens.
+// Users can horizontally scroll instead of having compressed/wrapped table text.
+.app-process-page {
+    .app-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .app-table {
+        width: max-content;
+        min-width: 100%;
+        table-layout: auto;
+    }
+
+    .app-table thead th,
+    .app-table tbody td {
+        white-space: nowrap;
+    }
+}
+
 .app-status-accepted   { color: #006837; font-weight: 600; }
 .app-status-pending    { color: #e6a817; font-weight: 600; }
 .app-status-rejected   { color: #c0392b; font-weight: 600; }

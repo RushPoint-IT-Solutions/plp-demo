@@ -27939,6 +27939,23 @@ body.page-profile-edit .student-content {
   color: #fff !important;
 }
 
+/* Application Process responsive table: keep natural column width and allow horizontal scroll */
+.app-process-page .app-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-process-page .app-table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+.app-process-page .app-table thead th,
+.app-process-page .app-table tbody td {
+  white-space: nowrap;
+}
+
 .page-user-accounts .ua-selected-user {
   display: flex;
   flex-wrap: nowrap;

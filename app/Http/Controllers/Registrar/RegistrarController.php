@@ -592,7 +592,7 @@ class RegistrarController extends Controller
     public function applicationProcess()
     {
         $applicants = Applicant::query()
-            ->with('applicationPreference')
+            ->with('applicationPreference.course')
             ->orderByDesc('updated_at')
             ->orderByDesc('id')
             ->paginate(10)
@@ -656,6 +656,88 @@ class RegistrarController extends Controller
                 'applicant_id' => $applicant->applicant_id,
                 'exam_result_status' => (string) ($applicant->exam_result_status ?? 'Pending'),
                 'exam_score' => $applicant->exam_score,
+            ],
+        ]);
+    }
+
+    private function mapApprovalStatusLabelToDbValue($statusLabel): string
+    {
+        $normalized = strtolower(trim((string) $statusLabel));
+
+        if ($normalized === 'document submitted' || $normalized === 'submitted') {
+            return 'submitted';
+        }
+
+        if ($normalized === 'on probation' || $normalized === 'on_probation') {
+            return 'on_probation';
+        }
+
+        if ($normalized === 'in process' || $normalized === 'in_process') {
+            return 'in_process';
+        }
+
+        if ($normalized === 'rejected') {
+            return 'rejected';
+        }
+
+        if ($normalized === 'incomplete' || $normalized === 'draft') {
+            return 'draft';
+        }
+
+        if ($normalized === 'accepted') {
+            return 'accepted';
+        }
+
+        return 'in_process';
+    }
+
+    private function mapApprovalStatusDbValueToLabel($statusValue): string
+    {
+        $normalized = strtolower(trim((string) $statusValue));
+
+        if ($normalized === 'submitted' || $normalized === 'document submitted') {
+            return 'Document Submitted';
+        }
+
+        if ($normalized === 'on_probation' || $normalized === 'on probation') {
+            return 'On Probation';
+        }
+
+        if ($normalized === 'in_process' || $normalized === 'in process') {
+            return 'In Process';
+        }
+
+        if ($normalized === 'rejected') {
+            return 'Rejected';
+        }
+
+        if ($normalized === 'draft' || $normalized === 'incomplete') {
+            return 'Incomplete';
+        }
+
+        if ($normalized === 'accepted') {
+            return 'Accepted';
+        }
+
+        return 'In Process';
+    }
+
+    public function updateApplicantApprovalStatus(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'application_status' => 'required|in:Document Submitted,On Probation,In Process,Rejected,Incomplete,Accepted',
+        ]);
+
+        $applicant->application_status = $this->mapApprovalStatusLabelToDbValue($validated['application_status']);
+        $applicant->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Application status updated successfully.',
+            'row' => [
+                'id' => $applicant->id,
+                'applicant_id' => $applicant->applicant_id,
+                'application_status' => $this->mapApprovalStatusDbValueToLabel($applicant->application_status),
             ],
         ]);
     }

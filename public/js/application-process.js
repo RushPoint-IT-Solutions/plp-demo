@@ -17,6 +17,7 @@
 
     var examScheduleUrlTemplate = appProcessPage.getAttribute('data-exam-schedule-url-template') || '';
     var examResultUrlTemplate = appProcessPage.getAttribute('data-exam-result-url-template') || '';
+    var approvalStatusUrlTemplate = appProcessPage.getAttribute('data-approval-status-url-template') || '';
     var formUrlTemplate = appProcessPage.getAttribute('data-form-url-template') || '';
 
     var detailApplicantPk = document.getElementById('detailApplicantPk');
@@ -40,6 +41,12 @@
     var appFormEditorEmpty = document.getElementById('registrarAppFormEditorEmpty');
     var appFormEditorFrame = document.getElementById('registrarAppFormEditorFrame');
 
+    var approvalProgramInput = document.getElementById('approvalProgramInput');
+    var approvalStatusSelect = document.getElementById('approvalStatusSelect');
+    var approvalDateAccepted = document.getElementById('approvalDateAccepted');
+    var approvalBanner = document.getElementById('approvalBanner');
+    var approvalSaveBtn = document.getElementById('approvalSaveBtn');
+
     var selectedApplicantRow = null;
 
     function getUrlFromTemplate(template, applicantPk) {
@@ -59,7 +66,40 @@
         node.style.color = isError ? '#b42318' : '#14532d';
     }
 
-    function normalizeStatus(status) {
+    function normalizeApplicationStatus(status) {
+        var lowered = String(status || 'In Process').toLowerCase().trim();
+        if (lowered === 'submitted' || lowered === 'document submitted') {
+            return 'Document Submitted';
+        }
+        if (lowered === 'on probation' || lowered === 'on_probation') {
+            return 'On Probation';
+        }
+        if (lowered === 'in process' || lowered === 'in_process') {
+            return 'In Process';
+        }
+        if (lowered === 'rejected') {
+            return 'Rejected';
+        }
+        if (lowered === 'incomplete' || lowered === 'draft') {
+            return 'Incomplete';
+        }
+        if (lowered === 'accepted') {
+            return 'Accepted';
+        }
+        return 'In Process';
+    }
+
+    function getApplicationStatusClass(status) {
+        if (status === 'Rejected') {
+            return 'app-status-rejected';
+        }
+        if (status === 'Accepted' || status === 'Document Submitted' || status === 'In Process') {
+            return 'app-status-accepted';
+        }
+        return 'app-status-pending';
+    }
+
+    function normalizeExamResultStatus(status) {
         var lowered = String(status || 'Pending').toLowerCase();
         if (lowered === 'passed') {
             return 'Passed';
@@ -80,16 +120,48 @@
             return;
         }
 
-        var normalizedStatus = normalizeStatus(status);
-        var statusClass = 'app-status-pending';
-        if (normalizedStatus === 'Passed') {
-            statusClass = 'app-status-accepted';
-        }
-        if (normalizedStatus === 'Failed') {
-            statusClass = 'app-status-rejected';
-        }
+        var normalizedStatus = normalizeApplicationStatus(status);
+        var statusClass = getApplicationStatusClass(normalizedStatus);
 
         cell.innerHTML = '<span class="' + statusClass + '"><span class="app-status-dot"></span>' + normalizedStatus.toUpperCase() + '</span>';
+    }
+
+    function formatDate(date) {
+        var mm = String(date.getMonth() + 1).padStart(2, '0');
+        var dd = String(date.getDate()).padStart(2, '0');
+        var yyyy = date.getFullYear();
+        return mm + '/' + dd + '/' + yyyy;
+    }
+
+    function syncApprovalUi() {
+        if (!approvalStatusSelect || !approvalBanner || !approvalDateAccepted) {
+            return;
+        }
+
+        var status = normalizeApplicationStatus(approvalStatusSelect.value);
+        approvalStatusSelect.value = status;
+        approvalBanner.textContent = 'Application, ' + status;
+        if (status === 'Accepted') {
+            approvalDateAccepted.value = approvalDateAccepted.value || formatDate(new Date());
+        } else {
+            approvalDateAccepted.value = '';
+        }
+    }
+
+    function setApprovalPanelFromRow(row) {
+        if (!row) {
+            return;
+        }
+
+        if (approvalProgramInput) {
+            approvalProgramInput.value = row.getAttribute('data-program') || '';
+        }
+
+        if (approvalStatusSelect) {
+            approvalStatusSelect.value = normalizeApplicationStatus(row.getAttribute('data-application-status'));
+        }
+
+        syncApprovalUi();
     }
 
     function getPayloadErrorMessage(payload) {
@@ -117,7 +189,7 @@
         }
 
         var examDate = String(row.getAttribute('data-exam-date') || '').trim();
-        var status = normalizeStatus(row.getAttribute('data-exam-result-status'));
+        var status = normalizeExamResultStatus(row.getAttribute('data-exam-result-status'));
         var score = String(row.getAttribute('data-exam-score') || '').trim();
 
         if (!examDate) {
@@ -203,6 +275,8 @@
         if (scheduleExamFeedback) {
             scheduleExamFeedback.textContent = '';
         }
+
+        setApprovalPanelFromRow(row);
 
         if (appFormEditorFrame) {
             var formUrl = getUrlFromTemplate(formUrlTemplate, applicantPk);
@@ -321,8 +395,6 @@
                 selectedApplicantRow.setAttribute('data-exam-time', rowData.exam_time || examTime);
                 selectedApplicantRow.setAttribute('data-exam-room', rowData.exam_room || examRoom);
                 selectedApplicantRow.setAttribute('data-exam-result-status', rowData.exam_result_status || 'Pending');
-
-                renderStatusChip(selectedApplicantRow, rowData.exam_result_status || 'Pending');
                 setFeedback(scheduleExamFeedback, (data && data.message) ? data.message : 'Exam schedule saved successfully.', false);
             }).catch(function (error) {
                 saveExamScheduleBtn.disabled = false;
@@ -340,30 +412,60 @@
     }
 
     function initApprovalPanel() {
-        var statusSelect = document.getElementById('approvalStatusSelect');
-        var dateInput = document.getElementById('approvalDateAccepted');
-        var banner = document.getElementById('approvalBanner');
-        if (!statusSelect || !dateInput || !banner) return;
-
-        function formatDate(date) {
-            var mm = String(date.getMonth() + 1).padStart(2, '0');
-            var dd = String(date.getDate()).padStart(2, '0');
-            var yyyy = date.getFullYear();
-            return mm + '/' + dd + '/' + yyyy;
+        if (!approvalStatusSelect || !approvalDateAccepted || !approvalBanner) {
+            return;
         }
 
-        function syncApprovalState() {
-            var status = statusSelect.value || '';
-            if (status === 'Accepted') {
-                dateInput.value = formatDate(new Date());
-            } else {
-                dateInput.value = '';
+        approvalStatusSelect.addEventListener('change', syncApprovalUi);
+        syncApprovalUi();
+
+        if (!approvalSaveBtn) {
+            return;
+        }
+
+        approvalSaveBtn.addEventListener('click', function () {
+            var applicantPk = detailApplicantPk ? detailApplicantPk.value : '';
+            if (!selectedApplicantRow || !applicantPk) {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Select an applicant first.', 'warning');
+                }
+                return;
             }
-            banner.textContent = 'Application, ' + status;
-        }
 
-        statusSelect.addEventListener('change', syncApprovalState);
-        syncApprovalState();
+            var endpoint = getUrlFromTemplate(approvalStatusUrlTemplate, applicantPk);
+            if (!endpoint) {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Approval endpoint is not configured.', 'error');
+                }
+                return;
+            }
+
+            var selectedStatus = normalizeApplicationStatus(approvalStatusSelect.value);
+            approvalSaveBtn.disabled = true;
+
+            sendPut(endpoint, {
+                application_status: selectedStatus
+            }).then(function (data) {
+                approvalSaveBtn.disabled = false;
+
+                var rowData = data && data.row ? data.row : {};
+                var nextStatus = normalizeApplicationStatus(rowData.application_status || selectedStatus);
+                selectedApplicantRow.setAttribute('data-application-status', nextStatus);
+                renderStatusChip(selectedApplicantRow, nextStatus);
+
+                approvalStatusSelect.value = nextStatus;
+                syncApprovalUi();
+
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast((data && data.message) ? data.message : 'Application status updated successfully.', 'success');
+                }
+            }).catch(function (error) {
+                approvalSaveBtn.disabled = false;
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast(getPayloadErrorMessage(error.payload || error), 'error');
+                }
+            });
+        });
     }
 
     function initDocumentsSubmittedPanel() {

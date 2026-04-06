@@ -44,7 +44,10 @@ function openAddDocModal() {
     document.getElementById('addGradeLevel').value = '';
     document.getElementById('addDocument').value = '';
     document.querySelector('#addDocForm input[name="add_doc_type"][value="Document"]').checked = true;
-    document.getElementById('addNonFilipino').checked = false;
+    var addNonFilipino = document.getElementById('addNonFilipino');
+    if (addNonFilipino) {
+        addNonFilipino.checked = false;
+    }
     document.getElementById('addDocModal').style.display = 'flex';
 }
 
@@ -129,7 +132,10 @@ function openEditModal(id, dept, grade, doc, type, nonFilipino) {
         document.getElementById('editTypeDocument').checked = true;
     }
 
-    document.getElementById('editNonFilipino').checked = !!nonFilipino;
+    var editNonFilipino = document.getElementById('editNonFilipino');
+    if (editNonFilipino) {
+        editNonFilipino.checked = !!nonFilipino;
+    }
     document.getElementById('editModal').style.display = 'flex';
 }
 

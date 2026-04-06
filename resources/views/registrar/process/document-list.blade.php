@@ -33,7 +33,7 @@
                 <tr>
                     <th>#</th>
                     <th>Department Type</th>
-                    <th>Grade Level</th>
+                    <th>Year Level</th>
                     <th>Document/ Requirements</th>
                     <th>Type</th>
                     <th>Non Filipino</th>
@@ -129,12 +129,12 @@
                             </label>
                         </div>
                     </div>
-                    <div class="req-modal-field-group" style="flex:0 0 auto;">
+                    {{-- <div class="req-modal-field-group" style="flex:0 0 auto;">
                         <label class="req-modal-label">Non-Filipino</label>
                         <label class="doclist-checkbox-label" style="margin-top:4px;">
                             <input type="checkbox" id="addNonFilipino" name="non_filipino" value="1"> Yes
                         </label>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
             <div class="req-modal-actions">
@@ -186,12 +186,12 @@
                             </label>
                         </div>
                     </div>
-                    <div class="req-modal-field-group" style="flex:0 0 auto;">
+                    {{-- <div class="req-modal-field-group" style="flex:0 0 auto;">
                         <label class="req-modal-label">Non-Filipino</label>
                         <label class="doclist-checkbox-label" style="margin-top:4px;">
                             <input type="checkbox" id="editNonFilipino" name="non_filipino" value="1"> Yes
                         </label>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 

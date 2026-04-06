@@ -157,6 +157,7 @@
     }
 
     var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
+    var hideRequiredIndicators = form.getAttribute('data-hide-required-indicators') === '1';
 
     function findRequiredLabel(field) {
         var container = field.closest('.setup-col, .setup-col-sm, .setup-col-toggle, .setup-col--full');
@@ -174,6 +175,10 @@
         form.querySelectorAll('.setup-label.is-required').forEach(function (label) {
             label.classList.remove('is-required');
         });
+
+        if (hideRequiredIndicators) {
+            return;
+        }
 
         var grouped = {};
         form.querySelectorAll('input[required], select[required], textarea[required]').forEach(function (field) {
