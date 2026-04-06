@@ -228,6 +228,6 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/document-list.js') }}"></script>
+<script src="{{ asset('js/document-list.js') }}?v={{ time() }}"></script>
 @endpush
 @endsection
