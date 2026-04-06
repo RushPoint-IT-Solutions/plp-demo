@@ -29,6 +29,7 @@
     @php($showResetButton = isset($showResetButton) ? (bool) $showResetButton : true)
     @php($forceEditable = isset($forceEditable) ? (bool) $forceEditable : false)
     @php($skipPreviewStepValidation = !empty($previewPortalMode))
+    @php($hideRequiredIndicators = !empty($applicationFormEmbedded))
 
     @if(session('success'))
     <div class="applicant-alert applicant-alert-success">{{ session('success') }}</div>
@@ -170,6 +171,7 @@
         id="applicationForm"
         data-active-step="{{ $activeStep }}"
         data-preview-skip-validation="{{ $skipPreviewStepValidation ? '1' : '0' }}"
+        data-hide-required-indicators="{{ $hideRequiredIndicators ? '1' : '0' }}"
         data-step1-url="{{ route($step1RouteName, $routeParams) }}"
         data-step2-url="{{ route($step2RouteName, $routeParams) }}"
         data-step3-url="{{ route($step3RouteName, $routeParams) }}"
@@ -206,9 +208,11 @@
             </div>
         </div>
 
+        @if(!$hideRequiredIndicators)
         <div class="setup-required-legend">
             <span class="setup-required">*</span> Required fields
         </div>
+        @endif
 
         <div class="setup-form-container step-panel{{ $activeStep !== 1 ? ' step-hidden' : '' }}" id="step-1">
             <div class="setup-section">

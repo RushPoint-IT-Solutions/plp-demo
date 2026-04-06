@@ -92,6 +92,7 @@
     data-form-url-template="{{ route('registrar.process.application.form.edit', ['applicant' => '__APPLICANT_ID__']) }}"
     data-exam-schedule-url-template="{{ route('registrar.process.application.exam-schedule.update', ['applicant' => '__APPLICANT_ID__']) }}"
     data-exam-result-url-template="{{ route('registrar.process.application.exam-result.update', ['applicant' => '__APPLICANT_ID__']) }}"
+    data-approval-status-url-template="{{ route('registrar.process.application.approval-status.update', ['applicant' => '__APPLICANT_ID__']) }}"
     data-csrf-token="{{ csrf_token() }}"
 >
 
@@ -168,19 +169,35 @@
                 @php
                     $displayName = trim((string) $applicant->first_name . ' ' . (string) $applicant->last_name);
                     $preference = optional($applicant->applicationPreference);
+                    $preferredCourse = optional($preference->course);
                     $programLabel = 'N/A';
                     if ($preference->apply_program === 'college') {
-                        $programLabel = 'College';
+                        $programLabel = $preferredCourse->name ?: ($preferredCourse->code ?: 'College');
                     } elseif ($preference->apply_program === 'senior_high') {
                         $programLabel = $preference->apply_strand ?: 'Senior High';
                     }
 
-                    $statusRaw = strtolower((string) ($applicant->exam_result_status ?: 'Pending'));
+                    $rawApplicationStatus = strtolower(trim((string) ($applicant->application_status ?: 'in process')));
+                    $statusRaw = 'In Process';
+                    if ($rawApplicationStatus === 'submitted' || $rawApplicationStatus === 'document submitted') {
+                        $statusRaw = 'Document Submitted';
+                    } elseif ($rawApplicationStatus === 'on probation' || $rawApplicationStatus === 'on_probation') {
+                        $statusRaw = 'On Probation';
+                    } elseif ($rawApplicationStatus === 'in process' || $rawApplicationStatus === 'in_process') {
+                        $statusRaw = 'In Process';
+                    } elseif ($rawApplicationStatus === 'rejected') {
+                        $statusRaw = 'Rejected';
+                    } elseif ($rawApplicationStatus === 'incomplete' || $rawApplicationStatus === 'draft') {
+                        $statusRaw = 'Incomplete';
+                    } elseif ($rawApplicationStatus === 'accepted') {
+                        $statusRaw = 'Accepted';
+                    }
+
                     $statusClass = 'app-status-pending';
-                    if ($statusRaw === 'passed') {
+                    if ($statusRaw === 'Accepted' || $statusRaw === 'Document Submitted' || $statusRaw === 'In Process') {
                         $statusClass = 'app-status-accepted';
                     }
-                    if ($statusRaw === 'failed') {
+                    if ($statusRaw === 'Rejected') {
                         $statusClass = 'app-status-rejected';
                     }
                 @endphp
@@ -188,6 +205,8 @@
                     data-pk="{{ $applicant->id }}"
                     data-id="{{ $applicant->applicant_id }}"
                     data-name="{{ e($displayName) }}"
+                    data-program="{{ e($programLabel) }}"
+                    data-application-status="{{ e($statusRaw) }}"
                     data-exam-date="{{ optional($applicant->exam_date)->format('Y-m-d') }}"
                     data-exam-time="{{ optional($applicant->exam_date)->format('H:i') }}"
                     data-exam-room="{{ e((string) ($applicant->exam_room ?? '')) }}"

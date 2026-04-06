@@ -128,6 +128,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::post('/application/{applicant}/form/step-4', 'Registrar\RegistrarController@saveApplicantFormStep4FromRegistrar')->name('application.form.step-4.save');
         Route::put('/application/{applicant}/exam-schedule', 'Registrar\RegistrarController@updateApplicantExamSchedule')->name('application.exam-schedule.update');
         Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
+        Route::put('/application/{applicant}/approval-status', 'Registrar\RegistrarController@updateApplicantApprovalStatus')->name('application.approval-status.update');
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
