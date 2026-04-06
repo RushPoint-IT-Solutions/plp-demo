@@ -31,7 +31,8 @@ mix.js('resources/js/app.js', 'public/js')
    .sass('resources/sass/loa-enrolled.scss', 'public/css')
    .sass('resources/sass/citizens-charter.scss', 'public/css')
    .sass('resources/sass/request-form-f-137a.scss', 'public/css')
-   .sass('resources/sass/registrar-faculty-loads.scss', 'public/css');
+   .sass('resources/sass/registrar-faculty-loads.scss', 'public/css')
+   .version();
 
    mix.browserSync({
       proxy: '127.0.0.1:8000',
