@@ -4,65 +4,37 @@
     padding: 6px 0 0;
 }
 
-/* Grades page */
-.grades-page {
-    max-width: 1080px;
-    margin: 0;
-    padding: 6px 0 0;
-}
+// Applicant sidebar
+#applicantSidebar { display: none; }
 
-/* Events page */
-.events-page {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 6px 0 0;
-}
-
-/* Profile / setup wizard */
-.profile-page {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 6px 0 0;
-}
-
-.profile-save-banner {
+.appl-sidebar-back {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: #e9f7ef;
-    border: 1px solid #006837;
-    color: #004d28;
-    border-radius: 6px;
-    padding: 10px 16px;
-    margin-bottom: 14px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    button {
-        background: none;
-        border: none;
-        color: #006837;
-        font-size: 1rem;
-        cursor: pointer;
-        line-height: 1;
-    }
-    &.profile-error-banner {
-        background: #fdecea;
-        padding: 14px 16px 16px;
-        max-width: 1080px;
-        margin: 0 auto;
-        color: #7b0f0f;
-        button { color: #c0392b; }
-    }
-}
-
-        align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 18px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
     width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    text-align: left;
+    letter-spacing: 0.03em;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
+    svg { width: 20px; height: 20px; flex-shrink: 0; }
 }
 
-/* Left-align Code & Course columns, keep numerics centered */
-.grades-page .sched-th:nth-child(1),
+// STUDENT - Profile edit page layout overrides
+body.page-profile-edit .pf-table-controls .pf-entries-control span,
+body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
+    margin: 0;
+    white-space: nowrap;
+}
 .grades-page .sched-th:nth-child(2),
 .grades-page .sched-td:nth-child(1),
 .grades-page .sched-td:nth-child(2) {
@@ -71,39 +43,29 @@
 
 @include down(991px) {
     .section-offering-page,
-            font-size: 42px;
-            line-height: 1.04;
+    .grades-page,
     .events-page,
     .profile-page {
         max-width: 100%;
     }
 }
 
-            margin: 5px 0 0;
+@include down(768px) {
     .section-offering-page,
     .grades-page,
     .events-page,
     .profile-page {
         padding-top: 0;
     }
-        font-size: 13px;
 }
-        margin-top: 6px;
 
 /* Applicant form helpers migrated from inline styles */
 .step-hidden {
-    .applicant-correspondence-divider {
-        height: 1px;
-        background: #0a813c;
-        margin: 12px 0 16px;
-    }
-
     display: none;
-        padding: 0 2px 2px;
+}
 
 .setup-photo-img {
     width: 100%;
-        margin: 0 0 18px;
     object-fit: cover;
 }
 
@@ -120,7 +82,6 @@
     gap: 16px;
     margin-top: 4px;
 }
-        margin-top: 10px;
 .setup-col--flex-3 { flex: 3; }
 .setup-col--flex-23 { flex: 2.3; }
 .setup-col--flex-2 { flex: 2; }
@@ -156,8 +117,6 @@
 .application-form-page {
     .step-save-feedback {
         margin-top: 6px;
-    }
-
     }
 
     .setup-helper--tight {
@@ -1045,9 +1004,9 @@ body.page-profile-view .pv-layout {
 }
 
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö sidebar dropdowns & topbar icons
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - sidebar dropdowns & topbar icons
+// ----------------------------------------
 .student-portal-body {
     .sidebar-dropdown {
         display: flex;
@@ -1252,9 +1211,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// SHARED ΓÇö Student / Registrar tables
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// SHARED - Student / Registrar tables
+// ----------------------------------------
 .student-table-wrapper {
     overflow-x: auto;
     border: 2px solid #c0c0c0;
@@ -1304,9 +1263,9 @@ body.page-profile-view .pv-layout {
     border-bottom: none;
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Form elements (Citizenship, Religion, etc.)
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Form elements (Citizenship, Religion, etc.)
+// ----------------------------------------
 .registrar-form-row {
     display: flex;
     gap: 16px;
@@ -1375,9 +1334,9 @@ body.page-profile-view .pv-layout {
     tbody td:last-child { text-align: left; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Document List
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Document List
+// ----------------------------------------
 .doclist-page { padding: 4px 0; }
 
 .doclist-form-card {
@@ -1464,9 +1423,9 @@ body.page-profile-view .pv-layout {
     &:hover { background: #ffcdd2; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Batch Upload
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Batch Upload
+// ----------------------------------------
 .batch-upload-wrapper {
     display: flex;
     flex-direction: column;
@@ -1510,9 +1469,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Responsive overrides
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Responsive overrides
+// ----------------------------------------
 @include down(991px) {
     .registrar-body .registrar-form-row {
         gap: 12px;
@@ -1553,9 +1512,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Dashboard
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Dashboard
+// ----------------------------------------
 .reg-dashboard {
     padding: 4px 0;
     width: 100%;
@@ -1926,9 +1885,9 @@ body.page-profile-view .pv-layout {
     &.badge-orange { background: #fff3e0; color: #e65100; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Application Process (shared table styles)
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Application Process (shared table styles)
+// ----------------------------------------
 .app-process-page { padding: 4px 0; }
 .app-filter-bar {
     display: flex;
@@ -2074,9 +2033,9 @@ body.page-profile-view .pv-layout {
 .app-status-rejected   { color: #c0392b; font-weight: 600; }
 .app-status-inprogress { color: #1a73e8; font-weight: 600; }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Responsive: Dashboard, App Process, Document List
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Responsive: Dashboard, App Process, Document List
+// ----------------------------------------
 @include down(991px) {
     .reg-dash-top {
         grid-template-columns: 1fr;
@@ -2149,9 +2108,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Requirements page
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Requirements page
+// ----------------------------------------
 .req-page { padding: 4px 0; }
 
 .req-search-wrap { margin-bottom: 20px; }
@@ -2316,9 +2275,9 @@ body.page-profile-view .pv-layout {
     &:hover { color: #a93226; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Shared modals
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Shared modals
+// ----------------------------------------
 .req-modal-overlay {
     position: fixed;
     inset: 0;
@@ -2487,9 +2446,9 @@ select.req-modal-input {
     appearance: auto;
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Approval Status page
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Approval Status page
+// ----------------------------------------
 .apst-page { padding: 4px 0; }
 .apst-topbar {
     display: flex;
@@ -2629,18 +2588,18 @@ select.req-modal-input {
     background: #a93226;
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Application Process: applicant detail panels
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Application Process: applicant detail panels
+// ----------------------------------------
 
-// ΓöÇ Clickable rows
+// - Clickable rows
 .app-table tbody tr {
     cursor: pointer;
     transition: background 0.12s;
     &:hover { background-color: #f0faf4; }
 }
 
-// ΓöÇ Applicant detail view
+// - Applicant detail view
 #applicantDetailView { display: none; }
 
 .appl-detail-header {
@@ -2675,11 +2634,11 @@ select.req-modal-input {
     &.wide input[type="text"] { min-width: 320px; }
 }
 
-// ΓöÇ Panels
+// - Panels
 .applicant-panel { display: none; }
 .applicant-panel.active { display: block; }
 
-// ΓöÇ Under development placeholder
+// - Under development placeholder
 .under-dev-notice {
     display: flex;
     align-items: center;
@@ -2978,7 +2937,7 @@ select.req-modal-input {
     }
 }
 
-// ΓöÇ Schedule of Exam panel
+// - Schedule of Exam panel
 .sched-exam-card {
     background: #fff;
     border: 1px solid #e0e0e0;
@@ -3242,62 +3201,34 @@ select.req-modal-input {
     }
 }
 
-// ΓöÇ Applicant sidebar
+// Applicant sidebar
 #applicantSidebar { display: none; }
+
 .appl-sidebar-back {
     display: flex;
     align-items: center;
-    .applicant-correspondence-divider {
-        height: 1px;
-        background: #0a813c;
-        margin: 12px 0 16px;
-    }
-
     gap: 12px;
-        padding: 0 2px 2px;
-    }
+    padding: 10px 12px;
     font-size: 0.95rem;
     font-weight: 600;
-        margin: 0 0 18px;
+    margin: 0 0 18px;
     background: rgba(255, 255, 255, 0.15);
     border: none;
     width: 100%;
     text-align: left;
-    .applicant-ref-chip {
     letter-spacing: 0.03em;
+    color: #fff;
     text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+
     &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
     svg { width: 20px; height: 20px; flex-shrink: 0; }
 }
 
-        background: #f4faf6;
-// STUDENT ΓÇö Profile edit page layout overrides
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-
-        .dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #0a813c;
-            position: relative;
-
-            &:before {
-                content: '';
-                position: absolute;
-                left: 4px;
-                top: 2px;
-                width: 4px;
-                height: 7px;
-                border: solid #fff;
-                border-width: 0 2px 2px 0;
-                transform: rotate(45deg);
-            }
-        }
-    }
-body.page-profile-edit {
-.pf-table-controls .pf-entries-control span,
-        margin-top: 10px;
-.sc-table-head .pf-entries-control.sc-show-entry span {
+// STUDENT - Profile edit page layout overrides
+body.page-profile-edit .pf-table-controls .pf-entries-control span,
+body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     margin: 0;
     white-space: nowrap;
 }
