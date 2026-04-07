@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Registrar;
 
+use App\ApplicationStatus;
 use App\Applicant;
 use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
@@ -664,6 +665,10 @@ class RegistrarController extends Controller
     {
         $normalized = strtolower(trim((string) $statusLabel));
 
+        if ($normalized === '') {
+            return 'in_process';
+        }
+
         if ($normalized === 'document submitted' || $normalized === 'submitted') {
             return 'submitted';
         }
@@ -688,12 +693,16 @@ class RegistrarController extends Controller
             return 'accepted';
         }
 
-        return 'in_process';
+        return str_replace(' ', '_', $normalized);
     }
 
     private function mapApprovalStatusDbValueToLabel($statusValue): string
     {
         $normalized = strtolower(trim((string) $statusValue));
+
+        if ($normalized === '') {
+            return 'In Process';
+        }
 
         if ($normalized === 'submitted' || $normalized === 'document submitted') {
             return 'Document Submitted';
@@ -719,13 +728,13 @@ class RegistrarController extends Controller
             return 'Accepted';
         }
 
-        return 'In Process';
+        return ucwords(str_replace('_', ' ', $normalized));
     }
 
     public function updateApplicantApprovalStatus(Request $request, Applicant $applicant): JsonResponse
     {
         $validated = $request->validate([
-            'application_status' => 'required|in:Document Submitted,On Probation,In Process,Rejected,Incomplete,Accepted',
+            'application_status' => 'required|string|max:120',
         ]);
 
         $applicant->application_status = $this->mapApprovalStatusLabelToDbValue($validated['application_status']);
@@ -772,6 +781,96 @@ class RegistrarController extends Controller
     public function approvalStatus()
     {
         return view('registrar.process.approval-status');
+    }
+
+    public function approvalStatusData(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+
+        $query = ApplicationStatus::query()->where('is_active', true);
+
+        if ($search !== '') {
+            $query->where(function ($innerQuery) use ($search) {
+                $innerQuery->where('status_code', 'like', '%' . $search . '%')
+                    ->orWhere('status_name', 'like', '%' . $search . '%')
+                    ->orWhere('status_message', 'like', '%' . $search . '%');
+            });
+        }
+
+        $rows = $query->orderBy('status_code')
+            ->orderBy('id')
+            ->get()
+            ->map(function (ApplicationStatus $status) {
+                return $this->approvalStatusRowPayload($status);
+            })
+            ->values();
+
+        return response()->json([
+            'rows' => $rows,
+        ]);
+    }
+
+    public function storeApprovalStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'status_code' => 'required|string|max:10|regex:/^[A-Za-z0-9_-]+$/|unique:application_statuses,status_code',
+            'status' => 'required|string|max:120|unique:application_statuses,status_name',
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        $status = ApplicationStatus::create([
+            'status_code' => strtoupper(trim($validated['status_code'])),
+            'status_name' => trim($validated['status']),
+            'status_message' => trim((string) ($validated['message'] ?? '')),
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Approval status created successfully.',
+            'row' => $this->approvalStatusRowPayload($status),
+        ], 201);
+    }
+
+    public function updateApprovalStatus(Request $request, ApplicationStatus $applicationStatus): JsonResponse
+    {
+        $validated = $request->validate([
+            'status_code' => 'required|string|max:10|regex:/^[A-Za-z0-9_-]+$/|unique:application_statuses,status_code,' . $applicationStatus->id,
+            'status' => 'required|string|max:120|unique:application_statuses,status_name,' . $applicationStatus->id,
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        $applicationStatus->status_code = strtoupper(trim($validated['status_code']));
+        $applicationStatus->status_name = trim($validated['status']);
+        $applicationStatus->status_message = trim((string) ($validated['message'] ?? ''));
+        $applicationStatus->is_active = true;
+        $applicationStatus->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Approval status updated successfully.',
+            'row' => $this->approvalStatusRowPayload($applicationStatus),
+        ]);
+    }
+
+    public function destroyApprovalStatus(ApplicationStatus $applicationStatus): JsonResponse
+    {
+        $applicationStatus->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Approval status deleted successfully.',
+        ]);
+    }
+
+    private function approvalStatusRowPayload(ApplicationStatus $status): array
+    {
+        return [
+            'id' => $status->id,
+            'code' => (string) $status->status_code,
+            'status' => (string) $status->status_name,
+            'message' => (string) ($status->status_message ?: ''),
+        ];
     }
 
     /**

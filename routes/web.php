@@ -132,6 +132,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
+        Route::get('/approval-status/data', 'Registrar\RegistrarController@approvalStatusData')->name('approval-status.data');
+        Route::post('/approval-status', 'Registrar\RegistrarController@storeApprovalStatus')->name('approval-status.store');
+        Route::put('/approval-status/{applicationStatus}', 'Registrar\RegistrarController@updateApprovalStatus')->name('approval-status.update');
+        Route::delete('/approval-status/{applicationStatus}', 'Registrar\RegistrarController@destroyApprovalStatus')->name('approval-status.delete');
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
         Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
         Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');

@@ -1,52 +1,51 @@
 ---
-name: "mysql-explorer"
-description: "Safely explore and query MySQL databases via MCP, strictly adhering to parser-safe syntax for schema inspection and data retrieval."
+name: "laravel-db-architect"
+description: "End-to-end Laravel database design: handles 3NF normalization, safe MySQL schema inspection, and automated 'trash data' seeder generation."
 ---
 
-# MySQL Explorer
+# Laravel Database Architect & Seeder Skill
 
-## Purpose
+## 1. Core Safety Rules (MySQL Parser Guardrails)
+To avoid 'unquoted dot notation' errors in the MCP SQL parser, you MUST use these syntaxes when inspecting the existing database:
+- **Primary Method:** `SHOW COLUMNS FROM [table_name] IN [database_name]`
+- **Secondary Method:** `SELECT * FROM information_schema.columns WHERE table_schema = '[database_name]' AND table_name = '[table_name]'`
+- **Fallback:** Use backticks: `` `database`.`table` ``
 
-Use the MySQL MCP server to explore database schemas, inspect table structures, and retrieve data without triggering strict SQL parser errors (specifically the unquoted dot notation error). Produce formatted, easily readable data reports.
+## 2. The Normalization Workflow (3NF)
+Before creating any files, analyze the user's request for normalization needs:
+- **1NF:** Ensure no multi-valued attributes (e.g., split "Phone Numbers" into a separate `contacts` table if multiple are provided).
+- **2NF:** Remove partial dependencies; ensure all non-key attributes are fully functional on the primary key.
+- **3NF:** Eliminate transitive dependencies (e.g., move "City/State" to a `locations` table if an "Address" is provided).
 
-## Core Parsing Rules (CRITICAL)
+## 3. Implementation Steps
 
-The built-in SQL parser for this MCP server will FAIL on unquoted dot notation (e.g., `DESCRIBE plp_demo.courses`). You MUST use one of the following safe syntaxes for schema exploration:
+### Step A: Schema Discovery
+Use the `mysql-explorer` rules to check for existing tables. 
+*Action:* Run `php artisan db:show` or the MCP `query` tool to ensure no naming collisions.
 
-- **Safe Syntax 1 (Backticks):** Wrap database and table names in backticks.
-  `DESCRIBE \`plp_demo\`.\`courses\``
-- **Safe Syntax 2 (Native FROM/IN):** Avoid the dot entirely using MySQL native keywords.
-  `SHOW COLUMNS FROM courses IN plp_demo`
-- **Safe Syntax 3 (Information Schema):** Use a standard SELECT statement for bulletproof execution.
-  `SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT FROM information_schema.columns WHERE table_schema = 'plp_demo' AND table_name = 'courses'`
+### Step B: Laravel Scaffolding
+Generate the following using Artisan commands:
+1. **Migration:** `php artisan make:migration create_[name]_table` (Include Foreign Keys).
+2. **Model:** `php artisan make:model [Name]` (Define `$fillable` and Relationships: `hasMany`, `belongsTo`).
+3. **Controller:** `php artisan make:controller [Name]Controller --resource`.
 
-## Required MCP Tools
+### Step C: The "Trash Data" Factory
+Create a Factory that generates high-volume, realistic testing data:
+- Use `fake()` modifiers for variety (e.g., `unique()`, `optional()`).
+- *Example:* `'email' => fake()->unique()->safeEmail()`.
 
-- `query` (or the equivalent SQL execution tool provided by your specific MySQL MCP server)
+### Step D: The Seeder
+Create a Seeder that generates at least **50-100 records** by default.
+- Use the `count()` method: `[Model]::factory()->count(100)->create();`.
+- If relationships exist, use `.each()` to create related 'trash' records automatically.
 
-## Preconditions
+## 4. Execution & Verification
+Once the code is written:
+1. Run `php artisan migrate`.
+2. Run `php artisan db:seed --class=[Name]Seeder`.
+3. Use the `mysql-explorer` safe syntax to verify the data was inserted correctly:
+   `SELECT COUNT(*) FROM [table_name] IN [database_name]`
 
-- The MySQL MCP server is reachable and connected.
-- Confirm the target database and table names.
-- Confirm whether the user wants to inspect the schema or retrieve actual rows of data.
-- Read-only operations are the default. Destructive operations require explicit consent.
-
-## Workflow (steps 1–5)
-
-1) Get inputs  
-- Prompt the user for:
-  - Target database name.
-  - Target table name (or specific SQL query intent).
-  - Action required: "Inspect Schema" or "Query Data"?
-  - Allow destructive actions (INSERT, UPDATE, DELETE, DROP)? (yes/no) — default: no.
-
-2) Inspect Schema (If requested)  
-- NEVER use `DESCRIBE db.table`. Use Safe Syntax 2 (Native FROM/IN) to fetch the table structure.
-
-```json
-{
-  "tool": "query",
-  "params": { 
-    "sql": "SHOW COLUMNS FROM courses IN plp_demo" 
-  }
-}
+## 5. User Interaction
+- Prompt the user: "Should I normalize [Field X] into its own table?"
+- Confirm: "How many rows of trash data do you need for testing?" (Default is 50).
