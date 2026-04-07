@@ -19,6 +19,8 @@ use App\Http\Requests\SaveApplicantStep3Request;
 use App\Http\Requests\SaveApplicantStep4Request;
 use App\Http\Requests\SubmitApplicantApplicationRequest;
 use App\Student;
+use App\StudentProfile;
+use App\StudentProfileImage;
 use App\StudentSubjectGrade;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
@@ -894,7 +896,195 @@ class RegistrarController extends Controller
      */
     public function batchUpload()
     {
-        return view('registrar.process.batch-upload');
+        $recentUploads = collect();
+
+        if (Schema::hasTable('student_profile_images')) {
+            $recentUploads = StudentProfileImage::query()
+                ->with('studentProfile')
+                ->orderByDesc('updated_at')
+                ->limit(50)
+                ->get()
+                ->map(function ($image) {
+                    $profile = $image->studentProfile;
+                    $studentNo = $profile ? (string) $profile->student_no : 'N/A';
+                    $studentName = $profile ? $this->formatStudentProfileName($profile) : 'Unknown Student';
+                    $imageUrl = '';
+
+                    if (!empty($image->storage_path)) {
+                        $imageUrl = route('registrar.process.batch-upload.image', [
+                            'studentProfileImage' => $image->id,
+                        ]);
+                    }
+
+                    return [
+                        'id' => (int) $image->id,
+                        'student_no' => $studentNo,
+                        'student_name' => $studentName,
+                        'original_filename' => (string) $image->original_filename,
+                        'storage_path' => (string) $image->storage_path,
+                        'image_url' => $imageUrl,
+                        'size_kb' => round(((int) $image->size_bytes) / 1024, 2),
+                        'uploaded_at' => optional($image->updated_at)->format('M d, Y h:i A') ?: '-',
+                    ];
+                })
+                ->values();
+        }
+
+        return view('registrar.process.batch-upload', [
+            'recentUploads' => $recentUploads,
+        ]);
+    }
+
+    public function batchUploadImage(StudentProfileImage $studentProfileImage)
+    {
+        $disk = !empty($studentProfileImage->storage_disk) ? (string) $studentProfileImage->storage_disk : 'public';
+        $path = (string) $studentProfileImage->storage_path;
+
+        if (empty($path) || !Storage::disk($disk)->exists($path)) {
+            abort(404);
+        }
+
+        $mimeType = !empty($studentProfileImage->mime_type)
+            ? (string) $studentProfileImage->mime_type
+            : 'image/jpeg';
+
+        return response(
+            Storage::disk($disk)->get($path),
+            200,
+            [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            ]
+        );
+    }
+
+    public function storeBatchUpload(Request $request)
+    {
+        $validated = $request->validate([
+            'images' => 'required|array|min:1',
+            'images.*' => 'required|file|mimes:jpg,jpeg|max:1024',
+        ]);
+
+        if (!Schema::hasTable('student_profile_images')) {
+            return redirect()
+                ->route('registrar.process.batch-upload')
+                ->withErrors(['images' => 'Upload table is not available. Please run migrations first.']);
+        }
+
+        $uploadedRows = [];
+        $skippedRows = [];
+        $files = $validated['images'];
+
+        foreach ($files as $file) {
+            $originalFilename = (string) $file->getClientOriginalName();
+            $studentNo = trim((string) pathinfo($originalFilename, PATHINFO_FILENAME));
+
+            if ($studentNo === '') {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Filename is empty. Use student number as filename.',
+                ];
+                continue;
+            }
+
+            $student = Student::where('student_no', $studentNo)->first();
+            if (!$student) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'No matching student ID found for ' . $studentNo . '.',
+                ];
+                continue;
+            }
+
+            $profile = StudentProfile::where('student_no', $studentNo)->first();
+
+            if (!$profile) {
+                $profile = StudentProfile::create([
+                    'student_id' => $student->id,
+                    'student_no' => $student->student_no,
+                    'first_name' => $student->name,
+                    'profile_complete' => false,
+                ]);
+            }
+
+            if (!$profile) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Student profile could not be created for ' . $studentNo . '.',
+                ];
+                continue;
+            }
+
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+            if ($extension === '') {
+                $extension = 'jpg';
+            }
+
+            $storedFilename = $studentNo . '.' . $extension;
+            $storedPath = $file->storeAs('students/profile-photos', $storedFilename, 'public');
+
+            if (empty($storedPath)) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'File could not be stored. Please try again.',
+                ];
+                continue;
+            }
+
+            $existingImage = StudentProfileImage::where('student_profile_id', $profile->id)->first();
+            if ($existingImage && !empty($existingImage->storage_path) && $existingImage->storage_path !== $storedPath) {
+                Storage::disk($existingImage->storage_disk ?: 'public')->delete($existingImage->storage_path);
+            }
+
+            StudentProfileImage::updateOrCreate(
+                ['student_profile_id' => $profile->id],
+                [
+                    'uploaded_by_user_id' => optional(auth()->user())->id,
+                    'original_filename' => $originalFilename,
+                    'storage_disk' => 'public',
+                    'storage_path' => $storedPath,
+                    'mime_type' => $file->getClientMimeType(),
+                    'size_bytes' => (int) $file->getSize(),
+                ]
+            );
+
+            // Keep existing profile photo field synchronized for legacy pages.
+            $profile->profile_photo_path = $storedPath;
+            $profile->save();
+
+            $uploadedRows[] = [
+                'filename' => $originalFilename,
+                'student_no' => (string) $profile->student_no,
+            ];
+        }
+
+        return redirect()
+            ->route('registrar.process.batch-upload')
+            ->with('batchUploadReport', [
+                'total' => count($files),
+                'uploaded' => $uploadedRows,
+                'skipped' => $skippedRows,
+            ]);
+    }
+
+    private function formatStudentProfileName(StudentProfile $profile)
+    {
+        $parts = [
+            (string) $profile->first_name,
+            (string) $profile->middle_name,
+            (string) $profile->last_name,
+            (string) $profile->suffix,
+        ];
+
+        $parts = array_values(array_filter($parts, function ($value) {
+            return trim((string) $value) !== '';
+        }));
+
+        if (!empty($parts)) {
+            return trim(implode(' ', $parts));
+        }
+
+        return !empty($profile->student_no) ? (string) $profile->student_no : 'Unknown Student';
     }
 
     /**

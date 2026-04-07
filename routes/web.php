@@ -140,6 +140,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
         Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
+        Route::post('/batch-upload', 'Registrar\RegistrarController@storeBatchUpload')->name('batch-upload.store');
+        Route::get('/batch-upload/image/{studentProfileImage}', 'Registrar\RegistrarController@batchUploadImage')->name('batch-upload.image');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
         Route::prefix('reports')->name('reports.')->group(function () {

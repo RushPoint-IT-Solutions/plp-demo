@@ -57,4 +57,9 @@ class StudentProfile extends Model
         'no_k12'           => 'boolean',
         'profile_complete' => 'boolean',
     ];
+
+    public function profileImage()
+    {
+        return $this->hasOne(StudentProfileImage::class);
+    }
 }

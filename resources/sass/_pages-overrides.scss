@@ -1432,6 +1432,15 @@ body.page-profile-view .pv-layout {
     gap: 20px;
 }
 
+.batch-upload-alert {
+    margin-bottom: 0;
+}
+
+.batch-upload-report-list {
+    margin: 8px 0 0;
+    padding-left: 18px;
+}
+
 .batch-dropzone {
     border: 2px dashed var(--plp-green);
     border-radius: 8px;
@@ -1458,6 +1467,25 @@ body.page-profile-view .pv-layout {
     pointer-events: none;
 }
 
+.batch-upload-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.batch-file-count {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    color: #3b3b3b;
+}
+
+.batch-upload-btn {
+    min-width: 220px;
+    font-weight: 600;
+}
+
 .batch-upload-note {
     padding: 0;
     p {
@@ -1467,6 +1495,19 @@ body.page-profile-view .pv-layout {
         margin: 0;
         line-height: 1.6;
     }
+}
+
+.batch-upload-results {
+    border-top: 1px solid #e5e5e5;
+    padding-top: 16px;
+}
+
+.batch-upload-results-title {
+    margin: 0 0 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2d1f;
 }
 
 // ----------------------------------------
