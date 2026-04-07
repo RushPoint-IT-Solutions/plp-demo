@@ -19,10 +19,14 @@ use App\Http\Requests\SaveApplicantStep3Request;
 use App\Http\Requests\SaveApplicantStep4Request;
 use App\Http\Requests\SubmitApplicantApplicationRequest;
 use App\RegistrarRequirement;
+use App\RegistrarRequirementDefinition;
+use App\RegistrarRequirementPolicy;
+use App\RegistrarRequirementType;
 use App\Student;
 use App\StudentProfile;
 use App\StudentProfileImage;
 use App\StudentSubjectGrade;
+use App\SystemSchoolSemester;
 use App\YearBlock;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
@@ -1095,6 +1099,8 @@ class RegistrarController extends Controller
      */
     public function documentList()
     {
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
         $yearLevelOptions = YearBlock::query()
             ->orderBy('id')
             ->pluck('label')
@@ -1109,6 +1115,12 @@ class RegistrarController extends Controller
 
         $rows = RegistrarRequirement::query()
             ->with('yearBlock:id,label')
+            ->where(function ($query) use ($activeSemesterId) {
+                $query->whereNull('registrar_requirement_policy_id')
+                    ->orWhereHas('policy', function ($policyQuery) use ($activeSemesterId) {
+                        $policyQuery->where('system_school_semester_id', $activeSemesterId);
+                    });
+            })
             ->orderBy('applies_to_all_year_levels', 'desc')
             ->orderBy('year_block_id')
             ->orderBy('requirement_name')
@@ -1162,6 +1174,8 @@ class RegistrarController extends Controller
             'created_by_user_id' => optional(auth()->user())->id,
         ]);
 
+        $this->syncRequirementPolicyForLegacyRow($requirement);
+
         $requirement->load('yearBlock:id,label');
 
         return response()->json([
@@ -1206,6 +1220,8 @@ class RegistrarController extends Controller
         $documentRequirement->non_filipino = $nonFilipino;
         $documentRequirement->save();
 
+        $this->syncRequirementPolicyForLegacyRow($documentRequirement);
+
         $documentRequirement->load('yearBlock:id,label');
 
         return response()->json([
@@ -1217,7 +1233,18 @@ class RegistrarController extends Controller
 
     public function destroyDocumentRequirement(RegistrarRequirement $documentRequirement): JsonResponse
     {
+        $policyId = $documentRequirement->registrar_requirement_policy_id;
+        $definitionId = null;
+
+        if (!empty($policyId)) {
+            $definitionId = RegistrarRequirementPolicy::query()
+                ->where('id', $policyId)
+                ->value('registrar_requirement_definition_id');
+        }
+
         $documentRequirement->delete();
+
+        $this->cleanupOrphanedRequirementPolicy($policyId, $definitionId);
 
         return response()->json([
             'ok' => true,
@@ -1252,6 +1279,146 @@ class RegistrarController extends Controller
         ];
     }
 
+    private function syncRequirementPolicyForLegacyRow(RegistrarRequirement $requirement)
+    {
+        $typeCode = $this->normalizeRequirementTypeCode($requirement->requirement_type);
+
+        $type = RegistrarRequirementType::query()->firstOrCreate(
+            ['code' => $typeCode],
+            ['name' => $this->resolveRequirementTypeLabel($typeCode)]
+        );
+
+        $definition = RegistrarRequirementDefinition::query()->firstOrCreate(
+            [
+                'requirement_name' => (string) $requirement->requirement_name,
+                'registrar_requirement_type_id' => $type->id,
+                'non_filipino_only' => (bool) $requirement->non_filipino,
+            ],
+            [
+                'created_by_user_id' => $requirement->created_by_user_id,
+            ]
+        );
+
+        $systemSchoolSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $policyQuery = RegistrarRequirementPolicy::query()
+            ->where('registrar_requirement_definition_id', $definition->id)
+            ->where('system_school_semester_id', $systemSchoolSemesterId);
+
+        if ($requirement->applies_to_all_year_levels || empty($requirement->year_block_id)) {
+            $policyQuery->whereNull('year_block_id');
+        } else {
+            $policyQuery->where('year_block_id', $requirement->year_block_id);
+        }
+
+        $policy = $policyQuery->first();
+
+        if (!$policy) {
+            $policy = RegistrarRequirementPolicy::query()->create([
+                'registrar_requirement_definition_id' => $definition->id,
+                'system_school_semester_id' => $systemSchoolSemesterId,
+                'year_block_id' => ($requirement->applies_to_all_year_levels || empty($requirement->year_block_id))
+                    ? null
+                    : $requirement->year_block_id,
+                'created_by_user_id' => $requirement->created_by_user_id,
+            ]);
+        }
+
+        if ((int) $requirement->registrar_requirement_policy_id !== (int) $policy->id) {
+            $requirement->registrar_requirement_policy_id = $policy->id;
+            $requirement->save();
+        }
+    }
+
+    private function resolveActiveRequirementSystemSemesterId()
+    {
+        $latestSemester = SystemSchoolSemester::query()
+            ->orderByDesc('id')
+            ->first();
+
+        if ($latestSemester) {
+            return (int) $latestSemester->id;
+        }
+
+        $yearStart = (int) Carbon::now()->format('Y');
+
+        $createdSemester = SystemSchoolSemester::query()->create([
+            'school_year' => $yearStart . '-' . ($yearStart + 1),
+            'semester' => 'First Semester',
+        ]);
+
+        return (int) $createdSemester->id;
+    }
+
+    private function normalizeRequirementTypeCode($type)
+    {
+        $normalized = strtoupper(trim((string) $type));
+
+        if ($normalized === 'MEDICAL') {
+            return 'MEDICAL';
+        }
+
+        return 'DOCUMENT';
+    }
+
+    private function resolveRequirementTypeLabel($typeCode)
+    {
+        if ($typeCode === 'MEDICAL') {
+            return 'Medical';
+        }
+
+        return 'Document';
+    }
+
+    private function cleanupOrphanedRequirementPolicy($policyId, $definitionId = null)
+    {
+        if (empty($policyId)) {
+            return;
+        }
+
+        $hasLegacyRows = RegistrarRequirement::query()
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->exists();
+
+        if ($hasLegacyRows) {
+            return;
+        }
+
+        $hasStudentStatusRows = DB::table('student_requirement_statuses')
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->exists();
+
+        if ($hasStudentStatusRows) {
+            return;
+        }
+
+        $policy = RegistrarRequirementPolicy::query()->find($policyId);
+
+        if (!$policy) {
+            return;
+        }
+
+        if (empty($definitionId)) {
+            $definitionId = $policy->registrar_requirement_definition_id;
+        }
+
+        $policy->delete();
+
+        if (empty($definitionId)) {
+            return;
+        }
+
+        $hasOtherPolicies = RegistrarRequirementPolicy::query()
+            ->where('registrar_requirement_definition_id', $definitionId)
+            ->exists();
+
+        if (!$hasOtherPolicies) {
+            RegistrarRequirementDefinition::query()
+                ->where('id', $definitionId)
+                ->delete();
+        }
+    }
+
     private function findDuplicateDocumentRequirement(
         array $resolvedYearLevel,
         $documentName,
@@ -1259,11 +1426,19 @@ class RegistrarController extends Controller
         $nonFilipino,
         $ignoreId = null
     ) {
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
         $query = RegistrarRequirement::query()
             ->where('requirement_name', $documentName)
             ->where('requirement_type', $documentType)
             ->where('non_filipino', $nonFilipino)
-            ->where('applies_to_all_year_levels', $resolvedYearLevel['applies_to_all_year_levels']);
+            ->where('applies_to_all_year_levels', $resolvedYearLevel['applies_to_all_year_levels'])
+            ->where(function ($scopeQuery) use ($activeSemesterId) {
+                $scopeQuery->whereNull('registrar_requirement_policy_id')
+                    ->orWhereHas('policy', function ($policyQuery) use ($activeSemesterId) {
+                        $policyQuery->where('system_school_semester_id', $activeSemesterId);
+                    });
+            });
 
         if (!empty($resolvedYearLevel['year_block_id'])) {
             $query->where('year_block_id', $resolvedYearLevel['year_block_id']);

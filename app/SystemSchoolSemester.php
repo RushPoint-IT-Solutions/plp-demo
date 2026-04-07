@@ -10,4 +10,9 @@ class SystemSchoolSemester extends Model
         'school_year',
         'semester',
     ];
+
+    public function registrarRequirementPolicies()
+    {
+        return $this->hasMany(RegistrarRequirementPolicy::class);
+    }
 }

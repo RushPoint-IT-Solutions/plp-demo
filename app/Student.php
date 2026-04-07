@@ -37,6 +37,11 @@ class Student extends Model
         return $this->hasMany(StudentDeficiency::class);
     }
 
+    public function requirementStatuses()
+    {
+        return $this->hasMany(StudentRequirementStatus::class);
+    }
+
     /**
      * Helper: formatted school year + semester label.
      * e.g. "SY 2025-2026 2nd Semester"

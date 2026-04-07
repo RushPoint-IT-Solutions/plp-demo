@@ -63,6 +63,7 @@ class DatabaseSeeder extends Seeder
             FacultySeeder::class,
             StudentDemoDataSeeder::class,
             C3TrashDataSeeder::class,
+            RegistrarRequirement3nfSeeder::class,
         ]);
         
         $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student, first-reset student 2026A00001/PLP-2026A00001, applicant 2526B0177/PLP-2526B0177, applicant/applicant');
