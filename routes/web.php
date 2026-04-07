@@ -143,6 +143,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::post('/batch-upload', 'Registrar\RegistrarController@storeBatchUpload')->name('batch-upload.store');
         Route::get('/batch-upload/image/{studentProfileImage}', 'Registrar\RegistrarController@batchUploadImage')->name('batch-upload.image');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
+        Route::post('/document-list', 'Registrar\RegistrarController@storeDocumentRequirement')->name('document-list.store');
+        Route::put('/document-list/{documentRequirement}', 'Registrar\RegistrarController@updateDocumentRequirement')->name('document-list.update');
+        Route::delete('/document-list/{documentRequirement}', 'Registrar\RegistrarController@destroyDocumentRequirement')->name('document-list.delete');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/unifast', 'Registrar\RegistrarController@reportsUnifast')->name('unifast');

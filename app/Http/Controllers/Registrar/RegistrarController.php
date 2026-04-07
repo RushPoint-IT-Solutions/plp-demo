@@ -18,14 +18,17 @@ use App\Http\Requests\SaveApplicantStep2Request;
 use App\Http\Requests\SaveApplicantStep3Request;
 use App\Http\Requests\SaveApplicantStep4Request;
 use App\Http\Requests\SubmitApplicantApplicationRequest;
+use App\RegistrarRequirement;
 use App\Student;
 use App\StudentProfile;
 use App\StudentProfileImage;
 use App\StudentSubjectGrade;
+use App\YearBlock;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Schema;
 use App\User;
 use Illuminate\Support\Facades\DB;
@@ -1092,7 +1095,204 @@ class RegistrarController extends Controller
      */
     public function documentList()
     {
-        return view('registrar.process.document-list');
+        $yearLevelOptions = YearBlock::query()
+            ->orderBy('id')
+            ->pluck('label')
+            ->values()
+            ->all();
+
+        if (!count($yearLevelOptions)) {
+            $yearLevelOptions = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+        }
+
+        array_unshift($yearLevelOptions, 'All Year Level');
+
+        $rows = RegistrarRequirement::query()
+            ->with('yearBlock:id,label')
+            ->orderBy('applies_to_all_year_levels', 'desc')
+            ->orderBy('year_block_id')
+            ->orderBy('requirement_name')
+            ->orderBy('id')
+            ->get()
+            ->map(function (RegistrarRequirement $requirement) {
+                return $this->documentRequirementRowPayload($requirement);
+            })
+            ->values()
+            ->all();
+
+        return view('registrar.process.document-list', [
+            'requirements' => $rows,
+            'yearLevelOptions' => $yearLevelOptions,
+        ]);
+    }
+
+    public function storeDocumentRequirement(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade_level' => 'required|string|max:50',
+            'document' => 'required|string|max:180',
+            'doc_type' => 'required|in:Medical,Document',
+            'non_filipino' => 'nullable',
+        ]);
+
+        $resolvedYearLevel = $this->resolveDocumentRequirementYearLevel($validated['grade_level']);
+        $documentName = trim((string) $validated['document']);
+        $documentType = trim((string) $validated['doc_type']);
+        $nonFilipino = $this->requestBoolean($request, 'non_filipino');
+
+        $duplicate = $this->findDuplicateDocumentRequirement(
+            $resolvedYearLevel,
+            $documentName,
+            $documentType,
+            $nonFilipino
+        );
+
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'document' => ['This requirement already exists for the selected year level and type.'],
+            ]);
+        }
+
+        $requirement = RegistrarRequirement::create([
+            'year_block_id' => $resolvedYearLevel['year_block_id'],
+            'applies_to_all_year_levels' => $resolvedYearLevel['applies_to_all_year_levels'],
+            'requirement_name' => $documentName,
+            'requirement_type' => $documentType,
+            'non_filipino' => $nonFilipino,
+            'created_by_user_id' => optional(auth()->user())->id,
+        ]);
+
+        $requirement->load('yearBlock:id,label');
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement added successfully.',
+            'row' => $this->documentRequirementRowPayload($requirement),
+        ], 201);
+    }
+
+    public function updateDocumentRequirement(Request $request, RegistrarRequirement $documentRequirement): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade_level' => 'required|string|max:50',
+            'document' => 'required|string|max:180',
+            'doc_type' => 'required|in:Medical,Document',
+            'non_filipino' => 'nullable',
+        ]);
+
+        $resolvedYearLevel = $this->resolveDocumentRequirementYearLevel($validated['grade_level']);
+        $documentName = trim((string) $validated['document']);
+        $documentType = trim((string) $validated['doc_type']);
+        $nonFilipino = $this->requestBoolean($request, 'non_filipino');
+
+        $duplicate = $this->findDuplicateDocumentRequirement(
+            $resolvedYearLevel,
+            $documentName,
+            $documentType,
+            $nonFilipino,
+            $documentRequirement->id
+        );
+
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'document' => ['This requirement already exists for the selected year level and type.'],
+            ]);
+        }
+
+        $documentRequirement->year_block_id = $resolvedYearLevel['year_block_id'];
+        $documentRequirement->applies_to_all_year_levels = $resolvedYearLevel['applies_to_all_year_levels'];
+        $documentRequirement->requirement_name = $documentName;
+        $documentRequirement->requirement_type = $documentType;
+        $documentRequirement->non_filipino = $nonFilipino;
+        $documentRequirement->save();
+
+        $documentRequirement->load('yearBlock:id,label');
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement updated successfully.',
+            'row' => $this->documentRequirementRowPayload($documentRequirement),
+        ]);
+    }
+
+    public function destroyDocumentRequirement(RegistrarRequirement $documentRequirement): JsonResponse
+    {
+        $documentRequirement->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement deleted successfully.',
+        ]);
+    }
+
+    private function resolveDocumentRequirementYearLevel($gradeLevel): array
+    {
+        $normalized = trim((string) $gradeLevel);
+
+        if ($normalized === '' || strcasecmp($normalized, 'All Year Level') === 0) {
+            return [
+                'year_block_id' => null,
+                'applies_to_all_year_levels' => true,
+            ];
+        }
+
+        $yearBlock = YearBlock::query()
+            ->where('label', $normalized)
+            ->first();
+
+        if (!$yearBlock) {
+            throw ValidationException::withMessages([
+                'grade_level' => ['Selected year level is invalid.'],
+            ]);
+        }
+
+        return [
+            'year_block_id' => $yearBlock->id,
+            'applies_to_all_year_levels' => false,
+        ];
+    }
+
+    private function findDuplicateDocumentRequirement(
+        array $resolvedYearLevel,
+        $documentName,
+        $documentType,
+        $nonFilipino,
+        $ignoreId = null
+    ) {
+        $query = RegistrarRequirement::query()
+            ->where('requirement_name', $documentName)
+            ->where('requirement_type', $documentType)
+            ->where('non_filipino', $nonFilipino)
+            ->where('applies_to_all_year_levels', $resolvedYearLevel['applies_to_all_year_levels']);
+
+        if (!empty($resolvedYearLevel['year_block_id'])) {
+            $query->where('year_block_id', $resolvedYearLevel['year_block_id']);
+        } else {
+            $query->whereNull('year_block_id');
+        }
+
+        if (!empty($ignoreId)) {
+            $query->where('id', '<>', $ignoreId);
+        }
+
+        return $query->first();
+    }
+
+    private function documentRequirementRowPayload(RegistrarRequirement $requirement): array
+    {
+        $yearLevel = 'All Year Level';
+
+        if (!$requirement->applies_to_all_year_levels && $requirement->yearBlock) {
+            $yearLevel = (string) $requirement->yearBlock->label;
+        }
+
+        return [
+            'id' => (int) $requirement->id,
+            'year_level' => $yearLevel,
+            'document' => (string) $requirement->requirement_name,
+            'type' => (string) $requirement->requirement_type,
+            'non_filipino' => (bool) $requirement->non_filipino,
+        ];
     }
 
     /**

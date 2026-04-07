@@ -30817,6 +30817,41 @@ body.page-profile-view .pv-layout {
   gap: 18px;
 }
 
+.doclist-filter-input,
+.doclist-filter-select {
+  width: 100%;
+}
+
+.req-modal-overlay.doclist-modal-hidden {
+  display: none;
+}
+
+.doclist-modal-fields-stacked {
+  flex-direction: column;
+  gap: 14px;
+}
+
+.doclist-modal-option-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.doclist-modal-option-group {
+  flex: 0 0 auto;
+}
+
+.doclist-modal-option-list {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.doclist-non-filipino-label {
+  margin-top: 4px;
+}
+
 .doclist-radio-label,
 .doclist-checkbox-label {
   display: inline-flex;
@@ -30855,6 +30890,12 @@ body.page-profile-view .pv-layout {
   text-align: center;
 }
 
+.doclist-empty-row td {
+  text-align: center;
+  color: #666;
+  padding: 20px 12px;
+}
+
 .doclist-actions {
   display: inline-flex;
   align-items: center;
@@ -30890,6 +30931,50 @@ body.page-profile-view .pv-layout {
 }
 .doclist-delete-btn:hover {
   background: #ffcdd2;
+}
+
+.doclist-delete-modal {
+  text-align: center;
+  max-width: 420px;
+}
+
+.doclist-delete-icon-wrap {
+  margin-bottom: 16px;
+  color: #c62828;
+}
+
+.doclist-delete-title {
+  color: #c62828;
+}
+
+.doclist-delete-text {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.doclist-delete-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.doclist-delete-note {
+  font-size: 0.78rem;
+  color: #999;
+  margin-bottom: 22px;
+}
+
+.doclist-delete-actions {
+  justify-content: center;
+}
+
+.req-btn-danger {
+  background: #c62828;
+}
+.req-btn-danger:hover {
+  background: #a31f1f;
 }
 
 .batch-upload-wrapper {
