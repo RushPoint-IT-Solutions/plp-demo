@@ -1555,6 +1555,9 @@ body.page-profile-view .pv-layout {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    margin-bottom: 18px;
+    padding: 12px 0 18px;
+    border-bottom: 1px solid #e8e8e8;
 }
 
 .batch-file-count {
@@ -1566,7 +1569,31 @@ body.page-profile-view .pv-layout {
 
 .batch-upload-btn {
     min-width: 220px;
-    font-weight: 600;
+    min-height: 42px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    background: #0f7b43;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background-color 0.16s ease, transform 0.12s ease;
+}
+
+.batch-upload-btn:hover:not(:disabled) {
+    background: #0c6a39;
+}
+
+.batch-upload-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.batch-upload-btn:disabled {
+    background: #9bcda9;
+    color: #f7fff9;
+    cursor: not-allowed;
 }
 
 .batch-upload-note {
@@ -1581,8 +1608,9 @@ body.page-profile-view .pv-layout {
 }
 
 .batch-upload-results {
+    margin-top: 14px;
     border-top: 1px solid #e5e5e5;
-    padding-top: 16px;
+    padding-top: 20px;
 }
 
 .batch-upload-results-title {
@@ -2064,6 +2092,61 @@ body.page-profile-view .pv-layout {
     outline: none;
     min-width: 100px;
     &:focus { border-color: #006837; }
+}
+
+// ----------------------------------------
+// REGISTRAR - Tagging of Graduates controls
+// ----------------------------------------
+.ga-page .ga-table .tog-input {
+    width: 100%;
+    max-width: 100%;
+    min-height: 32px;
+    border: 1px solid #cfd9d3;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+    color: #2e3b34;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.ga-page .ga-table .tog-input:focus {
+    border-color: #0b8043;
+    box-shadow: 0 0 0 2px rgba(11, 128, 67, 0.12);
+}
+
+.ga-page .ga-table .tog-input-date {
+    min-width: 138px;
+}
+
+.ga-page .ga-table .tog-input-so {
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.ga-page .ga-table .tog-check {
+    width: 16px;
+    height: 16px;
+    accent-color: #0b8043;
+    cursor: pointer;
+}
+
+.ga-page .ga-table .tog-suspend-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2f3d36;
+}
+
+.ga-page .ga-table .tog-save-btn {
+    margin-left: 8px;
+    min-width: 72px;
+    padding: 6px 14px;
+    font-size: 0.76rem;
 }
 .app-filter-select {
     padding: 7px 10px;

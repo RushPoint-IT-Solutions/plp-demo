@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var backBtn = document.getElementById('gradingBackBtn');
     var subjectIdInput = document.getElementById('gradingSubjectIdInput');
     var checks = document.querySelectorAll('.grading-subject-check');
+    var subjectRows = document.querySelectorAll('.grading-subject-row');
 
     var selectedSubjectId = null;
     var activeSubject = null;
@@ -147,6 +148,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
             selectedSubjectId = check.checked ? check.getAttribute('data-subject-id') : null;
             viewAction.style.display = selectedSubjectId ? 'flex' : 'none';
+        });
+
+        check.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+    });
+
+    subjectRows.forEach(function (row) {
+        row.style.cursor = 'pointer';
+
+        row.addEventListener('click', function () {
+            var rowSubjectId = row.getAttribute('data-subject-id');
+            if (!rowSubjectId) {
+                return;
+            }
+
+            selectedSubjectId = rowSubjectId;
+            var rowCheck = row.querySelector('.grading-subject-check');
+            checks.forEach(function (other) {
+                other.checked = !!(rowCheck && other === rowCheck);
+            });
+            viewAction.style.display = 'flex';
+
+            openGradingDetail(rowSubjectId);
         });
     });
 

@@ -137,11 +137,17 @@ document.addEventListener('DOMContentLoaded', function() {
             openSetupDepartmentsModal();
         }
 
+        const shouldOpenNew = programFilePage.getAttribute('data-open-new') === '1';
+        if (shouldOpenNew) {
+            openNewProgramModal();
+        }
+
         const entriesSelect = document.getElementById('pfEntriesLimit');
         const table = document.getElementById('pfTable');
 
         if (entriesSelect && table) {
             const tableBody = table.querySelector('tbody');
+            const headerColumnsCount = table.querySelectorAll('thead th').length || 1;
             const tableRows = tableBody ? Array.from(tableBody.querySelectorAll('tr')) : [];
             const emptyRows = tableRows.filter(function (row) {
                 return row.querySelector('.pf-empty-row') !== null;
@@ -171,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const totalRow = document.createElement('tr');
                     totalRow.className = 'pf-total-row';
-                    totalRow.innerHTML = '<td colspan="5" class="pf-total-cell">Total Programs: <strong>' + visibleCount + '</strong></td>';
+                    totalRow.innerHTML = '<td colspan="' + headerColumnsCount + '" class="pf-total-cell">Total Programs: <strong>' + visibleCount + '</strong></td>';
                     tableBody.appendChild(totalRow);
                 }
             }
@@ -179,6 +185,136 @@ document.addEventListener('DOMContentLoaded', function() {
             entriesSelect.addEventListener('change', applyEntryLimit);
             applyEntryLimit();
         }
+
+        const editModal = document.getElementById('pfEditProgramModal');
+        const deleteModal = document.getElementById('pfDeleteProgramModal');
+        const editForm = document.getElementById('pfEditProgramForm');
+        const deleteForm = document.getElementById('pfDeleteProgramForm');
+        const deleteText = document.getElementById('pfDeleteProgramText');
+
+        function closeProgramMenus() {
+            programFilePage.querySelectorAll('.apst-dropdown.open').forEach(function (menu) {
+                menu.classList.remove('open');
+            });
+        }
+
+        function positionProgramMenu(menu, trigger) {
+            if (!menu || !trigger) {
+                return;
+            }
+
+            const rect = trigger.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.left = (rect.right - 170) + 'px';
+            menu.style.top = (rect.bottom + 6) + 'px';
+            menu.style.zIndex = '2000';
+
+            const menuRect = menu.getBoundingClientRect();
+            if (menuRect.right > window.innerWidth - 8) {
+                menu.style.left = Math.max(8, window.innerWidth - menuRect.width - 8) + 'px';
+            }
+            if (menuRect.bottom > window.innerHeight - 8) {
+                menu.style.top = Math.max(8, rect.top - menuRect.height - 6) + 'px';
+            }
+        }
+
+        function openPfEditModal(trigger) {
+            if (!editModal || !editForm) {
+                return;
+            }
+
+            editForm.action = trigger.getAttribute('data-update-url') || '';
+            const codeInput = document.getElementById('pfEditProgramCode');
+            const nameInput = document.getElementById('pfEditProgramName');
+            const departmentInput = document.getElementById('pfEditDepartment');
+            const accreditationInput = document.getElementById('pfEditAccreditation');
+
+            if (codeInput) {
+                codeInput.value = trigger.getAttribute('data-code') || '';
+            }
+            if (nameInput) {
+                nameInput.value = trigger.getAttribute('data-name') || '';
+            }
+            if (departmentInput) {
+                departmentInput.value = trigger.getAttribute('data-department-id') || '';
+            }
+            if (accreditationInput) {
+                accreditationInput.value = trigger.getAttribute('data-accreditation') || 'Pending Review';
+            }
+
+            editModal.style.display = 'flex';
+        }
+
+        function openPfDeleteModal(trigger) {
+            if (!deleteModal || !deleteForm) {
+                return;
+            }
+
+            deleteForm.action = trigger.getAttribute('data-delete-url') || '';
+            if (deleteText) {
+                deleteText.textContent = 'Are you sure you want to delete program "' + (trigger.getAttribute('data-code') || '') + '"?';
+            }
+            deleteModal.style.display = 'flex';
+        }
+
+        programFilePage.addEventListener('click', function (event) {
+            const toggleBtn = event.target.closest('[data-pf-menu-toggle]');
+            if (toggleBtn) {
+                event.preventDefault();
+                const menu = document.getElementById(toggleBtn.getAttribute('data-pf-menu-toggle'));
+                if (!menu) {
+                    return;
+                }
+
+                const willOpen = !menu.classList.contains('open');
+                closeProgramMenus();
+
+                if (willOpen) {
+                    menu.classList.add('open');
+                    positionProgramMenu(menu, toggleBtn);
+                }
+                return;
+            }
+
+            const actionBtn = event.target.closest('[data-pf-action]');
+            if (actionBtn) {
+                event.preventDefault();
+                const menu = actionBtn.closest('.apst-dropdown');
+                const row = menu ? menu.closest('tr') : null;
+                const trigger = row ? row.querySelector('[data-pf-menu-toggle]') : null;
+                const action = actionBtn.getAttribute('data-pf-action');
+
+                closeProgramMenus();
+
+                if (!trigger) {
+                    return;
+                }
+
+                if (action === 'edit') {
+                    openPfEditModal(trigger);
+                } else if (action === 'delete') {
+                    openPfDeleteModal(trigger);
+                }
+                return;
+            }
+
+            if (!event.target.closest('.apst-dropdown')) {
+                closeProgramMenus();
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            const openMenu = programFilePage.querySelector('.apst-dropdown.open');
+            if (!openMenu) {
+                return;
+            }
+
+            const row = openMenu.closest('tr');
+            const trigger = row ? row.querySelector('[data-pf-menu-toggle]') : null;
+            if (trigger) {
+                positionProgramMenu(openMenu, trigger);
+            }
+        });
     }
 });
 
@@ -189,8 +325,6 @@ function openSetupDepartmentsModal() {
 
 function openNewProgramModal() {
     const modal = document.getElementById('newProgramModal');
-    const form = document.getElementById('newProgramForm');
-    if (form) form.reset();
     if (modal) modal.style.display = 'flex';
 }
 
@@ -199,27 +333,18 @@ function closeNewProgramModal() {
     if (modal) modal.style.display = 'none';
 }
 
-function handleNewProgramSave(event) {
-    event.preventDefault();
-    const codeInput = document.getElementById('newProgramCode');
-    const code = codeInput ? codeInput.value.trim() : '';
-
-    if (!code) {
-        if (typeof showRegistrarToast === 'function') {
-            showRegistrarToast('Please fill in required fields.', 'warning');
-        }
-        return false;
-    }
-
-    closeNewProgramModal();
-    if (typeof showRegistrarToast === 'function') {
-        showRegistrarToast('Program "' + code + '" saved successfully.', 'success');
-    }
-    return false;
-}
-
 function closeSetupDepartmentsModal() {
     const modal = document.getElementById('setupDepartmentsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function closePfEditProgramModal() {
+    const modal = document.getElementById('pfEditProgramModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function closePfDeleteProgramModal() {
+    const modal = document.getElementById('pfDeleteProgramModal');
     if (modal) modal.style.display = 'none';
 }
 

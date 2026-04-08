@@ -1050,7 +1050,7 @@ $loae-border-color: #000;
         page-break-inside: avoid;
     }
 
-    /* Print-only checkbox replacement: show { } and {✓} when checked */
+/* Print-only checkbox replacement: show { } and { } when checked */
     .registrar-body .loae-reason-item input[type='checkbox'],
     .registrar-body .loae-inline-check input[type='checkbox'] {
         position: absolute !important;
@@ -1081,7 +1081,7 @@ $loae-border-color: #000;
 
     .registrar-body .loae-reason-item input[type='checkbox']:checked + .loae-check-render::before,
     .registrar-body .loae-inline-check input[type='checkbox']:checked + .loae-check-render::before {
-        content: "{✓}" !important;
+        content: "{\2713}" !important;
     }
 
     /* Print overrides for DSA and Guidance signature lines */

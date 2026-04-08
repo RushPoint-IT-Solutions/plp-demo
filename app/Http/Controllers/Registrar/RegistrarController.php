@@ -1821,7 +1821,7 @@ class RegistrarController extends Controller
                 $query->where('department_id', $request->input('department_id'));
             })
             ->when($request->filled('program_type'), function ($query) use ($request) {
-                $query->where('program_type', $request->input('program_type'));
+                $query->where('program_file', $request->input('program_type'));
             })
             ->when($request->filled('program_code'), function ($query) use ($request) {
                 $query->where('code', 'like', '%' . $request->input('program_code') . '%');
@@ -1852,13 +1852,34 @@ class RegistrarController extends Controller
     /**
      * Registrar > Academic Master > Program File > Save setup modal
      */
+    public function saveDepartmentSetup(Request $request)
+    {
+        $validated = $request->validate([
+            'dept_code' => 'required|string|max:30|unique:departments,code',
+            'dept_description' => 'required|string|max:255|unique:departments,description',
+        ]);
+
+        Department::create([
+            'code' => $validated['dept_code'],
+            'description' => $validated['dept_description'],
+        ]);
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Department setup saved successfully.');
+    }
+
+    /**
+     * Registrar > Academic Master > Program File > Save add-program modal
+     */
     public function saveProgramSetup(Request $request)
     {
         $validated = $request->validate([
-            'program_type' => 'required|string|max:80',
+            'program_type' => 'nullable|string|max:80',
             'program_code' => 'required|string|max:30|unique:courses,code',
             'department_id' => 'required|exists:departments,id',
-            'description' => 'required|string|max:255',
+            'program_name' => 'required|string|max:255',
+            'accreditation_level' => 'nullable|string|max:120',
             'slots' => 'nullable|integer|min:0',
             'track_category' => 'nullable|in:Academic,TVL,Academic/TVL',
             'non_filipino' => 'nullable|boolean',
@@ -1867,10 +1888,11 @@ class RegistrarController extends Controller
 
         Course::create([
             'code' => $validated['program_code'],
-            'name' => $validated['description'],
-            'program_type' => $validated['program_type'],
+            'name' => $validated['program_name'],
+            'program_type' => $validated['program_type'] ?? 'Degree',
             'department_id' => $validated['department_id'],
-            'description' => $validated['description'],
+            'description' => $validated['program_name'],
+            'program_file' => $validated['accreditation_level'] ?? null,
             'slots' => $validated['slots'] ?? 0,
             'track_category' => $validated['track_category'] ?? null,
             'non_filipino' => (bool) ($validated['non_filipino'] ?? false),
@@ -1880,6 +1902,43 @@ class RegistrarController extends Controller
         return redirect()
             ->route('registrar.registrar-menu.academic-master.program-file')
             ->with('program_file_success', 'Program setup saved successfully.');
+    }
+
+    /**
+     * Registrar > Academic Master > Program File > Update setup modal
+     */
+    public function updateProgramSetup(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'program_code' => 'required|string|max:30|unique:courses,code,' . $course->id,
+            'department_id' => 'required|exists:departments,id',
+            'program_name' => 'required|string|max:255',
+            'accreditation_level' => 'nullable|string|max:120',
+        ]);
+
+        $course->update([
+            'code' => $validated['program_code'],
+            'name' => $validated['program_name'],
+            'description' => $validated['program_name'],
+            'department_id' => $validated['department_id'],
+            'program_file' => $validated['accreditation_level'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Program updated successfully.');
+    }
+
+    /**
+     * Registrar > Academic Master > Program File > Delete setup row
+     */
+    public function destroyProgramSetup(Course $course)
+    {
+        $course->delete();
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Program deleted successfully.');
     }
 
     /**

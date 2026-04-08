@@ -75,16 +75,13 @@
                         <td>{{ $student->name }}</td>
                         <td>{{ $student->program ?: '-' }}</td>
                         <td>{{ $student->year_level ?: '-' }}</td>
-                        <td style="text-align: center;"><input type="checkbox" data-tag-is-graduate {{ $tag && $tag->is_graduate ? 'checked' : '' }}></td>
-                        <td style="text-align: center;"><input type="date" data-tag-date-graduated value="{{ $tag && $tag->date_graduated ? $tag->date_graduated->format('Y-m-d') : '' }}"></td>
-                        <td style="text-align: center;"><input type="text" data-tag-so-number value="{{ $tag ? $tag->so_number : '' }}" placeholder="SO Number" style="max-width: 140px;"></td>
-                        <td style="text-align: center;"><input type="date" data-tag-so-date value="{{ $tag && $tag->so_date ? $tag->so_date->format('Y-m-d') : '' }}"></td>
+                        <td style="text-align: center;"><input type="checkbox" class="tog-check" data-tag-is-graduate {{ $tag && $tag->is_graduate ? 'checked' : '' }}></td>
+                        <td style="text-align: center;"><input type="date" class="tog-input tog-input-date" data-tag-date-graduated value="{{ $tag && $tag->date_graduated ? $tag->date_graduated->format('Y-m-d') : '' }}"></td>
+                        <td style="text-align: center;"><input type="text" class="tog-input tog-input-so" data-tag-so-number value="{{ $tag ? $tag->so_number : '' }}" placeholder="SO Number"></td>
+                        <td style="text-align: center;"><input type="date" class="tog-input tog-input-date" data-tag-so-date value="{{ $tag && $tag->so_date ? $tag->so_date->format('Y-m-d') : '' }}"></td>
                         <td style="text-align: center;">
-                            <label style="display:inline-flex; align-items:center; gap:6px;">
-                                <input type="checkbox" data-tag-suspend {{ $tag && $tag->suspend_account ? 'checked' : '' }}>
-                                <span>Suspended</span>
-                            </label>
-                            <button type="button" class="req-btn-save" style="margin-left:8px; min-width:72px;" data-tag-save>Save</button>
+                            <input type="checkbox" class="tog-check" data-tag-suspend {{ $tag && $tag->suspend_account ? 'checked' : '' }}>
+                            <button type="button" class="req-btn-save tog-save-btn" data-tag-save>Save</button>
                         </td>
                     </tr>
                     @empty

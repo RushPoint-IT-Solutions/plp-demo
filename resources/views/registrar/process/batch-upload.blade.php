@@ -47,7 +47,7 @@
 
             <div class="batch-upload-actions">
                 <p class="batch-file-count" id="batchFileCount">No files selected.</p>
-                <button type="submit" id="batchUploadButton" class="btn btn-success batch-upload-btn" disabled>Upload Selected Files</button>
+                <button type="submit" id="batchUploadButton" class="batch-upload-btn" disabled>Upload Selected Files</button>
             </div>
         </form>
 
