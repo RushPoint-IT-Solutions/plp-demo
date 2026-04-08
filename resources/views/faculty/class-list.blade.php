@@ -4,7 +4,67 @@
 @section('page-title', 'CLASS LIST')
 
 @section('content')
-<div class="faculty-class-list-wrap">
+<div class="faculty-class-list-wrap faculty-class-list-page">
+
+    @php
+        $schoolYears = collect($subjects ?? [])->pluck('school_year')->filter()->unique()->values();
+        $defaultSchoolYear = $schoolYears->first() ?: '2025-2026';
+        $semesters = collect($subjects ?? [])->pluck('semester')->filter()->unique()->values();
+        $classListSubjects = collect($subjects ?? [])->map(function ($subject) {
+            return [
+                'id' => $subject->id,
+                'name' => (string) $subject->name,
+                'code' => (string) $subject->code,
+                'units' => number_format((float) $subject->units, 1),
+                'days' => str_replace(',', ', ', (string) $subject->days),
+                'time' => (string) $subject->formatted_time,
+                'room' => (string) $subject->room,
+                'year_section' => (string) $subject->year_section,
+                'section_display' => trim(($subject->course ?: '') . ' ' . ($subject->year_section ?: '')),
+                'school_year' => (string) ($subject->school_year ?: ''),
+                'semester' => (string) ($subject->semester ?: ''),
+            ];
+        })->values();
+    @endphp
+
+    <div class="gs-filter-bar faculty-load-filter-bar" id="fclFilterBar">
+        <div class="gs-filter-row">
+            <div class="gs-filter-group gs-filter-even">
+                <span class="gs-filter-label">School Year</span>
+                <select class="gs-filter-select" id="clSchoolYear">
+                    @forelse($schoolYears as $year)
+                        <option value="{{ $year }}">{{ $year }}</option>
+                    @empty
+                        <option value="{{ $defaultSchoolYear }}">{{ $defaultSchoolYear }}</option>
+                    @endforelse
+                </select>
+            </div>
+            <div class="gs-filter-group gs-filter-even">
+                <span class="gs-filter-label">Semester</span>
+                <select class="gs-filter-select" id="clSemester">
+                    <option value="">All</option>
+                    @foreach($semesters as $semester)
+                        <option value="{{ $semester }}">{{ $semester }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="gs-filter-group faculty-load-display-btn-wrap">
+                <button type="button" class="gs-view-btn" id="clDisplayBtn">Display</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="faculty-gs-detail-tools-row faculty-gs-hidden" id="fclDetailToolsRow">
+        <div class="gs-filter-group faculty-gs-detail-search-wrap">
+            <label class="gs-filter-label" for="classListDetailSearch">Search</label>
+            <input type="text" id="classListDetailSearch" class="gs-filter-select" placeholder="Search Student ID / Name">
+        </div>
+        <div class="faculty-cl-detail-tools-actions">
+            <button type="button" class="btn-faculty-download" id="classListPrintBtn">Print List</button>
+        </div>
+    </div>
+
+    <h3 class="faculty-gs-school-year" id="clYearLabel">{{ $defaultSchoolYear }}</h3>
 
     <div id="classListSubjectView">
         <p class="faculty-section-header">Kindly select a subject to view Class List. You can only select one at a time.</p>
@@ -23,34 +83,23 @@
                         <th>Yr&amp;Section</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($subjects as $subject)
-                    <tr class="faculty-click-row class-list-row"
-                        data-subject-id="{{ $subject->id }}"
-                        data-subject-name="{{ $subject->name }}"
-                        data-subject-section="{{ trim(($subject->course ?: '') . ' ' . ($subject->year_section ?: '')) }}">
-                        <td class="text-center">
-                            <button type="button" class="grading-view-link class-list-open-link">View</button>
-                        </td>
-                        <td class="td-code">{{ $subject->code }}</td>
-                        <td>{{ $subject->name }}</td>
-                        <td>{{ number_format($subject->units, 1) }}</td>
-                        <td>{{ str_replace(',', ', ', $subject->days) }}</td>
-                        <td>{{ $subject->formatted_time }}</td>
-                        <td>{{ $subject->room }}</td>
-                        <td>{{ $subject->year_section }}</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="8" class="text-center text-muted py-4">No subjects found.</td></tr>
-                    @endforelse
-                </tbody>
+                <tbody id="classListBody"></tbody>
             </table>
+        </div>
+
+        <div class="rtp-pagination faculty-cl-pager faculty-gs-hidden" id="classListSubjectPager">
+            <nav class="rtp-nav" aria-label="Class list subjects pagination">
+                <div class="rtp-list" id="classListSubjectPagerList"></div>
+            </nav>
         </div>
     </div>
 
-    <div id="classListDetailView" style="display:none;">
-        <div class="faculty-detail-header">
-            <button type="button" class="faculty-back-btn" id="classListBackBtn">Back</button>
+    <div id="classListDetailView" class="faculty-gs-hidden">
+        <div class="faculty-gs-detail-heading">
+            <button type="button" class="gs-back-btn faculty-gs-back-inline" id="classListBackBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to List
+            </button>
             <div class="faculty-detail-title" id="classListDetailTitle">Class List</div>
             <div class="faculty-detail-section" id="classListDetailSection"></div>
         </div>
@@ -69,14 +118,23 @@
                 <tbody id="classListDetailBody"></tbody>
             </table>
         </div>
+
+        <div class="rtp-pagination faculty-cl-pager faculty-gs-hidden" id="classListDetailPager">
+            <nav class="rtp-nav" aria-label="Class list students pagination">
+                <div class="rtp-list" id="classListDetailPagerList"></div>
+            </nav>
+        </div>
+
+    </div>
+
+    <div id="classListData"
+         data-subjects='@json($classListSubjects)'
+         data-students='@json($subjectStudents)'>
     </div>
 
 </div>
 
 @push('scripts')
-<script>
-    var subjectStudents = @json($subjectStudents);
-</script>
 <script src="{{ asset('js/faculty-class-list.js') }}"></script>
 @endpush
 @endsection

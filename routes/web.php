@@ -384,4 +384,5 @@ Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_
     Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');
     Route::post('/grading-sheet/update', 'Faculty\FacultyController@updateGrades')->name('grading-sheet.update');
     Route::get('/evaluation', 'Faculty\FacultyController@evaluation')->name('evaluation');
+    Route::get('/messaging', 'Faculty\FacultyController@messaging')->name('messaging');
 });

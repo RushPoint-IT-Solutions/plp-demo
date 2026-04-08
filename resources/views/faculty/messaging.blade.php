@@ -1,4 +1,4 @@
-@extends('layouts.registrar')
+@extends('layouts.faculty')
 
 @section('title', 'PLP - Messaging')
 @section('page-title', 'MESSAGING')
@@ -30,7 +30,7 @@
 <div class="messaging-page msg-theme-lite">
     <div class="messaging-shell">
         <aside class="msg-sidebar">
-            <a href="{{ route('registrar.messaging', ['folder' => 'inbox']) }}" class="msg-nav-link {{ $folder === 'inbox' ? 'active' : '' }}">
+            <a href="{{ route('faculty.messaging', ['folder' => 'inbox']) }}" class="msg-nav-link {{ $folder === 'inbox' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
@@ -39,7 +39,7 @@
                 </span>
                 <span>Inbox</span>
             </a>
-            <a href="{{ route('registrar.messaging', ['folder' => 'drafts']) }}" class="msg-nav-link {{ $folder === 'drafts' ? 'active' : '' }}">
+            <a href="{{ route('faculty.messaging', ['folder' => 'drafts']) }}" class="msg-nav-link {{ $folder === 'drafts' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -48,7 +48,7 @@
                 </span>
                 <span>Drafts</span>
             </a>
-            <a href="{{ route('registrar.messaging', ['folder' => 'sent']) }}" class="msg-nav-link {{ $folder === 'sent' ? 'active' : '' }}">
+            <a href="{{ route('faculty.messaging', ['folder' => 'sent']) }}" class="msg-nav-link {{ $folder === 'sent' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"/>
@@ -57,7 +57,7 @@
                 </span>
                 <span>Sent</span>
             </a>
-            <a href="{{ route('registrar.messaging', ['folder' => 'trash']) }}" class="msg-nav-link {{ $folder === 'trash' ? 'active' : '' }}">
+            <a href="{{ route('faculty.messaging', ['folder' => 'trash']) }}" class="msg-nav-link {{ $folder === 'trash' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"/>
@@ -112,8 +112,6 @@
                     </tbody>
                 </table>
             </div>
-
-            
         </section>
     </div>
 </div>
@@ -159,5 +157,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/registrar-messaging.js') }}?v={{ file_exists(public_path('js/registrar-messaging.js')) ? filemtime(public_path('js/registrar-messaging.js')) : time() }}"></script>
+<script src="{{ asset('js/faculty-messaging.js') }}?v={{ file_exists(public_path('js/faculty-messaging.js')) ? filemtime(public_path('js/faculty-messaging.js')) : time() }}"></script>
 @endpush
