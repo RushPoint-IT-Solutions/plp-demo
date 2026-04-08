@@ -92,5 +92,5 @@
 <script>
     var gradingSubjects = @json($gradingSubjects);
 </script>
-<script src="{{ asset('js/faculty-grading-sheet.js') }}"></script>
+<script src="{{ asset('js/faculty-grading-sheet.js') }}?v={{ file_exists(public_path('js/faculty-grading-sheet.js')) ? filemtime(public_path('js/faculty-grading-sheet.js')) : time() }}"></script>
 @endpush

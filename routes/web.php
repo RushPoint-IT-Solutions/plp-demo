@@ -158,7 +158,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         // Academic Master
         Route::prefix('academic-master')->name('academic-master.')->group(function () {
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
+            Route::post('/program-file/department', 'Registrar\RegistrarController@saveDepartmentSetup')->name('program-file.department.store');
             Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
+            Route::put('/program-file/setup/{course}', 'Registrar\RegistrarController@updateProgramSetup')->name('program-file.setup.update');
+            Route::delete('/program-file/setup/{course}', 'Registrar\RegistrarController@destroyProgramSetup')->name('program-file.setup.delete');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');

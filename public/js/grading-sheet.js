@@ -1,4 +1,4 @@
-/* ── Grading Sheet Page ── */
+/* Grading Sheet Page */
 
 var GS_SECTIONS = [
     {
@@ -22,13 +22,23 @@ var GS_SECTIONS = [
     }
 ];
 
-/* ── Render section list (View 1) ── */
+function findSectionById(id) {
+    for (var i = 0; i < GS_SECTIONS.length; i++) {
+        if (String(GS_SECTIONS[i].id) === String(id)) {
+            return GS_SECTIONS[i];
+        }
+    }
+    return null;
+}
+
 function renderSectionList() {
     var tbody = document.getElementById('gsListBody');
+    if (!tbody) return;
+
     var html = '';
     for (var i = 0; i < GS_SECTIONS.length; i++) {
         var s = GS_SECTIONS[i];
-        html += '<tr class="gs-section-row" onclick="showDetailView(' + s.id + ')" style="cursor:pointer;">' +
+        html += '<tr class="gs-section-row" data-section-id="' + s.id + '" style="cursor:pointer;">' +
             '<td>' + (i + 1) + '</td>' +
             '<td class="gs-section-link">' + s.section + '</td>' +
             '<td>' + s.courseCode + '</td>' +
@@ -40,22 +50,35 @@ function renderSectionList() {
         '</tr>';
     }
     tbody.innerHTML = html;
-    document.getElementById('gsListPageInfo').textContent = 'Showing ' + GS_SECTIONS.length + ' sections';
+    var pageInfo = document.getElementById('gsListPageInfo');
+    if (pageInfo) {
+        pageInfo.textContent = 'Showing ' + GS_SECTIONS.length + ' sections';
+    }
 }
 
-/* ── Show detail view (View 2) ── */
 function showDetailView(id) {
-    var sec = GS_SECTIONS.find(function(s) { return s.id === id; });
+    var sec = findSectionById(id);
     if (!sec) return;
 
-    document.getElementById('gsBannerSection').textContent = sec.section;
-    document.getElementById('gsBannerCourse').textContent = sec.courseFull;
-    /* Format: "DIAZ, JONNEL MARK" → "Diaz, Jonnel Mark" */
-    var profName = sec.faculty.replace(/\w\S*/g, function(t) { return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase(); });
-    document.getElementById('gsBannerProf').textContent = profName;
-    document.getElementById('gsBannerSched').textContent = sec.schedule;
+    var bannerSection = document.getElementById('gsBannerSection');
+    var bannerCourse = document.getElementById('gsBannerCourse');
+    var bannerProf = document.getElementById('gsBannerProf');
+    var bannerSched = document.getElementById('gsBannerSched');
+    var detailBody = document.getElementById('gsDetailBody');
+    var detailPageInfo = document.getElementById('gsDetailPageInfo');
+    var listView = document.getElementById('gsListView');
+    var detailView = document.getElementById('gsDetailView');
 
-    var tbody = document.getElementById('gsDetailBody');
+    if (!bannerSection || !bannerCourse || !bannerProf || !bannerSched || !detailBody || !listView || !detailView) {
+        return;
+    }
+
+    bannerSection.textContent = sec.section;
+    bannerCourse.textContent = sec.courseFull;
+    var profName = sec.faculty.replace(/\w\S*/g, function(t) { return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase(); });
+    bannerProf.textContent = profName;
+    bannerSched.textContent = sec.schedule;
+
     var html = '';
     for (var i = 0; i < sec.students.length; i++) {
         var st = sec.students[i];
@@ -72,24 +95,53 @@ function showDetailView(id) {
             '<td class="gs-remarks-passed">' + st.remarks + '</td>' +
         '</tr>';
     }
-    tbody.innerHTML = html;
-    document.getElementById('gsDetailPageInfo').textContent = 'Showing ' + sec.students.length + ' students';
+    detailBody.innerHTML = html;
+    if (detailPageInfo) {
+        detailPageInfo.textContent = 'Showing ' + sec.students.length + ' students';
+    }
 
-    document.getElementById('gsListView').style.display = 'none';
-    document.getElementById('gsDetailView').style.display = 'block';
+    listView.style.display = 'none';
+    detailView.style.display = 'block';
 }
 
-/* ── Back to list ── */
 function showListView() {
-    document.getElementById('gsDetailView').style.display = 'none';
-    document.getElementById('gsListView').style.display = 'block';
+    var detailView = document.getElementById('gsDetailView');
+    var listView = document.getElementById('gsListView');
+    if (!detailView || !listView) return;
+
+    detailView.style.display = 'none';
+    listView.style.display = 'block';
 }
 
-/* ── View List button (just re-renders) ── */
 function handleViewList() {
     renderSectionList();
     showListView();
 }
 
-/* ── Init ── */
-renderSectionList();
+function initGradingSheetPage() {
+    renderSectionList();
+
+    var listBody = document.getElementById('gsListBody');
+    if (!listBody) {
+        return;
+    }
+
+    listBody.addEventListener('click', function (event) {
+        var row = event.target.closest('tr[data-section-id]');
+        if (!row) {
+            return;
+        }
+
+        showDetailView(row.getAttribute('data-section-id'));
+    });
+}
+
+window.showDetailView = showDetailView;
+window.showListView = showListView;
+window.handleViewList = handleViewList;
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGradingSheetPage);
+} else {
+    initGradingSheetPage();
+}

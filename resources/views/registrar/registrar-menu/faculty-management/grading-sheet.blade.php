@@ -159,5 +159,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/grading-sheet.js') }}"></script>
+<script src="{{ asset('js/grading-sheet.js') }}?v={{ file_exists(public_path('js/grading-sheet.js')) ? filemtime(public_path('js/grading-sheet.js')) : time() }}"></script>
 @endpush
