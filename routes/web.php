@@ -384,4 +384,7 @@ Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_
     Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');
     Route::post('/grading-sheet/update', 'Faculty\FacultyController@updateGrades')->name('grading-sheet.update');
     Route::get('/evaluation', 'Faculty\FacultyController@evaluation')->name('evaluation');
+    Route::get('/notifications/feed', 'Faculty\FacultyController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Faculty\FacultyController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Faculty\FacultyController@dismissNotification')->name('notifications.dismiss');
 });

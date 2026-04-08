@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Faculty;
 
 use App\Http\Controllers\Controller;
 use App\AcademicCalendarEvent;
+use App\FacultyEvaluation;
+use App\NotificationDelivery;
+use App\NotificationType;
+use App\PortalNotification;
 use App\Subject;
 use App\StudentSubjectGrade;
 use Illuminate\Http\Request;
@@ -11,6 +15,148 @@ use Illuminate\Support\Facades\Schema;
 
 class FacultyController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = auth()->user();
+            $this->syncEvaluationNotificationsForFaculty($user);
+
+            view()->share('facultyNotifications', $this->activeFacultyNotifications($user));
+            view()->share('facultyUnreadNotificationCount', $this->facultyUnreadNotificationCount($user));
+
+            return $next($request);
+        });
+    }
+
+    private function activeFacultyNotifications($user = null)
+    {
+        $user = $user ?: auth()->user();
+
+        if (!$user || $user->module !== 'faculty') {
+            return collect();
+        }
+
+        if (!Schema::hasTable('notification_deliveries') || !Schema::hasTable('portal_notifications')) {
+            return collect();
+        }
+
+        return NotificationDelivery::query()
+            ->with(['notification.type'])
+            ->where('user_id', $user->id)
+            ->whereNull('dismissed_at')
+            ->orderByDesc('delivered_at')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    private function facultyUnreadNotificationCount($user = null)
+    {
+        $user = $user ?: auth()->user();
+
+        if (!$user || $user->module !== 'faculty') {
+            return 0;
+        }
+
+        if (!Schema::hasTable('notification_deliveries')) {
+            return 0;
+        }
+
+        return (int) NotificationDelivery::query()
+            ->where('user_id', $user->id)
+            ->whereNull('dismissed_at')
+            ->whereNull('read_at')
+            ->count();
+    }
+
+    private function syncEvaluationNotificationsForFaculty($user)
+    {
+        if (!$user || $user->module !== 'faculty') {
+            return;
+        }
+
+        if (!Schema::hasTable('faculty_evaluations')
+            || !Schema::hasTable('notification_types')
+            || !Schema::hasTable('portal_notifications')
+            || !Schema::hasTable('notification_deliveries')
+        ) {
+            return;
+        }
+
+        $faculty = $this->currentFaculty();
+        if (!$faculty) {
+            return;
+        }
+
+        $subjects = $this->subjectsForFaculty($faculty)
+            ->get(['id', 'code', 'name'])
+            ->keyBy('id');
+
+        if ($subjects->isEmpty()) {
+            return;
+        }
+
+        $type = NotificationType::query()->firstOrCreate(
+            ['code' => 'EVALUATION_RESULT_SHARED'],
+            ['name' => 'Evaluation Result Shared']
+        );
+
+        $evaluations = FacultyEvaluation::query()
+            ->whereIn('subject_id', $subjects->keys()->all())
+            ->orderBy('id')
+            ->get(['id', 'subject_id', 'section', 'mean_score', 'created_at']);
+
+        foreach ($evaluations as $evaluation) {
+            $subject = $subjects->get((int) $evaluation->subject_id);
+            if (!$subject) {
+                continue;
+            }
+
+            $sourceReference = 'faculty_evaluation:' . $evaluation->id;
+            $sectionLabel = trim((string) $evaluation->section);
+            $titleSubject = trim((string) ($subject->code ?: $subject->name));
+
+            $title = 'New Evaluation Posted: ' . ($titleSubject !== '' ? $titleSubject : 'Subject');
+            $message = 'A new evaluation result is available';
+            if ($sectionLabel !== '') {
+                $message .= ' for section ' . $sectionLabel;
+            }
+            if ($evaluation->mean_score !== null) {
+                $message .= ' (mean score: ' . number_format((float) $evaluation->mean_score, 1) . ')';
+            }
+            $message .= '.';
+
+            $notification = PortalNotification::query()->firstOrCreate(
+                [
+                    'source_module' => 'faculty_evaluation',
+                    'source_reference' => $sourceReference,
+                ],
+                [
+                    'notification_type_id' => $type->id,
+                    'title' => $title,
+                    'message' => $message,
+                    'source_url' => route('faculty.evaluation', ['subject_id' => $evaluation->subject_id], false),
+                    'created_by_user_id' => null,
+                ]
+            );
+
+            $localSourceUrl = (string) $notification->local_source_url;
+            if ($localSourceUrl !== '' && (string) $notification->source_url !== $localSourceUrl) {
+                $notification->source_url = $localSourceUrl;
+                $notification->save();
+            }
+
+            NotificationDelivery::query()->firstOrCreate(
+                [
+                    'portal_notification_id' => $notification->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'delivered_at' => $evaluation->created_at ?: now(),
+                ]
+            );
+        }
+    }
+
     private function currentFaculty()
     {
         $user = auth()->user();
@@ -277,5 +423,91 @@ class FacultyController extends Controller
             ->get(['id', 'name']);
 
         return view('faculty.evaluation', compact('subjects', 'evaluationDetails', 'subjectOptions', 'selectedSubjectId', 'hasEvaluationRows'));
+    }
+
+    public function dismissNotification(Request $request, $notificationDelivery)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        if (!Schema::hasTable('notification_deliveries')) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => true]);
+            }
+
+            return back();
+        }
+
+        $delivery = NotificationDelivery::query()
+            ->where('id', (int) $notificationDelivery)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $delivery->dismissed_at = now();
+        if (empty($delivery->read_at)) {
+            $delivery->read_at = now();
+        }
+        $delivery->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
+
+        return back();
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        if (!Schema::hasTable('notification_deliveries')) {
+            return response()->json(['ok' => true, 'unread_count' => 0]);
+        }
+
+        NotificationDelivery::query()
+            ->where('user_id', $user->id)
+            ->whereNull('dismissed_at')
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return response()->json(['ok' => true, 'unread_count' => 0]);
+    }
+
+    public function notificationsFeed(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        $this->syncEvaluationNotificationsForFaculty($user);
+
+        $notifications = $this->activeFacultyNotifications($user)
+            ->map(function ($delivery) {
+                $notification = $delivery->notification;
+
+                return [
+                    'delivery_id' => (int) $delivery->id,
+                    'title' => $notification ? (string) $notification->title : 'New notification',
+                    'source_url' => $notification ? (string) $notification->local_source_url : '',
+                    'is_read' => !empty($delivery->read_at),
+                    'dismiss_url' => route('faculty.notifications.dismiss', ['notificationDelivery' => $delivery->id], false),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'unread_count' => $this->facultyUnreadNotificationCount($user),
+            'notifications' => $notifications,
+        ]);
     }
 }

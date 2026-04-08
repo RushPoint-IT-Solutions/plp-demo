@@ -1098,7 +1098,7 @@
     page-break-inside: avoid;
   }
 
-  /* Print-only checkbox replacement: show { } and {✓} when checked */
+  /* Print-only checkbox replacement: show { } and { } when checked */
 
   .registrar-body .loae-reason-item input[type=checkbox],
   .registrar-body .loae-inline-check input[type=checkbox] {

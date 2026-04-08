@@ -50228,6 +50228,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /***/ }),
 
+/***/ "./resources/sass/faculty-notifications.scss":
+/*!***************************************************!*\
+  !*** ./resources/sass/faculty-notifications.scss ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ "./resources/sass/loa-enrolled.scss":
 /*!******************************************!*\
   !*** ./resources/sass/loa-enrolled.scss ***!
@@ -50273,15 +50284,16 @@ document.addEventListener('DOMContentLoaded', function () {
 /***/ }),
 
 /***/ 0:
-/*!*********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/loa-enrolled.scss ./resources/sass/citizens-charter.scss ./resources/sass/request-form-f-137a.scss ./resources/sass/registrar-faculty-loads.scss ***!
-  \*********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/faculty-notifications.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/loa-enrolled.scss ./resources/sass/citizens-charter.scss ./resources/sass/request-form-f-137a.scss ./resources/sass/registrar-faculty-loads.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\app.js */"./resources/js/app.js");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\faculty-notifications.scss */"./resources/sass/faculty-notifications.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-gwa.scss */"./resources/sass/certificate-gwa.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
 __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");

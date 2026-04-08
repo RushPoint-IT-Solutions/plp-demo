@@ -56,4 +56,15 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Applicant::class);
     }
+
+    public function notificationDeliveries()
+    {
+        return $this->hasMany(NotificationDelivery::class);
+    }
+
+    public function activeNotificationDeliveries()
+    {
+        return $this->hasMany(NotificationDelivery::class)
+            ->whereNull('dismissed_at');
+    }
 }

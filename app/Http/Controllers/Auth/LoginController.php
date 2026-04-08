@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -67,6 +68,29 @@ class LoginController extends Controller
             default:
                 return redirect()->route('student.access-module');
         }
+    }
+
+    /**
+     * Log the user out of the application and redirect by access module.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function logout(\Illuminate\Http\Request $request)
+    {
+        $user = Auth::user();
+        $module = $user ? (string) $user->module : '';
+
+        $this->guard()->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($module === 'student' || $module === 'applicant') {
+            return redirect()->route('access-module');
+        }
+
+        return redirect()->route('admin.access-module');
     }
 
     /**

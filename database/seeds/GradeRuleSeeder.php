@@ -19,18 +19,45 @@ class GradeRuleSeeder extends Seeder
             ['code' => 'P', 'grade' => '1.0-3.0', 'remarks' => 'Passed'],
             ['code' => 'F', 'grade' => '5.0', 'remarks' => 'Failed'],
         ];
+        $defaultPeriods = ['Prelim', 'Midterm', 'Pre-Final', 'Finals'];
 
         foreach ($rows as $row) {
+            $payload = [
+                'grade' => $row['grade'],
+                'remarks' => $row['remarks'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            if (!Schema::hasTable('grade_rule_periods') && Schema::hasColumn('grade_rules', 'periods')) {
+                $payload['periods'] = json_encode($defaultPeriods);
+            }
+
             DB::table('grade_rules')->updateOrInsert(
                 ['code' => $row['code']],
-                [
-                    'grade' => $row['grade'],
-                    'remarks' => $row['remarks'],
-                    'periods' => json_encode(['Prelim', 'Midterm', 'Pre-Final', 'Finals']),
+                $payload
+            );
+
+            if (!Schema::hasTable('grade_rule_periods')) {
+                continue;
+            }
+
+            $ruleId = DB::table('grade_rules')->where('code', $row['code'])->value('id');
+            if (empty($ruleId)) {
+                continue;
+            }
+
+            DB::table('grade_rule_periods')->where('grade_rule_id', $ruleId)->delete();
+
+            foreach ($defaultPeriods as $index => $periodName) {
+                DB::table('grade_rule_periods')->insert([
+                    'grade_rule_id' => $ruleId,
+                    'period_name' => $periodName,
+                    'sort_order' => $index + 1,
                     'created_at' => $now,
                     'updated_at' => $now,
-                ]
-            );
+                ]);
+            }
         }
     }
 }

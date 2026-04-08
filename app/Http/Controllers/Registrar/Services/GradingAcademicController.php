@@ -11,12 +11,18 @@ use App\StudentDeficiency;
 use App\TransmutationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class GradingAcademicController extends Controller
 {
     public function gradingSystem()
     {
-        $gradeRules = GradeRule::query()->orderBy('code')->get();
+        $gradeRulesQuery = GradeRule::query();
+        if (Schema::hasTable('grade_rule_periods')) {
+            $gradeRulesQuery->with('periodItems');
+        }
+
+        $gradeRules = $gradeRulesQuery->orderBy('code')->get();
 
         return view('registrar.services.grading-academic.grading-system', compact('gradeRules'));
     }
@@ -28,14 +34,16 @@ class GradingAcademicController extends Controller
             'grade' => 'nullable|string|max:20',
             'remarks' => 'required|string|max:255',
             'periods' => 'nullable|array',
+            'periods.*' => 'nullable|string|max:50',
         ]);
 
         $rule = GradeRule::create([
             'code' => strtoupper(trim($validated['code'])),
             'grade' => isset($validated['grade']) ? trim((string) $validated['grade']) : null,
             'remarks' => trim($validated['remarks']),
-            'periods' => isset($validated['periods']) ? array_values($validated['periods']) : [],
         ]);
+
+        $rule->syncPeriods(isset($validated['periods']) ? array_values($validated['periods']) : []);
 
         return response()->json(['ok' => true, 'id' => $rule->id]);
     }
@@ -46,6 +54,8 @@ class GradingAcademicController extends Controller
             'code' => 'required|string|max:20|unique:grade_rules,code,' . $gradeRule->id,
             'grade' => 'nullable|string|max:20',
             'remarks' => 'required|string|max:255',
+            'periods' => 'nullable|array',
+            'periods.*' => 'nullable|string|max:50',
         ]);
 
         $gradeRule->update([
@@ -53,6 +63,10 @@ class GradingAcademicController extends Controller
             'grade' => isset($validated['grade']) ? trim((string) $validated['grade']) : null,
             'remarks' => trim($validated['remarks']),
         ]);
+
+        if (array_key_exists('periods', $validated)) {
+            $gradeRule->syncPeriods(array_values((array) $validated['periods']));
+        }
 
         return response()->json(['ok' => true]);
     }
