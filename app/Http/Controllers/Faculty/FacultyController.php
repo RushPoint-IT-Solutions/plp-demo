@@ -152,6 +152,7 @@ class FacultyController extends Controller
 
                 return [
                     'id' => $student->id,
+                    'student_no' => $student->student_no,
                     'name' => $student->name,
                     'prelim' => $grade ? number_format((float) $grade->prelim, 2) : '',
                     'midterm' => $grade ? number_format((float) $grade->midterm, 2) : '',
@@ -168,6 +169,8 @@ class FacultyController extends Controller
                 'units' => number_format((float) $subject->units, 1),
                 'days' => str_replace(',', ', ', (string) $subject->days),
                 'section' => trim(($subject->course ?: '') . ' ' . ($subject->year_section ?: '')),
+                'semester' => (string) ($subject->semester ?: ''),
+                'school_year' => (string) ($subject->school_year ?: ''),
                 'status' => $subject->grading_status,
                 'students' => $students,
             ];

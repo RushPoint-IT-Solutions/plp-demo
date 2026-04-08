@@ -3582,16 +3582,19 @@ select:hover {
 }
 
 .faculty-table-wrap {
+  overflow-x: auto;
+  border: 2px solid #c0c0c0;
+  border-radius: 10px;
   background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #e8e8e8;
+  position: relative;
 }
 
 .faculty-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  font-size: 0.84rem;
 }
 
 .faculty-table thead tr {
@@ -3599,15 +3602,16 @@ select:hover {
 }
 
 .faculty-table thead th {
-  padding: 13px 16px;
+  padding: 12px 14px;
   font-weight: 600;
   color: #fff;
-  border: none;
+  text-align: left;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
 .faculty-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #c0c0c0;
 }
 
 .faculty-table tbody tr:last-child {
@@ -3615,9 +3619,14 @@ select:hover {
 }
 
 .faculty-table tbody tr td {
-  padding: 13px 16px;
-  color: #555555;
+  padding: 11px 14px;
+  color: #333;
   vertical-align: middle;
+  border-bottom: 1px solid #c0c0c0;
+}
+
+.faculty-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .faculty-table tbody td.score-cell {
@@ -3638,17 +3647,17 @@ select:hover {
 }
 
 .faculty-click-row:hover {
-  background: #f7fbf9;
+  background: #f9fffe;
 }
 
 .faculty-load-wrap {
-  padding: 24px;
+  padding: 10px 8px;
 }
 
 .faculty-load-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 14px;
 }
 
 .btn-faculty-download {
@@ -3704,7 +3713,139 @@ select:hover {
 }
 
 .grading-sheet-wrap {
-  padding: 24px;
+  padding: 10px 8px;
+}
+
+.faculty-gs-hidden {
+  display: none !important;
+}
+
+.faculty-grading-sheet-page .gs-filter-bar,
+.faculty-load-page .gs-filter-bar {
+  background: #ffffff;
+  border: 1px solid #e4e9e6;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.faculty-gs-school-year {
+  margin: 0 0 10px;
+  text-align: center;
+  color: #0d6f3b;
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.faculty-gs-search-btn-wrap,
+.faculty-load-display-btn-wrap {
+  flex: 0 0 auto;
+  align-self: flex-end;
+}
+
+.faculty-gs-detail-tools-row {
+  display: flex;
+  justify-content: flex-start;
+  background: #ffffff;
+  border: 1px solid #e4e9e6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  align-items: flex-end;
+}
+
+.faculty-gs-detail-search-wrap {
+  width: min(420px, 100%);
+}
+
+#gradingSubjectTable tbody tr,
+#gradingDetailTable tbody tr {
+  cursor: pointer;
+}
+
+#gradingSubjectTable tbody tr:hover,
+#gradingDetailTable tbody tr:hover {
+  background: #f1f8f4;
+}
+
+#gradingSubjectTable thead th,
+#gradingSubjectTable tbody td {
+  text-align: left;
+}
+
+#gradingSubjectTable thead th:first-child,
+#gradingSubjectTable tbody td:first-child,
+#gradingSubjectTable thead th:last-child,
+#gradingSubjectTable tbody td:last-child {
+  text-align: center;
+}
+
+.faculty-gs-detail-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.faculty-gs-back-inline {
+  justify-self: start;
+}
+
+.faculty-gs-pager {
+  margin-top: 10px;
+  padding-top: 0;
+}
+
+#gradingDetailTable {
+  table-layout: fixed;
+  min-width: 980px;
+}
+
+#gradingDetailTable thead th,
+#gradingDetailTable tbody td {
+  text-align: center;
+  white-space: nowrap;
+}
+
+#gradingDetailTable thead th:nth-child(2),
+#gradingDetailTable tbody td:nth-child(2),
+#gradingDetailTable thead th:nth-child(3),
+#gradingDetailTable tbody td:nth-child(3) {
+  text-align: left;
+}
+
+#gradingDetailTable thead th:nth-child(1),
+#gradingDetailTable tbody td:nth-child(1) {
+  width: 46px;
+}
+
+#gradingDetailTable thead th:nth-child(2),
+#gradingDetailTable tbody td:nth-child(2) {
+  width: 130px;
+}
+
+#gradingDetailTable thead th:nth-child(3),
+#gradingDetailTable tbody td:nth-child(3) {
+  width: 240px;
+}
+
+#gradingDetailTable thead th:nth-child(4),
+#gradingDetailTable tbody td:nth-child(4),
+#gradingDetailTable thead th:nth-child(5),
+#gradingDetailTable tbody td:nth-child(5),
+#gradingDetailTable thead th:nth-child(6),
+#gradingDetailTable tbody td:nth-child(6),
+#gradingDetailTable thead th:nth-child(7),
+#gradingDetailTable tbody td:nth-child(7),
+#gradingDetailTable thead th:nth-child(8),
+#gradingDetailTable tbody td:nth-child(8) {
+  width: 110px;
+}
+
+.faculty-grading-sheet-page .faculty-detail-actions {
+  margin-top: 12px;
 }
 
 .grading-status-submitted {
@@ -3779,13 +3920,16 @@ select:hover {
   color: #006837;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .faculty-detail-section {
   font-size: 1rem;
   font-weight: 700;
   color: var(--plp-green);
-  white-space: nowrap;
+  white-space: normal;
+  text-align: right;
 }
 
 .faculty-detail-actions {
@@ -8917,6 +9061,24 @@ select.req-modal-input {
   .gs-banner-grid {
     grid-template-columns: 1fr;
     gap: 8px 0;
+  }
+  .faculty-gs-school-year {
+    font-size: 1.45rem;
+  }
+  .faculty-gs-search-btn-wrap,
+  .faculty-load-display-btn-wrap {
+    width: 100%;
+  }
+  .faculty-gs-detail-search-wrap {
+    width: 100%;
+    margin-left: 0;
+  }
+  .faculty-gs-search-btn-wrap .gs-view-btn,
+  .faculty-load-display-btn-wrap .gs-view-btn {
+    width: 100%;
+  }
+  .faculty-gs-detail-heading {
+    grid-template-columns: 1fr;
   }
   .gs-back-wrap {
     margin-bottom: 10px;

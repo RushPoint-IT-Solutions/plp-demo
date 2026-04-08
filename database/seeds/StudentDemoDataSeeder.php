@@ -8,6 +8,10 @@ class StudentDemoDataSeeder extends Seeder
 {
     public function run()
     {
+        if (app()->environment('production')) {
+            throw new \RuntimeException('StudentDemoDataSeeder cannot run in production.');
+        }
+
         $now = now();
 
         $studentId = DB::table('students')->updateOrInsert(
@@ -145,6 +149,36 @@ class StudentDemoDataSeeder extends Seeder
                     'final' => 1.50,
                     'final_average' => 1.58,
                     'remarks' => 'Passed',
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ]
+            );
+        }
+
+        // Ensure demo grading table is fully populated for enrolled students.
+        $sampleGrade = DB::table('student_subject_grades')
+            ->where('student_id', $student->id)
+            ->orderBy('id')
+            ->first();
+
+        $defaultPrelim = $sampleGrade ? (float) $sampleGrade->prelim : 1.75;
+        $defaultMidterm = $sampleGrade ? (float) $sampleGrade->midterm : 1.50;
+        $defaultFinal = $sampleGrade ? (float) $sampleGrade->final : 1.50;
+        $defaultAverage = $sampleGrade ? (float) $sampleGrade->final_average : 1.58;
+        $defaultRemarks = $sampleGrade ? (string) $sampleGrade->remarks : 'Passed';
+
+        $enrollments = DB::table('student_subject')
+            ->get(['student_id', 'subject_id']);
+
+        foreach ($enrollments as $enrollment) {
+            DB::table('student_subject_grades')->updateOrInsert(
+                ['student_id' => $enrollment->student_id, 'subject_id' => $enrollment->subject_id],
+                [
+                    'prelim' => $defaultPrelim,
+                    'midterm' => $defaultMidterm,
+                    'final' => $defaultFinal,
+                    'final_average' => $defaultAverage,
+                    'remarks' => $defaultRemarks,
                     'updated_at' => $now,
                     'created_at' => $now,
                 ]
