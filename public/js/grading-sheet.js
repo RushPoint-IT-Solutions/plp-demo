@@ -83,16 +83,16 @@ function showDetailView(id) {
     for (var i = 0; i < sec.students.length; i++) {
         var st = sec.students[i];
         html += '<tr>' +
-            '<td>' + (i + 1) + '</td>' +
-            '<td>' + st.studentNo + '</td>' +
-            '<td>' + st.name + '</td>' +
-            '<td style="text-align:center;"><input type="checkbox" class="gs-checkbox"' + (st.fda ? ' checked' : '') + '></td>' +
-            '<td style="text-align:center;"><input type="checkbox" class="gs-checkbox"' + (st.na ? ' checked' : '') + '></td>' +
-            '<td>' + st.midterm.toFixed(2) + '</td>' +
-            '<td>' + st.final.toFixed(2) + '</td>' +
-            '<td>' + st.cRating.toFixed(2) + '</td>' +
-            '<td>' + st.fRating.toFixed(2) + '</td>' +
-            '<td class="gs-remarks-passed">' + st.remarks + '</td>' +
+            '<td class="gs-col-num">' + (i + 1) + '</td>' +
+            '<td class="gs-col-studno">' + st.studentNo + '</td>' +
+            '<td class="gs-col-name">' + st.name + '</td>' +
+            '<td class="gs-col-flag"><input type="checkbox" class="gs-checkbox"' + (st.fda ? ' checked' : '') + '></td>' +
+            '<td class="gs-col-flag"><input type="checkbox" class="gs-checkbox"' + (st.na ? ' checked' : '') + '></td>' +
+            '<td class="gs-col-grade">' + st.midterm.toFixed(2) + '</td>' +
+            '<td class="gs-col-grade">' + st.final.toFixed(2) + '</td>' +
+            '<td class="gs-col-grade">' + st.cRating.toFixed(2) + '</td>' +
+            '<td class="gs-col-grade">' + st.fRating.toFixed(2) + '</td>' +
+            '<td class="gs-col-remarks gs-remarks-passed">' + st.remarks + '</td>' +
         '</tr>';
     }
     detailBody.innerHTML = html;

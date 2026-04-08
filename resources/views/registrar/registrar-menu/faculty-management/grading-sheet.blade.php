@@ -100,7 +100,7 @@
     {{-- ═══ VIEW 2: Student Grades Detail ═══ --}}
     <div id="gsDetailView" style="display:none;">
         {{-- Back link --}}
-        <div style="margin-bottom:12px;">
+        <div class="gs-back-wrap">
             <button type="button" class="gs-back-btn" onclick="showListView()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 Back to List
@@ -131,7 +131,7 @@
 
         {{-- Students Table --}}
         <div class="student-table-wrapper table-responsive">
-            <table class="student-table registrar-table" id="gsDetailTable">
+            <table class="student-table registrar-table gs-detail-table" id="gsDetailTable">
                 <thead>
                     <tr>
                         <th style="width:35px;">#</th>

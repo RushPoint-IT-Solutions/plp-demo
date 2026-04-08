@@ -357,7 +357,14 @@
 }
 
 .page-report-access .ra-modal-box {
-  width: min(1080px, 96vw);
+  width: min(1240px, 97vw);
+  max-width: min(1240px, 97vw);
+  max-height: 92vh;
+  padding: 22px 24px 18px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .page-report-access .ra-modal-user {
@@ -375,9 +382,18 @@
 
 .page-report-access .ra-groups {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 12px;
   margin-top: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding-right: 4px;
+}
+
+.page-report-access .ra-group-head {
+  align-items: flex-start;
 }
 
 .page-report-access .ra-group {
@@ -385,6 +401,7 @@
   border-radius: 10px;
   padding: 10px;
   background: #fbfdfc;
+  min-height: 0;
 }
 
 .page-report-access .ra-group-title h4 {
@@ -399,7 +416,7 @@
   flex-direction: column;
   gap: 6px;
   margin-top: 8px;
-  max-height: 180px;
+  max-height: 260px;
   overflow: auto;
   padding-right: 6px;
 }
@@ -443,6 +460,25 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e4ece7;
+  flex-shrink: 0;
+}
+
+.page-report-access .ra-modal-head,
+.page-report-access .ra-modal-tools {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1180px) {
+  .page-report-access .ra-modal-box {
+    width: min(980px, 96vw);
+    max-width: min(980px, 96vw);
+  }
+
+  .page-report-access .ra-groups {
+    grid-template-columns: 1fr;
+  }
 }
 
 .page-faculty-file .ff-status {
@@ -909,6 +945,17 @@
   .page-student-profile .sp-toolbar,
   .page-student-grade-file .sgf-toolbar {
     flex-wrap: wrap;
+  }
+
+  .page-report-access .ra-modal-box {
+    width: 96vw;
+    max-width: 96vw;
+    max-height: 94vh;
+    padding: 18px 14px 14px;
+  }
+
+  .page-report-access .ra-group-list {
+    max-height: 220px;
   }
 
   .page-student-profile .sp-toolbar {
@@ -1795,4 +1842,29 @@
 .page-student-profile-app-preview .spc-view-form-btn:visited {
   text-decoration: none !important;
   color: #fff !important;
+}
+
+@media (max-width: 600px) {
+  .page-report-access .req-modal-overlay {
+    align-items: flex-start;
+    padding: 10px;
+    overflow: auto;
+  }
+
+  .page-report-access .ra-modal-box {
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    min-height: calc(100vh - 20px);
+    border-radius: 10px;
+  }
+
+  .page-report-access .ra-modal-user {
+    width: 100%;
+    font-size: 0.76rem;
+  }
+
+  .page-report-access .ra-group-list {
+    max-height: none;
+  }
 }
