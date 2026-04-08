@@ -31022,6 +31022,7 @@ body.page-profile-view .pv-layout {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 10px;
 }
 
 .batch-file-count {
@@ -31048,6 +31049,7 @@ body.page-profile-view .pv-layout {
 }
 
 .batch-upload-results {
+  margin-top: 8px;
   border-top: 1px solid #e5e5e5;
   padding-top: 16px;
 }
@@ -31610,6 +31612,58 @@ body.page-profile-view .pv-layout {
 }
 .app-filter-input:focus {
   border-color: #006837;
+}
+
+.ga-page .ga-table .tog-input {
+  width: 100%;
+  max-width: 100%;
+  min-height: 32px;
+  border: 1px solid #cfd9d3;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  color: #2e3b34;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.ga-page .ga-table .tog-input:focus {
+  border-color: #0b8043;
+  box-shadow: 0 0 0 2px rgba(11, 128, 67, 0.12);
+}
+
+.ga-page .ga-table .tog-input-date {
+  min-width: 138px;
+}
+
+.ga-page .ga-table .tog-input-so {
+  min-width: 120px;
+  max-width: 140px;
+}
+
+.ga-page .ga-table .tog-check {
+  width: 16px;
+  height: 16px;
+  accent-color: #0b8043;
+  cursor: pointer;
+}
+
+.ga-page .ga-table .tog-suspend-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #2f3d36;
+}
+
+.ga-page .ga-table .tog-save-btn {
+  margin-left: 8px;
+  min-width: 72px;
+  padding: 6px 14px;
+  font-size: 0.76rem;
 }
 
 .app-filter-select {
@@ -33288,8 +33342,9 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 
 .pf-entries-control {
   display: inline-flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
 
 .pf-entries-control label {
@@ -33309,6 +33364,15 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   color: #555;
   font-size: 0.88rem;
   padding: 4px 6px;
+}
+
+.pf-entries-control span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #006837;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .pf-modal-box.pf-dept-modal-box {

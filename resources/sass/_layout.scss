@@ -329,15 +329,15 @@
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// REGISTRAR — body-scoped overrides
-// ══════════════════════════════════════════════════════════════════════
+// ======================================================================
+// REGISTRAR body-scoped overrides
+// ======================================================================
 // The registrar layout body carries BOTH .student-portal-body AND
 // .registrar-body, so it inherits every student-portal rule above.
 // Use .registrar-body to layer registrar-only tweaks on top.
 
 .registrar-body {
-    // Sidebar responsive — same drawer pattern, scoped so it can't
+    // Sidebar responsive same drawer pattern, scoped so it can't
     // bleed into the student portal.
     @include down(991px) {
         .plp-sidebar {
@@ -381,3 +381,4 @@
         }
     }
 }
+

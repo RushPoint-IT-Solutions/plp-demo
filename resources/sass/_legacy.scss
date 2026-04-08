@@ -1241,7 +1241,7 @@ select:hover {
   box-shadow: none;
 }
 
-/* Filter grid â€” guarantees cross-row alignment */
+/* Filter grid guarantees cross-row alignment */
 
 .filter-grid {
   display: grid;
@@ -2234,7 +2234,7 @@ select:hover {
   color: #664d03;
 }
 
-/* â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Calendar */
 
 .cal-controls {
   display: flex;
@@ -2426,7 +2426,7 @@ select:hover {
   color: #1565c0;
 }
 
-/* â”€â”€ Calendar Event Popup (mobile tap-to-reveal) â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Calendar Event Popup (mobile tap-to-reveal) */
 
 .cal-event-popup {
   position: fixed;
@@ -2492,7 +2492,7 @@ select:hover {
   line-height: 1.35;
 }
 
-/* â”€â”€ Profile / Setup Wizard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Profile / Setup Wizard */
 
 .setup-steps {
   display: flex;
@@ -5506,7 +5506,7 @@ select:hover {
   font-weight: 700;
 }
 
-/* â”€â”€ Nested sub-dropdowns (e.g. Academic Master) â”€â”€ */
+/* Nested sub-dropdowns (e.g. Academic Master) */
 .student-portal-body .sidebar-nested-dropdown {
   display: flex;
   flex-direction: column;
@@ -5546,7 +5546,7 @@ select:hover {
   left: 36px;
 }
 
-/* â”€â”€ Program File / Academic Master pages â”€â”€ */
+/* Program File / Academic Master pages */
 .pf-page {
   display: flex;
   flex-direction: column;
@@ -6057,7 +6057,7 @@ select:hover {
   text-decoration: underline;
 }
 
-/* â”€â”€ Program File Modal â”€â”€ */
+/* Program File Modal */
 .pf-modal-overlay {
   position: fixed;
   inset: 0;
@@ -6439,7 +6439,7 @@ select:hover {
   text-align: left;
 }
 
-/* Program File table â€” all columns left-aligned, Action centered */
+/* Program File table all columns left-aligned, Action centered */
 .pf-page .registrar-table thead th,
 .pf-page .registrar-table tbody td {
   text-align: left;
@@ -8617,7 +8617,7 @@ select.req-modal-input {
   }
 }
 
-/* â”€â”€ Scheduling Filter Bar â”€â”€ */
+/* Scheduling Filter Bar */
 
 .sched-filter-bar {
   display: flex;
@@ -8734,7 +8734,7 @@ select.req-modal-input {
   }
 }
 
-/* â”€â”€ Slot Monitoring Progress Bar â”€â”€ */
+/* Slot Monitoring Progress Bar */
 
 .slot-status-wrap {
   display: flex;
@@ -8765,7 +8765,7 @@ select.req-modal-input {
   text-align: right;
 }
 
-/* â”€â”€ Grading Sheet Page â”€â”€ */
+/* Grading Sheet Page */
 .gs-filter-bar {
   padding: 18px 22px 14px;
   margin-bottom: 22px;
@@ -8823,7 +8823,7 @@ select.req-modal-input {
 }
 .gs-view-btn:hover { background: #004d29; }
 
-/* â”€â”€ Grading Sheet: Two-row table header â”€â”€ */
+/* Grading Sheet: Two-row table header */
 .gs-list-table thead {
   background: #006837;
 }
@@ -8904,7 +8904,7 @@ select.req-modal-input {
   background: #f0faf4;
 }
 
-/* â”€â”€ Section Info Banner v2 (detail view) â”€â”€ */
+/* Section Info Banner v2 (detail view) */
 .gs-section-banner-v2 {
   background: #fff;
   border: 1.5px solid #c8e6c9;
@@ -8970,7 +8970,7 @@ select.req-modal-input {
   .gs-banner-grid { grid-template-columns: 1fr; gap: 8px 0; }
 }
 
-/* â”€â”€ Evaluation Page â”€â”€ */
+/* Evaluation Page */
 .eval-layout {
   display: grid;
   grid-template-columns: 1fr 520px;
@@ -9319,7 +9319,7 @@ select.req-modal-input {
   font-weight: 500;
 }
 
-/* â”€â”€ Evaluation Dashboard (right panel) â”€â”€ */
+/* Evaluation Dashboard (right panel) */
 .eval-dashboard {
   background: #fff;
   border: 1.5px solid #e0e0e0;
@@ -9414,7 +9414,7 @@ select.req-modal-input {
 .eval-status-draft { background: #f9a825; color: #fff; }
 .eval-status-closed { background: #ccc; color: #555; }
 
-/* â”€â”€ Responsive: Grading Sheet + Evaluation â”€â”€ */
+/* Responsive: Grading Sheet + Evaluation */
 @media (max-width: 1200px) {
   .eval-layout { grid-template-columns: 1fr 280px; gap: 16px; }
 }
@@ -9442,7 +9442,7 @@ select.req-modal-input {
   .eval-q-actions { align-self: flex-end; }
 }
 
-/* â”€â”€ Eval CRUD Modal â”€â”€ */
+/* Eval CRUD Modal */
 .eval-crud-overlay {
   position: fixed;
   inset: 0;
@@ -9497,7 +9497,7 @@ select.req-modal-input {
   margin-top: 6px;
 }
 
-/* â”€â”€ Placeholder Page Card â”€â”€ */
+/* Placeholder Page Card */
 .placeholder-card {
   display: flex;
   flex-direction: column;
@@ -9523,7 +9523,7 @@ select.req-modal-input {
   line-height: 1.5;
 }
 
-/* â”€â”€ System Config: Announcement / Academic Calendar â”€â”€ */
+/* System Config: Announcement / Academic Calendar */
 .sc-page {
   display: flex;
   flex-direction: column;
@@ -9662,14 +9662,14 @@ select.req-modal-input {
   resize: vertical;
 }
 
-/* â”€â”€ System Config: Configuration Page â”€â”€ */
+/* System Config: Configuration Page */
 .cfg-page {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* â”€â”€ System Config: Admission Config Page â”€â”€ */
+/* System Config: Admission Config Page */
 .adm-page {
   display: flex;
   flex-direction: column;
@@ -10252,11 +10252,9 @@ select.req-modal-input {
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CLINIC RECORD / INFIRMARY LOG
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Clinic Record / Infirmary Log */
 
-/* â”€â”€ Filter Bar â”€â”€ */
+/* Filter Bar */
 .cr-filter-bar {
   margin-bottom: 18px;
 }
@@ -10306,7 +10304,7 @@ select.req-modal-input {
   outline: none;
 }
 
-/* â”€â”€ Student Table (uses shared .student-table pattern) â”€â”€ */
+/* Student Table (uses shared .student-table pattern) */
 .cr-name-link {
   color: #006837;
   text-decoration: none;
@@ -10324,7 +10322,7 @@ select.req-modal-input {
   background: #f8fcf9;
 }
 
-/* â”€â”€ Card (shared for Personal Info, Medical, Immunization) â”€â”€ */
+/* Card (shared for Personal Info, Medical, Immunization) */
 .cr-card {
   background: #fff;
   border: 1.5px solid #e0e0e0;
@@ -10347,7 +10345,7 @@ select.req-modal-input {
   margin-top: 24px;
 }
 
-/* â”€â”€ Parents Information â”€â”€ */
+/* Parents Information */
 .cr-parent-card {
   padding-bottom: 0;
   display: flex;
@@ -10552,7 +10550,7 @@ select.req-modal-input {
   background: #fff;
 }
 
-/* â”€â”€ Personal Information Grid â”€â”€ */
+/* Personal Information Grid */
 .cr-info-grid {
   display: flex;
   flex-direction: column;
@@ -10588,7 +10586,7 @@ select.req-modal-input {
   font-weight: 600;
 }
 
-/* â”€â”€ Medical History â”€â”€ */
+/* Medical History */
 .cr-med-table-wrap {
   margin-bottom: 28px;
 }
@@ -10637,7 +10635,7 @@ select.req-modal-input {
   color: #333;
   cursor: pointer;
 }
-/* â”€â”€ Custom Checkboxes (all clinic sections) â”€â”€ */
+/* Custom Checkboxes (all clinic sections) */
 .cr-med-check input[type="checkbox"],
 .cr-imm-check input[type="checkbox"],
 .cr-imm-sub-check input[type="checkbox"] {
@@ -10747,7 +10745,7 @@ select.req-modal-input {
 }
 .cr-cond-input:focus { border-color: #006837; outline: none; }
 
-/* â”€â”€ Immunization â”€â”€ */
+/* Immunization */
 .cr-imm-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -10822,7 +10820,7 @@ select.req-modal-input {
 }
 .cr-imm-sub-input:focus { border-color: #006837; outline: none; }
 
-/* â”€â”€ Doctor Info (grid item) â”€â”€ */
+/* Doctor Info (grid item) */
 .cr-doctor-box {
   grid-column: span 2;
 }
@@ -10844,7 +10842,7 @@ select.req-modal-input {
   letter-spacing: 0.3px;
 }
 
-/* â”€â”€ Clinic Record Responsive â”€â”€ */
+/* Clinic Record Responsive */
 @media (max-width: 1100px) {
   .cr-imm-grid { grid-template-columns: repeat(3, 1fr); }
   .cr-doctor-box { grid-column: span 2; }
@@ -10880,7 +10878,7 @@ select.req-modal-input {
   .cr-cond-input { width: 100%; }
 }
 
-/* â”€â”€ Pre-requisites Page â”€â”€ */
+/* Pre-requisites Page */
 .prereq-page {
   padding: 4px 0;
 }
@@ -10950,7 +10948,7 @@ select.req-modal-input {
   background: #005229;
 }
 
-/* â”€â”€ List View â”€â”€ */
+/* List View */
 .prereq-list-header {
   display: flex;
   align-items: center;
@@ -11076,7 +11074,7 @@ select.req-modal-input {
   padding: 18px 12px !important;
 }
 
-/* â”€â”€ Detail / Edit View â”€â”€ */
+/* Detail / Edit View */
 .prereq-detail-banner {
   display: flex;
   align-items: center;
@@ -11349,7 +11347,7 @@ select.req-modal-input {
   }
 }
 
-/* â”€â”€ Subject File Page â”€â”€ */
+/* Subject File Page */
 .sf-page {
   display: flex;
   flex-direction: column;
@@ -12160,7 +12158,7 @@ select.req-modal-input {
 
 /* profile-edit: keep header fixed, content scrolls normally */
 
-/* â”€â”€ Profile View: bg on wrapper like login â”€â”€ */
+/* Profile View: bg on wrapper like login */
 body.page-profile-view .student-main-wrapper {
   background-color: #006837;
   background-size: cover;
@@ -12202,12 +12200,9 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   color: #d4a017;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   UNIFIED CUSTOM CHECKBOXES
-   Consistent with the Clinic Record design
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Unified custom checkboxes (consistent with Clinic Record design) */
 
-/* â”€â”€ Label wrappers (flex row with gap) â”€â”€ */
+/* Label wrappers (flex row with gap) */
 .setup-checkbox-label,
 .setup-checkbox,
 .doclist-checkbox-label,
@@ -12220,14 +12215,14 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   cursor: pointer;
 }
 
-/* â”€â”€ Checkbox group (flex-wrap row for multi-select lists) â”€â”€ */
+/* Checkbox group (flex-wrap row for multi-select lists) */
 .setup-checkbox-group {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 22px;
 }
 
-/* â”€â”€ Custom checkbox appearance (matches clinic record) â”€â”€ */
+/* Custom checkbox appearance (matches clinic record) */
 .setup-checkbox-label input[type="checkbox"],
 .setup-checkbox input[type="checkbox"],
 .doclist-checkbox-label input[type="checkbox"],
@@ -12249,7 +12244,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-/* â”€â”€ Checked state â”€â”€ */
+/* Checked state */
 .setup-checkbox-label input[type="checkbox"]:checked,
 .setup-checkbox input[type="checkbox"]:checked,
 .doclist-checkbox-label input[type="checkbox"]:checked,
@@ -12262,7 +12257,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   border-color: #0a813c;
 }
 
-/* â”€â”€ Checkmark icon â”€â”€ */
+/* Checkmark icon */
 .setup-checkbox-label input[type="checkbox"]:checked::after,
 .setup-checkbox input[type="checkbox"]:checked::after,
 .doclist-checkbox-label input[type="checkbox"]:checked::after,
@@ -12281,7 +12276,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   transform: translate(-50%, -50%);
 }
 
-/* â”€â”€ Hover glow â”€â”€ */
+/* Hover glow */
 .setup-checkbox-label input[type="checkbox"]:hover,
 .setup-checkbox input[type="checkbox"]:hover,
 .doclist-checkbox-label input[type="checkbox"]:hover,
@@ -12294,7 +12289,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
-/* â”€â”€ Custom radio buttons (document list modals) â”€â”€ */
+/* Custom radio buttons (document list modals) */
 .doclist-radio-label {
   display: flex;
   align-items: center;
@@ -12340,7 +12335,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
 }
 
-/* â”€â”€ Faculty Loads â”€â”€ */
+/* Faculty Loads */
 .rfl-wrap {
   padding: 24px;
 }
@@ -20957,7 +20952,7 @@ select:hover {
   box-shadow: none;
 }
 
-/* Filter grid â€” guarantees cross-row alignment */
+/* Filter grid guarantees cross-row alignment */
 
 .filter-grid {
   display: grid;
@@ -21669,7 +21664,7 @@ select:hover {
   color: #842029;
 }
 
-/* â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Calendar */
 
 .cal-controls {
   display: flex;
@@ -21897,7 +21892,7 @@ select:hover {
   color: #1565c0;
 }
 
-/* â”€â”€ Profile / Setup Wizard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Profile / Setup Wizard */
 
 .setup-steps {
   display: flex;
