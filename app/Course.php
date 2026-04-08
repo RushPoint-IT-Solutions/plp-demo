@@ -14,6 +14,7 @@ class Course extends Model
         'program_type',
         'department_id',
         'description',
+        'program_file',
         'slots',
         'track_category',
         'non_filipino',

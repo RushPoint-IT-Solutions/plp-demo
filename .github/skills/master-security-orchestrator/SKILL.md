@@ -1,46 +1,48 @@
 ---
 name: "master-security-orchestrator"
-description: "Executes the full Defense-in-Depth pipeline. Runs the Static Code Auditor, UI/Security Debugger, and Chaos Tester sequentially, compiling a master vulnerability report."
+description: "Executes Defense-in-Depth pipeline. Scans backend, fuzzes frontend, stress-tests servers, AUTO-FIXES vulnerabilities, and stores all reports in a git-ignored '.security-audits/' folder."
 ---
 
-# Master Security Orchestrator (Defense-in-Depth)
+# Master Security Orchestrator (Active Defender & Cleaner)
 
 ## Purpose
-Coordinate the execution of backend static analysis, frontend UI/security fuzzing, and aggressive stress testing into a single, automated workflow.
+Coordinate the execution of backend static analysis, frontend UI/security fuzzing, and stress testing. This skill must automatically patch discovered vulnerabilities using filesystem tools and ensure all generated logs, traces, and reports are confined to a dedicated, git-ignored folder to prevent workspace clutter.
 
 ## Required MCP Tools
-- Filesystem / File Editor (for Code Audit)
-- CLI / Terminal (for compiling/commands)
-- Playwright (for Frontend & Chaos testing)
+- `read_file`, `edit_file`, `delete_file`
+- CLI / Terminal (for `git` commands, directory creation, compiling)
+- Playwright tools (for Frontend & Chaos testing)
 
-## Workflow (Steps 1–5)
+## Workflow (Steps 1–6)
 
 1) **Get Target Scope**
-- Prompt the user for: Target URL and Target Local Directory (for backend code).
+- Prompt the user for: Target URL and Target Local Directory.
 
-2) **Phase 1: Backend Static Audit (The Foundation)**
-- Execute the `laravel-security-auditor` workflow.
-- Scan `./app/Http/Controllers` and `./app/Models` for missing authorization gates, Mass Assignment vulnerabilities, and raw SQL injections.
-- *Store findings in memory.* Do not stop the master workflow.
+2) **Phase 1: Backend Audit & AUTO-FIX**
+- Scan `./app/Http/Controllers` and `./app/Models`.
+- **Action:** Use `edit_file` to immediately patch found vulnerabilities (e.g., inject `$this->authorize()`, define `$fillable`).
+- *Store a log of what was fixed in memory.*
 
-3) **Phase 2: Frontend UI & Injection Check (The Surface)**
-- Execute the `playwright-debugger` workflow on the Target URL.
-- Emulate iPhone SE layout.
-- Inject safe XSS (`<img src="x" onerror="console.error('CRITICAL_XSS')">`) and SQLi (`' OR '1'='1`) payloads into all discovered input fields.
-- *Store findings in memory.*
+3) **Phase 2: Frontend UI & Injection Check**
+- Execute UI/Mobile checks and fuzz inputs for XSS/SQLi.
+- **Action:** If CSS/layout issues are found, use the CLI to `grep` the exact class, use `edit_file` to fix the style, and recompile.
 
-4) **Phase 3: Chaos & Stress Testing (The Resilience)**
-- Execute the `playwright-chaos-tester` workflow on the primary action button of the Target URL.
-- Inject JS to spam clicks (20x/sec) and attempt rapid form submissions to test Rate Limiting (429s) and Race Conditions.
-- *Store findings in memory.*
+4) **Phase 3: Chaos & Stress Testing**
+- Run the aggressive auto-clicker and rapid-reload scripts on primary action buttons to test for Race Conditions and missing Rate Limits.
 
-5) **Generate the Master Health Report**
-- Consolidate all stored findings into a single, comprehensive Markdown report categorized strictly by:
-  - **CRITICAL:** (e.g., missing backend auth, successful XSS, race conditions allowing duplicate database entries).
-  - **WARNING:** (e.g., missing rate limits, mass assignment risks).
-  - **UI/UX FAILURES:** (e.g., broken iPhone SE layout, missing tap targets).
-- For every backend/CSS issue, provide the exact file path and suggested code fix.
+5) **Phase 4: Workspace Organization & Gitignore (CRITICAL)**
+- **Create Directory:** Use the CLI to create a hidden folder in the project root: `mkdir -p .security-audits`
+- **Gitignore the Folder:** Ensure this folder is ignored by version control. Use the CLI to run: 
+  `grep -qxF '/.security-audits/' .gitignore || echo '/.security-audits/' >> .gitignore`
+- **Move/Delete Junk:** Move any Playwright trace files or JSON logs into `.security-audits/`. Use `delete_file` or CLI `rm` to destroy any leftover temporary files in the root.
+
+6) **Generate Final Master Report**
+- Output the final master report locally inside the new folder as: `.security-audits/master-audit-report.md`
+- The report must contain:
+  - **Patches Applied:** Exact files modified and the vulnerabilities fixed.
+  - **Remaining Threats:** Anything the AI could not auto-fix safely.
+  - **Cleanup Confirmation:** A brief note confirming all logs are safely stored in `.security-audits/` and the folder is git-ignored.
 
 ## STOP COMMAND
-When the master report is delivered, output exactly:
+When the report is generated in the target folder and cleanup is complete, output exactly:
 WAITING_FOR_HUMAN_OK

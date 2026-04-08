@@ -95,16 +95,17 @@
                         <td>{{ optional($program->department)->description ?: '-' }}</td>
                         <td>{{ $program->program_file ?: 'Pending Review' }}</td>
                         <td style="text-align:center;">
-                            <div class="apst-action-btn"
-                                 data-pf-menu-toggle="pfMenu-{{ $program->id }}"
-                                 data-update-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.update', $program) }}"
-                                 data-delete-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.delete', $program) }}"
-                                 data-code="{{ $program->code }}"
-                                 data-name="{{ $program->name ?: $program->description }}"
-                                 data-department-id="{{ $program->department_id }}"
-                                 data-accreditation="{{ $program->program_file ?: 'Pending Review' }}"
-                                 aria-label="Open row actions"
-                                 title="Actions"><span></span><span></span><span></span></div>
+                            <button type="button"
+                                class="apst-action-btn"
+                                data-pf-menu-toggle="pfMenu-{{ $program->id }}"
+                                data-update-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.update', $program) }}"
+                                data-delete-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.delete', $program) }}"
+                                data-code="{{ $program->code }}"
+                                data-name="{{ $program->name ?: $program->description }}"
+                                data-department-id="{{ $program->department_id }}"
+                                data-accreditation="{{ $program->program_file ?: 'Pending Review' }}"
+                                aria-label="Open row actions"
+                                title="Actions"><span></span><span></span><span></span></button>
                             <div class="apst-dropdown" id="pfMenu-{{ $program->id }}">
                                 <button type="button" data-pf-action="edit">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>

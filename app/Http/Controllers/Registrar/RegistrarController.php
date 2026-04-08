@@ -1945,24 +1945,44 @@ class RegistrarController extends Controller
      */
     public function programFile(Request $request)
     {
+        $departmentId = (int) $request->input('department_id', 0);
+        $programType = trim((string) $request->input('program_type', ''));
+        $programCode = trim((string) $request->input('program_code', ''));
+        $description = trim((string) $request->input('description', ''));
+
         $departments = Department::orderBy('description')->get();
         $faculties = Faculty::orderBy('name')->get();
 
         $programs = Course::with(['department', 'deanDirector'])
-            ->when($request->filled('department_id'), function ($query) use ($request) {
-                $query->where('department_id', $request->input('department_id'));
+            ->when($departmentId > 0, function ($query) use ($departmentId) {
+                $query->where('department_id', $departmentId);
             })
-            ->when($request->filled('program_type'), function ($query) use ($request) {
-                $query->where('program_file', $request->input('program_type'));
+            ->when($programType !== '', function ($query) use ($programType) {
+                if ($programType === 'Pending Review') {
+                    $query->where(function ($pendingQuery) {
+                        $pendingQuery->whereNull('program_file')
+                            ->orWhere('program_file', '')
+                            ->orWhere('program_file', 'Pending Review');
+                    });
+                    return;
+                }
+
+                $query->where('program_file', $programType);
             })
-            ->when($request->filled('program_code'), function ($query) use ($request) {
-                $query->where('code', 'like', '%' . $request->input('program_code') . '%');
+            ->when($programCode !== '', function ($query) use ($programCode) {
+                $query->where('code', 'like', '%' . $programCode . '%');
             })
-            ->when($request->filled('description'), function ($query) use ($request) {
-                $term = $request->input('description');
-                $query->where(function ($subQuery) use ($term) {
-                    $subQuery->where('name', 'like', '%' . $term . '%')
-                        ->orWhere('description', 'like', '%' . $term . '%');
+            ->when($description !== '', function ($query) use ($description) {
+                $query->where(function ($subQuery) use ($description) {
+                    $departmentTable = (new Department)->getTable();
+
+                    $subQuery->where('name', 'like', '%' . $description . '%')
+                        ->orWhere('description', 'like', '%' . $description . '%')
+                        ->orWhere('code', 'like', '%' . $description . '%')
+                        ->orWhereHas('department', function ($departmentQuery) use ($description, $departmentTable) {
+                            $departmentQuery->where($departmentTable . '.description', 'like', '%' . $description . '%')
+                                ->orWhere($departmentTable . '.code', 'like', '%' . $description . '%');
+                        });
                 });
             })
             ->orderBy('code')
@@ -1973,10 +1993,10 @@ class RegistrarController extends Controller
             'faculties' => $faculties,
             'programs' => $programs,
             'filters' => [
-                'department_id' => $request->input('department_id', ''),
-                'program_type' => $request->input('program_type', ''),
-                'program_code' => $request->input('program_code', ''),
-                'description' => $request->input('description', ''),
+                'department_id' => $departmentId > 0 ? (string) $departmentId : '',
+                'program_type' => $programType,
+                'program_code' => $programCode,
+                'description' => $description,
             ],
         ]);
     }
@@ -2018,13 +2038,15 @@ class RegistrarController extends Controller
             'dean_director_id' => 'nullable|exists:faculties,id',
         ]);
 
+        $accreditationLevel = trim((string) ($validated['accreditation_level'] ?? ''));
+
         Course::create([
             'code' => $validated['program_code'],
             'name' => $validated['program_name'],
             'program_type' => $validated['program_type'] ?? 'Degree',
             'department_id' => $validated['department_id'],
             'description' => $validated['program_name'],
-            'program_file' => $validated['accreditation_level'] ?? null,
+            'program_file' => $accreditationLevel !== '' ? $accreditationLevel : 'Pending Review',
             'slots' => $validated['slots'] ?? 0,
             'track_category' => $validated['track_category'] ?? null,
             'non_filipino' => (bool) ($validated['non_filipino'] ?? false),
@@ -2048,12 +2070,14 @@ class RegistrarController extends Controller
             'accreditation_level' => 'nullable|string|max:120',
         ]);
 
+        $accreditationLevel = trim((string) ($validated['accreditation_level'] ?? ''));
+
         $course->update([
             'code' => $validated['program_code'],
             'name' => $validated['program_name'],
             'description' => $validated['program_name'],
             'department_id' => $validated['department_id'],
-            'program_file' => $validated['accreditation_level'] ?? null,
+            'program_file' => $accreditationLevel !== '' ? $accreditationLevel : 'Pending Review',
         ]);
 
         return redirect()
