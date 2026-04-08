@@ -21,7 +21,7 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
-    <link rel="stylesheet" href="{{ mix('css/faculty-notifications.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/faculty-notifications.css') }}">
 
     @stack('styles')
 </head>

@@ -47,7 +47,7 @@
 
     @if($showResetButton && (app()->environment('local') || config('app.debug')) && !empty($resetRouteName))
     <div class="d-flex justify-content-end mb-2">
-        <form action="{{ route($resetRouteName, $routeParams) }}" method="POST" onsubmit="return confirm('Reset application progress and step data for testing?');">
+        <form action="{{ route($resetRouteName, $routeParams) }}" method="POST" id="resetApplicationProgressForm" data-confirm-message="Reset application progress and step data for testing?">
             @csrf
             <button type="submit" class="btn btn-warning btn-sm">Temporary Reset Test Data</button>
         </form>
@@ -531,25 +531,14 @@
         <div class="setup-form-container step-panel{{ $activeStep !== 4 ? ' step-hidden' : '' }}" id="step-4">
             <div class="setup-section">
                 <div class="setup-section-header">
-                    <h3 class="setup-section-title">Applying For</h3>
+                    <h3 class="setup-section-title">Applying For (College)</h3>
                 </div>
 
                 <div class="setup-row setup-row--apply-program">
                     <div class="setup-col setup-col--flex-12 setup-col--w-180">
                         <label class="setup-label">Program Type</label>
-                        <div class="setup-radio-group setup-radio-group--spaced">
-                            <label class="setup-radio"><input type="radio" name="apply_program" value="senior_high" {{ old('apply_program', optional($pref)->apply_program ?: 'senior_high') === 'senior_high' ? 'checked' : '' }} required> Senior High</label>
-                            <label class="setup-radio"><input type="radio" name="apply_program" value="college" {{ old('apply_program', optional($pref)->apply_program) === 'college' ? 'checked' : '' }} required> College</label>
-                        </div>
-                    </div>
-                    <div class="setup-col setup-col--w-220 setup-col--apply-choice">
-                        <label class="setup-label">Strand</label>
-                        <select name="apply_strand" id="applyStrandSelect" class="setup-input setup-select">
-                            <option value="">Select Strand</option>
-                            @foreach($strandOptions as $strand)
-                            <option value="{{ $strand }}" {{ old('apply_strand', optional($pref)->apply_strand) === $strand ? 'selected' : '' }}>{{ $strand }}</option>
-                            @endforeach
-                        </select>
+                        <input type="hidden" name="apply_program" value="college">
+                        <input type="text" class="setup-input" value="College" readonly>
                     </div>
                     <div class="setup-col setup-col--w-220 setup-col--apply-choice">
                         <label class="setup-label">Course</label>
@@ -576,7 +565,7 @@
                         <label class="setup-label">Year Level</label>
                         <select name="year_level" class="setup-input setup-select" required>
                             <option value="">Year Level</option>
-                            @foreach(['Grade 11', 'Grade 12', '1st Year', '2nd Year', '3rd Year', '4th Year'] as $year)
+                            @foreach(['1st Year', '2nd Year', '3rd Year', '4th Year'] as $year)
                             <option value="{{ $year }}" {{ old('year_level', optional($pref)->year_level) === $year ? 'selected' : '' }}>{{ $year }}</option>
                             @endforeach
                         </select>

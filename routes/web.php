@@ -120,6 +120,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
         Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::get('/application/print', 'Registrar\RegistrarController@applicationProcessPrint')->name('application.print');
         Route::get('/application/{applicant}/form', 'Registrar\RegistrarController@applicantFormEditor')->name('application.form.edit');
         Route::post('/application/{applicant}/form', 'Registrar\RegistrarController@saveApplicantFormFromRegistrar')->name('application.form.save');
         Route::post('/application/{applicant}/form/step-1', 'Registrar\RegistrarController@saveApplicantFormStep1FromRegistrar')->name('application.form.step-1.save');

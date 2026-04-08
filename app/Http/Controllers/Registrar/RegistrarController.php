@@ -182,13 +182,8 @@ class RegistrarController extends Controller
 
     private function upsertApplicationPreference(Applicant $applicant, array $payload)
     {
-        if (($payload['apply_program'] ?? null) === 'senior_high') {
-            $payload['apply_course_id'] = null;
-        }
-
-        if (($payload['apply_program'] ?? null) === 'college') {
-            $payload['apply_strand'] = null;
-        }
+        $payload['apply_program'] = 'college';
+        $payload['apply_strand'] = null;
 
         $record = $applicant->applicationPreference;
         if (!$record) {
@@ -458,6 +453,8 @@ class RegistrarController extends Controller
         }
 
         $validated = $request->validated();
+        $validated['apply_program'] = 'college';
+        $validated['apply_strand'] = null;
 
         $this->upsertApplicationPreference($applicant, $validated);
         $applicant->application_draft_step = max((int) $applicant->application_draft_step, 4);
@@ -576,8 +573,8 @@ class RegistrarController extends Controller
             $this->upsertFamilyBackground($applicant, $step3Payload);
 
             $step4Payload = [
-                'apply_program' => $validated['apply_program'],
-                'apply_strand' => $validated['apply_strand'] ?? null,
+                'apply_program' => 'college',
+                'apply_strand' => null,
                 'apply_course_id' => $validated['apply_course_id'] ?? null,
                 'entry_classification' => $validated['entry_classification'],
                 'year_level' => $validated['year_level'],
@@ -599,16 +596,151 @@ class RegistrarController extends Controller
     /**
      * Process > Application Process
      */
-    public function applicationProcess()
+    public function applicationProcess(Request $request)
     {
-        $applicants = Applicant::query()
-            ->with('applicationPreference.course')
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->appends(request()->query());
+        $filters = $this->normalizeApplicationProcessFilters($request);
 
-        return view('registrar.process.application-process', compact('applicants'));
+        $applicants = $this->buildApplicationProcessQuery($filters)
+            ->paginate($filters['per_page'])
+            ->appends($request->query());
+
+        $courses = Course::query()
+            ->orderBy('name')
+            ->get(['id', 'code', 'name']);
+
+        return view('registrar.process.application-process', compact('applicants', 'courses', 'filters'));
+    }
+
+    public function applicationProcessPrint(Request $request)
+    {
+        $filters = $this->normalizeApplicationProcessFilters($request);
+
+        $applicants = $this->buildApplicationProcessQuery($filters)->get();
+
+        return view('registrar.process.application-process-print', compact('applicants', 'filters'));
+    }
+
+    private function normalizeApplicationProcessFilters(Request $request): array
+    {
+        $allowedPerPage = [10, 25, 50, 100];
+        $allowedSortBy = ['applicant_id', 'applicant_name', 'date_applied', 'date_updated'];
+        $allowedSortDirection = ['asc', 'desc'];
+
+        $fromDate = trim((string) $request->query('from_date', ''));
+        $toDate = trim((string) $request->query('to_date', ''));
+
+        $normalizedFromDate = null;
+        if ($fromDate !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fromDate)) {
+            try {
+                $normalizedFromDate = Carbon::parse($fromDate)->format('Y-m-d');
+            } catch (\Throwable $exception) {
+                $normalizedFromDate = null;
+            }
+        }
+
+        $normalizedToDate = null;
+        if ($toDate !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $toDate)) {
+            try {
+                $normalizedToDate = Carbon::parse($toDate)->format('Y-m-d');
+            } catch (\Throwable $exception) {
+                $normalizedToDate = null;
+            }
+        }
+
+        if (!empty($normalizedFromDate) && !empty($normalizedToDate) && $normalizedFromDate > $normalizedToDate) {
+            $tempDate = $normalizedFromDate;
+            $normalizedFromDate = $normalizedToDate;
+            $normalizedToDate = $tempDate;
+        }
+
+        $courseId = (int) $request->query('course_id', 0);
+        if ($courseId < 1) {
+            $courseId = 0;
+        }
+
+        $search = trim((string) $request->query('search', ''));
+
+        $sortBy = strtolower(trim((string) $request->query('sort_by', 'date_updated')));
+        if (!in_array($sortBy, $allowedSortBy, true)) {
+            $sortBy = 'date_updated';
+        }
+
+        $sortDirection = strtolower(trim((string) $request->query('sort_direction', 'desc')));
+        if (!in_array($sortDirection, $allowedSortDirection, true)) {
+            $sortDirection = 'desc';
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 10;
+        }
+
+        return [
+            'from_date' => $normalizedFromDate,
+            'to_date' => $normalizedToDate,
+            'course_id' => $courseId,
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'per_page' => $perPage,
+        ];
+    }
+
+    private function buildApplicationProcessQuery(array $filters)
+    {
+        $query = Applicant::query()
+            ->with('applicationPreference.course')
+            ->leftJoin('applicant_application_preferences as preferences', 'preferences.applicant_id', '=', 'applicants.id')
+            ->select('applicants.*');
+
+        if (!empty($filters['from_date'])) {
+            $query->whereDate('applicants.created_at', '>=', $filters['from_date']);
+        }
+
+        if (!empty($filters['to_date'])) {
+            $query->whereDate('applicants.created_at', '<=', $filters['to_date']);
+        }
+
+        if (!empty($filters['course_id'])) {
+            $query->where('preferences.apply_course_id', (int) $filters['course_id']);
+        }
+
+        if (!empty($filters['search'])) {
+            $escapedSearch = addcslashes($filters['search'], '\\%_');
+            $likeValue = '%' . $escapedSearch . '%';
+
+            $query->where(function ($searchQuery) use ($likeValue) {
+                $searchQuery->where('applicants.applicant_id', 'like', $likeValue)
+                    ->orWhere('applicants.first_name', 'like', $likeValue)
+                    ->orWhere('applicants.middle_name', 'like', $likeValue)
+                    ->orWhere('applicants.last_name', 'like', $likeValue)
+                    ->orWhereRaw(
+                        "CONCAT(COALESCE(applicants.first_name, ''), ' ', COALESCE(applicants.last_name, '')) LIKE ?",
+                        [$likeValue]
+                    )
+                    ->orWhereRaw(
+                        "CONCAT(COALESCE(applicants.last_name, ''), ', ', COALESCE(applicants.first_name, '')) LIKE ?",
+                        [$likeValue]
+                    );
+            });
+        }
+
+        $sortDirection = $filters['sort_direction'] === 'asc' ? 'asc' : 'desc';
+        if ($filters['sort_by'] === 'applicant_name') {
+            $query->orderBy('applicants.last_name', $sortDirection)
+                ->orderBy('applicants.first_name', $sortDirection)
+                ->orderBy('applicants.middle_name', $sortDirection);
+        } elseif ($filters['sort_by'] === 'applicant_id') {
+            $query->orderBy('applicants.applicant_id', $sortDirection);
+        } elseif ($filters['sort_by'] === 'date_applied') {
+            $query->orderBy('applicants.created_at', $sortDirection);
+        } else {
+            $query->orderBy('applicants.updated_at', $sortDirection);
+        }
+
+        $query->orderBy('applicants.id', 'desc');
+
+        return $query;
     }
 
     public function updateApplicantExamSchedule(Request $request, Applicant $applicant): JsonResponse

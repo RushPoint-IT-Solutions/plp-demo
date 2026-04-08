@@ -3009,6 +3009,18 @@ select:hover {
   transition: background 0.15s;
 }
 
+.btn-setup-prev:disabled,
+.btn-setup-next:disabled,
+.btn-setup-submit:disabled,
+.btn-setup-prev.is-loading,
+.btn-setup-next.is-loading,
+.btn-setup-submit.is-loading {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.72;
+  box-shadow: none;
+}
+
 .btn-setup-next:hover,
 .btn-setup-submit:hover {
   background: #005028;
@@ -7196,8 +7208,13 @@ select:hover {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
-  margin-bottom: 18px;
+  gap: 6px;
+  margin-bottom: 12px;
+  background: #fff;
+  border: 1px solid #d9e3dd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   width: 100%;
 }
 
@@ -7205,16 +7222,52 @@ select:hover {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
 .app-filter-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1 1 180px;
-  min-width: 180px;
+  gap: 3px;
+  flex: 1 1 170px;
+  min-width: 170px;
+}
+
+.app-filter-actions-row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-filter-action-btn {
+  min-width: 108px;
+}
+
+.app-filter-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.app-filter-auto-note {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #4f5a53;
+  line-height: 1.35;
+}
+
+.sidebar-logout-form {
+  margin: 0;
+}
+
+.sidebar-logout-form .sidebar-link.logout-link {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
 }
 
 .app-filter-input-search {
@@ -7260,6 +7313,7 @@ select:hover {
   border-radius: 6px;
   font-size: 0.8rem;
   outline: none;
+  min-height: 36px;
   min-width: 100px;
 }
 
@@ -7275,6 +7329,7 @@ select:hover {
   outline: none;
   background: #fff;
   cursor: pointer;
+  min-height: 36px;
 }
 
 .app-filter-select:focus {
@@ -7384,6 +7439,60 @@ select:hover {
   font-weight: 600;
 }
 
+.schedule-exam-feedback {
+  margin: 8px 0 12px;
+  color: #555;
+  min-height: 20px;
+  font-size: 0.84rem;
+}
+
+.schedule-exam-feedback.is-error {
+  color: #b42318;
+}
+
+.schedule-exam-feedback.is-success {
+  color: #14532d;
+}
+
+#panel-exam-result .is-hidden {
+  display: none;
+}
+
+.result-score-message {
+  margin-top: 8px;
+}
+
+.applicant-no-result {
+  padding: 20px;
+  color: #555;
+}
+
+.app-process-print-page .app-process-print-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.app-process-print-page .app-process-print-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media print {
+  .app-process-print-page .no-print {
+    display: none !important;
+  }
+  .app-process-print-page {
+    background: #fff;
+  }
+  .app-process-print-page .container-fluid {
+    max-width: 100%;
+    padding: 0;
+  }
+}
 @media (max-width: 991px) {
   .reg-dash-top {
     grid-template-columns: 1fr 1fr;
@@ -7404,8 +7513,22 @@ select:hover {
     flex-direction: column;
     align-items: stretch;
   }
+  .app-filter-actions-row {
+    gap: 8px;
+  }
   .app-filter-group {
     width: 100%;
+  }
+  .app-filter-actions-group {
+    margin-left: 0;
+    width: 100%;
+    justify-content: stretch;
+  }
+  .app-filter-actions-group .app-filter-action-btn {
+    flex: 1 1 120px;
+  }
+  .app-filter-auto-note {
+    font-size: 0.72rem;
   }
   .app-filter-select-wide,
   .app-filter-input-search,
@@ -22324,6 +22447,18 @@ select:hover {
   transition: background 0.15s;
 }
 
+.btn-setup-prev:disabled,
+.btn-setup-next:disabled,
+.btn-setup-submit:disabled,
+.btn-setup-prev.is-loading,
+.btn-setup-next.is-loading,
+.btn-setup-submit.is-loading {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.72;
+  box-shadow: none;
+}
+
 .btn-setup-next:hover,
 .btn-setup-submit:hover {
   background: #005028;
@@ -24214,25 +24349,53 @@ body.page-profile-view .pv-layout {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
-  margin-bottom: 18px;
+  gap: 6px;
+  margin-bottom: 12px;
   background: #fff;
+  border: 1px solid #d9e3dd;
   border-radius: 10px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .app-filter-row {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .app-filter-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  flex: 1 1 170px;
+  min-width: 170px;
+}
+
+.app-filter-actions-row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-filter-action-btn {
+  min-width: 108px;
+}
+
+.app-filter-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.app-filter-auto-note {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #4f5a53;
+  line-height: 1.35;
 }
 
 .app-filter-input-search {
@@ -24278,6 +24441,7 @@ body.page-profile-view .pv-layout {
   border-radius: 6px;
   font-size: 0.82rem;
   outline: none;
+  min-height: 36px;
   min-width: 100px;
 }
 
@@ -24293,6 +24457,7 @@ body.page-profile-view .pv-layout {
   outline: none;
   background: #fff;
   cursor: pointer;
+  min-height: 36px;
 }
 
 .app-filter-select:focus {
@@ -24419,8 +24584,22 @@ body.page-profile-view .pv-layout {
     flex-direction: column;
     align-items: stretch;
   }
+  .app-filter-actions-row {
+    gap: 8px;
+  }
   .app-filter-group {
     width: 100%;
+  }
+  .app-filter-actions-group {
+    margin-left: 0;
+    width: 100%;
+    justify-content: stretch;
+  }
+  .app-filter-actions-group .app-filter-action-btn {
+    flex: 1 1 120px;
+  }
+  .app-filter-auto-note {
+    font-size: 0.72rem;
   }
   .app-filter-select-wide,
   .app-filter-input-search,
@@ -27091,6 +27270,72 @@ body.page-profile-edit .student-content {
   color: #fff !important;
 }
 
+/* Applicant process compact filter layout override */
+.app-process-page .app-filter-bar {
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d9e3dd;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.app-process-page .app-filter-row {
+  gap: 8px;
+}
+
+.app-process-page .app-filter-group {
+  gap: 3px;
+  flex: 1 1 170px;
+  min-width: 170px;
+}
+
+.app-process-page .app-filter-actions-row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-process-page .app-filter-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.app-process-page .app-filter-action-btn {
+  min-width: 108px;
+}
+
+.app-process-page .app-filter-auto-note {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #4f5a53;
+  line-height: 1.35;
+}
+
+.app-process-page .app-filter-input,
+.app-process-page .app-filter-select {
+  min-height: 36px;
+}
+
+@media (max-width: 991px) {
+  .app-process-page .app-filter-actions-row {
+    gap: 8px;
+    align-items: stretch;
+  }
+  .app-process-page .app-filter-actions-group {
+    margin-left: 0;
+    width: 100%;
+    justify-content: stretch;
+  }
+  .app-process-page .app-filter-actions-group .app-filter-action-btn {
+    flex: 1 1 120px;
+  }
+  .app-process-page .app-filter-auto-note {
+    font-size: 0.72rem;
+  }
+}
 .plp-header {
   background-color: var(--plp-green);
   width: 100%;

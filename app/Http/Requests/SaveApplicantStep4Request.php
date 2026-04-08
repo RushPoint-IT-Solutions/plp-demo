@@ -25,11 +25,11 @@ class SaveApplicantStep4Request extends FormRequest
     public function rules()
     {
         return [
-            'apply_program' => 'required|in:senior_high,college',
-            'apply_strand' => 'required_if:apply_program,senior_high|nullable|string|max:120',
+            'apply_program' => 'required|in:college',
+            'apply_strand' => 'nullable|string|max:120',
             'apply_course_id' => 'nullable|exists:courses,id',
             'entry_classification' => 'required|string|max:120',
-            'year_level' => 'required|string|max:60',
+            'year_level' => 'required|in:1st Year,2nd Year,3rd Year,4th Year',
             'semester' => 'required|string|max:60',
             'school_year' => 'required|string|max:20',
             'application_date' => 'required|date',
