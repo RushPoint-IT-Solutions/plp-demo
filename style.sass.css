@@ -27304,7 +27304,49 @@ body.page-profile-edit .student-content {
 }
 
 .app-process-page .app-filter-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 108px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #006837;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.app-process-page .app-filter-action-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.16rem rgba(0, 104, 55, 0.22);
+}
+
+.app-process-page .app-filter-action-btn--reset {
+  background: #f2faf5;
+  color: #006837;
+  border-color: #0b7a47;
+}
+
+.app-process-page .app-filter-action-btn--reset:hover {
+  background: #e5f4ec;
+  color: #005028;
+  text-decoration: none;
+}
+
+.app-process-page .app-filter-action-btn--print {
+  background: #006837;
+  color: #fff;
+  border-color: #006837;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+}
+
+.app-process-page .app-filter-action-btn--print:hover {
+  background: #005028;
+  color: #fff;
+  text-decoration: none;
 }
 
 .app-process-page .app-filter-auto-note {
@@ -27320,6 +27362,11 @@ body.page-profile-edit .student-content {
 }
 
 @media (max-width: 991px) {
+  .app-process-page .app-filter-row .app-filter-group {
+    flex: 0 0 auto;
+    min-width: 100%;
+    width: 100%;
+  }
   .app-process-page .app-filter-actions-row {
     gap: 8px;
     align-items: stretch;
@@ -27328,9 +27375,11 @@ body.page-profile-edit .student-content {
     margin-left: 0;
     width: 100%;
     justify-content: stretch;
+    gap: 6px;
   }
   .app-process-page .app-filter-actions-group .app-filter-action-btn {
-    flex: 1 1 120px;
+    flex: 1 1 calc(50% - 3px);
+    min-width: 0;
   }
   .app-process-page .app-filter-auto-note {
     font-size: 0.72rem;

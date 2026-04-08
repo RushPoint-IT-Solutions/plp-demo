@@ -193,12 +193,12 @@
         <div class="app-filter-row app-filter-actions-row">
             <p class="app-filter-auto-note">Filters auto-apply as you change values or type in search.</p>
             <div class="app-filter-actions-group">
-                <a href="{{ route('registrar.process.application') }}" class="btn btn-sm btn-outline-secondary app-filter-action-btn">Reset</a>
+                <a href="{{ route('registrar.process.application') }}" class="app-filter-action-btn app-filter-action-btn--reset">Reset</a>
                 <a
                     href="{{ route('registrar.process.application.print', array_merge(request()->query(), ['autoprint' => 1])) }}"
                     target="_blank"
                     rel="noopener"
-                    class="btn btn-sm btn-outline-primary app-filter-action-btn"
+                    class="app-filter-action-btn app-filter-action-btn--print"
                     id="printApplicantListBtn"
                 >
                     Print List
