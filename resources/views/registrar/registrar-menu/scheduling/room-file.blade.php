@@ -82,20 +82,17 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="sf-pagination-bar" id="rfPaginationBar">
-        <div class="sf-pagination-left">
-            <label for="rfPerPage">Rows per page</label>
-            <select id="rfPerPage">
-                <option value="25" selected>25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
-        <div class="sf-pagination-right">
-            <span id="rfPageInfo">Page 1 of 1</span>
-            <button type="button" class="sf-page-btn" id="rfPrevBtn">Previous</button>
-            <button type="button" class="sf-page-btn" id="rfNextBtn">Next</button>
-            <span id="rfTotalInfo">0 total rooms</span>
+    <div class="sf-pagination-bar sf-pagination-compact" id="rfPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Room File pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
+                    <button type="button" class="rtp-page-btn" id="rfPrevBtn" aria-label="Previous page" disabled>&lt;</button>
+                    <div class="rtp-pages" id="rfPageNumbers">
+                        <button type="button" class="rtp-page-num active" aria-current="page" disabled>1</button>
+                    </div>
+                    <button type="button" class="rtp-page-btn" id="rfNextBtn" aria-label="Next page" disabled>&gt;</button>
+                </div>
+            </nav>
         </div>
     </div>
 </div>

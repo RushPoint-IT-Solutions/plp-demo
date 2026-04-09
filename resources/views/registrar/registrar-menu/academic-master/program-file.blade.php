@@ -25,6 +25,7 @@
 
     <form method="GET" action="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="pf-top-filter" id="pfTopFilterForm">
         <input type="hidden" name="page" id="pfPageInput" value="{{ (int) $programs->currentPage() }}">
+        <input type="hidden" name="per_page" id="pfPerPage" value="25">
         <div class="pf-top-filter-grid">
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterDepartment">Department</label>
@@ -67,7 +68,7 @@
     </form>
 
     <div class="student-table-wrapper table-responsive">
-        <table class="student-table registrar-table" id="pfTable">
+        <table class="student-table registrar-table" id="pfTable" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th>Program Code</th>
@@ -117,21 +118,51 @@
         </table>
     </div>
 
-    <div class="sf-pagination-bar" id="pfPaginationBar">
-        <div class="sf-pagination-left">
-            <label for="pfPerPage">Rows per page</label>
-            <select id="pfPerPage" name="per_page" form="pfTopFilterForm">
-                <option value="10" {{ $filters['per_page'] === '10' ? 'selected' : '' }}>10</option>
-                <option value="25" {{ $filters['per_page'] === '25' ? 'selected' : '' }}>25</option>
-                <option value="50" {{ $filters['per_page'] === '50' ? 'selected' : '' }}>50</option>
-                <option value="100" {{ $filters['per_page'] === '100' ? 'selected' : '' }}>100</option>
-            </select>
-        </div>
-        <div class="sf-pagination-right">
-            <span id="pfPageInfo">Page {{ (int) $programs->currentPage() }} of {{ (int) $programs->lastPage() }}</span>
-            <button type="button" class="sf-page-btn" id="pfPrevBtn" {{ $programs->onFirstPage() ? 'disabled' : '' }}>Previous</button>
-            <button type="button" class="sf-page-btn" id="pfNextBtn" {{ $programs->hasMorePages() ? '' : 'disabled' }}>Next</button>
-            <span id="pfTotalInfo">{{ (int) $programs->total() }} total programs</span>
+    @php
+        $pfCurrentPage = (int) $programs->currentPage();
+        $pfLastPage = max((int) $programs->lastPage(), 1);
+        $pfStartPage = max(1, $pfCurrentPage - 2);
+        $pfEndPage = min($pfLastPage, $pfCurrentPage + 2);
+
+        if ($pfCurrentPage <= 3) {
+            $pfEndPage = min($pfLastPage, 5);
+        } elseif ($pfCurrentPage >= ($pfLastPage - 2)) {
+            $pfStartPage = max(1, $pfLastPage - 4);
+        }
+    @endphp
+
+    <div class="sf-pagination-bar sf-pagination-compact" id="pfPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Program File pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
+                    <button
+                        type="button"
+                        class="rtp-page-btn"
+                        id="pfPrevBtn"
+                        data-pf-page="{{ $pfCurrentPage - 1 }}"
+                        aria-label="Previous page"
+                        {{ $pfCurrentPage <= 1 ? 'disabled' : '' }}
+                    >&lt;</button>
+                    <div class="rtp-pages" id="pfPageNumbers">
+                        @for($pfPage = $pfStartPage; $pfPage <= $pfEndPage; $pfPage++)
+                            <button
+                                type="button"
+                                class="rtp-page-num {{ $pfPage === $pfCurrentPage ? 'active' : '' }}"
+                                data-pf-page="{{ $pfPage }}"
+                                aria-label="Go to page {{ $pfPage }}"
+                            >{{ $pfPage }}</button>
+                        @endfor
+                    </div>
+                    <button
+                        type="button"
+                        class="rtp-page-btn"
+                        id="pfNextBtn"
+                        data-pf-page="{{ $pfCurrentPage + 1 }}"
+                        aria-label="Next page"
+                        {{ $pfCurrentPage >= $pfLastPage ? 'disabled' : '' }}
+                    >&gt;</button>
+                </div>
+            </nav>
         </div>
     </div>
 

@@ -71,20 +71,15 @@
         </table>
     </div>
 
-    <div class="sf-pagination-bar" id="smPaginationBar">
-        <div class="sf-pagination-left">
-            <label for="smPerPage">Rows per page</label>
-            <select id="smPerPage">
-                <option value="25" selected>25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
-        <div class="sf-pagination-right">
-            <span id="smPageInfo">Page 1 of 1</span>
-            <button type="button" class="sf-page-btn" id="smPrevBtn">Previous</button>
-            <button type="button" class="sf-page-btn" id="smNextBtn">Next</button>
-            <span id="smTotalInfo">0 total slots</span>
+    <div class="sf-pagination-bar sf-pagination-compact" id="smPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Slot Monitoring pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
+                    <button type="button" class="rtp-page-btn" id="smPrevBtn" aria-label="Previous page">&lt;</button>
+                    <div class="rtp-pages" id="smPageNumbers"></div>
+                    <button type="button" class="rtp-page-btn" id="smNextBtn" aria-label="Next page">&gt;</button>
+                </div>
+            </nav>
         </div>
     </div>
 

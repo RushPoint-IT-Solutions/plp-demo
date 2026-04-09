@@ -20,6 +20,7 @@ use App\Faculty;
 use App\Http\Requests\StoreRoomBuildingRequest;
 use App\Http\Requests\StoreRoomHallwayRequest;
 use App\Http\Requests\StoreRoomRequest;
+use App\Http\Requests\StoreSectionMergingRequest;
 use App\Http\Requests\StoreSlotMonitoringRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Http\Requests\UpdateSlotMonitoringRequest;
@@ -36,6 +37,7 @@ use App\Room;
 use App\RoomBuilding;
 use App\RoomHallway;
 use App\Semester;
+use App\SectionMergingOperation;
 use App\SlotMonitoring;
 use App\Student;
 use App\StudentProfile;
@@ -1993,15 +1995,7 @@ class RegistrarController extends Controller
         $programType = trim((string) $request->input('program_type', ''));
         $programCode = trim((string) $request->input('program_code', ''));
         $description = trim((string) $request->input('description', ''));
-        $perPage = (int) $request->input('per_page', 25);
-
-        if ($perPage < 10) {
-            $perPage = 10;
-        }
-
-        if ($perPage > 100) {
-            $perPage = 100;
-        }
+        $perPage = 25;
 
         $departments = Department::orderBy('description')->get();
         $faculties = Faculty::orderBy('name')->get();
@@ -4074,6 +4068,362 @@ class RegistrarController extends Controller
     public function sectionMerging()
     {
         return view('registrar.registrar-menu.scheduling.section-merging');
+    }
+
+    public function sectionMergingData(Request $request): JsonResponse
+    {
+        $requestedSchoolYear = trim((string) $request->query('school_year', ''));
+        $requestedSemester = trim((string) $request->query('semester', ''));
+
+        $semesterOrderSql = "FIELD(semester, 'First', 'Second', 'Summer')";
+
+        $configRows = SlotMonitoring::query()
+            ->select([
+                'school_year',
+                'semester',
+                DB::raw('COUNT(*) as row_count'),
+            ])
+            ->whereIn('semester', self::SLOT_MONITORING_ALLOWED_SEMESTERS)
+            ->whereNotNull('school_year')
+            ->where('school_year', '<>', '')
+            ->groupBy('school_year', 'semester')
+            ->orderBy('school_year', 'desc')
+            ->orderByRaw($semesterOrderSql)
+            ->get();
+
+        $schoolYears = [];
+        $semesterMap = [];
+
+        foreach ($configRows as $configRow) {
+            $year = trim((string) $configRow->school_year);
+            $semester = trim((string) $configRow->semester);
+
+            if ($year === '' || $semester === '') {
+                continue;
+            }
+
+            if (!array_key_exists($year, $semesterMap)) {
+                $semesterMap[$year] = [];
+                $schoolYears[] = $year;
+            }
+
+            if (!in_array($semester, $semesterMap[$year], true)) {
+                $semesterMap[$year][] = $semester;
+            }
+        }
+
+        $schoolYear = $requestedSchoolYear;
+        if ($schoolYear === '' || !in_array($schoolYear, $schoolYears, true)) {
+            $schoolYear = !empty($schoolYears) ? (string) $schoolYears[0] : $schoolYear;
+        }
+
+        $semestersForYear = array_key_exists($schoolYear, $semesterMap)
+            ? $semesterMap[$schoolYear]
+            : self::SLOT_MONITORING_ALLOWED_SEMESTERS;
+
+        $semester = $requestedSemester;
+        if ($semester === '' || !in_array($semester, $semestersForYear, true)) {
+            $semester = !empty($semestersForYear) ? (string) $semestersForYear[0] : '';
+        }
+
+        $rowsQuery = SlotMonitoring::query()
+            ->select([
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+            ])
+            ->with(['course:id,code,name']);
+
+        if ($schoolYear !== '') {
+            $rowsQuery->where('school_year', $schoolYear);
+        }
+
+        if ($semester !== '') {
+            $rowsQuery->where('semester', $semester);
+        }
+
+        $rows = $rowsQuery
+            ->orderBy('section')
+            ->orderBy('subject')
+            ->orderBy('id')
+            ->get();
+
+        $mappedRows = $rows
+            ->map(function (SlotMonitoring $slotMonitoring) {
+                return $this->mapSectionMergingRow($slotMonitoring);
+            })
+            ->values();
+
+        $courses = $rows
+            ->map(function (SlotMonitoring $slotMonitoring) {
+                if (!$slotMonitoring->course) {
+                    return null;
+                }
+
+                $courseCode = trim((string) $slotMonitoring->course->code);
+                $courseName = trim((string) $slotMonitoring->course->name);
+                $label = $courseCode;
+
+                if ($label === '') {
+                    $label = $courseName;
+                } elseif ($courseName !== '') {
+                    $label = $label . ' - ' . $courseName;
+                }
+
+                return [
+                    'id' => (int) $slotMonitoring->course->id,
+                    'code' => $courseCode,
+                    'name' => $courseName,
+                    'label' => $label,
+                ];
+            })
+            ->filter(function ($item) {
+                return $item !== null;
+            })
+            ->unique('id')
+            ->sortBy('code')
+            ->values();
+
+        $yearLevels = $mappedRows
+            ->pluck('year_level')
+            ->filter(function ($yearLevel) {
+                return is_int($yearLevel) && $yearLevel > 0;
+            })
+            ->unique()
+            ->sort()
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $mappedRows,
+            'options' => [
+                'courses' => $courses,
+                'year_levels' => $yearLevels,
+                'config' => [
+                    'school_years' => array_values($schoolYears),
+                    'semester_map' => $semesterMap,
+                    'selected_school_year' => (string) $schoolYear,
+                    'selected_semester' => (string) $semester,
+                ],
+            ],
+            'meta' => [
+                'total' => (int) $mappedRows->count(),
+            ],
+        ]);
+    }
+
+    public function storeSectionMerging(StoreSectionMergingRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $sourceSlotId = (int) $validated['source_slot_monitoring_id'];
+        $targetSlotId = (int) $validated['target_slot_monitoring_id'];
+        $schoolYear = (string) $validated['school_year'];
+        $semester = (string) $validated['semester'];
+
+        $source = null;
+        $target = null;
+        $operation = null;
+
+        DB::beginTransaction();
+        try {
+            $source = SlotMonitoring::query()
+                ->where('id', $sourceSlotId)
+                ->lockForUpdate()
+                ->first();
+
+            $target = SlotMonitoring::query()
+                ->where('id', $targetSlotId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$source || !$target) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => [
+                        'source_slot_monitoring_id' => ['One of the selected sections no longer exists.'],
+                    ],
+                ], 422);
+            }
+
+            $consistencyError = $this->resolveSectionMergingConsistencyError($source, $target, $schoolYear, $semester);
+            if ($consistencyError !== null) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $consistencyError,
+                ], 422);
+            }
+
+            $sourceTotalSlots = (int) $source->total_slots;
+            $sourceEnrolledSlots = (int) $source->enrolled_slots;
+            $targetTotalBefore = (int) $target->total_slots;
+            $targetEnrolledBefore = (int) $target->enrolled_slots;
+
+            $targetTotalAfter = $targetTotalBefore + $sourceTotalSlots;
+            $targetEnrolledAfter = $targetEnrolledBefore + $sourceEnrolledSlots;
+
+            $target->update([
+                'total_slots' => $targetTotalAfter,
+                'enrolled_slots' => $targetEnrolledAfter,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $source->update([
+                'total_slots' => 0,
+                'enrolled_slots' => 0,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $operation = SectionMergingOperation::query()->create([
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+                'source_slot_monitoring_id' => (int) $source->id,
+                'target_slot_monitoring_id' => (int) $target->id,
+                'source_course_id' => (int) $source->course_id,
+                'target_course_id' => (int) $target->course_id,
+                'source_section' => (string) $source->section,
+                'target_section' => (string) $target->section,
+                'source_subject' => (string) $source->subject,
+                'target_subject' => (string) $target->subject,
+                'source_total_slots' => $sourceTotalSlots,
+                'source_enrolled_slots' => $sourceEnrolledSlots,
+                'target_total_slots_before' => $targetTotalBefore,
+                'target_enrolled_slots_before' => $targetEnrolledBefore,
+                'target_total_slots_after' => $targetTotalAfter,
+                'target_enrolled_slots_after' => $targetEnrolledAfter,
+                'merge_status' => 'completed',
+                'merged_by_user_id' => auth()->id(),
+                'merged_at' => Carbon::now(),
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
+
+        $source->load(['course:id,code,name']);
+        $target->load(['course:id,code,name']);
+
+        return response()->json([
+            'ok' => true,
+            'operation_id' => $operation ? (int) $operation->id : null,
+            'message' => 'Sections merged successfully.',
+            'merged_student_count' => $operation ? (int) $operation->source_enrolled_slots : 0,
+            'source_row' => $this->mapSectionMergingRow($source),
+            'target_row' => $this->mapSectionMergingRow($target),
+        ]);
+    }
+
+    private function mapSectionMergingRow(SlotMonitoring $slotMonitoring)
+    {
+        $courseCode = '';
+        $courseName = '';
+
+        if ($slotMonitoring->course) {
+            $courseCode = trim((string) $slotMonitoring->course->code);
+            $courseName = trim((string) $slotMonitoring->course->name);
+        }
+
+        $courseLabel = $courseCode;
+        if ($courseLabel === '') {
+            $courseLabel = $courseName;
+        } elseif ($courseName !== '') {
+            $courseLabel = $courseLabel . ' - ' . $courseName;
+        }
+
+        $yearLevel = $this->extractYearLevelFromSectionLabel((string) $slotMonitoring->section);
+
+        return [
+            'id' => (int) $slotMonitoring->id,
+            'school_year' => (string) $slotMonitoring->school_year,
+            'semester' => (string) $slotMonitoring->semester,
+            'course_id' => (int) $slotMonitoring->course_id,
+            'course_code' => $courseCode,
+            'course_name' => $courseName,
+            'course_label' => $courseLabel,
+            'year_level' => $yearLevel,
+            'section' => (string) $slotMonitoring->section,
+            'subject' => (string) $slotMonitoring->subject,
+            'schedule' => (string) $slotMonitoring->schedule,
+            'total_slots' => (int) $slotMonitoring->total_slots,
+            'enrolled_slots' => (int) $slotMonitoring->enrolled_slots,
+            'source_available' => (int) $slotMonitoring->enrolled_slots > 0,
+        ];
+    }
+
+    private function resolveSectionMergingConsistencyError(SlotMonitoring $source, SlotMonitoring $target, $schoolYear, $semester)
+    {
+        if ((string) $source->school_year !== $schoolYear || (string) $target->school_year !== $schoolYear) {
+            return [
+                'school_year' => ['Selected sections do not match the chosen school year.'],
+            ];
+        }
+
+        if ((string) $source->semester !== $semester || (string) $target->semester !== $semester) {
+            return [
+                'semester' => ['Selected sections do not match the chosen semester.'],
+            ];
+        }
+
+        if ((int) $source->course_id !== (int) $target->course_id) {
+            return [
+                'target_slot_monitoring_id' => ['Source and target sections must belong to the same program.'],
+            ];
+        }
+
+        if (strcasecmp(trim((string) $source->subject), trim((string) $target->subject)) !== 0) {
+            return [
+                'target_slot_monitoring_id' => ['Source and target sections must have the same subject before merging.'],
+            ];
+        }
+
+        if ((int) $source->enrolled_slots <= 0) {
+            return [
+                'source_slot_monitoring_id' => ['Source section has no enrolled students to merge.'],
+            ];
+        }
+
+        return null;
+    }
+
+    private function extractYearLevelFromSectionLabel($section)
+    {
+        $normalized = strtolower(trim((string) $section));
+        if ($normalized === '') {
+            return null;
+        }
+
+        $wordToLevel = [
+            'first' => 1,
+            'second' => 2,
+            'third' => 3,
+            'fourth' => 4,
+            'fifth' => 5,
+            'sixth' => 6,
+        ];
+
+        foreach ($wordToLevel as $word => $value) {
+            if (strpos($normalized, $word) !== false) {
+                return $value;
+            }
+        }
+
+        if (preg_match('/(?:^|\s)([1-9])(?:\s*[-]|\b)/', $normalized, $matches) === 1) {
+            return (int) $matches[1];
+        }
+
+        return null;
     }
 
     /**

@@ -143,41 +143,47 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const topFilterForm = document.getElementById('pfTopFilterForm');
-        const perPageSelect = document.getElementById('pfPerPage');
         const pageInput = document.getElementById('pfPageInput');
-        const prevBtn = document.getElementById('pfPrevBtn');
-        const nextBtn = document.getElementById('pfNextBtn');
-
         const currentPage = parseInt(programFilePage.getAttribute('data-current-page') || '1', 10) || 1;
         const lastPage = parseInt(programFilePage.getAttribute('data-last-page') || '1', 10) || 1;
+        let submittingPageNavigation = false;
 
-        if (perPageSelect && topFilterForm && pageInput) {
-            perPageSelect.addEventListener('change', function () {
-                pageInput.value = '1';
-                topFilterForm.submit();
+        if (topFilterForm && pageInput) {
+            topFilterForm.addEventListener('submit', function () {
+                if (!submittingPageNavigation) {
+                    // Reset to first page when running a new filter search.
+                    pageInput.value = '1';
+                }
+
+                submittingPageNavigation = false;
             });
         }
 
-        if (prevBtn && topFilterForm && pageInput) {
-            prevBtn.addEventListener('click', function () {
-                if (currentPage <= 1 || prevBtn.disabled) {
-                    return;
-                }
+        function submitProgramPage(pageNumber) {
+            if (!topFilterForm || !pageInput) {
+                return;
+            }
 
-                pageInput.value = String(currentPage - 1);
-                topFilterForm.submit();
-            });
-        }
+            var targetPage = Number(pageNumber || 1);
+            if (!Number.isFinite(targetPage)) {
+                return;
+            }
 
-        if (nextBtn && topFilterForm && pageInput) {
-            nextBtn.addEventListener('click', function () {
-                if (currentPage >= lastPage || nextBtn.disabled) {
-                    return;
-                }
+            if (targetPage < 1) {
+                targetPage = 1;
+            }
 
-                pageInput.value = String(currentPage + 1);
-                topFilterForm.submit();
-            });
+            if (targetPage > lastPage) {
+                targetPage = lastPage;
+            }
+
+            if (targetPage === currentPage) {
+                return;
+            }
+
+            submittingPageNavigation = true;
+            pageInput.value = String(targetPage);
+            topFilterForm.submit();
         }
 
         const editModal = document.getElementById('pfEditProgramModal');
@@ -252,6 +258,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         programFilePage.addEventListener('click', function (event) {
+            const pageBtn = event.target.closest('[data-pf-page]');
+            if (pageBtn) {
+                event.preventDefault();
+                if (pageBtn.disabled) {
+                    return;
+                }
+
+                submitProgramPage(pageBtn.getAttribute('data-pf-page'));
+                return;
+            }
+
             const toggleBtn = event.target.closest('[data-pf-menu-toggle]');
             if (toggleBtn) {
                 event.preventDefault();

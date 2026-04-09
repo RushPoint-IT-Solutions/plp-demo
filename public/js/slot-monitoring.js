@@ -45,11 +45,9 @@
         section: document.getElementById('smSection'),
         course: document.getElementById('smCourse'),
         search: document.getElementById('smSearch'),
-        perPage: document.getElementById('smPerPage'),
         prevBtn: document.getElementById('smPrevBtn'),
         nextBtn: document.getElementById('smNextBtn'),
-        pageInfo: document.getElementById('smPageInfo'),
-        totalInfo: document.getElementById('smTotalInfo'),
+        pageNumbers: document.getElementById('smPageNumbers'),
         addBtn: document.getElementById('smAddBtn'),
 
         addModal: document.getElementById('addSlotModal'),
@@ -103,6 +101,22 @@
 
     function clamp(value, min, max) {
         return Math.min(max, Math.max(min, value));
+    }
+
+    function getPaginationWindow(page, maxPage) {
+        var start = Math.max(1, page - 2);
+        var end = Math.min(maxPage, page + 2);
+
+        if (page <= 3) {
+            end = Math.min(maxPage, 5);
+        } else if (page >= maxPage - 2) {
+            start = Math.max(1, maxPage - 4);
+        }
+
+        return {
+            start: start,
+            end: end,
+        };
     }
 
     function closeOpenMenus() {
@@ -268,10 +282,6 @@
             els.nextBtn.disabled = isLoading || currentPage >= lastPage;
         }
 
-        if (els.perPage) {
-            els.perPage.disabled = isLoading;
-        }
-
         if (isLoading && els.body) {
             els.body.innerHTML = '<tr><td colspan="10">Loading slots...</td></tr>';
         }
@@ -364,20 +374,32 @@
     }
 
     function renderPagination() {
-        if (els.pageInfo) {
-            els.pageInfo.textContent = 'Page ' + currentPage + ' of ' + lastPage;
-        }
-
-        if (els.totalInfo) {
-            els.totalInfo.textContent = totalRows + ' total slots';
-        }
-
         if (els.prevBtn) {
             els.prevBtn.disabled = isLoading || currentPage <= 1;
         }
 
         if (els.nextBtn) {
             els.nextBtn.disabled = isLoading || currentPage >= lastPage;
+        }
+
+        if (els.pageNumbers) {
+            els.pageNumbers.innerHTML = '';
+
+            var windowRange = getPaginationWindow(currentPage, lastPage);
+            for (var pageNumber = windowRange.start; pageNumber <= windowRange.end; pageNumber += 1) {
+                var pageBtn = document.createElement('button');
+                pageBtn.type = 'button';
+                pageBtn.className = 'rtp-page-num' + (pageNumber === currentPage ? ' active' : '');
+                pageBtn.setAttribute('data-sm-page', String(pageNumber));
+                pageBtn.setAttribute('aria-label', 'Go to page ' + pageNumber);
+                pageBtn.textContent = String(pageNumber);
+
+                if (isLoading || pageNumber === currentPage) {
+                    pageBtn.disabled = true;
+                }
+
+                els.pageNumbers.appendChild(pageBtn);
+            }
         }
     }
 
@@ -536,10 +558,7 @@
             lastPage = Math.max(1, toInt(meta.last_page, 1));
             totalRows = Math.max(0, toInt(meta.total, 0));
             perPage = clamp(toInt(meta.per_page, perPage), 10, 100);
-
-            if (els.perPage) {
-                els.perPage.value = String(perPage);
-            }
+            perPage = 25;
 
             syncOptions(payload ? payload.options : null);
 
@@ -901,14 +920,6 @@
             });
         }
 
-        if (els.perPage) {
-            perPage = clamp(toInt(els.perPage.value, 25), 10, 100);
-            els.perPage.addEventListener('change', function () {
-                perPage = clamp(toInt(els.perPage.value, 25), 10, 100);
-                loadSlots(1, false, '');
-            });
-        }
-
         if (els.prevBtn) {
             els.prevBtn.addEventListener('click', function () {
                 if (isLoading || currentPage <= 1) {
@@ -926,6 +937,23 @@
                 }
 
                 loadSlots(currentPage + 1, false, '');
+            });
+        }
+
+        var paginationBar = document.getElementById('smPaginationBar');
+        if (paginationBar) {
+            paginationBar.addEventListener('click', function (event) {
+                var pageBtn = event.target.closest('[data-sm-page]');
+                if (!pageBtn || isLoading) {
+                    return;
+                }
+
+                var targetPage = toInt(pageBtn.getAttribute('data-sm-page'), 0);
+                if (targetPage < 1 || targetPage > lastPage || targetPage === currentPage) {
+                    return;
+                }
+
+                loadSlots(targetPage, false, '');
             });
         }
 

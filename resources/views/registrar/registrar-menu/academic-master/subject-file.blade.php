@@ -52,20 +52,17 @@
         </table>
     </div>
 
-    <div class="sf-pagination-bar" id="sfPaginationBar">
-        <div class="sf-pagination-left">
-            <label for="sfPerPage">Rows per page</label>
-            <select id="sfPerPage">
-                <option value="25" selected>25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
-        <div class="sf-pagination-right">
-            <span id="sfPageInfo">Page 1 of 1</span>
-            <button type="button" class="sf-page-btn" id="sfPrevBtn">Previous</button>
-            <button type="button" class="sf-page-btn" id="sfNextBtn">Next</button>
-            <span id="sfTotalInfo">0 total subjects</span>
+    <div class="sf-pagination-bar sf-pagination-compact" id="sfPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Subject File pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
+                    <button type="button" class="rtp-page-btn" id="sfPrevBtn" aria-label="Previous page" disabled>&lt;</button>
+                    <div class="rtp-pages" id="sfPageNumbers">
+                        <button type="button" class="rtp-page-num active" aria-current="page" disabled>1</button>
+                    </div>
+                    <button type="button" class="rtp-page-btn" id="sfNextBtn" aria-label="Next page" disabled>&gt;</button>
+                </div>
+            </nav>
         </div>
     </div>
 

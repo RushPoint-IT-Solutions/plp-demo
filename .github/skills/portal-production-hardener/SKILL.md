@@ -1,12 +1,12 @@
 ---
 name: "portal-production-hardener"
-description: "Complete self‑healing production hardener for Laravel 5.7 / PHP 7.4. Single‑skill full lifecycle: UI scan → 3NF normalization → security hardening → seeding → API audit → auth bypass → input validation → Playwright debug/chaos → performance → preflight → persistence/skill evolution. Iterates until all verifications pass. No external skill dependencies."
+description: "Complete self‑healing production hardener for Laravel 5.7 / PHP 7.4. Single‑skill full lifecycle: load memory → UI scan → component reuse → 3NF normalization → security hardening → seeding → API audit → auth bypass → input validation → Playwright debug/chaos → performance → preflight → persistence/skill evolution. Iterates until all verifications pass. No external skill dependencies."
 ---
 
-# Portal Production Hardener (All‑in‑One, Self‑Healing, Self‑Improving) – Laravel 5.7
+# Portal Production Hardener (All‑in‑One, Self‑Healing, Self‑Improving, Component‑Aware) – Laravel 5.7
 
 ## Purpose
-Transform a development Laravel 5.7 project into a production‑ready, secure, and scalable school portal. **All phases are contained in this single skill.** The workflow will iterate until all Playwright and MCP verifications pass. **After completion, a summary of important additions and customizations is created, and you are prompted to optionally embed this knowledge into the skill itself for future runs.**
+Transform a development Laravel 5.7 project into a production‑ready, secure, and scalable school portal. **All phases are contained in this single skill.** The workflow begins by loading any previously saved project memory, then scans the UI, identifies reusable components to prevent duplication, and proceeds through all hardening and testing phases. A self‑healing loop iterates until all Playwright and MCP verifications pass. Finally, a project memory summary is created and optionally embedded into the skill for future runs.
 
 ## Prerequisites
 - Laravel 5.7 project with database connection configured.
@@ -45,31 +45,68 @@ Transform a development Laravel 5.7 project into a production‑ready, secure, a
 
 ---
 
-# PHASE 1: UI Data Mapping
+# PHASE 0: Load Project Memory (Context Initialization)
 
 ## Purpose
-Scan existing web pages to identify data requirements. Extract form labels and input names to generate a JSON contract for the Seeder and Normalizer.
-
-## Tools
-- Playwright MCP: `browser_navigate`, `browser_snapshot`, `browser_evaluate`
+Before any scanning or modification, load previously saved project memory to accelerate execution and preserve customizations.
 
 ## Steps
 
-1. **Navigate to Key Pages**
+1. **Check for Appended Memory in Skill File**
+   - Read the current skill file (the file containing this definition).
+   - Search for the section `## Project‑Specific Memory (Auto‑Appended)`.
+   - If found, extract the content after that heading. Parse markdown to identify:
+     - Previously created tables and relationships.
+     - Custom validation rules.
+     - Special business logic.
+     - Unresolved issues from last run.
+     - Playwright/Chaos test summary.
+     - Known reusable components.
+   - Store in runtime context object.
+
+2. **Fallback: Check `.security-audits/PROJECT_MEMORY.md`**
+   - If no appended memory in skill file, check `.security-audits/PROJECT_MEMORY.md` and load similarly.
+
+3. **Apply Context**
+   - Use known tables/fields to potentially skip redundant UI scanning.
+   - Prioritize fixing unresolved issues.
+   - Note any existing reusable components to avoid recreating them.
+
+4. **Log**
+   - Save `.security-audits/context-loaded.txt` indicating whether memory was found.
+
+---
+
+# PHASE 1: UI Data Mapping (Context‑Aware)
+
+## Purpose
+Scan web pages to identify data requirements. Use existing contract if available and page hash matches; otherwise fresh scan.
+
+## Tools
+- Playwright MCP: `browser_navigate`, `browser_snapshot`, `browser_evaluate`
+- Filesystem
+
+## Steps
+
+1. **Check Existing UI Contract**
+   - If `.security-audits/ui-data-contract.json` exists and memory context indicates no structural changes, load and skip to Phase 1.5.
+   - Else, proceed with fresh scan.
+
+2. **Navigate to Key Pages**
    - Use `browser_navigate` to visit:
      - Applicant Form page
      - Student Profile page
      - Registrar Dashboard page
-     - Any other major CRUD pages.
+     - Any other major CRUD pages (from memory context).
    - Wait for network idle.
 
-2. **Extract Form Fields and Table Headers**
-   - Use `browser_evaluate` to run a script that collects:
-     - All `<input>` names, types, and whether they are required.
-     - All `<select>` names and their options.
+3. **Extract Form Fields and Table Headers**
+   - Use `browser_evaluate` to collect:
+     - All `<input>` names, types, required.
+     - All `<select>` names and options.
      - All `<textarea>` names.
      - All `<table>` header texts (`<th>`).
-   - Example extraction script:
+   - Example script:
      ```javascript
      () => {
        const inputs = Array.from(document.querySelectorAll('input, select, textarea')).map(el => ({
@@ -82,14 +119,130 @@ Scan existing web pages to identify data requirements. Extract form labels and i
      }
      ```
 
-3. **Generate UI Data Contract**
-   - Combine extracted data into a structured JSON object mapping models to fields.
-   - Infer relationships based on field naming conventions (e.g., `user_id` → `belongsTo User`).
+4. **Generate UI Data Contract**
    - Save to `.security-audits/ui-data-contract.json`.
 
-4. **Verification**
-   - Confirm the file exists and contains valid JSON.
-   - If any page fails to load or returns no data, retry navigation once.
+---
+
+# PHASE 1.5: Component Reusability & Consistency Enforcement
+
+## Purpose
+Analyze the UI structure across scanned pages to identify repeating patterns (pagination, tables, modals, filter bars, cards, buttons) and enforce the use of shared Blade components or partials. This prevents duplicate code and ensures consistent behavior and styling.
+
+## Tools
+- Filesystem (`read_file`, `write_file`, `search_files`)
+- Playwright MCP (to capture additional UI structure if needed)
+
+## Steps
+
+### Step 1: Identify Common UI Patterns
+- From the UI scan in Phase 1, analyze the DOM snapshots and extracted elements to detect:
+  - **Pagination:** Presence of `<nav>` with `pagination` class or similar.
+  - **Data Tables:** Repeated `<table>` structures with similar columns across pages.
+  - **Modals:** Overlay containers with forms or confirmations.
+  - **Filter/Search Bars:** Input groups with search buttons.
+  - **Action Buttons:** Recurring button groups (Edit, Delete, View).
+  - **Cards/Grids:** Repeating card layouts for entities.
+- For each pattern, note the pages where it appears and the exact markup variations.
+
+### Step 2: Generate Reusable Blade Components
+- For each identified pattern, create a Blade component (Laravel 5.7 uses `@component` directive or simple partial includes).
+- **Example: Pagination Component**
+  - Create `resources/views/components/pagination.blade.php`:
+    ```blade
+    @if ($paginator->hasPages())
+        <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-between">
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                        {{-- Previous Page Link --}}
+                        @if ($paginator->onFirstPage())
+                            <span class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-l-md leading-5">
+                                {!! __('pagination.previous') !!}
+                            </span>
+                        @else
+                            <a href="{{ $paginator->previousPageUrl() }}" class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md leading-5 hover:text-gray-500 focus:z-10 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
+                                {!! __('pagination.previous') !!}
+                            </a>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @foreach ($elements as $element)
+                            {{-- "Three Dots" Separator --}}
+                            @if (is_string($element))
+                                <span class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 cursor-default leading-5">{{ $element }}</span>
+                            @endif
+
+                            {{-- Array Of Links --}}
+                            @if (is_array($element))
+                                @foreach ($element as $page => $url)
+                                    @if ($page == $paginator->currentPage())
+                                        <span class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default leading-5">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-500 focus:z-10 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">{{ $page }}</a>
+                                    @endif
+                                @endforeach
+                            @endif
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($paginator->hasMorePages())
+                            <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md leading-5 hover:text-gray-500 focus:z-10 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150">
+                                {!! __('pagination.next') !!}
+                            </a>
+                        @else
+                            <span class="relative inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-r-md leading-5">
+                                {!! __('pagination.next') !!}
+                            </span>
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </nav>
+    @endif
+    ```
+- **Example: Delete Confirmation Modal Component**
+  - Create `resources/views/components/confirm-delete-modal.blade.php`:
+    ```blade
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this <span class="font-weight-bold">{{ $entityName }}</span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    ```
+
+### Step 3: Refactor Existing Views to Use Components
+- Scan all Blade files in `resources/views/`.
+- Identify inline repetitions of the patterns found in Step 1.
+- Replace each occurrence with the corresponding `@include` or `@component`.
+- Example replacement for pagination:
+  - Before: manual pagination links.
+  - After: `@include('components.pagination', ['paginator' => $students])`
+
+### Step 4: Enforce Consistency Rules
+- Add a check in Phase 8 (Playwright Debugger) to verify that common UI elements share the same DOM structure and classes.
+- If inconsistencies are found (e.g., different pagination markup on different pages), flag as a medium‑severity issue and auto‑fix by replacing with the component.
+
+### Step 5: Update Project Memory
+- Record all created components and their usage in the runtime context for future runs.
 
 ---
 
@@ -493,6 +646,7 @@ Create a persistent summary of all important changes made during the run, and of
   - Unresolved issues that required manual intervention or were skipped.
   - Performance optimizations applied (indexes, eager loading).
   - Playwright/Chaos test results summary (pass/fail counts, critical issues fixed).
+  - Reusable Blade components created (from Phase 1.5).
 
 ### Step 2: Generate a Concise "Memory Summary"
 - Create a markdown file: `.security-audits/PROJECT_MEMORY.md` with the following structure:
@@ -512,6 +666,7 @@ Create a persistent summary of all important changes made during the run, and of
 - **Custom Validation Rules:** {list}
 - **Special Business Logic:** {any discovered during UI scan}
 - **Security Patches Applied:** {summary}
+- **Reusable Components Created:** {list of Blade components}
 
 ## Playwright & Chaos Test Summary
 - Debugger: {pass/fail count}
@@ -583,6 +738,7 @@ while iteration <= max_iterations and not all_passed:
 | Migration not reversible | Generate missing `down()` method in migration file. |
 | Rate limiting missing | Add `->middleware('throttle:60,1')` to route group. |
 | Form validation missing | Generate Form Request class as per Phase 7. |
+| UI component inconsistency | Replace divergent markup with the standard Blade component from Phase 1.5. |
 
 ## Final Output
 
@@ -613,7 +769,7 @@ WAITING_FOR_HUMAN_OK
 
 # Execution Note
 
-**This skill is self‑contained.** Do not call external sub‑skills. Execute all phases in order, then run the self‑healing loop until conditions are met. Finally, run Phase 11 to persist memory.
+**This skill is self‑contained.** Execute Phase 0 first to load context, then proceed through all phases in order, run the self‑healing loop, and finally Phase 11 to persist memory.
 
 ---
 

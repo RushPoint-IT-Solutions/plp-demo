@@ -97,8 +97,30 @@ function removeDuplicateAutoPagers() {
     }
 
     pageRoot.querySelectorAll('.rtp-pagination').forEach(function (pager) {
-        pager.parentNode.removeChild(pager);
+        if (pager.closest('#sfPaginationBar')) {
+            return;
+        }
+
+        if (pager.parentNode) {
+            pager.parentNode.removeChild(pager);
+        }
     });
+}
+
+function getPaginationWindow(page, maxPage) {
+    var start = Math.max(1, page - 2);
+    var end = Math.min(maxPage, page + 2);
+
+    if (page <= 3) {
+        end = Math.min(maxPage, 5);
+    } else if (page >= maxPage - 2) {
+        start = Math.max(1, maxPage - 4);
+    }
+
+    return {
+        start: start,
+        end: end
+    };
 }
 
 function bindSubjectFileControls() {
@@ -117,11 +139,6 @@ function bindSubjectFileControls() {
         newBtn.addEventListener('click', openNewSubjectModal);
     }
 
-    var perPageSelect = document.getElementById('sfPerPage');
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', changeSubjectPerPage);
-    }
-
     var prevBtn = document.getElementById('sfPrevBtn');
     if (prevBtn) {
         prevBtn.addEventListener('click', goToPrevPage);
@@ -130,6 +147,23 @@ function bindSubjectFileControls() {
     var nextBtn = document.getElementById('sfNextBtn');
     if (nextBtn) {
         nextBtn.addEventListener('click', goToNextPage);
+    }
+
+    var paginationBar = document.getElementById('sfPaginationBar');
+    if (paginationBar) {
+        paginationBar.addEventListener('click', function (event) {
+            var pageBtn = event.target.closest('[data-sf-page]');
+            if (!pageBtn || isLoading) {
+                return;
+            }
+
+            var targetPage = parseInt(pageBtn.getAttribute('data-sf-page'), 10);
+            if (isNaN(targetPage) || targetPage < 1 || targetPage > lastPage || targetPage === currentPage) {
+                return;
+            }
+
+            loadSubjects(activeSearch, targetPage);
+        });
     }
 }
 
@@ -238,10 +272,7 @@ function loadSubjects(search, page) {
             perPage = 10;
         }
 
-        var perPageSelect = document.getElementById('sfPerPage');
-        if (perPageSelect) {
-            perPageSelect.value = String(perPage);
-        }
+        perPage = 25;
 
         if (SUBJECTS.length === 0 && totalRows > 0 && currentPage > 1) {
             loadSubjects(activeSearch, currentPage - 1);
@@ -314,19 +345,9 @@ function renderTable() {
 }
 
 function renderPagination() {
-    var pageInfo = document.getElementById('sfPageInfo');
-    var totalInfo = document.getElementById('sfTotalInfo');
     var prevBtn = document.getElementById('sfPrevBtn');
     var nextBtn = document.getElementById('sfNextBtn');
-    var perPageSelect = document.getElementById('sfPerPage');
-
-    if (pageInfo) {
-        pageInfo.textContent = 'Page ' + currentPage + ' of ' + lastPage;
-    }
-
-    if (totalInfo) {
-        totalInfo.textContent = totalRows + ' total subjects';
-    }
+    var pageNumbers = document.getElementById('sfPageNumbers');
 
     if (prevBtn) {
         prevBtn.disabled = isLoading || currentPage <= 1;
@@ -336,8 +357,24 @@ function renderPagination() {
         nextBtn.disabled = isLoading || currentPage >= lastPage;
     }
 
-    if (perPageSelect) {
-        perPageSelect.disabled = isLoading;
+    if (pageNumbers) {
+        pageNumbers.innerHTML = '';
+
+        var windowRange = getPaginationWindow(currentPage, lastPage);
+        for (var pageNumber = windowRange.start; pageNumber <= windowRange.end; pageNumber += 1) {
+            var pageBtn = document.createElement('button');
+            pageBtn.type = 'button';
+            pageBtn.className = 'rtp-page-num' + (pageNumber === currentPage ? ' active' : '');
+            pageBtn.setAttribute('data-sf-page', String(pageNumber));
+            pageBtn.setAttribute('aria-label', 'Go to page ' + pageNumber);
+            pageBtn.textContent = String(pageNumber);
+
+            if (isLoading || pageNumber === currentPage) {
+                pageBtn.disabled = true;
+            }
+
+            pageNumbers.appendChild(pageBtn);
+        }
     }
 }
 
@@ -352,29 +389,6 @@ function filterSubjects() {
 }
 
 function sortSubjects() {
-    loadSubjects(activeSearch, 1);
-}
-
-function changeSubjectPerPage() {
-    var perPageSelect = document.getElementById('sfPerPage');
-    if (!perPageSelect) {
-        return;
-    }
-
-    var selected = parseInt(perPageSelect.value, 10);
-    if (isNaN(selected)) {
-        selected = 25;
-    }
-
-    if (selected < 10) {
-        selected = 10;
-    }
-
-    if (selected > 100) {
-        selected = 100;
-    }
-
-    perPage = selected;
     loadSubjects(activeSearch, 1);
 }
 

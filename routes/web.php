@@ -194,6 +194,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@updateSlotMonitoring')->name('slot-monitoring.update')->middleware('throttle:60,1');
             Route::delete('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@destroySlotMonitoring')->name('slot-monitoring.delete')->middleware('throttle:60,1');
             Route::get('/section-merging', 'Registrar\RegistrarController@sectionMerging')->name('section-merging');
+            Route::get('/section-merging/data', 'Registrar\RegistrarController@sectionMergingData')->name('section-merging.data')->middleware('throttle:60,1');
+            Route::post('/section-merging', 'Registrar\RegistrarController@storeSectionMerging')->name('section-merging.store')->middleware('throttle:60,1');
         });
 
         // Student Management

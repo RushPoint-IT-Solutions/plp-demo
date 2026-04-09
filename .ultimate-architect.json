@@ -4,7 +4,9 @@
     "applicants": 2000,
     "students": 1000,
     "faculty": 100,
-    "subjects": 5000
+    "subjects": 5000,
+    "slot_monitoring": 5000,
+    "section_merging": 5000
   },
   "normalization": {
     "destructive": false,
