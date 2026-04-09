@@ -1,12 +1,12 @@
 ---
 name: "portal-production-hardener"
-description: "Complete self‑healing production hardener for Laravel 5.7 / PHP 7.4. Single‑skill full lifecycle: UI scan → 3NF normalization → security hardening → seeding → API audit → auth bypass → input validation → Playwright debug/chaos → performance → preflight. Iterates until all verifications pass. No external skill dependencies."
+description: "Complete self‑healing production hardener for Laravel 5.7 / PHP 7.4. Single‑skill full lifecycle: UI scan → 3NF normalization → security hardening → seeding → API audit → auth bypass → input validation → Playwright debug/chaos → performance → preflight → persistence/skill evolution. Iterates until all verifications pass. No external skill dependencies."
 ---
 
-# Portal Production Hardener (All‑in‑One, Self‑Healing) – Laravel 5.7
+# Portal Production Hardener (All‑in‑One, Self‑Healing, Self‑Improving) – Laravel 5.7
 
 ## Purpose
-Transform a development Laravel 5.7 project into a production‑ready, secure, and scalable school portal. **All phases are contained in this single skill.** The workflow will iterate until all Playwright and MCP verifications pass (up to a configurable maximum).
+Transform a development Laravel 5.7 project into a production‑ready, secure, and scalable school portal. **All phases are contained in this single skill.** The workflow will iterate until all Playwright and MCP verifications pass. **After completion, a summary of important additions and customizations is created, and you are prompted to optionally embed this knowledge into the skill itself for future runs.**
 
 ## Prerequisites
 - Laravel 5.7 project with database connection configured.
@@ -428,7 +428,18 @@ Detect N+1 queries, missing indexes, and suggest caching/pagination.
 4. **Pagination Check**
    - Replace `->get()` on large tables with `->paginate(15)`.
 
-5. **Report**
+5. **Interactive Filter Throughput Hardening (High-Volume UI Lists)**
+   - For filter/search UIs backed by large datasets, enforce lightweight request patterns.
+   - Do not send heavy metadata/options payloads on every keystroke.
+   - Add debounce to text filters/search (target: 350-500ms).
+   - Apply a minimum 2-character threshold for broad text search fields.
+   - Abort stale in-flight list requests before sending new ones.
+   - Lazy-load heavy modal-only options (e.g., full course lists) on first modal open.
+   - Prefer text query filters over giant `<select>` lists when option cardinality is high.
+   - Add an options mode split for APIs (e.g., `filters` mode returns only light dropdown metadata, `modal` mode returns heavy option lists).
+   - Keep active search/filter inputs focus-stable while typing (avoid disabling or remounting the focused control during async reloads).
+
+6. **Report**
    - Save to `.security-audits/performance-audit.txt`.
 
 ---
@@ -463,6 +474,77 @@ Final sanity checks before production.
 
 6. **Report**
    - Save to `.security-audits/preflight-report.txt`.
+
+---
+
+# PHASE 11: Persistence & Skill Evolution (Memory Summary)
+
+## Purpose
+Create a persistent summary of all important changes made during the run, and offer to embed this knowledge into the skill definition itself so that future runs (even in new chat sessions) can leverage project‑specific context.
+
+## Steps
+
+### Step 1: Gather All Changes and Findings
+- Aggregate the following from the `.security-audits/` folder and execution logs:
+  - New tables created (from Phase 2).
+  - New models/relationships added.
+  - Security patches applied (e.g., routes wrapped in auth, mass assignment fixes).
+  - Any project‑specific customizations (e.g., custom validation rules, special business logic discovered during UI scan).
+  - Unresolved issues that required manual intervention or were skipped.
+  - Performance optimizations applied (indexes, eager loading).
+  - Playwright/Chaos test results summary (pass/fail counts, critical issues fixed).
+
+### Step 2: Generate a Concise "Memory Summary"
+- Create a markdown file: `.security-audits/PROJECT_MEMORY.md` with the following structure:
+
+```markdown
+# Project Memory – {Project Name} – {Date}
+
+## Overview
+- Laravel 5.7 / PHP 7.4
+- Database: MySQL/PostgreSQL
+- Normalization: 3NF applied
+- Total records seeded: {count}
+
+## Key Customizations & Important Additions
+- **New Tables:** {list}
+- **New Relationships:** {list}
+- **Custom Validation Rules:** {list}
+- **Special Business Logic:** {any discovered during UI scan}
+- **Security Patches Applied:** {summary}
+
+## Playwright & Chaos Test Summary
+- Debugger: {pass/fail count}
+- Chaos: {pass/fail count}
+- Duplicate Prevention: {status}
+- Rate Limiting: {status}
+
+## Unresolved Issues / Manual Follow‑ups
+- {list or "None"}
+
+## Suggested Skill Updates
+- {any recommendations for improving future runs, e.g., additional selectors, new fuzzing payloads}
+```
+
+### Step 3: Prompt User for Skill Embedding
+- Display the summary to the user.
+- Ask explicitly:
+
+```
+The run has completed. A project memory summary has been saved to `.security-audits/PROJECT_MEMORY.md`.
+
+Do you want to embed this knowledge into the skill definition so that future runs remember these project‑specific details?
+[YES] / [NO]
+```
+
+### Step 4: If YES – Update the Skill File
+- Locate the skill file (the file containing this skill definition).
+- Append a new section at the end of the skill file titled `## Project‑Specific Memory (Auto‑Appended)`.
+- Insert the content of `PROJECT_MEMORY.md` under that heading, with a timestamp.
+- Save the updated skill file.
+
+### Step 5: If NO – Inform User
+- Output: `Memory summary saved locally. Skill definition unchanged. You may manually review .security-audits/PROJECT_MEMORY.md for future reference.`
 
 ---
 
@@ -531,4 +613,9 @@ WAITING_FOR_HUMAN_OK
 
 # Execution Note
 
-**This skill is self‑contained.** Do not call external sub‑skills. Execute all phases in order, then run the self‑healing loop until conditions are met.
+**This skill is self‑contained.** Do not call external sub‑skills. Execute all phases in order, then run the self‑healing loop until conditions are met. Finally, run Phase 11 to persist memory.
+
+---
+
+## Project‑Specific Memory (Auto‑Appended)
+<!-- This section will be populated with the summary after each run if user opts in -->

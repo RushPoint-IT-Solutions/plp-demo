@@ -8769,7 +8769,7 @@ select.req-modal-input {
 /* Slot Monitoring: keep one row on desktop and responsive wrapping on smaller widths. */
 .page-slot-monitoring .sm-filter-row {
   display: grid;
-  grid-template-columns: 150px 130px 120px 170px;
+  grid-template-columns: 150px 130px 140px 210px minmax(220px, 1fr);
   gap: 10px;
   align-items: end;
 }
@@ -8779,12 +8779,31 @@ select.req-modal-input {
   max-width: none;
 }
 
+.page-slot-monitoring .sm-search-input {
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+}
+
+.page-slot-monitoring .pf-modal-overlay.is-hidden {
+  display: none;
+}
+
+.page-slot-monitoring .sm-action-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.page-slot-monitoring #smTable td.sm-number-cell {
+  text-align: center;
+}
+
 @media (max-width: 920px) {
   .page-section-offering .so-filter-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .page-slot-monitoring .sm-filter-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 @media (max-width: 768px) {
@@ -8812,7 +8831,7 @@ select.req-modal-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 110px;
+  min-width: 168px;
 }
 
 .slot-progress-bar {
@@ -8829,12 +8848,110 @@ select.req-modal-input {
   transition: width 0.3s ease;
 }
 
+.slot-progress-fill.is-open {
+  background: #006837;
+}
+
+.slot-progress-fill.is-warning {
+  background: #f9a825;
+}
+
+.slot-progress-fill.is-critical {
+  background: #e53935;
+}
+
 .slot-pct {
   font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
   min-width: 36px;
   text-align: right;
+}
+
+.slot-status-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  min-width: 56px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.slot-pct.is-open,
+.slot-status-label.is-open {
+  color: #006837;
+}
+
+.slot-pct.is-warning,
+.slot-status-label.is-warning {
+  color: #f9a825;
+}
+
+.slot-pct.is-critical,
+.slot-status-label.is-critical {
+  color: #e53935;
+}
+
+.page-slot-monitoring .sm-slot-modal-box {
+  max-width: 680px;
+}
+
+.page-slot-monitoring .sm-confirm-modal-box {
+  text-align: center;
+  max-width: 420px;
+}
+
+.page-slot-monitoring .sm-confirm-icon-wrap {
+  margin-bottom: 16px;
+  color: #c62828;
+}
+
+.page-slot-monitoring .sm-success-icon-wrap {
+  color: #006837;
+}
+
+.page-slot-monitoring .sm-danger-title {
+  color: #c62828;
+}
+
+.page-slot-monitoring .sm-success-title {
+  color: #006837;
+}
+
+.page-slot-monitoring .sm-confirm-text {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.page-slot-monitoring .sm-confirm-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.page-slot-monitoring .sm-confirm-note {
+  font-size: 0.78rem;
+  color: #999;
+  margin-bottom: 22px;
+}
+
+.page-slot-monitoring .sm-success-message {
+  font-size: 0.92rem;
+  color: #444;
+  margin-bottom: 24px;
+}
+
+.page-slot-monitoring .sm-center-actions {
+  justify-content: center;
+}
+
+.page-slot-monitoring .sm-danger-btn {
+  background: #c62828;
+}
+
+.page-slot-monitoring .sm-danger-btn:hover {
+  background: #a31f1f;
 }
 
 /* Grading Sheet Page */
@@ -12106,7 +12223,9 @@ select.req-modal-input {
   display: none;
 }
 
-#rfPaginationBar {
+#rfPaginationBar,
+#pfPaginationBar,
+#smPaginationBar {
   margin-top: 8px;
   padding: 11px 12px;
   border: 1px solid #d2e6d7;
@@ -12117,30 +12236,44 @@ select.req-modal-input {
 
 #rfPaginationBar .sf-pagination-left label,
 #rfPageInfo,
-#rfTotalInfo {
+#rfTotalInfo,
+#pfPaginationBar .sf-pagination-left label,
+#pfPageInfo,
+#pfTotalInfo,
+#smPaginationBar .sf-pagination-left label,
+#smPageInfo,
+#smTotalInfo {
   color: #0a6e3a;
   font-weight: 800;
 }
 
-#rfPaginationBar .sf-pagination-left select {
+#rfPaginationBar .sf-pagination-left select,
+#pfPaginationBar .sf-pagination-left select,
+#smPaginationBar .sf-pagination-left select {
   border-color: #b8d5c0;
   color: #0a6e3a;
   background: #ffffff;
 }
 
-#rfPaginationBar .sf-page-btn {
+#rfPaginationBar .sf-page-btn,
+#pfPaginationBar .sf-page-btn,
+#smPaginationBar .sf-page-btn {
   border-color: #9ac7a6;
   color: #0a6e3a;
   background: #ffffff;
 }
 
-#rfPaginationBar .sf-page-btn:hover:not(:disabled) {
+#rfPaginationBar .sf-page-btn:hover:not(:disabled),
+#pfPaginationBar .sf-page-btn:hover:not(:disabled),
+#smPaginationBar .sf-page-btn:hover:not(:disabled) {
   border-color: #0f7b43;
   color: #ffffff;
   background: #0f7b43;
 }
 
-#rfPaginationBar .sf-page-btn:disabled {
+#rfPaginationBar .sf-page-btn:disabled,
+#pfPaginationBar .sf-page-btn:disabled,
+#smPaginationBar .sf-page-btn:disabled {
   color: #6f8679;
   border-color: #c8dbcf;
   background: #f4f9f6;

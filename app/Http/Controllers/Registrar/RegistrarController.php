@@ -20,7 +20,9 @@ use App\Faculty;
 use App\Http\Requests\StoreRoomBuildingRequest;
 use App\Http\Requests\StoreRoomHallwayRequest;
 use App\Http\Requests\StoreRoomRequest;
+use App\Http\Requests\StoreSlotMonitoringRequest;
 use App\Http\Requests\UpdateRoomRequest;
+use App\Http\Requests\UpdateSlotMonitoringRequest;
 use App\Http\Requests\SaveApplicantStep1Request;
 use App\Http\Requests\SaveApplicantStep2Request;
 use App\Http\Requests\SaveApplicantStep3Request;
@@ -34,6 +36,7 @@ use App\Room;
 use App\RoomBuilding;
 use App\RoomHallway;
 use App\Semester;
+use App\SlotMonitoring;
 use App\Student;
 use App\StudentProfile;
 use App\StudentProfileImage;
@@ -71,6 +74,11 @@ class RegistrarController extends Controller
         'program',
         'updated_by',
     ];
+
+    private const SLOT_MONITORING_DEFAULT_PER_PAGE = 25;
+    private const SLOT_MONITORING_MIN_PER_PAGE = 10;
+    private const SLOT_MONITORING_MAX_PER_PAGE = 100;
+    private const SLOT_MONITORING_ALLOWED_SEMESTERS = ['First', 'Second', 'Summer'];
 
     /**
      * Registrar Dashboard
@@ -1985,11 +1993,20 @@ class RegistrarController extends Controller
         $programType = trim((string) $request->input('program_type', ''));
         $programCode = trim((string) $request->input('program_code', ''));
         $description = trim((string) $request->input('description', ''));
+        $perPage = (int) $request->input('per_page', 25);
+
+        if ($perPage < 10) {
+            $perPage = 10;
+        }
+
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
 
         $departments = Department::orderBy('description')->get();
         $faculties = Faculty::orderBy('name')->get();
 
-        $programs = Course::with(['department', 'deanDirector'])
+        $programsQuery = Course::with(['department', 'deanDirector'])
             ->when($departmentId > 0, function ($query) use ($departmentId) {
                 $query->where('department_id', $departmentId);
             })
@@ -2021,8 +2038,17 @@ class RegistrarController extends Controller
                         });
                 });
             })
-            ->orderBy('code')
-            ->get();
+            ->orderBy('code');
+
+        $programs = $programsQuery
+            ->paginate($perPage)
+            ->appends([
+                'department_id' => $departmentId > 0 ? $departmentId : null,
+                'program_type' => $programType,
+                'program_code' => $programCode,
+                'description' => $description,
+                'per_page' => $perPage,
+            ]);
 
         return view('registrar.registrar-menu.academic-master.program-file', [
             'departments' => $departments,
@@ -2033,6 +2059,7 @@ class RegistrarController extends Controller
                 'program_type' => $programType,
                 'program_code' => $programCode,
                 'description' => $description,
+                'per_page' => (string) $perPage,
             ],
         ]);
     }
@@ -3683,6 +3710,362 @@ class RegistrarController extends Controller
     public function slotMonitoring()
     {
         return view('registrar.registrar-menu.scheduling.slot-monitoring');
+    }
+
+    public function slotMonitoringData(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = trim((string) $request->query('semester', ''));
+        $sectionQuery = trim((string) $request->query('section', ''));
+        $courseQuery = trim((string) $request->query('course_query', ''));
+        $courseId = (int) $request->query('course_id', 0);
+        $page = $this->resolveSlotMonitoringPage($request->query('page', 1));
+        $perPage = $this->resolveSlotMonitoringPerPage($request->query('per_page', self::SLOT_MONITORING_DEFAULT_PER_PAGE));
+        $includeOptions = $this->requestBoolean($request, 'include_options');
+        $optionsMode = trim((string) $request->query('options_mode', ''));
+
+        $query = SlotMonitoring::query()
+            ->select([
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+                'updated_by_user_id',
+                'updated_at',
+            ])
+            ->with([
+                'course:id,code,name',
+                'updatedBy:id,name',
+            ]);
+
+        if ($schoolYear !== '') {
+            $query->where('school_year', $schoolYear);
+        }
+
+        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
+            $query->where('semester', $semester);
+        }
+
+        if ($sectionQuery !== '') {
+            $query->where('section', 'like', $sectionQuery . '%');
+        }
+
+        if ($courseId > 0) {
+            $query->where('course_id', $courseId);
+        }
+
+        if ($courseQuery !== '' && strlen($courseQuery) >= 2) {
+            $query->whereHas('course', function ($builder) use ($courseQuery) {
+                $builder->where('code', 'like', $courseQuery . '%')
+                    ->orWhere('name', 'like', '%' . $courseQuery . '%');
+            });
+        }
+
+        $normalizedSearch = preg_replace('/\s+/', ' ', $search);
+        $normalizedSearch = trim((string) $normalizedSearch);
+        if ($normalizedSearch !== '' && strlen($normalizedSearch) >= 2) {
+            $query->where(function ($builder) use ($normalizedSearch) {
+                $builder->where('subject', 'like', $normalizedSearch . '%')
+                    ->orWhere('section', 'like', $normalizedSearch . '%')
+                    ->orWhere('schedule', 'like', '%' . $normalizedSearch . '%');
+            });
+        }
+
+        $paginator = $query
+            ->orderBy('school_year', 'desc')
+            ->orderByRaw("CASE WHEN semester = 'First' THEN 1 WHEN semester = 'Second' THEN 2 WHEN semester = 'Summer' THEN 3 ELSE 4 END")
+            ->orderBy('section')
+            ->orderBy('subject')
+            ->paginate($perPage, [
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+                'updated_by_user_id',
+                'updated_at',
+            ], 'page', $page);
+
+        $rows = $paginator->getCollection()
+            ->map(function (SlotMonitoring $slotMonitoring) {
+                return $this->mapSlotMonitoringRow($slotMonitoring);
+            })
+            ->values();
+
+        $options = null;
+        if ($includeOptions) {
+            $options = $this->slotMonitoringOptionsPayload($schoolYear, $semester, $courseId, $optionsMode);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'options' => $options,
+            'meta' => [
+                'page' => (int) $paginator->currentPage(),
+                'last_page' => (int) $paginator->lastPage(),
+                'per_page' => (int) $paginator->perPage(),
+                'total' => (int) $paginator->total(),
+            ],
+        ]);
+    }
+
+    public function storeSlotMonitoring(StoreSlotMonitoringRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $slotMonitoring = null;
+
+        DB::beginTransaction();
+        try {
+            $slotMonitoring = SlotMonitoring::query()->create([
+                'school_year' => (string) $validated['school_year'],
+                'semester' => (string) $validated['semester'],
+                'course_id' => (int) $validated['course_id'],
+                'section' => (string) $validated['section'],
+                'subject' => (string) $validated['subject'],
+                'schedule' => (string) $validated['schedule'],
+                'total_slots' => (int) $validated['total_slots'],
+                'enrolled_slots' => isset($validated['enrolled_slots']) ? (int) $validated['enrolled_slots'] : 0,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateSlotMonitoringConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate slot entry.',
+                    'errors' => [
+                        'subject' => ['A slot entry with the same school year, semester, course, section, subject, and schedule already exists.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $slotMonitoring->load(['course:id,code,name', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'id' => (int) $slotMonitoring->id,
+            'row' => $this->mapSlotMonitoringRow($slotMonitoring),
+        ]);
+    }
+
+    public function updateSlotMonitoring(UpdateSlotMonitoringRequest $request, SlotMonitoring $slotMonitoring): JsonResponse
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        try {
+            $slotMonitoring->update([
+                'school_year' => (string) $validated['school_year'],
+                'semester' => (string) $validated['semester'],
+                'course_id' => (int) $validated['course_id'],
+                'section' => (string) $validated['section'],
+                'subject' => (string) $validated['subject'],
+                'schedule' => (string) $validated['schedule'],
+                'total_slots' => (int) $validated['total_slots'],
+                'enrolled_slots' => isset($validated['enrolled_slots']) ? (int) $validated['enrolled_slots'] : 0,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateSlotMonitoringConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate slot entry.',
+                    'errors' => [
+                        'subject' => ['A slot entry with the same school year, semester, course, section, subject, and schedule already exists.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $slotMonitoring->load(['course:id,code,name', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapSlotMonitoringRow($slotMonitoring),
+        ]);
+    }
+
+    public function destroySlotMonitoring(SlotMonitoring $slotMonitoring): JsonResponse
+    {
+        $slotMonitoring->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function slotMonitoringOptionsPayload($schoolYear = '', $semester = '', $courseId = 0, $optionsMode = '')
+    {
+        $schoolYears = SlotMonitoring::query()
+            ->select('school_year')
+            ->distinct()
+            ->orderBy('school_year', 'desc')
+            ->pluck('school_year')
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->values();
+
+        if ($schoolYears->isEmpty()) {
+            $year = (int) date('Y');
+            $schoolYears = collect([
+                ($year - 1) . '-' . $year,
+                $year . '-' . ($year + 1),
+            ]);
+        }
+
+        $semesters = collect(self::SLOT_MONITORING_ALLOWED_SEMESTERS)
+            ->merge(
+                SlotMonitoring::query()
+                    ->select('semester')
+                    ->distinct()
+                    ->pluck('semester')
+            )
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->values();
+
+        $normalizedMode = strtolower(trim((string) $optionsMode));
+        if ($normalizedMode === 'filters') {
+            return [
+                'school_years' => $schoolYears,
+                'semesters' => $semesters,
+            ];
+        }
+
+        $courses = Course::query()
+            ->orderBy('code')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                $label = trim((string) $course->code);
+                if ($label === '') {
+                    $label = (string) $course->name;
+                }
+
+                return [
+                    'id' => (int) $course->id,
+                    'code' => (string) $course->code,
+                    'name' => (string) $course->name,
+                    'label' => $label,
+                ];
+            })
+            ->values();
+
+        return [
+            'school_years' => $schoolYears,
+            'semesters' => $semesters,
+            'courses' => $courses,
+        ];
+    }
+
+    private function mapSlotMonitoringRow(SlotMonitoring $slotMonitoring)
+    {
+        $totalSlots = (int) $slotMonitoring->total_slots;
+        $enrolledSlots = (int) $slotMonitoring->enrolled_slots;
+        $utilizationPct = 0;
+
+        if ($totalSlots > 0) {
+            $utilizationPct = (int) round(($enrolledSlots / $totalSlots) * 100);
+        }
+
+        if ($utilizationPct < 0) {
+            $utilizationPct = 0;
+        }
+
+        if ($utilizationPct > 100) {
+            $utilizationPct = 100;
+        }
+
+        $statusLabel = 'Open';
+        if ($utilizationPct >= 90) {
+            $statusLabel = 'Critical';
+        } elseif ($utilizationPct >= 50) {
+            $statusLabel = 'Warning';
+        }
+
+        return [
+            'id' => (int) $slotMonitoring->id,
+            'school_year' => (string) $slotMonitoring->school_year,
+            'semester' => (string) $slotMonitoring->semester,
+            'course_id' => (int) $slotMonitoring->course_id,
+            'course_code' => $slotMonitoring->course ? (string) $slotMonitoring->course->code : '',
+            'course_name' => $slotMonitoring->course ? (string) $slotMonitoring->course->name : '',
+            'section' => (string) $slotMonitoring->section,
+            'subject' => (string) $slotMonitoring->subject,
+            'schedule' => (string) $slotMonitoring->schedule,
+            'total_slots' => $totalSlots,
+            'enrolled_slots' => $enrolledSlots,
+            'utilization_pct' => $utilizationPct,
+            'status_label' => $statusLabel,
+            'updated_by' => $slotMonitoring->updatedBy ? (string) $slotMonitoring->updatedBy->name : 'System',
+            'updated_at' => $slotMonitoring->updated_at ? $slotMonitoring->updated_at->toDateTimeString() : null,
+        ];
+    }
+
+    private function resolveSlotMonitoringPage($page)
+    {
+        $safePage = (int) $page;
+
+        if ($safePage < 1) {
+            return 1;
+        }
+
+        return $safePage;
+    }
+
+    private function resolveSlotMonitoringPerPage($perPage)
+    {
+        $safePerPage = (int) $perPage;
+
+        if ($safePerPage < self::SLOT_MONITORING_MIN_PER_PAGE) {
+            return self::SLOT_MONITORING_MIN_PER_PAGE;
+        }
+
+        if ($safePerPage > self::SLOT_MONITORING_MAX_PER_PAGE) {
+            return self::SLOT_MONITORING_MAX_PER_PAGE;
+        }
+
+        return $safePerPage;
+    }
+
+    private function isDuplicateSlotMonitoringConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'slot_monitorings_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
     }
 
     /**

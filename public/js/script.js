@@ -142,48 +142,42 @@ document.addEventListener('DOMContentLoaded', function() {
             openNewProgramModal();
         }
 
-        const entriesSelect = document.getElementById('pfEntriesLimit');
-        const table = document.getElementById('pfTable');
+        const topFilterForm = document.getElementById('pfTopFilterForm');
+        const perPageSelect = document.getElementById('pfPerPage');
+        const pageInput = document.getElementById('pfPageInput');
+        const prevBtn = document.getElementById('pfPrevBtn');
+        const nextBtn = document.getElementById('pfNextBtn');
 
-        if (entriesSelect && table) {
-            const tableBody = table.querySelector('tbody');
-            const headerColumnsCount = table.querySelectorAll('thead th').length || 1;
-            const tableRows = tableBody ? Array.from(tableBody.querySelectorAll('tr')) : [];
-            const emptyRows = tableRows.filter(function (row) {
-                return row.querySelector('.pf-empty-row') !== null;
+        const currentPage = parseInt(programFilePage.getAttribute('data-current-page') || '1', 10) || 1;
+        const lastPage = parseInt(programFilePage.getAttribute('data-last-page') || '1', 10) || 1;
+
+        if (perPageSelect && topFilterForm && pageInput) {
+            perPageSelect.addEventListener('change', function () {
+                pageInput.value = '1';
+                topFilterForm.submit();
             });
-            const dataRows = tableRows.filter(function (row) {
-                return row.querySelector('.pf-empty-row') === null;
-            });
+        }
 
-            function applyEntryLimit() {
-                const limit = parseInt(entriesSelect.value, 10);
-                const total = dataRows.length;
-                const visibleCount = Number.isNaN(limit) ? total : Math.min(limit, total);
-
-                dataRows.forEach(function (row, index) {
-                    row.style.display = index < visibleCount ? '' : 'none';
-                });
-
-                emptyRows.forEach(function (row) {
-                    row.style.display = total === 0 ? '' : 'none';
-                });
-
-                if (tableBody) {
-                    const oldTotalRow = tableBody.querySelector('.pf-total-row');
-                    if (oldTotalRow) {
-                        oldTotalRow.remove();
-                    }
-
-                    const totalRow = document.createElement('tr');
-                    totalRow.className = 'pf-total-row';
-                    totalRow.innerHTML = '<td colspan="' + headerColumnsCount + '" class="pf-total-cell">Total Programs: <strong>' + visibleCount + '</strong></td>';
-                    tableBody.appendChild(totalRow);
+        if (prevBtn && topFilterForm && pageInput) {
+            prevBtn.addEventListener('click', function () {
+                if (currentPage <= 1 || prevBtn.disabled) {
+                    return;
                 }
-            }
 
-            entriesSelect.addEventListener('change', applyEntryLimit);
-            applyEntryLimit();
+                pageInput.value = String(currentPage - 1);
+                topFilterForm.submit();
+            });
+        }
+
+        if (nextBtn && topFilterForm && pageInput) {
+            nextBtn.addEventListener('click', function () {
+                if (currentPage >= lastPage || nextBtn.disabled) {
+                    return;
+                }
+
+                pageInput.value = String(currentPage + 1);
+                topFilterForm.submit();
+            });
         }
 
         const editModal = document.getElementById('pfEditProgramModal');

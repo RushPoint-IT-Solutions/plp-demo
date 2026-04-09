@@ -7,7 +7,9 @@
 <div class="pf-page" id="programFilePage"
      data-success="{{ session('program_file_success', '') }}"
      data-open-setup="{{ ($errors->has('dept_code') || $errors->has('dept_description')) ? '1' : '0' }}"
-     data-open-new="{{ ($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('accreditation_level')) ? '1' : '0' }}">
+    data-open-new="{{ ($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('accreditation_level')) ? '1' : '0' }}"
+    data-current-page="{{ (int) $programs->currentPage() }}"
+    data-last-page="{{ (int) $programs->lastPage() }}">
     <div class="pf-toolbar">
         <div class="pf-toolbar-actions">
             <button type="button" class="pf-btn-new" onclick="openSetupDepartmentsModal()">
@@ -22,6 +24,7 @@
     </div>
 
     <form method="GET" action="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="pf-top-filter" id="pfTopFilterForm">
+        <input type="hidden" name="page" id="pfPageInput" value="{{ (int) $programs->currentPage() }}">
         <div class="pf-top-filter-grid">
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterDepartment">Department</label>
@@ -63,19 +66,6 @@
         </div>
     </form>
 
-    <div class="pf-table-controls">
-        <div class="pf-entries-control">
-            <label for="pfEntriesLimit">Show</label>
-            <select id="pfEntriesLimit" class="pf-entries-select">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100" selected>100</option>
-            </select>
-            <span>Entries</span>
-        </div>
-    </div>
-
     <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table" id="pfTable">
             <thead>
@@ -84,7 +74,7 @@
                     <th>Program Name</th>
                     <th>Department</th>
                     <th>Accreditation Level</th>
-                    <th style="text-align:center; width: 70px;">Actions</th>
+                    <th class="pf-actions-head">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -94,7 +84,7 @@
                         <td>{{ $program->name ?: $program->description }}</td>
                         <td>{{ optional($program->department)->description ?: '-' }}</td>
                         <td>{{ $program->program_file ?: 'Pending Review' }}</td>
-                        <td style="text-align:center;">
+                        <td class="pf-actions-cell">
                             <button type="button"
                                 class="apst-action-btn"
                                 data-pf-menu-toggle="pfMenu-{{ $program->id }}"
@@ -120,11 +110,29 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center pf-empty-row" style="padding: 18px; color: #888;">No programs found.</td>
+                        <td colspan="5" class="text-center pf-empty-row">No programs found.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    <div class="sf-pagination-bar" id="pfPaginationBar">
+        <div class="sf-pagination-left">
+            <label for="pfPerPage">Rows per page</label>
+            <select id="pfPerPage" name="per_page" form="pfTopFilterForm">
+                <option value="10" {{ $filters['per_page'] === '10' ? 'selected' : '' }}>10</option>
+                <option value="25" {{ $filters['per_page'] === '25' ? 'selected' : '' }}>25</option>
+                <option value="50" {{ $filters['per_page'] === '50' ? 'selected' : '' }}>50</option>
+                <option value="100" {{ $filters['per_page'] === '100' ? 'selected' : '' }}>100</option>
+            </select>
+        </div>
+        <div class="sf-pagination-right">
+            <span id="pfPageInfo">Page {{ (int) $programs->currentPage() }} of {{ (int) $programs->lastPage() }}</span>
+            <button type="button" class="sf-page-btn" id="pfPrevBtn" {{ $programs->onFirstPage() ? 'disabled' : '' }}>Previous</button>
+            <button type="button" class="sf-page-btn" id="pfNextBtn" {{ $programs->hasMorePages() ? '' : 'disabled' }}>Next</button>
+            <span id="pfTotalInfo">{{ (int) $programs->total() }} total programs</span>
+        </div>
     </div>
 
 </div>

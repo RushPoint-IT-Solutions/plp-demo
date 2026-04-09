@@ -74,9 +74,21 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        if ((bool) env('SEED_HIGH_VOLUME_PROGRAMS', false)) {
+            $this->call([
+                HighVolumeProgramFileSeeder::class,
+            ]);
+        }
+
         if ((bool) env('SEED_HIGH_VOLUME_ROOMS', false)) {
             $this->call([
                 HighVolumeRoomFileSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_SLOTS', false)) {
+            $this->call([
+                HighVolumeSlotMonitoringSeeder::class,
             ]);
         }
         
