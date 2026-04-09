@@ -1,170 +1,1099 @@
-/* ── Room File Page ── */
+/* Room File JS */
 
-var ROOMS = [
-    { id: 1, room: 1, floor: 1, building: 'Campus 3', students: 30, program: 'BSIT', updatedBy: 'Admin 1' },
-    { id: 2, room: 2, floor: 2, building: 'Campus 3', students: 20, program: 'BSCS', updatedBy: 'Admin 1' },
-    { id: 3, room: 3, floor: 3, building: 'Campus 2', students: 50, program: 'BSED', updatedBy: 'Admin 1' },
-    { id: 4, room: 4, floor: 1, building: 'Campus 1', students: 40, program: 'BSAT', updatedBy: 'Admin 1' },
-    { id: 5, room: 5, floor: 2, building: 'Campus 3', students: 35, program: 'BSIT-Animation', updatedBy: 'Admin 1' },
-    { id: 6, room: 6, floor: 3, building: 'Campus 4', students: 50, program: 'BSN', updatedBy: 'Admin 1' },
-    { id: 7, room: 7, floor: 1, building: 'Campus 2', students: 50, program: 'BSET', updatedBy: 'Admin 1' }
-];
+var RF_PAGE = document.getElementById('roomFilePage');
+var RF_FETCH_URL = RF_PAGE ? RF_PAGE.getAttribute('data-fetch-url') : '';
+var RF_STORE_URL = RF_PAGE ? RF_PAGE.getAttribute('data-store-url') : '';
+var RF_STORE_BUILDING_URL = RF_PAGE ? RF_PAGE.getAttribute('data-store-building-url') : '';
+var RF_STORE_HALLWAY_URL = RF_PAGE ? RF_PAGE.getAttribute('data-store-hallway-url') : '';
+var RF_PROGRAM_FILE_URL = RF_PAGE ? RF_PAGE.getAttribute('data-program-file-url') : '';
+var RF_UPDATE_URL_TEMPLATE = RF_PAGE ? RF_PAGE.getAttribute('data-update-url-template') : '';
+var RF_DELETE_URL_TEMPLATE = RF_PAGE ? RF_PAGE.getAttribute('data-delete-url-template') : '';
+var RF_CSRF_TOKEN = RF_PAGE ? RF_PAGE.getAttribute('data-csrf-token') : '';
 
-function renderRoomTable(filter) {
-    var tbody = document.getElementById('rfBody');
-    var list = ROOMS;
-    if (filter) {
-        var f = filter.toLowerCase();
-        list = ROOMS.filter(function(r) {
-            return String(r.room).indexOf(f) > -1 ||
-                   r.building.toLowerCase().indexOf(f) > -1 ||
-                   r.program.toLowerCase().indexOf(f) > -1;
-        });
+var ROOMS = [];
+var ROOM_OPTIONS = {
+    buildings: [],
+    programs: []
+};
+
+var currentPage = 1;
+var lastPage = 1;
+var totalRows = 0;
+var perPage = 25;
+var activeSearch = '';
+var currentSortBy = RF_PAGE ? String(RF_PAGE.getAttribute('data-default-sort-by') || 'floor_number') : 'floor_number';
+var currentSortDir = RF_PAGE && String(RF_PAGE.getAttribute('data-default-sort-dir') || '').toLowerCase() === 'desc' ? 'desc' : 'asc';
+var optionsLoaded = false;
+var isLoading = false;
+var searchTimer = null;
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getPayloadErrorMessage(payload, fallbackMessage) {
+    if (payload && payload.errors && typeof payload.errors === 'object') {
+        var firstKey = Object.keys(payload.errors)[0];
+        if (firstKey && payload.errors[firstKey] && payload.errors[firstKey][0]) {
+            return payload.errors[firstKey][0];
+        }
     }
 
-    var html = '';
-    for (var i = 0; i < list.length; i++) {
-        var r = list[i];
-        html += '<tr>' +
+    if (payload && payload.message) {
+        return payload.message;
+    }
+
+    return fallbackMessage;
+}
+
+function showErrorMessage(message) {
+    if (typeof showRegistrarToast === 'function') {
+        showRegistrarToast(message, 'warning');
+        return;
+    }
+
+    alert(message);
+}
+
+function showSuccessMessage(message) {
+    if (typeof showRegistrarToast === 'function') {
+        showRegistrarToast(message, 'success');
+        return;
+    }
+
+    console.log(message);
+}
+
+function getUrlFromTemplate(template, id) {
+    if (!template || !id) {
+        return '';
+    }
+
+    return template.replace('__ROOM_ID__', String(id));
+}
+
+function closeOpenMenus() {
+    document.querySelectorAll('#rfTable .apst-dropdown').forEach(function (dropdown) {
+        dropdown.classList.remove('open');
+        dropdown.classList.remove('drop-up');
+        dropdown.style.top = '';
+        dropdown.style.left = '';
+        dropdown.style.bottom = '';
+    });
+}
+
+function removeDuplicateAutoPagers() {
+    var table = document.getElementById('rfTable');
+    if (!table) {
+        return;
+    }
+
+    table.dataset.noAutoPager = '1';
+
+    if (!RF_PAGE) {
+        return;
+    }
+
+    RF_PAGE.querySelectorAll('.rtp-pagination').forEach(function (pager) {
+        pager.parentNode.removeChild(pager);
+    });
+}
+
+function normalizeSortDirection(direction) {
+    return String(direction || '').toLowerCase() === 'desc' ? 'desc' : 'asc';
+}
+
+function setSortState(sortBy, sortDir) {
+    currentSortBy = String(sortBy || 'floor_number').trim() || 'floor_number';
+    currentSortDir = normalizeSortDirection(sortDir);
+    renderSortIndicators();
+}
+
+function renderSortIndicators() {
+    document.querySelectorAll('#rfTable .rf-sort-btn').forEach(function (button) {
+        var sortBy = String(button.getAttribute('data-sort') || '');
+        var isActive = sortBy === currentSortBy;
+        var indicator = button.querySelector('.rf-sort-indicator');
+        var th = button.closest('th');
+
+        button.classList.toggle('is-active', isActive);
+
+        if (indicator) {
+            if (!isActive) {
+                indicator.textContent = 'Sort';
+            } else {
+                indicator.textContent = currentSortDir === 'desc' ? 'Desc' : 'Asc';
+            }
+        }
+
+        if (th) {
+            th.setAttribute('aria-sort', isActive
+                ? (currentSortDir === 'desc' ? 'descending' : 'ascending')
+                : 'none');
+        }
+    });
+}
+
+function toggleSort(sortBy) {
+    if (!sortBy || isLoading) {
+        return;
+    }
+
+    if (currentSortBy === sortBy) {
+        currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortBy = sortBy;
+        currentSortDir = 'asc';
+    }
+
+    renderSortIndicators();
+    loadRooms(activeSearch, 1);
+}
+
+function setLoadingState(loading) {
+    isLoading = !!loading;
+
+    var prevBtn = document.getElementById('rfPrevBtn');
+    var nextBtn = document.getElementById('rfNextBtn');
+    var perPageSelect = document.getElementById('rfPerPage');
+    if (prevBtn) {
+        prevBtn.disabled = isLoading || currentPage <= 1;
+    }
+    if (nextBtn) {
+        nextBtn.disabled = isLoading || currentPage >= lastPage;
+    }
+    if (perPageSelect) {
+        perPageSelect.disabled = isLoading;
+    }
+
+    document.querySelectorAll('#rfTable .rf-sort-btn').forEach(function (button) {
+        button.disabled = isLoading;
+    });
+
+    var tbody = document.getElementById('rfBody');
+    if (isLoading && tbody) {
+        tbody.innerHTML = '<tr><td colspan="7">Loading rooms...</td></tr>';
+    }
+}
+
+function sendJsonRequest(url, method, payload) {
+    return fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': RF_CSRF_TOKEN
+        },
+        body: payload ? JSON.stringify(payload) : null,
+        credentials: 'same-origin'
+    }).then(function (response) {
+        return response.json().catch(function () {
+            return {};
+        }).then(function (responsePayload) {
+            if (!response.ok) {
+                throw responsePayload;
+            }
+            return responsePayload;
+        });
+    });
+}
+
+function buildFetchUrl(searchValue, pageValue) {
+    var params = [
+        'page=' + encodeURIComponent(String(pageValue)),
+        'per_page=' + encodeURIComponent(String(perPage)),
+        'sort_by=' + encodeURIComponent(String(currentSortBy)),
+        'sort_dir=' + encodeURIComponent(String(currentSortDir))
+    ];
+
+    if (!optionsLoaded) {
+        params.push('include_options=1');
+    }
+
+    if (searchValue) {
+        params.push('search=' + encodeURIComponent(searchValue));
+    }
+
+    return RF_FETCH_URL + (RF_FETCH_URL.indexOf('?') === -1 ? '?' : '&') + params.join('&');
+}
+
+function syncOptionCaches(options) {
+    if (!options || !Array.isArray(options.buildings) || !Array.isArray(options.programs)) {
+        return;
+    }
+
+    ROOM_OPTIONS.buildings = options.buildings;
+    ROOM_OPTIONS.programs = options.programs;
+    optionsLoaded = true;
+
+    renderBuildingOptions('newRoomBuilding', null);
+    renderBuildingOptions('editRoomBuilding', null);
+    renderProgramOptions('newRoomProgram', null);
+    renderProgramOptions('editRoomProgram', null);
+}
+
+function loadRooms(search, page) {
+    if (!RF_FETCH_URL) {
+        return;
+    }
+
+    if (typeof search === 'string') {
+        activeSearch = String(search || '').trim();
+    }
+
+    if (typeof page === 'number' && page > 0) {
+        currentPage = page;
+    }
+
+    var url = buildFetchUrl(activeSearch, currentPage);
+    setLoadingState(true);
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    }).then(function (response) {
+        return response.json().catch(function () {
+            return {};
+        }).then(function (responsePayload) {
+            if (!response.ok) {
+                throw responsePayload;
+            }
+            return responsePayload;
+        });
+    }).then(function (responsePayload) {
+        ROOMS = responsePayload && responsePayload.rows ? responsePayload.rows : [];
+
+        var meta = responsePayload && responsePayload.meta ? responsePayload.meta : {};
+        currentPage = Number(meta.page || currentPage || 1);
+        lastPage = Number(meta.last_page || 1);
+        totalRows = Number(meta.total || 0);
+        perPage = Number(meta.per_page || perPage || 25);
+        setSortState(meta.sort_by || currentSortBy, meta.sort_dir || currentSortDir);
+
+        if (lastPage < 1) {
+            lastPage = 1;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+
+        if (currentPage > lastPage) {
+            currentPage = lastPage;
+        }
+
+        if (perPage < 10) {
+            perPage = 10;
+        }
+
+        if (perPage > 100) {
+            perPage = 100;
+        }
+
+        var perPageSelect = document.getElementById('rfPerPage');
+        if (perPageSelect) {
+            perPageSelect.value = String(perPage);
+        }
+
+        if (responsePayload && responsePayload.options) {
+            syncOptionCaches(responsePayload.options);
+        }
+
+        if (ROOMS.length === 0 && totalRows > 0 && currentPage > 1) {
+            loadRooms(activeSearch, currentPage - 1);
+            return;
+        }
+
+        renderRoomTable();
+        renderPagination();
+    }).catch(function (errorPayload) {
+        console.error(errorPayload);
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to load room data right now.'));
+    }).finally(function () {
+        setLoadingState(false);
+        renderPagination();
+    });
+}
+
+function renderRoomTable() {
+    var tbody = document.getElementById('rfBody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = '';
+
+    if (!ROOMS.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No rooms found.</td></tr>';
+        return;
+    }
+
+    ROOMS.forEach(function (room) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
             '<td>' +
-                '<div class="apst-action-btn" onclick="toggleRoomMenu(' + r.id + ', event)">' +
+                '<div class="apst-action-btn" onclick="toggleRoomMenu(' + room.id + ', event)">' +
                     '<span></span><span></span><span></span>' +
                 '</div>' +
-                '<div class="apst-dropdown" id="rfMenu' + r.id + '">' +
-                    '<button onclick="openEditRoomModal(' + r.id + ')">' +
+                '<div class="apst-dropdown" id="rfMenu' + room.id + '">' +
+                    '<button onclick="openEditRoomModal(' + room.id + ')">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
                         ' Edit' +
                     '</button>' +
-                    '<button class="apst-del-btn" onclick="openDeleteRoomModal(' + r.id + ')">' +
+                    '<button class="apst-del-btn" onclick="openDeleteRoomModal(' + room.id + ')">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
                         ' Delete' +
                     '</button>' +
                 '</div>' +
             '</td>' +
-            '<td>' + r.room + '</td>' +
-            '<td>' + r.floor + '</td>' +
-            '<td>' + r.building + '</td>' +
-            '<td>' + r.students + '</td>' +
-            '<td>' + r.program + '</td>' +
-            '<td>' + r.updatedBy + '</td>' +
-        '</tr>';
+            '<td>' + escapeHtml(room.room_number) + '</td>' +
+            '<td>' + escapeHtml(room.floor_number) + '</td>' +
+            '<td>' + escapeHtml(room.location_label || '-') + '</td>' +
+            '<td>' + escapeHtml(room.capacity) + '</td>' +
+            '<td>' + escapeHtml(room.program_label || '-') + '</td>' +
+            '<td>' + escapeHtml(room.updated_by || '-') + '</td>';
+
+        tbody.appendChild(tr);
+    });
+}
+
+function renderPagination() {
+    var pageInfo = document.getElementById('rfPageInfo');
+    var totalInfo = document.getElementById('rfTotalInfo');
+    var prevBtn = document.getElementById('rfPrevBtn');
+    var nextBtn = document.getElementById('rfNextBtn');
+
+    if (pageInfo) {
+        pageInfo.textContent = 'Page ' + currentPage + ' of ' + lastPage;
     }
 
-    tbody.innerHTML = html;
-    document.getElementById('rfPageInfo').textContent = 'Showing ' + list.length + ' of ' + ROOMS.length + ' rooms';
+    if (totalInfo) {
+        totalInfo.textContent = totalRows + ' total rooms';
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = isLoading || currentPage <= 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = isLoading || currentPage >= lastPage;
+    }
 }
 
-/* ── Search ── */
-document.getElementById('rfSearch').addEventListener('input', function() {
-    renderRoomTable(this.value.trim());
-});
+function renderBuildingOptions(selectId, selectedId) {
+    var select = document.getElementById(selectId);
+    if (!select) {
+        return;
+    }
 
-/* ── New Room Modal ── */
+    var optionsHtml = '<option value="">- Select Building -</option>';
+    ROOM_OPTIONS.buildings.forEach(function (building) {
+        var selected = selectedId && Number(selectedId) === Number(building.id) ? ' selected' : '';
+        optionsHtml += '<option value="' + Number(building.id) + '"' + selected + '>' + escapeHtml(building.name) + '</option>';
+    });
+
+    select.innerHTML = optionsHtml;
+}
+
+function renderProgramOptions(selectId, selectedId) {
+    var select = document.getElementById(selectId);
+    if (!select) {
+        return;
+    }
+
+    var optionsHtml = '<option value="">- Select Program -</option>';
+    ROOM_OPTIONS.programs.forEach(function (program) {
+        var selected = selectedId && Number(selectedId) === Number(program.id) ? ' selected' : '';
+        optionsHtml += '<option value="' + Number(program.id) + '"' + selected + '>' + escapeHtml(program.label || program.code || program.name) + '</option>';
+    });
+
+    select.innerHTML = optionsHtml;
+}
+
+function getBuildingById(buildingId) {
+    var id = Number(buildingId || 0);
+    var found = null;
+
+    ROOM_OPTIONS.buildings.forEach(function (building) {
+        if (Number(building.id) === id) {
+            found = building;
+        }
+    });
+
+    return found;
+}
+
+function upsertBuildingOption(buildingPayload) {
+    var buildingId = Number(buildingPayload && buildingPayload.id ? buildingPayload.id : 0);
+    var buildingName = String(buildingPayload && buildingPayload.name ? buildingPayload.name : '').trim();
+
+    if (!buildingId || !buildingName) {
+        return null;
+    }
+
+    var rawHallways = Array.isArray(buildingPayload && buildingPayload.hallways) ? buildingPayload.hallways : [];
+    var normalizedHallways = rawHallways.map(function (hallway) {
+        return {
+            id: Number(hallway && hallway.id ? hallway.id : 0),
+            name: String(hallway && hallway.name ? hallway.name : '').trim()
+        };
+    }).filter(function (hallway) {
+        return hallway.id > 0 && hallway.name !== '';
+    });
+
+    normalizedHallways.sort(function (left, right) {
+        return String(left.name || '').localeCompare(String(right.name || ''));
+    });
+
+    var existing = getBuildingById(buildingId);
+    if (existing) {
+        existing.name = buildingName;
+        existing.hallways = normalizedHallways;
+        return existing;
+    }
+
+    var newBuilding = {
+        id: buildingId,
+        name: buildingName,
+        hallways: normalizedHallways
+    };
+
+    ROOM_OPTIONS.buildings.push(newBuilding);
+    ROOM_OPTIONS.buildings.sort(function (left, right) {
+        return String(left.name || '').localeCompare(String(right.name || ''));
+    });
+
+    return newBuilding;
+}
+
+function openProgramSetup() {
+    if (!RF_PROGRAM_FILE_URL) {
+        showErrorMessage('Program File page is unavailable right now.');
+        return;
+    }
+
+    var popup = window.open(RF_PROGRAM_FILE_URL, '_blank');
+    if (!popup) {
+        window.location.href = RF_PROGRAM_FILE_URL;
+    }
+}
+
+function openBuildingModal(prefix) {
+    var modal = document.getElementById('addBuildingModal');
+    var prefixInput = document.getElementById('addBuildingPrefix');
+    var nameInput = document.getElementById('addBuildingName');
+
+    if (!modal || !prefixInput || !nameInput) {
+        showErrorMessage('Building setup modal is unavailable right now.');
+        return;
+    }
+
+    if (prefix !== 'new' && prefix !== 'edit') {
+        showErrorMessage('Unable to determine which room form to update.');
+        return;
+    }
+
+    prefixInput.value = prefix;
+    nameInput.value = '';
+    modal.style.display = 'flex';
+
+    setTimeout(function () {
+        nameInput.focus();
+    }, 0);
+}
+
+function closeBuildingModal() {
+    var modal = document.getElementById('addBuildingModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+
+    var form = document.getElementById('addBuildingForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+function handleBuildingModalSave(event) {
+    event.preventDefault();
+
+    var prefixInput = document.getElementById('addBuildingPrefix');
+    var nameInput = document.getElementById('addBuildingName');
+    var submitBtn = event.submitter ? event.submitter : document.getElementById('addBuildingSaveBtn');
+
+    var prefix = prefixInput ? String(prefixInput.value || '').trim() : '';
+    var buildingName = nameInput ? String(nameInput.value || '').trim() : '';
+
+    if (prefix !== 'new' && prefix !== 'edit') {
+        showErrorMessage('Unable to determine which room form to update.');
+        return false;
+    }
+
+    if (!buildingName) {
+        showErrorMessage('Building name is required.');
+        return false;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+
+    createBuildingForSelect(prefix, buildingName)
+        .then(function (responsePayload) {
+            if (responsePayload) {
+                closeBuildingModal();
+            }
+        })
+        .finally(function () {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        });
+
+    return false;
+}
+
+function createBuildingForSelect(prefix, providedName) {
+    var addButton = document.getElementById(prefix + 'AddBuildingBtn');
+
+    if (!RF_STORE_BUILDING_URL) {
+        showErrorMessage('Building setup endpoint is unavailable right now.');
+        return Promise.resolve(null);
+    }
+
+    if (typeof providedName !== 'string') {
+        openBuildingModal(prefix);
+        return Promise.resolve(null);
+    }
+
+    var buildingName = String(providedName || '').trim().replace(/\s+/g, ' ');
+    if (!buildingName) {
+        showErrorMessage('Building name is required.');
+        return Promise.resolve(null);
+    }
+
+    var newSelect = document.getElementById('newRoomBuilding');
+    var editSelect = document.getElementById('editRoomBuilding');
+
+    var newSelected = newSelect && newSelect.value ? Number(newSelect.value) : null;
+    var editSelected = editSelect && editSelect.value ? Number(editSelect.value) : null;
+
+    if (addButton) {
+        addButton.disabled = true;
+    }
+
+    return sendJsonRequest(RF_STORE_BUILDING_URL, 'POST', {
+        name: buildingName
+    })
+        .then(function (responsePayload) {
+            var buildingPayload = responsePayload && responsePayload.building ? responsePayload.building : null;
+            if (!buildingPayload) {
+                showErrorMessage('Unable to add building right now.');
+                return null;
+            }
+
+            var building = upsertBuildingOption(buildingPayload);
+            if (!building) {
+                showErrorMessage('Unable to refresh building list right now.');
+                return null;
+            }
+
+            var targetBuildingId = Number(building.id);
+            var resolvedNewSelected = prefix === 'new' ? targetBuildingId : newSelected;
+            var resolvedEditSelected = prefix === 'edit' ? targetBuildingId : editSelected;
+
+            renderBuildingOptions('newRoomBuilding', resolvedNewSelected);
+            renderBuildingOptions('editRoomBuilding', resolvedEditSelected);
+
+            renderHallwayOptions(resolvedNewSelected, 'newRoomHallway', null);
+            renderHallwayOptions(resolvedEditSelected, 'editRoomHallway', null);
+
+            if (responsePayload && responsePayload.existing) {
+                showSuccessMessage('Building already exists. Selected existing building.');
+            } else {
+                showSuccessMessage('Building added successfully.');
+            }
+
+            return responsePayload;
+        })
+        .catch(function (errorPayload) {
+            showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to add building right now.'));
+            return null;
+        })
+        .finally(function () {
+            if (addButton) {
+                addButton.disabled = false;
+            }
+        });
+}
+
+function upsertHallwayOption(buildingId, hallwayPayload) {
+    var building = getBuildingById(buildingId);
+    if (!building) {
+        return null;
+    }
+
+    if (!Array.isArray(building.hallways)) {
+        building.hallways = [];
+    }
+
+    var hallwayId = Number(hallwayPayload && hallwayPayload.id ? hallwayPayload.id : 0);
+    var hallwayName = String(hallwayPayload && hallwayPayload.name ? hallwayPayload.name : '').trim();
+
+    if (!hallwayId || !hallwayName) {
+        return null;
+    }
+
+    var existing = null;
+    building.hallways.forEach(function (hallway) {
+        if (Number(hallway.id) === hallwayId) {
+            existing = hallway;
+        }
+    });
+
+    if (existing) {
+        existing.name = hallwayName;
+        return existing;
+    }
+
+    var newHallway = {
+        id: hallwayId,
+        name: hallwayName
+    };
+
+    building.hallways.push(newHallway);
+    building.hallways.sort(function (left, right) {
+        return String(left.name || '').localeCompare(String(right.name || ''));
+    });
+
+    return newHallway;
+}
+
+function renderHallwayOptions(buildingId, selectId, selectedHallwayId) {
+    var select = document.getElementById(selectId);
+    if (!select) {
+        return;
+    }
+
+    var building = getBuildingById(buildingId);
+    var optionsHtml = '<option value="">- Select Hallway -</option>';
+
+    if (building && building.hallways && building.hallways.length) {
+        building.hallways.forEach(function (hallway) {
+            var selected = '';
+            if (selectedHallwayId && Number(selectedHallwayId) === Number(hallway.id)) {
+                selected = ' selected';
+            } else if (!selectedHallwayId && building.hallways.length === 1) {
+                selected = ' selected';
+            }
+
+            optionsHtml += '<option value="' + Number(hallway.id) + '"' + selected + '>' + escapeHtml(hallway.name) + '</option>';
+        });
+    }
+
+    select.innerHTML = optionsHtml;
+}
+
+function openHallwayModal(prefix) {
+    var buildingSelect = document.getElementById(prefix + 'RoomBuilding');
+    if (!buildingSelect || !buildingSelect.value) {
+        showErrorMessage('Please select a building first.');
+        return;
+    }
+
+    var modal = document.getElementById('addHallwayModal');
+    var prefixInput = document.getElementById('addHallwayPrefix');
+    var buildingInput = document.getElementById('addHallwayBuilding');
+    var hallwayInput = document.getElementById('addHallwayName');
+
+    if (!modal || !prefixInput || !buildingInput || !hallwayInput) {
+        showErrorMessage('Hallway setup modal is unavailable right now.');
+        return;
+    }
+
+    var building = getBuildingById(buildingSelect.value);
+    var selectedText = buildingSelect.options && buildingSelect.selectedIndex >= 0
+        ? buildingSelect.options[buildingSelect.selectedIndex].text
+        : '';
+
+    prefixInput.value = prefix;
+    buildingInput.value = building && building.name ? building.name : selectedText;
+    hallwayInput.value = '';
+
+    modal.style.display = 'flex';
+    setTimeout(function () {
+        hallwayInput.focus();
+    }, 0);
+}
+
+function closeHallwayModal() {
+    var modal = document.getElementById('addHallwayModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+
+    var form = document.getElementById('addHallwayForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+function handleHallwayModalSave(event) {
+    event.preventDefault();
+
+    var prefixInput = document.getElementById('addHallwayPrefix');
+    var hallwayNameInput = document.getElementById('addHallwayName');
+    var submitBtn = event.submitter ? event.submitter : document.getElementById('addHallwaySaveBtn');
+
+    var prefix = prefixInput ? String(prefixInput.value || '').trim() : '';
+    var hallwayName = hallwayNameInput ? String(hallwayNameInput.value || '').trim() : '';
+
+    if (prefix !== 'new' && prefix !== 'edit') {
+        showErrorMessage('Unable to determine which room form to update.');
+        return false;
+    }
+
+    if (!hallwayName) {
+        showErrorMessage('Hallway name is required.');
+        return false;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+
+    createHallwayForSelect(prefix, hallwayName)
+        .then(function (responsePayload) {
+            if (responsePayload) {
+                closeHallwayModal();
+            }
+        })
+        .finally(function () {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        });
+
+    return false;
+}
+
+function createHallwayForSelect(prefix, providedName) {
+    var buildingSelect = document.getElementById(prefix + 'RoomBuilding');
+    var hallwaySelectId = prefix + 'RoomHallway';
+    var addButton = document.getElementById(prefix + 'AddHallwayBtn');
+
+    if (!buildingSelect || !buildingSelect.value) {
+        showErrorMessage('Please select a building first.');
+        return Promise.resolve(null);
+    }
+
+    if (!RF_STORE_HALLWAY_URL) {
+        showErrorMessage('Hallway setup endpoint is unavailable right now.');
+        return Promise.resolve(null);
+    }
+
+    if (typeof providedName !== 'string') {
+        openHallwayModal(prefix);
+        return Promise.resolve(null);
+    }
+
+    var hallwayName = String(providedName || '').trim().replace(/\s+/g, ' ');
+    if (!hallwayName) {
+        showErrorMessage('Hallway name is required.');
+        return Promise.resolve(null);
+    }
+
+    var payload = {
+        room_building_id: Number(buildingSelect.value),
+        name: hallwayName
+    };
+
+    if (addButton) {
+        addButton.disabled = true;
+    }
+
+    return sendJsonRequest(RF_STORE_HALLWAY_URL, 'POST', payload)
+        .then(function (responsePayload) {
+            var hallwayPayload = responsePayload && responsePayload.hallway ? responsePayload.hallway : null;
+            if (!hallwayPayload) {
+                showErrorMessage('Unable to add hallway right now.');
+                return null;
+            }
+
+            var hallway = upsertHallwayOption(payload.room_building_id, hallwayPayload);
+            if (!hallway) {
+                showErrorMessage('Unable to refresh hallway list right now.');
+                return null;
+            }
+
+            renderHallwayOptions(payload.room_building_id, hallwaySelectId, hallway.id);
+
+            if (responsePayload && responsePayload.existing) {
+                showSuccessMessage('Hallway already exists. Selected existing hallway.');
+            } else {
+                showSuccessMessage('Hallway added successfully.');
+            }
+
+            return responsePayload;
+        })
+        .catch(function (errorPayload) {
+            showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to add hallway right now.'));
+            return null;
+        })
+        .finally(function () {
+            if (addButton) {
+                addButton.disabled = false;
+            }
+        });
+}
+
+function extractRoomPayload(prefix) {
+    var roomNumber = Number(document.getElementById(prefix + 'RoomNumber').value);
+    var floorNumber = Number(document.getElementById(prefix + 'RoomFloor').value);
+    var buildingId = Number(document.getElementById(prefix + 'RoomBuilding').value);
+    var hallwayId = Number(document.getElementById(prefix + 'RoomHallway').value);
+    var capacity = Number(document.getElementById(prefix + 'RoomStudents').value);
+    var programId = Number(document.getElementById(prefix + 'RoomProgram').value);
+
+    if (!roomNumber || !floorNumber || !buildingId || !hallwayId || !capacity || !programId) {
+        showErrorMessage('Please fill in all fields.');
+        return null;
+    }
+
+    if (roomNumber < 1 || floorNumber < 1 || capacity < 1) {
+        showErrorMessage('Room number, floor, and capacity must be greater than zero.');
+        return null;
+    }
+
+    return {
+        room_number: roomNumber,
+        floor_number: floorNumber,
+        room_building_id: buildingId,
+        room_hallway_id: hallwayId,
+        capacity: capacity,
+        course_ids: [programId]
+    };
+}
+
 function openNewRoomModal() {
-    document.getElementById('newRoomForm').reset();
+    var form = document.getElementById('newRoomForm');
+    if (form) {
+        form.reset();
+    }
+
+    renderBuildingOptions('newRoomBuilding', null);
+    renderProgramOptions('newRoomProgram', null);
+
+    var newBuildingSelect = document.getElementById('newRoomBuilding');
+    if (newBuildingSelect && ROOM_OPTIONS.buildings.length) {
+        newBuildingSelect.value = String(ROOM_OPTIONS.buildings[0].id);
+        renderHallwayOptions(newBuildingSelect.value, 'newRoomHallway', null);
+    } else {
+        renderHallwayOptions(null, 'newRoomHallway', null);
+    }
+
+    var newProgramSelect = document.getElementById('newRoomProgram');
+    if (newProgramSelect && newProgramSelect.options.length > 1) {
+        newProgramSelect.value = newProgramSelect.options[1].value;
+    }
+
     document.getElementById('newRoomModal').style.display = 'flex';
 }
+
 function closeNewRoomModal() {
     document.getElementById('newRoomModal').style.display = 'none';
 }
-function handleNewRoomSave(e) {
-    e.preventDefault();
-    var room = document.getElementById('newRoomNumber').value.trim();
-    var floor = document.getElementById('newRoomFloor').value.trim();
-    var building = document.getElementById('newRoomBuilding').value;
-    var students = document.getElementById('newRoomStudents').value.trim();
-    var program = document.getElementById('newRoomProgram').value;
-    if (!room || !floor || !building || !students || !program) {
-        showRegistrarToast('Please fill in all fields.', 'warning');
+
+function handleNewRoomSave(event) {
+    event.preventDefault();
+
+    var payload = extractRoomPayload('new');
+    if (!payload) {
         return false;
     }
-    var newId = ROOMS.length ? Math.max.apply(null, ROOMS.map(function(r) { return r.id; })) + 1 : 1;
-    ROOMS.push({ id: newId, room: parseInt(room), floor: parseInt(floor), building: building, students: parseInt(students), program: program, updatedBy: 'Admin 1' });
-    closeNewRoomModal();
-    renderRoomTable();
-    showRoomSuccessModal('Room #' + room + ' added successfully.');
+
+    var submitBtn = event.submitter ? event.submitter : document.querySelector('#newRoomForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+
+    sendJsonRequest(RF_STORE_URL, 'POST', payload)
+        .then(function (responsePayload) {
+            closeNewRoomModal();
+            loadRooms(activeSearch, 1);
+
+            var row = responsePayload && responsePayload.row ? responsePayload.row : null;
+            var roomLabel = row ? row.room_number : payload.room_number;
+            showRoomSuccessModal('Room #' + roomLabel + ' added successfully.');
+        })
+        .catch(function (errorPayload) {
+            showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to add room right now.'));
+        })
+        .finally(function () {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        });
+
     return false;
 }
 
-/* ── Edit Room Modal ── */
 function openEditRoomModal(id) {
-    var r = ROOMS.find(function(x) { return x.id === id; });
-    if (!r) return;
-    document.getElementById('editRoomId').value = r.id;
-    document.getElementById('editRoomNumber').value = r.room;
-    document.getElementById('editRoomFloor').value = r.floor;
-    document.getElementById('editRoomBuilding').value = r.building;
-    document.getElementById('editRoomStudents').value = r.students;
-    document.getElementById('editRoomProgram').value = r.program;
+    var room = ROOMS.find(function (item) {
+        return Number(item.id) === Number(id);
+    });
+
+    if (!room) {
+        return;
+    }
+
+    document.getElementById('editRoomId').value = room.id;
+    document.getElementById('editRoomNumber').value = room.room_number;
+    document.getElementById('editRoomFloor').value = room.floor_number;
+    document.getElementById('editRoomStudents').value = room.capacity;
+
+    renderBuildingOptions('editRoomBuilding', room.room_building_id);
+    renderHallwayOptions(room.room_building_id, 'editRoomHallway', room.room_hallway_id);
+
+    var selectedProgramId = room.program_ids && room.program_ids.length ? room.program_ids[0] : null;
+    renderProgramOptions('editRoomProgram', selectedProgramId);
+
     document.getElementById('editRoomModal').style.display = 'flex';
 }
+
 function closeEditRoomModal() {
     document.getElementById('editRoomModal').style.display = 'none';
 }
-function handleEditRoomSave(e) {
-    e.preventDefault();
-    var id = parseInt(document.getElementById('editRoomId').value);
-    var r = ROOMS.find(function(x) { return x.id === id; });
-    if (!r) return false;
-    r.room = parseInt(document.getElementById('editRoomNumber').value);
-    r.floor = parseInt(document.getElementById('editRoomFloor').value);
-    r.building = document.getElementById('editRoomBuilding').value;
-    r.students = parseInt(document.getElementById('editRoomStudents').value);
-    r.program = document.getElementById('editRoomProgram').value;
-    closeEditRoomModal();
-    renderRoomTable();
-    showRoomSuccessModal('Room #' + r.room + ' updated successfully.');
+
+function handleEditRoomSave(event) {
+    event.preventDefault();
+
+    var roomId = Number(document.getElementById('editRoomId').value);
+    if (!roomId) {
+        showErrorMessage('Invalid room record. Please refresh and try again.');
+        return false;
+    }
+
+    var updateUrl = getUrlFromTemplate(RF_UPDATE_URL_TEMPLATE, roomId);
+    if (!updateUrl) {
+        showErrorMessage('Unable to prepare room update request.');
+        return false;
+    }
+
+    var payload = extractRoomPayload('edit');
+    if (!payload) {
+        return false;
+    }
+
+    var submitBtn = event.submitter ? event.submitter : document.querySelector('#editRoomForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
+
+    sendJsonRequest(updateUrl, 'PUT', payload)
+        .then(function () {
+            closeEditRoomModal();
+            loadRooms(activeSearch, currentPage);
+            showRoomSuccessModal('Room #' + payload.room_number + ' updated successfully.');
+        })
+        .catch(function (errorPayload) {
+            showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to update room right now.'));
+        })
+        .finally(function () {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        });
+
     return false;
 }
 
-/* ── Delete Room Modal ── */
 function openDeleteRoomModal(id) {
-    var r = ROOMS.find(function(x) { return x.id === id; });
-    if (!r) return;
-    document.getElementById('deleteRoomId').value = r.id;
-    document.getElementById('deleteRoomName').textContent = 'Room #' + r.room + ' — ' + r.building;
+    var room = ROOMS.find(function (item) {
+        return Number(item.id) === Number(id);
+    });
+
+    if (!room) {
+        return;
+    }
+
+    document.getElementById('deleteRoomId').value = room.id;
+    document.getElementById('deleteRoomName').textContent = 'Room #' + room.room_number + ' - ' + (room.location_label || '-');
     document.getElementById('deleteRoomModal').style.display = 'flex';
 }
+
 function closeDeleteRoomModal() {
     document.getElementById('deleteRoomModal').style.display = 'none';
 }
+
 function handleDeleteRoomConfirm() {
-    var id = parseInt(document.getElementById('deleteRoomId').value);
-    ROOMS = ROOMS.filter(function(x) { return x.id !== id; });
-    closeDeleteRoomModal();
-    renderRoomTable();
-    showRoomSuccessModal('Room deleted successfully.');
+    var roomId = Number(document.getElementById('deleteRoomId').value);
+    var deleteUrl = getUrlFromTemplate(RF_DELETE_URL_TEMPLATE, roomId);
+
+    if (!roomId || !deleteUrl) {
+        showErrorMessage('Invalid room record. Please refresh and try again.');
+        return;
+    }
+
+    var deleteBtn = document.querySelector('#deleteRoomModal .pf-modal-btn-save');
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+    }
+
+    sendJsonRequest(deleteUrl, 'DELETE')
+        .then(function () {
+            closeDeleteRoomModal();
+            loadRooms(activeSearch, currentPage);
+            showRoomSuccessModal('Room deleted successfully.');
+        })
+        .catch(function (errorPayload) {
+            showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to delete room right now.'));
+        })
+        .finally(function () {
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+            }
+        });
 }
 
-/* ── Success Modal ── */
-function showRoomSuccessModal(msg) {
-    document.getElementById('roomSuccessMsg').textContent = msg;
+function showRoomSuccessModal(message) {
+    document.getElementById('roomSuccessMsg').textContent = message;
     document.getElementById('roomSuccessModal').style.display = 'flex';
 }
+
 function closeRoomSuccessModal() {
     document.getElementById('roomSuccessModal').style.display = 'none';
 }
 
-/* ── Escape key closes modals ── */
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeNewRoomModal();
-        closeEditRoomModal();
-        closeDeleteRoomModal();
-        closeRoomSuccessModal();
-    }
-});
+function toggleRoomMenu(id, event) {
+    event.stopPropagation();
 
-/* ── Action Dropdown Toggle ── */
-function toggleRoomMenu(id, e) {
-    e.stopPropagation();
     var menu = document.getElementById('rfMenu' + id);
+    if (!menu) {
+        return;
+    }
+
     var isOpen = menu.classList.contains('open');
-    document.querySelectorAll('#rfTable .apst-dropdown').forEach(function(d) { d.classList.remove('open','drop-up'); d.style.top=''; d.style.left=''; d.style.bottom=''; });
+    closeOpenMenus();
+
     if (!isOpen) {
-        var btn = menu.parentElement.querySelector('.apst-action-btn');
-        var rect = btn.getBoundingClientRect();
+        var button = menu.parentElement.querySelector('.apst-action-btn');
+        if (!button) {
+            return;
+        }
+
+        var rect = button.getBoundingClientRect();
         var spaceBelow = window.innerHeight - rect.bottom;
+
         menu.style.left = (rect.right + 4) + 'px';
         if (spaceBelow < 120) {
             menu.classList.add('drop-up');
@@ -174,19 +1103,165 @@ function toggleRoomMenu(id, e) {
             menu.style.top = rect.top + 'px';
             menu.style.bottom = 'auto';
         }
+
         menu.classList.add('open');
     }
 }
 
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.apst-action-btn') && !e.target.closest('.apst-dropdown')) {
-        document.querySelectorAll('#rfTable .apst-dropdown').forEach(function(d) { d.classList.remove('open','drop-up'); d.style.top=''; d.style.left=''; d.style.bottom=''; });
+function bindRoomFileControls() {
+    removeDuplicateAutoPagers();
+
+    var searchInput = document.getElementById('rfSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
+
+            searchTimer = setTimeout(function () {
+                loadRooms(searchInput.value, 1);
+            }, 250);
+        });
     }
-});
 
-window.addEventListener('scroll', function() {
-    document.querySelectorAll('#rfTable .apst-dropdown.open').forEach(function(d) { d.classList.remove('open'); });
-}, true);
+    var perPageSelect = document.getElementById('rfPerPage');
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', function () {
+            var selected = Number(perPageSelect.value || 25);
+            if (selected < 10) {
+                selected = 10;
+            }
+            if (selected > 100) {
+                selected = 100;
+            }
 
-/* ── Init ── */
-renderRoomTable();
+            perPage = selected;
+            loadRooms(activeSearch, 1);
+        });
+    }
+
+    var prevBtn = document.getElementById('rfPrevBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function () {
+            if (!isLoading && currentPage > 1) {
+                loadRooms(activeSearch, currentPage - 1);
+            }
+        });
+    }
+
+    var nextBtn = document.getElementById('rfNextBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function () {
+            if (!isLoading && currentPage < lastPage) {
+                loadRooms(activeSearch, currentPage + 1);
+            }
+        });
+    }
+
+    document.querySelectorAll('#rfTable .rf-sort-btn').forEach(function (button) {
+        button.addEventListener('click', function () {
+            toggleSort(button.getAttribute('data-sort'));
+        });
+    });
+
+    renderSortIndicators();
+
+    var newBuildingSelect = document.getElementById('newRoomBuilding');
+    if (newBuildingSelect) {
+        newBuildingSelect.addEventListener('change', function () {
+            renderHallwayOptions(newBuildingSelect.value, 'newRoomHallway', null);
+        });
+    }
+
+    var editBuildingSelect = document.getElementById('editRoomBuilding');
+    if (editBuildingSelect) {
+        editBuildingSelect.addEventListener('change', function () {
+            renderHallwayOptions(editBuildingSelect.value, 'editRoomHallway', null);
+        });
+    }
+
+    var newAddBuildingBtn = document.getElementById('newAddBuildingBtn');
+    if (newAddBuildingBtn) {
+        newAddBuildingBtn.addEventListener('click', function () {
+            openBuildingModal('new');
+        });
+    }
+
+    var editAddBuildingBtn = document.getElementById('editAddBuildingBtn');
+    if (editAddBuildingBtn) {
+        editAddBuildingBtn.addEventListener('click', function () {
+            openBuildingModal('edit');
+        });
+    }
+
+    var addBuildingForm = document.getElementById('addBuildingForm');
+    if (addBuildingForm) {
+        addBuildingForm.addEventListener('submit', handleBuildingModalSave);
+    }
+
+    var addBuildingCancelBtn = document.getElementById('addBuildingCancelBtn');
+    if (addBuildingCancelBtn) {
+        addBuildingCancelBtn.addEventListener('click', closeBuildingModal);
+    }
+
+    var newAddHallwayBtn = document.getElementById('newAddHallwayBtn');
+    if (newAddHallwayBtn) {
+        newAddHallwayBtn.addEventListener('click', function () {
+            openHallwayModal('new');
+        });
+    }
+
+    var editAddHallwayBtn = document.getElementById('editAddHallwayBtn');
+    if (editAddHallwayBtn) {
+        editAddHallwayBtn.addEventListener('click', function () {
+            openHallwayModal('edit');
+        });
+    }
+
+    var addHallwayForm = document.getElementById('addHallwayForm');
+    if (addHallwayForm) {
+        addHallwayForm.addEventListener('submit', handleHallwayModalSave);
+    }
+
+    var addHallwayCancelBtn = document.getElementById('addHallwayCancelBtn');
+    if (addHallwayCancelBtn) {
+        addHallwayCancelBtn.addEventListener('click', closeHallwayModal);
+    }
+
+    var newGoProgramSetupBtn = document.getElementById('newGoProgramSetupBtn');
+    if (newGoProgramSetupBtn) {
+        newGoProgramSetupBtn.addEventListener('click', openProgramSetup);
+    }
+
+    var editGoProgramSetupBtn = document.getElementById('editGoProgramSetupBtn');
+    if (editGoProgramSetupBtn) {
+        editGoProgramSetupBtn.addEventListener('click', openProgramSetup);
+    }
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.apst-action-btn') && !event.target.closest('.apst-dropdown')) {
+            closeOpenMenus();
+        }
+    });
+
+    window.addEventListener('scroll', function () {
+        closeOpenMenus();
+    }, true);
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeNewRoomModal();
+            closeEditRoomModal();
+            closeBuildingModal();
+            closeHallwayModal();
+            closeDeleteRoomModal();
+            closeRoomSuccessModal();
+        }
+    });
+}
+
+if (RF_PAGE) {
+    bindRoomFileControls();
+    setSortState(currentSortBy, currentSortDir);
+    loadRooms('', 1);
+}

@@ -1,16 +1,17 @@
 ---
 name: "portal-production-hardener"
-description: "Self‑healing master orchestrator for Laravel 5.7 / PHP 7.4. Iterates until all Playwright and MCP verifications pass. Full lifecycle: UI scan → 3NF normalization → security hardening → seeding → API audit → auth bypass → input validation → dual Playwright audit → performance → preflight check."
+description: "Complete self‑healing production hardener for Laravel 5.7 / PHP 7.4. Single‑skill full lifecycle: UI scan → 3NF normalization → security hardening → seeding → API audit → auth bypass → input validation → Playwright debug/chaos → performance → preflight. Iterates until all verifications pass. No external skill dependencies."
 ---
 
-# Portal Production Hardener (Self‑Healing) – Laravel 5.7
+# Portal Production Hardener (All‑in‑One, Self‑Healing) – Laravel 5.7
 
 ## Purpose
-Transform a development Laravel 5.7 project into a production‑ready, secure, and scalable school portal. **Will not stop until all verifications pass** (up to a configurable maximum iteration limit).
+Transform a development Laravel 5.7 project into a production‑ready, secure, and scalable school portal. **All phases are contained in this single skill.** The workflow will iterate until all Playwright and MCP verifications pass (up to a configurable maximum).
 
 ## Prerequisites
 - Laravel 5.7 project with database connection configured.
 - Playwright MCP server accessible.
+- MySQL/PostgreSQL MCP accessible.
 - `.ultimate-architect.json` configuration file at project root.
 
 ### Configuration File (`.ultimate-architect.json`)
@@ -42,86 +43,492 @@ Transform a development Laravel 5.7 project into a production‑ready, secure, a
 }
 ```
 
-## Workflow (Iterative Until Perfection)
+---
 
-The master skill runs in two stages:
+# PHASE 1: UI Data Mapping
 
-### Stage 1: Foundational Setup (Run Once)
-These phases are deterministic and only need to execute once.
+## Purpose
+Scan existing web pages to identify data requirements. Extract form labels and input names to generate a JSON contract for the Seeder and Normalizer.
 
-1. **Phase 1: UI Data Mapping** → Execute `ui-to-seeder-mapper`.  
-2. **Phase 2: Database Normalization (3NF)** → Execute `db-retrofit-normalizer`.  
-3. **Phase 3: Codebase Security Hardening** → Execute `codebase-security-hardener`.  
-4. **Phase 4: Realistic Data Seeding** → Execute `high-volume-trash-seeder`.  
-5. **Phase 4.5: Post-Seed Pagination/Index Gate** → Verify seeded list pages use server-side pagination and indexed query paths before continuing.  
-5. **Phase 5: API Security Audit** → Execute `api-security-auditor`.  
-6. **Phase 6: Authentication Bypass Testing** → Execute `auth-bypass-detector`.  
-7. **Phase 7: Input Validation Enforcement** → Execute `input-validation-enforcer`.  
-8. **Phase 9: Performance & Scalability Audit** → Execute `scalability-performance-auditor`.  
+## Tools
+- Playwright MCP: `browser_navigate`, `browser_snapshot`, `browser_evaluate`
 
-### Stage 2: Verification & Self‑Healing Loop (Iterate Until Pass)
+## Steps
 
-**Loop Control Variables:**
-- `iteration = 1`
-- `max_iterations` from config (default 5)
-- `all_passed = false`
+1. **Navigate to Key Pages**
+   - Use `browser_navigate` to visit:
+     - Applicant Form page
+     - Student Profile page
+     - Registrar Dashboard page
+     - Any other major CRUD pages.
+   - Wait for network idle.
 
-**Loop Body:**
+2. **Extract Form Fields and Table Headers**
+   - Use `browser_evaluate` to run a script that collects:
+     - All `<input>` names, types, and whether they are required.
+     - All `<select>` names and their options.
+     - All `<textarea>` names.
+     - All `<table>` header texts (`<th>`).
+   - Example extraction script:
+     ```javascript
+     () => {
+       const inputs = Array.from(document.querySelectorAll('input, select, textarea')).map(el => ({
+         name: el.name,
+         type: el.type || el.tagName.toLowerCase(),
+         required: el.required
+       }));
+       const headers = Array.from(document.querySelectorAll('th')).map(th => th.innerText.trim());
+       return { inputs, headers };
+     }
+     ```
 
-1. **Phase 8: Playwright Dual Audit**
-   - Execute `playwright-debugger`
-   - Execute `playwright-chaos-tester`
-   - Capture all failures from both reports.
+3. **Generate UI Data Contract**
+   - Combine extracted data into a structured JSON object mapping models to fields.
+   - Infer relationships based on field naming conventions (e.g., `user_id` → `belongsTo User`).
+   - Save to `.security-audits/ui-data-contract.json`.
 
-2. **Phase 10: Deployment Preflight Check**
-   - Execute `deployment-preflight-check`
-   - Capture any failures.
+4. **Verification**
+   - Confirm the file exists and contains valid JSON.
+   - If any page fails to load or returns no data, retry navigation once.
 
-3. **Evaluate Results**
-   - If **zero failures** across Playwright and Preflight:
-     - Set `all_passed = true`
-     - Break out of loop.
-   - If failures exist and `iteration < max_iterations`:
-     - **Attempt Automatic Fixes:**
-       - For Playwright failures (e.g., missing `disabled` attribute on button, XSS vulnerability, missing rate limit), call the appropriate sub‑skill with a `--fix` flag or apply targeted patches.
-       - For Preflight failures (e.g., `APP_DEBUG=true`), automatically modify `.env` or config files.
-     - Log all fixes applied to `.security-audits/self-healing-log.txt`.
-     - Increment `iteration`.
-     - **Re‑run only the failed verification phases** (or full Stage 2).
-   - If `iteration == max_iterations` and failures persist:
-     - Halt and output a detailed report of unresolved issues.
+---
 
-### Automatic Fix Mapping
+# PHASE 2: Database Normalization to 3NF
 
-| Failure Type | Automatic Fix Action |
-|--------------|----------------------|
-| Button not disabling on click | Inject JavaScript debouncing/throttling code into relevant Blade view. |
-| Missing `auth` middleware on route | Edit `routes/web.php` to wrap route in `Route::middleware('auth')->group()`. |
-| XSS vulnerability detected | Apply `{{ }}` escaping (if using raw `{!! !!}`), or add `strip_tags` validation. |
-| SQLi probe succeeded | Replace `DB::raw` with parameterized bindings. |
-| Missing index on foreign key | Generate a new migration with `$table->index('column_name')`. |
-| Large seeded table causes page/search lag | Implement server-side pagination (`page`, `per_page`), move search/sort to backend, and add composite indexes for filter/order columns. |
-| `APP_DEBUG=true` in production | Modify `.env` file to set `APP_DEBUG=false`. |
+## Purpose
+Analyze the existing database schema, identify 1NF/2NF/3NF violations, and safely refactor to strict 3NF without data loss.
+
+## Tools
+- MySQL/PostgreSQL MCP
+- CLI / Terminal
+- Filesystem (`read_file`, `write_file`, `edit_file`)
+
+## Steps
+
+### Step 0: Migration Inventory & Drift Detection
+- Read all files in `database/migrations/`.
+- Parse `up()` methods to build expected schema.
+- Compare expected schema with actual live database (using `SHOW TABLES`, `SHOW COLUMNS`).
+- If discrepancies exist, warn and save drift report to `.security-audits/schema-drift-report.txt`. Continue with live schema.
+
+### Step 1: Schema Audit & Proposal
+- Query database for flat structures (e.g., `users` table containing `street`, `city`, `zip`).
+- Identify comma-separated values, redundant status strings, missing foreign keys.
+- Generate a refactoring plan detailing new tables to create.
+
+### Step 2: The 3‑Step Safe Migration (CRITICAL)
+For each normalization, generate a migration following this exact sequence:
+
+**Step A (Up):** Create the new normalized table.
+**Step B (Up):** Transfer existing data using `DB::statement()` or `DB::table()->insert()`. Add new foreign key column to old table and populate it.
+**Step C (Up):** Only after data is linked, drop the old flat columns using `$table->dropColumn()`.
+
+### Step 3: Model Updating & Relationship Sync
+- Use `edit_file` to update affected Eloquent models:
+  - Remove old flat attributes from `$fillable`.
+  - Add `belongsTo` / `hasMany` relationship methods.
+  - Ensure foreign key constraints are defined in migrations (`onDelete('cascade')` where appropriate).
+
+### Step 4: Rollback Script Generation
+- Generate a companion SQL rollback file saved to `.security-audits/rollback_YYYYMMDD_HHMMSS.sql`.
+- The rollback script should contain reverse operations to restore original flat columns and drop new tables.
+
+### Step 5: 3NF Validation Checklist
+- Run SQL queries to verify:
+  - No partial dependencies on composite primary keys (2NF violation).
+  - No transitive dependencies (3NF violation).
+  - All foreign keys properly indexed.
+- Save results to `.security-audits/3nf-validation-report.txt`.
+
+### Step 6: Data Verification
+- Run a `JOIN` query to verify original data is intact and correctly linked across new tables.
+
+---
+
+# PHASE 3: Codebase Security Hardening
+
+## Purpose
+Patch logical vulnerabilities: route protection, mass assignment, SQL injection, CSRF/CORS, file upload validation, sensitive data exposure.
+
+## Tools
+- Filesystem (`read_file`, `edit_file`, `search_files`)
+- CLI / Terminal
+
+## Steps
+
+### Step 1: Route & Middleware Lockdown
+- Read `routes/web.php` and `routes/api.php`.
+- Ensure all POST/PUT/DELETE routes and sensitive GET routes are wrapped in `auth` middleware (or `auth:api` for API).
+- Use `edit_file` to wrap unprotected routes in `Route::middleware('auth')->group()`.
+
+### Step 2: Controller Authorization Audit
+- Scan all files in `app/Http/Controllers`.
+- For any method that updates or deletes a resource, ensure `$this->authorize('update', $model)` is called.
+- If missing, inject the appropriate Gate check.
+
+### Step 3: Mass Assignment Eradication
+- Scan all files in `app/Models`.
+- Replace `protected $guarded = [];` with a strict `protected $fillable` array based on database schema.
+- Explicitly exclude sensitive columns like `is_admin`, `role_id`.
+
+### Step 4: SQL Injection Eradication
+- Search controllers for `DB::raw` or string concatenation in queries.
+- Refactor to Eloquent or parameterized bindings: `whereRaw('price > ?', [$request->price])`.
+
+### Step 5: CSRF & CORS Hardening
+- Read `app/Http/Middleware/VerifyCsrfToken.php`. Flag any overly permissive `$except` entries.
+- Read `config/cors.php` (or CORS middleware). Ensure `allowed_origins` does not contain `*`.
+
+### Step 6: File Upload Validation
+- Search controllers for `$request->file()`.
+- Ensure every file upload has validation rules: `mimes:jpg,png,pdf|max:2048`. Add if missing.
+
+### Step 7: Sensitive Data Exposure Prevention
+- Verify all `User` models have `protected $hidden = ['password', 'remember_token'];`. Add if missing.
+- Flag any `->toArray()` calls on models containing sensitive fields.
+
+---
+
+# PHASE 4: Realistic High‑Volume Data Seeding
+
+## Purpose
+Populate the 3NF database with thousands of localized, realistic records using Laravel Model Factories.
+
+## Tools
+- Filesystem (`write_file`, `read_file`)
+- CLI / Terminal
+- Playwright MCP (for screenshot verification)
+
+## Steps
+
+### Step 1: Generate/Update Model Factories
+- Read `ui-data-contract.json` from `.security-audits/`.
+- For each model, create or update a factory in `database/factories/` that defines all required fields using Faker.
+- Use `FAKER_LOCALE=en_PH` in `.env` for Philippine locale.
+
+### Step 2: Create/Update DatabaseSeeder
+- Write a `DatabaseSeeder.php` that calls factories with counts from config.
+- Use `LazyCollection` or `chunk(100)` to avoid memory exhaustion.
+
+### Step 3: Execute Seeding
+- Run `php artisan migrate:fresh --seed` (if destructive) or `php artisan db:seed`.
+- Display progress bar via CLI output.
+
+### Step 4: Verify Seeded Data in UI
+- Use Playwright to navigate to a page displaying seeded data (e.g., Student List).
+- Take a screenshot and save to `.security-audits/seeded-ui-screenshot.png`.
+- If screenshot shows empty tables, abort and report failure.
+
+---
+
+# PHASE 5: API Security Audit
+
+## Purpose
+Audit REST API endpoints for authentication, CORS, IDOR, and rate limiting.
+
+## Tools
+- Filesystem
+- Playwright MCP
+- CLI
+
+## Steps
+
+### Step 1: Route Inventory
+- Parse `routes/api.php`. Use `php artisan route:list` to list all routes.
+- Classify by method, URI, middleware, presence of `{id}`.
+- Save to `.security-audits/api-route-inventory.json`.
+
+### Step 2: Authentication Middleware Check
+- For POST/PUT/DELETE or sensitive GET routes, verify `auth:api` middleware is applied.
+- Flag unprotected routes; do not auto-modify without confirmation unless in auto-fix mode.
+
+### Step 3: CORS Configuration Audit
+- Check `config/cors.php` or middleware.
+- Ensure `allowed_origins` does not contain `*`. Suggest fix if needed.
+
+### Step 4: IDOR Fuzzing
+- Authenticate as User A. For each ID-parameterized route, attempt to access User B's resource by changing the ID.
+- Expect `403` or `404`. If data is returned, flag as CRITICAL.
+- Save results to `.security-audits/idor-test-results.json`.
+
+### Step 5: Rate Limiting Verification
+- Check if `throttle:60,1` middleware is applied.
+- Send 20 rapid requests to a public endpoint. Expect `429` after threshold.
+- If missing, suggest adding middleware.
+
+### Step 6: Report
+- Compile findings into `.security-audits/api-security-report.md`.
+
+---
+
+# PHASE 6: Authentication Bypass Detection
+
+## Purpose
+Test for horizontal/vertical privilege escalation, session fixation, and logout invalidation.
+
+## Tools
+- Playwright MCP
+
+## Steps
+
+### Step 1: Role Discovery
+- Query roles table or infer from routes. Define matrix: student, teacher, admin.
+
+### Step 2: Horizontal Privilege Escalation
+- Log in as student A. Navigate to `/student/profile/1`. Change URL ID to student B.
+- Assert: data not shown, redirect or 403/404.
+
+### Step 3: Vertical Privilege Escalation
+- As student, attempt to access `/admin`, `/registrar/dashboard`.
+- Assert: access denied.
+
+### Step 4: Session Fixation Test
+- Capture session cookie before login. Log in. Capture again.
+- Assert: cookie value changed.
+
+### Step 5: Logout Session Invalidation
+- Log in, capture cookie. Log out. Attempt to use old cookie.
+- Assert: request rejected.
+
+### Step 6: Remember Me Token Security (if applicable)
+- Test remember me cookie behavior.
+
+### Step 7: Report
+- Save to `.security-audits/auth-bypass-report.md`.
+
+---
+
+# PHASE 7: Input Validation Enforcement
+
+## Purpose
+Ensure all incoming data is validated using Form Requests. Generate missing classes with strict rules.
+
+## Tools
+- Filesystem
+- Database MCP
+- CLI
+
+## Steps
+
+### Step 1: Controller Input Scan
+- Scan `app/Http/Controllers` for `$request->input()`, `$request->all()`, etc.
+- Map controller methods to fields used.
+
+### Step 2: Validation Presence Check
+- For each method using input, check for Form Request type-hint or `$this->validate()` call.
+- Flag missing validation.
+
+### Step 3: Form Request Generation
+- Run `php artisan make:request Store{Model}Request`.
+- Populate `rules()` using database schema: `string|max:255`, `integer|exists:table,id`, `required`, etc.
+- Use `Rule::unique()->ignore()` for updates.
+
+### Step 4: Controller Refactoring
+- Type-hint the new Form Request and use `$request->validated()`.
+
+### Step 5: Additional Checks
+- File uploads: `file|mimes:...|max:2048`.
+- Exclude sensitive fields.
+
+### Step 6: Report
+- Save to `.security-audits/validation-enforcer-report.md`.
+
+---
+
+# PHASE 8: Playwright Dual Audit (Debugger + Chaos Tester)
+
+## Purpose
+Rigorously test UI/UX and security resilience: mobile layout, XSS/SQLi fuzzing, race conditions, rate limiting, duplicate prevention.
+
+## Tools
+- Playwright MCP: all browser tools.
+
+## Part A: Playwright Debugger (UI & Security Fuzzing)
+
+1. **Navigation & Mobile Emulation**
+   - Navigate to target URL (from config).
+   - Emulate iPhone SE (375×667). Verify viewport meta tag.
+
+2. **Baseline Console**
+   - Capture initial console errors.
+
+3. **Snapshot & Interactive Elements**
+   - Obtain accessibility tree snapshot.
+
+4. **Mobile Layout & Theme Checks**
+   - Check horizontal overflow.
+   - Tap targets must be ≥44×44px.
+
+5. **Interaction & Fuzzing**
+   - Click each button/link, wait 1000ms.
+   - For inputs, inject:
+     - XSS: `<img src=x onerror=console.error('XSS_FOUND')>`
+     - SQLi: `' OR '1'='1`
+   - Monitor console for `XSS_FOUND` and network for SQL errors.
+
+6. **Report**
+   - Save findings to `.security-audits/playwright-debug-report.txt`.
+
+## Part B: Playwright Chaos Tester (Stress & Race Conditions)
+
+1. **Auto-Clicker Spam (Duplicate Prevention)**
+   - Identify primary submit/save buttons.
+   - Inject script to click button 20 times in 1 second.
+   - Assert: button disables immediately; only one request succeeds; no duplicate DB records.
+
+2. **Reload-and-Fire Attack**
+   - Reload page, immediately click button before idle.
+   - Assert: no bypass.
+
+3. **Concurrent Form Submission**
+   - Call `form.submit()` 10× in loop.
+   - Assert: only one submission processed.
+
+4. **Parameter Tampering & IDOR Probes**
+   - Change numeric IDs in URLs. Expect 403/404.
+
+5. **Input Validation Fuzzing**
+   - Inject SQLi, XSS, boundary values, special characters into all inputs.
+
+6. **File Upload Abuse**
+   - Attempt to upload PHP files, oversized files, double extensions.
+   - Assert: rejected.
+
+7. **Rate Limiting**
+   - Send 20 rapid requests to login/reset. Expect 429.
+
+8. **Error Disclosure**
+   - Scan responses for stack traces, DB errors.
+
+9. **Chaos Report**
+   - Save detailed pass/fail to `.security-audits/chaos-test-report.json`.
+
+---
+
+# PHASE 9: Scalability & Performance Audit
+
+## Purpose
+Detect N+1 queries, missing indexes, and suggest caching/pagination.
+
+## Tools
+- Filesystem
+- Database MCP
+
+## Steps
+
+1. **N+1 Query Hunt**
+   - Scan controllers for `foreach` containing DB calls. Enforce eager loading (`with()`).
+
+2. **Indexing Check**
+   - For columns in `WHERE`, `ORDER BY`, ensure index exists. Generate migration if missing.
+
+3. **Caching Suggestion**
+   - Wrap static/heavy queries in `Cache::remember()`.
+
+4. **Pagination Check**
+   - Replace `->get()` on large tables with `->paginate(15)`.
+
+5. **Report**
+   - Save to `.security-audits/performance-audit.txt`.
+
+---
+
+# PHASE 10: Deployment Preflight Check
+
+## Purpose
+Final sanity checks before production.
+
+## Tools
+- CLI
+- Filesystem
+
+## Steps
+
+1. **Environment Configuration**
+   - Check `.env`: `APP_ENV=production`, `APP_DEBUG=false`.
+
+2. **Cache Optimization (Laravel 5.7)**
+   - Run `php artisan config:cache`
+   - Run `php artisan route:cache`
+   - (Skip `event:cache` – not available)
+
+3. **Migration Reversibility**
+   - Run `php artisan migrate:rollback --pretend`. Verify `down()` methods.
+
+4. **Storage Link**
+   - Ensure `public/storage` symlink exists. Run `php artisan storage:link` if missing.
+
+5. **Queue Configuration**
+   - Suggest switching from `sync` to `database`/`redis`.
+
+6. **Report**
+   - Save to `.security-audits/preflight-report.txt`.
+
+---
+
+# SELF‑HEALING LOOP (Iterate Until Perfect)
+
+## Loop Logic
+
+After completing all phases once, enter verification loop:
+
+```
+iteration = 1
+max_iterations = config.self_healing.max_iterations (default 5)
+all_passed = false
+
+while iteration <= max_iterations and not all_passed:
+    1. Re-run Phase 8 (Playwright Dual Audit) and Phase 10 (Preflight).
+    2. Collect all failures from reports.
+    3. If failures exist:
+        a. For each failure, attempt automatic fix based on mapping below.
+        b. Log fix applied to `.security-audits/self-healing-log.txt`.
+        c. iteration++
+    4. Else:
+        all_passed = true
+```
+
+## Automatic Fix Mapping
+
+| Failure | Auto-Fix Action |
+|---------|-----------------|
+| Button not disabling on click | Edit Blade view: add `onclick="this.disabled=true; this.form.submit()"` or similar debounce logic. |
+| Missing `auth` middleware | Edit `routes/web.php` to wrap route in `Route::middleware('auth')->group()`. |
+| XSS vulnerability (payload executed) | Change `{!! $var !!}` to `{{ $var }}` or add `strip_tags` validation. |
+| SQLi probe succeeded | Replace `DB::raw` with parameterized binding. |
+| Missing index | Generate migration with `$table->index('column')`. |
+| `APP_DEBUG=true` | Modify `.env` to set `APP_DEBUG=false`. |
 | Migration not reversible | Generate missing `down()` method in migration file. |
 | Rate limiting missing | Add `->middleware('throttle:60,1')` to route group. |
+| Form validation missing | Generate Form Request class as per Phase 7. |
 
-### Final Output
+## Final Output
 
-When `all_passed == true`:
+### Success
 ```
 PRODUCTION_READY: All verifications passed after {iteration} iteration(s).
 Reports and self‑healing log saved in .security-audits/
 WAITING_FOR_HUMAN_OK
 ```
 
-When `max_iterations` reached with failures:
+### Failure After Max Iterations
 ```
 PRODUCTION_BLOCKED: Unable to resolve all issues after {max_iterations} iterations.
+Unresolved issues:
+- [List from latest reports]
 See .security-audits/unresolved-issues.md for details.
 WAITING_FOR_HUMAN_OK
 ```
 
-## Version Compatibility Guarantee
-- No `composer update` or `npm update` is ever executed.
-- Commands restricted to Laravel 5.7 available Artisan commands.
-- All generated code uses PHP 7.4 syntax.
+---
+
+# Version Compatibility Guarantee
+
+- **No `composer update` or `npm update`** is ever executed.
+- All Artisan commands are compatible with Laravel 5.7.
+- PHP syntax used in generated code is PHP 7.4 compliant (no typed properties, no union types).
+- Middleware syntax: `'auth'`, `'auth:api'`, `'throttle:60,1'`.
+
+# Execution Note
+
+**This skill is self‑contained.** Do not call external sub‑skills. Execute all phases in order, then run the self‑healing loop until conditions are met.

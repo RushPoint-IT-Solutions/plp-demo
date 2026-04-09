@@ -181,6 +181,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         // Scheduling
         Route::prefix('scheduling')->name('scheduling.')->group(function () {
             Route::get('/room-file', 'Registrar\RegistrarController@roomFile')->name('room-file');
+            Route::get('/room-file/data', 'Registrar\RegistrarController@roomFileData')->name('room-file.data')->middleware('throttle:60,1');
+            Route::post('/room-file/buildings', 'Registrar\RegistrarController@storeRoomBuilding')->name('room-file.building.store')->middleware('throttle:60,1');
+            Route::post('/room-file/hallways', 'Registrar\RegistrarController@storeRoomHallway')->name('room-file.hallway.store')->middleware('throttle:60,1');
+            Route::post('/room-file', 'Registrar\RegistrarController@storeRoomFile')->name('room-file.store')->middleware('throttle:60,1');
+            Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
+            Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
             Route::get('/section-merging', 'Registrar\RegistrarController@sectionMerging')->name('section-merging');

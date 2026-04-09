@@ -67,4 +67,14 @@ class User extends Authenticatable
         return $this->hasMany(NotificationDelivery::class)
             ->whereNull('dismissed_at');
     }
+
+    public function updatedRooms()
+    {
+        return $this->hasMany(Room::class, 'updated_by_user_id');
+    }
+
+    public function roomCourseAssignments()
+    {
+        return $this->hasMany(RoomCourseAssignment::class, 'assigned_by_user_id');
+    }
 }

@@ -17,6 +17,10 @@ use App\CurriculumRequisiteType;
 use App\CurriculumSubjectRequisite;
 use App\Department;
 use App\Faculty;
+use App\Http\Requests\StoreRoomBuildingRequest;
+use App\Http\Requests\StoreRoomHallwayRequest;
+use App\Http\Requests\StoreRoomRequest;
+use App\Http\Requests\UpdateRoomRequest;
 use App\Http\Requests\SaveApplicantStep1Request;
 use App\Http\Requests\SaveApplicantStep2Request;
 use App\Http\Requests\SaveApplicantStep3Request;
@@ -26,6 +30,9 @@ use App\RegistrarRequirement;
 use App\RegistrarRequirementDefinition;
 use App\RegistrarRequirementPolicy;
 use App\RegistrarRequirementType;
+use App\Room;
+use App\RoomBuilding;
+use App\RoomHallway;
 use App\Semester;
 use App\Student;
 use App\StudentProfile;
@@ -38,6 +45,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Schema;
@@ -50,6 +58,20 @@ use Mpdf\Output\Destination;
 
 class RegistrarController extends Controller
 {
+    private const ROOM_FILE_DEFAULT_PER_PAGE = 25;
+    private const ROOM_FILE_MIN_PER_PAGE = 10;
+    private const ROOM_FILE_MAX_PER_PAGE = 100;
+    private const ROOM_FILE_DEFAULT_SORT_BY = 'floor_number';
+    private const ROOM_FILE_DEFAULT_SORT_DIR = 'asc';
+    private const ROOM_FILE_ALLOWED_SORT_COLUMNS = [
+        'room_number',
+        'floor_number',
+        'building',
+        'capacity',
+        'program',
+        'updated_by',
+    ];
+
     /**
      * Registrar Dashboard
      */
@@ -2991,7 +3013,660 @@ class RegistrarController extends Controller
      */
     public function roomFile()
     {
+        $this->seedRoomDimensionsIfEmpty();
+
         return view('registrar.registrar-menu.scheduling.room-file');
+    }
+
+    public function roomFileData(Request $request): JsonResponse
+    {
+        $this->seedRoomDimensionsIfEmpty();
+
+        $search = trim((string) $request->input('search', ''));
+        $page = $this->resolveRoomFilePage($request->input('page', 1));
+        $perPage = $this->resolveRoomFilePerPage($request->input('per_page', self::ROOM_FILE_DEFAULT_PER_PAGE));
+        $sortBy = $this->resolveRoomFileSortBy($request->input('sort_by', self::ROOM_FILE_DEFAULT_SORT_BY));
+        $sortDir = $this->resolveRoomFileSortDirection($request->input('sort_dir', self::ROOM_FILE_DEFAULT_SORT_DIR));
+        $includeOptions = $this->requestBoolean($request, 'include_options');
+
+        $query = Room::query()
+            ->select([
+                'rooms.id',
+                'rooms.room_hallway_id',
+                'rooms.room_number',
+                'rooms.floor_number',
+                'rooms.capacity',
+                'rooms.updated_by_user_id',
+                'rooms.updated_at',
+            ])
+            ->with([
+                'hallway.building:id,name',
+                'courses',
+                'updatedBy:id,name',
+            ]);
+
+        if ($search !== '') {
+            $this->applyRoomFileSearch($query, $search);
+            $this->applyRoomFileSearchPriority($query, $search);
+        }
+
+        $this->applyRoomFileSort($query, $sortBy, $sortDir);
+
+        $paginator = $query->paginate($perPage, [
+            'rooms.id',
+            'rooms.room_hallway_id',
+            'rooms.room_number',
+            'rooms.floor_number',
+            'rooms.capacity',
+            'rooms.updated_by_user_id',
+            'rooms.updated_at',
+        ], 'page', $page);
+
+        $rows = $paginator->getCollection()
+            ->map(function (Room $room) {
+                return $this->mapRoomFileRow($room);
+            })
+            ->values();
+
+        $options = null;
+        if ($includeOptions) {
+            $options = $this->roomFileOptionsPayload();
+        }
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'options' => $options,
+            'meta' => [
+                'page' => (int) $paginator->currentPage(),
+                'last_page' => (int) $paginator->lastPage(),
+                'per_page' => (int) $paginator->perPage(),
+                'total' => (int) $paginator->total(),
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
+            ],
+        ]);
+    }
+
+    public function storeRoomFile(StoreRoomRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids']);
+
+        $room = null;
+
+        DB::beginTransaction();
+        try {
+            $room = Room::create([
+                'room_hallway_id' => (int) $validated['room_hallway_id'],
+                'room_number' => (int) $validated['room_number'],
+                'floor_number' => (int) $validated['floor_number'],
+                'capacity' => (int) $validated['capacity'],
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $room->courses()->sync($courseIds);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateRoomConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate room location entry.',
+                    'errors' => [
+                        'room_number' => ['The room number already exists for the selected floor and hallway.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $room->load(['hallway.building:id,name', 'courses', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'id' => $room->id,
+            'row' => $this->mapRoomFileRow($room),
+        ]);
+    }
+
+    public function storeRoomBuilding(StoreRoomBuildingRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $name = $this->normalizeRoomBuildingName($validated['name']);
+
+        if ($name === '') {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'name' => ['Building name is required.'],
+                ],
+            ], 422);
+        }
+
+        $existing = RoomBuilding::query()
+            ->with([
+                'hallways' => function ($hallwayQuery) {
+                    $hallwayQuery
+                        ->select('id', 'room_building_id', 'name')
+                        ->orderBy('name');
+                },
+            ])
+            ->where('name', $name)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'ok' => true,
+                'existing' => true,
+                'building' => $this->mapRoomBuildingOption($existing),
+            ]);
+        }
+
+        try {
+            $building = RoomBuilding::query()->create([
+                'name' => $name,
+            ]);
+
+            $building->setRelation('hallways', collect());
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateRoomBuildingConstraint($exception)) {
+                $existing = RoomBuilding::query()
+                    ->with([
+                        'hallways' => function ($hallwayQuery) {
+                            $hallwayQuery
+                                ->select('id', 'room_building_id', 'name')
+                                ->orderBy('name');
+                        },
+                    ])
+                    ->where('name', $name)
+                    ->first();
+
+                if ($existing) {
+                    return response()->json([
+                        'ok' => true,
+                        'existing' => true,
+                        'building' => $this->mapRoomBuildingOption($existing),
+                    ]);
+                }
+            }
+
+            throw $exception;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'existing' => false,
+            'building' => $this->mapRoomBuildingOption($building),
+        ]);
+    }
+
+    public function storeRoomHallway(StoreRoomHallwayRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $buildingId = (int) $validated['room_building_id'];
+        $name = $this->normalizeRoomHallwayName($validated['name']);
+
+        if ($name === '') {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'name' => ['Hallway name is required.'],
+                ],
+            ], 422);
+        }
+
+        $existing = RoomHallway::query()
+            ->where('room_building_id', $buildingId)
+            ->where('name', $name)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'ok' => true,
+                'existing' => true,
+                'hallway' => [
+                    'id' => (int) $existing->id,
+                    'name' => (string) $existing->name,
+                    'room_building_id' => (int) $existing->room_building_id,
+                ],
+            ]);
+        }
+
+        try {
+            $hallway = RoomHallway::query()->create([
+                'room_building_id' => $buildingId,
+                'name' => $name,
+            ]);
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateRoomHallwayConstraint($exception)) {
+                $existing = RoomHallway::query()
+                    ->where('room_building_id', $buildingId)
+                    ->where('name', $name)
+                    ->first();
+
+                if ($existing) {
+                    return response()->json([
+                        'ok' => true,
+                        'existing' => true,
+                        'hallway' => [
+                            'id' => (int) $existing->id,
+                            'name' => (string) $existing->name,
+                            'room_building_id' => (int) $existing->room_building_id,
+                        ],
+                    ]);
+                }
+            }
+
+            throw $exception;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'existing' => false,
+            'hallway' => [
+                'id' => (int) $hallway->id,
+                'name' => (string) $hallway->name,
+                'room_building_id' => (int) $hallway->room_building_id,
+            ],
+        ]);
+    }
+
+    public function updateRoomFile(UpdateRoomRequest $request, Room $room): JsonResponse
+    {
+        $validated = $request->validated();
+        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids']);
+
+        DB::beginTransaction();
+        try {
+            $room->update([
+                'room_hallway_id' => (int) $validated['room_hallway_id'],
+                'room_number' => (int) $validated['room_number'],
+                'floor_number' => (int) $validated['floor_number'],
+                'capacity' => (int) $validated['capacity'],
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $room->courses()->sync($courseIds);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateRoomConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate room location entry.',
+                    'errors' => [
+                        'room_number' => ['The room number already exists for the selected floor and hallway.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $room->load(['hallway.building:id,name', 'courses', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapRoomFileRow($room),
+        ]);
+    }
+
+    public function destroyRoomFile(Room $room): JsonResponse
+    {
+        $room->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function applyRoomFileSearch($query, $search)
+    {
+        $term = '%' . $search . '%';
+
+        $query->where(function ($builder) use ($term) {
+            $builder->where('room_number', 'like', $term)
+                ->orWhere('floor_number', 'like', $term)
+                ->orWhere('capacity', 'like', $term)
+                ->orWhereHas('hallway', function ($hallwayQuery) use ($term) {
+                    $hallwayQuery->where('name', 'like', $term)
+                        ->orWhereHas('building', function ($buildingQuery) use ($term) {
+                            $buildingQuery->where('name', 'like', $term);
+                        });
+                })
+                ->orWhereHas('courses', function ($courseQuery) use ($term) {
+                    $courseQuery->where('code', 'like', $term)
+                        ->orWhere('name', 'like', $term);
+                })
+                ->orWhereHas('updatedBy', function ($userQuery) use ($term) {
+                    $userQuery->where('name', 'like', $term);
+                });
+        });
+    }
+
+    private function applyRoomFileSearchPriority($query, $search)
+    {
+        $needle = trim((string) $search);
+        if ($needle === '') {
+            return;
+        }
+
+        $startsWith = $needle . '%';
+        $contains = '%' . $needle . '%';
+
+        $query->orderByRaw(
+            "CASE WHEN CAST(rooms.room_number AS CHAR) = ? THEN 0 WHEN CAST(rooms.room_number AS CHAR) LIKE ? THEN 1 WHEN CAST(rooms.room_number AS CHAR) LIKE ? THEN 2 ELSE 3 END",
+            [$needle, $startsWith, $contains]
+        );
+    }
+
+    private function applyRoomFileSort($query, $sortBy, $sortDir)
+    {
+        switch ($sortBy) {
+            case 'room_number':
+                $query->orderBy('rooms.room_number', $sortDir)
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'building':
+                $query->leftJoin('room_hallways as rf_sort_h', 'rf_sort_h.id', '=', 'rooms.room_hallway_id')
+                    ->leftJoin('room_buildings as rf_sort_b', 'rf_sort_b.id', '=', 'rf_sort_h.room_building_id')
+                    ->orderBy('rf_sort_b.name', $sortDir)
+                    ->orderBy('rf_sort_h.name', $sortDir)
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'capacity':
+                $query->orderBy('rooms.capacity', $sortDir)
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'program':
+                $query->orderByRaw("(SELECT MIN(COALESCE(NULLIF(TRIM(c.code), ''), c.name)) FROM room_course_assignments rca INNER JOIN courses c ON c.id = rca.course_id WHERE rca.room_id = rooms.id) {$sortDir}")
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'updated_by':
+                $query->leftJoin('users as rf_sort_u', 'rf_sort_u.id', '=', 'rooms.updated_by_user_id')
+                    ->orderByRaw("COALESCE(rf_sort_u.name, '') {$sortDir}")
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'floor_number':
+            default:
+                $query->orderBy('rooms.floor_number', $sortDir)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+        }
+    }
+
+    private function roomFileOptionsPayload()
+    {
+        $buildings = RoomBuilding::query()
+            ->with([
+                'hallways' => function ($hallwayQuery) {
+                    $hallwayQuery
+                        ->select('id', 'room_building_id', 'name')
+                        ->orderBy('name');
+                },
+            ])
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(function (RoomBuilding $building) {
+                return $this->mapRoomBuildingOption($building);
+            })
+            ->values();
+
+        $programs = Course::query()
+            ->orderBy('code')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                $label = trim((string) $course->code);
+                if ($label === '') {
+                    $label = (string) $course->name;
+                }
+
+                return [
+                    'id' => (int) $course->id,
+                    'code' => (string) $course->code,
+                    'name' => (string) $course->name,
+                    'label' => $label,
+                ];
+            })
+            ->values();
+
+        return [
+            'buildings' => $buildings,
+            'programs' => $programs,
+        ];
+    }
+
+    private function mapRoomFileRow(Room $room)
+    {
+        $buildingName = '';
+        $hallwayName = '';
+
+        if ($room->hallway) {
+            $hallwayName = (string) $room->hallway->name;
+            if ($room->hallway->building) {
+                $buildingName = (string) $room->hallway->building->name;
+            }
+        }
+
+        $programIds = $room->courses
+            ->pluck('id')
+            ->map(function ($courseId) {
+                return (int) $courseId;
+            })
+            ->values()
+            ->all();
+
+        $programLabels = $room->courses
+            ->map(function (Course $course) {
+                $code = trim((string) $course->code);
+                return $code !== '' ? $code : (string) $course->name;
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->values()
+            ->all();
+
+        $updatedByName = 'System';
+        if ($room->updatedBy && trim((string) $room->updatedBy->name) !== '') {
+            $updatedByName = (string) $room->updatedBy->name;
+        }
+
+        $locationLabel = trim($buildingName . ' / ' . $hallwayName, ' /');
+
+        return [
+            'id' => (int) $room->id,
+            'room_number' => (int) $room->room_number,
+            'floor_number' => (int) $room->floor_number,
+            'capacity' => (int) $room->capacity,
+            'room_building_id' => $room->hallway ? (int) $room->hallway->room_building_id : null,
+            'room_hallway_id' => (int) $room->room_hallway_id,
+            'building' => $buildingName,
+            'hallway' => $hallwayName,
+            'location_label' => $locationLabel,
+            'program_ids' => $programIds,
+            'program_labels' => $programLabels,
+            'program_label' => count($programLabels) ? implode(', ', $programLabels) : '-',
+            'updated_by' => $updatedByName,
+            'updated_at' => $room->updated_at ? $room->updated_at->toDateTimeString() : null,
+        ];
+    }
+
+    private function normalizeRoomCourseIds(array $courseIds)
+    {
+        $normalized = [];
+
+        foreach ($courseIds as $courseId) {
+            $id = (int) $courseId;
+            if ($id > 0 && !in_array($id, $normalized, true)) {
+                $normalized[] = $id;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeRoomHallwayName($name)
+    {
+        $normalized = preg_replace('/\s+/', ' ', trim((string) $name));
+
+        return $normalized === null ? '' : $normalized;
+    }
+
+    private function normalizeRoomBuildingName($name)
+    {
+        $normalized = preg_replace('/\s+/', ' ', trim((string) $name));
+
+        return $normalized === null ? '' : $normalized;
+    }
+
+    private function resolveRoomFilePage($page)
+    {
+        $safePage = (int) $page;
+
+        if ($safePage < 1) {
+            return 1;
+        }
+
+        return $safePage;
+    }
+
+    private function resolveRoomFilePerPage($perPage)
+    {
+        $safePerPage = (int) $perPage;
+
+        if ($safePerPage < self::ROOM_FILE_MIN_PER_PAGE) {
+            return self::ROOM_FILE_MIN_PER_PAGE;
+        }
+
+        if ($safePerPage > self::ROOM_FILE_MAX_PER_PAGE) {
+            return self::ROOM_FILE_MAX_PER_PAGE;
+        }
+
+        return $safePerPage;
+    }
+
+    private function resolveRoomFileSortBy($sortBy)
+    {
+        $candidate = strtolower(trim((string) $sortBy));
+
+        if (in_array($candidate, self::ROOM_FILE_ALLOWED_SORT_COLUMNS, true)) {
+            return $candidate;
+        }
+
+        return self::ROOM_FILE_DEFAULT_SORT_BY;
+    }
+
+    private function resolveRoomFileSortDirection($sortDirection)
+    {
+        $candidate = strtolower(trim((string) $sortDirection));
+
+        if ($candidate === 'desc') {
+            return 'desc';
+        }
+
+        return self::ROOM_FILE_DEFAULT_SORT_DIR;
+    }
+
+    private function isDuplicateRoomConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'rooms_location_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
+    private function isDuplicateRoomHallwayConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'room_hallways_building_name_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
+    private function isDuplicateRoomBuildingConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'room_buildings_name_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
+    private function mapRoomBuildingOption(RoomBuilding $building)
+    {
+        $hallways = $building->hallways;
+        if (!$hallways) {
+            $hallways = collect();
+        }
+
+        return [
+            'id' => (int) $building->id,
+            'name' => (string) $building->name,
+            'hallways' => $hallways
+                ->map(function (RoomHallway $hallway) {
+                    return [
+                        'id' => (int) $hallway->id,
+                        'name' => (string) $hallway->name,
+                    ];
+                })
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function seedRoomDimensionsIfEmpty()
+    {
+        if (!Schema::hasTable('room_buildings') || !Schema::hasTable('room_hallways')) {
+            return;
+        }
+
+        if (RoomBuilding::query()->exists()) {
+            return;
+        }
+
+        $defaultBuildings = ['Campus 1', 'Campus 2', 'Campus 3', 'Campus 4'];
+
+        DB::transaction(function () use ($defaultBuildings) {
+            foreach ($defaultBuildings as $buildingName) {
+                $building = RoomBuilding::query()->create([
+                    'name' => $buildingName,
+                ]);
+
+                RoomHallway::query()->create([
+                    'room_building_id' => $building->id,
+                    'name' => 'Main Hallway',
+                ]);
+            }
+        });
     }
 
     /**

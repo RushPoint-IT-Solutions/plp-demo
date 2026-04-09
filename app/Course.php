@@ -35,4 +35,11 @@ class Course extends Model
     {
         return $this->hasMany(CourseCurriculum::class);
     }
+
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'room_course_assignments', 'course_id', 'room_id')
+            ->withPivot('assigned_by_user_id')
+            ->withTimestamps();
+    }
 }

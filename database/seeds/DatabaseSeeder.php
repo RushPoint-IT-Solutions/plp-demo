@@ -73,6 +73,12 @@ class DatabaseSeeder extends Seeder
                 HighVolumeSubjectFileSeeder::class,
             ]);
         }
+
+        if ((bool) env('SEED_HIGH_VOLUME_ROOMS', false)) {
+            $this->call([
+                HighVolumeRoomFileSeeder::class,
+            ]);
+        }
         
         $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student, first-reset student 2026A00001/PLP-2026A00001, applicant 2526B0177/PLP-2526B0177, applicant/applicant');
     }

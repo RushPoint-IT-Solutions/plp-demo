@@ -8283,6 +8283,119 @@ select.req-modal-input {
   position: relative;
 }
 
+#rfTable .rf-sort-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+#rfTable .rf-sort-btn:hover:not(:disabled),
+#rfTable .rf-sort-btn:focus-visible {
+  color: #0a813c;
+  outline: none;
+}
+
+#rfTable .rf-sort-btn:disabled {
+  opacity: 0.62;
+  cursor: wait;
+}
+
+#rfTable .rf-sort-btn .rf-sort-indicator {
+  min-width: 40px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid #c6dbcf;
+  background: #f6fbf8;
+  color: #5a7061;
+  text-align: center;
+  font-size: 0.65rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+#rfTable .rf-sort-btn.is-active .rf-sort-indicator {
+  border-color: #0f7b43;
+  background: #0f7b43;
+  color: #ffffff;
+}
+
+.rf-hallway-inline,
+.rf-building-inline,
+.rf-program-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#newRoomModal .pf-modal-title,
+#newRoomModal .pf-modal-label {
+  color: #0a6e3a;
+}
+
+#newRoomModal .pf-modal-input::placeholder {
+  color: #8e96a0;
+}
+
+.rf-hallway-modal-box {
+  max-width: 460px;
+}
+
+.rf-building-modal-box {
+  max-width: 460px;
+}
+
+.rf-hallway-modal-box #addHallwayBuilding {
+  background: #f2fbf6;
+  border-color: #c6e1cf;
+  color: #0d6336;
+}
+
+.rf-hallway-inline .pf-modal-select,
+.rf-building-inline .pf-modal-select,
+.rf-program-inline .pf-modal-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.rf-hallway-add-btn,
+.rf-setup-add-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #9ac7a6;
+  border-radius: 8px;
+  background: #f4fbf7;
+  color: #0a6e3a;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rf-hallway-add-btn:hover:not(:disabled),
+.rf-setup-add-btn:hover:not(:disabled) {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
+}
+
+.rf-hallway-add-btn:disabled,
+.rf-setup-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 #gsTable th:first-child,
 #gsTable td:first-child {
   text-align: center;
@@ -11991,6 +12104,46 @@ select.req-modal-input {
 
 .sf-page .rtp-pagination {
   display: none;
+}
+
+#rfPaginationBar {
+  margin-top: 8px;
+  padding: 11px 12px;
+  border: 1px solid #d2e6d7;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f7fff9 0%, #eef9f2 100%);
+  box-shadow: 0 3px 10px rgba(0, 104, 55, 0.08);
+}
+
+#rfPaginationBar .sf-pagination-left label,
+#rfPageInfo,
+#rfTotalInfo {
+  color: #0a6e3a;
+  font-weight: 800;
+}
+
+#rfPaginationBar .sf-pagination-left select {
+  border-color: #b8d5c0;
+  color: #0a6e3a;
+  background: #ffffff;
+}
+
+#rfPaginationBar .sf-page-btn {
+  border-color: #9ac7a6;
+  color: #0a6e3a;
+  background: #ffffff;
+}
+
+#rfPaginationBar .sf-page-btn:hover:not(:disabled) {
+  border-color: #0f7b43;
+  color: #ffffff;
+  background: #0f7b43;
+}
+
+#rfPaginationBar .sf-page-btn:disabled {
+  color: #6f8679;
+  border-color: #c8dbcf;
+  background: #f4f9f6;
 }
 
 .sf-check-label {
