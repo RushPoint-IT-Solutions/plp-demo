@@ -78,12 +78,12 @@
                 </div>
                 <div class="pv-meta-row">
                     <span class="pv-meta-label">UNIVERSITY EMAIL</span>
-                    <span class="pv-meta-value pv-meta-email">{{ $profile->student_email ?? '—' }}</span>
+                    <span class="pv-meta-value pv-meta-email" title="{{ $profile->student_email ?? '—' }}">{{ $profile->student_email ?? '—' }}</span>
                 </div>
                 @if($courseBlock)
                 <div class="pv-meta-row">
                     <span class="pv-meta-label">COURSE, BLOCK &amp; YR</span>
-                    <span class="pv-meta-value pv-meta-course">{{ $courseBlock }}</span>
+                    <span class="pv-meta-value pv-meta-course" title="{{ $courseBlock }}">{{ $courseBlock }}</span>
                 </div>
                 @endif
             </div>

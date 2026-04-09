@@ -21,10 +21,16 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
+    @php
+        $facultyBodyClass = trim($__env->yieldContent('body-class'));
+    @endphp
+    @if(\Illuminate\Support\Str::contains($facultyBodyClass, 'page-profile-view'))
+    <link rel="stylesheet" href="{{ asset('css/students.css') }}?v={{ time() }}">
+    @endif
 
     @stack('styles')
 </head>
-<body class="student-body student-portal-body faculty-body">
+<body class="student-body student-portal-body faculty-body @yield('body-class')">
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -47,7 +53,7 @@
 
                 <div class="topbar-icons">
                     {{-- Notification Bell --}}
-                    <a href="#" class="topbar-icon-link" title="Notifications">
+                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -62,8 +68,26 @@
                     </a>
 
                     {{-- Profile Avatar --}}
-                    <a href="#" class="topbar-user">
-                        @if(isset($facultyPhoto) && $facultyPhoto)
+                    @php
+                        $facultyPhoto = null;
+                        $facultyUser = auth()->user();
+                        if ($facultyUser && !empty($facultyUser->faculty_id) && \Illuminate\Support\Facades\Schema::hasTable('master_faculty_files')) {
+                            $facultyRow = \App\MasterFacultyFile::where('code', $facultyUser->username)->first();
+                            if (!$facultyRow && !empty($facultyUser->name)) {
+                                $facultyRow = \App\MasterFacultyFile::where('name', $facultyUser->name)->first();
+                            }
+                            if ($facultyRow && is_array($facultyRow->config_payload)) {
+                                $state = isset($facultyRow->config_payload['form_state']) && is_array($facultyRow->config_payload['form_state'])
+                                    ? $facultyRow->config_payload['form_state']
+                                    : [];
+                                if (!empty($state['profile_photo_path'])) {
+                                    $facultyPhoto = (string) $state['profile_photo_path'];
+                                }
+                            }
+                        }
+                    @endphp
+                    <a href="{{ route('faculty.profile') }}" class="topbar-user topbar-profile-trigger {{ request()->routeIs('faculty.profile') || request()->routeIs('faculty.profile.edit') ? 'is-active' : '' }}" title="Profile">
+                        @if($facultyPhoto)
                             <img src="{{ asset('storage/' . $facultyPhoto) }}" alt="User Avatar" class="topbar-avatar">
                         @else
                             <div class="topbar-avatar-placeholder">
@@ -92,6 +116,11 @@
                 @include('includes.footer')
             </div>
         </div>
+    </div>
+
+    <div id="download-toast" class="toast-notification">
+        <span class="toast-message">Saved successfully.</span>
+        <button class="toast-close">&times;</button>
     </div>
 
     <!-- Bootstrap JS -->

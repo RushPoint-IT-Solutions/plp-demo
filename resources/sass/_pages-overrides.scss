@@ -453,6 +453,84 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     }
 }
 
+/* Faculty profile wizard cleanup */
+body.page-faculty-profile-edit {
+    .profile-page {
+        max-width: 1320px;
+    }
+
+    .faculty-profile-form .setup-form-container {
+        width: 100%;
+        max-width: 1320px !important;
+        box-sizing: border-box;
+    }
+
+    .faculty-profile-form .setup-section-header {
+        min-height: 38px;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .faculty-profile-form .faculty-step-consistent {
+        display: flex;
+        flex-direction: column;
+        min-height: 540px;
+    }
+
+    .faculty-profile-form .faculty-step-consistent .faculty-step-content {
+        flex: 1;
+        padding-right: 0;
+    }
+
+    .faculty-profile-form .faculty-step-consistent .setup-nav {
+        margin-top: auto;
+    }
+
+    .faculty-profile-form .setup-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: 0.04em;
+    }
+
+    .faculty-action-cell {
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .faculty-action-btn {
+        display: inline-block;
+        border: none;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 0 3px;
+    }
+
+    .faculty-action-btn--edit {
+        background: #0a7a3f;
+        color: #fff;
+    }
+
+    .faculty-action-btn--delete {
+        background: #c0392b;
+        color: #fff;
+    }
+
+    .faculty-action-btn:focus,
+    .faculty-action-btn:hover {
+        opacity: 0.9;
+    }
+}
+
+@include down(991px) {
+    body.page-faculty-profile-edit .faculty-profile-form .setup-label {
+        white-space: normal;
+    }
+}
+
 @include down(768px) {
     .setup-row--app-meta {
         flex-wrap: wrap;
@@ -769,7 +847,8 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .pv-page {
     background: rgba(0, 104, 55, 0.74);
     border-radius: 0;
-    backdrop-filter: saturate(115%) blur(1px);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 body.page-profile-view .content-footer-wrap {
@@ -812,20 +891,32 @@ body.page-profile-view .pv-page {
 }
 
 body.page-profile-view .pv-layout {
-    max-width: none;
+    max-width: 1360px;
     width: 100%;
     min-height: calc(100vh - 118px);
     gap: 18px;
     padding: 18px 22px 24px;
+    margin: 0 auto;
     box-sizing: border-box;
     position: relative;
     z-index: 1;
 }
 
 .pv-sidebar {
-    background: rgba(255, 255, 255, 0.86);
-    border: 1px solid rgba(255, 255, 255, 0.45);
+    width: 292px;
+    min-width: 292px;
+    max-width: 324px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 10px 24px rgba(0, 28, 14, 0.16);
     min-height: 100%;
+}
+
+.pv-body {
+    background: rgba(0, 88, 47, 0.44);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 14px 14px;
 }
 
 .pv-sidebar-header {
@@ -872,10 +963,10 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-meta-row {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: minmax(98px, auto) minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -887,10 +978,20 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-meta-value {
-    text-align: right;
-    font-size: 0.64rem;
+    text-align: left;
+    font-size: 0.76rem;
     font-weight: 700;
     flex: 1;
+    line-height: 1.28;
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.pv-meta-department,
+.pv-meta-email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pv-btn-group {
@@ -919,8 +1020,8 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-body-title {
-    margin: 6px 0 10px;
-    font-size: 0.98rem;
+    margin: 4px 0 11px;
+    font-size: 1rem;
 }
 
 .pv-tabs {
@@ -932,9 +1033,9 @@ body.page-profile-view .pv-layout {
     background: rgba(255, 255, 255, 0.18);
     border-color: rgba(255, 255, 255, 0.52);
     color: #ffffff;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    padding: 5px 12px;
+    padding: 6px 13px;
 }
 
 .pv-tab.active {
@@ -944,30 +1045,34 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-panel-card {
-    background: rgba(0, 104, 55, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    padding: 8px 12px;
+    background: rgba(0, 69, 36, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 10px;
+    padding: 12px 14px;
 }
 
 .pv-row {
+    display: grid;
+    grid-template-columns: 210px 16px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
     border-bottom-color: rgba(255, 255, 255, 0.16);
-    padding: 6px 0;
+    padding: 7px 0;
 }
 
 .pv-label {
-    font-size: 0.95rem;
-    min-width: 165px;
-    max-width: 165px;
+    font-size: 0.84rem;
+    min-width: 0;
+    max-width: none;
     color: #f6f9f7;
-    line-height: 1.1;
+    line-height: 1.24;
 }
 
 .pv-sep,
 .pv-value {
-    font-size: 0.95rem;
+    font-size: 0.86rem;
     color: #fff;
-    line-height: 1.1;
+    line-height: 1.28;
 }
 
 .pv-value {
@@ -991,15 +1096,57 @@ body.page-profile-view .pv-layout {
 }
 
 @include down(992px) {
+    .pv-sidebar {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .pv-meta-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .pv-meta-department,
+    .pv-meta-email {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
     .pv-label {
-        min-width: 145px;
-        max-width: 145px;
+        min-width: 0;
+        max-width: none;
         font-size: 0.82rem;
+    }
+
+    .pv-row {
+        grid-template-columns: 145px 14px minmax(0, 1fr);
     }
 
     .pv-sep,
     .pv-value {
         font-size: 0.82rem;
+    }
+}
+
+@include down(576px) {
+    .pv-body {
+        padding: 10px;
+    }
+
+    .pv-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .pv-sep {
+        display: none;
+    }
+
+    .pv-label,
+    .pv-value {
+        font-size: 0.8rem;
     }
 }
 
@@ -1123,10 +1270,47 @@ body.page-profile-view .pv-layout {
             color: #222;
         }
     }
+
+    .topbar-icon-link.msg-icon:hover,
+    .topbar-icon-link.msg-icon:focus-visible,
+    .topbar-icon-link.topbar-notif-icon:hover,
+    .topbar-icon-link.topbar-notif-icon:focus-visible {
+        background-color: #e8f4ed;
+        color: $student-shell-green;
+        box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .topbar-icon-link.msg-icon.is-active,
+    .topbar-icon-link.topbar-notif-icon.is-active {
+        background-color: $student-shell-green;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
+    }
+
     .topbar-user {
         display: inline-flex;
         align-items: center;
         text-decoration: none;
+    }
+
+    .topbar-user.topbar-profile-trigger {
+        border-radius: 999px;
+        padding: 4px;
+        background-color: #f0f0f0;
+        transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+
+        &:hover,
+        &:focus-visible {
+            background-color: #e8f4ed;
+            box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
+            transform: translateY(-1px);
+        }
+
+        &.is-active {
+            background-color: #e8f4ed;
+            box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
+        }
     }
     .topbar-avatar-placeholder,
     .topbar-avatar-image {
@@ -3321,6 +3505,201 @@ select.req-modal-input {
         margin: 5px 0 0;
         font-size: 14px;
         color: #444;
+    }
+}
+
+// Final PV overrides: ensure legacy duplicate rules never re-enable heavy effects.
+body.page-profile-view {
+    .content-footer-wrap {
+        background-image: linear-gradient(rgba(0, 104, 55, 0.74), rgba(0, 104, 55, 0.74)), url('../img/schoolbg.png') !important;
+        background-size: cover !important;
+        background-position: center top !important;
+    }
+
+    .pv-page {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .pv-sidebar {
+        width: 100%;
+        max-width: 320px;
+        min-width: 260px;
+        background: rgba(255, 255, 255, 0.92) !important;
+        border: 1px solid rgba(255, 255, 255, 0.72) !important;
+    }
+
+    .pv-body {
+        background: rgba(0, 88, 47, 0.42) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px;
+    }
+
+    .pv-panel-card {
+        background: rgba(0, 104, 55, 0.64) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .pv-sidebar-header {
+        width: 100%;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .pv-avatar-wrap {
+        align-self: center !important;
+        margin: 0 auto 12px !important;
+    }
+
+    .pv-sidebar-info {
+        width: 100%;
+        text-align: center !important;
+    }
+
+    .pv-meta-row {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 4px !important;
+        align-items: start !important;
+    }
+
+    .pv-meta-label {
+        font-size: 0.64rem;
+        letter-spacing: 0.05em;
+    }
+
+    .pv-meta-value {
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.24;
+        text-align: left !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pv-label,
+    .pv-sep,
+    .pv-value {
+        font-size: 0.83rem;
+        line-height: 1.22;
+    }
+
+    .pv-label {
+        font-weight: 700;
+        color: rgba(246, 249, 247, 0.95);
+    }
+
+    .pv-value {
+        font-weight: 600;
+    }
+
+    .pv-meta-department,
+    .pv-meta-email,
+    .pv-meta-course {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+}
+
+body.faculty-body.page-profile-view {
+    .pv-meta-status,
+    .pv-meta-department,
+    .pv-meta-position {
+        color: #0a813c;
+        font-weight: 700;
+    }
+
+    .pv-panel-card--compact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+        row-gap: 0;
+    }
+
+    .pv-panel-card--compact-grid .pv-row {
+        margin: 0;
+    }
+
+    .pv-panel-card--split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+    }
+
+    .pv-panel-card--split .pv-grid-col {
+        min-width: 0;
+    }
+}
+
+@include down(1200px) {
+    body.page-profile-view .pv-sidebar {
+        max-width: 100%;
+        min-width: 0;
+    }
+}
+
+@include down(576px) {
+    body.page-profile-view .pv-avatar-wrap {
+        width: 88px;
+        height: 88px;
+    }
+}
+
+@include down(1100px) {
+    body.faculty-body.page-profile-view .pv-panel-card--compact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.faculty-body.page-profile-view .pv-panel-card--split {
+        grid-template-columns: 1fr;
+    }
+}
+
+body.faculty-body.page-profile-view {
+    .pv-edu-item {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pv-edu-item-head {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .pv-edu-item--empty {
+        padding: 10px;
+    }
+
+    .pv-row--edu .pv-label {
+        min-width: 160px;
+        max-width: 160px;
+    }
+
+    .pv-row--edu .pv-value {
+        font-weight: 600;
+    }
+}
+
+@include down(768px) {
+    body.faculty-body.page-profile-view .pv-row--edu .pv-label {
+        min-width: 125px;
+        max-width: 125px;
     }
 }
 

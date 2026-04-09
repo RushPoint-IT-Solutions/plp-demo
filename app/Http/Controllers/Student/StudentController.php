@@ -450,6 +450,6 @@ class StudentController extends Controller
         $student->sex = $profile->gender;
         $student->save();
 
-        return redirect()->route('student.profile')->with('success', 'Profile saved successfully!');
+        return redirect()->route('student.profile')->with('success', 'Student profile saved successfully.');
     }
 }

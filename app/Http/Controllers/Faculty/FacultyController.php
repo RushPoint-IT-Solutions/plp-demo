@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Faculty;
 
 use App\Http\Controllers\Controller;
 use App\AcademicCalendarEvent;
+use App\MasterFacultyFile;
 use App\Subject;
 use App\StudentSubjectGrade;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -95,6 +97,77 @@ class FacultyController extends Controller
                 $query->orWhere('faculty', $faculty->name);
             }
         });
+    }
+
+    private function defaultFacultyProfileSections()
+    {
+        return [
+            'education' => [],
+            'registration' => [],
+            'organization' => [],
+            'work' => [],
+            'training' => [],
+        ];
+    }
+
+    private function mergeFacultyProfileSections($stored)
+    {
+        $sections = $this->defaultFacultyProfileSections();
+
+        if (!is_array($stored)) {
+            return $sections;
+        }
+
+        foreach ($sections as $key => $defaultRows) {
+            if (isset($stored[$key]) && is_array($stored[$key])) {
+                $sections[$key] = $stored[$key];
+            }
+        }
+
+        return $sections;
+    }
+
+    private function resolveFacultyProfileRow($faculty)
+    {
+        if (!$faculty || !Schema::hasTable('master_faculty_files')) {
+            return null;
+        }
+
+        $code = (string) ($faculty->code ?: '');
+        $name = (string) ($faculty->name ?: '');
+
+        $row = null;
+        if ($code !== '') {
+            $row = MasterFacultyFile::where('code', $code)->first();
+        }
+
+        if (!$row && $name !== '') {
+            $row = MasterFacultyFile::where('name', $name)->first();
+        }
+
+        if (!$row) {
+            $row = MasterFacultyFile::create([
+                'code' => $code !== '' ? $code : ('FAC-' . str_pad((string) $faculty->id, 4, '0', STR_PAD_LEFT)),
+                'name' => $name !== '' ? $name : 'Faculty Member',
+                'department' => 'Computer Studies',
+                'status' => 'Active',
+            ]);
+        }
+
+        return $row;
+    }
+
+    private function isFacultyProfileComplete($row)
+    {
+        if (!$row || !is_array($row->config_payload)) {
+            return false;
+        }
+
+        $formState = isset($row->config_payload['form_state']) && is_array($row->config_payload['form_state'])
+            ? $row->config_payload['form_state']
+            : [];
+
+        return !empty($formState['profile_completed']);
     }
 
     /**
@@ -405,6 +478,109 @@ class FacultyController extends Controller
         }
 
         return view('faculty.evaluation', compact('evaluationLibrary', 'evaluationPanels', 'selectedSubjectId'));
+    }
+
+    /**
+     * Faculty Profile summary view.
+     */
+    public function profile()
+    {
+        $faculty = $this->currentFaculty();
+
+        if (!$faculty) {
+            return redirect()->route('module.login', ['module' => 'faculty']);
+        }
+
+        $profileRow = $this->resolveFacultyProfileRow($faculty);
+        if (!$this->isFacultyProfileComplete($profileRow)) {
+            return redirect()->route('faculty.profile.edit');
+        }
+
+        $payload = is_array($profileRow->config_payload) ? $profileRow->config_payload : [];
+        $formState = isset($payload['form_state']) && is_array($payload['form_state']) ? $payload['form_state'] : [];
+        $detailRows = $this->mergeFacultyProfileSections(isset($payload['sections']) ? $payload['sections'] : []);
+
+        return view('faculty.profile-view', compact('faculty', 'profileRow', 'formState', 'detailRows'));
+    }
+
+    /**
+     * Faculty Profile step wizard.
+     */
+    public function editProfile()
+    {
+        $faculty = $this->currentFaculty();
+
+        if (!$faculty) {
+            return redirect()->route('module.login', ['module' => 'faculty']);
+        }
+
+        $profileRow = $this->resolveFacultyProfileRow($faculty);
+        $payload = is_array($profileRow->config_payload) ? $profileRow->config_payload : [];
+        $formState = isset($payload['form_state']) && is_array($payload['form_state']) ? $payload['form_state'] : [];
+        $detailRows = $this->mergeFacultyProfileSections(isset($payload['sections']) ? $payload['sections'] : []);
+
+        return view('faculty.profile', compact('faculty', 'profileRow', 'formState', 'detailRows'));
+    }
+
+    /**
+     * Save Faculty Profile wizard payload.
+     */
+    public function updateProfile(Request $request)
+    {
+        $faculty = $this->currentFaculty();
+
+        if (!$faculty) {
+            return redirect()->route('module.login', ['module' => 'faculty']);
+        }
+
+        $profileRow = $this->resolveFacultyProfileRow($faculty);
+        if (!$profileRow) {
+            return redirect()->route('faculty.load')->withErrors(['profile' => 'Faculty profile storage is not available.']);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:190',
+            'department' => 'required|string|max:190',
+            'status' => 'required|string|in:Active,Inactive',
+            'sections_json' => 'nullable|string',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:4096',
+        ]);
+
+        $sections = $this->defaultFacultyProfileSections();
+        $sectionsRaw = $request->input('sections_json');
+        if (!empty($sectionsRaw)) {
+            $decoded = json_decode($sectionsRaw, true);
+            if (is_array($decoded)) {
+                $sections = $this->mergeFacultyProfileSections($decoded);
+            }
+        }
+
+        $excludedKeys = ['_token', 'sections_json', 'profile_photo'];
+        $formState = $request->except($excludedKeys);
+        $formState['profile_completed'] = 1;
+
+        if ($request->hasFile('profile_photo')) {
+            $formState['profile_photo_path'] = $request->file('profile_photo')->store('faculty/photos', 'public');
+        } elseif (!empty($profileRow->config_payload['form_state']['profile_photo_path'])) {
+            $formState['profile_photo_path'] = (string) $profileRow->config_payload['form_state']['profile_photo_path'];
+        }
+
+        $profileRow->update([
+            'name' => $validated['name'],
+            'department' => $validated['department'],
+            'status' => $validated['status'],
+            'config_payload' => [
+                'form_state' => $formState,
+                'sections' => $sections,
+            ],
+        ]);
+
+        $faculty->name = $validated['name'];
+        $faculty->save();
+
+        User::where('faculty_id', $faculty->id)->update(['name' => $validated['name']]);
+
+        return redirect()->route('faculty.profile')->with('success', 'Faculty profile saved successfully.');
     }
 
     /**

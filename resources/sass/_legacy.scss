@@ -2553,13 +2553,6 @@ select:hover {
   max-width: 100%;
 }
 
-/* For wide content (step 4): allow the wizard to expand and scroll horizontally */
-#step-4.setup-form-container {
-  width: 100%;
-  max-width: 1080px;
-  box-sizing: border-box;
-}
-
 .setup-section {
   margin-bottom: 28px;
 }
@@ -6903,22 +6896,6 @@ select:hover {
   background-color: #006837;
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
-}
-
-.student-portal-body .topbar-user {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.student-portal-body .topbar-avatar-placeholder {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #7d7d7d;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .student-table-wrapper {
@@ -21101,31 +21078,6 @@ select:hover {
   color: #ffffff;
 }
 
-.student-portal-body .sidebar-link.active {
-  background-color: #ffffff;
-  color: #0a813c;
-  font-weight: 700;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
-}
-
-.student-portal-body .sidebar-logout {
-  margin-top: auto;
-  padding: 8px;
-}
-
-.student-portal-body .logout-link {
-  background-color: #ffffff;
-  color: #111111;
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-decoration: none;
-  font-size: 1rem;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
-}
-
 .student-portal-body .logout-link svg {
   width: 22px;
   height: 22px;
@@ -24311,31 +24263,6 @@ body.page-profile-view .pv-layout {
 .student-portal-body .topbar-icon-link:hover {
   background-color: #e0e0e0;
   color: #222;
-}
-
-.student-portal-body .topbar-user {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.student-portal-body .topbar-avatar-placeholder,
-.student-portal-body .topbar-avatar-image {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-color: #0a813c;
-}
-
-.student-portal-body .topbar-avatar-image {
-  -o-object-fit: cover;
-     object-fit: cover;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
 }
 
 .student-table-wrapper {
