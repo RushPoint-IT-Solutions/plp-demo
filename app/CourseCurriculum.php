@@ -10,6 +10,7 @@ class CourseCurriculum extends Model
 
     protected $fillable = [
         'course_id',
+        'curriculum_year_id',
         'curriculum_year_code',
         'title',
         'is_active',
@@ -22,6 +23,11 @@ class CourseCurriculum extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function curriculumYear()
+    {
+        return $this->belongsTo(CurriculumYear::class);
     }
 
     public function curriculumSubjects()

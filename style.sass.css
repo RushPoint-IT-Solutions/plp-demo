@@ -11402,6 +11402,43 @@ select.req-modal-input {
   border-bottom: none;
 }
 
+.prereq-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.prereq-pagination-btn {
+  padding: 6px 14px;
+  border: 1px solid #006837;
+  border-radius: 6px;
+  background: #fff;
+  color: #006837;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prereq-pagination-btn:hover:not(:disabled) {
+  background: #006837;
+  color: #fff;
+}
+
+.prereq-pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.prereq-pagination-info {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.78rem;
+  color: #444;
+}
+
 .prereq-empty-msg {
   text-align: center !important;
   color: #999;
@@ -11662,13 +11699,26 @@ select.req-modal-input {
   .student-page-header,
   .plp-footer,
   .sidebar-overlay,
-  #registrar-toast,
-  .prereq-filter-bar,
-  #btnViewList,
-  #prereqDownloadBtn,
-  #prereqBackBtn,
-  #prereqSaveBtn,
-  .prereq-detail-view {
+  #registrar-toast {
+    display: none !important;
+  }
+  body:not(.prereq-print-subject) .prereq-filter-bar,
+  body:not(.prereq-print-subject) #btnViewList,
+  body:not(.prereq-print-subject) #prereqDownloadBtn,
+  body:not(.prereq-print-subject) #prereqPagination,
+  body:not(.prereq-print-subject) #prereqDetailView {
+    display: none !important;
+  }
+  body.prereq-print-subject .prereq-filter-bar,
+  body.prereq-print-subject #btnViewList,
+  body.prereq-print-subject #prereqDownloadBtn,
+  body.prereq-print-subject #prereqBackBtn,
+  body.prereq-print-subject #prereqSubjectDownloadBtn,
+  body.prereq-print-subject #prereqSaveBtn,
+  body.prereq-print-subject #prereqPagination,
+  body.prereq-print-subject .prereq-search-row,
+  body.prereq-print-subject .prereq-available-list,
+  body.prereq-print-subject .prereq-remove-btn {
     display: none !important;
   }
   .student-main-wrapper,
@@ -11679,7 +11729,13 @@ select.req-modal-input {
     padding: 0 !important;
     background: #fff !important;
   }
-  #prereqListView {
+  body:not(.prereq-print-subject) #prereqListView {
+    display: block !important;
+  }
+  body.prereq-print-subject #prereqListView {
+    display: none !important;
+  }
+  body.prereq-print-subject #prereqDetailView {
     display: block !important;
   }
   .prereq-list-header {
@@ -11717,6 +11773,41 @@ select.req-modal-input {
     border-color: #bdbdbd !important;
     color: #000 !important;
   }
+  body.prereq-print-subject .prereq-detail-banner {
+    margin: 0 0 10px !important;
+    padding: 0 0 10px !important;
+    border-bottom: 1px solid #bdbdbd !important;
+    background: #fff !important;
+  }
+  body.prereq-print-subject .prereq-detail-code,
+  body.prereq-print-subject .prereq-detail-name {
+    color: #000 !important;
+  }
+  body.prereq-print-subject .prereq-section {
+    box-shadow: none !important;
+    border: 1px solid #d0d0d0 !important;
+    page-break-inside: avoid;
+  }
+  body.prereq-print-subject .prereq-section-label {
+    color: #000 !important;
+    background: #fff !important;
+    border-bottom: 1px solid #d0d0d0 !important;
+  }
+  body.prereq-print-subject .prereq-section-body {
+    display: block !important;
+  }
+  body.prereq-print-subject .prereq-col {
+    border: none !important;
+    padding: 8px 12px !important;
+    min-height: 0 !important;
+  }
+  body.prereq-print-subject .prereq-col:first-child {
+    display: none !important;
+  }
+  body.prereq-print-subject .prereq-selected-list {
+    max-height: none !important;
+    overflow: visible !important;
+  }
 }
 @media (max-width: 768px) {
   .prereq-filter-bar {
@@ -11729,6 +11820,10 @@ select.req-modal-input {
   .prereq-filter-group {
     min-width: unset;
     width: 100%;
+  }
+  .prereq-pagination {
+    justify-content: center;
+    flex-wrap: wrap;
   }
   .prereq-section-body {
     flex-direction: column;

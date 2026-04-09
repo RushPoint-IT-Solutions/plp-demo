@@ -8,8 +8,10 @@
     class="prereq-page"
     id="prereqPage"
     data-list-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites.data') }}"
+    data-download-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites.download') }}"
     data-detail-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.show', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
     data-save-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.update', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
+    data-subject-download-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.download', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
     data-csrf-token="{{ csrf_token() }}"
     data-course-years='@json($courseYearMap)'
     data-selected-course-id="{{ $selectedCourseId ?: '' }}"
@@ -51,6 +53,12 @@
         <div id="prereqListContent">
             {{-- Dynamic year/semester tables injected here --}}
         </div>
+
+        <div class="prereq-pagination" id="prereqPagination" hidden>
+            <button type="button" class="prereq-pagination-btn" id="prereqPrevPage">Previous</button>
+            <span class="prereq-pagination-info" id="prereqPageInfo">Page 1 of 1</span>
+            <button type="button" class="prereq-pagination-btn" id="prereqNextPage">Next</button>
+        </div>
     </div>
 
     {{-- ═══════════ VIEW 3: Subject Detail / Edit (hidden until row clicked) ═══════════ --}}
@@ -61,6 +69,7 @@
                 <span class="prereq-detail-name" id="prereqDetailName"></span>
             </div>
             <button type="button" class="prereq-download-btn" id="prereqBackBtn">Back to List</button>
+            <button type="button" class="prereq-download-btn" id="prereqSubjectDownloadBtn">Download Subject PDF</button>
             <button type="button" class="prereq-save-btn" id="prereqSaveBtn">Save</button>
         </div>
 

@@ -45,6 +45,8 @@ use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 
 class RegistrarController extends Controller
 {
@@ -2371,215 +2373,74 @@ class RegistrarController extends Controller
         $validated = $request->validate([
             'course_id' => 'required|integer|exists:courses,id',
             'curriculum_year' => 'required|string|max:20',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
         $courseId = (int) $validated['course_id'];
         $curriculumYear = trim((string) $validated['curriculum_year']);
+        $page = isset($validated['page']) ? (int) $validated['page'] : 1;
+        $perPage = isset($validated['per_page']) ? (int) $validated['per_page'] : 100;
 
-        $course = Course::query()->find($courseId);
-        if (!$course) {
-            return response()->json([
-                'ok' => false,
-                'message' => 'Course not found.',
-            ], 404);
-        }
+        $payload = $this->buildPreRequisitesListPayload($courseId, $curriculumYear, $page, $perPage);
 
-        $curriculum = CourseCurriculum::query()
-            ->where('course_id', $courseId)
-            ->where('curriculum_year_code', $curriculumYear)
-            ->first();
-
-        if (!$curriculum) {
-            return response()->json([
-                'ok' => true,
-                'course' => [
-                    'id' => (int) $course->id,
-                    'code' => (string) $course->code,
-                    'name' => (string) ($course->name ?: $course->description),
-                ],
-                'curriculum_year' => $curriculumYear,
-                'years' => [],
-            ]);
-        }
-
-        $assignments = CourseCurriculumSubject::query()
-            ->with(['subject', 'yearBlock', 'semester'])
-            ->where('course_curriculum_id', (int) $curriculum->id)
-            ->orderBy('display_order')
-            ->get();
-
-        $assignmentIds = $assignments->pluck('id')->map(function ($id) {
-            return (int) $id;
-        })->all();
-
-        $requisiteMap = [];
-        if (count($assignmentIds) > 0) {
-            $requisiteRows = DB::table('curriculum_subject_requisites as csr')
-                ->join('curriculum_requisite_types as crt', 'crt.id', '=', 'csr.curriculum_requisite_type_id')
-                ->join('subjects as rs', 'rs.id', '=', 'csr.requisite_subject_id')
-                ->whereIn('csr.course_curriculum_subject_id', $assignmentIds)
-                ->orderBy('csr.sort_order')
-                ->get([
-                    'csr.course_curriculum_subject_id',
-                    'crt.code as requisite_type_code',
-                    'rs.code as requisite_subject_code',
-                ]);
-
-            foreach ($requisiteRows as $row) {
-                $assignmentId = (int) $row->course_curriculum_subject_id;
-                $typeCode = strtolower(trim((string) $row->requisite_type_code));
-
-                if (!isset($requisiteMap[$assignmentId])) {
-                    $requisiteMap[$assignmentId] = [
-                        'pre' => [],
-                        'co' => [],
-                        'equivalent' => [],
-                    ];
-                }
-
-                if (!array_key_exists($typeCode, $requisiteMap[$assignmentId])) {
-                    continue;
-                }
-
-                $requisiteMap[$assignmentId][$typeCode][] = trim((string) $row->requisite_subject_code);
-            }
-        }
-
-        $assignmentBuckets = [];
-        foreach ($assignments as $assignment) {
-            $assignmentId = (int) $assignment->id;
-            $yearBlockId = (int) $assignment->year_block_id;
-            $semesterId = (int) $assignment->semester_id;
-
-            if (!isset($assignmentBuckets[$yearBlockId])) {
-                $assignmentBuckets[$yearBlockId] = [];
-            }
-
-            if (!isset($assignmentBuckets[$yearBlockId][$semesterId])) {
-                $assignmentBuckets[$yearBlockId][$semesterId] = [];
-            }
-
-            $types = $requisiteMap[$assignmentId] ?? [
-                'pre' => [],
-                'co' => [],
-                'equivalent' => [],
-            ];
-
-            $assignmentBuckets[$yearBlockId][$semesterId][] = [
-                'curriculum_subject_id' => $assignmentId,
-                'subject_id' => (int) $assignment->subject_id,
-                'code' => (string) optional($assignment->subject)->code,
-                'description' => (string) optional($assignment->subject)->name,
-                'credited_units' => (float) $assignment->credited_units,
-                'pre_requisite_text' => count($types['pre']) ? implode(', ', $types['pre']) : 'None',
-                'co_requisite_text' => count($types['co']) ? implode(', ', $types['co']) : 'None',
-                'equivalent_subject_text' => count($types['equivalent']) ? implode(', ', $types['equivalent']) : 'None',
-            ];
-        }
-
-        $yearsPayload = [];
-        $yearBlocks = $this->orderedYearBlocks();
-        $semesters = $this->orderedSemesters();
-
-        foreach ($yearBlocks as $yearBlock) {
-            $semesterPayload = [];
-
-            foreach ($semesters as $semester) {
-                $semesterPayload[] = [
-                    'id' => (int) $semester->id,
-                    'label' => (string) $semester->name,
-                    'subjects' => $assignmentBuckets[(int) $yearBlock->id][(int) $semester->id] ?? [],
-                ];
-            }
-
-            $yearsPayload[] = [
-                'id' => (int) $yearBlock->id,
-                'label' => (string) $yearBlock->label,
-                'semesters' => $semesterPayload,
-            ];
-        }
-
-        return response()->json([
-            'ok' => true,
-            'course' => [
-                'id' => (int) $course->id,
-                'code' => (string) $course->code,
-                'name' => (string) ($course->name ?: $course->description),
-            ],
-            'curriculum_year' => (string) $curriculum->curriculum_year_code,
-            'program_title' => strtoupper((string) ($course->name ?: $course->description)),
-            'years' => $yearsPayload,
-        ]);
+        return response()->json(array_merge(['ok' => true], $payload));
     }
 
     public function preRequisitesSubjectDetail($courseCurriculumSubjectId): JsonResponse
     {
-        $curriculumSubjectId = (int) $courseCurriculumSubjectId;
-
-        $assignment = CourseCurriculumSubject::query()
-            ->with(['subject', 'curriculum'])
-            ->find($curriculumSubjectId);
-
-        if (!$assignment) {
+        $payload = $this->buildPreRequisitesSubjectPayload((int) $courseCurriculumSubjectId);
+        if (!$payload) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Curriculum subject not found.',
             ], 404);
         }
 
-        $availableSubjects = CourseCurriculumSubject::query()
-            ->with('subject')
-            ->where('course_curriculum_id', (int) $assignment->course_curriculum_id)
-            ->where('id', '<>', (int) $assignment->id)
-            ->orderBy('display_order')
-            ->get()
-            ->map(function (CourseCurriculumSubject $item) {
-                return [
-                    'subject_id' => (int) $item->subject_id,
-                    'code' => (string) optional($item->subject)->code,
-                    'description' => (string) optional($item->subject)->name,
-                ];
-            })
-            ->unique('subject_id')
-            ->values();
+        return response()->json(array_merge(['ok' => true], $payload));
+    }
 
-        $selectedRows = CurriculumSubjectRequisite::query()
-            ->with(['requisiteType', 'requisiteSubject'])
-            ->where('course_curriculum_subject_id', (int) $assignment->id)
-            ->orderBy('sort_order')
-            ->get();
+    public function downloadPreRequisitesPdf(Request $request)
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'curriculum_year' => 'required|string|max:20',
+        ]);
 
-        $selected = [
-            'pre' => [],
-            'co' => [],
-            'equivalent' => [],
-        ];
+        $courseId = (int) $validated['course_id'];
+        $curriculumYear = trim((string) $validated['curriculum_year']);
 
-        foreach ($selectedRows as $row) {
-            $typeCode = strtolower((string) optional($row->requisiteType)->code);
-            if (!array_key_exists($typeCode, $selected)) {
-                continue;
-            }
+        $payload = $this->buildPreRequisitesListPayload($courseId, $curriculumYear, 1, 5000);
 
-            $selected[$typeCode][] = [
-                'subject_id' => (int) $row->requisite_subject_id,
-                'code' => (string) optional($row->requisiteSubject)->code,
-                'description' => (string) optional($row->requisiteSubject)->name,
-            ];
+        $fileSafeCode = $this->sanitizeFilenameSegment($payload['course']['code'] ?? 'course');
+        $fileSafeYear = $this->sanitizeFilenameSegment($payload['curriculum_year'] ?? $curriculumYear);
+        $filename = 'pre-requisites-' . $fileSafeCode . '-' . $fileSafeYear . '-' . now()->format('Ymd_His') . '.pdf';
+
+        $html = view('registrar.registrar-menu.academic-master.pdf.pre-requisites', [
+            'payload' => $payload,
+            'generatedAt' => now(),
+        ])->render();
+
+        return $this->makePdfDownloadResponse($html, $filename, 'L');
+    }
+
+    public function downloadPreRequisitesSubjectPdf($courseCurriculumSubjectId)
+    {
+        $payload = $this->buildPreRequisitesSubjectPayload((int) $courseCurriculumSubjectId);
+        if (!$payload) {
+            abort(404, 'Curriculum subject not found.');
         }
 
-        return response()->json([
-            'ok' => true,
-            'subject' => [
-                'curriculum_subject_id' => (int) $assignment->id,
-                'subject_id' => (int) $assignment->subject_id,
-                'code' => (string) optional($assignment->subject)->code,
-                'description' => (string) optional($assignment->subject)->name,
-                'credited_units' => (float) $assignment->credited_units,
-            ],
-            'available_subjects' => $availableSubjects,
-            'selected' => $selected,
-        ]);
+        $subjectCode = $this->sanitizeFilenameSegment($payload['subject']['code'] ?? 'subject');
+        $curriculumYear = $this->sanitizeFilenameSegment($payload['curriculum_year'] ?? 'curriculum');
+        $filename = 'subject-config-' . $subjectCode . '-' . $curriculumYear . '-' . now()->format('Ymd_His') . '.pdf';
+
+        $html = view('registrar.registrar-menu.academic-master.pdf.pre-requisites-subject', [
+            'payload' => $payload,
+            'generatedAt' => now(),
+        ])->render();
+
+        return $this->makePdfDownloadResponse($html, $filename, 'P');
     }
 
     public function updatePreRequisitesSubjectDetail(Request $request, $courseCurriculumSubjectId): JsonResponse
@@ -2699,6 +2560,318 @@ class RegistrarController extends Controller
         ]);
     }
 
+    private function buildPreRequisitesListPayload($courseId, $curriculumYear, $page = 1, $perPage = 100): array
+    {
+        $course = Course::query()->find((int) $courseId);
+        if (!$course) {
+            throw ValidationException::withMessages([
+                'course_id' => ['Course not found.'],
+            ]);
+        }
+
+        $safePage = max((int) $page, 1);
+        $safePerPage = min(max((int) $perPage, 1), 5000);
+
+        $hasCurriculumYearLookup = Schema::hasTable('curriculum_years');
+        $hasCurriculumYearForeign = Schema::hasColumn('course_curricula', 'curriculum_year_id');
+        $curriculumYearId = null;
+        if ($hasCurriculumYearLookup) {
+            $curriculumYearId = DB::table('curriculum_years')
+                ->where('code', (string) $curriculumYear)
+                ->value('id');
+        }
+
+        $curriculum = CourseCurriculum::query()
+            ->where('course_id', (int) $courseId)
+            ->where(function ($query) use ($curriculumYear, $curriculumYearId, $hasCurriculumYearForeign) {
+                $query->where('curriculum_year_code', (string) $curriculumYear);
+
+                if ($hasCurriculumYearForeign && !empty($curriculumYearId)) {
+                    $query->orWhere('curriculum_year_id', (int) $curriculumYearId);
+                }
+            })
+            ->first();
+
+        if (!$curriculum) {
+            return [
+                'course' => [
+                    'id' => (int) $course->id,
+                    'code' => (string) $course->code,
+                    'name' => (string) ($course->name ?: $course->description),
+                ],
+                'curriculum_year' => (string) $curriculumYear,
+                'program_title' => strtoupper((string) ($course->name ?: $course->description)),
+                'years' => [],
+                'meta' => [
+                    'page' => 1,
+                    'per_page' => $safePerPage,
+                    'total' => 0,
+                    'last_page' => 1,
+                ],
+            ];
+        }
+
+        $assignmentQuery = CourseCurriculumSubject::query()
+            ->with(['subject', 'yearBlock', 'semester'])
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->orderBy('display_order')
+            ->orderBy('id');
+
+        $totalAssignments = (int) (clone $assignmentQuery)->count();
+        $lastPage = max((int) ceil($totalAssignments / $safePerPage), 1);
+        if ($safePage > $lastPage) {
+            $safePage = $lastPage;
+        }
+
+        $assignments = $assignmentQuery
+            ->forPage($safePage, $safePerPage)
+            ->get();
+
+        $assignmentIds = $assignments->pluck('id')->map(function ($id) {
+            return (int) $id;
+        })->all();
+
+        $requisiteMap = [];
+        if (count($assignmentIds) > 0) {
+            $requisiteRows = DB::table('curriculum_subject_requisites as csr')
+                ->join('curriculum_requisite_types as crt', 'crt.id', '=', 'csr.curriculum_requisite_type_id')
+                ->join('subjects as rs', 'rs.id', '=', 'csr.requisite_subject_id')
+                ->whereIn('csr.course_curriculum_subject_id', $assignmentIds)
+                ->orderBy('csr.sort_order')
+                ->get([
+                    'csr.course_curriculum_subject_id',
+                    'crt.code as requisite_type_code',
+                    'rs.code as requisite_subject_code',
+                ]);
+
+            foreach ($requisiteRows as $row) {
+                $assignmentId = (int) $row->course_curriculum_subject_id;
+                $typeCode = strtolower(trim((string) $row->requisite_type_code));
+
+                if (!isset($requisiteMap[$assignmentId])) {
+                    $requisiteMap[$assignmentId] = [
+                        'pre' => [],
+                        'co' => [],
+                        'equivalent' => [],
+                    ];
+                }
+
+                if (!array_key_exists($typeCode, $requisiteMap[$assignmentId])) {
+                    continue;
+                }
+
+                $requisiteMap[$assignmentId][$typeCode][] = trim((string) $row->requisite_subject_code);
+            }
+        }
+
+        $assignmentBuckets = [];
+        foreach ($assignments as $assignment) {
+            $assignmentId = (int) $assignment->id;
+            $yearBlockId = (int) $assignment->year_block_id;
+            $semesterId = (int) $assignment->semester_id;
+
+            if (!isset($assignmentBuckets[$yearBlockId])) {
+                $assignmentBuckets[$yearBlockId] = [];
+            }
+
+            if (!isset($assignmentBuckets[$yearBlockId][$semesterId])) {
+                $assignmentBuckets[$yearBlockId][$semesterId] = [];
+            }
+
+            $types = $requisiteMap[$assignmentId] ?? [
+                'pre' => [],
+                'co' => [],
+                'equivalent' => [],
+            ];
+
+            $assignmentBuckets[$yearBlockId][$semesterId][] = [
+                'curriculum_subject_id' => $assignmentId,
+                'subject_id' => (int) $assignment->subject_id,
+                'code' => (string) optional($assignment->subject)->code,
+                'description' => (string) optional($assignment->subject)->name,
+                'credited_units' => (float) $assignment->credited_units,
+                'pre_requisite_text' => count($types['pre']) ? implode(', ', $types['pre']) : 'None',
+                'co_requisite_text' => count($types['co']) ? implode(', ', $types['co']) : 'None',
+                'equivalent_subject_text' => count($types['equivalent']) ? implode(', ', $types['equivalent']) : 'None',
+            ];
+        }
+
+        $yearsPayload = [];
+        $yearBlocks = $this->orderedYearBlocks();
+        $semesters = $this->orderedSemesters();
+
+        foreach ($yearBlocks as $yearBlock) {
+            $semesterPayload = [];
+
+            foreach ($semesters as $semester) {
+                $semesterPayload[] = [
+                    'id' => (int) $semester->id,
+                    'label' => (string) $semester->name,
+                    'subjects' => $assignmentBuckets[(int) $yearBlock->id][(int) $semester->id] ?? [],
+                ];
+            }
+
+            $yearsPayload[] = [
+                'id' => (int) $yearBlock->id,
+                'label' => (string) $yearBlock->label,
+                'semesters' => $semesterPayload,
+            ];
+        }
+
+        $resolvedCurriculumYearCode = trim((string) $curriculum->curriculum_year_code);
+        if ($resolvedCurriculumYearCode === '' && $hasCurriculumYearLookup && !empty($curriculum->curriculum_year_id)) {
+            $lookupCode = DB::table('curriculum_years')
+                ->where('id', (int) $curriculum->curriculum_year_id)
+                ->value('code');
+
+            if (!empty($lookupCode)) {
+                $resolvedCurriculumYearCode = (string) $lookupCode;
+            }
+        }
+
+        if ($resolvedCurriculumYearCode === '') {
+            $resolvedCurriculumYearCode = (string) $curriculumYear;
+        }
+
+        return [
+            'course' => [
+                'id' => (int) $course->id,
+                'code' => (string) $course->code,
+                'name' => (string) ($course->name ?: $course->description),
+            ],
+            'curriculum_year' => $resolvedCurriculumYearCode,
+            'program_title' => strtoupper((string) ($course->name ?: $course->description)),
+            'years' => $yearsPayload,
+            'meta' => [
+                'page' => $safePage,
+                'per_page' => $safePerPage,
+                'total' => $totalAssignments,
+                'last_page' => $lastPage,
+            ],
+        ];
+    }
+
+    private function buildPreRequisitesSubjectPayload($curriculumSubjectId)
+    {
+        $assignment = CourseCurriculumSubject::query()
+            ->with(['subject', 'curriculum.course'])
+            ->find((int) $curriculumSubjectId);
+
+        if (!$assignment) {
+            return null;
+        }
+
+        $availableSubjects = CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $assignment->course_curriculum_id)
+            ->where('id', '<>', (int) $assignment->id)
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get()
+            ->map(function (CourseCurriculumSubject $item) {
+                return [
+                    'subject_id' => (int) $item->subject_id,
+                    'code' => (string) optional($item->subject)->code,
+                    'description' => (string) optional($item->subject)->name,
+                ];
+            })
+            ->unique('subject_id')
+            ->values();
+
+        $selectedRows = CurriculumSubjectRequisite::query()
+            ->with(['requisiteType', 'requisiteSubject'])
+            ->where('course_curriculum_subject_id', (int) $assignment->id)
+            ->orderBy('sort_order')
+            ->get();
+
+        $selected = [
+            'pre' => [],
+            'co' => [],
+            'equivalent' => [],
+        ];
+
+        foreach ($selectedRows as $row) {
+            $typeCode = strtolower((string) optional($row->requisiteType)->code);
+            if (!array_key_exists($typeCode, $selected)) {
+                continue;
+            }
+
+            $selected[$typeCode][] = [
+                'subject_id' => (int) $row->requisite_subject_id,
+                'code' => (string) optional($row->requisiteSubject)->code,
+                'description' => (string) optional($row->requisiteSubject)->name,
+            ];
+        }
+
+        $curriculumYearCode = trim((string) optional($assignment->curriculum)->curriculum_year_code);
+        if ($curriculumYearCode === ''
+            && Schema::hasTable('curriculum_years')
+            && !empty(optional($assignment->curriculum)->curriculum_year_id)) {
+            $lookupCode = DB::table('curriculum_years')
+                ->where('id', (int) optional($assignment->curriculum)->curriculum_year_id)
+                ->value('code');
+
+            if (!empty($lookupCode)) {
+                $curriculumYearCode = (string) $lookupCode;
+            }
+        }
+
+        return [
+            'subject' => [
+                'curriculum_subject_id' => (int) $assignment->id,
+                'subject_id' => (int) $assignment->subject_id,
+                'code' => (string) optional($assignment->subject)->code,
+                'description' => (string) optional($assignment->subject)->name,
+                'credited_units' => (float) $assignment->credited_units,
+            ],
+            'available_subjects' => $availableSubjects,
+            'selected' => $selected,
+            'course' => [
+                'id' => (int) optional(optional($assignment->curriculum)->course)->id,
+                'code' => (string) optional(optional($assignment->curriculum)->course)->code,
+                'name' => (string) (optional(optional($assignment->curriculum)->course)->name ?: optional(optional($assignment->curriculum)->course)->description),
+            ],
+            'curriculum_year' => $curriculumYearCode,
+        ];
+    }
+
+    private function makePdfDownloadResponse($html, $filename, $orientation = 'P')
+    {
+        $tempDir = storage_path('app/mpdf-temp');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0755, true);
+        }
+
+        $format = strtoupper((string) $orientation) === 'L' ? 'A4-L' : 'A4';
+
+        $pdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => $format,
+            'tempDir' => $tempDir,
+            'margin_top' => 10,
+            'margin_right' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+        ]);
+
+        $pdf->WriteHTML((string) $html);
+        $binary = $pdf->Output((string) $filename, Destination::STRING_RETURN);
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    private function sanitizeFilenameSegment($value)
+    {
+        $normalized = strtolower(trim((string) $value));
+        $normalized = preg_replace('/[^a-z0-9]+/', '-', $normalized);
+        $normalized = trim((string) $normalized, '-');
+
+        return $normalized !== '' ? $normalized : 'file';
+    }
+
     private function buildCourseCurriculumYearMap($courses): array
     {
         $courseIds = collect($courses)->pluck('id')->map(function ($id) {
@@ -2709,11 +2882,22 @@ class RegistrarController extends Controller
             return [];
         }
 
-        $rows = DB::table('course_curricula')
-            ->select(['course_id', 'curriculum_year_code'])
-            ->whereIn('course_id', $courseIds)
-            ->orderBy('curriculum_year_code')
-            ->get();
+        $rowsQuery = DB::table('course_curricula as cc')
+            ->whereIn('cc.course_id', $courseIds)
+            ->orderBy('cc.curriculum_year_code');
+
+        if (Schema::hasTable('curriculum_years') && Schema::hasColumn('course_curricula', 'curriculum_year_id')) {
+            $rowsQuery
+                ->leftJoin('curriculum_years as cy', 'cy.id', '=', 'cc.curriculum_year_id')
+                ->select([
+                    'cc.course_id',
+                    DB::raw('COALESCE(cy.code, cc.curriculum_year_code) as curriculum_year_code'),
+                ]);
+        } else {
+            $rowsQuery->select(['cc.course_id', 'cc.curriculum_year_code']);
+        }
+
+        $rows = $rowsQuery->get();
 
         $map = [];
         foreach ($courseIds as $courseId) {

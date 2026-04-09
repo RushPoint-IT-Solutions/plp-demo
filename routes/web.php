@@ -170,9 +170,11 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/subject-file/{subjectId}', 'Registrar\RegistrarController@destroySubjectFile')->name('subject-file.delete');
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
-            Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data');
-            Route::get('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@preRequisitesSubjectDetail')->name('pre-requisites.subject.show');
-            Route::put('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@updatePreRequisitesSubjectDetail')->name('pre-requisites.subject.update');
+            Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data')->middleware('throttle:60,1');
+            Route::get('/pre-requisites/download/pdf', 'Registrar\RegistrarController@downloadPreRequisitesPdf')->name('pre-requisites.download')->middleware('throttle:60,1');
+            Route::get('/pre-requisites/subjects/{courseCurriculumSubjectId}/download/pdf', 'Registrar\RegistrarController@downloadPreRequisitesSubjectPdf')->name('pre-requisites.subject.download')->middleware('throttle:60,1');
+            Route::get('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@preRequisitesSubjectDetail')->name('pre-requisites.subject.show')->middleware('throttle:60,1');
+            Route::put('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@updatePreRequisitesSubjectDetail')->name('pre-requisites.subject.update')->middleware('throttle:60,1');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });
 

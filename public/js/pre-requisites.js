@@ -16,11 +16,16 @@
     var downloadButton = document.getElementById('prereqDownloadBtn');
     var saveButton = document.getElementById('prereqSaveBtn');
     var backButton = document.getElementById('prereqBackBtn');
+    var subjectDownloadButton = document.getElementById('prereqSubjectDownloadBtn');
 
     var listView = document.getElementById('prereqListView');
     var detailView = document.getElementById('prereqDetailView');
     var listContent = document.getElementById('prereqListContent');
     var programTitle = document.getElementById('prereqProgramTitle');
+    var pagination = document.getElementById('prereqPagination');
+    var prevPageButton = document.getElementById('prereqPrevPage');
+    var nextPageButton = document.getElementById('prereqNextPage');
+    var pageInfoLabel = document.getElementById('prereqPageInfo');
 
     var detailCode = document.getElementById('prereqDetailCode');
     var detailName = document.getElementById('prereqDetailName');
@@ -46,6 +51,14 @@
     var state = {
         selectedCourseId: page.getAttribute('data-selected-course-id') || '',
         selectedCurriculumYear: page.getAttribute('data-selected-curriculum-year') || '',
+        listPage: 1,
+        perPage: 100,
+        listMeta: {
+            page: 1,
+            per_page: 100,
+            total: 0,
+            last_page: 1
+        },
         yearsPayload: [],
         currentSubject: null,
         availableSubjects: [],
@@ -71,6 +84,21 @@
             console.error(error);
             return {};
         }
+    }
+
+    function renderPagination() {
+        if (!pagination || !pageInfoLabel || !prevPageButton || !nextPageButton) {
+            return;
+        }
+
+        var currentPage = Number(state.listMeta.page || 1);
+        var lastPage = Number(state.listMeta.last_page || 1);
+        var total = Number(state.listMeta.total || 0);
+
+        pagination.hidden = total <= Number(state.perPage);
+        pageInfoLabel.textContent = 'Page ' + currentPage + ' of ' + lastPage + ' (' + total + ' subject(s))';
+        prevPageButton.disabled = currentPage <= 1;
+        nextPageButton.disabled = currentPage >= lastPage;
     }
 
     function getTemplateUrl(template, id) {
@@ -178,6 +206,36 @@
         }
     }
 
+    function clearPrintMode() {
+        document.body.classList.remove('prereq-print-list');
+        document.body.classList.remove('prereq-print-subject');
+    }
+
+    function printCurrentView(mode) {
+        clearPrintMode();
+        document.body.classList.add(mode === 'subject' ? 'prereq-print-subject' : 'prereq-print-list');
+
+        var didCleanup = false;
+        function cleanupPrintMode() {
+            if (didCleanup) {
+                return;
+            }
+
+            didCleanup = true;
+            clearPrintMode();
+            window.removeEventListener('afterprint', cleanupPrintMode);
+        }
+
+        window.addEventListener('afterprint', cleanupPrintMode);
+
+        setTimeout(function () {
+            window.print();
+
+            // Some browsers do not fire afterprint reliably.
+            setTimeout(cleanupPrintMode, 1200);
+        }, 70);
+    }
+
     function renderListView() {
         if (!listContent) {
             return;
@@ -226,7 +284,7 @@
         listContent.innerHTML = html;
     }
 
-    function loadPrerequisiteList() {
+    function loadPrerequisiteList(pageNumber) {
         if (!LIST_URL || !courseSelect || !curriculumYearSelect) {
             return;
         }
@@ -241,24 +299,68 @@
 
         state.selectedCourseId = courseId;
         state.selectedCurriculumYear = curriculumYear;
+        if (typeof pageNumber !== 'undefined' && pageNumber !== null) {
+            state.listPage = Math.max(Number(pageNumber) || 1, 1);
+        }
 
         setButtonLoading(viewListButton, true, 'Loading...');
 
-        var url = LIST_URL + '?course_id=' + encodeURIComponent(courseId) + '&curriculum_year=' + encodeURIComponent(curriculumYear);
+        var url = LIST_URL
+            + '?course_id=' + encodeURIComponent(courseId)
+            + '&curriculum_year=' + encodeURIComponent(curriculumYear)
+            + '&page=' + encodeURIComponent(String(state.listPage))
+            + '&per_page=' + encodeURIComponent(String(state.perPage));
         requestJson(url)
             .then(function (payload) {
                 state.yearsPayload = payload.years || [];
+                state.listMeta = payload.meta || {
+                    page: 1,
+                    per_page: state.perPage,
+                    total: 0,
+                    last_page: 1
+                };
+                state.listPage = Number(state.listMeta.page || 1);
                 programTitle.textContent = String(payload.program_title || '').toUpperCase();
                 renderListView();
+                renderPagination();
                 toggleViews(true);
             })
             .catch(function (errorPayload) {
                 console.error(errorPayload);
                 showMessage(resolveErrorMessage(errorPayload, 'Unable to load pre-requisites right now.'), 'warning');
+                state.yearsPayload = [];
+                state.listMeta = {
+                    page: 1,
+                    per_page: state.perPage,
+                    total: 0,
+                    last_page: 1
+                };
+                renderListView();
+                renderPagination();
             })
             .finally(function () {
                 setButtonLoading(viewListButton, false);
             });
+    }
+
+    function downloadListPdf() {
+        if (!state.yearsPayload.length) {
+            showMessage('Please view list first before downloading.', 'warning');
+            return;
+        }
+
+        toggleViews(true);
+        printCurrentView('list');
+    }
+
+    function downloadSubjectPdf() {
+        if (!state.currentSubject || !state.currentSubject.curriculum_subject_id) {
+            showMessage('Please open a subject first before downloading.', 'warning');
+            return;
+        }
+
+        toggleViews(false);
+        printCurrentView('subject');
     }
 
     function resolveErrorMessage(payload, fallback) {
@@ -467,7 +569,7 @@
             .then(function (payload) {
                 showMessage(payload.message || 'Pre-requisites saved successfully.', 'success');
                 toggleViews(true);
-                loadPrerequisiteList();
+                loadPrerequisiteList(state.listPage);
             })
             .catch(function (errorPayload) {
                 console.error(errorPayload);
@@ -483,6 +585,7 @@
             courseSelect.addEventListener('change', function () {
                 state.selectedCourseId = String(courseSelect.value || '');
                 state.selectedCurriculumYear = '';
+                state.listPage = 1;
                 updateCurriculumYearOptions();
             });
         }
@@ -490,17 +593,19 @@
         if (curriculumYearSelect) {
             curriculumYearSelect.addEventListener('change', function () {
                 state.selectedCurriculumYear = String(curriculumYearSelect.value || '');
+                state.listPage = 1;
             });
         }
 
         if (viewListButton) {
-            viewListButton.addEventListener('click', loadPrerequisiteList);
+            viewListButton.addEventListener('click', function () {
+                state.listPage = 1;
+                loadPrerequisiteList(1);
+            });
         }
 
         if (downloadButton) {
-            downloadButton.addEventListener('click', function () {
-                window.print();
-            });
+            downloadButton.addEventListener('click', downloadListPdf);
         }
 
         if (saveButton) {
@@ -510,6 +615,31 @@
         if (backButton) {
             backButton.addEventListener('click', function () {
                 toggleViews(true);
+            });
+        }
+
+        if (subjectDownloadButton) {
+            subjectDownloadButton.addEventListener('click', downloadSubjectPdf);
+        }
+
+        if (prevPageButton) {
+            prevPageButton.addEventListener('click', function () {
+                if (state.listPage <= 1) {
+                    return;
+                }
+
+                loadPrerequisiteList(state.listPage - 1);
+            });
+        }
+
+        if (nextPageButton) {
+            nextPageButton.addEventListener('click', function () {
+                var lastPage = Number(state.listMeta.last_page || 1);
+                if (state.listPage >= lastPage) {
+                    return;
+                }
+
+                loadPrerequisiteList(state.listPage + 1);
             });
         }
 
@@ -578,7 +708,9 @@
         bindEvents();
 
         if (state.selectedCourseId && state.selectedCurriculumYear) {
-            loadPrerequisiteList();
+            loadPrerequisiteList(1);
+        } else {
+            renderPagination();
         }
     }
 
