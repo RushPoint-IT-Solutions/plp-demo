@@ -30,4 +30,9 @@ class Course extends Model
     {
         return $this->belongsTo(Faculty::class, 'dean_director_id');
     }
+
+    public function curricula()
+    {
+        return $this->hasMany(CourseCurriculum::class);
+    }
 }

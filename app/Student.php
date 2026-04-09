@@ -3,14 +3,19 @@
 namespace App;
 
 // app/Student.php
+use App\Concerns\ResolvesAcademicTerm;
+use App\Concerns\ResolvesProgramYearDimensions;
 use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
+    use ResolvesAcademicTerm, ResolvesProgramYearDimensions;
+
     protected $fillable = [
         'student_no', 'name', 'sex', 'age',
         'college', 'program', 'curriculum', 'year_level',
-        'scholarship', 'registration_no', 'school_year', 'semester',
+        'scholarship', 'registration_no', 'school_year', 'semester', 'academic_term_id',
+        'course_id', 'year_block_id',
     ];
 
     /**
@@ -35,6 +40,16 @@ class Student extends Model
     public function deficiencies()
     {
         return $this->hasMany(StudentDeficiency::class);
+    }
+
+    public function canonicalCourse()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function yearBlock()
+    {
+        return $this->belongsTo(YearBlock::class, 'year_block_id');
     }
 
     public function requirementStatuses()

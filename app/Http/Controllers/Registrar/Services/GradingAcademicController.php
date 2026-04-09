@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\GradeRule;
 use App\GradingComponent;
 use App\GradingPeriod;
+use App\Course;
 use App\Student;
 use App\StudentDeficiency;
 use App\TransmutationRule;
@@ -81,8 +82,10 @@ class GradingAcademicController extends Controller
     public function gradingPeriods()
     {
         $gradingPeriods = GradingPeriod::query()
-            ->orderByDesc('school_year')
-            ->orderBy('semester')
+            ->leftJoin('academic_terms as at', 'at.id', '=', 'grading_periods.academic_term_id')
+            ->select('grading_periods.*')
+            ->orderByDesc('at.school_year')
+            ->orderBy('at.term')
             ->orderBy('period')
             ->get();
 
@@ -165,8 +168,10 @@ class GradingAcademicController extends Controller
     public function gradingComponents()
     {
         $gradingComponents = GradingComponent::query()
-            ->orderByDesc('school_year')
-            ->orderBy('semester')
+            ->leftJoin('academic_terms as at', 'at.id', '=', 'grading_components.academic_term_id')
+            ->select('grading_components.*')
+            ->orderByDesc('at.school_year')
+            ->orderBy('at.term')
             ->orderBy('period')
             ->orderBy('sequence_no')
             ->get();
@@ -254,8 +259,12 @@ class GradingAcademicController extends Controller
     public function transmutation()
     {
         $transmutationRules = TransmutationRule::query()
-            ->orderByDesc('school_year')
-            ->orderBy('program')
+            ->leftJoin('academic_terms as at', 'at.id', '=', 'transmutation_rules.academic_term_id')
+            ->leftJoin('courses as c', 'c.id', '=', 'transmutation_rules.course_id')
+            ->with('canonicalCourse:id,code,name')
+            ->select('transmutation_rules.*')
+            ->orderByDesc('at.school_year')
+            ->orderByRaw("COALESCE(NULLIF(c.code, ''), c.name) ASC")
             ->orderByDesc('initial_from')
             ->get();
 
@@ -275,7 +284,20 @@ class GradingAcademicController extends Controller
             'remarks' => 'required|string|max:100',
         ]);
 
-        $rule = TransmutationRule::create($validated);
+        $courseId = $this->resolveCourseId($validated['program']);
+        if (!$courseId) {
+            return response()->json([
+                'message' => 'The selected program is invalid.',
+                'errors' => [
+                    'program' => ['Program must match an existing course code or name.'],
+                ],
+            ], 422);
+        }
+
+        $payload = $validated;
+        $payload['course_id'] = $courseId;
+
+        $rule = TransmutationRule::create($payload);
 
         return response()->json(['ok' => true, 'id' => $rule->id]);
     }
@@ -293,7 +315,20 @@ class GradingAcademicController extends Controller
             'remarks' => 'required|string|max:100',
         ]);
 
-        $transmutationRule->update($validated);
+        $courseId = $this->resolveCourseId($validated['program']);
+        if (!$courseId) {
+            return response()->json([
+                'message' => 'The selected program is invalid.',
+                'errors' => [
+                    'program' => ['Program must match an existing course code or name.'],
+                ],
+            ], 422);
+        }
+
+        $payload = $validated;
+        $payload['course_id'] = $courseId;
+
+        $transmutationRule->update($payload);
 
         return response()->json(['ok' => true]);
     }
@@ -308,8 +343,9 @@ class GradingAcademicController extends Controller
     public function deficiency()
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
             ->orderBy('name')
-            ->get(['id', 'student_no', 'name', 'program', 'year_level']);
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
 
         $selectedStudent = $students->first();
         $studentDeficiencies = collect();
@@ -432,5 +468,18 @@ class GradingAcademicController extends Controller
         $studentDeficiency->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    private function resolveCourseId($courseValue)
+    {
+        $courseText = trim((string) $courseValue);
+        if ($courseText === '') {
+            return null;
+        }
+
+        return Course::query()
+            ->whereRaw('LOWER(TRIM(code)) = ?', [strtolower($courseText)])
+            ->orWhereRaw('LOWER(TRIM(name)) = ?', [strtolower($courseText)])
+            ->value('id');
     }
 }

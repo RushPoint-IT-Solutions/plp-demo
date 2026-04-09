@@ -22,6 +22,7 @@ class StudentAccountController extends Controller
 
         $familyRows = StudentProfile::query()
             ->leftJoin('students', 'student_profiles.student_no', '=', 'students.student_no')
+            ->leftJoin('year_blocks', 'students.year_block_id', '=', 'year_blocks.id')
             ->select(
                 'student_profiles.id',
                 'student_profiles.student_no',
@@ -37,7 +38,7 @@ class StudentAccountController extends Controller
                 'student_profiles.father_lastname',
                 'student_profiles.guardian_firstname',
                 'student_profiles.guardian_lastname',
-                'students.year_level'
+                'year_blocks.label as year_level'
             )
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($inner) use ($search) {
@@ -57,7 +58,7 @@ class StudentAccountController extends Controller
                 });
             })
             ->when($yearLevel !== '', function ($query) use ($yearLevel) {
-                $query->where('students.year_level', $yearLevel);
+                $query->where('year_blocks.label', $yearLevel);
             })
             ->when($withSiblings, function ($query) {
                 $query->where('student_profiles.number_of_siblings', '>', 0);

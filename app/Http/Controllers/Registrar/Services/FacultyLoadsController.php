@@ -32,11 +32,10 @@ class FacultyLoadsController extends Controller
         $faculty = Faculty::findOrFail($facultyId);
 
         $schoolYears = Subject::query()
-            ->select('school_year')
-            ->whereNotNull('school_year')
-            ->where('school_year', '!=', '')
+            ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
+            ->select('at.school_year')
             ->distinct()
-            ->orderBy('school_year', 'desc')
+            ->orderBy('at.school_year', 'desc')
             ->pluck('school_year');
 
         $defaultSchoolYear = $schoolYears->first();
@@ -56,10 +55,14 @@ class FacultyLoadsController extends Controller
         $assignedSubjects = Subject::query()
             ->where('faculty_id', $faculty->id)
             ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
-                return $q->where('school_year', $selectedSchoolYear);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
+                    $termQuery->where('school_year', $selectedSchoolYear);
+                });
             })
             ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
-                return $q->where('semester', $selectedSemester);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSemester) {
+                    $termQuery->where('term', $selectedSemester);
+                });
             })
             ->orderByRaw('COALESCE(course, "")')
             ->orderByRaw('COALESCE(year_section, "")')
@@ -69,10 +72,14 @@ class FacultyLoadsController extends Controller
         $availableSubjects = Subject::query()
             ->whereNull('faculty_id')
             ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
-                return $q->where('school_year', $selectedSchoolYear);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
+                    $termQuery->where('school_year', $selectedSchoolYear);
+                });
             })
             ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
-                return $q->where('semester', $selectedSemester);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSemester) {
+                    $termQuery->where('term', $selectedSemester);
+                });
             })
             ->orderBy('code')
             ->get();

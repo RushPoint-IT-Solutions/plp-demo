@@ -2,10 +2,13 @@
 
 namespace App;
 
+use App\Concerns\ResolvesLookupCodeFields;
 use Illuminate\Database\Eloquent\Model;
 
 class Applicant extends Model
 {
+    use ResolvesLookupCodeFields;
+
     protected $fillable = [
         'applicant_id',
         'lrn', 'last_name', 'first_name', 'middle_name', 'suffix', 'nickname',
@@ -13,11 +16,15 @@ class Applicant extends Model
         'age', 'civil_status', 'mobile_number', 'email_address', 'photo',
         'present_street', 'present_barangay', 'present_zipcode',
         'present_municipality', 'present_province', 'present_region',
+        'present_location_address_id',
         'same_as_present',
         'permanent_street', 'permanent_barangay', 'permanent_zipcode',
         'permanent_municipality', 'permanent_province', 'permanent_region',
+        'permanent_location_address_id',
         'exam_date', 'exam_room', 'exam_result_status', 'exam_score',
+        'exam_result_status_id',
         'application_status', 'application_draft_step', 'application_submitted_at', 'application_portal_stage',
+        'application_status_id',
     ];
 
     protected $casts = [
@@ -51,5 +58,45 @@ class Applicant extends Model
     public function applicationPreference()
     {
         return $this->hasOne(ApplicantApplicationPreference::class);
+    }
+
+    public function applicationStatusLookup()
+    {
+        return $this->belongsTo(ApplicantApplicationStatus::class, 'application_status_id');
+    }
+
+    public function examResultStatusLookup()
+    {
+        return $this->belongsTo(ApplicantExamResultStatus::class, 'exam_result_status_id');
+    }
+
+    public function getApplicationStatusAttribute($value)
+    {
+        return $this->getLookupCodeAttributeValue('application_status', 'applicationStatusLookup', $value);
+    }
+
+    public function setApplicationStatusAttribute($value)
+    {
+        $this->setLookupCodeAttributeValue(
+            'application_status',
+            'application_status_id',
+            ApplicantApplicationStatus::class,
+            $value
+        );
+    }
+
+    public function getExamResultStatusAttribute($value)
+    {
+        return $this->getLookupCodeAttributeValue('exam_result_status', 'examResultStatusLookup', $value);
+    }
+
+    public function setExamResultStatusAttribute($value)
+    {
+        $this->setLookupCodeAttributeValue(
+            'exam_result_status',
+            'exam_result_status_id',
+            ApplicantExamResultStatus::class,
+            $value
+        );
     }
 }

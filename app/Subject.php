@@ -3,19 +3,43 @@
 namespace App;
 
 // app/Subject.php
+use App\Concerns\ResolvesProgramYearDimensions;
+use App\Concerns\ResolvesLookupCodeFields;
+use App\Concerns\ResolvesAcademicTerm;
 use Illuminate\Database\Eloquent\Model;
 
 class Subject extends Model
 {
+    use ResolvesAcademicTerm, ResolvesProgramYearDimensions, ResolvesLookupCodeFields;
+
     protected $fillable = [
         'code', 'name', 'units', 'days',
+        'is_subject_file_record',
         'lec', 'lab',
+        'is_core', 'is_applied', 'is_specialized',
         'time_start', 'time_end', 'room', 'faculty',
         'faculty_id',
-        'year_section', 'course', 'semester', 'school_year',
-        'grading_status',
-        'load_type', 'credited_tuition_units', 'load_hours', 'added_by',
+        'year_section', 'course', 'course_id', 'semester', 'school_year', 'academic_term_id',
+        'grading_status', 'grading_status_id',
+        'load_type', 'load_type_id', 'credited_tuition_units', 'load_hours', 'added_by',
     ];
+
+    protected $casts = [
+        'is_subject_file_record' => 'boolean',
+        'is_core' => 'boolean',
+        'is_applied' => 'boolean',
+        'is_specialized' => 'boolean',
+    ];
+
+        public function curriculumAssignments()
+        {
+            return $this->hasMany(CourseCurriculumSubject::class);
+        }
+
+        public function requisiteLinks()
+        {
+            return $this->hasMany(CurriculumSubjectRequisite::class, 'requisite_subject_id');
+        }
 
     /**
      * Formatted time range for display: "01:00-02:00 PM"
@@ -63,5 +87,40 @@ class Subject extends Model
     public function facultyModel()
     {
         return $this->belongsTo(Faculty::class, 'faculty_id');
+    }
+
+    public function canonicalCourse()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function gradingStatusLookup()
+    {
+        return $this->belongsTo(SubjectGradingStatus::class, 'grading_status_id');
+    }
+
+    public function loadTypeLookup()
+    {
+        return $this->belongsTo(SubjectLoadType::class, 'load_type_id');
+    }
+
+    public function getGradingStatusAttribute($value)
+    {
+        return $this->getLookupCodeAttributeValue('grading_status', 'gradingStatusLookup', $value);
+    }
+
+    public function setGradingStatusAttribute($value)
+    {
+        $this->setLookupCodeAttributeValue('grading_status', 'grading_status_id', SubjectGradingStatus::class, $value);
+    }
+
+    public function getLoadTypeAttribute($value)
+    {
+        return $this->getLookupCodeAttributeValue('load_type', 'loadTypeLookup', $value);
+    }
+
+    public function setLoadTypeAttribute($value)
+    {
+        $this->setLookupCodeAttributeValue('load_type', 'load_type_id', SubjectLoadType::class, $value);
     }
 }

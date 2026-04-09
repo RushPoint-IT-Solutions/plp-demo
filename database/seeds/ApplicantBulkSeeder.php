@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class ApplicantBulkSeeder extends Seeder
 {
@@ -57,6 +58,34 @@ class ApplicantBulkSeeder extends Seeder
 
         if (empty($strands)) {
             $strands = ['STEM', 'ABM', 'HUMSS', 'GAS', 'ICT'];
+        }
+
+        $hasYearLevelColumn = Schema::hasColumn('applicant_application_preferences', 'year_level');
+        $hasYearLevelIdColumn = Schema::hasColumn('applicant_application_preferences', 'year_level_id');
+        $hasSemesterColumn = Schema::hasColumn('applicant_application_preferences', 'semester');
+        $hasSchoolYearColumn = Schema::hasColumn('applicant_application_preferences', 'school_year');
+        $hasAcademicTermIdColumn = Schema::hasColumn('applicant_application_preferences', 'academic_term_id');
+
+        $yearLevelIds = [];
+        if ($hasYearLevelIdColumn && Schema::hasTable('applicant_year_levels')) {
+            foreach (['1st Year', 'Grade 11'] as $label) {
+                DB::table('applicant_year_levels')->updateOrInsert(
+                    ['code' => $label],
+                    ['label' => $label, 'created_at' => $now, 'updated_at' => $now]
+                );
+            }
+
+            $yearLevelIds = DB::table('applicant_year_levels')->pluck('id', 'code')->toArray();
+        }
+
+        $preferenceSchoolYear = '2026-2027';
+        $preferenceTermLabel = 'First Semester';
+        $academicTermId = null;
+        if ($hasAcademicTermIdColumn && Schema::hasTable('academic_terms')) {
+            $academicTermId = DB::table('academic_terms')
+                ->where('school_year', $preferenceSchoolYear)
+                ->whereRaw("LOWER(TRIM(term)) IN ('first', 'first semester')")
+                ->value('id');
         }
 
         for ($i = 0; $i < 30; $i++) {
@@ -221,21 +250,40 @@ class ApplicantBulkSeeder extends Seeder
                 $applyStrand = $strands[$i % count($strands)];
             }
 
+            $preferencePayload = [
+                'apply_program' => $applyProgram,
+                'apply_strand' => $applyStrand,
+                'apply_course_id' => $applyCourseId,
+                'entry_classification' => 'Regular Freshman',
+                'application_date' => Carbon::now()->copy()->subDays($i % 40)->toDateString(),
+                'campus' => 'Pasig',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            if ($hasYearLevelColumn) {
+                $preferencePayload['year_level'] = ($applyProgram === 'college') ? '1st Year' : 'Grade 11';
+            }
+
+            if ($hasYearLevelIdColumn) {
+                $preferencePayload['year_level_id'] = $yearLevelIds[($applyProgram === 'college') ? '1st Year' : 'Grade 11'] ?? null;
+            }
+
+            if ($hasSemesterColumn) {
+                $preferencePayload['semester'] = $preferenceTermLabel;
+            }
+
+            if ($hasSchoolYearColumn) {
+                $preferencePayload['school_year'] = $preferenceSchoolYear;
+            }
+
+            if ($hasAcademicTermIdColumn) {
+                $preferencePayload['academic_term_id'] = $academicTermId;
+            }
+
             DB::table('applicant_application_preferences')->updateOrInsert(
                 ['applicant_id' => $applicantId],
-                [
-                    'apply_program' => $applyProgram,
-                    'apply_strand' => $applyStrand,
-                    'apply_course_id' => $applyCourseId,
-                    'entry_classification' => 'Regular Freshman',
-                    'year_level' => ($applyProgram === 'college') ? '1st Year' : 'Grade 11',
-                    'semester' => 'First Semester',
-                    'school_year' => '2026-2027',
-                    'application_date' => Carbon::now()->copy()->subDays($i % 40)->toDateString(),
-                    'campus' => 'Pasig',
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
+                $preferencePayload
             );
         }
 

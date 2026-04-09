@@ -1,0 +1,26 @@
+{
+  "locale": "en_PH",
+  "seeder": {
+    "applicants": 2000,
+    "students": 1000,
+    "faculty": 100,
+    "subjects": 5000
+  },
+  "normalization": {
+    "destructive": false,
+    "generate_rollback": true
+  },
+  "chaos_testing": {
+    "enabled": true,
+    "target_url": "http://localhost:8000/registrar/registrar-menu/academic-master/subject-file"
+  },
+  "version_lock": {
+    "laravel": "5.7.29",
+    "php": "7.4.30"
+  },
+  "self_healing": {
+    "max_iterations": 3,
+    "auto_fix": true,
+    "halt_on_critical": true
+  }
+}

@@ -164,8 +164,15 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/program-file/setup/{course}', 'Registrar\RegistrarController@updateProgramSetup')->name('program-file.setup.update');
             Route::delete('/program-file/setup/{course}', 'Registrar\RegistrarController@destroyProgramSetup')->name('program-file.setup.delete');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
+            Route::get('/subject-file/data', 'Registrar\RegistrarController@subjectFileData')->name('subject-file.data');
+            Route::post('/subject-file', 'Registrar\RegistrarController@storeSubjectFile')->name('subject-file.store');
+            Route::put('/subject-file/{subjectId}', 'Registrar\RegistrarController@updateSubjectFile')->name('subject-file.update');
+            Route::delete('/subject-file/{subjectId}', 'Registrar\RegistrarController@destroySubjectFile')->name('subject-file.delete');
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
+            Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data');
+            Route::get('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@preRequisitesSubjectDetail')->name('pre-requisites.subject.show');
+            Route::put('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@updatePreRequisitesSubjectDetail')->name('pre-requisites.subject.update');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });
 

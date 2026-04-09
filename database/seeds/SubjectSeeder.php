@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SubjectSeeder extends Seeder
 {
@@ -9,6 +10,29 @@ class SubjectSeeder extends Seeder
     {
         $now = now();
         $faculty = DB::table('faculties')->where('code', 'FAC-001')->first();
+
+        $hasCourseColumn = Schema::hasColumn('subjects', 'course');
+        $hasCourseIdColumn = Schema::hasColumn('subjects', 'course_id');
+        $hasSemesterColumn = Schema::hasColumn('subjects', 'semester');
+        $hasSchoolYearColumn = Schema::hasColumn('subjects', 'school_year');
+        $hasAcademicTermIdColumn = Schema::hasColumn('subjects', 'academic_term_id');
+
+        $courseIdsByCode = $hasCourseIdColumn
+            ? DB::table('courses')->pluck('id', 'code')->toArray()
+            : [];
+
+        $academicTermIds = [];
+        if ($hasAcademicTermIdColumn && Schema::hasTable('academic_terms')) {
+            $academicTermIds = DB::table('academic_terms')
+                ->select('id', 'school_year', 'term')
+                ->get()
+                ->mapWithKeys(function ($row) {
+                    $key = strtolower(trim((string) $row->school_year) . '|' . trim((string) $row->term));
+
+                    return [$key => (int) $row->id];
+                })
+                ->all();
+        }
 
         $subjects = [
             [
@@ -74,13 +98,55 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $subject) {
+            $academicTermKey = strtolower(trim((string) $subject['school_year']) . '|' . trim((string) $subject['semester']));
+            $academicTermId = isset($academicTermIds[$academicTermKey]) ? (int) $academicTermIds[$academicTermKey] : null;
+
+            $insertPayload = [
+                'code' => $subject['code'],
+                'name' => $subject['name'],
+                'units' => $subject['units'],
+                'days' => $subject['days'],
+                'time_start' => $subject['time_start'],
+                'time_end' => $subject['time_end'],
+                'room' => $subject['room'],
+                'faculty_id' => $subject['faculty_id'],
+                'year_section' => $subject['year_section'],
+                'grading_status' => $subject['grading_status'],
+            ];
+
+            if ($hasCourseColumn) {
+                $insertPayload['course'] = $subject['course'];
+            }
+
+            if ($hasCourseIdColumn) {
+                $insertPayload['course_id'] = isset($courseIdsByCode[$subject['course']])
+                    ? (int) $courseIdsByCode[$subject['course']]
+                    : null;
+            }
+
+            if ($hasSemesterColumn) {
+                $insertPayload['semester'] = $subject['semester'];
+            }
+
+            if ($hasSchoolYearColumn) {
+                $insertPayload['school_year'] = $subject['school_year'];
+            }
+
+            if ($hasAcademicTermIdColumn) {
+                $insertPayload['academic_term_id'] = $academicTermId;
+            }
+
+            $identity = ['code' => $subject['code']];
+            if ($hasAcademicTermIdColumn && $academicTermId) {
+                $identity['academic_term_id'] = $academicTermId;
+            } elseif ($hasSemesterColumn && $hasSchoolYearColumn) {
+                $identity['semester'] = $subject['semester'];
+                $identity['school_year'] = $subject['school_year'];
+            }
+
             DB::table('subjects')->updateOrInsert(
-                [
-                    'code'        => $subject['code'],
-                    'semester'    => $subject['semester'],
-                    'school_year' => $subject['school_year'],
-                ],
-                array_merge($subject, [
+                $identity,
+                array_merge($insertPayload, [
                     'created_at' => $now,
                     'updated_at' => $now,
                 ])

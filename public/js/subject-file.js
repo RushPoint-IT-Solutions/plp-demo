@@ -1,30 +1,282 @@
-/* ── Subject File JS ── */
+/* Subject File JS */
 
-var SUBJECTS = [
-    { code: 'CP 126',  title: 'Capstone Project',                       lec: 2.0, lab: 3.0, core: false, applied: true,  specialized: false },
-    { code: 'LAWR 19', title: 'Life And Works Of Rizal',                 lec: 3.0, lab: 0.0, core: true,  applied: false, specialized: false },
-    { code: 'OOP 111', title: 'Object-Oriented Programming',            lec: 2.0, lab: 3.0, core: false, applied: false, specialized: true  },
-    { code: 'SPI 128', title: 'Social and Professional Issues',         lec: 2.0, lab: 3.0, core: false, applied: true,  specialized: false },
-    { code: 'SAM 125', title: 'System Administration and Maintenance',  lec: 2.0, lab: 3.0, core: false, applied: false, specialized: true  },
-    { code: 'UTS 12',  title: 'Understanding The Self',                 lec: 3.0, lab: 0.0, core: true,  applied: false, specialized: false },
-];
+var SF_PAGE = document.getElementById('subjectFilePage');
+var SF_FETCH_URL = SF_PAGE ? SF_PAGE.getAttribute('data-fetch-url') : '';
+var SF_STORE_URL = SF_PAGE ? SF_PAGE.getAttribute('data-store-url') : '';
+var SF_UPDATE_URL_TEMPLATE = SF_PAGE ? SF_PAGE.getAttribute('data-update-url-template') : '';
+var SF_DELETE_URL_TEMPLATE = SF_PAGE ? SF_PAGE.getAttribute('data-delete-url-template') : '';
+var SF_CSRF_TOKEN = SF_PAGE ? SF_PAGE.getAttribute('data-csrf-token') : '';
 
-var editingIdx = -1;
-var deletingIdx = -1;
+var SUBJECTS = [];
+var editingId = null;
+var deletingId = null;
+var searchTimer = null;
+var currentPage = 1;
+var lastPage = 1;
+var totalRows = 0;
+var perPage = 25;
+var activeSearch = '';
+var isLoading = false;
 
-function yn(v) { return v ? 'Y' : 'N'; }
+function yn(v) {
+    return v ? 'Y' : 'N';
+}
 
-function renderTable(filter) {
-    var tbody = document.getElementById('sfTableBody');
-    tbody.innerHTML = '';
-    var count = 0;
-    SUBJECTS.forEach(function (s, idx) {
-        if (filter) {
-            var f = filter.toLowerCase();
-            if (s.code.toLowerCase().indexOf(f) === -1 &&
-                s.title.toLowerCase().indexOf(f) === -1) return;
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function closeOpenMenus() {
+    document.querySelectorAll('.apst-dropdown').forEach(function (dropdown) {
+        dropdown.classList.remove('open');
+        dropdown.classList.remove('drop-up');
+        dropdown.style.top = '';
+        dropdown.style.left = '';
+        dropdown.style.bottom = '';
+    });
+}
+
+function getSearchValue() {
+    var searchInput = document.getElementById('sfSearchInput');
+    return searchInput ? String(searchInput.value || '').trim() : '';
+}
+
+function getSortDirection() {
+    var sortSelect = document.getElementById('sfSort');
+    return sortSelect ? sortSelect.value : 'asc';
+}
+
+function getUrlFromTemplate(template, id) {
+    if (!template || !id) {
+        return '';
+    }
+
+    return template.replace('__SUBJECT_ID__', String(id));
+}
+
+function getPayloadErrorMessage(payload, fallbackMessage) {
+    if (payload && payload.message) {
+        return payload.message;
+    }
+
+    if (payload && payload.errors && typeof payload.errors === 'object') {
+        var firstErrorKey = Object.keys(payload.errors)[0];
+        if (firstErrorKey && payload.errors[firstErrorKey] && payload.errors[firstErrorKey][0]) {
+            return payload.errors[firstErrorKey][0];
         }
-        count++;
+    }
+
+    return fallbackMessage;
+}
+
+function showErrorMessage(message) {
+    if (typeof showRegistrarToast === 'function') {
+        showRegistrarToast(message, 'warning');
+        return;
+    }
+
+    alert(message);
+}
+
+function removeDuplicateAutoPagers() {
+    var table = document.getElementById('sfTable');
+    if (!table) {
+        return;
+    }
+
+    table.dataset.noAutoPager = '1';
+
+    var pageRoot = document.getElementById('subjectFilePage');
+    if (!pageRoot) {
+        return;
+    }
+
+    pageRoot.querySelectorAll('.rtp-pagination').forEach(function (pager) {
+        pager.parentNode.removeChild(pager);
+    });
+}
+
+function bindSubjectFileControls() {
+    var searchInput = document.getElementById('sfSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterSubjects);
+    }
+
+    var sortSelect = document.getElementById('sfSort');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', sortSubjects);
+    }
+
+    var newBtn = document.getElementById('sfNewBtn');
+    if (newBtn) {
+        newBtn.addEventListener('click', openNewSubjectModal);
+    }
+
+    var perPageSelect = document.getElementById('sfPerPage');
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', changeSubjectPerPage);
+    }
+
+    var prevBtn = document.getElementById('sfPrevBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', goToPrevPage);
+    }
+
+    var nextBtn = document.getElementById('sfNextBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', goToNextPage);
+    }
+}
+
+function setLoadingState(loading) {
+    isLoading = !!loading;
+
+    var tbody = document.getElementById('sfTableBody');
+    if (isLoading && tbody) {
+        tbody.innerHTML = '<tr><td colspan="9">Loading subjects...</td></tr>';
+    }
+
+    renderPagination();
+}
+
+function sendJsonRequest(url, method, payload) {
+    return fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': SF_CSRF_TOKEN
+        },
+        body: JSON.stringify(payload || {}),
+        credentials: 'same-origin'
+    }).then(function (response) {
+        return response.json().catch(function () {
+            return {};
+        }).then(function (payloadData) {
+            if (!response.ok) {
+                throw payloadData;
+            }
+
+            return payloadData;
+        });
+    });
+}
+
+function buildFetchUrl(searchValue, pageValue) {
+    var params = [];
+    if (searchValue !== '') {
+        params.push('search=' + encodeURIComponent(searchValue));
+    }
+
+    params.push('sort=' + encodeURIComponent(getSortDirection()));
+    params.push('page=' + encodeURIComponent(String(pageValue)));
+    params.push('per_page=' + encodeURIComponent(String(perPage)));
+
+    return SF_FETCH_URL + (SF_FETCH_URL.indexOf('?') === -1 ? '?' : '&') + params.join('&');
+}
+
+function loadSubjects(search, page) {
+    if (!SF_FETCH_URL) {
+        return;
+    }
+
+    if (typeof search === 'string') {
+        activeSearch = String(search || '').trim();
+    }
+
+    if (typeof page === 'number' && page > 0) {
+        currentPage = page;
+    }
+
+    var targetPage = currentPage;
+    var url = buildFetchUrl(activeSearch, targetPage);
+    setLoadingState(true);
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    }).then(function (response) {
+        return response.json().catch(function () {
+            return {};
+        }).then(function (payloadData) {
+            if (!response.ok) {
+                throw payloadData;
+            }
+
+            return payloadData;
+        });
+    }).then(function (payloadData) {
+        SUBJECTS = payloadData && payloadData.rows ? payloadData.rows : [];
+        var meta = payloadData && payloadData.meta ? payloadData.meta : {};
+        totalRows = Number(meta.total || 0);
+        lastPage = Number(meta.last_page || 1);
+        if (lastPage < 1) {
+            lastPage = 1;
+        }
+
+        currentPage = Number(meta.page || targetPage);
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+
+        if (currentPage > lastPage) {
+            currentPage = lastPage;
+        }
+
+        perPage = Number(meta.per_page || perPage);
+        if (perPage < 10) {
+            perPage = 10;
+        }
+
+        var perPageSelect = document.getElementById('sfPerPage');
+        if (perPageSelect) {
+            perPageSelect.value = String(perPage);
+        }
+
+        if (SUBJECTS.length === 0 && totalRows > 0 && currentPage > 1) {
+            loadSubjects(activeSearch, currentPage - 1);
+            return;
+        }
+
+        renderTable();
+        renderPagination();
+    }).catch(function (errorPayload) {
+        console.error(errorPayload);
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to load subjects right now.'));
+    }).finally(function () {
+        setLoadingState(false);
+    });
+}
+
+function renderTable() {
+    var tbody = document.getElementById('sfTableBody');
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = '';
+
+    if (!SUBJECTS.length) {
+        tbody.innerHTML = '<tr><td colspan="9">No subjects found.</td></tr>';
+        return;
+    }
+
+    var rowNumberOffset = (currentPage - 1) * perPage;
+
+    SUBJECTS.forEach(function (subject, idx) {
+        var lec = Number(subject.lec || 0);
+        var lab = Number(subject.lab || 0);
+
         var tr = document.createElement('tr');
         tr.innerHTML =
             '<td>' +
@@ -42,58 +294,132 @@ function renderTable(filter) {
                     '</button>' +
                 '</div>' +
             '</td>' +
-            '<td>' + count + '</td>' +
-            '<td>' + s.code + '</td>' +
-            '<td style="text-align:left;">' + s.title + '</td>' +
-            '<td style="text-align:center;">' + s.lec.toFixed(1) + '</td>' +
-            '<td style="text-align:center;">' + s.lab.toFixed(1) + '</td>' +
-            '<td style="text-align:center;">' + yn(s.core) + '</td>' +
-            '<td style="text-align:center;">' + yn(s.applied) + '</td>' +
-            '<td style="text-align:center;">' + yn(s.specialized) + '</td>';
+            '<td>' + (rowNumberOffset + idx + 1) + '</td>' +
+            '<td>' + escapeHtml(subject.code) + '</td>' +
+            '<td style="text-align:left;">' + escapeHtml(subject.title) + '</td>' +
+            '<td style="text-align:center;">' + lec.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + lab.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + yn(subject.core) + '</td>' +
+            '<td style="text-align:center;">' + yn(subject.applied) + '</td>' +
+            '<td style="text-align:center;">' + yn(subject.specialized) + '</td>';
         tbody.appendChild(tr);
     });
 
     var totalRow = document.createElement('tr');
     totalRow.className = 'sf-total-row';
-    totalRow.innerHTML = '<td colspan="9" class="sf-total-cell">Total Subjects: <strong>' + count + '</strong></td>';
+    var rangeStart = rowNumberOffset + 1;
+    var rangeEnd = rowNumberOffset + SUBJECTS.length;
+    totalRow.innerHTML = '<td colspan="9" class="sf-total-cell">Showing <strong>' + rangeStart + '-' + rangeEnd + '</strong> of <strong>' + totalRows + '</strong> subjects</td>';
     tbody.appendChild(totalRow);
 }
 
+function renderPagination() {
+    var pageInfo = document.getElementById('sfPageInfo');
+    var totalInfo = document.getElementById('sfTotalInfo');
+    var prevBtn = document.getElementById('sfPrevBtn');
+    var nextBtn = document.getElementById('sfNextBtn');
+    var perPageSelect = document.getElementById('sfPerPage');
+
+    if (pageInfo) {
+        pageInfo.textContent = 'Page ' + currentPage + ' of ' + lastPage;
+    }
+
+    if (totalInfo) {
+        totalInfo.textContent = totalRows + ' total subjects';
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = isLoading || currentPage <= 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = isLoading || currentPage >= lastPage;
+    }
+
+    if (perPageSelect) {
+        perPageSelect.disabled = isLoading;
+    }
+}
+
 function filterSubjects() {
-    renderTable(document.getElementById('sfSearchInput').value);
+    if (searchTimer) {
+        clearTimeout(searchTimer);
+    }
+
+    searchTimer = setTimeout(function () {
+        loadSubjects(getSearchValue(), 1);
+    }, 250);
 }
 
 function sortSubjects() {
-    var dir = document.getElementById('sfSort').value;
-    SUBJECTS.sort(function (a, b) {
-        var cmp = a.code.localeCompare(b.code);
-        return dir === 'desc' ? -cmp : cmp;
-    });
-    renderTable(document.getElementById('sfSearchInput').value);
+    loadSubjects(activeSearch, 1);
 }
 
-/* ── Dropdown menu ── */
-document.addEventListener('click', function (e) {
-    if (!e.target.closest('.apst-action-btn') && !e.target.closest('.apst-dropdown')) {
-        document.querySelectorAll('.apst-dropdown').forEach(function (d) { d.classList.remove('open'); d.classList.remove('drop-up'); d.style.top = ''; d.style.left = ''; d.style.bottom = ''; });
+function changeSubjectPerPage() {
+    var perPageSelect = document.getElementById('sfPerPage');
+    if (!perPageSelect) {
+        return;
+    }
+
+    var selected = parseInt(perPageSelect.value, 10);
+    if (isNaN(selected)) {
+        selected = 25;
+    }
+
+    if (selected < 10) {
+        selected = 10;
+    }
+
+    if (selected > 100) {
+        selected = 100;
+    }
+
+    perPage = selected;
+    loadSubjects(activeSearch, 1);
+}
+
+function goToPrevPage() {
+    if (currentPage <= 1 || isLoading) {
+        return;
+    }
+
+    loadSubjects(activeSearch, currentPage - 1);
+}
+
+function goToNextPage() {
+    if (currentPage >= lastPage || isLoading) {
+        return;
+    }
+
+    loadSubjects(activeSearch, currentPage + 1);
+}
+
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.apst-action-btn') && !event.target.closest('.apst-dropdown')) {
+        closeOpenMenus();
     }
 });
 
-/* Close dropdown on scroll so the fixed-position menu doesn't float away */
 window.addEventListener('scroll', function () {
-    document.querySelectorAll('.apst-dropdown.open').forEach(function (d) { d.classList.remove('open'); d.classList.remove('drop-up'); d.style.top = ''; d.style.left = ''; d.style.bottom = ''; });
+    closeOpenMenus();
 }, true);
 
-function toggleSubjectMenu(idx, e) {
-    e.stopPropagation();
+function toggleSubjectMenu(idx, event) {
+    event.stopPropagation();
+
     var menu = document.getElementById('sfMenu' + idx);
+    if (!menu) {
+        return;
+    }
+
     var isOpen = menu.classList.contains('open');
-    document.querySelectorAll('.apst-dropdown').forEach(function (d) { d.classList.remove('open'); d.classList.remove('drop-up'); d.style.top = ''; d.style.left = ''; d.style.bottom = ''; });
+    closeOpenMenus();
+
     if (!isOpen) {
         var btn = menu.parentElement.querySelector('.apst-action-btn');
         var rect = btn.getBoundingClientRect();
         var spaceBelow = window.innerHeight - rect.bottom;
-        /* Position using fixed coords relative to viewport */
+
         menu.style.left = (rect.right + 4) + 'px';
         if (spaceBelow < 120) {
             menu.classList.add('drop-up');
@@ -103,13 +429,13 @@ function toggleSubjectMenu(idx, e) {
             menu.style.top = rect.top + 'px';
             menu.style.bottom = 'auto';
         }
+
         menu.classList.add('open');
     }
 }
 
-/* ── New Subject Modal ── */
 function openNewSubjectModal() {
-    editingIdx = -1;
+    editingId = null;
     document.getElementById('sfModalTitle').textContent = 'NEW SUBJECT';
     document.getElementById('sfInputCode').value = '';
     document.getElementById('sfInputTitle').value = '';
@@ -121,91 +447,126 @@ function openNewSubjectModal() {
     document.getElementById('sfModal').style.display = 'flex';
 }
 
-/* ── Edit Subject Modal ── */
 function openEditSubjectModal(idx) {
-    document.querySelectorAll('.apst-dropdown').forEach(function (d) { d.classList.remove('open'); });
-    editingIdx = idx;
-    var s = SUBJECTS[idx];
+    closeOpenMenus();
+    var subject = SUBJECTS[idx];
+    if (!subject) {
+        return;
+    }
+
+    editingId = subject.id;
     document.getElementById('sfModalTitle').textContent = 'EDIT SUBJECT';
-    document.getElementById('sfInputCode').value = s.code;
-    document.getElementById('sfInputTitle').value = s.title;
-    document.getElementById('sfInputLec').value = s.lec;
-    document.getElementById('sfInputLab').value = s.lab;
-    document.getElementById('sfInputCore').checked = s.core;
-    document.getElementById('sfInputApplied').checked = s.applied;
-    document.getElementById('sfInputSpecialized').checked = s.specialized;
+    document.getElementById('sfInputCode').value = subject.code || '';
+    document.getElementById('sfInputTitle').value = subject.title || '';
+    document.getElementById('sfInputLec').value = Number(subject.lec || 0).toFixed(0);
+    document.getElementById('sfInputLab').value = Number(subject.lab || 0).toFixed(0);
+    document.getElementById('sfInputCore').checked = !!subject.core;
+    document.getElementById('sfInputApplied').checked = !!subject.applied;
+    document.getElementById('sfInputSpecialized').checked = !!subject.specialized;
     document.getElementById('sfModal').style.display = 'flex';
 }
 
-function closeSfModal(e) {
-    if (!e || e.target.id === 'sfModal') {
+function closeSfModal(event) {
+    if (!event || event.target.id === 'sfModal') {
         document.getElementById('sfModal').style.display = 'none';
     }
 }
 
 function saveSubject() {
-    var code  = document.getElementById('sfInputCode').value.trim();
-    var title = document.getElementById('sfInputTitle').value.trim();
-    var lec   = parseFloat(document.getElementById('sfInputLec').value) || 0;
-    var lab   = parseFloat(document.getElementById('sfInputLab').value) || 0;
-    var core  = document.getElementById('sfInputCore').checked;
-    var applied = document.getElementById('sfInputApplied').checked;
-    var specialized = document.getElementById('sfInputSpecialized').checked;
+    var code = String(document.getElementById('sfInputCode').value || '').trim();
+    var title = String(document.getElementById('sfInputTitle').value || '').trim();
+    var lec = parseInt(document.getElementById('sfInputLec').value, 10);
+    var lab = parseInt(document.getElementById('sfInputLab').value, 10);
+    var core = !!document.getElementById('sfInputCore').checked;
+    var applied = !!document.getElementById('sfInputApplied').checked;
+    var specialized = !!document.getElementById('sfInputSpecialized').checked;
 
     if (!code || !title) {
-        showRegistrarToast('Subject Code and Title are required.', 'warning');
+        showErrorMessage('Subject Code and Title are required.');
         return;
     }
 
-    var obj = { code: code, title: title, lec: lec, lab: lab, core: core, applied: applied, specialized: specialized };
-
-    if (editingIdx === -1) {
-        SUBJECTS.push(obj);
-    } else {
-        SUBJECTS[editingIdx] = obj;
+    if (isNaN(lec) || lec < 0) {
+        lec = 0;
     }
 
-    document.getElementById('sfModal').style.display = 'none';
-    var msg = editingIdx === -1
-        ? 'Subject "' + code + '" added successfully.'
-        : 'Subject "' + code + '" updated successfully.';
-    document.getElementById('sfSuccessMsg').textContent = msg;
-    document.getElementById('sfSuccessModal').style.display = 'flex';
-    renderTable(document.getElementById('sfSearchInput').value);
+    if (isNaN(lab) || lab < 0) {
+        lab = 0;
+    }
+
+    var isEditing = !!editingId;
+    var method = editingId ? 'PUT' : 'POST';
+    var url = editingId ? getUrlFromTemplate(SF_UPDATE_URL_TEMPLATE, editingId) : SF_STORE_URL;
+    if (!url) {
+        showErrorMessage('Unable to save subject right now.');
+        return;
+    }
+
+    sendJsonRequest(url, method, {
+        code: code,
+        title: title,
+        lec: lec,
+        lab: lab,
+        core: core,
+        applied: applied,
+        specialized: specialized
+    }).then(function (payloadData) {
+        editingId = null;
+        document.getElementById('sfModal').style.display = 'none';
+        document.getElementById('sfSuccessMsg').textContent = payloadData.message || ('Subject "' + code + '" saved successfully.');
+        document.getElementById('sfSuccessModal').style.display = 'flex';
+        loadSubjects(activeSearch, isEditing ? currentPage : 1);
+    }).catch(function (errorPayload) {
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to save subject right now.'));
+    });
 }
 
-/* ── Delete Modal ── */
 function openDeleteSubjectModal(idx) {
-    document.querySelectorAll('.apst-dropdown').forEach(function (d) { d.classList.remove('open'); });
-    deletingIdx = idx;
-    document.getElementById('sfDeleteName').textContent = SUBJECTS[idx].code + ' — ' + SUBJECTS[idx].title;
+    closeOpenMenus();
+    var subject = SUBJECTS[idx];
+    if (!subject) {
+        return;
+    }
+
+    deletingId = subject.id;
+    document.getElementById('sfDeleteName').textContent = subject.code + ' - ' + subject.title;
     document.getElementById('sfDeleteModal').style.display = 'flex';
 }
 
-function closeSfDeleteModal(e) {
-    if (!e || e.target.id === 'sfDeleteModal') {
+function closeSfDeleteModal(event) {
+    if (!event || event.target.id === 'sfDeleteModal') {
         document.getElementById('sfDeleteModal').style.display = 'none';
     }
 }
 
 function confirmDeleteSubject() {
-    if (deletingIdx > -1) {
-        var code = SUBJECTS[deletingIdx].code;
-        SUBJECTS.splice(deletingIdx, 1);
-        deletingIdx = -1;
-        document.getElementById('sfDeleteModal').style.display = 'none';
-        document.getElementById('sfSuccessMsg').textContent = 'Subject "' + code + '" deleted successfully.';
-        document.getElementById('sfSuccessModal').style.display = 'flex';
-        renderTable(document.getElementById('sfSearchInput').value);
+    var deleteUrl = getUrlFromTemplate(SF_DELETE_URL_TEMPLATE, deletingId);
+    if (!deleteUrl) {
+        showErrorMessage('Unable to delete subject right now.');
+        return;
     }
+
+    sendJsonRequest(deleteUrl, 'DELETE', {}).then(function (payloadData) {
+        deletingId = null;
+        document.getElementById('sfDeleteModal').style.display = 'none';
+        document.getElementById('sfSuccessMsg').textContent = payloadData.message || 'Subject deleted successfully.';
+        document.getElementById('sfSuccessModal').style.display = 'flex';
+        loadSubjects(activeSearch, currentPage);
+    }).catch(function (errorPayload) {
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to delete subject right now.'));
+    });
 }
 
-/* ── Success Modal ── */
-function closeSfSuccess(e) {
-    if (!e || e.target.id === 'sfSuccessModal') {
+function closeSfSuccess(event) {
+    if (!event || event.target.id === 'sfSuccessModal') {
         document.getElementById('sfSuccessModal').style.display = 'none';
     }
 }
 
-/* ── Initial render ── */
-renderTable();
+if (SF_PAGE) {
+    bindSubjectFileControls();
+    removeDuplicateAutoPagers();
+    window.setTimeout(removeDuplicateAutoPagers, 200);
+    window.setTimeout(removeDuplicateAutoPagers, 900);
+    loadSubjects('', 1);
+}
