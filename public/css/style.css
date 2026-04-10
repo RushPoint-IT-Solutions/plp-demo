@@ -17392,6 +17392,285 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   color: #374151;
 }
 
+.page-services-grading-academic .ga-toolbar {
+  gap: 10px;
+}
+
+.page-services-grading-academic .ga-toolbar .ga-search-wrap.sf-search-box {
+  width: min(460px, 100%);
+  max-width: 460px;
+}
+
+.page-services-grading-academic .ga-trans-table {
+  table-layout: fixed;
+  min-width: 980px;
+}
+
+.page-services-grading-academic .ga-trans-table thead th {
+  vertical-align: middle;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-head-top th[colspan] {
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.35);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-head-sub th {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 9px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-head-top th[rowspan="2"] {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-sy {
+  width: 95px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-term {
+  width: 84px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-program {
+  width: 100px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-initial {
+  width: 90px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-grade {
+  width: 120px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-code {
+  width: 80px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-remarks {
+  width: 140px;
+}
+
+.page-services-grading-academic .ga-trans-table .ga-trans-col-action {
+  width: 82px;
+}
+
+.page-services-grading-academic .ga-trans-table thead th,
+.page-services-grading-academic .ga-trans-table tbody td {
+  text-align: center;
+  white-space: nowrap;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.page-services-grading-academic .ga-trans-table tbody td:nth-child(9) {
+  text-align: center;
+  padding-left: 0;
+}
+
+.page-services-grading-academic .ga-trans-table td.ga-state-pass,
+.page-services-grading-academic .ga-trans-table td.ga-state-fail {
+  text-align: center;
+}
+
+.page-services-grading-academic .ga-trans-table td.ga-state-pass {
+  color: #28a745;
+  font-weight: 700;
+}
+
+.page-services-grading-academic .ga-trans-table td.ga-state-fail {
+  color: #dc3545;
+  font-weight: 700;
+}
+
+.page-services-grading-academic .ga-trans-chip {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+
+.page-services-grading-academic .ga-table-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  color: #355649;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.page-services-grading-academic .ga-trans-modal-overlay {
+  display: none;
+}
+
+.page-services-grading-academic .ga-trans-modal-box {
+  max-width: 640px;
+  padding: 25px;
+}
+
+.page-services-grading-academic .ga-trans-modal-box--delete {
+  min-width: 300px;
+}
+
+.page-services-grading-academic .ga-trans-modal-title {
+  margin-bottom: 20px;
+}
+
+.page-services-grading-academic .ga-trans-modal-title--delete {
+  color: #c0392b;
+}
+
+.page-services-grading-academic .ga-trans-delete-text {
+  font-size: 0.88rem;
+  color: #444;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.page-services-grading-academic .ga-trans-modal-panel {
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 16px;
+}
+
+.page-services-grading-academic .ga-trans-modal-panel--standard {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.page-services-grading-academic .ga-trans-modal-panel--accent {
+  background: #f8fbf9;
+  border: 1px solid #cce3d6;
+}
+
+.page-services-grading-academic .ga-trans-modal-panel .tm-modal-grid,
+.page-services-grading-academic .ga-trans-modal-panel .tm-modal-grid-3 {
+  margin-top: 0;
+}
+
+.page-services-grading-academic .ga-trans-modal-panel__label {
+  text-align: center;
+  display: block;
+  margin-bottom: 12px;
+  color: #006837;
+}
+
+.page-services-grading-academic .ga-trans-modal-actions {
+  margin-top: 25px;
+  gap: 12px;
+}
+
+.page-services-grading-academic .ga-trans-modal-actions--center {
+  justify-content: center;
+}
+
+.page-services-grading-academic .ga-trans-btn-cancel {
+  padding: 10px 20px;
+}
+
+.page-services-grading-academic .ga-trans-btn-save {
+  padding: 10px 24px;
+  background: #006837;
+}
+
+.page-services-grading-academic .ga-trans-btn-save:hover {
+  background: #005a2e;
+}
+
+.page-services-grading-academic .ga-trans-btn-save--danger {
+  background: #c0392b;
+}
+
+.page-services-grading-academic .ga-trans-btn-save--danger:hover {
+  background: #a93226;
+}
+
+.page-services-grading-academic .tm-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.page-services-grading-academic .tm-modal-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.page-services-grading-academic .tm-modal-initial-group {
+  grid-column: span 2;
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.page-services-grading-academic .tm-modal-initial-group .req-modal-label {
+  margin-bottom: 12px;
+  display: block;
+  color: #555;
+}
+
+.page-services-grading-academic .tm-modal-initial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.page-services-grading-academic .tm-modal-grid .tm-modal-remarks {
+  margin-left: 0;
+}
+
+.page-services-grading-academic .tm-modal-grid .rg-listbox,
+.page-services-grading-academic .tm-modal-grid-3 .rg-listbox,
+.page-services-grading-academic .tm-modal-initial-grid .rg-listbox {
+  width: 100%;
+}
+
+.page-services-grading-academic .tm-modal-field-group--full {
+  grid-column: 1/-1;
+}
+
+.page-services-grading-academic #tmTable td:first-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+.page-services-grading-academic .ga-toolbar .ga-btn {
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .page-services-grading-academic .ga-toolbar .ga-search-wrap.sf-search-box,
+  .page-services-grading-academic .ga-toolbar .ga-btn {
+    width: 100%;
+  }
+
+  .page-services-grading-academic .tm-modal-grid,
+  .page-services-grading-academic .tm-modal-grid-3,
+  .page-services-grading-academic .tm-modal-initial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-services-grading-academic .tm-modal-initial-group {
+    grid-column: 1/-1;
+  }
+}
+
 .page-services-grading-academic .ga-filter-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(140px, 1fr));

@@ -7,104 +7,6 @@
 @section('content')
 <div class="pf-page">
     <div class="ga-page" id="tmPage">
-        <style>
-            .ga-toolbar {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-
-            .ga-toolbar .ga-search-wrap.sf-search-box {
-                width: min(460px, 100%);
-            }
-
-            .ga-trans-table td.ga-state-pass,
-            .ga-trans-table td.ga-state-fail {
-                text-align: center !important;
-            }
-
-            .ga-trans-table td.ga-state-pass {
-                color: #28a745 !important;
-                font-weight: bold !important;
-            }
-
-            .ga-trans-table td.ga-state-fail {
-                color: #dc3545 !important;
-                font-weight: bold !important;
-            }
-
-            .tm-modal-grid {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 16px;
-                margin-top: 15px;
-            }
-
-            .tm-modal-grid-3 {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 16px;
-                margin-top: 15px;
-            }
-
-            .tm-modal-initial-group {
-                grid-column: span 2;
-                background: #f8f9fa;
-                padding: 12px 16px;
-                border-radius: 6px;
-                border: 1px solid #e2e8f0;
-            }
-
-            .tm-modal-initial-group .req-modal-label {
-                margin-bottom: 12px;
-                display: block;
-                color: #555;
-            }
-
-            .tm-modal-initial-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-            }
-
-            .tm-modal-grid .tm-modal-remarks {
-                margin-left: 0;
-            }
-
-            .tm-modal-grid .rg-listbox,
-            .tm-modal-grid-3 .rg-listbox,
-            .tm-modal-initial-grid .rg-listbox {
-                width: 100%;
-            }
-
-            .ga-table-meta {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-top: 10px;
-                color: #355649;
-                font-size: 0.83rem;
-                font-weight: 600;
-            }
-
-            @media (max-width: 720px) {
-                .tm-modal-grid,
-                .tm-modal-grid-3,
-                .tm-modal-initial-grid {
-                    grid-template-columns: 1fr;
-                }
-                .tm-modal-initial-group {
-                    grid-column: 1 / -1;
-                }
-
-                .ga-toolbar .ga-search-wrap.sf-search-box,
-                .ga-toolbar .ga-btn {
-                    width: 100%;
-                }
-            }
-        </style>
         <form method="GET" action="{{ route('registrar.services.grading-academic.transmutation') }}" class="ga-toolbar" id="tmFilterForm">
             @include('registrar.components.search-bar', [
                 'id' => 'tmSearchInput',
@@ -135,18 +37,18 @@
                     </colgroup>
                     <thead>
                         <tr class="ga-trans-head-top">
-                            <th rowspan="2" style="text-align: center;">Action</th>
-                            <th rowspan="2" style="text-align: center;">SY</th>
-                            <th rowspan="2" style="text-align: center;">Term</th>
-                            <th rowspan="2" style="text-align: center;">Program</th>
-                            <th colspan="2" style="text-align: center;">Initial Grade</th>
-                            <th rowspan="2" style="text-align: center;">Transmuted Grade</th>
-                            <th rowspan="2" style="text-align: center;">Code</th>
-                            <th rowspan="2" style="text-align: center;">Remarks</th>
+                            <th rowspan="2">Action</th>
+                            <th rowspan="2">SY</th>
+                            <th rowspan="2">Term</th>
+                            <th rowspan="2">Program</th>
+                            <th colspan="2">Initial Grade</th>
+                            <th rowspan="2">Transmuted Grade</th>
+                            <th rowspan="2">Code</th>
+                            <th rowspan="2">Remarks</th>
                         </tr>
                         <tr class="ga-trans-head-sub">
-                            <th style="text-align: center;">From</th>
-                            <th style="text-align: center;">To</th>
+                            <th>From</th>
+                            <th>To</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -199,12 +101,12 @@
             {{ $transmutationRules->links() }}
         </div>
 
-        <div class="req-modal-overlay" id="gaTransmutationNewModal" style="display:none;">
-            <div class="req-modal-box" style="max-width:640px; padding: 25px;">
-                <h3 class="req-modal-title" id="gaTransmutationNewTitle" style="margin-bottom: 20px;">ADD TRANSMUTATION RULE</h3>
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationNewModal">
+            <div class="req-modal-box ga-trans-modal-box">
+                <h3 class="req-modal-title ga-trans-modal-title" id="gaTransmutationNewTitle">ADD TRANSMUTATION RULE</h3>
                 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <div class="tm-modal-grid" style="margin-top: 0;">
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid">
                         <div class="req-modal-field-group">
                             <label class="req-modal-label">SY</label>
                             @include('registrar.components.listbox-select', [
@@ -225,8 +127,8 @@
                                 'placeholder' => 'Select term',
                             ])
                         </div>
-                        
-                        <div class="req-modal-field-group" style="grid-column: 1 / -1;">
+
+                        <div class="req-modal-field-group tm-modal-field-group--full">
                             <label class="req-modal-label">PROGRAM</label>
                             @include('registrar.components.listbox-select', [
                                 'id' => 'tmNewProgram',
@@ -239,35 +141,35 @@
                     </div>
                 </div>
 
-                <div style="background: #f8fbf9; border: 1px solid #cce3d6; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <label class="req-modal-label" style="text-align: center; display: block; margin-bottom: 12px; color: #006837;">INITIAL GRADE</label>
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--accent">
+                    <label class="req-modal-label ga-trans-modal-panel__label">INITIAL GRADE</label>
                     <div class="tm-modal-initial-grid">
                         <div class="req-modal-field-group"><label class="req-modal-label">FROM</label><input class="req-modal-input" id="tmNewFrom" placeholder="75.00"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmNewTo" placeholder="79.99"></div>
                     </div>
                 </div>
 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
-                    <div class="tm-modal-grid-3" style="margin-top: 0;">
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid-3">
                         <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED</label><input class="req-modal-input" id="tmNewGrade" placeholder="3.00"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmNewCode" placeholder="P"></div>
                         <div class="req-modal-field-group tm-modal-remarks"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmNewRemarks" placeholder="Passed"></div>
                     </div>
                 </div>
 
-                <div class="req-modal-actions" style="margin-top: 25px; gap: 12px;">
-                    <button type="button" class="req-btn-cancel" data-ga-close style="padding: 10px 20px;">Cancel</button>
-                    <button type="button" class="req-btn-save" data-tm-save-new style="padding: 10px 24px; background: #006837;">Save</button>
+                <div class="req-modal-actions ga-trans-modal-actions">
+                    <button type="button" class="req-btn-cancel ga-trans-btn-cancel" data-ga-close>Cancel</button>
+                    <button type="button" class="req-btn-save ga-trans-btn-save" data-tm-save-new>Save</button>
                 </div>
             </div>
         </div>
 
-        <div class="req-modal-overlay" id="gaTransmutationActionModal" style="display:none;">
-            <div class="req-modal-box" style="max-width:640px; padding: 25px;">
-                <h3 class="req-modal-title" id="gaTransmutationActionTitle" style="margin-bottom: 20px;">EDIT TRANSMUTATION RULE</h3>
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationActionModal">
+            <div class="req-modal-box ga-trans-modal-box">
+                <h3 class="req-modal-title ga-trans-modal-title" id="gaTransmutationActionTitle">EDIT TRANSMUTATION RULE</h3>
                 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <div class="tm-modal-grid" style="margin-top: 0;">
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid">
                         <div class="req-modal-field-group">
                             <label class="req-modal-label">SY</label>
                             @include('registrar.components.listbox-select', [
@@ -288,8 +190,8 @@
                                 'placeholder' => 'Select term',
                             ])
                         </div>
-                        
-                        <div class="req-modal-field-group" style="grid-column: 1 / -1;">
+
+                        <div class="req-modal-field-group tm-modal-field-group--full">
                             <label class="req-modal-label">PROGRAM</label>
                             @include('registrar.components.listbox-select', [
                                 'id' => 'tmEditProgram',
@@ -302,38 +204,38 @@
                     </div>
                 </div>
                     
-                <div style="background: #f8fbf9; border: 1px solid #cce3d6; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <label class="req-modal-label" style="text-align: center; display: block; margin-bottom: 12px; color: #006837;">INITIAL GRADE</label>
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--accent">
+                    <label class="req-modal-label ga-trans-modal-panel__label">INITIAL GRADE</label>
                     <div class="tm-modal-initial-grid">
                         <div class="req-modal-field-group"><label class="req-modal-label">FROM</label><input class="req-modal-input" id="tmEditFrom"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmEditTo"></div>
                     </div>
                 </div>
                     
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
-                    <div class="tm-modal-grid-3" style="margin-top: 0;">
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid-3">
                         <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED</label><input class="req-modal-input" id="tmEditGrade"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmEditCode"></div>
                         <div class="req-modal-field-group tm-modal-remarks"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmEditRemarks"></div>
                     </div>
                 </div>
                 
-                <div class="req-modal-actions" style="margin-top: 25px; gap: 12px;">
-                    <button type="button" class="req-btn-cancel" data-ga-close style="padding: 10px 20px;">Cancel</button>
-                    <button type="button" class="req-btn-save" data-ga-confirm-action style="padding: 10px 24px; background: #006837;">Save</button>
+                <div class="req-modal-actions ga-trans-modal-actions">
+                    <button type="button" class="req-btn-cancel ga-trans-btn-cancel" data-ga-close>Cancel</button>
+                    <button type="button" class="req-btn-save ga-trans-btn-save" data-ga-confirm-action>Save</button>
                 </div>
             </div>
         </div>
 
-        <div class="req-modal-overlay" id="gaTransmutationDeleteModal" style="display:none;">
-            <div class="req-modal-box req-modal-success" style="min-width:300px;">
-                <h3 class="req-modal-title" style="color:#c0392b;" id="gaTransmutationDeleteTitle">DELETE TRANSMUTATION RULE</h3>
-                <p id="gaTransmutationDeleteText" style="font-size:0.88rem; color:#444; margin-bottom:20px; text-align:center;">
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationDeleteModal">
+            <div class="req-modal-box req-modal-success ga-trans-modal-box ga-trans-modal-box--delete">
+                <h3 class="req-modal-title ga-trans-modal-title ga-trans-modal-title--delete" id="gaTransmutationDeleteTitle">DELETE TRANSMUTATION RULE</h3>
+                <p id="gaTransmutationDeleteText" class="ga-trans-delete-text">
                     Are you sure you want to delete this transmutation rule?
                 </p>
-                <div class="req-modal-actions" style="justify-content:center;">
+                <div class="req-modal-actions ga-trans-modal-actions ga-trans-modal-actions--center">
                     <button class="req-btn-cancel" type="button" data-ga-close-delete>Cancel</button>
-                    <button class="req-btn-save" type="button" style="background:#c0392b;" data-ga-confirm-delete>Delete</button>
+                    <button class="req-btn-save ga-trans-btn-save ga-trans-btn-save--danger" type="button" data-ga-confirm-delete>Delete</button>
                 </div>
             </div>
         </div>
