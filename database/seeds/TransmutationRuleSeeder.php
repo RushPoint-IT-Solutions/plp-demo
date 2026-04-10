@@ -29,7 +29,8 @@ class TransmutationRuleSeeder extends Seeder
                 ->select('id', 'school_year', 'term')
                 ->get()
                 ->mapWithKeys(function ($row) {
-                    $key = strtolower(trim((string) $row->school_year) . '|' . trim((string) $row->term));
+                    $canonicalTerm = $this->canonicalTermLabel($row->term);
+                    $key = strtolower(trim((string) $row->school_year) . '|' . $canonicalTerm);
 
                     return [$key => (int) $row->id];
                 })
@@ -70,7 +71,7 @@ class TransmutationRuleSeeder extends Seeder
         ];
 
         foreach ($rows as $row) {
-            $academicTermKey = strtolower(trim((string) $row['school_year']) . '|' . trim((string) $row['term']));
+            $academicTermKey = strtolower(trim((string) $row['school_year']) . '|' . $this->canonicalTermLabel($row['term']));
             $academicTermId = isset($academicTermIds[$academicTermKey]) ? (int) $academicTermIds[$academicTermKey] : null;
             $courseId = isset($courseIdsByCode[$row['program']]) ? (int) $courseIdsByCode[$row['program']] : null;
 
@@ -128,5 +129,28 @@ class TransmutationRuleSeeder extends Seeder
                 ])
             );
         }
+    }
+
+    private function canonicalTermLabel($value)
+    {
+        $normalized = strtolower(trim((string) $value));
+
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (strpos($normalized, 'summer') !== false) {
+            return 'summer';
+        }
+
+        if (strpos($normalized, 'second') !== false || strpos($normalized, '2nd') !== false || $normalized === '2') {
+            return 'second';
+        }
+
+        if (strpos($normalized, 'first') !== false || strpos($normalized, '1st') !== false || $normalized === '1') {
+            return 'first';
+        }
+
+        return $normalized;
     }
 }

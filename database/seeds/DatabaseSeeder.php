@@ -105,6 +105,12 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        if ((bool) env('SEED_HIGH_VOLUME_TRANSMUTATION', false)) {
+            $this->call([
+                HighVolumeTransmutationRuleSeeder::class,
+            ]);
+        }
+
         if ((bool) env('SEED_HIGH_VOLUME_SLOTS', false)) {
             $this->call([
                 HighVolumeSlotMonitoringSeeder::class,

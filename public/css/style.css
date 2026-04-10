@@ -9048,13 +9048,9 @@ select.req-modal-input {
   padding-right: 8px;
 }
 
-.page-services-grading-academic .ga-trans-table tbody td:nth-child(8) {
-  text-align: center;
-  padding-left: 0;
-}
-
 .page-services-grading-academic .ga-trans-table tbody td:nth-child(9) {
   text-align: center;
+  padding-left: 0;
 }
 
 #tmTable td:first-child .apst-action-btn {

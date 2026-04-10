@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Registrar\Services;
 
 use App\Http\Controllers\Controller;
+use App\AcademicTerm;
 use App\GradeRule;
 use App\GradingComponent;
 use App\GradingPeriod;
@@ -256,27 +257,123 @@ class GradingAcademicController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function transmutation()
+    public function transmutation(Request $request)
     {
+        $search = trim((string) $request->query('q', ''));
+
         $transmutationRules = TransmutationRule::query()
             ->leftJoin('academic_terms as at', 'at.id', '=', 'transmutation_rules.academic_term_id')
             ->leftJoin('courses as c', 'c.id', '=', 'transmutation_rules.course_id')
-            ->with('canonicalCourse:id,code,name')
+            ->with(['academicTerm:id,school_year,term', 'canonicalCourse:id,code,name'])
             ->select('transmutation_rules.*')
-            ->orderByDesc('at.school_year')
-            ->orderByRaw("COALESCE(NULLIF(c.code, ''), c.name) ASC")
-            ->orderByDesc('initial_from')
-            ->get();
+            ->when($search !== '', function ($query) use ($search) {
+                $like = '%' . $search . '%';
 
-        return view('registrar.services.grading-academic.transmutation', compact('transmutationRules'));
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('at.school_year', 'like', $like)
+                        ->orWhere('at.term', 'like', $like)
+                        ->orWhere('c.code', 'like', $like)
+                        ->orWhere('c.name', 'like', $like)
+                        ->orWhere('transmutation_rules.code', 'like', $like)
+                        ->orWhere('transmutation_rules.remarks', 'like', $like)
+                        ->orWhereRaw('CAST(transmutation_rules.initial_from AS CHAR) like ?', [$like])
+                        ->orWhereRaw('CAST(transmutation_rules.initial_to AS CHAR) like ?', [$like])
+                        ->orWhereRaw('CAST(transmutation_rules.transmuted_grade AS CHAR) like ?', [$like]);
+                });
+            })
+            ->orderByDesc('at.school_year')
+            ->orderByRaw($this->transmutationTermSortSql('at.term'))
+            ->orderByRaw("COALESCE(NULLIF(c.code, ''), c.name) ASC")
+            ->orderByDesc('transmutation_rules.initial_from')
+            ->paginate(25)
+            ->appends($request->except('page'));
+
+        $transmutationRules->getCollection()->transform(function ($rule) {
+            $academicTerm = $rule->relationLoaded('academicTerm') ? $rule->academicTerm : null;
+            $canonicalCourse = $rule->relationLoaded('canonicalCourse') ? $rule->canonicalCourse : null;
+
+            $rule->resolved_school_year = trim((string) optional($academicTerm)->school_year);
+            $rule->resolved_term = $this->canonicalTransmutationTermLabel(optional($academicTerm)->term);
+            $rule->resolved_program = trim((string) (optional($canonicalCourse)->code ?: optional($canonicalCourse)->name));
+
+            return $rule;
+        });
+
+        $schoolYearOptions = AcademicTerm::query()
+            ->whereNotNull('school_year')
+            ->where('school_year', '<>', '')
+            ->orderBy('school_year', 'desc')
+            ->pluck('school_year')
+            ->unique()
+            ->map(function ($schoolYear) {
+                return [
+                    'value' => (string) $schoolYear,
+                    'label' => (string) $schoolYear,
+                ];
+            })
+            ->values()
+            ->all();
+
+        array_unshift($schoolYearOptions, [
+            'value' => '',
+            'label' => 'Select school year',
+        ]);
+
+        $termOptions = [
+            ['value' => '', 'label' => 'Select term'],
+            ['value' => 'First', 'label' => 'First'],
+            ['value' => 'Second', 'label' => 'Second'],
+            ['value' => 'Summer', 'label' => 'Summer'],
+        ];
+
+        $programOptions = Course::query()
+            ->select('id', 'code', 'name')
+            ->where(function ($query) {
+                $query->whereNotNull('code')->where('code', '<>', '')
+                    ->orWhere(function ($inner) {
+                        $inner->whereNotNull('name')->where('name', '<>', '');
+                    });
+            })
+            ->orderByRaw("COALESCE(NULLIF(code, ''), name) ASC")
+            ->get()
+            ->map(function ($course) {
+                $courseCode = trim((string) $course->code);
+                $courseName = trim((string) $course->name);
+
+                if ($courseCode !== '' && $courseName !== '') {
+                    $label = $courseCode . ' - ' . $courseName;
+                } else {
+                    $label = $courseCode !== '' ? $courseCode : $courseName;
+                }
+
+                return [
+                    'value' => (string) $course->id,
+                    'label' => $label,
+                ];
+            })
+            ->values()
+            ->all();
+
+        array_unshift($programOptions, [
+            'value' => '',
+            'label' => 'Select program',
+        ]);
+
+        return view('registrar.services.grading-academic.transmutation', [
+            'transmutationRules' => $transmutationRules,
+            'search' => $search,
+            'schoolYearOptions' => $schoolYearOptions,
+            'termOptions' => $termOptions,
+            'programOptions' => $programOptions,
+        ]);
     }
 
     public function transmutationStore(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'school_year' => 'required|string|max:20',
-            'term' => 'required|string|max:20',
-            'program' => 'required|string|max:50',
+            'school_year' => 'required|string|max:20|exists:academic_terms,school_year',
+            'term' => 'required|string|in:First,Second,Summer',
+            'course_id' => 'required|integer|exists:courses,id',
             'initial_from' => 'required|numeric',
             'initial_to' => 'required|numeric|gte:initial_from',
             'transmuted_grade' => 'required|numeric',
@@ -284,18 +381,25 @@ class GradingAcademicController extends Controller
             'remarks' => 'required|string|max:100',
         ]);
 
-        $courseId = $this->resolveCourseId($validated['program']);
-        if (!$courseId) {
+        $academicTermId = $this->resolveAcademicTermId($validated['school_year'], $validated['term']);
+        if (!$academicTermId) {
             return response()->json([
-                'message' => 'The selected program is invalid.',
+                'message' => 'The selected school year and term combination is invalid.',
                 'errors' => [
-                    'program' => ['Program must match an existing course code or name.'],
+                    'term' => ['The selected term is not available for the selected school year.'],
                 ],
             ], 422);
         }
 
-        $payload = $validated;
-        $payload['course_id'] = $courseId;
+        $payload = [
+            'academic_term_id' => $academicTermId,
+            'course_id' => (int) $validated['course_id'],
+            'initial_from' => (float) $validated['initial_from'],
+            'initial_to' => (float) $validated['initial_to'],
+            'transmuted_grade' => (float) $validated['transmuted_grade'],
+            'code' => strtoupper(trim($validated['code'])),
+            'remarks' => trim($validated['remarks']),
+        ];
 
         $rule = TransmutationRule::create($payload);
 
@@ -305,9 +409,9 @@ class GradingAcademicController extends Controller
     public function transmutationUpdate(Request $request, TransmutationRule $transmutationRule): JsonResponse
     {
         $validated = $request->validate([
-            'school_year' => 'required|string|max:20',
-            'term' => 'required|string|max:20',
-            'program' => 'required|string|max:50',
+            'school_year' => 'required|string|max:20|exists:academic_terms,school_year',
+            'term' => 'required|string|in:First,Second,Summer',
+            'course_id' => 'required|integer|exists:courses,id',
             'initial_from' => 'required|numeric',
             'initial_to' => 'required|numeric|gte:initial_from',
             'transmuted_grade' => 'required|numeric',
@@ -315,18 +419,25 @@ class GradingAcademicController extends Controller
             'remarks' => 'required|string|max:100',
         ]);
 
-        $courseId = $this->resolveCourseId($validated['program']);
-        if (!$courseId) {
+        $academicTermId = $this->resolveAcademicTermId($validated['school_year'], $validated['term']);
+        if (!$academicTermId) {
             return response()->json([
-                'message' => 'The selected program is invalid.',
+                'message' => 'The selected school year and term combination is invalid.',
                 'errors' => [
-                    'program' => ['Program must match an existing course code or name.'],
+                    'term' => ['The selected term is not available for the selected school year.'],
                 ],
             ], 422);
         }
 
-        $payload = $validated;
-        $payload['course_id'] = $courseId;
+        $payload = [
+            'academic_term_id' => $academicTermId,
+            'course_id' => (int) $validated['course_id'],
+            'initial_from' => (float) $validated['initial_from'],
+            'initial_to' => (float) $validated['initial_to'],
+            'transmuted_grade' => (float) $validated['transmuted_grade'],
+            'code' => strtoupper(trim($validated['code'])),
+            'remarks' => trim($validated['remarks']),
+        ];
 
         $transmutationRule->update($payload);
 
@@ -470,16 +581,67 @@ class GradingAcademicController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    private function resolveCourseId($courseValue)
+    private function resolveAcademicTermId($schoolYear, $canonicalTerm)
     {
-        $courseText = trim((string) $courseValue);
-        if ($courseText === '') {
+        $schoolYear = trim((string) $schoolYear);
+        $canonicalTerm = $this->canonicalTransmutationTermLabel($canonicalTerm);
+
+        if ($schoolYear === '' || $canonicalTerm === '') {
             return null;
         }
 
-        return Course::query()
-            ->whereRaw('LOWER(TRIM(code)) = ?', [strtolower($courseText)])
-            ->orWhereRaw('LOWER(TRIM(name)) = ?', [strtolower($courseText)])
+        return AcademicTerm::query()
+            ->where('school_year', $schoolYear)
+            ->whereIn('term', $this->transmutationTermAliases($canonicalTerm))
             ->value('id');
+    }
+
+    private function canonicalTransmutationTermLabel($value)
+    {
+        $normalized = strtolower(trim((string) $value));
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (strpos($normalized, 'summer') !== false) {
+            return 'Summer';
+        }
+
+        if (strpos($normalized, 'second') !== false || strpos($normalized, '2nd') !== false || $normalized === '2') {
+            return 'Second';
+        }
+
+        if (strpos($normalized, 'first') !== false || strpos($normalized, '1st') !== false || $normalized === '1') {
+            return 'First';
+        }
+
+        return trim((string) $value);
+    }
+
+    private function transmutationTermAliases($canonicalLabel)
+    {
+        if ($canonicalLabel === 'First') {
+            return ['First', '1st Semester', 'First Semester'];
+        }
+
+        if ($canonicalLabel === 'Second') {
+            return ['Second', '2nd Semester', 'Second Semester'];
+        }
+
+        if ($canonicalLabel === 'Summer') {
+            return ['Summer', 'Summer Semester'];
+        }
+
+        return [$canonicalLabel];
+    }
+
+    private function transmutationTermSortSql($qualifiedColumn)
+    {
+        return "CASE
+            WHEN LOWER(" . $qualifiedColumn . ") LIKE '%first%' OR LOWER(" . $qualifiedColumn . ") LIKE '%1st%' THEN 1
+            WHEN LOWER(" . $qualifiedColumn . ") LIKE '%second%' OR LOWER(" . $qualifiedColumn . ") LIKE '%2nd%' THEN 2
+            WHEN LOWER(" . $qualifiedColumn . ") LIKE '%summer%' THEN 3
+            ELSE 4
+        END";
     }
 }
