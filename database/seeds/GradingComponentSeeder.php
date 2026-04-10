@@ -16,7 +16,7 @@ class GradingComponentSeeder extends Seeder
         $rows = [
             [
                 'school_year' => '2025',
-                'period' => 'Prelim',
+                'period' => '1',
                 'semester' => 'First',
                 'section' => 'BSIT-4A',
                 'course_code' => 'IT 4102',
@@ -30,7 +30,7 @@ class GradingComponentSeeder extends Seeder
             ],
             [
                 'school_year' => '2025',
-                'period' => 'Prelim',
+                'period' => '2',
                 'semester' => 'First',
                 'section' => 'BSCS-3A',
                 'course_code' => 'CS 301',
@@ -48,7 +48,6 @@ class GradingComponentSeeder extends Seeder
             DB::table('grading_components')->updateOrInsert(
                 [
                     'school_year' => $row['school_year'],
-                    'period' => $row['period'],
                     'semester' => $row['semester'],
                     'section' => $row['section'],
                     'course_code' => $row['course_code'],

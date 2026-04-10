@@ -16193,6 +16193,88 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   font-weight: 700;
 }
 
+.page-services-attendance .att-assignment-wrap {
+  margin-bottom: 16px;
+}
+
+.page-services-attendance .att-assignment-empty {
+  display: none;
+  padding: 12px;
+  color: #666;
+  border: 1px solid #d9d9d9;
+  border-top: 0;
+  background: #fff;
+}
+
+.page-services-attendance #attResult {
+  display: none;
+}
+
+.page-services-attendance .att-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #c7d8cf;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f7fcf9 0%, #eef8f2 100%);
+  margin-bottom: 10px;
+}
+
+.page-services-attendance .att-summary-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.page-services-attendance .att-summary-pill {
+  background: #ffffff;
+  border: 1px solid #d3e3da;
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 220px;
+  color: #234;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.page-services-attendance .att-summary-label {
+  color: #006837;
+  letter-spacing: 0.02em;
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.page-services-attendance .att-summary-value {
+  color: #1a2a21;
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.page-services-attendance .att-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #c9d8cf;
+  border-radius: 8px;
+  padding: 7px 14px;
+  min-height: 34px;
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+}
+
+.page-services-attendance .att-back-btn:hover {
+  border-color: #006837;
+  color: #006837;
+  background: #f2faf5;
+}
+
 .page-services-attendance .att-table {
   width: 100%;
   min-width: 1120px;
@@ -16589,6 +16671,16 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-grading-academic .ga-filter-grid-compact {
   grid-template-columns: repeat(6, minmax(110px, 1fr));
+}
+
+.page-services-grading-academic #gcTable th,
+.page-services-grading-academic #gcTable td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.page-services-grading-academic #gcTable .apst-dropdown {
+  position: fixed;
 }
 
 .page-services-grading-academic .ga-filter-grid-deficiency {

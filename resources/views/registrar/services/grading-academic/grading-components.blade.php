@@ -7,18 +7,18 @@
 @section('content')
 <div class="pf-page">
     <div class="ga-page">
-        <style>
-            #gcTable th, #gcTable td { white-space: nowrap; vertical-align: middle; }
-            #gcTable .apst-dropdown { position: fixed; }
-        </style>
-        <div class="ga-card ga-filter-card sched-filter-bar">
-            <div class="ga-filter-grid ga-filter-grid-compact">
-                <div><label class="ga-label">School Year</label><select class="app-filter-select"><option>2025-2026</option></select></div>
-                <div><label class="ga-label">Semester</label><select class="app-filter-select"><option>First</option></select></div>
-                <div><label class="ga-label">Section</label><select class="app-filter-select"><option>A</option></select></div>
-                <div><label class="ga-label">Period</label><select class="app-filter-select"><option>-select-</option></select></div>
-                <div><label class="ga-label">Subject Type</label><select class="app-filter-select"><option>-select-</option></select></div>
-                <div class="ga-filter-search"><button type="button" class="pf-btn-new ga-btn ga-btn-primary">Search</button></div>
+        <div class="ga-card ga-filter-card sched-filter-bar ga-periods-filter">
+            <div class="ga-filter-grid ga-filter-grid-periods-lite">
+                <div><label class="ga-label">School Year</label><select class="app-filter-select" id="gcFilterSchoolYear"><option value="">All</option><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option></select></div>
+                <div><label class="ga-label">Semester</label><select class="app-filter-select" id="gcFilterSemester"><option value="">All</option><option>First</option><option>Second</option><option>Summer</option></select></div>
+                <div><label class="ga-label">Section</label><select class="app-filter-select" id="gcFilterSection"><option value="">All</option><option>A</option><option>B</option><option>BSCS 3A</option><option>BSIT 2B</option></select></div>
+                <div><label class="ga-label">Period</label><select class="app-filter-select" id="gcFilterPeriod"><option value="">All</option><option>1</option><option>2</option><option>3</option></select></div>
+                <div><label class="ga-label">Subject Type</label><select class="app-filter-select" id="gcFilterSubjectType"><option value="">All</option><option>Core</option><option>Applied</option><option>Specialized</option><option>No</option></select></div>
+                <div><label class="ga-label">Course Code</label><select class="app-filter-select" id="gcFilterCourseCode"><option value="">All</option><option>CS 301</option><option>IT 4102</option><option>CS301</option><option>IT201</option><option>MATH101</option></select></div>
+                <div class="ga-filter-inline-action">
+                    <label class="ga-label">&nbsp;</label>
+                    <button type="button" class="pf-btn-new ga-btn ga-btn-primary ga-filter-update-btn" id="gcFilterSearch">Search</button>
+                </div>
             </div>
         </div>
 
@@ -30,6 +30,7 @@
                 <table class="ga-table ga-table-compact app-table" id="gcTable">
                     <thead>
                         <tr>
+                            <th style="padding: 10px 15px; text-align: center; width: 80px;">Action</th>
                             <th style="padding: 10px 15px; text-align: left;">SY</th>
                             <th style="padding: 10px 15px; text-align: left;">Period</th>
                             <th style="padding: 10px 15px; text-align: left;">Semester</th>
@@ -42,24 +43,11 @@
                             <th style="padding: 10px 15px; text-align: left;">CAP</th>
                             <th style="padding: 10px 15px; text-align: left;">User</th>
                             <th style="padding: 10px 15px; text-align: left;">Date</th>
-                            <th style="padding: 10px 15px; text-align: center; width: 80px;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($gradingComponents as $index => $component)
                         <tr data-grading-component-id="{{ $component->id }}">
-                            <td>{{ $component->school_year }}</td>
-                            <td>{{ $component->period }}</td>
-                            <td>{{ $component->semester }}</td>
-                            <td>{{ $component->section }}</td>
-                            <td>{{ $component->course_code }}</td>
-                            <td>{{ $component->title }}</td>
-                            <td>{{ $component->sequence_no }}</td>
-                            <td>{{ rtrim(rtrim(number_format((float) $component->percentage, 2, '.', ''), '0'), '.') }}</td>
-                            <td>{{ $component->lab_mode ?: '-' }}</td>
-                            <td>{{ $component->cap ?: '-' }}</td>
-                            <td>{{ $component->updated_by ?: '-' }}</td>
-                            <td>{{ optional($component->effective_date)->format('Y-m-d') ?: '-' }}</td>
                             <td style="text-align: center; vertical-align: middle;">
                                 <div class="apst-action-btn" data-gc-menu-toggle="gcMenu{{ $index }}" aria-label="Open row actions" title="Actions" style="margin: 0 auto;">
                                     <span></span><span></span><span></span>
@@ -79,6 +67,18 @@
                                     </button>
                                 </div>
                             </td>
+                            <td>{{ $component->school_year }}</td>
+                            <td>{{ $component->period }}</td>
+                            <td>{{ $component->semester }}</td>
+                            <td>{{ $component->section }}</td>
+                            <td>{{ $component->course_code }}</td>
+                            <td>{{ $component->title }}</td>
+                            <td>{{ $component->sequence_no }}</td>
+                            <td>{{ rtrim(rtrim(number_format((float) $component->percentage, 2, '.', ''), '0'), '.') }}</td>
+                            <td>{{ $component->lab_mode ?: '-' }}</td>
+                            <td>{{ $component->cap ?: '-' }}</td>
+                            <td>{{ $component->updated_by ?: '-' }}</td>
+                            <td>{{ optional($component->effective_date)->format('Y-m-d') ?: '-' }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="13" style="text-align:center; color:#666;">No grading components found.</td></tr>
@@ -93,28 +93,65 @@
                 
                 <div class="req-modal-fields" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
                     <div class="req-modal-field-group">
-                        <label class="req-modal-label">SCHOOL YEAR</label>
-                        <input class="req-modal-input" id="gaNewCompSy" placeholder="e.g. 2025">
+                        <label class="req-modal-label">SCHOOL YEAR:</label>
+                        <select class="req-modal-input" id="gaNewCompSy">
+                            <option value="">SY</option>
+                            <option>2025-2026</option>
+                            <option>2024-2025</option>
+                            <option>2023-2024</option>
+                        </select>
                     </div>
                     <div class="req-modal-field-group">
-                        <label class="req-modal-label">SEMESTER</label>
-                        <input class="req-modal-input" id="gaNewCompSemester" placeholder="e.g. First">
+                        <label class="req-modal-label">SEMESTER:</label>
+                        <select class="req-modal-input" id="gaNewCompSemester">
+                            <option value="">select semester</option>
+                            <option>First</option>
+                            <option>Second</option>
+                            <option>Summer</option>
+                        </select>
                     </div>
                     <div class="req-modal-field-group">
-                        <label class="req-modal-label">PERIOD ID</label>
-                        <input class="req-modal-input" id="gaNewCompPeriod" placeholder="e.g. Prelim">
+                        <label class="req-modal-label">PERIOD ID:</label>
+                        <select class="req-modal-input" id="gaNewCompPeriod">
+                            <option value="">select all</option>
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                        </select>
                     </div>
-                    <div class="req-modal-field-group">
-                        <label class="req-modal-label">CODE</label>
-                        <input class="req-modal-input" id="gaNewCompCourseCode" placeholder="e.g. IT 4102">
-                    </div>
+                </div>
+
+                <div class="req-modal-fields" style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-top: 15px;">
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">SUBJECT TYPE</label>
-                        <input class="req-modal-input" id="gaNewCompLab" placeholder="Select Course">
+                        <select class="req-modal-input" id="gaNewCompLab">
+                            <option value="">Type</option>
+                            <option>Core</option>
+                            <option>Applied</option>
+                            <option>Specialized</option>
+                        </select>
                     </div>
                     <div class="req-modal-field-group">
-                        <label class="req-modal-label">SECTION</label>
-                        <input class="req-modal-input" id="gaNewCompSection" placeholder="e.g. BSIT-4A">
+                        <label class="req-modal-label">COURSE:</label>
+                        <select class="req-modal-input" id="gaNewCompCourseCode">
+                            <option value="">Select Course</option>
+                            <option>CS301</option>
+                            <option>IT201</option>
+                            <option>MATH101</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="req-modal-fields" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                    <div class="req-modal-field-group">
+                        <label class="req-modal-label">SECTION:</label>
+                        <select class="req-modal-input" id="gaNewCompSection">
+                            <option value="">Select Section</option>
+                            <option>A</option>
+                            <option>B</option>
+                            <option>BSCS 3A</option>
+                            <option>BSIT 2B</option>
+                        </select>
                     </div>
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">PERCENTAGE</label>
@@ -128,29 +165,17 @@
                 
                 <div class="req-modal-fields" style="margin-top: 15px;">
                     <div class="req-modal-field-group">
-                        <label class="req-modal-label">COMPONENT'S TITLE</label>
-                        <input class="req-modal-input" id="gaNewCompTitle" placeholder="e.g. Written/Seatwork">
-                    </div>
-                </div>
-
-                <div class="req-modal-fields" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
-                    <div class="req-modal-field-group">
-                        <label class="req-modal-label">CAP</label>
-                        <input class="req-modal-input" id="gaNewCompCap" placeholder="No">
-                    </div>
-                    <div class="req-modal-field-group">
-                        <label class="req-modal-label">USER</label>
-                        <input class="req-modal-input" id="gaNewCompUser" placeholder="Registrar">
-                    </div>
-                    <div class="req-modal-field-group">
-                        <label class="req-modal-label">DATE</label>
-                        <input class="req-modal-input" id="gaNewCompDate" type="date" onclick="this.showPicker()">
+                        <label class="req-modal-label">COMPONENT'S TITLE:</label>
+                        <input class="req-modal-input" id="gaNewCompTitle" placeholder="Title">
                     </div>
                 </div>
                 
-                <div class="req-modal-actions" style="margin-top: 25px;">
+                <div class="req-modal-actions" style="margin-top: 25px; justify-content: space-between;">
+                    <button type="button" class="req-btn-save" style="background:#ff4d4f;" data-gc-clear-new>Clear Entries</button>
+                    <div>
                     <button type="button" class="req-btn-cancel" onclick="document.getElementById('gaComponentsNewModal').style.display='none'">Cancel</button>
                     <button type="button" class="req-btn-save" style="background:#006837;" data-gc-save-new>Save</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,6 +227,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!page) return;
 
     var table = document.getElementById('gcTable');
+    var gcFilterSchoolYear = document.getElementById('gcFilterSchoolYear');
+    var gcFilterSemester = document.getElementById('gcFilterSemester');
+    var gcFilterSection = document.getElementById('gcFilterSection');
+    var gcFilterPeriod = document.getElementById('gcFilterPeriod');
+    var gcFilterSubjectType = document.getElementById('gcFilterSubjectType');
+    var gcFilterCourseCode = document.getElementById('gcFilterCourseCode');
+    var gcFilterSearch = document.getElementById('gcFilterSearch');
     var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
     var gcStoreUrl = @json(route('registrar.services.grading-academic.grading-components.store'));
     var gcUpdateUrlTemplate = @json(route('registrar.services.grading-academic.grading-components.update', ['gradingComponent' => '__ID__']));
@@ -226,10 +258,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var rect = trigger.getBoundingClientRect();
         var spaceBelow = window.innerHeight - rect.bottom;
-        
-        // Position menu to the left of the action button so it doesn't overflow screen
-        menu.style.left = 'auto';
-        menu.style.right = (window.innerWidth - rect.left + 4) + 'px';
+        var leftPosition = rect.right + 4;
+
+        menu.style.right = 'auto';
+        if ((leftPosition + 180) > window.innerWidth) {
+            leftPosition = Math.max(8, rect.left - 184);
+        }
+        menu.style.left = leftPosition + 'px';
         
         if (spaceBelow < 120) {
             menu.classList.add('drop-up');
@@ -265,10 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
         title: document.getElementById('gaNewCompTitle'),
         sequence: document.getElementById('gaNewCompSequence'),
         percentage: document.getElementById('gaNewCompPercentage'),
-        lab: document.getElementById('gaNewCompLab'),
-        cap: document.getElementById('gaNewCompCap'),
-        user: document.getElementById('gaNewCompUser'),
-        date: document.getElementById('gaNewCompDate')
+        lab: document.getElementById('gaNewCompLab')
     };
     var actionConfirmBtn = page.querySelector('#gaComponentsActionModal [data-ga-confirm-action]');
     var compInputs = {
@@ -290,6 +322,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function gcBuildUrl(template, id) {
         return String(template).replace('__ID__', String(id));
+    }
+
+    function normalizeText(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    function applyGcFilters() {
+        if (!table || !table.tBodies.length) return;
+        var tbody = table.tBodies[0];
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr[data-grading-component-id]'));
+        var visibleCount = 0;
+
+        rows.forEach(function (row) {
+            if (row.cells.length < 13) return;
+
+            var rowSchoolYear = normalizeText(row.cells[1].textContent);
+            var rowPeriod = normalizeText(row.cells[2].textContent);
+            var rowSemester = normalizeText(row.cells[3].textContent);
+            var rowSection = normalizeText(row.cells[4].textContent);
+            var rowCourseCode = normalizeText(row.cells[5].textContent);
+            var rowSubjectType = normalizeText(row.cells[9].textContent);
+
+            var schoolYearOk = !gcFilterSchoolYear || !gcFilterSchoolYear.value || rowSchoolYear === normalizeText(gcFilterSchoolYear.value);
+            var semesterOk = !gcFilterSemester || !gcFilterSemester.value || rowSemester === normalizeText(gcFilterSemester.value);
+            var sectionOk = !gcFilterSection || !gcFilterSection.value || rowSection.indexOf(normalizeText(gcFilterSection.value)) !== -1;
+            var periodOk = !gcFilterPeriod || !gcFilterPeriod.value || rowPeriod === normalizeText(gcFilterPeriod.value);
+            var subjectTypeOk = !gcFilterSubjectType || !gcFilterSubjectType.value || rowSubjectType.indexOf(normalizeText(gcFilterSubjectType.value)) !== -1;
+            var courseCodeOk = !gcFilterCourseCode || !gcFilterCourseCode.value || rowCourseCode.indexOf(normalizeText(gcFilterCourseCode.value)) !== -1;
+
+            var visible = schoolYearOk && semesterOk && sectionOk && periodOk && subjectTypeOk && courseCodeOk;
+            row.style.display = visible ? '' : 'none';
+            if (visible) visibleCount += 1;
+        });
+
+        var emptyRow = tbody.querySelector('#gcFilterEmptyRow');
+        if (!visibleCount) {
+            if (!emptyRow) {
+                emptyRow = document.createElement('tr');
+                emptyRow.id = 'gcFilterEmptyRow';
+                emptyRow.innerHTML = '<td colspan="13" style="text-align:center; color:#666;">No matching grading components found.</td>';
+                tbody.appendChild(emptyRow);
+            }
+        } else if (emptyRow) {
+            emptyRow.parentNode.removeChild(emptyRow);
+        }
     }
 
     function gcRequest(url, method, payload) {
@@ -355,34 +432,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function fillInputsFromRow(row) {
         if (!row || row.cells.length < 13) return;
-        if (compInputs.sy) compInputs.sy.value = (row.cells[0].textContent || '').trim();
-        if (compInputs.period) compInputs.period.value = (row.cells[1].textContent || '').trim();
-        if (compInputs.semester) compInputs.semester.value = (row.cells[2].textContent || '').trim();
-        if (compInputs.section) compInputs.section.value = (row.cells[3].textContent || '').trim();
-        if (compInputs.courseCode) compInputs.courseCode.value = (row.cells[4].textContent || '').trim();
-        if (compInputs.title) compInputs.title.value = (row.cells[5].textContent || '').trim();
-        if (compInputs.sequence) compInputs.sequence.value = (row.cells[6].textContent || '').trim();
-        if (compInputs.percentage) compInputs.percentage.value = (row.cells[7].textContent || '').trim();
-        if (compInputs.lab) compInputs.lab.value = (row.cells[8].textContent || '').trim();
-        if (compInputs.cap) compInputs.cap.value = (row.cells[9].textContent || '').trim();
-        if (compInputs.user) compInputs.user.value = (row.cells[10].textContent || '').trim();
-        if (compInputs.date) compInputs.date.value = (row.cells[11].textContent || '').trim();
+        if (compInputs.sy) compInputs.sy.value = (row.cells[1].textContent || '').trim();
+        if (compInputs.period) compInputs.period.value = (row.cells[2].textContent || '').trim();
+        if (compInputs.semester) compInputs.semester.value = (row.cells[3].textContent || '').trim();
+        if (compInputs.section) compInputs.section.value = (row.cells[4].textContent || '').trim();
+        if (compInputs.courseCode) compInputs.courseCode.value = (row.cells[5].textContent || '').trim();
+        if (compInputs.title) compInputs.title.value = (row.cells[6].textContent || '').trim();
+        if (compInputs.sequence) compInputs.sequence.value = (row.cells[7].textContent || '').trim();
+        if (compInputs.percentage) compInputs.percentage.value = (row.cells[8].textContent || '').trim();
+        if (compInputs.lab) compInputs.lab.value = (row.cells[9].textContent || '').trim();
+        if (compInputs.cap) compInputs.cap.value = (row.cells[10].textContent || '').trim();
+        if (compInputs.user) compInputs.user.value = (row.cells[11].textContent || '').trim();
+        if (compInputs.date) compInputs.date.value = (row.cells[12].textContent || '').trim();
     }
 
     function saveInputsToRow(row) {
         if (!row || row.cells.length < 13) return;
-        row.cells[0].textContent = compInputs.sy && compInputs.sy.value ? compInputs.sy.value.trim() : row.cells[0].textContent;
-        row.cells[1].textContent = compInputs.period && compInputs.period.value ? compInputs.period.value.trim() : row.cells[1].textContent;
-        row.cells[2].textContent = compInputs.semester && compInputs.semester.value ? compInputs.semester.value.trim() : row.cells[2].textContent;
-        row.cells[3].textContent = compInputs.section && compInputs.section.value ? compInputs.section.value.trim() : row.cells[3].textContent;
-        row.cells[4].textContent = compInputs.courseCode && compInputs.courseCode.value ? compInputs.courseCode.value.trim() : row.cells[4].textContent;
-        row.cells[5].textContent = compInputs.title && compInputs.title.value ? compInputs.title.value.trim() : row.cells[5].textContent;
-        row.cells[6].textContent = compInputs.sequence && compInputs.sequence.value ? compInputs.sequence.value.trim() : row.cells[6].textContent;
-        row.cells[7].textContent = compInputs.percentage && compInputs.percentage.value ? compInputs.percentage.value.trim() : row.cells[7].textContent;
-        row.cells[8].textContent = compInputs.lab && compInputs.lab.value ? compInputs.lab.value.trim() : row.cells[8].textContent;
-        row.cells[9].textContent = compInputs.cap && compInputs.cap.value ? compInputs.cap.value.trim() : row.cells[9].textContent;
-        row.cells[10].textContent = compInputs.user && compInputs.user.value ? compInputs.user.value.trim() : row.cells[10].textContent;
-        row.cells[11].textContent = compInputs.date && compInputs.date.value ? compInputs.date.value.trim() : row.cells[11].textContent;
+        row.cells[1].textContent = compInputs.sy && compInputs.sy.value ? compInputs.sy.value.trim() : row.cells[1].textContent;
+        row.cells[2].textContent = compInputs.period && compInputs.period.value ? compInputs.period.value.trim() : row.cells[2].textContent;
+        row.cells[3].textContent = compInputs.semester && compInputs.semester.value ? compInputs.semester.value.trim() : row.cells[3].textContent;
+        row.cells[4].textContent = compInputs.section && compInputs.section.value ? compInputs.section.value.trim() : row.cells[4].textContent;
+        row.cells[5].textContent = compInputs.courseCode && compInputs.courseCode.value ? compInputs.courseCode.value.trim() : row.cells[5].textContent;
+        row.cells[6].textContent = compInputs.title && compInputs.title.value ? compInputs.title.value.trim() : row.cells[6].textContent;
+        row.cells[7].textContent = compInputs.sequence && compInputs.sequence.value ? compInputs.sequence.value.trim() : row.cells[7].textContent;
+        row.cells[8].textContent = compInputs.percentage && compInputs.percentage.value ? compInputs.percentage.value.trim() : row.cells[8].textContent;
+        row.cells[9].textContent = compInputs.lab && compInputs.lab.value ? compInputs.lab.value.trim() : row.cells[9].textContent;
+        row.cells[10].textContent = compInputs.cap && compInputs.cap.value ? compInputs.cap.value.trim() : row.cells[10].textContent;
+        row.cells[11].textContent = compInputs.user && compInputs.user.value ? compInputs.user.value.trim() : row.cells[11].textContent;
+        row.cells[12].textContent = compInputs.date && compInputs.date.value ? compInputs.date.value.trim() : row.cells[12].textContent;
     }
 
     page.addEventListener('click', function (event) {
@@ -456,6 +533,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        if (event.target.matches('[data-gc-clear-new]')) {
+            resetNewForm();
+            return;
+        }
+
         if (event.target.matches('[data-gc-confirm-delete]')) {
             if (!activeRow) {
                 document.getElementById('gaComponentsDeleteModal').style.display = 'none';
@@ -488,6 +570,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('scroll', closeActionMenus, true);
+    if (gcFilterSearch) {
+        gcFilterSearch.addEventListener('click', applyGcFilters);
+    }
+    [gcFilterSchoolYear, gcFilterSemester, gcFilterSection, gcFilterPeriod, gcFilterSubjectType, gcFilterCourseCode].forEach(function (select) {
+        if (select) {
+            select.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    applyGcFilters();
+                }
+            });
+        }
+    });
+    applyGcFilters();
+
     document.addEventListener('click', function (event) {
         if (!event.target.closest('[data-gc-menu-toggle]') && !event.target.closest('.apst-dropdown')) {
             closeActionMenus();

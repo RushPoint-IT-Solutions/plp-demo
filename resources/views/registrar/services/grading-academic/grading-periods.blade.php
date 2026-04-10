@@ -9,16 +9,16 @@
     <div class="ga-page">
         <div class="ga-card ga-filter-card sched-filter-bar ga-periods-filter">
             <div class="ga-filter-grid ga-filter-grid-periods-lite">
-                <div><label class="ga-label">SY</label><select class="app-filter-select"><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option></select></div>
-                <div><label class="ga-label">Semester</label><select class="app-filter-select"><option>First</option><option>Second</option><option>Summer</option></select></div>
-                <div><label class="ga-label">Grading Computation</label><select class="app-filter-select"><option>-select-</option><option>Weighted</option><option>Averaging</option><option>Point-Based</option></select></div>
-                <div><label class="ga-label">Faculty</label><select class="app-filter-select"><option>-select-</option><option>Marasigan</option><option>Dela Cruz</option><option>Santos</option><option>Reyes</option></select></div>
-                <div><label class="ga-label">Subject</label><select class="app-filter-select"><option>-select subject-</option><option>CS301</option><option>IT201</option><option>MATH101</option><option>ENG102</option></select></div>
-                <div><label class="ga-label">Section</label><select class="app-filter-select"><option>-select section-</option><option>BSCS 3A</option><option>BSIT 2B</option><option>BSCS 1C</option></select></div>
+                <div><label class="ga-label">SY</label><select class="app-filter-select" id="gpFilterSchoolYear"><option value="">All</option><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option></select></div>
+                <div><label class="ga-label">Semester</label><select class="app-filter-select" id="gpFilterSemester"><option value="">All</option><option>First</option><option>Second</option><option>Summer</option></select></div>
+                <div><label class="ga-label">Grading Computation</label><select class="app-filter-select" id="gpFilterComputation"><option value="">All</option><option>Weighted</option><option>Averaging</option><option>Point-Based</option></select></div>
+                <div><label class="ga-label">Faculty</label><select class="app-filter-select" id="gpFilterFaculty"><option value="">All</option><option>Marasigan</option><option>Dela Cruz</option><option>Santos</option><option>Reyes</option></select></div>
+                <div><label class="ga-label">Subject</label><select class="app-filter-select" id="gpFilterSubject"><option value="">All</option><option>CS301</option><option>IT201</option><option>MATH101</option><option>ENG102</option></select></div>
+                <div><label class="ga-label">Section</label><select class="app-filter-select" id="gpFilterSection"><option value="">All</option><option>BSCS 3A</option><option>BSIT 2B</option><option>BSCS 1C</option></select></div>
 
                 <div class="ga-filter-inline-action">
                     <label class="ga-label">&nbsp;</label>
-                    <button type="button" class="pf-btn-new ga-btn ga-btn-primary ga-filter-update-btn">Search</button>
+                    <button type="button" class="pf-btn-new ga-btn ga-btn-primary ga-filter-update-btn" id="gpFilterSearch">Search</button>
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@
                     </thead>
                     <tbody>
                         @forelse($gradingPeriods as $index => $period)
-                        <tr data-grading-period-id="{{ $period->id }}">
+                        <tr data-grading-period-id="{{ $period->id }}" data-school-year="{{ $period->school_year }}" data-semester="{{ $period->semester }}">
                             <td>
                                 <div class="apst-action-btn" data-gp-menu-toggle="gpMenu{{ $index }}" aria-label="Open row actions" title="Actions">
                                     <span></span><span></span><span></span>
@@ -227,6 +227,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!page) return;
 
     var table = document.getElementById('gpTable');
+    var gpFilterSchoolYear = document.getElementById('gpFilterSchoolYear');
+    var gpFilterSemester = document.getElementById('gpFilterSemester');
+    var gpFilterComputation = document.getElementById('gpFilterComputation');
+    var gpFilterFaculty = document.getElementById('gpFilterFaculty');
+    var gpFilterSubject = document.getElementById('gpFilterSubject');
+    var gpFilterSection = document.getElementById('gpFilterSection');
+    var gpFilterSearch = document.getElementById('gpFilterSearch');
     var actionModal = document.getElementById('gaPeriodsActionModal');
     var deleteModal = document.getElementById('gaPeriodsDeleteModal');
     var actionTitle = document.getElementById('gaPeriodsActionTitle');
@@ -289,6 +296,65 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function gpBuildUrl(template, id) {
         return String(template).replace('__ID__', String(id));
+    }
+
+    function normalizeText(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    function parseSectionSubjectFaculty(text) {
+        var parts = String(text || '').split('/').map(function (item) {
+            return item.trim();
+        });
+        return {
+            section: parts[0] || '',
+            subject: parts[1] || '',
+            faculty: parts[2] || ''
+        };
+    }
+
+    function matchesOrMissing(rowValue, filterValue) {
+        if (!filterValue) return true;
+        if (!rowValue) return true;
+        return normalizeText(rowValue) === normalizeText(filterValue);
+    }
+
+    function applyGpFilters() {
+        if (!table || !table.tBodies.length) return;
+        var tbody = table.tBodies[0];
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr[data-grading-period-id]'));
+        var visibleCount = 0;
+
+        rows.forEach(function (row) {
+            var rowSchoolYear = row.getAttribute('data-school-year') || '';
+            var rowSemester = row.getAttribute('data-semester') || '';
+            var rowSectionSubjectFaculty = row.cells[1] ? row.cells[1].textContent : '';
+            var parsed = parseSectionSubjectFaculty(rowSectionSubjectFaculty);
+            var rowComputation = row.cells[8] ? row.cells[8].textContent : '';
+
+            var schoolYearOk = matchesOrMissing(rowSchoolYear, gpFilterSchoolYear ? gpFilterSchoolYear.value : '');
+            var semesterOk = matchesOrMissing(rowSemester, gpFilterSemester ? gpFilterSemester.value : '');
+            var computationOk = !gpFilterComputation || !gpFilterComputation.value || normalizeText(rowComputation) === normalizeText(gpFilterComputation.value);
+            var facultyOk = !gpFilterFaculty || !gpFilterFaculty.value || normalizeText(parsed.faculty).indexOf(normalizeText(gpFilterFaculty.value)) !== -1;
+            var subjectOk = !gpFilterSubject || !gpFilterSubject.value || normalizeText(parsed.subject).indexOf(normalizeText(gpFilterSubject.value)) !== -1;
+            var sectionOk = !gpFilterSection || !gpFilterSection.value || normalizeText(parsed.section).indexOf(normalizeText(gpFilterSection.value)) !== -1;
+
+            var visible = schoolYearOk && semesterOk && computationOk && facultyOk && subjectOk && sectionOk;
+            row.style.display = visible ? '' : 'none';
+            if (visible) visibleCount += 1;
+        });
+
+        var emptyRow = tbody.querySelector('#gpFilterEmptyRow');
+        if (!visibleCount) {
+            if (!emptyRow) {
+                emptyRow = document.createElement('tr');
+                emptyRow.id = 'gpFilterEmptyRow';
+                emptyRow.innerHTML = '<td colspan="10" style="text-align:center; color:#666;">No matching grading periods found.</td>';
+                tbody.appendChild(emptyRow);
+            }
+        } else if (emptyRow) {
+            emptyRow.parentNode.removeChild(emptyRow);
+        }
     }
 
     function gpRequest(url, method, payload) {
@@ -491,7 +557,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 end_date: addEndDate ? addEndDate.value : null,
                 start_time: startTimeValue || null,
                 grading_computation: computationValue,
-                use_grades_library: useLibChecked
+                use_grades_library: useLibChecked,
+                school_year: gpFilterSchoolYear && gpFilterSchoolYear.value ? gpFilterSchoolYear.value : null,
+                semester: gpFilterSemester && gpFilterSemester.value ? gpFilterSemester.value : null
             }).then(function () {
                 if (typeof showRegistrarToast === 'function') {
                     showRegistrarToast('Period record added successfully.');
@@ -520,7 +588,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     end_date: editEndDate ? editEndDate.value : null,
                     start_time: editStartTime ? editStartTime.value : null,
                     grading_computation: editComputation ? editComputation.value.trim() : '',
-                    use_grades_library: editUseGradesLib ? editUseGradesLib.checked : false
+                    use_grades_library: editUseGradesLib ? editUseGradesLib.checked : false,
+                    school_year: gpFilterSchoolYear && gpFilterSchoolYear.value ? gpFilterSchoolYear.value : null,
+                    semester: gpFilterSemester && gpFilterSemester.value ? gpFilterSemester.value : null
                 }).then(function () {
                     if (typeof showRegistrarToast === 'function') {
                         showRegistrarToast('Grading period updated successfully.');
@@ -566,6 +636,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('scroll', closeActionMenus, true);
+    if (gpFilterSearch) {
+        gpFilterSearch.addEventListener('click', applyGpFilters);
+    }
+    [gpFilterSchoolYear, gpFilterSemester, gpFilterComputation, gpFilterFaculty, gpFilterSubject, gpFilterSection].forEach(function (select) {
+        if (select) {
+            select.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    applyGpFilters();
+                }
+            });
+        }
+    });
+    applyGpFilters();
+
     document.addEventListener('click', function (event) {
         if (!event.target.closest('[data-gp-menu-toggle]') && !event.target.closest('.apst-dropdown')) {
             closeActionMenus();
