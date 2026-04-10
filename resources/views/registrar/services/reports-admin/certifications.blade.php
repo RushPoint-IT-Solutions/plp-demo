@@ -7,28 +7,39 @@
 <div class="pf-page">
     <div class="rep-dashboard">
         <div class="rep-top-row">
-            <div class="rep-sys-card rep-sys-card--compact">
+            <div class="rep-sys-card" style="max-width:none;">
                 <div class="rep-sys-title">System Configuration</div>
-                <div class="rep-sys-grid">
-                    <div class="rep-sys-field">
-                        <label class="app-filter-label">School Year:</label>
-                        <select class="app-filter-select">
-                            <option>2025-2026</option>
-                            <option>2024-2025</option>
-                        </select>
+                <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:nowrap;">
+                    <div style="display:flex; align-items:flex-end; gap:10px; flex:1 1 auto; min-width:0; flex-wrap:nowrap;">
+                        <div class="rep-sys-field" style="width:170px; min-width:170px;">
+                            <label class="app-filter-label">School Year:</label>
+                            <select class="app-filter-select">
+                                <option>2025-2026</option>
+                                <option>2024-2025</option>
+                            </select>
+                        </div>
+                        <div class="rep-sys-field" style="width:130px; min-width:130px;">
+                            <label class="app-filter-label">Term:</label>
+                            <select class="app-filter-select">
+                                <option>First</option>
+                                <option>Second</option>
+                                <option>Summer</option>
+                            </select>
+                        </div>
+                        <div class="rep-sys-action">
+                            <button class="req-btn-save" style="height:36px; min-width: 100px; padding:0 24px; font-weight:700;">Set</button>
+                        </div>
                     </div>
-                    <div class="rep-sys-field">
-                        <label class="app-filter-label">Term:</label>
-                        <select class="app-filter-select">
-                            <option>First</option>
-                            <option>Second</option>
-                            <option>Summer</option>
-                        </select>
-                    </div>
-                    <div class="rep-sys-action">
-                        <button class="req-btn-save" style="height:36px; min-width: 100px; padding:0 24px; font-weight:700;">Set</button>
+                    <div style="align-self:stretch; width:1px; background:#d7e5dc;"></div>
+                    <div style="display:flex; align-items:flex-end; gap:10px; flex:1.45 1 auto; min-width:0;">
+                        <div class="rep-sys-field" style="flex:1; min-width:260px;">
+                            <label class="app-filter-label">Search Certificate</label>
+                            <input type="text" class="app-filter-select" id="repQuickSearch" placeholder="Type keyword (e.g. grades, graduation, enrollment)">
+                        </div>
+                        <button type="button" class="req-btn-cancel" id="repQuickSearchClear" style="height:36px; min-width: 86px;">Clear</button>
                     </div>
                 </div>
+                <div id="repQuickSearchEmpty" style="display:none; margin-top:10px; color:#6b7280; font-weight:600;">No certificate matched your search.</div>
             </div>
         </div>
 
@@ -82,7 +93,24 @@
                             <td>{{ $record->issued_by ?: '-' }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" style="text-align:center; color:#666;">No issued certificates yet.</td></tr>
+                        <tr>
+                            <td>04/02/2026</td>
+                            <td>2022-00123 - Juan Dela Cruz</td>
+                            <td>Certificate of Enrollment</td>
+                            <td>Registrar</td>
+                        </tr>
+                        <tr>
+                            <td>03/28/2026</td>
+                            <td>2021-00457 - Maria Santos</td>
+                            <td>Certificate of Grades</td>
+                            <td>Registrar</td>
+                        </tr>
+                        <tr>
+                            <td>03/19/2026</td>
+                            <td>2020-00891 - Carlo Reyes</td>
+                            <td>Certificate of Graduation</td>
+                            <td>Registrar</td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -177,6 +205,46 @@
         return String(value || '').replace(/[&<>"']/g, function(ch) {
             var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
             return map[ch];
+        });
+    }
+
+    function runReportSearchFilter() {
+        var input = document.getElementById('repQuickSearch');
+        if (!input) {
+            return;
+        }
+
+        var keyword = input.value.toLowerCase().trim();
+        var buttons = document.querySelectorAll('.rep-group-card .rep-btn[onclick]');
+        var visibleCount = 0;
+
+        Array.prototype.forEach.call(buttons, function(button) {
+            var text = (button.textContent || '').toLowerCase();
+            var isVisible = !keyword || text.indexOf(keyword) !== -1;
+            button.style.display = isVisible ? '' : 'none';
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        var empty = document.getElementById('repQuickSearchEmpty');
+        if (empty) {
+            empty.style.display = visibleCount ? 'none' : 'block';
+        }
+    }
+
+    function initReportSearchFilter() {
+        var input = document.getElementById('repQuickSearch');
+        var clearBtn = document.getElementById('repQuickSearchClear');
+        if (!input || !clearBtn) {
+            return;
+        }
+
+        input.addEventListener('input', runReportSearchFilter);
+        clearBtn.addEventListener('click', function() {
+            input.value = '';
+            runReportSearchFilter();
+            input.focus();
         });
     }
 
@@ -286,5 +354,7 @@
             closePreviewModal();
         }
     });
+
+    document.addEventListener('DOMContentLoaded', initReportSearchFilter);
 </script>
 @endpush
