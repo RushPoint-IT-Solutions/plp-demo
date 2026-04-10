@@ -37568,8 +37568,8 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 
 .registrar-body .page-alumni-tracker .at-total-row td,
 .registrar-body .page-alumni-tracker .at-total-cell,
-.registrar-body .page-services-class-list .svc-total-row td,
-.registrar-body .page-services-class-list .svc-total-cell,
+.registrar-body.page-services-class-list .svc-total-row td,
+.registrar-body.page-services-class-list .svc-total-cell,
 .registrar-body .page-services-faculty-loads .rfl-list-total-row td,
 .registrar-body .page-services-faculty-loads .rfl-totals-row td,
 .registrar-body .page-services-faculty-loads .rfl-list-total-cell,
@@ -38098,5 +38098,280 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   }
   .page-report-access .ra-group-list {
     max-height: none;
+  }
+}
+/* Registrar reusable listbox dropdown */
+.registrar-body .rg-listbox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.registrar-body .rg-listbox-native.is-enhanced {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.registrar-body .rg-listbox-trigger {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #c8d8cf;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: #fff;
+  color: #26463a;
+  font-size: 0.79rem;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.registrar-body .rg-listbox-native.is-enhanced + .rg-listbox-trigger {
+  display: inline-flex;
+}
+
+.registrar-body .rg-listbox-trigger:focus,
+.registrar-body .rg-listbox.is-open .rg-listbox-trigger {
+  outline: none;
+  border-color: #0f7b43;
+  box-shadow: 0 0 0 3px rgba(15, 123, 67, 0.14);
+}
+
+.registrar-body .rg-listbox-trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registrar-body .rg-listbox-trigger-caret {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #0f7b43;
+  border-bottom: 2px solid #0f7b43;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+.registrar-body .rg-listbox.is-open .rg-listbox-trigger-caret {
+  transform: rotate(225deg) translateY(2px);
+}
+
+.registrar-body .rg-listbox-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid #2d8b5a;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(12, 58, 35, 0.15);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 35;
+}
+
+.registrar-body .rg-listbox.is-open .rg-listbox-menu {
+  display: block;
+}
+
+.registrar-body .rg-listbox-option-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a3f2e;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.registrar-body .rg-listbox-option-btn:hover,
+.registrar-body .rg-listbox-option-btn:focus,
+.registrar-body .rg-listbox-option-btn.is-active {
+  outline: none;
+  background: #0f7b43;
+  color: #fff;
+}
+
+.registrar-body .rg-listbox-option-btn.is-selected {
+  background: rgba(15, 123, 67, 0.12);
+  color: #0f7b43;
+}
+
+/* Registrar: Services / Classroom & Faculty / Class List */
+.registrar-body.page-services-class-list .cl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.registrar-body.page-services-class-list .cl-alert {
+  margin-bottom: 0;
+}
+
+.registrar-body.page-services-class-list .at-top-row {
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 1.45fr);
+  align-items: start;
+}
+
+.registrar-body.page-services-class-list .at-search-card .sf-search-box,
+.registrar-body.page-services-class-list .at-search-wrap.sf-search-box {
+  width: 100%;
+  max-width: 100%;
+}
+
+.registrar-body.page-services-class-list .at-config-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(72px, auto);
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.registrar-body.page-services-class-list .at-config-item {
+  align-items: flex-end;
+}
+
+.registrar-body.page-services-class-list .at-config-item .rg-listbox {
+  min-width: 0;
+}
+
+.registrar-body.page-services-class-list .at-config-action {
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 100%;
+}
+
+.registrar-body.page-services-class-list .at-btn-set {
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.registrar-body.page-services-class-list table.student-table.registrar-table.svc-table th,
+.registrar-body.page-services-class-list table.student-table.registrar-table.svc-table td {
+  text-align: center !important;
+  vertical-align: middle;
+}
+
+.registrar-body.page-services-class-list .svc-actions-row {
+  margin-bottom: 0;
+}
+
+.registrar-body.page-services-class-list .svc-btn-pdf,
+.registrar-body.page-services-class-list .svc-btn-excel {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.registrar-body.page-services-class-list .svc-btn-pdf:hover,
+.registrar-body.page-services-class-list .svc-btn-excel:hover,
+.registrar-body.page-services-class-list .svc-btn-pdf:focus,
+.registrar-body.page-services-class-list .svc-btn-excel:focus {
+  text-decoration: none;
+  color: #fff;
+  opacity: 0.93;
+}
+
+.registrar-body.page-services-class-list .svc-selected-info {
+  margin-bottom: 0;
+}
+
+.registrar-body.page-services-class-list .cl-back-row {
+  margin-top: -2px;
+}
+
+.registrar-body.page-services-class-list .cl-pagination {
+  margin-top: 6px;
+}
+
+.registrar-body.page-services-class-list .svc-summary-total {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid #d6e1db;
+  border-radius: 8px;
+  background: #f8fcf9;
+  color: #0f7b43;
+  font-weight: 700;
+  text-align: left;
+}
+
+.registrar-body.page-services-class-list .svc-summary-total-left {
+  text-align: left;
+}
+
+@media (max-width: 1366px) {
+  .registrar-body.page-services-class-list .at-top-row {
+    grid-template-columns: 1fr;
+  }
+  .registrar-body.page-services-class-list .at-config-card {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid #d2d9df;
+    padding-top: 8px;
+  }
+  .registrar-body.page-services-class-list .at-config-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .registrar-body.page-services-class-list .at-config-action {
+    grid-column: 1/-1;
+    justify-content: flex-end;
+  }
+  .registrar-body.page-services-class-list .at-btn-set {
+    width: 100%;
+  }
+}
+@media (max-width: 1280px) {
+  .registrar-body.page-services-class-list .at-config-grid {
+    grid-template-columns: 1fr;
+  }
+  .registrar-body.page-services-class-list .at-config-action {
+    justify-content: stretch;
+  }
+}
+@media (max-width: 820px) {
+  .registrar-body.page-services-class-list .at-config-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .registrar-body.page-services-class-list .at-config-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .registrar-body.page-services-class-list .at-config-inline-label {
+    white-space: normal;
+  }
+  .registrar-body.page-services-class-list .at-config-action,
+  .registrar-body.page-services-class-list .svc-actions-row {
+    justify-content: stretch;
+  }
+  .registrar-body.page-services-class-list .at-btn-set,
+  .registrar-body.page-services-class-list .svc-btn-pdf,
+  .registrar-body.page-services-class-list .svc-btn-excel {
+    width: 100%;
+  }
+  .registrar-body.page-services-class-list .svc-selected-info {
+    grid-template-columns: 1fr;
   }
 }

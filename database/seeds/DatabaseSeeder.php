@@ -74,6 +74,18 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        if ((bool) env('SEED_HIGH_VOLUME_STUDENTS', false)) {
+            $this->call([
+                HighVolumeStudentSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_CLASS_LIST_SCHOOL_YEAR_RANGE', false)) {
+            $this->call([
+                ClassListSchoolYearRangeSeeder::class,
+            ]);
+        }
+
         if ((bool) env('SEED_HIGH_VOLUME_PROGRAMS', false)) {
             $this->call([
                 HighVolumeProgramFileSeeder::class,
@@ -97,6 +109,11 @@ class DatabaseSeeder extends Seeder
                 HighVolumeSectionMergingSeeder::class,
             ]);
         }
+
+        $this->call([
+            ClassListDataBackfillSeeder::class,
+            ClassListStudentEnrollmentBackfillSeeder::class,
+        ]);
         
         $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student, first-reset student 2026A00001/PLP-2026A00001, applicant 2526B0177/PLP-2526B0177, applicant/applicant');
     }

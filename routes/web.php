@@ -264,6 +264,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     Route::prefix('services')->name('services.')->group(function () {
         Route::prefix('classroom-faculty')->name('classroom-faculty.')->group(function () {
             Route::get('/class-list', 'Registrar\Services\ClassListController@index')->name('class-list');
+            Route::get('/class-list/export/{format}', 'Registrar\Services\ClassListController@export')->name('class-list.export');
             Route::get('/attendance', 'Registrar\Services\AttendanceController@index')->name('attendance');
 
             Route::prefix('faculty-loads')->name('faculty-loads.')->group(function () {

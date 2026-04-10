@@ -16,13 +16,10 @@
 
     {{-- Toolbar --}}
     <div class="sf-topbar">
-        <div class="sf-search-box">
-            <input type="text" class="sf-search-input" placeholder="Search Subject Code" id="sfSearchInput">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sf-search-icon">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-        </div>
+        @include('registrar.components.search-bar', [
+            'id' => 'sfSearchInput',
+            'placeholder' => 'Search Subject Code',
+        ])
         <div class="sf-sort-wrap">
             <select class="sf-sort-select" id="sfSort">
                 <option value="asc">Ascending</option>
