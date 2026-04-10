@@ -63,9 +63,9 @@ Route::prefix('apply')->name('applicant.apply.')->group(function () {
         return redirect()->route('applicant.apply.welcome');
     });
     Route::get('/apply-welcome', 'Applicant\ApplicantOnboardingController@welcome')->name('welcome');
-    Route::post('/start', 'Applicant\ApplicantOnboardingController@start')->name('start');
+    Route::post('/start', 'Applicant\ApplicantOnboardingController@start')->name('start')->middleware('throttle:20,1');
     Route::get('/basic-details', 'Applicant\ApplicantOnboardingController@basicDetails')->name('basic-details');
-    Route::post('/basic-details', 'Applicant\ApplicantOnboardingController@storeBasicDetails')->name('basic-details.store');
+    Route::post('/basic-details', 'Applicant\ApplicantOnboardingController@storeBasicDetails')->name('basic-details.store')->middleware('throttle:20,1');
     Route::get('/form-preview', 'Applicant\ApplicantOnboardingController@formPreview')->name('form-preview');
     Route::post('/form-preview', 'Applicant\ApplicantOnboardingController@savePreviewForm')->name('form-preview.save');
     Route::post('/form-preview/step-1', 'Applicant\ApplicantOnboardingController@savePreviewStep1')->name('form-preview.step-1.save');

@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class ApplicantOnboardingController extends Controller
 {
@@ -67,16 +66,22 @@ class ApplicantOnboardingController extends Controller
         }
 
         $validated = $request->validate([
-            'last_name' => 'nullable|string|max:120',
-            'first_name' => 'nullable|string|max:120',
-            'middle_name' => 'nullable|string|max:120',
+            'last_name' => 'nullable|string|max:120|regex:/^(?:[A-Za-z][A-Za-z\s\-\.\x27]*)?$/',
+            'first_name' => 'nullable|string|max:120|regex:/^(?:[A-Za-z][A-Za-z\s\-\.\x27]*)?$/',
+            'middle_name' => 'nullable|string|max:120|regex:/^(?:[A-Za-z][A-Za-z\s\-\.\x27]*)?$/',
             'has_no_middle_name' => 'nullable|boolean',
             'email_address' => 'nullable|email|max:190',
             'mobile_number' => 'nullable|regex:/^[0-9]{11}$/',
             'application_track' => 'nullable|in:college,senior_high',
-            'date_of_birth' => 'nullable|date',
-            'nationality' => 'nullable|string|max:120',
-            'religion' => 'nullable|string|max:120',
+            'date_of_birth' => 'nullable|date|before_or_equal:today',
+            'nationality' => 'nullable|in:Filipino,Other',
+            'religion' => 'nullable|in:Roman Catholic,Christian,Others,Seventh Day Adventist',
+        ], [
+            'last_name.regex' => 'Last name may only contain letters, spaces, apostrophes, periods, and hyphens.',
+            'first_name.regex' => 'First name may only contain letters, spaces, apostrophes, periods, and hyphens.',
+            'middle_name.regex' => 'Middle name may only contain letters, spaces, apostrophes, periods, and hyphens.',
+            'nationality.in' => 'Please select a valid nationality option.',
+            'religion.in' => 'Please select a valid religion option.',
         ]);
 
         $validated['last_name'] = trim((string) ($validated['last_name'] ?? ''));
@@ -95,8 +100,8 @@ class ApplicantOnboardingController extends Controller
             $validated['first_name'] = 'APPLICANT';
         }
 
-        if ($validated['email_address'] === '') {
-            $validated['email_address'] = 'preview+' . time() . '@plp.test';
+        if ($validated['email_address'] === '' || strtolower($validated['email_address']) === 'preview@plp.test') {
+            $validated['email_address'] = $this->generatePreviewEmailAddress();
         }
 
         if ($validated['mobile_number'] === '') {
@@ -445,6 +450,15 @@ class ApplicantOnboardingController extends Controller
         }
 
         return false;
+    }
+
+    private function generatePreviewEmailAddress()
+    {
+        do {
+            $candidate = 'preview+' . now()->format('YmdHis') . random_int(1000, 9999) . '@plp.test';
+        } while (User::where('email', $candidate)->exists());
+
+        return $candidate;
     }
 
     private function generateApplicantId()

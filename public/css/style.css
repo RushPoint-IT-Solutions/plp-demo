@@ -1633,21 +1633,151 @@ select:hover {
 }
 
 .app-apply-field input,
-.app-apply-field select {
+.app-apply-field select,
+.app-apply-select-trigger {
   width: 100%;
   min-height: 40px;
   border: 1px solid #d4ded6;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 8px 11px;
   font-size: 0.9rem;
   color: #21312a;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.app-apply-selectbox {
+  position: relative;
+  width: 100%;
+}
+
+.app-apply-native-select.is-enhanced {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-apply-select-trigger {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.app-apply-native-select.is-enhanced + .app-apply-select-trigger {
+  display: inline-flex;
+}
+
+.app-apply-select-trigger-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-apply-select-trigger-caret {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #0f7b43;
+  border-bottom: 2px solid #0f7b43;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+.app-apply-field select {
+  border-color: #a9cdb7;
+  padding-right: 34px;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #0f7b43 50%), linear-gradient(135deg, #0f7b43 50%, transparent 50%);
+  background-position: calc(100% - 17px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.app-apply-native-select.is-enhanced + .app-apply-select-trigger {
+  background-image: none;
+}
+
+.app-apply-selectbox.is-open .app-apply-select-trigger-caret {
+  transform: rotate(225deg) translateY(2px);
+}
+
+.app-apply-field select:hover {
+  border-color: #0f7b43;
+  box-shadow: 0 0 0 2px rgba(15, 123, 67, 0.12);
+}
+
+.app-apply-field select option {
+  background-color: #ffffff;
+  color: #21312a;
+}
+
+.app-apply-select-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #2d8b5a;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(9, 52, 30, 0.2);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 30;
+}
+
+.app-apply-selectbox.is-open .app-apply-select-menu {
+  display: block;
+}
+
+.app-apply-select-option-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #163b28;
+  text-align: left;
+  padding: 9px 10px;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, font-weight 0.16s ease;
+}
+
+.app-apply-select-option-btn:hover,
+.app-apply-select-option-btn:focus,
+.app-apply-select-option-btn.is-active,
+.app-apply-select-option-btn:active {
+  outline: none;
+  background: #0f7b43;
+  color: #ffffff;
+}
+
+.app-apply-select-option-btn.is-selected {
+  background: rgba(15, 123, 67, 0.1);
+  color: #0f7b43;
+  font-weight: 600;
 }
 
 .app-apply-field input:focus,
-.app-apply-field select:focus {
+.app-apply-field select:focus,
+.app-apply-select-trigger:focus,
+.app-apply-selectbox.is-open .app-apply-select-trigger {
   outline: none;
   border-color: #0f7b43;
-  box-shadow: 0 0 0 3px rgba(15, 123, 67, 0.18);
+  box-shadow: 0 0 0 4px rgba(15, 123, 67, 0.18);
 }
 
 .app-apply-field-check {

@@ -54,21 +54,36 @@
 
                 <div class="app-apply-field">
                     <label for="nationality">Nationality</label>
-                    <select id="nationality" name="nationality">
-                        <option value="">- nationality -</option>
-                        <option value="Filipino" {{ old('nationality') === 'Filipino' ? 'selected' : '' }}>Filipino</option>
-                        <option value="Other" {{ old('nationality') === 'Other' ? 'selected' : '' }}>Other</option>
-                    </select>
+                    <div class="app-apply-selectbox" data-custom-select>
+                        <select id="nationality" name="nationality" class="app-apply-native-select js-app-apply-enhance" data-placeholder="- nationality -">
+                            <option value="">- nationality -</option>
+                            <option value="Filipino" {{ old('nationality') === 'Filipino' ? 'selected' : '' }}>Filipino</option>
+                            <option value="Other" {{ old('nationality') === 'Other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                        <button type="button" class="app-apply-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                            <span class="app-apply-select-trigger-text" data-select-current>- nationality -</span>
+                            <span class="app-apply-select-trigger-caret" aria-hidden="true"></span>
+                        </button>
+                        <ul class="app-apply-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                    </div>
                 </div>
 
                 <div class="app-apply-field">
                     <label for="religion">Religion</label>
-                    <select id="religion" name="religion">
-                        <option value="">- religion -</option>
-                        <option value="Roman Catholic" {{ old('religion') === 'Roman Catholic' ? 'selected' : '' }}>Roman Catholic</option>
-                        <option value="Christian" {{ old('religion') === 'Christian' ? 'selected' : '' }}>Christian</option>
-                        <option value="Others" {{ old('religion') === 'Others' ? 'selected' : '' }}>Others</option>
-                    </select>
+                    <div class="app-apply-selectbox" data-custom-select>
+                        <select id="religion" name="religion" class="app-apply-native-select js-app-apply-enhance" data-placeholder="- religion -">
+                            <option value="">- religion -</option>
+                            <option value="Roman Catholic" {{ old('religion') === 'Roman Catholic' ? 'selected' : '' }}>Roman Catholic</option>
+                            <option value="Christian" {{ old('religion') === 'Christian' ? 'selected' : '' }}>Christian</option>
+                            <option value="Seventh Day Adventist" {{ old('religion') === 'Seventh Day Adventist' ? 'selected' : '' }}>Seventh Day Adventist</option>
+                            <option value="Others" {{ old('religion') === 'Others' ? 'selected' : '' }}>Others</option>
+                        </select>
+                        <button type="button" class="app-apply-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                            <span class="app-apply-select-trigger-text" data-select-current>- religion -</span>
+                            <span class="app-apply-select-trigger-caret" aria-hidden="true"></span>
+                        </button>
+                        <ul class="app-apply-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                    </div>
                 </div>
             </div>
 
@@ -80,3 +95,7 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ mix('js/apply-basic-details.js') }}"></script>
+@endpush
