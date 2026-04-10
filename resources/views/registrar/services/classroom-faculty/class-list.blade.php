@@ -5,8 +5,8 @@
 @section('body-class', 'page-services-class-list')
 
 @push('scripts')
-    <script src="{{ mix('js/registrar-listbox-select.js') }}"></script>
-    <script src="{{ mix('js/registrar-class-list.js') }}"></script>
+    <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+    <script src="{{ asset('js/registrar-class-list.js') }}?v={{ file_exists(public_path('js/registrar-class-list.js')) ? filemtime(public_path('js/registrar-class-list.js')) : time() }}"></script>
 @endpush
 
 @section('content')

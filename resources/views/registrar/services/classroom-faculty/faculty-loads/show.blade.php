@@ -5,7 +5,8 @@
 @section('body-class', 'page-services-faculty-loads')
 
 @push('scripts')
-    <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+    <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ file_exists(public_path('js/registrar-faculty-loads.js')) ? filemtime(public_path('js/registrar-faculty-loads.js')) : time() }}"></script>
 @endpush
 
 @section('content')
@@ -32,34 +33,37 @@
         </a>
     </div>
 
+    <div class="rfl-back-row">
+        <a href="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="svc-link">Back to Faculty List</a>
+    </div>
+
     <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.show', $faculty->id) }}" class="rfl-filters">
         <input type="hidden" name="tab" value="{{ $tab }}">
 
         <div class="rfl-filter">
             <div class="app-filter-label">School Year:</div>
-            <select name="school_year" class="form-select rfl-select" {{ $schoolYears->count() ? '' : 'disabled' }}>
-                @forelse($schoolYears as $sy)
-                    <option value="{{ $sy }}" {{ $sy === $selectedSchoolYear ? 'selected' : '' }}>{{ $sy }}</option>
-                @empty
-                    <option value="" selected>No data</option>
-                @endforelse
-            </select>
+            <div class="rfl-select">
+                @include('registrar.components.listbox-select', [
+                    'id' => 'rflSchoolYear',
+                    'name' => 'school_year',
+                    'options' => $schoolYearOptions,
+                    'selected' => $selectedSchoolYear,
+                    'placeholder' => 'School Year',
+                ])
+            </div>
         </div>
 
         <div class="rfl-filter">
             <div class="app-filter-label">Term:</div>
-            <select name="semester" class="form-select rfl-select" {{ $semesters->count() ? '' : 'disabled' }}>
-                @forelse($semesters as $sem)
-                    @php
-                        $label = $sem->name;
-                        if ($sem->name === '1st Semester') $label = 'First';
-                        if ($sem->name === '2nd Semester') $label = 'Second';
-                    @endphp
-                    <option value="{{ $sem->name }}" {{ $sem->name === $selectedSemester ? 'selected' : '' }}>{{ $label }}</option>
-                @empty
-                    <option value="" selected>No data</option>
-                @endforelse
-            </select>
+            <div class="rfl-select">
+                @include('registrar.components.listbox-select', [
+                    'id' => 'rflSemester',
+                    'name' => 'semester',
+                    'options' => $semesterOptions,
+                    'selected' => $selectedSemester,
+                    'placeholder' => 'Term',
+                ])
+            </div>
         </div>
 
         <button class="btn btn-success rfl-set-btn" type="submit">Set</button>
@@ -108,18 +112,23 @@
         <div class="rfl-loading-wrap">
 
             <div class="rfl-loading-tools">
-                <div class="rfl-search">
+                <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.show', $faculty->id) }}" class="rfl-search">
+                    <input type="hidden" name="tab" value="loading">
+                    <input type="hidden" name="school_year" value="{{ $selectedSchoolYear }}">
+                    <input type="hidden" name="semester" value="{{ $selectedSemester }}">
                     <div class="app-filter-label">Search</div>
-                    <div class="rfl-search-form">
-                        <input type="text" class="form-control rfl-search-input" placeholder="Search Subject Code / Description">
-                        <button class="rfl-search-btn" type="button" aria-label="Search">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                    @include('registrar.components.search-bar', [
+                        'id' => 'rflLoadingSearch',
+                        'name' => 'loading_q',
+                        'value' => $loadingSearch,
+                        'placeholder' => 'Search Subject Code / Description / Section',
+                        'containerClass' => 'rfl-search-form',
+                        'inputClass' => 'js-rfl-auto-submit-search',
+                        'inputAttributes' => [
+                            'data-rfl-auto-submit-search' => '1',
+                        ],
+                    ])
+                </form>
 
                 <div class="rfl-loading-header">
                     <div class="rfl-loading-cols">SUBJECT CODE | DESCRIPTION | LEC | LAB | UNITS | SECTION | SCHEDULE</div>
@@ -130,19 +139,25 @@
                 @csrf
                 <input type="hidden" name="school_year" value="{{ $selectedSchoolYear }}">
                 <input type="hidden" name="semester" value="{{ $selectedSemester }}">
+                <input type="hidden" name="loading_q" value="{{ $loadingSearch }}">
 
                 <div class="rfl-assign-top">
-                    <select name="subject_id" class="form-select rfl-subject-select" {{ $availableSubjects->count() ? '' : 'disabled' }}>
-                        <option value="" selected disabled>list of available subjects</option>
-                        @foreach($availableSubjects as $sub)
-                            <option value="{{ $sub->id }}" {{ old('subject_id') == $sub->id ? 'selected' : '' }}>
-                                {{ $sub->code }} — {{ $sub->name }} ({{ $sub->year_section }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="rfl-subject-select">
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'rflSubjectSelect',
+                            'name' => 'subject_id',
+                            'options' => $availableSubjectOptions,
+                            'selected' => (string) old('subject_id', ''),
+                            'placeholder' => count($availableSubjectOptions) ? 'list of available subjects' : 'No available subjects',
+                        ])
+                    </div>
 
-                    <button type="submit" class="btn btn-secondary rfl-add-btn" {{ $availableSubjects->count() ? '' : 'disabled' }}>Add Subject</button>
+                    <button type="submit" class="btn btn-secondary rfl-add-btn" {{ count($availableSubjectOptions) ? '' : 'disabled' }}>Add Subject</button>
                 </div>
+
+                @if($availableSubjectsHasMore)
+                    <div class="text-muted small mt-1">Showing first 200 matching subjects. Narrow the search to find more options.</div>
+                @endif
 
                 <div class="rfl-assign-options">
                     <div class="rfl-load-type-group" role="radiogroup" aria-label="Load Type">
@@ -226,6 +241,10 @@
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+
+            <div class="app-table-pager rfl-pagination">
+                {{ $assignedSubjects->links() }}
             </div>
 
             <div class="rfl-loading-header rfl-schedule-table-title">FACULTY SCHEDULE</div>
@@ -316,9 +335,10 @@
                     return array_values(array_unique($days));
                 };
 
-                foreach ($assignedSubjects as $s) {
+                foreach ($assignedSubjectsForSchedule as $s) {
                     $mappedDays = $extractDays($s->days ?? '');
-                    $section = trim((($s->course ?? '') . ' ' . ($s->year_section ?? '')));
+                    $courseCode = trim((string) optional($s->canonicalCourse)->code);
+                    $section = trim(($courseCode . ' ' . ($s->year_section ?? '')));
                     $entry = [
                         'time' => strtoupper((string) ($s->formatted_time ?? '')),
                         'code' => strtoupper((string) ($s->code ?? '')),

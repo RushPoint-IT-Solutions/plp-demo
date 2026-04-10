@@ -39873,6 +39873,43 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   text-align: left;
 }
 
+/* Registrar: Services / Classroom & Faculty / Faculty Loads */
+
+.registrar-body.page-services-faculty-loads .content-footer-wrap {
+  max-height: none;
+  overflow: visible;
+}
+
+.registrar-body.page-services-faculty-loads .student-content {
+  overflow: visible !important;
+  min-height: calc(100vh - 112px);
+}
+
+.registrar-body.page-services-faculty-loads .rfl-wrap {
+  padding-bottom: 24px;
+}
+
+.registrar-body.page-services-faculty-loads .rfl-back-row {
+  margin: -4px 0 8px;
+}
+
+/* Back to Faculty List link color */
+
+.registrar-body.page-services-faculty-loads .rfl-back-row a {
+  color: #006837;
+}
+
+.registrar-body.page-services-faculty-loads .rfl-back-row a:hover,
+.registrar-body.page-services-faculty-loads .rfl-back-row a:focus {
+  color: #006837;
+}
+
+.registrar-body.page-services-faculty-loads .rfl-filters,
+.registrar-body.page-services-faculty-loads .rfl-loading-tools,
+.registrar-body.page-services-faculty-loads .rfl-assign-form {
+  overflow: visible;
+}
+
 @media (max-width: 1366px) {
   .registrar-body.page-services-class-list .at-top-row {
     grid-template-columns: 1fr;

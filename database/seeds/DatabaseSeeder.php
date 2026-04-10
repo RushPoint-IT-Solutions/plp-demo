@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             ApplicantBulkSeeder::class,
             RegistrarAuthSeeder::class,
             FacultyAuthSeeder::class,
+            HighVolumeFacultySeeder::class,
             StudentSeeder::class,
             StudentFirstLoginDemoSeeder::class,
             AcademicCalendarEventSeeder::class,
@@ -71,6 +72,12 @@ class DatabaseSeeder extends Seeder
         if ((bool) env('SEED_HIGH_VOLUME_TRASH', false)) {
             $this->call([
                 HighVolumeSubjectFileSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_AVAILABLE_SUBJECTS', false)) {
+            $this->call([
+                HighVolumeAvailableSubjectSeeder::class,
             ]);
         }
 

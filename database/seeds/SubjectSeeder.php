@@ -16,6 +16,8 @@ class SubjectSeeder extends Seeder
         $hasSemesterColumn = Schema::hasColumn('subjects', 'semester');
         $hasSchoolYearColumn = Schema::hasColumn('subjects', 'school_year');
         $hasAcademicTermIdColumn = Schema::hasColumn('subjects', 'academic_term_id');
+        $hasGradingStatusColumn = Schema::hasColumn('subjects', 'grading_status');
+        $hasGradingStatusIdColumn = Schema::hasColumn('subjects', 'grading_status_id');
 
         $courseIdsByCode = $hasCourseIdColumn
             ? DB::table('courses')->pluck('id', 'code')->toArray()
@@ -30,6 +32,17 @@ class SubjectSeeder extends Seeder
                     $key = strtolower(trim((string) $row->school_year) . '|' . trim((string) $row->term));
 
                     return [$key => (int) $row->id];
+                })
+                ->all();
+        }
+
+        $gradingStatusIds = [];
+        if ($hasGradingStatusIdColumn && Schema::hasTable('subject_grading_statuses')) {
+            $gradingStatusIds = DB::table('subject_grading_statuses')
+                ->select('id', 'code')
+                ->get()
+                ->mapWithKeys(function ($row) {
+                    return [strtolower(trim((string) $row->code)) => (int) $row->id];
                 })
                 ->all();
         }
@@ -95,6 +108,51 @@ class SubjectSeeder extends Seeder
                 'semester'       => '2nd Semester',
                 'school_year'    => '2025-2026',
             ],
+            [
+                'code'           => 'MATH101',
+                'name'           => 'College Algebra',
+                'units'          => 3.0,
+                'days'           => 'M,W',
+                'time_start'     => '09:00AM',
+                'time_end'       => '10:30AM',
+                'room'           => '3',
+                'faculty_id'     => null,
+                'year_section'   => '1-A',
+                'course'         => 'BSCS',
+                'grading_status' => 'Open For Encoding',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
+            ],
+            [
+                'code'           => 'ENG101',
+                'name'           => 'Purposive Communication',
+                'units'          => 3.0,
+                'days'           => 'T,Th',
+                'time_start'     => '10:30AM',
+                'time_end'       => '12:00PM',
+                'room'           => '4',
+                'faculty_id'     => null,
+                'year_section'   => '1-A',
+                'course'         => 'BSCS',
+                'grading_status' => 'Open For Encoding',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
+            ],
+            [
+                'code'           => 'NSTP102',
+                'name'           => 'National Service Training Program 2',
+                'units'          => 3.0,
+                'days'           => 'F,Sa',
+                'time_start'     => '01:00PM',
+                'time_end'       => '02:30PM',
+                'room'           => '6',
+                'faculty_id'     => null,
+                'year_section'   => '1-B',
+                'course'         => 'BSIT',
+                'grading_status' => 'Open For Encoding',
+                'semester'       => '2nd Semester',
+                'school_year'    => '2025-2026',
+            ],
         ];
 
         foreach ($subjects as $subject) {
@@ -111,8 +169,18 @@ class SubjectSeeder extends Seeder
                 'room' => $subject['room'],
                 'faculty_id' => $subject['faculty_id'],
                 'year_section' => $subject['year_section'],
-                'grading_status' => $subject['grading_status'],
             ];
+
+            if ($hasGradingStatusColumn) {
+                $insertPayload['grading_status'] = $subject['grading_status'];
+            }
+
+            if ($hasGradingStatusIdColumn) {
+                $statusKey = strtolower(trim((string) $subject['grading_status']));
+                $insertPayload['grading_status_id'] = isset($gradingStatusIds[$statusKey])
+                    ? (int) $gradingStatusIds[$statusKey]
+                    : null;
+            }
 
             if ($hasCourseColumn) {
                 $insertPayload['course'] = $subject['course'];
