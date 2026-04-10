@@ -9338,7 +9338,8 @@ select.req-modal-input {
   .sched-filter-actions {
     width: 100%;
   }
-  .sched-filter-actions .so-print-btn {
+  .sched-filter-actions .so-print-btn,
+  .sched-filter-actions .sched-download-btn {
     width: 100%;
   }
 }
@@ -22391,6 +22392,225 @@ select:hover {
   font-weight: 600;
   text-align: center;
   padding: 10px 6px;
+}
+
+.sched-page-container .sched-filter-bar {
+  margin-bottom: 2px;
+}
+
+.sched-page-container .sched-filter-row {
+  justify-content: space-between;
+}
+
+.sched-page-container .sched-filter-group {
+  max-width: 210px;
+}
+
+.sched-page-container .sched-filter-actions {
+  margin-left: auto;
+}
+
+.sched-page-container .sched-download-btn {
+  min-width: 210px;
+  width: auto;
+  font-size: 1rem;
+}
+
+.sched-print-meta {
+  display: none;
+  padding: 8px 20px 0;
+  font-size: 0.82rem;
+  color: #1f2a35;
+  font-weight: 600;
+}
+
+.sched-print-head {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body,
+  .student-body {
+    background: #ffffff !important;
+  }
+
+  .student-sidebar,
+  .student-topbar,
+  .sidebar-overlay,
+  .student-page-header,
+  .content-footer-wrap > footer,
+  .content-footer-wrap .footer {
+    display: none !important;
+  }
+
+  .student-main-wrapper,
+  .content-footer-wrap,
+  .student-content,
+  .sched-page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .student-layout {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .sched-page-container {
+    gap: 12px !important;
+  }
+
+  .sched-filter-bar {
+    display: none !important;
+  }
+
+  .sched-scroll-wrapper,
+  .so-weekly-scroll {
+    overflow: visible !important;
+  }
+
+  .sched-scroll-wrapper,
+  .so-weekly {
+    width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  .sched-print-meta {
+    display: none !important;
+  }
+
+  .sched-print-head {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid #cddbd4;
+    background: #eef6f1;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+    color: #1f2a35;
+  }
+
+  .sched-print-head-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sched-print-head-right {
+    text-align: right;
+    font-weight: 700;
+    color: #0f5132;
+  }
+
+  .sched-table {
+    width: 100% !important;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 1px solid #98a6a0 !important;
+  }
+
+  .sched-th,
+  .sched-td {
+    font-size: 0.74rem !important;
+    padding: 7px 8px !important;
+    white-space: normal !important;
+    word-break: break-word;
+    border-color: #b8c6bf !important;
+  }
+
+  .sched-th {
+    background: #0b8746 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+  }
+
+  .sched-table,
+  .so-weekly {
+    box-shadow: none !important;
+    border-color: #b7b7b7 !important;
+  }
+
+  .so-weekly-grid {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .so-weekly {
+    border: 1px solid #b7c5be !important;
+    border-radius: 8px;
+    overflow: visible !important;
+  }
+
+  .so-weekly-col {
+    flex: 1 1 0;
+    min-width: 0 !important;
+    border-right: 1px solid #d7e3db;
+  }
+
+  .so-weekly-col:last-child {
+    border-right: none;
+  }
+
+  .so-weekly-title {
+    background: #0b8746 !important;
+    color: #ffffff !important;
+    font-size: 1.2rem !important;
+    padding: 10px 12px !important;
+    margin: 0 !important;
+  }
+
+  .sched-print-meta {
+    background: #ecf5ef;
+    border-top: 1px solid #d3dfd8;
+    border-bottom: 1px solid #d3dfd8;
+    padding: 6px 12px !important;
+  }
+
+  .so-weekly-day {
+    background: #edf6ef !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 8px 4px;
+    border-bottom: 1px solid #d7e3db;
+  }
+
+  .so-weekly-body {
+    min-height: 128px !important;
+    padding: 6px 4px !important;
+    gap: 5px !important;
+  }
+
+  .so-weekly-card {
+    background: #0b8746 !important;
+    color: #ffffff !important;
+    border: 1px solid #0a6f3b !important;
+    border-radius: 8px;
+    padding: 6px 4px;
+    box-shadow: none !important;
+  }
+
+  .so-weekly-code,
+  .so-weekly-section,
+  .so-weekly-time,
+  .so-weekly-room {
+    font-size: 0.56rem;
+  }
 }
 
 /* Toast */
