@@ -2,6 +2,80 @@
 //   PLP Web System – Custom JavaScript
 // ========================================================
 
+window.PLPComponents = window.PLPComponents || {};
+
+window.PLPComponents.initSelectStyles = function (root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('select[data-plp-select]').forEach(function (select) {
+        select.classList.add('plp-select');
+    });
+};
+
+window.PLPComponents.initServerPagination = function (config) {
+    if (!config || !config.root || !config.form || !config.pageInput) {
+        return null;
+    }
+
+    var root = config.root;
+    var form = config.form;
+    var pageInput = config.pageInput;
+    var currentPage = parseInt(config.currentPage || '1', 10) || 1;
+    var lastPage = Math.max(parseInt(config.lastPage || '1', 10) || 1, 1);
+    var pageSelector = config.pageSelector || '[data-page]';
+    var pageAttribute = config.pageAttribute || 'data-page';
+    var resetToFirstOnSubmit = config.resetToFirstOnSubmit !== false;
+    var submittingPageNavigation = false;
+
+    form.addEventListener('submit', function () {
+        if (resetToFirstOnSubmit && !submittingPageNavigation) {
+            pageInput.value = '1';
+        }
+
+        submittingPageNavigation = false;
+    });
+
+    function submitPage(pageNumber) {
+        var targetPage = Number(pageNumber || 1);
+        if (!Number.isFinite(targetPage)) {
+            return;
+        }
+
+        if (targetPage < 1) {
+            targetPage = 1;
+        }
+
+        if (targetPage > lastPage) {
+            targetPage = lastPage;
+        }
+
+        if (targetPage === currentPage) {
+            return;
+        }
+
+        submittingPageNavigation = true;
+        pageInput.value = String(targetPage);
+        form.submit();
+    }
+
+    root.addEventListener('click', function (event) {
+        var pageButton = event.target.closest(pageSelector);
+        if (!pageButton) {
+            return;
+        }
+
+        event.preventDefault();
+        if (pageButton.disabled || pageButton.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
+
+        submitPage(pageButton.getAttribute(pageAttribute));
+    });
+
+    return {
+        submitPage: submitPage,
+    };
+};
+
 // Wait for DOM to load
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -127,6 +201,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== PROGRAM FILE PAGE =====
     const programFilePage = document.getElementById('programFilePage');
     if (programFilePage) {
+        if (window.PLPComponents && typeof window.PLPComponents.initSelectStyles === 'function') {
+            window.PLPComponents.initSelectStyles(programFilePage);
+        }
+
         const successMessage = programFilePage.getAttribute('data-success');
         if (successMessage && typeof showRegistrarToast === 'function') {
             showRegistrarToast(successMessage, 'success');
@@ -146,44 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const pageInput = document.getElementById('pfPageInput');
         const currentPage = parseInt(programFilePage.getAttribute('data-current-page') || '1', 10) || 1;
         const lastPage = parseInt(programFilePage.getAttribute('data-last-page') || '1', 10) || 1;
-        let submittingPageNavigation = false;
 
-        if (topFilterForm && pageInput) {
-            topFilterForm.addEventListener('submit', function () {
-                if (!submittingPageNavigation) {
-                    // Reset to first page when running a new filter search.
-                    pageInput.value = '1';
-                }
-
-                submittingPageNavigation = false;
+        if (window.PLPComponents && typeof window.PLPComponents.initServerPagination === 'function' && topFilterForm && pageInput) {
+            window.PLPComponents.initServerPagination({
+                root: programFilePage,
+                form: topFilterForm,
+                pageInput: pageInput,
+                currentPage: currentPage,
+                lastPage: lastPage,
+                pageSelector: '[data-pf-page]',
+                pageAttribute: 'data-pf-page',
+                resetToFirstOnSubmit: true,
             });
-        }
-
-        function submitProgramPage(pageNumber) {
-            if (!topFilterForm || !pageInput) {
-                return;
-            }
-
-            var targetPage = Number(pageNumber || 1);
-            if (!Number.isFinite(targetPage)) {
-                return;
-            }
-
-            if (targetPage < 1) {
-                targetPage = 1;
-            }
-
-            if (targetPage > lastPage) {
-                targetPage = lastPage;
-            }
-
-            if (targetPage === currentPage) {
-                return;
-            }
-
-            submittingPageNavigation = true;
-            pageInput.value = String(targetPage);
-            topFilterForm.submit();
         }
 
         const editModal = document.getElementById('pfEditProgramModal');
@@ -258,17 +310,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         programFilePage.addEventListener('click', function (event) {
-            const pageBtn = event.target.closest('[data-pf-page]');
-            if (pageBtn) {
-                event.preventDefault();
-                if (pageBtn.disabled) {
-                    return;
-                }
-
-                submitProgramPage(pageBtn.getAttribute('data-pf-page'));
-                return;
-            }
-
             const toggleBtn = event.target.closest('[data-pf-menu-toggle]');
             if (toggleBtn) {
                 event.preventDefault();

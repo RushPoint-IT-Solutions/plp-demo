@@ -29,7 +29,7 @@
         <div class="pf-top-filter-grid">
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterDepartment">Department</label>
-                <select name="department_id" id="filterDepartment" class="pf-modal-select">
+                <select name="department_id" id="filterDepartment" class="pf-modal-select plp-select" data-plp-select>
                     <option value="">-All Group-</option>
                     @foreach($departments as $department)
                         <option value="{{ $department->id }}" {{ (string)$filters['department_id'] === (string)$department->id ? 'selected' : '' }}>
@@ -51,7 +51,7 @@
 
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterProgramType">Accreditation</label>
-                <select name="program_type" id="filterProgramType" class="pf-modal-select">
+                <select name="program_type" id="filterProgramType" class="pf-modal-select plp-select" data-plp-select>
                     <option value="">-All Levels-</option>
                     <option value="Level I Accredited" {{ $filters['program_type'] === 'Level I Accredited' ? 'selected' : '' }}>Level I Accredited</option>
                     <option value="Level II Accredited" {{ $filters['program_type'] === 'Level II Accredited' ? 'selected' : '' }}>Level II Accredited</option>
@@ -132,22 +132,22 @@
     @endphp
 
     <div class="sf-pagination-bar sf-pagination-compact" id="pfPaginationBar">
-        <div class="rtp-pagination">
-            <nav class="rtp-nav" aria-label="Program File pagination">
-                <div class="rtp-list" role="group" aria-label="Page controls">
+        <div class="rtp-pagination plp-pagination">
+            <nav class="rtp-nav plp-pagination__nav" aria-label="Program File pagination">
+                <div class="rtp-list plp-pagination__list" role="group" aria-label="Page controls">
                     <button
                         type="button"
-                        class="rtp-page-btn"
+                        class="rtp-page-btn plp-pagination__btn"
                         id="pfPrevBtn"
                         data-pf-page="{{ $pfCurrentPage - 1 }}"
                         aria-label="Previous page"
                         {{ $pfCurrentPage <= 1 ? 'disabled' : '' }}
                     >&lt;</button>
-                    <div class="rtp-pages" id="pfPageNumbers">
+                    <div class="rtp-pages plp-pagination__pages" id="pfPageNumbers">
                         @for($pfPage = $pfStartPage; $pfPage <= $pfEndPage; $pfPage++)
                             <button
                                 type="button"
-                                class="rtp-page-num {{ $pfPage === $pfCurrentPage ? 'active' : '' }}"
+                                class="rtp-page-num plp-pagination__page {{ $pfPage === $pfCurrentPage ? 'active is-active' : '' }}"
                                 data-pf-page="{{ $pfPage }}"
                                 aria-label="Go to page {{ $pfPage }}"
                             >{{ $pfPage }}</button>
@@ -155,7 +155,7 @@
                     </div>
                     <button
                         type="button"
-                        class="rtp-page-btn"
+                        class="rtp-page-btn plp-pagination__btn"
                         id="pfNextBtn"
                         data-pf-page="{{ $pfCurrentPage + 1 }}"
                         aria-label="Next page"
@@ -246,7 +246,7 @@
 
                 <div class="pf-modal-field">
                     <label class="pf-modal-label" for="newProgramDepartment">Select Department</label>
-                    <select class="pf-modal-select" id="newProgramDepartment" name="department_id" required>
+                    <select class="pf-modal-select plp-select" id="newProgramDepartment" name="department_id" data-plp-select required>
                         <option value="">Select Department</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}" {{ (string)old('department_id') === (string)$department->id ? 'selected' : '' }}>{{ $department->description }}</option>
@@ -256,7 +256,7 @@
 
                 <div class="pf-modal-field">
                     <label class="pf-modal-label" for="newProgramAccreditation">Accreditation Level</label>
-                    <select class="pf-modal-select" id="newProgramAccreditation" name="accreditation_level" required>
+                    <select class="pf-modal-select plp-select" id="newProgramAccreditation" name="accreditation_level" data-plp-select required>
                         <option value="">Select Level</option>
                         <option value="Level I Accredited" {{ old('accreditation_level') === 'Level I Accredited' ? 'selected' : '' }}>Level I Accredited</option>
                         <option value="Level II Accredited" {{ old('accreditation_level') === 'Level II Accredited' ? 'selected' : '' }}>Level II Accredited</option>
@@ -298,7 +298,7 @@
 
                 <div class="pf-modal-field pf-item-department">
                     <label class="pf-modal-label" for="pfEditDepartment">Department</label>
-                    <select class="pf-modal-select" id="pfEditDepartment" name="department_id" required>
+                    <select class="pf-modal-select plp-select" id="pfEditDepartment" name="department_id" data-plp-select required>
                         <option value="">-Select Department-</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}">{{ $department->description }}</option>
@@ -308,7 +308,7 @@
 
                 <div class="pf-modal-field pf-item-accreditation">
                     <label class="pf-modal-label" for="pfEditAccreditation">Accreditation Level</label>
-                    <select class="pf-modal-select" id="pfEditAccreditation" name="accreditation_level" required>
+                    <select class="pf-modal-select plp-select" id="pfEditAccreditation" name="accreditation_level" data-plp-select required>
                         <option value="">Select Level</option>
                         <option value="Level I Accredited">Level I Accredited</option>
                         <option value="Level II Accredited">Level II Accredited</option>

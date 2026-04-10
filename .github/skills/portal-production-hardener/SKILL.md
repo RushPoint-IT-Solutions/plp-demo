@@ -240,6 +240,10 @@ Analyze the UI structure across scanned pages to identify repeating patterns (pa
 ### Step 4: Enforce Consistency Rules
 - Add a check in Phase 8 (Playwright Debugger) to verify that common UI elements share the same DOM structure and classes.
 - If inconsistencies are found (e.g., different pagination markup on different pages), flag as a medium‑severity issue and auto‑fix by replacing with the component.
+- Require shared components for:
+   - Dropdown styling primitives (reusable class contract).
+   - Pagination styling and server-side pagination click logic.
+- Preserve performance on high-volume pages by enforcing backend pagination (`page`/`per_page`) and avoiding client-side full-table rendering.
 
 ### Step 5: Update Project Memory
 - Record all created components and their usage in the runtime context for future runs.

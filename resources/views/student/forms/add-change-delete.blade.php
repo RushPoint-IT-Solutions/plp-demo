@@ -2,6 +2,7 @@
 
 @section('title', 'Adding/Changing/Deleting Form - PLP')
 @section('page-title', 'FORMS')
+@section('body-class', 'page-student-forms')
 
 @section('content')
 @php
@@ -16,7 +17,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form" style="margin-top: 2in;">
+        <div class="cor-container acd-form">
         <div class="acd-body">
             <p class="acd-form-number" style="margin: 0 0 8px; text-align: left;">PLPRO FORM NO.2</p>
             <div class="acd-meta-grid">

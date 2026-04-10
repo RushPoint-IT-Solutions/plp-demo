@@ -31666,6 +31666,94 @@ body.page-profile-edit .student-content {
   text-align: center !important;
 }
 
+/* Reusable native select styling component */
+
+.plp-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #a9cdb7;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #173b29;
+  padding: 7px 34px 7px 10px;
+  background-image: linear-gradient(45deg, transparent 50%, #0f7b43 50%), linear-gradient(135deg, #0f7b43 50%, transparent 50%);
+  background-position: calc(100% - 17px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.plp-select:focus {
+  outline: none;
+  border-color: #0f7b43;
+  box-shadow: 0 0 0 3px rgba(15, 123, 67, 0.18);
+}
+
+.plp-select:disabled {
+  background-color: #f5f8f6;
+  color: #6f8077;
+}
+
+/* Reusable server-side pagination styling component */
+
+.plp-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+.plp-pagination__nav {
+  width: 100%;
+}
+
+.plp-pagination__list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plp-pagination__pages {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plp-pagination__btn,
+.plp-pagination__page {
+  min-width: 34px;
+  height: 34px;
+  border: 1px solid #d7dfda;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f7b43;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 10px;
+  transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.plp-pagination__btn:hover:not(:disabled),
+.plp-pagination__page:hover {
+  background: #eef8f1;
+  border-color: #b9d0c3;
+  color: #0c6839;
+}
+
+.plp-pagination__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.plp-pagination__page.is-active,
+.plp-pagination__page.is-active:hover {
+  background: #0f7b43;
+  border-color: #0f7b43;
+  color: #ffffff;
+}
+
 /* Remark status colors */
 
 .remark-passed {
@@ -36265,6 +36353,15 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .acd-page {
   padding-top: 8px;
   overflow-x: hidden;
+  overflow-y: visible;
+}
+
+body.page-student-forms .student-main-wrapper,
+body.page-student-forms .content-footer-wrap,
+body.page-student-forms .student-content,
+body.page-student-forms .cor-scroll-wrapper.acd-page {
+  overflow-y: visible !important;
+  max-height: none !important;
 }
 
 .acd-canvas {
@@ -36278,7 +36375,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .acd-actions {
   display: flex;
   justify-content: flex-end;
-  margin: 0 0 8px;
+  margin: 0 0 16px;
 }
 
 .acd-print-btn {
@@ -36299,6 +36396,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   width: var(--acd-paper-width);
   min-width: var(--acd-paper-width);
   min-height: 297mm;
+  margin-top: 0 !important;
   border: 1.5px solid #9aa1a8;
   border-radius: 0 !important;
   transform: scale(var(--acd-scale));
@@ -36655,6 +36753,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     max-width: 100% !important;
     height: auto !important;
     min-height: auto !important;
+    margin-top: 2in !important;
     transform: none !important;
     border: 1.5px solid #000 !important;
     border-radius: 0 !important;

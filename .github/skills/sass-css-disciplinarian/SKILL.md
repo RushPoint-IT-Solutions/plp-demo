@@ -44,6 +44,13 @@ Use this pattern whenever dropdown option lists must be visually designed (green
   - `Escape` closes and returns focus to the trigger.
 - Never rely on native browser `<option>` popup styling for final UI design.
 
+## Pagination Component Rule
+- Pagination styling must be reusable via shared component classes (not page-only selectors).
+- Pagination logic should be reusable and server-driven for high-volume tables (thousands of rows):
+  - Submit `page`/`per_page` back to backend.
+  - Do not render all rows client-side.
+  - Keep click handlers generic and configurable by data attributes.
+
 ## Blade + Asset Integration Rules
 - Blade should reference compiled assets only.
 - CSS include pattern:
@@ -66,6 +73,7 @@ Before finalizing any Blade change:
 4. Confirm custom styles are in `resources/sass/` (or `resources/assets/sass/` in legacy modules) and compiled.
 5. Confirm custom scripts are in `resources/js/` (or `resources/assets/js/` in legacy modules) and compiled.
 6. For styled dropdowns, confirm active highlight follows current hover/focus target.
+7. For Student forms, confirm desktop has one vertical scrollbar and print keeps a 2in top form margin.
 
 ## STOP COMMAND
 WAITING_FOR_HUMAN_OK
