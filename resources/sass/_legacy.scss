@@ -24289,6 +24289,41 @@ body.page-profile-view .pv-layout {
   z-index: 1;
 }
 
+body.page-profile-view .pv-sidebar .pv-meta-grid {
+  gap: 10px;
+}
+
+body.page-profile-view .pv-sidebar .pv-meta-row {
+  display: grid;
+  grid-template-columns: minmax(118px, 46%) minmax(0, 54%);
+  align-items: center;
+  column-gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.page-profile-view .pv-sidebar .pv-meta-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: #4f5962;
+  font-weight: 700;
+  text-align: left;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+body.page-profile-view .pv-sidebar .pv-meta-value {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #1f2428;
+  text-align: right;
+  min-width: 0;
+  justify-self: end;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pv-sidebar {
   background: rgba(255, 255, 255, 0.86);
   border: 1px solid rgba(255, 255, 255, 0.45);
@@ -24332,6 +24367,25 @@ body.page-profile-view .pv-layout {
 .pv-student-id {
   color: #30353a;
   margin: 0 0 12px;
+}
+
+body.page-profile-view .pv-sidebar-header {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+body.page-profile-view .pv-sidebar-info {
+  text-align: left;
+}
+
+body.page-profile-view .pv-avatar-wrap {
+  margin: 0 0 12px;
+}
+
+body.page-profile-view .pv-name,
+body.page-profile-view .pv-student-id {
+  text-align: left;
 }
 
 .pv-meta-grid {

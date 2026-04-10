@@ -21,7 +21,12 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
+    @php
+        $studentBodyClass = trim($__env->yieldContent('body-class'));
+    @endphp
+    @if(!\Illuminate\Support\Str::contains($studentBodyClass, 'page-profile-view'))
     <link rel="stylesheet" href="{{ asset('css/students.css') }}?v={{ time() }}">
+    @endif
 
     @stack('styles')
 </head>

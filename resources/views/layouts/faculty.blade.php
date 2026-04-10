@@ -21,13 +21,6 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
-    @php
-        $facultyBodyClass = trim($__env->yieldContent('body-class'));
-    @endphp
-    @if(\Illuminate\Support\Str::contains($facultyBodyClass, 'page-profile-view'))
-    <link rel="stylesheet" href="{{ asset('css/students.css') }}?v={{ time() }}">
-    @endif
-
     @stack('styles')
 </head>
 <body class="student-body student-portal-body faculty-body @yield('body-class')">

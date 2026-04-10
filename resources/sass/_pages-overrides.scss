@@ -891,12 +891,12 @@ body.page-profile-view .pv-page {
 }
 
 body.page-profile-view .pv-layout {
-    max-width: 1360px;
+    max-width: none;
     width: 100%;
     min-height: calc(100vh - 118px);
     gap: 18px;
-    padding: 18px 22px 24px;
-    margin: 0 auto;
+    padding: 18px 14px 24px 8px;
+    margin: 0;
     box-sizing: border-box;
     position: relative;
     z-index: 1;
@@ -3530,16 +3530,39 @@ body.page-profile-view {
     }
 
     .pv-body {
-        background: rgba(0, 88, 47, 0.42) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 12px;
+        background: rgba(0, 88, 47, 0.30) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 10px;
+        padding: 10px 12px 12px;
     }
 
     .pv-panel-card {
-        background: rgba(0, 104, 55, 0.64) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(0, 104, 55, 0.46) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
+    }
+
+    .pv-body-title {
+        margin: 4px 0 8px;
+        font-size: 0.94rem;
+    }
+
+    .pv-tabs {
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .pv-tab {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.42);
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .pv-tab.active {
+        background: #f2f6f4;
+        border-color: #f2f6f4;
+        color: #1d262c;
     }
 
     .pv-sidebar-header {
@@ -3561,11 +3584,16 @@ body.page-profile-view {
         text-align: center !important;
     }
 
+    .pv-name,
+    .pv-student-id {
+        text-align: center !important;
+    }
+
     .pv-meta-row {
         display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 4px !important;
-        align-items: start !important;
+        grid-template-columns: minmax(118px, 46%) minmax(0, 54%) !important;
+        column-gap: 12px !important;
+        align-items: center !important;
     }
 
     .pv-meta-label {
@@ -3577,7 +3605,7 @@ body.page-profile-view {
         font-size: 0.78rem;
         font-weight: 600;
         line-height: 1.24;
-        text-align: left !important;
+        text-align: right !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -3602,11 +3630,9 @@ body.page-profile-view {
     .pv-meta-department,
     .pv-meta-email,
     .pv-meta-course {
-        white-space: normal !important;
-        overflow: visible !important;
-        text-overflow: clip !important;
-        word-break: break-word;
-        overflow-wrap: anywhere;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 }
 
@@ -3640,6 +3666,15 @@ body.faculty-body.page-profile-view {
     }
 }
 
+body.student-body.page-profile-view:not(.faculty-body) {
+    .pv-meta-value,
+    .pv-meta-email,
+    .pv-meta-course {
+        color: #0a813c !important;
+        font-weight: 700;
+    }
+}
+
 @include down(1200px) {
     body.page-profile-view .pv-sidebar {
         max-width: 100%;
@@ -3647,10 +3682,47 @@ body.faculty-body.page-profile-view {
     }
 }
 
+@include down(992px) {
+    body.page-profile-view .pv-meta-row {
+        grid-template-columns: minmax(88px, 44%) minmax(0, 56%) !important;
+        column-gap: 10px !important;
+    }
+
+    body.page-profile-view .pv-row {
+        grid-template-columns: 132px 12px minmax(0, 1fr) !important;
+        gap: 6px;
+    }
+
+    body.page-profile-view .pv-label,
+    body.page-profile-view .pv-sep,
+    body.page-profile-view .pv-value {
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
+}
+
 @include down(576px) {
     body.page-profile-view .pv-avatar-wrap {
         width: 88px;
         height: 88px;
+    }
+
+    body.page-profile-view .pv-meta-row {
+        grid-template-columns: minmax(82px, 46%) minmax(0, 54%) !important;
+    }
+
+    body.page-profile-view .pv-row {
+        grid-template-columns: 118px 10px minmax(0, 1fr) !important;
+        gap: 5px;
+    }
+
+    body.page-profile-view .pv-sep {
+        display: inline !important;
+    }
+
+    body.page-profile-view .pv-label,
+    body.page-profile-view .pv-value {
+        font-size: 0.76rem;
     }
 }
 

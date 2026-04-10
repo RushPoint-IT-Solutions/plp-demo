@@ -41,7 +41,10 @@
     $fatherName    = trim(($profile->father_firstname ?? '') . ' ' . ($profile->father_middlename ?? '') . ' ' . ($profile->father_lastname ?? ''));
     $guardianName  = trim(($profile->guardian_firstname ?? '') . ' ' . ($profile->guardian_middlename ?? '') . ' ' . ($profile->guardian_lastname ?? ''));
 
-    $courseBlock   = trim((optional($student)->program ?? '') . ' ' . (optional($student)->year_level ?? ''));
+    $courseBlock    = trim((optional($student)->program ?? '') . ' ' . (optional($student)->year_level ?? ''));
+    $departmentRaw  = optional($student)->college ?? '—';
+    $departmentTrim = preg_replace('/^College of\s+/i', '', (string) $departmentRaw);
+    $department     = trim((string) ($departmentTrim !== '' ? $departmentTrim : $departmentRaw));
 @endphp
 
 <div class="pv-page">
@@ -73,19 +76,17 @@
 
             <div class="pv-meta-grid">
                 <div class="pv-meta-row">
-                    <span class="pv-meta-label">STUDENT NO.</span>
-                    <span class="pv-meta-value">{{ $studentNo }}</span>
+                    <span class="pv-meta-label">DEPARTMENT</span>
+                    <span class="pv-meta-value pv-meta-department" title="{{ $department }}">{{ $department }}</span>
                 </div>
                 <div class="pv-meta-row">
                     <span class="pv-meta-label">UNIVERSITY EMAIL</span>
                     <span class="pv-meta-value pv-meta-email" title="{{ $profile->student_email ?? '—' }}">{{ $profile->student_email ?? '—' }}</span>
                 </div>
-                @if($courseBlock)
                 <div class="pv-meta-row">
                     <span class="pv-meta-label">COURSE, BLOCK &amp; YR</span>
                     <span class="pv-meta-value pv-meta-course" title="{{ $courseBlock }}">{{ $courseBlock }}</span>
                 </div>
-                @endif
             </div>
 
             <div class="pv-btn-group">
