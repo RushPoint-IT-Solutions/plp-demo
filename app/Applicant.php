@@ -60,6 +60,11 @@ class Applicant extends Model
         return $this->hasOne(ApplicantApplicationPreference::class);
     }
 
+    public function onboardingAcknowledgement()
+    {
+        return $this->hasOne(ApplicantOnboardingAcknowledgement::class);
+    }
+
     public function applicationStatusLookup()
     {
         return $this->belongsTo(ApplicantApplicationStatus::class, 'application_status_id');

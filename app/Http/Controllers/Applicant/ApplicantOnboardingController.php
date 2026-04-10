@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Applicant;
 
 use App\Applicant;
+use App\ApplicantOnboardingAcknowledgement;
 use App\Course;
 use App\Http\Controllers\Controller;
 use App\User;
@@ -29,16 +30,42 @@ class ApplicantOnboardingController extends Controller
             'ack_terms.accepted' => 'Please agree to the Privacy Policy and Terms of Service to continue.',
         ]);
 
-        return redirect()->route('applicant.apply.form-preview');
+        $request->session()->put('applicant_onboarding_acknowledgement', [
+            'ack_notices' => true,
+            'ack_terms' => true,
+            'acknowledged_at' => now()->toDateTimeString(),
+        ]);
+
+        return redirect()->route('applicant.apply.basic-details');
     }
 
-    public function basicDetails()
+    public function basicDetails(Request $request)
     {
-        return redirect()->route('applicant.apply.form-preview');
+        $acknowledgement = (array) $request->session()->get('applicant_onboarding_acknowledgement', []);
+
+        if (empty($acknowledgement['ack_notices']) || empty($acknowledgement['ack_terms'])) {
+            return redirect()
+                ->route('applicant.apply.welcome')
+                ->withErrors([
+                    'acknowledgement' => 'Please read and accept the notices and terms before registering.',
+                ]);
+        }
+
+        return view('applicant.apply-basic-details');
     }
 
     public function storeBasicDetails(Request $request)
     {
+        $acknowledgement = (array) $request->session()->get('applicant_onboarding_acknowledgement', []);
+
+        if (empty($acknowledgement['ack_notices']) || empty($acknowledgement['ack_terms'])) {
+            return redirect()
+                ->route('applicant.apply.welcome')
+                ->withErrors([
+                    'acknowledgement' => 'Please read and accept the notices and terms before registering.',
+                ]);
+        }
+
         $validated = $request->validate([
             'last_name' => 'nullable|string|max:120',
             'first_name' => 'nullable|string|max:120',
@@ -47,6 +74,9 @@ class ApplicantOnboardingController extends Controller
             'email_address' => 'nullable|email|max:190',
             'mobile_number' => 'nullable|regex:/^[0-9]{11}$/',
             'application_track' => 'nullable|in:college,senior_high',
+            'date_of_birth' => 'nullable|date',
+            'nationality' => 'nullable|string|max:120',
+            'religion' => 'nullable|string|max:120',
         ]);
 
         $validated['last_name'] = trim((string) ($validated['last_name'] ?? ''));
@@ -54,6 +84,8 @@ class ApplicantOnboardingController extends Controller
         $validated['middle_name'] = trim((string) ($validated['middle_name'] ?? ''));
         $validated['email_address'] = trim((string) ($validated['email_address'] ?? ''));
         $validated['mobile_number'] = trim((string) ($validated['mobile_number'] ?? ''));
+        $validated['nationality'] = trim((string) ($validated['nationality'] ?? ''));
+        $validated['religion'] = trim((string) ($validated['religion'] ?? ''));
 
         if ($validated['last_name'] === '') {
             $validated['last_name'] = 'TESTER';
@@ -75,6 +107,14 @@ class ApplicantOnboardingController extends Controller
             $validated['application_track'] = 'college';
         }
 
+        if ($validated['nationality'] === '') {
+            $validated['nationality'] = 'Filipino';
+        }
+
+        if ($validated['religion'] === '') {
+            $validated['religion'] = null;
+        }
+
         if ($this->requestBoolean($request, 'has_no_middle_name')) {
             $validated['middle_name'] = null;
         } elseif ($validated['middle_name'] === '') {
@@ -85,7 +125,7 @@ class ApplicantOnboardingController extends Controller
         $user = null;
 
         try {
-            DB::transaction(function () use ($validated, &$applicant, &$user) {
+            DB::transaction(function () use ($validated, $acknowledgement, &$applicant, &$user) {
                 $applicantId = $this->generateApplicantId();
 
                 $applicant = Applicant::create([
@@ -95,6 +135,9 @@ class ApplicantOnboardingController extends Controller
                     'middle_name' => !empty($validated['middle_name']) ? trim($validated['middle_name']) : null,
                     'email_address' => trim($validated['email_address']),
                     'mobile_number' => trim($validated['mobile_number']),
+                    'date_of_birth' => $validated['date_of_birth'] ?? null,
+                    'nationality' => $validated['nationality'],
+                    'religion' => $validated['religion'],
                     'application_status' => 'draft',
                     'application_draft_step' => 1,
                     'application_portal_stage' => 0,
@@ -109,26 +152,33 @@ class ApplicantOnboardingController extends Controller
                     'force_password_reset' => false,
                     'applicant_id' => $applicant->id,
                 ]);
+
+                ApplicantOnboardingAcknowledgement::updateOrCreate(
+                    ['applicant_id' => $applicant->id],
+                    [
+                        'ack_notices' => !empty($acknowledgement['ack_notices']),
+                        'ack_terms' => !empty($acknowledgement['ack_terms']),
+                        'acknowledged_at' => !empty($acknowledgement['acknowledged_at'])
+                            ? $acknowledgement['acknowledged_at']
+                            : now()->toDateTimeString(),
+                    ]
+                );
             });
         } catch (\Throwable $exception) {
-            $request->session()->put('applicant_preview_basic_details', [
-                'last_name' => $validated['last_name'],
-                'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'],
-                'email_address' => $validated['email_address'],
-                'mobile_number' => $validated['mobile_number'],
-                'application_track' => $validated['application_track'],
-                'has_no_middle_name' => $this->requestBoolean($request, 'has_no_middle_name'),
-            ]);
-
             return redirect()
-                ->route('applicant.apply.form-preview');
+                ->route('applicant.apply.basic-details')
+                ->withInput()
+                ->withErrors([
+                    'registration' => 'Unable to create your applicant account right now. Please try again.',
+                ]);
         }
 
         if ($user) {
             Auth::login($user, true);
             $request->session()->regenerate();
         }
+
+        $request->session()->forget('applicant_onboarding_acknowledgement');
 
         return redirect()
             ->route('applicant.application-form')
