@@ -8971,11 +8971,7 @@ select.req-modal-input {
   }
 }
 
-#dfTable .apst-dropdown {
-  position: fixed;
-}
-
-#dfTable td:first-child .apst-action-btn {
+#dfTable td:last-child .apst-action-btn {
   margin: 0 auto;
 }
 
@@ -17740,6 +17736,280 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 .page-services-grading-academic .ga-search-wrap-wide {
   max-width: none;
   width: 100%;
+}
+
+.page-services-grading-academic .df-detail-toolbar {
+  margin-bottom: 20px;
+}
+
+.page-services-grading-academic .df-list-table-wrap {
+  margin-top: 14px;
+}
+
+.page-services-grading-academic .df-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: #d1d5db;
+  background: #fff;
+}
+
+.page-services-grading-academic .df-back-btn:hover {
+  border-color: #0f7b43;
+}
+
+.page-services-grading-academic .df-students-table th,
+.page-services-grading-academic .df-students-table td {
+  vertical-align: middle;
+}
+
+.page-services-grading-academic .df-col-action,
+.page-services-grading-academic .df-col-index,
+.page-services-grading-academic .df-col-program,
+.page-services-grading-academic .df-col-year,
+.page-services-grading-academic .df-col-completed,
+.page-services-grading-academic .df-col-action-detail {
+  text-align: center;
+}
+
+.page-services-grading-academic .df-col-action {
+  width: 76px;
+}
+
+.page-services-grading-academic .df-col-index {
+  width: 58px;
+}
+
+.page-services-grading-academic .df-col-program {
+  width: 170px;
+}
+
+.page-services-grading-academic .df-col-year {
+  width: 120px;
+}
+
+.page-services-grading-academic .df-col-completed {
+  width: 106px;
+}
+
+.page-services-grading-academic #dfStudentsTable th,
+.page-services-grading-academic #dfStudentsTable td {
+  text-align: center;
+}
+
+.page-services-grading-academic .df-empty-row {
+  text-align: center;
+  color: #6b7280;
+}
+
+.page-services-grading-academic .df-student-link {
+  color: #1f2937;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.page-services-grading-academic .df-student-link:hover,
+.page-services-grading-academic .df-student-link:focus {
+  color: #0f7b43;
+  text-decoration: underline;
+}
+
+.page-services-grading-academic .df-selected-info {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.page-services-grading-academic .df-check-center {
+  justify-content: center;
+}
+
+.page-services-grading-academic #dfStudentsTable td:first-child,
+.page-services-grading-academic #dfTable td:last-child {
+  position: relative;
+}
+
+.page-services-grading-academic #dfStudentsTable td:first-child .apst-action-btn,
+.page-services-grading-academic #dfTable td:last-child .apst-action-btn {
+  margin: 0 auto;
+}
+
+.page-services-grading-academic #dfStudentsTable .apst-dropdown {
+  left: calc(50% + 21px);
+  right: auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.page-services-grading-academic #dfTable .apst-dropdown {
+  left: auto;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.page-services-grading-academic #dfStudentsTable .apst-dropdown.drop-up,
+.page-services-grading-academic #dfTable .apst-dropdown.drop-up {
+  top: auto;
+  bottom: 0;
+  transform: none;
+}
+
+.page-services-grading-academic .apst-action-btn.apst-action-btn-eye {
+  gap: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border-color: #9bcfb3;
+  background: #ecf9f1;
+  box-shadow: 0 1px 2px rgba(6, 78, 59, 0.16);
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.page-services-grading-academic .apst-action-btn.apst-action-btn-eye span {
+  display: none;
+}
+
+.page-services-grading-academic .apst-action-btn.apst-action-btn-eye svg {
+  color: #0f7b43;
+}
+
+.page-services-grading-academic .apst-action-btn.apst-action-btn-eye:hover,
+.page-services-grading-academic .apst-action-btn.apst-action-btn-eye:focus {
+  background: #dbf2e5;
+  border-color: #6bb38b;
+  transform: translateY(-1px);
+}
+
+.page-services-grading-academic .df-student-modal-box {
+  max-width: 500px;
+}
+
+.page-services-grading-academic .df-student-modal-fields {
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.page-services-grading-academic .df-student-modal-actions {
+  margin-top: 20px;
+}
+
+.page-services-grading-academic .df-modal-help {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.82rem;
+}
+
+.page-services-grading-academic .df-student-search-wrap .smrg-search-dropdown {
+  top: calc(100% + 4px);
+}
+
+.page-services-grading-academic .df-deficiency-modal-box {
+  max-width: 620px;
+}
+
+.page-services-grading-academic .df-modal-stack-gap {
+  margin-top: 10px;
+}
+
+.page-services-grading-academic .df-summary-modal-box {
+  max-width: 500px;
+  text-align: center;
+}
+
+.page-services-grading-academic .df-summary-title {
+  margin-bottom: 5px;
+}
+
+.page-services-grading-academic .df-summary-student {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0 0 20px;
+}
+
+.page-services-grading-academic .df-summary-body {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.page-services-grading-academic .df-summary-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.page-services-grading-academic .df-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-services-grading-academic .df-summary-item.has-top-border {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eaeaea;
+}
+
+.page-services-grading-academic .df-summary-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.page-services-grading-academic .df-summary-status.is-pending {
+  color: #d93025;
+  background: #ffe5e5;
+}
+
+.page-services-grading-academic .df-summary-status.is-completed {
+  color: #0b7a39;
+  background: #ddf8e8;
+}
+
+.page-services-grading-academic .df-summary-empty {
+  margin: 0;
+  color: #888;
+  font-style: italic;
+}
+
+.page-services-grading-academic .df-summary-actions {
+  justify-content: center;
+}
+
+.page-services-grading-academic .df-summary-manage-btn {
+  background: #006837;
+}
+
+.page-services-grading-academic .df-delete-modal-box {
+  min-width: 300px;
+}
+
+.page-services-grading-academic .df-delete-modal-title {
+  color: #c0392b;
+}
+
+.page-services-grading-academic .df-delete-modal-text {
+  font-size: 0.88rem;
+  color: #444;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.page-services-grading-academic .df-delete-modal-actions {
+  justify-content: center;
+}
+
+.page-services-grading-academic .df-delete-modal-confirm {
+  background: #c0392b;
 }
 
 .page-services-grading-academic .ga-inline-actions {

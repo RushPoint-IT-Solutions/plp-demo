@@ -453,13 +453,87 @@ class GradingAcademicController extends Controller
 
     public function deficiency()
     {
+        $search = trim((string) request()->query('q', ''));
+        $hasProgramColumn = Schema::hasColumn('students', 'program');
+        $hasYearLevelColumn = Schema::hasColumn('students', 'year_level');
+        $hasCourseCodeColumn = Schema::hasTable('courses') && Schema::hasColumn('courses', 'code');
+        $hasCourseNameColumn = Schema::hasTable('courses') && Schema::hasColumn('courses', 'name');
+        $hasYearBlockLabelColumn = Schema::hasTable('year_blocks') && Schema::hasColumn('year_blocks', 'label');
+
         $students = Student::query()
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
-            ->orderBy('name')
-            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
+            ->select('students.*')
+            ->when($search !== '', function ($query) use (
+                $search,
+                $hasProgramColumn,
+                $hasYearLevelColumn,
+                $hasCourseCodeColumn,
+                $hasCourseNameColumn,
+                $hasYearBlockLabelColumn
+            ) {
+                $like = '%' . $search . '%';
+
+                $query->where(function ($inner) use (
+                    $like,
+                    $hasProgramColumn,
+                    $hasYearLevelColumn,
+                    $hasCourseCodeColumn,
+                    $hasCourseNameColumn,
+                    $hasYearBlockLabelColumn
+                ) {
+                    $inner->where('students.student_no', 'like', $like)
+                        ->orWhere('students.name', 'like', $like);
+
+                    if ($hasProgramColumn) {
+                        $inner->orWhere('students.program', 'like', $like);
+                    }
+
+                    if ($hasYearLevelColumn) {
+                        $inner->orWhere('students.year_level', 'like', $like);
+                    }
+
+                    if ($hasCourseCodeColumn || $hasCourseNameColumn) {
+                        $inner->orWhereHas('canonicalCourse', function ($courseQuery) use ($like, $hasCourseCodeColumn, $hasCourseNameColumn) {
+                            $courseQuery->where(function ($courseInner) use ($like, $hasCourseCodeColumn, $hasCourseNameColumn) {
+                                if ($hasCourseCodeColumn) {
+                                    $courseInner->where('courses.code', 'like', $like);
+                                }
+
+                                if ($hasCourseNameColumn) {
+                                    if ($hasCourseCodeColumn) {
+                                        $courseInner->orWhere('courses.name', 'like', $like);
+                                    } else {
+                                        $courseInner->where('courses.name', 'like', $like);
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+                    if ($hasYearBlockLabelColumn) {
+                        $inner->orWhereHas('yearBlock', function ($yearBlockQuery) use ($like) {
+                            $yearBlockQuery->where('year_blocks.label', 'like', $like);
+                        });
+                    }
+                });
+            })
+            ->orderByDesc('students.id')
+            ->paginate(25)
+            ->appends(request()->except('page'));
+
+        $students->getCollection()->transform(function ($student) {
+            $canonicalCourse = $student->relationLoaded('canonicalCourse') ? $student->canonicalCourse : null;
+            $yearBlock = $student->relationLoaded('yearBlock') ? $student->yearBlock : null;
+
+            $student->resolved_program = trim((string) ($student->program ?: (optional($canonicalCourse)->code ?: optional($canonicalCourse)->name)));
+            $student->resolved_year_level = trim((string) ($student->year_level ?: optional($yearBlock)->label));
+
+            return $student;
+        });
 
         $selectedStudent = $students->first();
         $studentDeficiencies = collect();
+        $currentUserName = optional(request()->user())->name ?: 'Registrar';
 
         if ($selectedStudent) {
             $studentDeficiencies = StudentDeficiency::query()
@@ -469,7 +543,7 @@ class GradingAcademicController extends Controller
                 ->get();
         }
 
-        return view('registrar.services.grading-academic.deficiency', compact('students', 'studentDeficiencies', 'selectedStudent'));
+        return view('registrar.services.grading-academic.deficiency', compact('students', 'studentDeficiencies', 'selectedStudent', 'search', 'currentUserName'));
     }
 
     public function deficiencyRecords(Student $student): JsonResponse
@@ -483,32 +557,65 @@ class GradingAcademicController extends Controller
         return response()->json(['ok' => true, 'data' => $records]);
     }
 
+    public function deficiencyStudentSearch(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+        $limit = max(1, min(20, (int) $request->query('limit', 12)));
+
+        $students = Student::query()
+            ->select('id', 'student_no', 'name')
+            ->whereNotNull('student_no')
+            ->where('student_no', '<>', '')
+            ->whereNotNull('name')
+            ->where('name', '<>', '')
+            ->when($search !== '', function ($query) use ($search) {
+                $like = '%' . $search . '%';
+
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('student_no', 'like', $like)
+                        ->orWhere('name', 'like', $like);
+                });
+            })
+            ->orderBy('student_no')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'ok' => true,
+            'data' => $students,
+        ]);
+    }
+
     public function deficiencyStudentStore(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'student_id' => 'required|integer|exists:students,id',
             'student_no' => 'required|string|max:40',
             'name' => 'required|string|max:120',
         ]);
 
-        $studentNo = trim($validated['student_no']);
-        $name = trim($validated['name']);
+        $student = Student::query()->select('id', 'student_no', 'name')->find($validated['student_id']);
+        if (!$student) {
+            return response()->json([
+                'message' => 'Selected student is not available.',
+                'errors' => [
+                    'student_id' => ['Please select a valid student from the search results.'],
+                ],
+            ], 422);
+        }
 
-        $student = Student::query()->where('student_no', $studentNo)->first();
+        $studentNo = trim((string) $validated['student_no']);
+        $name = trim((string) $validated['name']);
+        $matchesStudentNo = strcasecmp(trim((string) $student->student_no), $studentNo) === 0;
+        $matchesStudentName = strcasecmp(trim((string) $student->name), $name) === 0;
 
-        if ($student) {
-            if (trim((string) $student->name) !== $name) {
-                $student->name = $name;
-                $student->save();
-            }
-        } else {
-            $student = Student::create([
-                'student_no' => $studentNo,
-                'name' => $name,
-                'program' => null,
-                'year_level' => null,
-                'school_year' => '2025-2026',
-                'semester' => 'First',
-            ]);
+        if (!$matchesStudentNo || !$matchesStudentName) {
+            return response()->json([
+                'message' => 'Selected student details do not match the current input.',
+                'errors' => [
+                    'student_id' => ['Please select a student from the list and do not edit the values manually.'],
+                ],
+            ], 422);
         }
 
         return response()->json([
@@ -517,8 +624,6 @@ class GradingAcademicController extends Controller
                 'id' => $student->id,
                 'student_no' => $student->student_no,
                 'name' => $student->name,
-                'program' => $student->program,
-                'year_level' => $student->year_level,
             ],
         ]);
     }
@@ -532,8 +637,9 @@ class GradingAcademicController extends Controller
             'submission_date' => 'nullable|date',
             'is_completed' => 'nullable|boolean',
             'compliance_date' => 'nullable|date',
-            'updated_by' => 'nullable|string|max:80',
         ]);
+
+        $updatedBy = optional($request->user())->name ?: 'Registrar';
 
         $record = StudentDeficiency::create([
             'student_id' => $student->id,
@@ -543,7 +649,7 @@ class GradingAcademicController extends Controller
             'submission_date' => $validated['submission_date'] ?? null,
             'is_completed' => (bool) ($validated['is_completed'] ?? false),
             'compliance_date' => $validated['compliance_date'] ?? null,
-            'updated_by' => isset($validated['updated_by']) ? trim($validated['updated_by']) : null,
+            'updated_by' => $updatedBy,
         ]);
 
         return response()->json(['ok' => true, 'id' => $record->id]);
@@ -558,8 +664,9 @@ class GradingAcademicController extends Controller
             'submission_date' => 'nullable|date',
             'is_completed' => 'nullable|boolean',
             'compliance_date' => 'nullable|date',
-            'updated_by' => 'nullable|string|max:80',
         ]);
+
+        $updatedBy = optional($request->user())->name ?: 'Registrar';
 
         $studentDeficiency->update([
             'department' => trim($validated['department']),
@@ -568,7 +675,7 @@ class GradingAcademicController extends Controller
             'submission_date' => $validated['submission_date'] ?? null,
             'is_completed' => (bool) ($validated['is_completed'] ?? false),
             'compliance_date' => $validated['compliance_date'] ?? null,
-            'updated_by' => isset($validated['updated_by']) ? trim($validated['updated_by']) : null,
+            'updated_by' => $updatedBy,
         ]);
 
         return response()->json(['ok' => true]);
