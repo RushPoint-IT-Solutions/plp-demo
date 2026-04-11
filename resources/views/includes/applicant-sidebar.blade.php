@@ -3,12 +3,11 @@
         $isPreviewPortal = !empty($previewPortalMode);
         $previewPortalUnlocked = !empty($previewPortalUnlocked);
 
-        // Real portal users should only see other pages after submitting AND clicking "Proceed" (stage >= 1)
+        // Real portal users should see other pages immediately after submitting
         $isRealPortalUnlocked = false;
         if (isset($applicant)) {
             $isRealPortalUnlocked = (
-                optional($applicant)->application_status === 'submitted' &&
-                (int) optional($applicant)->application_portal_stage >= 1
+                optional($applicant)->application_status === 'submitted'
             );
         }
 
