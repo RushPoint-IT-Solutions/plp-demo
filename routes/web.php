@@ -96,11 +96,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 */
 Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 'force_password_reset'])->group(function () {
     Route::get('/', function () {
-        return view('student.access-module');
+        return redirect()->route('student.schedule');
     })->name('access-module');
     Route::get('/section-offering', 'Student\StudentController@sectionOffering')->name('section-offering');
     Route::get('/grades', 'Student\StudentController@grades')->name('grades');
     Route::get('/schedule', 'Student\StudentController@schedule')->name('schedule');
+    Route::get('/cor', 'Student\StudentController@cor')->name('cor');
     Route::get('/events', 'Student\StudentController@events')->name('events');
     Route::get('/forms/{category}', 'Student\StudentController@forms')->name('forms.show');
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');

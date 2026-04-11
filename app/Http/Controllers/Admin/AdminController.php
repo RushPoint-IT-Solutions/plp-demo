@@ -45,7 +45,7 @@ class AdminController extends Controller
             $user = Auth::user();
             if ($user && $user->module === $module && $this->hasRequiredRoleLink($user, $module)) {
                 $redirectMap = [
-                    'student' => 'student.grades',
+                    'student' => 'student.schedule',
                     'applicant' => 'applicant.application-form',
                     'registrar' => 'registrar.dashboard',
                     'faculty' => 'faculty.load',
@@ -70,7 +70,7 @@ class AdminController extends Controller
         $module = $request->input('module', 'student');
 
         $redirectMap = [
-            'student'    => 'student.grades',
+            'student'    => 'student.schedule',
             'applicant'  => 'applicant.application-form',
             'registrar'  => 'registrar.dashboard',
             'accounting' => 'admin.access-module',
@@ -133,7 +133,7 @@ class AdminController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->route('student.grades');
+            return redirect()->route('student.schedule');
         }
 
         return back()->withErrors([

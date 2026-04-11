@@ -5,6 +5,11 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/cor-certificate-of-registration.css') }}?v={{ time() }}">
+<style>
+    @media print {
+        .cor-registrar-sheet { margin-top: 2in !important; }
+    }
+</style>
 @endpush
 
 @section('content')
@@ -32,7 +37,7 @@
     $currentAccount = number_format((float) $assessment['current_account'], 2);
 @endphp
 
-<div class="cor-registrar-page">
+<div class="cor-registrar-page d-flex flex-column align-items-center" style="width: 100%;">
     <div class="cor-registrar-toolbar d-print-none">
         <form method="GET" action="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="cor-registrar-toolbar__form">
             <label for="cor-student-id" class="cor-registrar-toolbar__label">Student</label>
@@ -52,7 +57,8 @@
         </div>
     </div>
 
-    <article class="cor-registrar-sheet a4-wrapper" aria-label="Certificate of Registration">
+    <div style="width: 100%; display: grid; place-items: center; padding: 20px 0;">
+        <article class="cor-registrar-sheet a4-wrapper" style="margin: 0 !important; display: block; float: none; text-align: left;" aria-label="Certificate of Registration">
         <section class="cor-registrar-student-info">
             <div class="cor-registrar-info-grid">
                 <div class="cor-registrar-info-col">
