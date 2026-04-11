@@ -116,6 +116,9 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
 Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
+    Route::get('/help-center', 'Registrar\RegistrarController@helpCenter')->name('help.center');
+    Route::get('/help-center/live-chat', 'Registrar\RegistrarController@helpCenterLiveChat')->name('help.live-chat');
+    Route::get('/help-center/{topic}', 'Registrar\RegistrarController@helpCenterTopic')->name('help.topic');
 
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
@@ -358,6 +361,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 */
 Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
+    Route::get('/help-center', 'Applicant\ApplicantController@helpCenter')->name('help.center');
+    Route::get('/help-center/live-chat', 'Applicant\ApplicantController@helpCenterLiveChat')->name('help.live-chat');
+    Route::get('/help-center/{topic}', 'Applicant\ApplicantController@helpCenterTopic')->name('help.topic');
     Route::post('/application-form/reset-progress', 'Applicant\ApplicantController@resetApplicationFormProgress')->name('application-form.reset-progress');
     Route::post('/application-form/step-1', 'Applicant\ApplicantController@saveApplicationFormStep1')->name('application-form.step-1.save');
     Route::post('/application-form/step-2', 'Applicant\ApplicantController@saveApplicationFormStep2')->name('application-form.step-2.save');

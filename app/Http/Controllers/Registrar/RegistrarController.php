@@ -109,6 +109,148 @@ class RegistrarController extends Controller
         return view('registrar.messaging');
     }
 
+    public function helpCenter()
+    {
+        $topics = $this->helpCenterTopics();
+
+        $popularQuestions = [
+            [
+                'question' => 'What documents are required for application?',
+                'answer' => 'You usually need a valid school ID, recent grades/records, and government-issued identification. Check your application step page for the exact list.',
+            ],
+            [
+                'question' => 'How can I track my application status?',
+                'answer' => 'Go to Application Process in your account and open your submitted application. Status updates are posted there in real-time by the registrar.',
+            ],
+            [
+                'question' => 'How do I apply using the system?',
+                'answer' => 'Open Application Process, complete all required fields, review your entries, then submit. You can use the Help Center topic pages for step-by-step guidance.',
+            ],
+        ];
+
+        return view('registrar.help-center.index', [
+            'topics' => $topics,
+            'popularQuestions' => $popularQuestions,
+        ]);
+    }
+
+    public function helpCenterTopic($topic)
+    {
+        $topics = $this->helpCenterTopics();
+        if (!isset($topics[$topic])) {
+            abort(404);
+        }
+
+        return view('registrar.help-center.topic', [
+            'topic' => $topics[$topic],
+        ]);
+    }
+
+    public function helpCenterLiveChat()
+    {
+        return view('registrar.help-center.live-chat');
+    }
+
+    private function helpCenterTopics()
+    {
+        return [
+            'account-issues' => [
+                'slug' => 'account-issues',
+                'title' => 'Account Issues',
+                'subtitle' => 'Common problems: Forgot password, Cannot log in, Did not receive a verification email, and Account is locked.',
+                'icon' => 'account',
+                'steps' => [
+                    ['title' => 'Click "Forgot Password"', 'description' => 'This option is available on the login page below the password field.'],
+                    ['title' => 'Enter your registered email', 'description' => 'Use the same email address used in your registration.'],
+                    ['title' => 'Check your email for reset link', 'description' => 'If not found, check your spam or junk folder.'],
+                    ['title' => 'Create a new password', 'description' => 'Use at least 8 characters with a mix of letters and numbers.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Why can not I log in?', 'a' => 'This usually happens because of a wrong password, inactive account, or pending verification. Try resetting your password first.'],
+                    ['q' => 'How do I reset my password?', 'a' => 'Use the Forgot Password option on login, then follow the instructions sent to your email.'],
+                    ['q' => 'Can I change my email?', 'a' => 'Yes, submit an account update request to registrar support for validation.'],
+                ],
+            ],
+            'application-process' => [
+                'slug' => 'application-process',
+                'title' => 'Application Process',
+                'subtitle' => 'Here is the step-by-step guide on how to apply using the system.',
+                'icon' => 'application',
+                'steps' => [
+                    ['title' => 'Complete the Application Form', 'description' => 'Fill out all required fields in the application form.'],
+                    ['title' => 'Submit your Application', 'description' => 'Review your information and click "Submit".'],
+                    ['title' => 'Log in to your Applicant Account', 'description' => 'Use your registered email and password to track your application status.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Can I edit my application after submitting it?', 'a' => 'Minor updates may be requested from registrar, but major fields are usually locked after submission.'],
+                    ['q' => 'How will I know if my application is successful?', 'a' => 'You will receive updates in your portal status and registered email notifications.'],
+                    ['q' => 'Where can I track my application status?', 'a' => 'Open Application Process from your dashboard and view your current status timeline.'],
+                ],
+            ],
+            'technical-problems' => [
+                'slug' => 'technical-problems',
+                'title' => 'Technical Problems',
+                'subtitle' => 'Try these troubleshooting steps before contacting support.',
+                'icon' => 'technical',
+                'steps' => [
+                    ['title' => 'Refresh the page', 'description' => 'This helps reload the system and fix minor issues.'],
+                    ['title' => 'Clear browser cache', 'description' => 'Old cache files may cause loading problems.'],
+                    ['title' => 'Use Google Chrome or Edge', 'description' => 'These browsers are fully supported by the system.'],
+                    ['title' => 'Check your internet connection', 'description' => 'Ensure you have a stable and strong connection.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Why is the system slow?', 'a' => 'Slow speed can be caused by network instability, browser cache, or peak-hour traffic.'],
+                    ['q' => 'What should I do if I get an error?', 'a' => 'Refresh first, then try again. If it persists, capture a screenshot and contact support.'],
+                ],
+            ],
+            'forms-and-uploads' => [
+                'slug' => 'forms-and-uploads',
+                'title' => 'Forms and Uploads',
+                'subtitle' => 'Guidelines for uploading files and submitting forms correctly.',
+                'icon' => 'forms',
+                'steps' => [
+                    ['title' => 'Prepare clear document scans', 'description' => 'Use readable images or PDF files only.'],
+                    ['title' => 'Check file size limits', 'description' => 'Large files may fail upload due to system limits.'],
+                    ['title' => 'Upload one required file at a time', 'description' => 'Wait for success confirmation before uploading next file.'],
+                ],
+                'faqs' => [
+                    ['q' => 'What file types are accepted?', 'a' => 'Commonly accepted formats are JPG, PNG, and PDF.'],
+                    ['q' => 'Why does upload fail?', 'a' => 'Upload may fail due to unsupported type, large size, or unstable internet connection.'],
+                ],
+            ],
+            'applicant-module' => [
+                'slug' => 'applicant-module',
+                'title' => 'Applicant Module',
+                'subtitle' => 'Quick guide for using applicant portal features.',
+                'icon' => 'module',
+                'steps' => [
+                    ['title' => 'Log in with your registered account', 'description' => 'Use the same credentials from your application registration.'],
+                    ['title' => 'Complete required sections', 'description' => 'Finish profile and requirement steps to avoid delays.'],
+                    ['title' => 'Monitor status updates', 'description' => 'Check your dashboard regularly for new notices.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Can I use one account for multiple applications?', 'a' => 'Use one account per applicant profile to avoid data conflicts.'],
+                    ['q' => 'Where do I see my application number?', 'a' => 'Your application number appears in your profile summary and status page.'],
+                ],
+            ],
+            'security-and-privacy' => [
+                'slug' => 'security-and-privacy',
+                'title' => 'Security and Privacy',
+                'subtitle' => 'Best practices to keep your account and personal data safe.',
+                'icon' => 'security',
+                'steps' => [
+                    ['title' => 'Use a strong password', 'description' => 'Do not reuse passwords from other websites.'],
+                    ['title' => 'Never share your login credentials', 'description' => 'Registrar staff will never ask for your password.'],
+                    ['title' => 'Log out on shared devices', 'description' => 'Always end your session after using public computers.'],
+                ],
+                'faqs' => [
+                    ['q' => 'How is my data protected?', 'a' => 'Your account data is protected with access controls and secure processing policies.'],
+                    ['q' => 'What if I suspect unauthorized access?', 'a' => 'Reset your password immediately and report the incident to support.'],
+                ],
+            ],
+        ];
+    }
+
     private function requestBoolean(Request $request, $key)
     {
         $value = $request->input($key);

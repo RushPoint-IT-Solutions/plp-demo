@@ -631,4 +631,149 @@ class ApplicantController extends Controller
         $applicant = $this->getApplicant();
         return view('applicant.exam-result', compact('applicant'));
     }
+
+    public function helpCenter()
+    {
+        $topics = $this->helpCenterTopics();
+
+        $popularQuestions = [
+            [
+                'question' => 'How do I complete my application faster?',
+                'answer' => 'Prepare your personal details and required documents first, then complete each section in one session to avoid delays.',
+            ],
+            [
+                'question' => 'Where can I monitor my application updates?',
+                'answer' => 'Check your Application Status and Correspondence pages regularly for registrar updates and notices.',
+            ],
+            [
+                'question' => 'What file format should I upload?',
+                'answer' => 'Use clear JPG, PNG, or PDF files and make sure each file is within the allowed size.',
+            ],
+        ];
+
+        return view('applicant.help-center.index', [
+            'topics' => $topics,
+            'popularQuestions' => $popularQuestions,
+        ]);
+    }
+
+    public function helpCenterTopic($topic)
+    {
+        $topics = $this->helpCenterTopics();
+        if (!isset($topics[$topic])) {
+            abort(404);
+        }
+
+        return view('applicant.help-center.topic', [
+            'topic' => $topics[$topic],
+        ]);
+    }
+
+    public function helpCenterLiveChat()
+    {
+        return view('applicant.help-center.live-chat');
+    }
+
+    private function helpCenterTopics()
+    {
+        return [
+            'account-issues' => [
+                'slug' => 'account-issues',
+                'title' => 'Account Issues',
+                'subtitle' => 'Problems signing in, password reset concerns, and account access issues.',
+                'icon' => 'account',
+                'steps' => [
+                    ['title' => 'Click "Forgot Password"', 'description' => 'Use the reset option on the applicant login page.'],
+                    ['title' => 'Enter your registered email', 'description' => 'Use the same email address linked to your applicant account.'],
+                    ['title' => 'Open the reset link in your email', 'description' => 'If missing, check spam or junk folder.'],
+                    ['title' => 'Set a new secure password', 'description' => 'Use at least 8 characters with letters and numbers.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Why can not I log in?', 'a' => 'Most cases are due to wrong password, unverified email, or temporary lock after repeated attempts.'],
+                    ['q' => 'How do I recover my account?', 'a' => 'Use Forgot Password and follow the email verification steps.'],
+                    ['q' => 'Can I update my email account?', 'a' => 'Yes. Contact support so your account details can be validated and updated securely.'],
+                ],
+            ],
+            'application-process' => [
+                'slug' => 'application-process',
+                'title' => 'Application Process',
+                'subtitle' => 'Step-by-step guide for completing and submitting your application.',
+                'icon' => 'application',
+                'steps' => [
+                    ['title' => 'Complete all required form fields', 'description' => 'Review each section and make sure required items are filled.'],
+                    ['title' => 'Upload complete requirements', 'description' => 'Submit clear copies of required documents before final submission.'],
+                    ['title' => 'Submit your application', 'description' => 'Finalize your form once all details are reviewed.'],
+                    ['title' => 'Track status updates', 'description' => 'Use your portal pages to monitor examiner and registrar updates.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Can I edit my application after submitting?', 'a' => 'Some sections may be locked after submission. Contact registrar for correction requests.'],
+                    ['q' => 'How will I know if my application passed review?', 'a' => 'Status changes are posted in your applicant portal and may also be sent to your email.'],
+                    ['q' => 'Where can I track application progress?', 'a' => 'Open Application Status and Correspondence in your applicant account.'],
+                ],
+            ],
+            'technical-problems' => [
+                'slug' => 'technical-problems',
+                'title' => 'Technical Problems',
+                'subtitle' => 'Quick troubleshooting steps for loading and system issues.',
+                'icon' => 'technical',
+                'steps' => [
+                    ['title' => 'Refresh the page', 'description' => 'A reload often resolves temporary display or submission issues.'],
+                    ['title' => 'Use Chrome or Edge browser', 'description' => 'These browsers are fully supported by the portal.'],
+                    ['title' => 'Clear browser cache', 'description' => 'Cached files can cause outdated data or UI glitches.'],
+                    ['title' => 'Check internet stability', 'description' => 'An unstable connection can interrupt uploads and saves.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Why is the page not loading?', 'a' => 'This can happen due to weak internet, expired session, or browser cache conflicts.'],
+                    ['q' => 'What should I do when I see an error?', 'a' => 'Refresh, try again, then capture a screenshot and contact support if the error persists.'],
+                ],
+            ],
+            'forms-and-uploads' => [
+                'slug' => 'forms-and-uploads',
+                'title' => 'Forms and Uploads',
+                'subtitle' => 'Best practices for uploading files and completing online forms.',
+                'icon' => 'forms',
+                'steps' => [
+                    ['title' => 'Click "Upload File"', 'description' => 'Locate the upload button in the form section.'],
+                    ['title' => 'Select your document', 'description' => 'Choose the correct file from your device.'],
+                    ['title' => 'Ensure correct format', 'description' => 'Only accepted formats like PDF, JPG, or PNG are allowed.'],
+                    ['title' => 'Click "Submit"', 'description' => 'Wait until upload is complete before proceeding.'],
+                ],
+                'faqs' => [
+                    ['q' => 'What documents are required?', 'a' => 'Required documents depend on your program and are listed in your applicant form requirements.'],
+                    ['q' => 'Why is my upload failing?', 'a' => 'Common reasons include unsupported format, file too large, or unstable connection.'],
+                ],
+            ],
+            'applicant-module' => [
+                'slug' => 'applicant-module',
+                'title' => 'Applicant Module',
+                'subtitle' => 'Overview of applicant portal pages and how to use them effectively.',
+                'icon' => 'module',
+                'steps' => [
+                    ['title' => 'Click "Continue" after application', 'description' => 'This button appears after completing all required steps.'],
+                    ['title' => 'Log in using your credentials', 'description' => 'Use the email and password provided during registration.'],
+                    ['title' => 'Redirect to Applicant Module', 'description' => 'You will be automatically directed to the applicant module.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Where can I track my application?', 'a' => 'Use Application Status and Correspondence pages in your account.'],
+                    ['q' => 'Can I edit my information?', 'a' => 'You may edit allowed sections before final submission or request registrar assistance.'],
+                ],
+            ],
+            'security-and-privacy' => [
+                'slug' => 'security-and-privacy',
+                'title' => 'Security and Privacy',
+                'subtitle' => 'Data protection and account safety reminders for applicants.',
+                'icon' => 'security',
+                'steps' => [
+                    ['title' => 'Do not share your password', 'description' => 'Keep your login credentials private at all times.'],
+                    ['title' => 'Always log out after use', 'description' => 'Especially when using public or shared devices.'],
+                    ['title' => 'Use a strong password', 'description' => 'Combine letters, numbers, and symbols for better security.'],
+                    ['title' => 'Report suspicious activity', 'description' => 'Contact support immediately if you notice unusual activity.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Is my data safe?', 'a' => 'Your data is secured with controlled access and protected processing standards.'],
+                    ['q' => 'Can I delete my account?', 'a' => 'Account-related requests can be coordinated with registrar support and follow policy checks.'],
+                ],
+            ],
+        ];
+    }
 }

@@ -7812,13 +7812,19 @@ select:hover {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 150px;
+  min-width: 178px;
   padding: 6px;
   border: 1px solid #d6dee8;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
   z-index: 80;
+  white-space: nowrap;
+}
+
+.page-registrar-dashboard .reg-more-menu.is-flip-left {
+  right: auto;
+  left: 0;
 }
 
 .page-registrar-dashboard .reg-more-menu[hidden] {
@@ -7826,6 +7832,8 @@ select:hover {
 }
 
 .page-registrar-dashboard .reg-more-action {
+  display: flex;
+  align-items: center;
   width: 100%;
   border: 0;
   background: transparent;
@@ -7834,6 +7842,8 @@ select:hover {
   border-radius: 6px;
   color: #1f2937;
   font-size: 0.82rem;
+  line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -7913,6 +7923,24 @@ select:hover {
 
 .page-registrar-dashboard .reg-sched-item.is-done .reg-sched-name {
   text-decoration: line-through;
+}
+
+/* Registrar dashboard cursor map: text stays default, actions stay pointer. */
+.page-registrar-dashboard .reg-card-date,
+.page-registrar-dashboard .reg-announce-item,
+.page-registrar-dashboard .reg-sched-item,
+.page-registrar-dashboard .reg-announce-title,
+.page-registrar-dashboard .reg-announce-time,
+.page-registrar-dashboard .reg-sched-name,
+.page-registrar-dashboard .reg-sched-time {
+  cursor: default;
+}
+
+.page-registrar-dashboard .reg-icon-btn,
+.page-registrar-dashboard .reg-more-toggle,
+.page-registrar-dashboard .reg-more-action,
+.page-registrar-dashboard .reg-see-all {
+  cursor: pointer;
 }
 
 .app-process-page {
@@ -25376,7 +25404,7 @@ body.page-profile-view .pv-student-id {
 .page-registrar-dashboard .reg-schedule-card:hover,
 .page-registrar-dashboard .reg-section-card:hover {
   box-shadow: 0 18px 34px rgba(16, 24, 40, 0.1), 0 4px 10px rgba(16, 24, 40, 0.06);
-  transform: translateY(-2px);
+  transform: none;
 }
 
 .page-registrar-dashboard .reg-announce-item,
