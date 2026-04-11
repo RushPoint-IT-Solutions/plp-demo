@@ -35,7 +35,62 @@ class ApplicantOnboardingController extends Controller
             'acknowledged_at' => now()->toDateTimeString(),
         ]);
 
-        return redirect()->route('applicant.apply.basic-details');
+        $applicant = null;
+        $user = null;
+
+        try {
+            DB::transaction(function () use (&$applicant, &$user) {
+                $applicantId = $this->generateApplicantId();
+
+                $applicant = \App\Applicant::create([
+                    'applicant_id' => $applicantId,
+                    'last_name' => 'APPLICANT',
+                    'first_name' => 'NEW',
+                    'email_address' => $this->generatePreviewEmailAddress(),
+                    'mobile_number' => '09123456789',
+                    'nationality' => 'Filipino',
+                    'application_status' => 'draft',
+                    'application_draft_step' => 1,
+                    'application_portal_stage' => 0,
+                ]);
+
+                $user = \App\User::create([
+                    'name' => 'NEW APPLICANT',
+                    'username' => $applicantId,
+                    'email' => $applicant->email_address,
+                    'password' => \Illuminate\Support\Facades\Hash::make('APPLICANT'),
+                    'module' => 'applicant',
+                    'force_password_reset' => false,
+                    'applicant_id' => $applicant->id,
+                ]);
+
+                \App\ApplicantOnboardingAcknowledgement::updateOrCreate(
+                    ['applicant_id' => $applicant->id],
+                    [
+                        'ack_notices' => true,
+                        'ack_terms' => true,
+                        'acknowledged_at' => now()->toDateTimeString(),
+                    ]
+                );
+            });
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->route('applicant.apply.welcome')
+                ->withErrors([
+                    'registration' => 'Unable to start application. Please try again.',
+                ]);
+        }
+
+        if ($user) {
+            Auth::login($user, true);
+            $request->session()->regenerate();
+        }
+
+        $request->session()->forget('applicant_onboarding_acknowledgement');
+
+        return redirect()
+            ->route('applicant.application-form')
+            ->with('success', 'Applicant profile created. Please complete the application form.');
     }
 
     public function basicDetails(Request $request)
