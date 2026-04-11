@@ -2,7 +2,17 @@
     @php
         $isPreviewPortal = !empty($previewPortalMode);
         $previewPortalUnlocked = !empty($previewPortalUnlocked);
-        $portalUnlocked = $isPreviewPortal ? $previewPortalUnlocked : true;
+
+        // Real portal users should only see other pages after submitting AND clicking "Proceed" (stage >= 1)
+        $isRealPortalUnlocked = false;
+        if (isset($applicant)) {
+            $isRealPortalUnlocked = (
+                optional($applicant)->application_status === 'submitted' &&
+                (int) optional($applicant)->application_portal_stage >= 1
+            );
+        }
+
+        $portalUnlocked = $isPreviewPortal ? $previewPortalUnlocked : $isRealPortalUnlocked;
 
         $applicationFormUrl = $isPreviewPortal
             ? route('applicant.apply.form-preview')
@@ -84,7 +94,8 @@
 
     </nav>
 
-    @if($isPreviewPortal && !$portalUnlocked)
+    @if(!$portalUnlocked)
+    {{-- Back Button (Onboarding Mode) --}}
     <div class="sidebar-logout">
         <a href="{{ route('applicant.apply.welcome') }}" class="sidebar-link logout-link">
             <span>Back</span>
@@ -93,8 +104,8 @@
             </svg>
         </a>
     </div>
-    @elseif(!$isPreviewPortal || $portalUnlocked)
-    {{-- Logout --}}
+    @else
+    {{-- Log Out --}}
     <div class="sidebar-logout">
         <a href="{{ route('logout') }}" class="sidebar-link logout-link"
            onclick="event.preventDefault(); document.getElementById('applicant-logout-form').submit();">
