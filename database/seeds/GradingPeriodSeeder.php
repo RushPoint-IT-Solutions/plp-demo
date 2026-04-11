@@ -13,6 +13,23 @@ class GradingPeriodSeeder extends Seeder
         }
 
         $now = now();
+        $hasSchoolYearColumn = Schema::hasColumn('grading_periods', 'school_year');
+        $hasSemesterColumn = Schema::hasColumn('grading_periods', 'semester');
+        $hasAcademicTermIdColumn = Schema::hasColumn('grading_periods', 'academic_term_id');
+
+        $academicTermIds = [];
+        if ($hasAcademicTermIdColumn && Schema::hasTable('academic_terms')) {
+            $academicTermIds = DB::table('academic_terms')
+                ->select('id', 'school_year', 'term')
+                ->get()
+                ->mapWithKeys(function ($row) {
+                    $key = strtolower(trim((string) $row->school_year) . '|' . trim((string) $row->term));
+
+                    return [$key => (int) $row->id];
+                })
+                ->all();
+        }
+
         $rows = [
             [
                 'school_year' => '2025-2026',
@@ -43,15 +60,48 @@ class GradingPeriodSeeder extends Seeder
         ];
 
         foreach ($rows as $row) {
+            $academicTermKey = strtolower(trim((string) $row['school_year']) . '|' . trim((string) $row['semester']));
+            $academicTermId = isset($academicTermIds[$academicTermKey]) ? (int) $academicTermIds[$academicTermKey] : null;
+
+            $payload = [
+                'section_subject_faculty' => $row['section_subject_faculty'],
+                'period' => $row['period'],
+                'description' => $row['description'],
+                'percentage' => $row['percentage'],
+                'start_date' => $row['start_date'],
+                'end_date' => $row['end_date'],
+                'start_time' => $row['start_time'],
+                'grading_computation' => $row['grading_computation'],
+                'use_grades_library' => $row['use_grades_library'],
+            ];
+
+            $identity = [
+                'section_subject_faculty' => $row['section_subject_faculty'],
+                'period' => $row['period'],
+                'description' => $row['description'],
+            ];
+
+            if ($hasSchoolYearColumn) {
+                $payload['school_year'] = $row['school_year'];
+                $identity['school_year'] = $row['school_year'];
+            }
+
+            if ($hasSemesterColumn) {
+                $payload['semester'] = $row['semester'];
+                $identity['semester'] = $row['semester'];
+            }
+
+            if ($hasAcademicTermIdColumn) {
+                $payload['academic_term_id'] = $academicTermId;
+
+                if ($academicTermId) {
+                    $identity['academic_term_id'] = $academicTermId;
+                }
+            }
+
             DB::table('grading_periods')->updateOrInsert(
-                [
-                    'school_year' => $row['school_year'],
-                    'semester' => $row['semester'],
-                    'section_subject_faculty' => $row['section_subject_faculty'],
-                    'period' => $row['period'],
-                    'description' => $row['description'],
-                ],
-                array_merge($row, ['created_at' => $now, 'updated_at' => $now])
+                $identity,
+                array_merge($payload, ['created_at' => $now, 'updated_at' => $now])
             );
         }
     }

@@ -60,6 +60,35 @@ class ApplicantBulkSeeder extends Seeder
             $strands = ['STEM', 'ABM', 'HUMSS', 'GAS', 'ICT'];
         }
 
+        $hasApplicationStatusColumn = Schema::hasColumn('applicants', 'application_status');
+        $hasApplicationStatusIdColumn = Schema::hasColumn('applicants', 'application_status_id');
+        $hasExamResultStatusColumn = Schema::hasColumn('applicants', 'exam_result_status');
+        $hasExamResultStatusIdColumn = Schema::hasColumn('applicants', 'exam_result_status_id');
+
+        $applicationStatusIds = [];
+        if ($hasApplicationStatusIdColumn && Schema::hasTable('applicant_application_statuses')) {
+            foreach (['draft', 'submitted'] as $code) {
+                DB::table('applicant_application_statuses')->updateOrInsert(
+                    ['code' => $code],
+                    ['label' => $code, 'created_at' => $now, 'updated_at' => $now]
+                );
+            }
+
+            $applicationStatusIds = DB::table('applicant_application_statuses')->pluck('id', 'code')->toArray();
+        }
+
+        $examResultStatusIds = [];
+        if ($hasExamResultStatusIdColumn && Schema::hasTable('applicant_exam_result_statuses')) {
+            foreach (['Pending', 'Passed', 'Failed'] as $code) {
+                DB::table('applicant_exam_result_statuses')->updateOrInsert(
+                    ['code' => $code],
+                    ['label' => $code, 'created_at' => $now, 'updated_at' => $now]
+                );
+            }
+
+            $examResultStatusIds = DB::table('applicant_exam_result_statuses')->pluck('id', 'code')->toArray();
+        }
+
         $hasYearLevelColumn = Schema::hasColumn('applicant_application_preferences', 'year_level');
         $hasYearLevelIdColumn = Schema::hasColumn('applicant_application_preferences', 'year_level_id');
         $hasSemesterColumn = Schema::hasColumn('applicant_application_preferences', 'semester');
@@ -126,49 +155,65 @@ class ApplicantBulkSeeder extends Seeder
                 $examScore = 58 + ($i % 10);
             }
 
+            $applicantPayload = [
+                'lrn' => str_pad((string) (120000000000 + $i), 12, '0', STR_PAD_LEFT),
+                'last_name' => $lastName,
+                'first_name' => $firstName,
+                'middle_name' => $middleName,
+                'suffix' => null,
+                'nickname' => $firstName,
+                'gender' => ($i % 2 === 0) ? 'Female' : 'Male',
+                'nationality' => 'Filipino',
+                'religion' => ($i % 2 === 0) ? 'Roman Catholic' : 'Born Again Christian',
+                'date_of_birth' => Carbon::now()->copy()->subYears(18 + ($i % 6))->subDays($i + 30)->toDateString(),
+                'place_of_birth' => $presentMunicipality,
+                'age' => 18 + ($i % 6),
+                'civil_status' => 'Single',
+                'mobile_number' => '09' . str_pad((string) (171000000 + $i), 9, '0', STR_PAD_LEFT),
+                'email_address' => 'applicant.' . strtolower($applicantCode) . '@plp.local',
+                'photo' => null,
+                'present_street' => $presentStreet,
+                'present_barangay' => $presentBarangay,
+                'present_zipcode' => (string) (1600 + ($i % 20)),
+                'present_municipality' => $presentMunicipality,
+                'present_province' => $presentProvince,
+                'present_region' => 'NCR',
+                'same_as_present' => true,
+                'permanent_street' => $presentStreet,
+                'permanent_barangay' => $presentBarangay,
+                'permanent_zipcode' => (string) (1600 + ($i % 20)),
+                'permanent_municipality' => $presentMunicipality,
+                'permanent_province' => $presentProvince,
+                'permanent_region' => 'NCR',
+                'exam_date' => $examDate,
+                'exam_room' => $isSubmitted ? ('Room ' . (200 + ($i % 20)) . ' - Main Building') : null,
+                'exam_score' => $examScore,
+                'application_draft_step' => $draftStep,
+                'application_submitted_at' => $isSubmitted ? Carbon::now()->copy()->subDays($i % 12) : null,
+                'application_portal_stage' => $portalStage,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            if ($hasExamResultStatusColumn) {
+                $applicantPayload['exam_result_status'] = $examResultStatus;
+            }
+
+            if ($hasApplicationStatusColumn) {
+                $applicantPayload['application_status'] = $applicationStatus;
+            }
+
+            if ($hasExamResultStatusIdColumn) {
+                $applicantPayload['exam_result_status_id'] = $examResultStatusIds[$examResultStatus] ?? null;
+            }
+
+            if ($hasApplicationStatusIdColumn) {
+                $applicantPayload['application_status_id'] = $applicationStatusIds[$applicationStatus] ?? null;
+            }
+
             DB::table('applicants')->updateOrInsert(
                 ['applicant_id' => $applicantCode],
-                [
-                    'lrn' => str_pad((string) (120000000000 + $i), 12, '0', STR_PAD_LEFT),
-                    'last_name' => $lastName,
-                    'first_name' => $firstName,
-                    'middle_name' => $middleName,
-                    'suffix' => null,
-                    'nickname' => $firstName,
-                    'gender' => ($i % 2 === 0) ? 'Female' : 'Male',
-                    'nationality' => 'Filipino',
-                    'religion' => ($i % 2 === 0) ? 'Roman Catholic' : 'Born Again Christian',
-                    'date_of_birth' => Carbon::now()->copy()->subYears(18 + ($i % 6))->subDays($i + 30)->toDateString(),
-                    'place_of_birth' => $presentMunicipality,
-                    'age' => 18 + ($i % 6),
-                    'civil_status' => 'Single',
-                    'mobile_number' => '09' . str_pad((string) (171000000 + $i), 9, '0', STR_PAD_LEFT),
-                    'email_address' => 'applicant.' . strtolower($applicantCode) . '@plp.local',
-                    'photo' => null,
-                    'present_street' => $presentStreet,
-                    'present_barangay' => $presentBarangay,
-                    'present_zipcode' => (string) (1600 + ($i % 20)),
-                    'present_municipality' => $presentMunicipality,
-                    'present_province' => $presentProvince,
-                    'present_region' => 'NCR',
-                    'same_as_present' => true,
-                    'permanent_street' => $presentStreet,
-                    'permanent_barangay' => $presentBarangay,
-                    'permanent_zipcode' => (string) (1600 + ($i % 20)),
-                    'permanent_municipality' => $presentMunicipality,
-                    'permanent_province' => $presentProvince,
-                    'permanent_region' => 'NCR',
-                    'exam_date' => $examDate,
-                    'exam_room' => $isSubmitted ? ('Room ' . (200 + ($i % 20)) . ' - Main Building') : null,
-                    'exam_result_status' => $examResultStatus,
-                    'exam_score' => $examScore,
-                    'application_status' => $applicationStatus,
-                    'application_draft_step' => $draftStep,
-                    'application_submitted_at' => $isSubmitted ? Carbon::now()->copy()->subDays($i % 12) : null,
-                    'application_portal_stage' => $portalStage,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
+                $applicantPayload
             );
 
             $applicantId = DB::table('applicants')->where('applicant_id', $applicantCode)->value('id');
