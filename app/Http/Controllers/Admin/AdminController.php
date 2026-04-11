@@ -41,22 +41,8 @@ class AdminController extends Controller
      */
     public function moduleLogin($module)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-            if ($user && $user->module === $module && $this->hasRequiredRoleLink($user, $module)) {
-                $redirectMap = [
-                    'student' => 'student.schedule',
-                    'applicant' => 'applicant.application-form',
-                    'registrar' => 'registrar.dashboard',
-                    'faculty' => 'faculty.load',
-                    'accounting' => 'admin.access-module',
-                    'cashier' => 'admin.access-module',
-                ];
-
-                return redirect()->route($redirectMap[$module] ?? 'admin.access-module');
-            }
-        }
-
+        // We always show the login page as requested, skipping the auto-redirect if already logged in.
+        // This ensures the user sees the 'Applicant Login' screen instead of being bounced to the portal.
         return view('auth.login', ['module' => $module]);
     }
 
@@ -253,6 +239,13 @@ class AdminController extends Controller
             Auth::login($user, $remember);
 
             $request->session()->regenerate();
+
+            // Auto-unlock the portal stage if the application is already submitted
+            $applicant = $user->applicant;
+            if ($applicant && $applicant->application_status === 'submitted' && $applicant->application_portal_stage < 1) {
+                $applicant->application_portal_stage = 1;
+                $applicant->save();
+            }
 
             return redirect()->route('applicant.application-form');
         }

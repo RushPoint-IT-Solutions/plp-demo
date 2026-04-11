@@ -446,7 +446,7 @@ class ApplicantController extends Controller
             $applicant->application_status = 'submitted';
             $applicant->application_draft_step = 4;
             $applicant->application_submitted_at = Carbon::now();
-            $applicant->application_portal_stage = 0;
+            $applicant->application_portal_stage = 1; // Auto-unlock portal after submission
             $applicant->save();
 
             $step2Payload = [
