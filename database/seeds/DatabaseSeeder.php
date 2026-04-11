@@ -87,6 +87,12 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        if ((bool) env('SEED_HIGH_VOLUME_STUDENT_DISCIPLINE', false)) {
+            $this->call([
+                HighVolumeStudentDisciplineSeeder::class,
+            ]);
+        }
+
         if ((bool) env('SEED_HIGH_VOLUME_STUDENT_DEFICIENCIES', false)) {
             $this->call([
                 HighVolumeStudentDeficiencySeeder::class,

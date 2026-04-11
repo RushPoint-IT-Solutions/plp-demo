@@ -15886,6 +15886,17 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   gap: 8px;
 }
 
+.page-student-discipline .sd-field-grid .rg-listbox,
+.page-student-discipline .sd-system-grid .rg-listbox {
+  width: 100%;
+}
+
+.page-student-discipline .sd-field-grid .rg-listbox-trigger,
+.page-student-discipline .sd-system-grid .rg-listbox-trigger {
+  min-height: 34px;
+  height: 34px;
+}
+
 .page-student-discipline .sd-filter-item {
   display: flex;
   flex-direction: column;
@@ -15960,6 +15971,25 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   background: #db4d4d;
 }
 
+.page-student-discipline .sd-hidden {
+  display: none !important;
+}
+
+.page-student-discipline #sdStudentsTable th,
+.page-student-discipline #sdStudentsTable td,
+.page-student-discipline #sdConductTable th,
+.page-student-discipline #sdConductTable td {
+  text-align: center;
+}
+
+.page-student-discipline .sd-col-action {
+  width: 70px;
+}
+
+.page-student-discipline .sd-col-index {
+  width: 50px;
+}
+
 .page-student-discipline .sd-total-cell strong {
   font-size: 1.1em;
   color: #006837 !important;
@@ -15991,20 +16021,33 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   position: fixed;
 }
 
-.page-student-discipline #sdStudentsTable th:last-child,
-.page-student-discipline #sdStudentsTable tbody tr:not(.sd-total-row) td:last-child {
+.page-student-discipline #sdStudentsTable th:first-child,
+.page-student-discipline #sdStudentsTable tbody tr:not(.sd-total-row) td:first-child {
   width: 70px;
   text-align: center;
 }
 
-.page-student-discipline #sdStudentsTable td:last-child .apst-action-btn {
+.page-student-discipline #sdStudentsTable td:first-child .apst-action-btn {
   margin: 0 auto;
+}
+
+.page-student-discipline #sdStudentsTable .sd-total-row td {
+  text-align: left !important;
 }
 
 .page-student-discipline .sd-name-link {
   color: #0f7b43;
   text-decoration: none;
   font-weight: 600;
+}
+
+.page-student-discipline .sd-name-link-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
 
 .page-student-discipline .sd-name-link:hover {
@@ -16128,6 +16171,236 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   font-size: 0.8rem;
 }
 
+.page-student-discipline .sd-record-hint {
+  margin: 0 0 10px;
+  color: #4d5f54;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.page-student-discipline #sdConductTable tbody tr[data-sd-record-row] {
+  cursor: pointer;
+}
+
+.page-student-discipline #sdConductTable tbody tr.sd-record-row-selected {
+  background: linear-gradient(90deg, #eef8f2 0%, #fbfefc 100%);
+}
+
+.page-student-discipline .sd-record-detail-card {
+  margin-top: 14px;
+  border: 1px solid #c8dfd1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f9fcfa 0%, #f3faf6 100%);
+  padding: 14px;
+  box-shadow: 0 8px 20px rgba(0, 104, 55, 0.08);
+}
+
+.page-student-discipline .sd-record-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.page-student-discipline .sd-record-detail-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0a6f3a;
+}
+
+.page-student-discipline .sd-record-detail-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #0b5f34;
+  background: #dff3e8;
+  border: 1px solid #bde3cc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.page-student-discipline .sd-record-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.page-student-discipline .sd-record-detail-item {
+  background: #fff;
+  border: 1px solid #d6e9dc;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.page-student-discipline .sd-record-detail-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #5c7265;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.page-student-discipline .sd-record-detail-item strong {
+  color: #173728;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.page-student-discipline .sd-record-detail-body-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.page-student-discipline .sd-record-detail-block {
+  background: #fff;
+  border: 1px solid #d6e9dc;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.page-student-discipline .sd-record-detail-block h4 {
+  margin: 0 0 6px;
+  color: #0e6f3c;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+}
+
+.page-student-discipline .sd-record-detail-block p {
+  margin: 0;
+  color: #344739;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.page-student-discipline .sd-add-help {
+  margin: 0 0 10px;
+  color: #4b5563;
+  font-size: 0.82rem;
+}
+
+.page-student-discipline .sd-student-search-wrap .smrg-search-dropdown,
+.page-student-discipline .sd-program-search-wrap .smrg-search-dropdown {
+  top: calc(100% + 4px);
+}
+
+.page-student-discipline .sd-record-search-wrap .smrg-search-dropdown {
+  top: calc(100% + 4px);
+  z-index: 55;
+}
+
+.page-student-discipline .sd-row-gap {
+  margin-top: 10px;
+}
+
+.page-student-discipline .sd-student-type-fixed .rg-listbox-trigger {
+  pointer-events: none;
+  background: #f4f6f5;
+  color: #5e6c63;
+  border-color: #d5ddd8;
+}
+
+.page-student-discipline .sd-student-type-fixed .rg-listbox-menu {
+  display: none !important;
+}
+
+.page-student-discipline .sd-field-note {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  color: #5f7165;
+  font-weight: 600;
+}
+
+.page-student-discipline .sd-auto-filled-input[disabled] {
+  background: #f4f6f5;
+  color: #5e6c63;
+  border-color: #d5ddd8;
+  cursor: not-allowed;
+}
+
+.page-student-discipline .sd-auto-filled-select .rg-listbox-trigger {
+  pointer-events: none;
+  background: #f4f6f5;
+  color: #5e6c63;
+  border-color: #d5ddd8;
+  cursor: not-allowed;
+}
+
+.page-student-discipline .sd-auto-filled-select .rg-listbox-menu {
+  display: none !important;
+}
+
+.page-student-discipline .sd-auto-filled-select .rg-listbox-native {
+  background: #f4f6f5;
+  color: #5e6c63;
+}
+
+.page-student-discipline .sd-auto-filled-search .smrg-search-input[disabled] {
+  background: #f4f6f5;
+  color: #5e6c63;
+  border-color: #d5ddd8;
+  cursor: not-allowed;
+}
+
+.page-student-discipline .sd-auto-filled-search .smrg-search-dropdown {
+  display: none !important;
+}
+
+.page-student-discipline .sd-student-modal {
+  max-width: 640px;
+}
+
+.page-student-discipline .sd-delete-modal {
+  min-width: 320px;
+}
+
+.page-student-discipline .sd-delete-title {
+  color: #c0392b;
+}
+
+.page-student-discipline .sd-delete-text {
+  font-size: 0.88rem;
+  color: #444;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.page-student-discipline .sd-delete-actions {
+  justify-content: center;
+}
+
+.page-student-discipline .sd-delete-confirm-btn {
+  background: #c0392b;
+}
+
+.page-student-discipline .req-modal-overlay {
+  display: none;
+}
+
+.page-student-discipline .req-modal-overlay.is-open {
+  display: flex;
+}
+
+.page-student-discipline #sdEditStudentModal .rg-listbox,
+.page-student-discipline #sdAddStudentModal .rg-listbox,
+.page-student-discipline .sd-modal-grid .rg-listbox {
+  width: 100%;
+}
+
 .page-student-discipline .sd-modal-box {
   max-width: 780px;
   width: min(94vw, 780px);
@@ -16218,10 +16491,93 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   resize: vertical;
 }
 
+.page-student-discipline .sd-date-input {
+  color-scheme: light;
+}
+
+.page-student-discipline .sd-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px;
+  -webkit-transition: background-color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.page-student-discipline .sd-date-input::-webkit-calendar-picker-indicator:hover {
+  background-color: rgba(15, 123, 67, 0.14);
+  transform: scale(1.05);
+}
+
+.page-student-discipline .sd-date-input::-webkit-datetime-edit {
+  color: #14532d;
+}
+
+.page-student-discipline .sd-date-input:invalid::-webkit-datetime-edit {
+  color: #8b8b8b;
+}
+
 .page-student-discipline .sd-modal-actions {
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid #e8efea;
+}
+
+.page-student-discipline .sd-print-records-sheet {
+  display: none;
+  margin-top: 12px;
+}
+
+.page-student-discipline .sd-print-sheet-head {
+  border: 1px solid #cde3d6;
+  background: linear-gradient(180deg, #f5fbf7 0%, #ecf7f1 100%);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.page-student-discipline .sd-print-sheet-title {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0a6f3a;
+  font-weight: 800;
+}
+
+.page-student-discipline .sd-print-sheet-student-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  font-size: 0.76rem;
+  color: #476153;
+  font-weight: 600;
+}
+
+.page-student-discipline .sd-print-sheet-student-meta strong {
+  color: #0a6f3a;
+}
+
+.page-student-discipline .sd-print-records-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.page-student-discipline .sd-print-record-card {
+  margin-top: 0;
+  box-shadow: none;
+  background: #fff;
+  page-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+       break-inside: avoid;
+}
+
+.page-student-discipline .sd-print-record-grid {
+  gap: 8px;
+}
+
+.page-student-discipline .sd-print-record-body-grid {
+  margin-top: 8px;
+  gap: 8px;
 }
 
 @media (max-width: 1080px) {
@@ -16283,10 +16639,103 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
     grid-template-columns: 1fr;
   }
 
+  .page-student-discipline .sd-record-detail-grid,
+  .page-student-discipline .sd-record-detail-body-grid {
+    grid-template-columns: 1fr;
+  }
+
   .page-student-discipline .sd-section-toggle {
     position: static;
     transform: none;
     margin-left: auto;
+  }
+}
+
+@media print {
+  body.page-student-discipline .plp-sidebar,
+  body.page-student-discipline .student-topbar,
+  body.page-student-discipline .student-page-header,
+  body.page-student-discipline .plp-footer,
+  body.page-student-discipline #registrar-toast,
+  body.page-student-discipline #sdListView,
+  body.page-student-discipline .sd-detail-topbar,
+  body.page-student-discipline .sd-student-banner,
+  body.page-student-discipline .sd-detail-actions,
+  body.page-student-discipline .apst-action-btn,
+  body.page-student-discipline .apst-dropdown,
+  body.page-student-discipline #sdDetailView .ga-table-wrap,
+  body.page-student-discipline #sdRecordDetailCard,
+  body.page-student-discipline .req-modal-overlay {
+    display: none !important;
+  }
+
+  body.page-student-discipline .student-content,
+  body.page-student-discipline .pf-page,
+  body.page-student-discipline .ga-page,
+  body.page-student-discipline #sdDetailView {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  body.page-student-discipline #sdDetailView {
+    display: block !important;
+  }
+
+  body.page-student-discipline .sd-record-hint {
+    display: none !important;
+  }
+
+  body.page-student-discipline .sd-print-records-sheet {
+    display: block !important;
+    margin-top: 10px !important;
+  }
+
+  body.page-student-discipline .sd-print-sheet-head {
+    page-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+         break-inside: avoid;
+  }
+
+  body.page-student-discipline .sd-print-records-list {
+    display: grid !important;
+    gap: 8px !important;
+  }
+
+  body.page-student-discipline .sd-print-record-card {
+    margin: 0 !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    page-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+         break-inside: avoid;
+  }
+
+  body.page-student-discipline .sd-print-record-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  body.page-student-discipline .sd-print-record-body-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-top: 6px !important;
+  }
+
+  body.page-student-discipline .sd-print-record-card .sd-record-detail-item {
+    padding: 6px 8px !important;
+  }
+
+  body.page-student-discipline .sd-print-record-card .sd-record-detail-item strong,
+  body.page-student-discipline .sd-print-record-card .sd-record-detail-block p {
+    font-size: 0.74rem !important;
+  }
+
+  body.page-student-discipline .sd-print-record-card .sd-record-detail-block h4 {
+    font-size: 0.66rem !important;
   }
 }
 

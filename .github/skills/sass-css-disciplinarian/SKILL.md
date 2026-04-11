@@ -44,6 +44,22 @@ Use this pattern whenever dropdown option lists must be visually designed (green
   - `Escape` closes and returns focus to the trigger.
 - Never rely on native browser `<option>` popup styling for final UI design.
 
+## Searchable Dropdown List Standard (Single-Open, Focus-Driven)
+Use this for autocomplete/search inputs that render `.smrg-search-dropdown` option lists.
+
+- Canonical Blade component for this project:
+  - `resources/views/registrar/components/search-dropdown-input.blade.php`
+- Naming contract:
+  - Reusable shared classes stay `smrg-search-*` (`.smrg-search-wrap`, `.smrg-search-input`, `.smrg-search-dropdown`, `.smrg-search-option`).
+  - Page/module classes use page prefixing (example: `sd-*` for Student Discipline wrappers like `.sd-record-search-wrap`).
+  - Dropdown element IDs must be explicit and stable per field (example: `sdCaseTypeDropdown`, `sdCalledByDropdown`) so JS can enforce single-open behavior.
+- Keep option lists hidden by default (`display: none`) and only show them on input focus or active typing.
+- Open exactly one search dropdown at a time across the page or modal.
+- When a different searchable field receives focus, close all other open lists immediately.
+- Close lists on click outside, modal close, and Escape key.
+- Selecting an option should close the current list and populate the input/hidden value.
+- Never keep multiple search dropdowns visible simultaneously; this is a strict UX rule.
+
 ## Pagination Component Rule
 - Pagination styling must be reusable via shared component classes (not page-only selectors).
 - Pagination logic should be reusable and server-driven for high-volume tables (thousands of rows):

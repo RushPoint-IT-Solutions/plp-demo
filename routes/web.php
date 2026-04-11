@@ -312,6 +312,16 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('student-account')->name('student-account.')->group(function () {
             Route::get('/student-discipline', 'Registrar\Services\StudentAccountController@studentDiscipline')->name('student-discipline');
+            Route::get('/student-discipline/data', 'Registrar\Services\StudentAccountController@studentDisciplineData')->name('student-discipline.data');
+            Route::get('/student-discipline/students/search', 'Registrar\Services\StudentAccountController@studentDisciplineStudentSearch')->name('student-discipline.students.search');
+            Route::get('/student-discipline/programs/search', 'Registrar\Services\StudentAccountController@studentDisciplineProgramSearch')->name('student-discipline.programs.search');
+            Route::post('/student-discipline/students', 'Registrar\Services\StudentAccountController@studentDisciplineStudentStore')->name('student-discipline.students.store');
+            Route::put('/student-discipline/students/{studentDisciplineStudent}', 'Registrar\Services\StudentAccountController@studentDisciplineStudentUpdate')->name('student-discipline.students.update');
+            Route::delete('/student-discipline/students/{studentDisciplineStudent}', 'Registrar\Services\StudentAccountController@studentDisciplineStudentDestroy')->name('student-discipline.students.destroy');
+            Route::get('/student-discipline/students/{studentDisciplineStudent}/records', 'Registrar\Services\StudentAccountController@studentDisciplineRecords')->name('student-discipline.records');
+            Route::post('/student-discipline/students/{studentDisciplineStudent}/records', 'Registrar\Services\StudentAccountController@studentDisciplineRecordStore')->name('student-discipline.records.store');
+            Route::put('/student-discipline/records/{studentDisciplineRecord}', 'Registrar\Services\StudentAccountController@studentDisciplineRecordUpdate')->name('student-discipline.records.update');
+            Route::delete('/student-discipline/records/{studentDisciplineRecord}', 'Registrar\Services\StudentAccountController@studentDisciplineRecordDestroy')->name('student-discipline.records.destroy');
             Route::get('/family', 'Registrar\Services\StudentAccountController@family')->name('family');
             Route::get('/change-password', 'Registrar\Services\StudentAccountController@changePassword')->name('change-password');
         });
