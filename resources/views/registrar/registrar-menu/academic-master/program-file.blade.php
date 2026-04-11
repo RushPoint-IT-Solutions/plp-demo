@@ -7,7 +7,9 @@
 <div class="pf-page" id="programFilePage"
      data-success="{{ session('program_file_success', '') }}"
      data-open-setup="{{ ($errors->has('dept_code') || $errors->has('dept_description')) ? '1' : '0' }}"
-     data-open-new="{{ ($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('accreditation_level')) ? '1' : '0' }}">
+    data-open-new="{{ ($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('accreditation_level')) ? '1' : '0' }}"
+    data-current-page="{{ (int) $programs->currentPage() }}"
+    data-last-page="{{ (int) $programs->lastPage() }}">
     <div class="pf-toolbar">
         <div class="pf-toolbar-actions">
             <button type="button" class="pf-btn-new" onclick="openSetupDepartmentsModal()">
@@ -22,10 +24,12 @@
     </div>
 
     <form method="GET" action="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="pf-top-filter" id="pfTopFilterForm">
+        <input type="hidden" name="page" id="pfPageInput" value="{{ (int) $programs->currentPage() }}">
+        <input type="hidden" name="per_page" id="pfPerPage" value="25">
         <div class="pf-top-filter-grid">
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterDepartment">Department</label>
-                <select name="department_id" id="filterDepartment" class="pf-modal-select">
+                <select name="department_id" id="filterDepartment" class="pf-modal-select plp-select" data-plp-select>
                     <option value="">-All Group-</option>
                     @foreach($departments as $department)
                         <option value="{{ $department->id }}" {{ (string)$filters['department_id'] === (string)$department->id ? 'selected' : '' }}>
@@ -47,7 +51,7 @@
 
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterProgramType">Accreditation</label>
-                <select name="program_type" id="filterProgramType" class="pf-modal-select">
+                <select name="program_type" id="filterProgramType" class="pf-modal-select plp-select" data-plp-select>
                     <option value="">-All Levels-</option>
                     <option value="Level I Accredited" {{ $filters['program_type'] === 'Level I Accredited' ? 'selected' : '' }}>Level I Accredited</option>
                     <option value="Level II Accredited" {{ $filters['program_type'] === 'Level II Accredited' ? 'selected' : '' }}>Level II Accredited</option>
@@ -63,28 +67,15 @@
         </div>
     </form>
 
-    <div class="pf-table-controls">
-        <div class="pf-entries-control">
-            <label for="pfEntriesLimit">Show</label>
-            <select id="pfEntriesLimit" class="pf-entries-select">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100" selected>100</option>
-            </select>
-            <span>Entries</span>
-        </div>
-    </div>
-
     <div class="student-table-wrapper table-responsive">
-        <table class="student-table registrar-table" id="pfTable">
+        <table class="student-table registrar-table" id="pfTable" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th>Program Code</th>
                     <th>Program Name</th>
                     <th>Department</th>
                     <th>Accreditation Level</th>
-                    <th style="text-align:center; width: 70px;">Actions</th>
+                    <th class="pf-actions-head">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -94,17 +85,18 @@
                         <td>{{ $program->name ?: $program->description }}</td>
                         <td>{{ optional($program->department)->description ?: '-' }}</td>
                         <td>{{ $program->program_file ?: 'Pending Review' }}</td>
-                        <td style="text-align:center;">
-                            <div class="apst-action-btn"
-                                 data-pf-menu-toggle="pfMenu-{{ $program->id }}"
-                                 data-update-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.update', $program) }}"
-                                 data-delete-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.delete', $program) }}"
-                                 data-code="{{ $program->code }}"
-                                 data-name="{{ $program->name ?: $program->description }}"
-                                 data-department-id="{{ $program->department_id }}"
-                                 data-accreditation="{{ $program->program_file ?: 'Pending Review' }}"
-                                 aria-label="Open row actions"
-                                 title="Actions"><span></span><span></span><span></span></div>
+                        <td class="pf-actions-cell">
+                            <button type="button"
+                                class="apst-action-btn"
+                                data-pf-menu-toggle="pfMenu-{{ $program->id }}"
+                                data-update-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.update', $program) }}"
+                                data-delete-url="{{ route('registrar.registrar-menu.academic-master.program-file.setup.delete', $program) }}"
+                                data-code="{{ $program->code }}"
+                                data-name="{{ $program->name ?: $program->description }}"
+                                data-department-id="{{ $program->department_id }}"
+                                data-accreditation="{{ $program->program_file ?: 'Pending Review' }}"
+                                aria-label="Open row actions"
+                                title="Actions"><span></span><span></span><span></span></button>
                             <div class="apst-dropdown" id="pfMenu-{{ $program->id }}">
                                 <button type="button" data-pf-action="edit">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
@@ -119,11 +111,59 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center pf-empty-row" style="padding: 18px; color: #888;">No programs found.</td>
+                        <td colspan="5" class="text-center pf-empty-row">No programs found.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    @php
+        $pfCurrentPage = (int) $programs->currentPage();
+        $pfLastPage = max((int) $programs->lastPage(), 1);
+        $pfStartPage = max(1, $pfCurrentPage - 2);
+        $pfEndPage = min($pfLastPage, $pfCurrentPage + 2);
+
+        if ($pfCurrentPage <= 3) {
+            $pfEndPage = min($pfLastPage, 5);
+        } elseif ($pfCurrentPage >= ($pfLastPage - 2)) {
+            $pfStartPage = max(1, $pfLastPage - 4);
+        }
+    @endphp
+
+    <div class="sf-pagination-bar sf-pagination-compact" id="pfPaginationBar">
+        <div class="rtp-pagination plp-pagination">
+            <nav class="rtp-nav plp-pagination__nav" aria-label="Program File pagination">
+                <div class="rtp-list plp-pagination__list" role="group" aria-label="Page controls">
+                    <button
+                        type="button"
+                        class="rtp-page-btn plp-pagination__btn"
+                        id="pfPrevBtn"
+                        data-pf-page="{{ $pfCurrentPage - 1 }}"
+                        aria-label="Previous page"
+                        {{ $pfCurrentPage <= 1 ? 'disabled' : '' }}
+                    >&lt;</button>
+                    <div class="rtp-pages plp-pagination__pages" id="pfPageNumbers">
+                        @for($pfPage = $pfStartPage; $pfPage <= $pfEndPage; $pfPage++)
+                            <button
+                                type="button"
+                                class="rtp-page-num plp-pagination__page {{ $pfPage === $pfCurrentPage ? 'active is-active' : '' }}"
+                                data-pf-page="{{ $pfPage }}"
+                                aria-label="Go to page {{ $pfPage }}"
+                            >{{ $pfPage }}</button>
+                        @endfor
+                    </div>
+                    <button
+                        type="button"
+                        class="rtp-page-btn plp-pagination__btn"
+                        id="pfNextBtn"
+                        data-pf-page="{{ $pfCurrentPage + 1 }}"
+                        aria-label="Next page"
+                        {{ $pfCurrentPage >= $pfLastPage ? 'disabled' : '' }}
+                    >&gt;</button>
+                </div>
+            </nav>
+        </div>
     </div>
 
 </div>
@@ -206,7 +246,7 @@
 
                 <div class="pf-modal-field">
                     <label class="pf-modal-label" for="newProgramDepartment">Select Department</label>
-                    <select class="pf-modal-select" id="newProgramDepartment" name="department_id" required>
+                    <select class="pf-modal-select plp-select" id="newProgramDepartment" name="department_id" data-plp-select required>
                         <option value="">Select Department</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}" {{ (string)old('department_id') === (string)$department->id ? 'selected' : '' }}>{{ $department->description }}</option>
@@ -216,7 +256,7 @@
 
                 <div class="pf-modal-field">
                     <label class="pf-modal-label" for="newProgramAccreditation">Accreditation Level</label>
-                    <select class="pf-modal-select" id="newProgramAccreditation" name="accreditation_level" required>
+                    <select class="pf-modal-select plp-select" id="newProgramAccreditation" name="accreditation_level" data-plp-select required>
                         <option value="">Select Level</option>
                         <option value="Level I Accredited" {{ old('accreditation_level') === 'Level I Accredited' ? 'selected' : '' }}>Level I Accredited</option>
                         <option value="Level II Accredited" {{ old('accreditation_level') === 'Level II Accredited' ? 'selected' : '' }}>Level II Accredited</option>
@@ -258,7 +298,7 @@
 
                 <div class="pf-modal-field pf-item-department">
                     <label class="pf-modal-label" for="pfEditDepartment">Department</label>
-                    <select class="pf-modal-select" id="pfEditDepartment" name="department_id" required>
+                    <select class="pf-modal-select plp-select" id="pfEditDepartment" name="department_id" data-plp-select required>
                         <option value="">-Select Department-</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}">{{ $department->description }}</option>
@@ -268,7 +308,7 @@
 
                 <div class="pf-modal-field pf-item-accreditation">
                     <label class="pf-modal-label" for="pfEditAccreditation">Accreditation Level</label>
-                    <select class="pf-modal-select" id="pfEditAccreditation" name="accreditation_level" required>
+                    <select class="pf-modal-select plp-select" id="pfEditAccreditation" name="accreditation_level" data-plp-select required>
                         <option value="">Select Level</option>
                         <option value="Level I Accredited">Level I Accredited</option>
                         <option value="Level II Accredited">Level II Accredited</option>

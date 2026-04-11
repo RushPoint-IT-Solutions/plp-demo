@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -117,15 +117,12 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     var baseWidth = form.offsetWidth;
-    var baseHeight = form.offsetHeight;
-    var actions = canvas.querySelector('.acd-actions');
-    var actionsHeight = actions ? actions.offsetHeight + 8 : 0;
     var availableWidth = Math.max(page.clientWidth - 12, 320);
     var scale = Math.min(1, availableWidth / baseWidth);
     canvas.style.setProperty('--acd-scale', scale.toFixed(4));
     canvas.style.width = baseWidth * scale + 'px';
     canvas.style.minWidth = baseWidth * scale + 'px';
-    canvas.style.height = baseHeight * scale + actionsHeight + 'px';
+    canvas.style.height = 'auto';
   }
   document.querySelectorAll('.sidebar-dropdown-toggle').forEach(function (toggle) {
     toggle.addEventListener('click', function (e) {
@@ -174,14 +171,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /***/ }),
 
-/***/ 3:
+/***/ 4:
 /*!********************************************************!*\
   !*** multi ./resources/js/student-sidebar-dropdown.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\student-sidebar-dropdown.js */"./resources/js/student-sidebar-dropdown.js");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\student-sidebar-dropdown.js */"./resources/js/student-sidebar-dropdown.js");
 
 
 /***/ })

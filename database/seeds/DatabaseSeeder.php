@@ -47,10 +47,12 @@ class DatabaseSeeder extends Seeder
             SemesterSeeder::class,
             YearBlockSeeder::class,
             CourseCatalogSeeder::class,
+            CourseCurriculumYearSeeder::class,
             ApplicantSeeder::class,
             ApplicantBulkSeeder::class,
             RegistrarAuthSeeder::class,
             FacultyAuthSeeder::class,
+            HighVolumeFacultySeeder::class,
             StudentSeeder::class,
             StudentFirstLoginDemoSeeder::class,
             AcademicCalendarEventSeeder::class,
@@ -60,10 +62,82 @@ class DatabaseSeeder extends Seeder
             GradingComponentSeeder::class,
             StudentDeficiencySeeder::class,
             SubjectSeeder::class,
+            CourseCurriculumSubjectMatrixSeeder::class,
             FacultySeeder::class,
             StudentDemoDataSeeder::class,
             C3TrashDataSeeder::class,
             RegistrarRequirement3nfSeeder::class,
+        ]);
+
+        if ((bool) env('SEED_HIGH_VOLUME_TRASH', false)) {
+            $this->call([
+                HighVolumeSubjectFileSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_AVAILABLE_SUBJECTS', false)) {
+            $this->call([
+                HighVolumeAvailableSubjectSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_STUDENTS', false)) {
+            $this->call([
+                HighVolumeStudentSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_STUDENT_DISCIPLINE', false)) {
+            $this->call([
+                HighVolumeStudentDisciplineSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_STUDENT_DEFICIENCIES', false)) {
+            $this->call([
+                HighVolumeStudentDeficiencySeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_CLASS_LIST_SCHOOL_YEAR_RANGE', false)) {
+            $this->call([
+                ClassListSchoolYearRangeSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_PROGRAMS', false)) {
+            $this->call([
+                HighVolumeProgramFileSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_ROOMS', false)) {
+            $this->call([
+                HighVolumeRoomFileSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_TRANSMUTATION', false)) {
+            $this->call([
+                HighVolumeTransmutationRuleSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_SLOTS', false)) {
+            $this->call([
+                HighVolumeSlotMonitoringSeeder::class,
+            ]);
+        }
+
+        if ((bool) env('SEED_HIGH_VOLUME_SECTION_MERGING', false)) {
+            $this->call([
+                HighVolumeSectionMergingSeeder::class,
+            ]);
+        }
+
+        $this->call([
+            ClassListDataBackfillSeeder::class,
+            ClassListStudentEnrollmentBackfillSeeder::class,
         ]);
         
         $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student, first-reset student 2026A00001/PLP-2026A00001, applicant 2526B0177/PLP-2526B0177, applicant/applicant');

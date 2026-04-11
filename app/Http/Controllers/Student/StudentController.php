@@ -13,6 +13,7 @@ use App\YearBlock;
 use App\StudentSubjectGrade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 
@@ -428,27 +429,19 @@ class StudentController extends Controller
         $profile->working_student            = $data['working_student'];
         $profile->has_scholarship            = $data['has_scholarship'];
         $profile->first_in_family_college    = $data['first_in_family_college'];
-        $profile->internet_access            = $data['internet_access'];
-        $profile->it_tools_access            = $data['it_tools_access'];
-        $profile->devices                    = json_encode($data['devices'] ?? []);
-        $profile->devices_other              = $data['devices_other'] ?? null;
-        $profile->lms_used                   = $data['lms_used'];
-        $profile->lms_used_other             = $data['lms_used_other'] ?? null;
-        $profile->lms_preferred              = $data['lms_preferred'];
-        $profile->lms_preferred_other        = $data['lms_preferred_other'] ?? null;
-        $profile->lms_reasons                = json_encode($data['lms_reasons'] ?? []);
-        $profile->lms_reasons_other          = $data['lms_reasons_other'] ?? null;
-        $profile->preferred_class_time       = $data['preferred_class_time'];
         $profile->evening_classes            = $data['evening_classes'];
         $profile->profile_complete           = true;
 
-        $profile->save();
+        DB::transaction(function () use ($profile, $student, $data) {
+            $profile->save();
+            $profile->syncWaveBLearningPreferences($data);
 
-        // Keep legacy student fields aligned with profile edits so pages/forms
-        // still reading App\Student values won't show stale seeded data.
-        $student->name = trim($profile->first_name . ' ' . $profile->last_name);
-        $student->sex = $profile->gender;
-        $student->save();
+            // Keep legacy student fields aligned with profile edits so pages/forms
+            // still reading App\Student values won't show stale seeded data.
+            $student->name = trim($profile->first_name . ' ' . $profile->last_name);
+            $student->sex = $profile->gender;
+            $student->save();
+        });
 
         return redirect()->route('student.profile')->with('success', 'Student profile saved successfully.');
     }

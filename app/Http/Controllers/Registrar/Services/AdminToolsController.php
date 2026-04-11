@@ -16,9 +16,11 @@ use App\SystemGradePosting;
 use App\SystemSchoolSemester;
 use App\ReportPermission;
 use App\AcademicCalendarEvent;
+use App\Course;
 use App\StudentProfile;
 use App\User;
 use App\UserAccountStatus;
+use App\YearBlock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -207,12 +209,30 @@ class AdminToolsController extends Controller
             'content' => 'required|string',
         ]);
 
+        $programValue = isset($validated['program']) ? trim((string) $validated['program']) : '';
+        $programValue = $programValue !== '' ? $programValue : 'All Programs';
+        $courseId = null;
+
+        if (strtolower($programValue) !== 'all programs') {
+            $courseId = $this->resolveCourseId($programValue);
+
+            if (!$courseId) {
+                return response()->json([
+                    'message' => 'The selected program is invalid.',
+                    'errors' => [
+                        'program' => ['Program must match an existing course code or name.'],
+                    ],
+                ], 422);
+            }
+        }
+
         $announcement = SystemAnnouncement::create([
             'date_from' => $validated['from'],
             'date_to' => $validated['to'],
             'title' => $validated['title'],
             'announcement_type' => $validated['type'] ?? 'Everyone',
-            'program' => $validated['program'] ?? 'All Programs',
+            'program' => $programValue,
+            'course_id' => $courseId,
             'content' => $validated['content'],
         ]);
 
@@ -233,12 +253,30 @@ class AdminToolsController extends Controller
             'content' => 'required|string',
         ]);
 
+        $programValue = isset($validated['program']) ? trim((string) $validated['program']) : '';
+        $programValue = $programValue !== '' ? $programValue : 'All Programs';
+        $courseId = null;
+
+        if (strtolower($programValue) !== 'all programs') {
+            $courseId = $this->resolveCourseId($programValue);
+
+            if (!$courseId) {
+                return response()->json([
+                    'message' => 'The selected program is invalid.',
+                    'errors' => [
+                        'program' => ['Program must match an existing course code or name.'],
+                    ],
+                ], 422);
+            }
+        }
+
         $systemAnnouncement->update([
             'date_from' => $validated['from'],
             'date_to' => $validated['to'],
             'title' => $validated['title'],
             'announcement_type' => $validated['type'] ?? 'Everyone',
-            'program' => $validated['program'] ?? 'All Programs',
+            'program' => $programValue,
+            'course_id' => $courseId,
             'content' => $validated['content'],
         ]);
 
@@ -579,7 +617,20 @@ class AdminToolsController extends Controller
             'status' => 'required|string|in:Active,Inactive',
         ]);
 
-        $row = MasterFacultyFile::create($validated);
+        $sourceFacultyId = Faculty::query()
+            ->where('code', $validated['code'])
+            ->orWhere('name', $validated['name'])
+            ->value('id');
+
+        $row = MasterFacultyFile::create([
+            'code' => $validated['code'],
+            'source_faculty_id' => $sourceFacultyId ?: null,
+            'name' => $validated['name'],
+            'department' => $validated['department'],
+            'status' => $validated['status'],
+            'snapshot_taken_at' => now(),
+            'is_snapshot' => true,
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -605,11 +656,18 @@ class AdminToolsController extends Controller
             'config_payload.sections' => 'nullable|array',
         ]);
 
+        $sourceFacultyId = Faculty::query()
+            ->where('code', $validated['code'])
+            ->orWhere('name', $validated['name'])
+            ->value('id');
+
         $updateData = [
             'code' => $validated['code'],
+            'source_faculty_id' => $sourceFacultyId ?: null,
             'name' => $validated['name'],
             'department' => $validated['department'],
             'status' => $validated['status'],
+            'is_snapshot' => true,
         ];
 
         if (array_key_exists('config_payload', $validated)) {
@@ -685,11 +743,18 @@ class AdminToolsController extends Controller
             'year_level' => 'required|string|max:30',
         ]);
 
+        $sourceStudentId = Student::query()
+            ->where('student_no', $validated['student_id'])
+            ->value('id');
+
         $row = MasterStudentProfileFile::create([
             'student_no' => $validated['student_id'],
+            'source_student_id' => $sourceStudentId ?: null,
             'student_name' => $validated['name'],
             'course' => $validated['course'],
             'year_level' => $validated['year_level'],
+            'snapshot_taken_at' => now(),
+            'is_snapshot' => true,
         ]);
 
         return response()->json([
@@ -713,11 +778,17 @@ class AdminToolsController extends Controller
             'year_level' => 'required|string|max:30',
         ]);
 
+        $sourceStudentId = Student::query()
+            ->where('student_no', $validated['student_id'])
+            ->value('id');
+
         $masterStudentProfile->update([
             'student_no' => $validated['student_id'],
+            'source_student_id' => $sourceStudentId ?: null,
             'student_name' => $validated['name'],
             'course' => $validated['course'],
             'year_level' => $validated['year_level'],
+            'is_snapshot' => true,
         ]);
 
         return response()->json([
@@ -776,11 +847,18 @@ class AdminToolsController extends Controller
             'year_level' => 'required|string|max:30',
         ]);
 
+        $sourceStudentId = Student::query()
+            ->where('student_no', $validated['student_id'])
+            ->value('id');
+
         $row = MasterStudentGradeFile::create([
             'student_no' => $validated['student_id'],
+            'source_student_id' => $sourceStudentId ?: null,
             'student_name' => $validated['name'],
             'course' => $validated['course'],
             'year_level' => $validated['year_level'],
+            'snapshot_taken_at' => now(),
+            'is_snapshot' => true,
         ]);
 
         return response()->json([
@@ -804,11 +882,17 @@ class AdminToolsController extends Controller
             'year_level' => 'required|string|max:30',
         ]);
 
+        $sourceStudentId = Student::query()
+            ->where('student_no', $validated['student_id'])
+            ->value('id');
+
         $masterStudentGradeFile->update([
             'student_no' => $validated['student_id'],
+            'source_student_id' => $sourceStudentId ?: null,
             'student_name' => $validated['name'],
             'course' => $validated['course'],
             'year_level' => $validated['year_level'],
+            'is_snapshot' => true,
         ]);
 
         return response()->json([
@@ -980,12 +1064,12 @@ class AdminToolsController extends Controller
 
     public function studentUpdate()
     {
-        $courseOptions = Student::query()
-            ->whereNotNull('program')
-            ->where('program', '<>', '')
+        $courseOptions = Course::query()
+            ->join('students', 'students.course_id', '=', 'courses.id')
+            ->selectRaw("COALESCE(NULLIF(TRIM(courses.code), ''), courses.name) as course_option")
             ->distinct()
-            ->orderBy('program')
-            ->pluck('program')
+            ->orderBy('course_option')
+            ->pluck('course_option')
             ->values()
             ->all();
 
@@ -1021,17 +1105,37 @@ class AdminToolsController extends Controller
         $query = Student::query();
 
         if (!empty($validated['school_year'])) {
-            $query->where('school_year', $validated['school_year']);
+            $query->whereHas('academicTerm', function ($termQuery) use ($validated) {
+                $termQuery->where('school_year', trim((string) $validated['school_year']));
+            });
         }
+
         if (!empty($validated['term'])) {
-            $query->where('semester', $validated['term']);
+            $query->whereHas('academicTerm', function ($termQuery) use ($validated) {
+                $termQuery->where('term', trim((string) $validated['term']));
+            });
         }
+
         if (!empty($validated['course'])) {
-            $query->where('program', $validated['course']);
+            $resolvedCourseId = $this->resolveCourseId($validated['course']);
+
+            if ($resolvedCourseId) {
+                $query->where('course_id', $resolvedCourseId);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
+
         if (!empty($validated['year_level'])) {
-            $query->where('year_level', $validated['year_level']);
+            $resolvedYearBlockId = $this->resolveYearBlockId($validated['year_level']);
+
+            if ($resolvedYearBlockId) {
+                $query->where('year_block_id', $resolvedYearBlockId);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
+
         if (!empty($validated['student_no'])) {
             $query->where('student_no', $validated['student_no']);
         }
@@ -1061,6 +1165,73 @@ class AdminToolsController extends Controller
             'affected_count' => $affectedCount,
             'message' => 'Action processed successfully.',
         ]);
+    }
+
+    private function resolveCourseId($courseValue)
+    {
+        $courseText = trim((string) $courseValue);
+        if ($courseText === '') {
+            return null;
+        }
+
+        return Course::query()
+            ->whereRaw('LOWER(TRIM(code)) = ?', [strtolower($courseText)])
+            ->orWhereRaw('LOWER(TRIM(name)) = ?', [strtolower($courseText)])
+            ->value('id');
+    }
+
+    private function resolveYearBlockId($yearLevelValue)
+    {
+        $normalizedLabel = $this->normalizeYearBlockLabel($yearLevelValue);
+        if (!$normalizedLabel) {
+            return null;
+        }
+
+        return YearBlock::query()
+            ->whereRaw('LOWER(TRIM(label)) = ?', [strtolower($normalizedLabel)])
+            ->value('id');
+    }
+
+    private function normalizeYearBlockLabel($value)
+    {
+        $normalized = strtolower(trim((string) $value));
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (in_array($normalized, ['1', '1st', '1st year', '1st yr', 'first', 'first year'], true)) {
+            return '1st Year';
+        }
+
+        if (in_array($normalized, ['2', '2nd', '2nd year', '2nd yr', 'second', 'second year'], true)) {
+            return '2nd Year';
+        }
+
+        if (in_array($normalized, ['3', '3rd', '3rd year', '3rd yr', 'third', 'third year'], true)) {
+            return '3rd Year';
+        }
+
+        if (in_array($normalized, ['4', '4th', '4th year', '4th yr', '4a', 'fourth', 'fourth year'], true)) {
+            return '4th Year';
+        }
+
+        if (preg_match('/^1/', $normalized)) {
+            return '1st Year';
+        }
+
+        if (preg_match('/^2/', $normalized)) {
+            return '2nd Year';
+        }
+
+        if (preg_match('/^3/', $normalized)) {
+            return '3rd Year';
+        }
+
+        if (preg_match('/^4/', $normalized)) {
+            return '4th Year';
+        }
+
+        return null;
     }
 
     private function mapAcademicCalendarRow(AcademicCalendarEvent $event): array
@@ -1177,9 +1348,10 @@ class AdminToolsController extends Controller
     private function seedBedStudentStatuses(): void
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
             ->orderBy('name')
             ->limit(40)
-            ->get(['student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+            ->get(['student_no', 'name', 'course_id', 'year_block_id', 'academic_term_id']);
 
         foreach ($students as $index => $student) {
             BedStudentStatus::create([
@@ -1278,9 +1450,10 @@ class AdminToolsController extends Controller
     private function seedMasterStudentProfileFiles(): void
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
             ->orderBy('name')
             ->limit(80)
-            ->get(['student_no', 'name', 'program', 'year_level']);
+            ->get(['student_no', 'name', 'course_id', 'year_block_id']);
 
         if ($students->count()) {
             foreach ($students as $student) {
@@ -1309,9 +1482,10 @@ class AdminToolsController extends Controller
     private function seedMasterStudentGradeFiles(): void
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
             ->orderBy('name')
             ->limit(80)
-            ->get(['student_no', 'name', 'program', 'year_level']);
+            ->get(['student_no', 'name', 'course_id', 'year_block_id']);
 
         if ($students->count()) {
             foreach ($students as $student) {

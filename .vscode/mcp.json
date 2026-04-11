@@ -16,11 +16,20 @@
         "mysql://root:@localhost:3306/plp_demo"
       ]
     },
+    "mysql_3nf_graph": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@berthojoris/mcp-mysql-server",
+        "mysql://root:@localhost:3306/plp_demo",
+        "list,read,utility,database_discovery,analysis"
+      ]
+    },
     "figma": {
       "command": "npx",
       "args": ["-y", "mcp-figma"],
       "env": {
-        "FIGMA_API_TOKEN": "${env:FIGMA_TOKEN}",
+        "FIGMA_API_TOKEN": "${env:FIGMA_TOKEN}"
       }
     },
     "github": {

@@ -4,29 +4,34 @@
 @section('page-title', 'SUBJECT FILE')
 
 @section('content')
-<div class="sf-page">
+<div
+    class="sf-page"
+    id="subjectFilePage"
+    data-fetch-url="{{ route('registrar.registrar-menu.academic-master.subject-file.data') }}"
+    data-store-url="{{ route('registrar.registrar-menu.academic-master.subject-file.store') }}"
+    data-update-url-template="{{ route('registrar.registrar-menu.academic-master.subject-file.update', ['subjectId' => '__SUBJECT_ID__']) }}"
+    data-delete-url-template="{{ route('registrar.registrar-menu.academic-master.subject-file.delete', ['subjectId' => '__SUBJECT_ID__']) }}"
+    data-csrf-token="{{ csrf_token() }}"
+>
 
     {{-- Toolbar --}}
     <div class="sf-topbar">
-        <div class="sf-search-box">
-            <input type="text" class="sf-search-input" placeholder="Search Subject Code" id="sfSearchInput" oninput="filterSubjects()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sf-search-icon">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-        </div>
+        @include('registrar.components.search-bar', [
+            'id' => 'sfSearchInput',
+            'placeholder' => 'Search Subject Code',
+        ])
         <div class="sf-sort-wrap">
-            <select class="sf-sort-select" id="sfSort" onchange="sortSubjects()">
+            <select class="sf-sort-select" id="sfSort">
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
             </select>
         </div>
-        <button class="sf-new-btn" onclick="openNewSubjectModal()">+New Subject</button>
+        <button class="sf-new-btn" id="sfNewBtn">+New Subject</button>
     </div>
 
     {{-- Table --}}
     <div class="app-table-wrap">
-        <table class="app-table" id="sfTable">
+        <table class="app-table" id="sfTable" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th style="width:5%;">Action</th>
@@ -42,6 +47,20 @@
             </thead>
             <tbody id="sfTableBody"></tbody>
         </table>
+    </div>
+
+    <div class="sf-pagination-bar sf-pagination-compact" id="sfPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Subject File pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
+                    <button type="button" class="rtp-page-btn" id="sfPrevBtn" aria-label="Previous page" disabled>&lt;</button>
+                    <div class="rtp-pages" id="sfPageNumbers">
+                        <button type="button" class="rtp-page-num active" aria-current="page" disabled>1</button>
+                    </div>
+                    <button type="button" class="rtp-page-btn" id="sfNextBtn" aria-label="Next page" disabled>&gt;</button>
+                </div>
+            </nav>
+        </div>
     </div>
 
     {{-- ══════ NEW / EDIT SUBJECT MODAL ══════ --}}
@@ -60,11 +79,11 @@
                 <div style="display:flex; gap:12px;">
                     <div class="req-modal-field-group" style="flex:1;">
                         <label class="req-modal-label">Lec</label>
-                        <input type="number" step="0.1" min="0" class="req-modal-input" id="sfInputLec" placeholder="0.0">
+                        <input type="number" step="1" min="0" class="req-modal-input" id="sfInputLec" placeholder="0">
                     </div>
                     <div class="req-modal-field-group" style="flex:1;">
                         <label class="req-modal-label">Lab</label>
-                        <input type="number" step="0.1" min="0" class="req-modal-input" id="sfInputLab" placeholder="0.0">
+                        <input type="number" step="1" min="0" class="req-modal-input" id="sfInputLab" placeholder="0">
                     </div>
                 </div>
                 <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">

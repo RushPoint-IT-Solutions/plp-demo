@@ -2,13 +2,17 @@
 
 namespace App;
 
+use App\Concerns\ResolvesAcademicTerm;
 use Illuminate\Database\Eloquent\Model;
 
 class GradingPeriod extends Model
 {
+    use ResolvesAcademicTerm;
+
     protected $fillable = [
         'school_year',
         'semester',
+        'academic_term_id',
         'section_subject_faculty',
         'period',
         'description',

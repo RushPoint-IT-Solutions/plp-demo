@@ -260,13 +260,8 @@ class ApplicantController extends Controller
 
     private function upsertApplicationPreference(Applicant $applicant, array $payload)
     {
-        if (($payload['apply_program'] ?? null) === 'senior_high') {
-            $payload['apply_course_id'] = null;
-        }
-
-        if (($payload['apply_program'] ?? null) === 'college') {
-            $payload['apply_strand'] = null;
-        }
+        $payload['apply_program'] = 'college';
+        $payload['apply_strand'] = null;
 
         $record = $applicant->applicationPreference;
         if (!$record) {
@@ -382,6 +377,8 @@ class ApplicantController extends Controller
         }
 
         $validated = $request->validated();
+        $validated['apply_program'] = 'college';
+        $validated['apply_strand'] = null;
 
         $this->upsertApplicationPreference($applicant, $validated);
         $this->markDraftProgress($applicant, 4);
@@ -503,8 +500,8 @@ class ApplicantController extends Controller
             $this->upsertFamilyBackground($applicant, $step3Payload);
 
             $step4Payload = [
-                'apply_program' => $validated['apply_program'],
-                'apply_strand' => $validated['apply_strand'] ?? null,
+                'apply_program' => 'college',
+                'apply_strand' => null,
                 'apply_course_id' => $validated['apply_course_id'] ?? null,
                 'entry_classification' => $validated['entry_classification'],
                 'year_level' => $validated['year_level'],

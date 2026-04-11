@@ -4,7 +4,20 @@
 @section('page-title', 'ROOM FILE')
 
 @section('content')
-<div class="pf-page">
+<div
+    class="pf-page"
+    id="roomFilePage"
+    data-fetch-url="{{ route('registrar.registrar-menu.scheduling.room-file.data') }}"
+    data-store-url="{{ route('registrar.registrar-menu.scheduling.room-file.store') }}"
+    data-store-building-url="{{ route('registrar.registrar-menu.scheduling.room-file.building.store') }}"
+    data-store-hallway-url="{{ route('registrar.registrar-menu.scheduling.room-file.hallway.store') }}"
+    data-program-file-url="{{ route('registrar.registrar-menu.academic-master.program-file') }}"
+    data-update-url-template="{{ route('registrar.registrar-menu.scheduling.room-file.update', ['room' => '__ROOM_ID__']) }}"
+    data-delete-url-template="{{ route('registrar.registrar-menu.scheduling.room-file.delete', ['room' => '__ROOM_ID__']) }}"
+    data-csrf-token="{{ csrf_token() }}"
+    data-default-sort-by="floor_number"
+    data-default-sort-dir="asc"
+>
 
     {{-- Toolbar --}}
     <div class="pf-toolbar">
@@ -20,16 +33,46 @@
 
     {{-- Table --}}
     <div class="student-table-wrapper table-responsive">
-        <table class="student-table registrar-table" id="rfTable">
+        <table class="student-table registrar-table" id="rfTable" data-no-auto-pager="1">
             <thead>
                 <tr>
                     <th>Action</th>
-                    <th>Room #</th>
-                    <th>Floor</th>
-                    <th>Building & Hallway</th>
-                    <th>Students</th>
-                    <th>Programs</th>
-                    <th>Update by</th>
+                    <th aria-sort="none">
+                        <button type="button" class="rf-sort-btn" data-sort="room_number">
+                            <span class="rf-sort-label">Room #</span>
+                            <span class="rf-sort-indicator">Sort</span>
+                        </button>
+                    </th>
+                    <th aria-sort="none">
+                        <button type="button" class="rf-sort-btn" data-sort="floor_number">
+                            <span class="rf-sort-label">Floor</span>
+                            <span class="rf-sort-indicator">Sort</span>
+                        </button>
+                    </th>
+                    <th aria-sort="none">
+                        <button type="button" class="rf-sort-btn" data-sort="building">
+                            <span class="rf-sort-label">Building & Hallway</span>
+                            <span class="rf-sort-indicator">Sort</span>
+                        </button>
+                    </th>
+                    <th aria-sort="none">
+                        <button type="button" class="rf-sort-btn" data-sort="capacity">
+                            <span class="rf-sort-label">Students</span>
+                            <span class="rf-sort-indicator">Sort</span>
+                        </button>
+                    </th>
+                    <th aria-sort="none">
+                        <button type="button" class="rf-sort-btn" data-sort="program">
+                            <span class="rf-sort-label">Programs</span>
+                            <span class="rf-sort-indicator">Sort</span>
+                        </button>
+                    </th>
+                    <th aria-sort="none">
+                        <button type="button" class="rf-sort-btn" data-sort="updated_by">
+                            <span class="rf-sort-label">Update by</span>
+                            <span class="rf-sort-indicator">Sort</span>
+                        </button>
+                    </th>
                 </tr>
             </thead>
             <tbody id="rfBody">
@@ -39,8 +82,18 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="pf-pagination">
-        <span class="pf-page-info" id="rfPageInfo">Showing 0 rooms</span>
+    <div class="sf-pagination-bar sf-pagination-compact" id="rfPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Room File pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
+                    <button type="button" class="rtp-page-btn" id="rfPrevBtn" aria-label="Previous page" disabled>&lt;</button>
+                    <div class="rtp-pages" id="rfPageNumbers">
+                        <button type="button" class="rtp-page-num active" aria-current="page" disabled>1</button>
+                    </div>
+                    <button type="button" class="rtp-page-btn" id="rfNextBtn" aria-label="Next page" disabled>&gt;</button>
+                </div>
+            </nav>
+        </div>
     </div>
 </div>
 
@@ -59,14 +112,34 @@
                     <input type="number" class="pf-modal-input" id="newRoomFloor" placeholder="e.g. 2" required min="1">
                 </div>
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Building & Hallway</label>
-                    <select class="pf-modal-select" id="newRoomBuilding" required>
-                        <option value="">- Select Building -</option>
-                        <option value="Campus 1">Campus 1</option>
-                        <option value="Campus 2">Campus 2</option>
-                        <option value="Campus 3">Campus 3</option>
-                        <option value="Campus 4">Campus 4</option>
-                    </select>
+                    <label class="pf-modal-label">Building</label>
+                    <div class="rf-building-inline">
+                        <select class="pf-modal-select" id="newRoomBuilding" required>
+                            <option value="">- Select Building -</option>
+                        </select>
+                        <button
+                            type="button"
+                            class="rf-setup-add-btn"
+                            id="newAddBuildingBtn"
+                            title="Add Building"
+                            aria-label="Add building"
+                        >+</button>
+                    </div>
+                </div>
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label">Hallway</label>
+                    <div class="rf-hallway-inline">
+                        <select class="pf-modal-select" id="newRoomHallway" required>
+                            <option value="">- Select Hallway -</option>
+                        </select>
+                        <button
+                            type="button"
+                            class="rf-hallway-add-btn"
+                            id="newAddHallwayBtn"
+                            title="Add Hallway"
+                            aria-label="Add hallway"
+                        >+</button>
+                    </div>
                 </div>
                 <div class="pf-modal-field">
                     <label class="pf-modal-label">Students (Capacity)</label>
@@ -74,16 +147,18 @@
                 </div>
                 <div class="pf-modal-field">
                     <label class="pf-modal-label">Programs</label>
-                    <select class="pf-modal-select" id="newRoomProgram" required>
-                        <option value="">- Select Program -</option>
-                        <option value="BSIT">BSIT</option>
-                        <option value="BSCS">BSCS</option>
-                        <option value="BSED">BSED</option>
-                        <option value="BSAT">BSAT</option>
-                        <option value="BSIT-Animation">BSIT-Animation</option>
-                        <option value="BSN">BSN</option>
-                        <option value="BSET">BSET</option>
-                    </select>
+                    <div class="rf-program-inline">
+                        <select class="pf-modal-select" id="newRoomProgram" required>
+                            <option value="">- Select Program -</option>
+                        </select>
+                        <button
+                            type="button"
+                            class="rf-setup-add-btn"
+                            id="newGoProgramSetupBtn"
+                            title="Open Program File"
+                            aria-label="Open program setup"
+                        >+</button>
+                    </div>
                 </div>
                 <div class="pf-modal-actions">
                     <button type="button" class="pf-modal-btn-cancel" onclick="closeNewRoomModal()">Cancel</button>
@@ -110,14 +185,34 @@
                     <input type="number" class="pf-modal-input" id="editRoomFloor" required min="1">
                 </div>
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Building & Hallway</label>
-                    <select class="pf-modal-select" id="editRoomBuilding" required>
-                        <option value="">- Select Building -</option>
-                        <option value="Campus 1">Campus 1</option>
-                        <option value="Campus 2">Campus 2</option>
-                        <option value="Campus 3">Campus 3</option>
-                        <option value="Campus 4">Campus 4</option>
-                    </select>
+                    <label class="pf-modal-label">Building</label>
+                    <div class="rf-building-inline">
+                        <select class="pf-modal-select" id="editRoomBuilding" required>
+                            <option value="">- Select Building -</option>
+                        </select>
+                        <button
+                            type="button"
+                            class="rf-setup-add-btn"
+                            id="editAddBuildingBtn"
+                            title="Add Building"
+                            aria-label="Add building"
+                        >+</button>
+                    </div>
+                </div>
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label">Hallway</label>
+                    <div class="rf-hallway-inline">
+                        <select class="pf-modal-select" id="editRoomHallway" required>
+                            <option value="">- Select Hallway -</option>
+                        </select>
+                        <button
+                            type="button"
+                            class="rf-hallway-add-btn"
+                            id="editAddHallwayBtn"
+                            title="Add Hallway"
+                            aria-label="Add hallway"
+                        >+</button>
+                    </div>
                 </div>
                 <div class="pf-modal-field">
                     <label class="pf-modal-label">Students (Capacity)</label>
@@ -125,20 +220,66 @@
                 </div>
                 <div class="pf-modal-field">
                     <label class="pf-modal-label">Programs</label>
-                    <select class="pf-modal-select" id="editRoomProgram" required>
-                        <option value="">- Select Program -</option>
-                        <option value="BSIT">BSIT</option>
-                        <option value="BSCS">BSCS</option>
-                        <option value="BSED">BSED</option>
-                        <option value="BSAT">BSAT</option>
-                        <option value="BSIT-Animation">BSIT-Animation</option>
-                        <option value="BSN">BSN</option>
-                        <option value="BSET">BSET</option>
-                    </select>
+                    <div class="rf-program-inline">
+                        <select class="pf-modal-select" id="editRoomProgram" required>
+                            <option value="">- Select Program -</option>
+                        </select>
+                        <button
+                            type="button"
+                            class="rf-setup-add-btn"
+                            id="editGoProgramSetupBtn"
+                            title="Open Program File"
+                            aria-label="Open program setup"
+                        >+</button>
+                    </div>
                 </div>
                 <div class="pf-modal-actions">
                     <button type="button" class="pf-modal-btn-cancel" onclick="closeEditRoomModal()">Cancel</button>
                     <button type="submit" class="pf-modal-btn-save">Save Changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- ══════ ADD HALLWAY MODAL ══════ --}}
+<div class="pf-modal-overlay" id="addHallwayModal" style="display:none;">
+    <div class="pf-modal-box rf-hallway-modal-box">
+        <div class="pf-modal-title">Add Hallway</div>
+        <form id="addHallwayForm">
+            <input type="hidden" id="addHallwayPrefix">
+            <div class="pf-modal-form">
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="addHallwayBuilding">Building</label>
+                    <input type="text" class="pf-modal-input" id="addHallwayBuilding" readonly>
+                </div>
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="addHallwayName">Hallway Name</label>
+                    <input type="text" class="pf-modal-input" id="addHallwayName" placeholder="e.g. West Wing" maxlength="120" required>
+                </div>
+                <div class="pf-modal-actions">
+                    <button type="button" class="pf-modal-btn-cancel" id="addHallwayCancelBtn">Cancel</button>
+                    <button type="submit" class="pf-modal-btn-save" id="addHallwaySaveBtn">Add Hallway</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- ══════ ADD BUILDING MODAL ══════ --}}
+<div class="pf-modal-overlay" id="addBuildingModal" style="display:none;">
+    <div class="pf-modal-box rf-building-modal-box">
+        <div class="pf-modal-title">Add Building</div>
+        <form id="addBuildingForm">
+            <input type="hidden" id="addBuildingPrefix">
+            <div class="pf-modal-form">
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="addBuildingName">Building Name</label>
+                    <input type="text" class="pf-modal-input" id="addBuildingName" placeholder="e.g. North Annex" maxlength="120" required>
+                </div>
+                <div class="pf-modal-actions">
+                    <button type="button" class="pf-modal-btn-cancel" id="addBuildingCancelBtn">Cancel</button>
+                    <button type="submit" class="pf-modal-btn-save" id="addBuildingSaveBtn">Add Building</button>
                 </div>
             </div>
         </form>
@@ -183,5 +324,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/room-file.js') }}"></script>
+<script src="{{ asset('js/room-file.js') }}?v={{ filemtime(public_path('js/room-file.js')) }}"></script>
 @endpush

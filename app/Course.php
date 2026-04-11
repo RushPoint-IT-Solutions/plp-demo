@@ -14,6 +14,7 @@ class Course extends Model
         'program_type',
         'department_id',
         'description',
+        'program_file',
         'slots',
         'track_category',
         'non_filipino',
@@ -28,5 +29,17 @@ class Course extends Model
     public function deanDirector()
     {
         return $this->belongsTo(Faculty::class, 'dean_director_id');
+    }
+
+    public function curricula()
+    {
+        return $this->hasMany(CourseCurriculum::class);
+    }
+
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'room_course_assignments', 'course_id', 'room_id')
+            ->withPivot('assigned_by_user_id')
+            ->withTimestamps();
     }
 }
