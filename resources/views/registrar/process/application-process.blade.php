@@ -72,18 +72,33 @@
     </nav>
 
     <div class="sidebar-logout">
-        <a href="{{ route('logout') }}" class="sidebar-link logout-link"
-           onclick="event.preventDefault(); document.getElementById('registrar-logout-form').submit();">
-            <span>Log Out</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-            </svg>
-        </a>
+        <form action="{{ route('logout') }}" method="POST" class="sidebar-logout-form">
+            @csrf
+            <button type="submit" class="sidebar-link logout-link">
+                <span>Log Out</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                </svg>
+            </button>
+        </form>
     </div>
 </aside>
 @endpush
 
 @section('content')
+
+@php
+    $filters = isset($filters) && is_array($filters) ? $filters : [
+        'from_date' => null,
+        'to_date' => null,
+        'course_id' => 0,
+        'search' => '',
+        'sort_by' => 'date_updated',
+        'sort_direction' => 'desc',
+        'per_page' => 10,
+    ];
+    $courses = isset($courses) ? $courses : collect();
+@endphp
 
 {{-- ========== MAIN APPLICATION PROCESS VIEW ========== --}}
 <div
@@ -97,58 +112,100 @@
 >
 
     {{-- Filter Bar --}}
-    <div class="app-filter-bar">
+    <form class="app-filter-bar" method="GET" action="{{ route('registrar.process.application') }}" id="applicationFilterForm">
         {{-- Row 1: Date range + Course --}}
         <div class="app-filter-row">
-            <div class="app-filter-group" style="flex:1;">
-                <span class="app-filter-label">From Date</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option>January 1, 2026</option>
-                    <option>February 1, 2026</option>
-                    <option>March 1, 2026</option>
-                </select>
+            <div class="app-filter-group">
+                <label class="app-filter-label" for="appFromDate">From Date</label>
+                <input
+                    id="appFromDate"
+                    name="from_date"
+                    type="date"
+                    class="app-filter-input w-100"
+                    value="{{ $filters['from_date'] }}"
+                >
             </div>
-            <div class="app-filter-group" style="flex:1;">
-                <span class="app-filter-label">To Date</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option>January 1, 2026</option>
-                    <option>February 1, 2026</option>
-                    <option>March 1, 2026</option>
-                </select>
+            <div class="app-filter-group">
+                <label class="app-filter-label" for="appToDate">To Date</label>
+                <input
+                    id="appToDate"
+                    name="to_date"
+                    type="date"
+                    class="app-filter-input w-100"
+                    value="{{ $filters['to_date'] }}"
+                >
             </div>
-            <div class="app-filter-group" style="flex:2;">
-                <span class="app-filter-label">Course</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option value="">Select Course</option>
-                    <option>BSCS</option>
-                    <option>BSIT</option>
-                    <option>BSED</option>
-                    <option>BSBA</option>
+            <div class="app-filter-group app-filter-select-wide">
+                <label class="app-filter-label" for="appCourse">Course</label>
+                <select id="appCourse" name="course_id" class="app-filter-select w-100">
+                    <option value="">All Courses</option>
+                    @foreach($courses as $course)
+                        @php
+                            $courseText = trim(((string) ($course->code ?: '')) . ' - ' . ((string) ($course->name ?: '')));
+                        @endphp
+                        <option value="{{ $course->id }}" {{ (int) $filters['course_id'] === (int) $course->id ? 'selected' : '' }}>
+                            {{ $courseText !== '-' ? $courseText : ('Course #' . $course->id) }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
         </div>
 
-        {{-- Row 2: Search + Sort By + Show Entries --}}
+        {{-- Row 2: Search + Sort + Entries --}}
         <div class="app-filter-row">
-            <div class="app-filter-group" style="flex:2;">
-                <span class="app-filter-label">Search</span>
-                <input type="text" class="app-filter-input" placeholder="Search" style="width:100%;">
+            <div class="app-filter-group app-filter-select-wide">
+                <label class="app-filter-label" for="appSearch">Search</label>
+                <input
+                    id="appSearch"
+                    name="search"
+                    type="text"
+                    class="app-filter-input w-100"
+                    placeholder="Search applicant ID or name"
+                    value="{{ $filters['search'] }}"
+                >
             </div>
-            <div class="app-filter-group" style="flex:2;">
-                <span class="app-filter-label">Sort By</span>
-                <input type="text" class="app-filter-input" placeholder="Applicant ID" style="width:100%;">
+            <div class="app-filter-group">
+                <label class="app-filter-label" for="appSortBy">Sort By</label>
+                <select id="appSortBy" name="sort_by" class="app-filter-select w-100">
+                    <option value="applicant_id" {{ $filters['sort_by'] === 'applicant_id' ? 'selected' : '' }}>Applicant ID</option>
+                    <option value="applicant_name" {{ $filters['sort_by'] === 'applicant_name' ? 'selected' : '' }}>Applicant Name</option>
+                    <option value="date_applied" {{ $filters['sort_by'] === 'date_applied' ? 'selected' : '' }}>Date Applied</option>
+                    <option value="date_updated" {{ $filters['sort_by'] === 'date_updated' ? 'selected' : '' }}>Date Last Update</option>
+                </select>
             </div>
-            <div class="app-filter-group" style="flex:1;">
-                <span class="app-filter-label">Show Entries</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option>100</option>
-                    <option>50</option>
-                    <option>25</option>
-                    <option>10</option>
+            <div class="app-filter-group app-filter-select-sm">
+                <label class="app-filter-label" for="appSortDirection">Order</label>
+                <select id="appSortDirection" name="sort_direction" class="app-filter-select w-100">
+                    <option value="asc" {{ $filters['sort_direction'] === 'asc' ? 'selected' : '' }}>Ascending</option>
+                    <option value="desc" {{ $filters['sort_direction'] === 'desc' ? 'selected' : '' }}>Descending</option>
+                </select>
+            </div>
+            <div class="app-filter-group app-filter-select-sm">
+                <label class="app-filter-label" for="appPerPage">Show Entries</label>
+                <select id="appPerPage" name="per_page" class="app-filter-select w-100">
+                    @foreach([10, 25, 50, 100] as $perPageOption)
+                        <option value="{{ $perPageOption }}" {{ (int) $filters['per_page'] === (int) $perPageOption ? 'selected' : '' }}>{{ $perPageOption }}</option>
+                    @endforeach
                 </select>
             </div>
         </div>
-    </div>
+
+        <div class="app-filter-row app-filter-actions-row">
+            <p class="app-filter-auto-note">Filters auto-apply as you change values or type in search.</p>
+            <div class="app-filter-actions-group">
+                <a href="{{ route('registrar.process.application') }}" class="app-filter-action-btn app-filter-action-btn--reset">Reset</a>
+                <a
+                    href="{{ route('registrar.process.application.print', array_merge(request()->query(), ['autoprint' => 1])) }}"
+                    target="_blank"
+                    rel="noopener"
+                    class="app-filter-action-btn app-filter-action-btn--print"
+                    id="printApplicantListBtn"
+                >
+                    Print List
+                </a>
+            </div>
+        </div>
+    </form>
 
     {{-- Table --}}
     <div class="app-table-wrap table-responsive">
@@ -268,11 +325,11 @@
             <div class="sched-fields-row">
                 <div class="sched-field-group">
                     <label>Date</label>
-                    <input type="date" id="scheduleExamDate" class="app-filter-input" style="width:100%;">
+                    <input type="date" id="scheduleExamDate" class="app-filter-input w-100">
                 </div>
                 <div class="sched-field-group">
                     <label>Time</label>
-                    <input type="time" id="scheduleExamTime" class="app-filter-input" style="width:100%;">
+                    <input type="time" id="scheduleExamTime" class="app-filter-input w-100">
                 </div>
                 <div class="sched-field-group sched-field-group--venue">
                     <label>Venue</label>
@@ -283,7 +340,7 @@
                 <button type="button" class="sched-btn-save" id="saveExamScheduleBtn">Save</button>
                 <button type="button" class="sched-btn-print" id="printExamScheduleBtn">Print</button>
             </div>
-            <div id="scheduleExamFeedback" style="margin: 8px 0 12px; color:#444;"></div>
+            <div id="scheduleExamFeedback" class="schedule-exam-feedback"></div>
             <div class="sched-reminders">
                 <p><strong>REMINDERS:</strong></p>
                 <ul>
@@ -315,12 +372,12 @@
     {{-- Exam Result --}}
     <div class="applicant-panel" id="panel-exam-result">
         <div class="student-table-wrapper applicant-content-shell">
-            <div class="applicant-result-box" id="examResultCard" style="display:none;">
+            <div class="applicant-result-box is-hidden" id="examResultCard">
                 <div class="result-status-badge" id="examResultBadge">PENDING</div>
-                <p class="result-score" id="examResultScoreLine" style="display:none;">Score: <strong id="examResultScoreText"></strong></p>
-                <p class="result-score" id="examResultMessage" style="margin-top:8px;"></p>
+                <p class="result-score is-hidden" id="examResultScoreLine">Score: <strong id="examResultScoreText"></strong></p>
+                <p class="result-score result-score-message" id="examResultMessage"></p>
             </div>
-            <div class="applicant-no-result" id="examResultNoData" style="padding:20px; color:#555;">No exam result is available yet.</div>
+            <div class="applicant-no-result" id="examResultNoData">No exam result is available yet.</div>
         </div>
     </div>
 

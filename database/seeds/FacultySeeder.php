@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class FacultySeeder extends Seeder
 {
@@ -19,10 +20,77 @@ class FacultySeeder extends Seeder
             ['student_no' => '2024008', 'name' => 'Ramos, Cristina',      'sex' => 'Female', 'age' => 19, 'program' => 'BSCS', 'year_level' => '1st Year', 'school_year' => '2025-2026', 'semester' => '2nd Semester'],
         ];
 
+        $hasProgramColumn = Schema::hasColumn('students', 'program');
+        $hasCourseIdColumn = Schema::hasColumn('students', 'course_id');
+        $hasYearLevelColumn = Schema::hasColumn('students', 'year_level');
+        $hasYearBlockIdColumn = Schema::hasColumn('students', 'year_block_id');
+        $hasSchoolYearColumn = Schema::hasColumn('students', 'school_year');
+        $hasSemesterColumn = Schema::hasColumn('students', 'semester');
+        $hasAcademicTermIdColumn = Schema::hasColumn('students', 'academic_term_id');
+
+        $courseIds = $hasCourseIdColumn && Schema::hasTable('courses')
+            ? DB::table('courses')->pluck('id', 'code')->toArray()
+            : [];
+
+        $yearBlockIds = [];
+        if ($hasYearBlockIdColumn && Schema::hasTable('year_blocks')) {
+            $yearBlockIds = DB::table('year_blocks')->pluck('id', 'label')->toArray();
+        }
+
+        $academicTermIds = [];
+        if ($hasAcademicTermIdColumn && Schema::hasTable('academic_terms')) {
+            $academicTermIds = DB::table('academic_terms')
+                ->select('id', 'school_year', 'term')
+                ->get()
+                ->mapWithKeys(function ($row) {
+                    $key = strtolower(trim((string) $row->school_year) . '|' . trim((string) $row->term));
+
+                    return [$key => (int) $row->id];
+                })
+                ->all();
+        }
+
         foreach ($students as $s) {
+            $payload = [
+                'name' => $s['name'],
+                'sex' => $s['sex'],
+                'age' => $s['age'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            if ($hasProgramColumn) {
+                $payload['program'] = $s['program'];
+            }
+
+            if ($hasCourseIdColumn) {
+                $payload['course_id'] = $courseIds[$s['program']] ?? null;
+            }
+
+            if ($hasYearLevelColumn) {
+                $payload['year_level'] = $s['year_level'];
+            }
+
+            if ($hasYearBlockIdColumn) {
+                $payload['year_block_id'] = $yearBlockIds[$s['year_level']] ?? null;
+            }
+
+            if ($hasSchoolYearColumn) {
+                $payload['school_year'] = $s['school_year'];
+            }
+
+            if ($hasSemesterColumn) {
+                $payload['semester'] = $s['semester'];
+            }
+
+            if ($hasAcademicTermIdColumn) {
+                $termKey = strtolower(trim((string) $s['school_year']) . '|' . trim((string) $s['semester']));
+                $payload['academic_term_id'] = $academicTermIds[$termKey] ?? null;
+            }
+
             DB::table('students')->updateOrInsert(
                 ['student_no' => $s['student_no']],
-                array_merge($s, ['created_at' => now(), 'updated_at' => now()])
+                $payload
             );
         }
 

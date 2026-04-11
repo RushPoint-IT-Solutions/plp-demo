@@ -4,65 +4,37 @@
     padding: 6px 0 0;
 }
 
-/* Grades page */
-.grades-page {
-    max-width: 1080px;
-    margin: 0;
-    padding: 6px 0 0;
-}
+// Applicant sidebar
+#applicantSidebar { display: none; }
 
-/* Events page */
-.events-page {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 6px 0 0;
-}
-
-/* Profile / setup wizard */
-.profile-page {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 6px 0 0;
-}
-
-.profile-save-banner {
+.appl-sidebar-back {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: #e9f7ef;
-    border: 1px solid #006837;
-    color: #004d28;
-    border-radius: 6px;
-    padding: 10px 16px;
-    margin-bottom: 14px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    button {
-        background: none;
-        border: none;
-        color: #006837;
-        font-size: 1rem;
-        cursor: pointer;
-        line-height: 1;
-    }
-    &.profile-error-banner {
-        background: #fdecea;
-        padding: 14px 16px 16px;
-        max-width: 1080px;
-        margin: 0 auto;
-        color: #7b0f0f;
-        button { color: #c0392b; }
-    }
-}
-
-        align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 18px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
     width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    text-align: left;
+    letter-spacing: 0.03em;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
+    svg { width: 20px; height: 20px; flex-shrink: 0; }
 }
 
-/* Left-align Code & Course columns, keep numerics centered */
-.grades-page .sched-th:nth-child(1),
+// STUDENT - Profile edit page layout overrides
+body.page-profile-edit .pf-table-controls .pf-entries-control span,
+body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
+    margin: 0;
+    white-space: nowrap;
+}
 .grades-page .sched-th:nth-child(2),
 .grades-page .sched-td:nth-child(1),
 .grades-page .sched-td:nth-child(2) {
@@ -71,39 +43,29 @@
 
 @include down(991px) {
     .section-offering-page,
-            font-size: 42px;
-            line-height: 1.04;
+    .grades-page,
     .events-page,
     .profile-page {
         max-width: 100%;
     }
 }
 
-            margin: 5px 0 0;
+@include down(768px) {
     .section-offering-page,
     .grades-page,
     .events-page,
     .profile-page {
         padding-top: 0;
     }
-        font-size: 13px;
 }
-        margin-top: 6px;
 
 /* Applicant form helpers migrated from inline styles */
 .step-hidden {
-    .applicant-correspondence-divider {
-        height: 1px;
-        background: #0a813c;
-        margin: 12px 0 16px;
-    }
-
     display: none;
-        padding: 0 2px 2px;
+}
 
 .setup-photo-img {
     width: 100%;
-        margin: 0 0 18px;
     object-fit: cover;
 }
 
@@ -120,7 +82,6 @@
     gap: 16px;
     margin-top: 4px;
 }
-        margin-top: 10px;
 .setup-col--flex-3 { flex: 3; }
 .setup-col--flex-23 { flex: 2.3; }
 .setup-col--flex-2 { flex: 2; }
@@ -156,8 +117,6 @@
 .application-form-page {
     .step-save-feedback {
         margin-top: 6px;
-    }
-
     }
 
     .setup-helper--tight {
@@ -494,6 +453,84 @@
     }
 }
 
+/* Faculty profile wizard cleanup */
+body.page-faculty-profile-edit {
+    .profile-page {
+        max-width: 1320px;
+    }
+
+    .faculty-profile-form .setup-form-container {
+        width: 100%;
+        max-width: 1320px !important;
+        box-sizing: border-box;
+    }
+
+    .faculty-profile-form .setup-section-header {
+        min-height: 38px;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .faculty-profile-form .faculty-step-consistent {
+        display: flex;
+        flex-direction: column;
+        min-height: 540px;
+    }
+
+    .faculty-profile-form .faculty-step-consistent .faculty-step-content {
+        flex: 1;
+        padding-right: 0;
+    }
+
+    .faculty-profile-form .faculty-step-consistent .setup-nav {
+        margin-top: auto;
+    }
+
+    .faculty-profile-form .setup-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: 0.04em;
+    }
+
+    .faculty-action-cell {
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .faculty-action-btn {
+        display: inline-block;
+        border: none;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 0 3px;
+    }
+
+    .faculty-action-btn--edit {
+        background: #0a7a3f;
+        color: #fff;
+    }
+
+    .faculty-action-btn--delete {
+        background: #c0392b;
+        color: #fff;
+    }
+
+    .faculty-action-btn:focus,
+    .faculty-action-btn:hover {
+        opacity: 0.9;
+    }
+}
+
+@include down(991px) {
+    body.page-faculty-profile-edit .faculty-profile-form .setup-label {
+        white-space: normal;
+    }
+}
+
 @include down(768px) {
     .setup-row--app-meta {
         flex-wrap: wrap;
@@ -810,7 +847,8 @@
 .pv-page {
     background: rgba(0, 104, 55, 0.74);
     border-radius: 0;
-    backdrop-filter: saturate(115%) blur(1px);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 body.page-profile-view .content-footer-wrap {
@@ -857,16 +895,28 @@ body.page-profile-view .pv-layout {
     width: 100%;
     min-height: calc(100vh - 118px);
     gap: 18px;
-    padding: 18px 22px 24px;
+    padding: 18px 14px 24px 8px;
+    margin: 0;
     box-sizing: border-box;
     position: relative;
     z-index: 1;
 }
 
 .pv-sidebar {
-    background: rgba(255, 255, 255, 0.86);
-    border: 1px solid rgba(255, 255, 255, 0.45);
+    width: 292px;
+    min-width: 292px;
+    max-width: 324px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 10px 24px rgba(0, 28, 14, 0.16);
     min-height: 100%;
+}
+
+.pv-body {
+    background: rgba(0, 88, 47, 0.44);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 14px 14px;
 }
 
 .pv-sidebar-header {
@@ -913,10 +963,10 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-meta-row {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: minmax(98px, auto) minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -928,10 +978,20 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-meta-value {
-    text-align: right;
-    font-size: 0.64rem;
+    text-align: left;
+    font-size: 0.76rem;
     font-weight: 700;
     flex: 1;
+    line-height: 1.28;
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.pv-meta-department,
+.pv-meta-email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pv-btn-group {
@@ -960,8 +1020,8 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-body-title {
-    margin: 6px 0 10px;
-    font-size: 0.98rem;
+    margin: 4px 0 11px;
+    font-size: 1rem;
 }
 
 .pv-tabs {
@@ -973,9 +1033,9 @@ body.page-profile-view .pv-layout {
     background: rgba(255, 255, 255, 0.18);
     border-color: rgba(255, 255, 255, 0.52);
     color: #ffffff;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    padding: 5px 12px;
+    padding: 6px 13px;
 }
 
 .pv-tab.active {
@@ -985,30 +1045,34 @@ body.page-profile-view .pv-layout {
 }
 
 .pv-panel-card {
-    background: rgba(0, 104, 55, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    padding: 8px 12px;
+    background: rgba(0, 69, 36, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 10px;
+    padding: 12px 14px;
 }
 
 .pv-row {
+    display: grid;
+    grid-template-columns: 210px 16px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
     border-bottom-color: rgba(255, 255, 255, 0.16);
-    padding: 6px 0;
+    padding: 7px 0;
 }
 
 .pv-label {
-    font-size: 0.95rem;
-    min-width: 165px;
-    max-width: 165px;
+    font-size: 0.84rem;
+    min-width: 0;
+    max-width: none;
     color: #f6f9f7;
-    line-height: 1.1;
+    line-height: 1.24;
 }
 
 .pv-sep,
 .pv-value {
-    font-size: 0.95rem;
+    font-size: 0.86rem;
     color: #fff;
-    line-height: 1.1;
+    line-height: 1.28;
 }
 
 .pv-value {
@@ -1032,10 +1096,32 @@ body.page-profile-view .pv-layout {
 }
 
 @include down(992px) {
+    .pv-sidebar {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .pv-meta-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .pv-meta-department,
+    .pv-meta-email {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
     .pv-label {
-        min-width: 145px;
-        max-width: 145px;
+        min-width: 0;
+        max-width: none;
         font-size: 0.82rem;
+    }
+
+    .pv-row {
+        grid-template-columns: 145px 14px minmax(0, 1fr);
     }
 
     .pv-sep,
@@ -1044,10 +1130,30 @@ body.page-profile-view .pv-layout {
     }
 }
 
+@include down(576px) {
+    .pv-body {
+        padding: 10px;
+    }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö sidebar dropdowns & topbar icons
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+    .pv-row {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .pv-sep {
+        display: none;
+    }
+
+    .pv-label,
+    .pv-value {
+        font-size: 0.8rem;
+    }
+}
+
+
+// ----------------------------------------
+// REGISTRAR - sidebar dropdowns & topbar icons
+// ----------------------------------------
 .student-portal-body {
     .sidebar-dropdown {
         display: flex;
@@ -1164,10 +1270,47 @@ body.page-profile-view .pv-layout {
             color: #222;
         }
     }
+
+    .topbar-icon-link.msg-icon:hover,
+    .topbar-icon-link.msg-icon:focus-visible,
+    .topbar-icon-link.topbar-notif-icon:hover,
+    .topbar-icon-link.topbar-notif-icon:focus-visible {
+        background-color: #e8f4ed;
+        color: $student-shell-green;
+        box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .topbar-icon-link.msg-icon.is-active,
+    .topbar-icon-link.topbar-notif-icon.is-active {
+        background-color: $student-shell-green;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
+    }
+
     .topbar-user {
         display: inline-flex;
         align-items: center;
         text-decoration: none;
+    }
+
+    .topbar-user.topbar-profile-trigger {
+        border-radius: 999px;
+        padding: 4px;
+        background-color: #f0f0f0;
+        transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+
+        &:hover,
+        &:focus-visible {
+            background-color: #e8f4ed;
+            box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
+            transform: translateY(-1px);
+        }
+
+        &.is-active {
+            background-color: #e8f4ed;
+            box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
+        }
     }
     .topbar-avatar-placeholder,
     .topbar-avatar-image {
@@ -1252,9 +1395,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// SHARED ΓÇö Student / Registrar tables
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// SHARED - Student / Registrar tables
+// ----------------------------------------
 .student-table-wrapper {
     overflow-x: auto;
     border: 2px solid #c0c0c0;
@@ -1304,9 +1447,9 @@ body.page-profile-view .pv-layout {
     border-bottom: none;
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Form elements (Citizenship, Religion, etc.)
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Form elements (Citizenship, Religion, etc.)
+// ----------------------------------------
 .registrar-form-row {
     display: flex;
     gap: 16px;
@@ -1375,9 +1518,9 @@ body.page-profile-view .pv-layout {
     tbody td:last-child { text-align: left; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Document List
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Document List
+// ----------------------------------------
 .doclist-page { padding: 4px 0; }
 
 .doclist-form-card {
@@ -1399,6 +1542,41 @@ body.page-profile-view .pv-layout {
     display: flex;
     align-items: center;
     gap: 18px;
+}
+
+.doclist-filter-input,
+.doclist-filter-select {
+    width: 100%;
+}
+
+.req-modal-overlay.doclist-modal-hidden {
+    display: none;
+}
+
+.doclist-modal-fields-stacked {
+    flex-direction: column;
+    gap: 14px;
+}
+
+.doclist-modal-option-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.doclist-modal-option-group {
+    flex: 0 0 auto;
+}
+
+.doclist-modal-option-list {
+    display: flex;
+    gap: 14px;
+    margin-top: 4px;
+}
+
+.doclist-non-filipino-label {
+    margin-top: 4px;
 }
 
 .doclist-radio-label,
@@ -1430,6 +1608,12 @@ body.page-profile-view .pv-layout {
     thead th:last-child { text-align: center; }
     tbody td { text-align: center; }
     tbody td:last-child { text-align: center; }
+}
+
+.doclist-empty-row td {
+    text-align: center;
+    color: #666;
+    padding: 20px 12px;
 }
 
 .doclist-actions {
@@ -1464,13 +1648,64 @@ body.page-profile-view .pv-layout {
     &:hover { background: #ffcdd2; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Batch Upload
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+.doclist-delete-modal {
+    text-align: center;
+    max-width: 420px;
+}
+
+.doclist-delete-icon-wrap {
+    margin-bottom: 16px;
+    color: #c62828;
+}
+
+.doclist-delete-title {
+    color: #c62828;
+}
+
+.doclist-delete-text {
+    font-size: 0.9rem;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.doclist-delete-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 20px;
+}
+
+.doclist-delete-note {
+    font-size: 0.78rem;
+    color: #999;
+    margin-bottom: 22px;
+}
+
+.doclist-delete-actions {
+    justify-content: center;
+}
+
+.req-btn-danger {
+    background: #c62828;
+    &:hover { background: #a31f1f; }
+}
+
+// ----------------------------------------
+// REGISTRAR - Batch Upload
+// ----------------------------------------
 .batch-upload-wrapper {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.batch-upload-alert {
+    margin-bottom: 0;
+}
+
+.batch-upload-report-list {
+    margin: 8px 0 0;
+    padding-left: 18px;
 }
 
 .batch-dropzone {
@@ -1499,6 +1734,52 @@ body.page-profile-view .pv-layout {
     pointer-events: none;
 }
 
+.batch-upload-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 12px 0 18px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.batch-file-count {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    color: #3b3b3b;
+}
+
+.batch-upload-btn {
+    min-width: 220px;
+    min-height: 42px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    background: #0f7b43;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background-color 0.16s ease, transform 0.12s ease;
+}
+
+.batch-upload-btn:hover:not(:disabled) {
+    background: #0c6a39;
+}
+
+.batch-upload-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.batch-upload-btn:disabled {
+    background: #9bcda9;
+    color: #f7fff9;
+    cursor: not-allowed;
+}
+
 .batch-upload-note {
     padding: 0;
     p {
@@ -1510,9 +1791,23 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Responsive overrides
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+.batch-upload-results {
+    margin-top: 14px;
+    border-top: 1px solid #e5e5e5;
+    padding-top: 20px;
+}
+
+.batch-upload-results-title {
+    margin: 0 0 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2d1f;
+}
+
+// ----------------------------------------
+// REGISTRAR - Responsive overrides
+// ----------------------------------------
 @include down(991px) {
     .registrar-body .registrar-form-row {
         gap: 12px;
@@ -1553,9 +1848,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Dashboard
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Dashboard
+// ----------------------------------------
 .reg-dashboard {
     padding: 4px 0;
     width: 100%;
@@ -1926,9 +2221,9 @@ body.page-profile-view .pv-layout {
     &.badge-orange { background: #fff3e0; color: #e65100; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Application Process (shared table styles)
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Application Process (shared table styles)
+// ----------------------------------------
 .app-process-page { padding: 4px 0; }
 .app-filter-bar {
     display: flex;
@@ -1981,6 +2276,61 @@ body.page-profile-view .pv-layout {
     outline: none;
     min-width: 100px;
     &:focus { border-color: #006837; }
+}
+
+// ----------------------------------------
+// REGISTRAR - Tagging of Graduates controls
+// ----------------------------------------
+.ga-page .ga-table .tog-input {
+    width: 100%;
+    max-width: 100%;
+    min-height: 32px;
+    border: 1px solid #cfd9d3;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+    color: #2e3b34;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.ga-page .ga-table .tog-input:focus {
+    border-color: #0b8043;
+    box-shadow: 0 0 0 2px rgba(11, 128, 67, 0.12);
+}
+
+.ga-page .ga-table .tog-input-date {
+    min-width: 138px;
+}
+
+.ga-page .ga-table .tog-input-so {
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.ga-page .ga-table .tog-check {
+    width: 16px;
+    height: 16px;
+    accent-color: #0b8043;
+    cursor: pointer;
+}
+
+.ga-page .ga-table .tog-suspend-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2f3d36;
+}
+
+.ga-page .ga-table .tog-save-btn {
+    margin-left: 8px;
+    min-width: 72px;
+    padding: 6px 14px;
+    font-size: 0.76rem;
 }
 .app-filter-select {
     padding: 7px 10px;
@@ -2074,9 +2424,9 @@ body.page-profile-view .pv-layout {
 .app-status-rejected   { color: #c0392b; font-weight: 600; }
 .app-status-inprogress { color: #1a73e8; font-weight: 600; }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Responsive: Dashboard, App Process, Document List
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Responsive: Dashboard, App Process, Document List
+// ----------------------------------------
 @include down(991px) {
     .reg-dash-top {
         grid-template-columns: 1fr;
@@ -2149,9 +2499,9 @@ body.page-profile-view .pv-layout {
     }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Requirements page
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Requirements page
+// ----------------------------------------
 .req-page { padding: 4px 0; }
 
 .req-search-wrap { margin-bottom: 20px; }
@@ -2316,9 +2666,9 @@ body.page-profile-view .pv-layout {
     &:hover { color: #a93226; }
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Shared modals
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Shared modals
+// ----------------------------------------
 .req-modal-overlay {
     position: fixed;
     inset: 0;
@@ -2487,9 +2837,9 @@ select.req-modal-input {
     appearance: auto;
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Approval Status page
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Approval Status page
+// ----------------------------------------
 .apst-page { padding: 4px 0; }
 .apst-topbar {
     display: flex;
@@ -2629,18 +2979,640 @@ select.req-modal-input {
     background: #a93226;
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-// REGISTRAR ΓÇö Application Process: applicant detail panels
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ----------------------------------------
+// REGISTRAR - Application Process: applicant detail panels
+// ----------------------------------------
 
-// ΓöÇ Clickable rows
+// ----------------------------------------
+// REGISTRAR - Help Center
+// ----------------------------------------
+body.page-registrar-help {
+    background: #f4f6f5;
+    height: auto !important;
+    min-height: 100vh;
+
+    .reg-help-shell {
+        width: 100%;
+        max-width: 100%; /* Fully maximize */
+        margin: 0;
+        padding: 16px 3.5% 32px;
+    }
+
+    .plp-footer {
+        margin-top: 20px;
+    }
+
+    .reg-help,
+    .reg-help-topic-page {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        color: #1f2d2a;
+        position: relative; /* Anchor back button */
+    }
+
+    .reg-help-chat-page {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        color: #1f2d2a;
+        position: relative; /* Anchor back button */
+    }
+
+    .reg-help-head {
+        margin-bottom: 20px;
+    }
+
+    .reg-help-top-nav {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .reg-help-top-nav .reg-help-back-btn {
+        position: static;
+        top: auto;
+        left: auto;
+        z-index: auto;
+    }
+
+    .reg-help-title,
+    .reg-help-topic-title {
+        margin: 0;
+        gap: 10px;
+    }
+
+    .reg-help-breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        color: #1f2d2a;
+        line-height: 1;
+    }
+
+    .reg-help-breadcrumb-parent {
+        color: #667570;
+        font-weight: 500;
+    }
+
+    .reg-help-breadcrumb-sep {
+        color: #9ca9a4;
+    }
+
+    .reg-help-breadcrumb-current {
+        color: #0b2b1d;
+        font-weight: 700;
+    }
+
+    .reg-help-title-icon,
+    .reg-help-topic-title-icon {
+        color: #0a813c;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .reg-help-subtitle,
+    .reg-help-topic-subtitle {
+        margin: 8px 0 0;
+        font-size: 1.05rem;
+        color: #4b5a56;
+    }
+
+    .reg-help-search {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        margin: 18px auto 0;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(16, 24, 40, 0.08); /* deeper shadow */
+    }
+
+    .reg-help-search input {
+        width: 100%;
+        border: 1px solid #d4ded9;
+        border-radius: 12px;
+        padding: 12px 40px 12px 16px;
+        font-size: 0.95rem;
+        outline: none;
+        background: #fff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .reg-help-search input:focus {
+        border-color: #0a813c;
+        box-shadow: 0 0 0 4px rgba(10, 129, 60, 0.1);
+    }
+
+    .reg-help-search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #87948f;
+    }
+
+    .reg-help-topic-grid {
+        margin-top: 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .reg-help-topic-card {
+        flex: 1; /* allow flex items to grow equally */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-decoration: none;
+        background: linear-gradient(155deg, #f0f7f3 0%, #e6f0e9 100%);
+        border: 1px solid #d4e2da;
+        border-radius: 16px;
+        padding: 20px 14px;
+        color: #0b7839;
+        box-shadow: 0 8px 24px rgba(10, 129, 60, 0.08); /* pops up */
+        min-height: 160px; /* Make containers smaller so no scrollbar */
+        transition: all 0.25s cubic-bezier(0.1, 0.6, 0.3, 1);
+    }
+
+    .reg-help-topic-card:hover {
+        background: linear-gradient(155deg, #eefbf4 0%, #d8e8de 100%);
+        border-color: #b9d2c5;
+        text-decoration: none;
+        color: #09612c;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(10, 129, 60, 0.12);
+    }
+
+    .reg-help-topic-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-bottom: 2px;
+        box-shadow: 0 4px 16px rgba(10, 129, 60, 0.12); /* Make icon pop up */
+    }
+    
+    .reg-help-topic-icon svg {
+        width: 44px;
+        height: 44px;
+    }
+
+    .reg-help-topic-name {
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.35;
+    }
+
+    .reg-help-bottom {
+        margin-top: 40px;
+        display: flex;
+        gap: 32px;
+        width: 100%;
+    }
+
+    .reg-help-panel {
+        flex: 1; /* evenly split */
+        background: transparent;
+        border-radius: 12px;
+    }
+
+    .reg-help-panel-title,
+    .reg-help-side-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin: 0 0 16px;
+        color: #16241e;
+        letter-spacing: -0.01em;
+        text-align: left; /* Align exactly with FAQ containers */
+    }
+
+    .reg-help-faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .reg-help-faq-item {
+        border: 1px solid #e0ede6;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(16, 24, 40, 0.06);
+        overflow: hidden;
+        transition: box-shadow 0.2s ease;
+    }
+    
+    .reg-help-faq-item:hover {
+        box-shadow: 0 6px 20px rgba(16, 24, 40, 0.09);
+    }
+
+    .reg-help-faq-q {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        font-size: 0.94rem;
+        color: #0b7839;
+        font-weight: 700;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+
+    .reg-help-faq-a {
+        display: none;
+        padding: 0 16px 14px;
+        font-size: 0.9rem;
+        color: #485c54;
+        line-height: 1.45;
+        border-top: 1px solid #edf1ef;
+    }
+
+    .reg-help-faq-item[data-expanded="true"] .reg-help-faq-a {
+        display: block;
+    }
+
+    .reg-help-faq-item[data-expanded="true"] .reg-help-faq-caret {
+        transform: rotate(180deg);
+    }
+
+    .reg-help-faq-caret {
+        color: #7d8b86;
+        transition: transform 0.15s ease;
+    }
+
+    .reg-help-contact-grid {
+        display: flex;
+        gap: 24px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .reg-help-contact-card {
+        flex: 1; /* Stretch properly to maximize width */
+        border: 1px solid #e9f2ee;
+        background: #fff;
+        border-radius: 16px;
+        min-height: 160px; /* Big boxes */
+        padding: 24px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-decoration: none;
+        color: #1a2420;
+        font-weight: 800;
+        font-size: 1.05rem;
+        box-shadow: 0 8px 24px rgba(10, 129, 60, 0.08); /* strong uniform shadow */
+        transition: all 0.25s cubic-bezier(0.1, 0.6, 0.3, 1);
+    }
+    
+    .reg-help-contact-card svg {
+        width: 56px;
+        height: 56px;
+        color: #0b7839;
+        filter: drop-shadow(0 6px 8px rgba(10, 129, 60, 0.18));
+    }
+
+    .reg-help-contact-card:hover {
+        text-decoration: none;
+        color: #08632e;
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(10, 129, 60, 0.12);
+    }
+
+    .reg-help-back-btn,
+    .reg-help-chat-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #dce8e0;
+        background: #fff;
+        color: #3e4e46;
+        text-decoration: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 0.94rem;
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(10, 129, 60, 0.08); /* pops out slightly */
+        transition: all 0.2s ease;
+        position: absolute; /* Push up along the row of back */
+        top: 0;
+        left: 0;
+        z-index: 10;
+    }
+
+    .reg-help-back-btn:hover,
+    .reg-help-chat-back:hover {
+        text-decoration: none;
+        color: #16241e;
+        background: #f7fbf8;
+        border-color: #c9dacd;
+        box-shadow: 0 6px 18px rgba(10, 129, 60, 0.12);
+        transform: translateY(-1px);
+    }
+
+    .reg-help-breadcrumb {
+        font-size: 0.84rem;
+        color: #5b6964;
+        margin-bottom: 10px;
+    }
+
+    .reg-help-breadcrumb span {
+        margin: 0 6px;
+        color: #9da9a4;
+    }
+
+    .reg-help-topic-layout {
+        margin-top: 14px;
+        border-top: 2px solid #97c8af;
+        padding-top: 14px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 24px;
+    }
+
+    .reg-help-steps-card {
+        border: 1px solid #d3ddda;
+        border-radius: 10px;
+        background: #fff;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    }
+
+    .reg-help-step-item {
+        display: flex;
+        gap: 16px;
+        padding: 0 0 32px 0;
+        position: relative;
+    }
+
+    .reg-help-step-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 9px;
+        top: 24px;
+        bottom: 4px;
+        width: 2px;
+        background: #0a813c; /* Connect the steps */
+    }
+
+    .reg-help-step-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .reg-help-step-check {
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: #0a813c;
+        font-size: 0.76rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .reg-help-step-title {
+        font-size: 1.04rem;
+        font-weight: 700;
+        color: #27322d;
+    }
+
+    .reg-help-step-desc {
+        font-size: 0.86rem;
+        color: #acb9b4; /* Muted color */
+        margin-top: 4px;
+    }
+
+    .reg-help-side-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .reg-help-topic-layout .reg-help-side-title {
+        text-align: center;
+        margin-top: 6px;
+    }
+
+    .reg-help-faq-list-topic {
+        margin-bottom: 24px;
+    }
+
+    .reg-help-contact-inline {
+        border: 1px solid #dce8e0;
+        background: #ebf2ef;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .reg-help-contact-inline-title {
+        text-align: center;
+        font-size: 0.95rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: #1a2622;
+    }
+
+    .reg-help-contact-inline-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px;
+        gap: 6px;
+    }
+
+    .reg-help-contact-inline-actions a {
+        color: #2b3934;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 8px;
+        border-radius: 6px;
+        transition: background 0.15s ease;
+    }
+
+    .reg-help-contact-icon {
+        color: #0a813c;
+        margin-right: 6px;
+        flex-shrink: 0;
+    }
+
+    .reg-help-contact-inline-actions a:hover {
+        color: #0a813c;
+        background: #f4f8f6;
+        text-decoration: none;
+    }
+
+    .reg-help-chat-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .reg-help-chat-head h2 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    .reg-help-chat-window {
+        border: 1px solid #d5ddda;
+        border-radius: 10px;
+        background: #f2f6f4;
+        height: calc(100vh - 470px); /* Slightly smaller so footer stays visible */
+        min-height: 150px;
+        overflow-y: auto; /* The chat scroll wheel */
+        padding: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05); /* add depth */
+    }
+
+    .reg-help-chat-row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .reg-help-chat-row.user {
+        justify-content: flex-end;
+    }
+
+    .reg-help-chat-bubble {
+        max-width: 80%;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 1rem;
+        line-height: 1.45;
+        box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+
+    .reg-help-chat-row.bot .reg-help-chat-bubble {
+        background: #0a813c;
+        color: #fff;
+    }
+
+    .reg-help-chat-row.user .reg-help-chat-bubble {
+        background: #dce9e2;
+        color: #1e2c27;
+    }
+
+    .reg-help-chat-input-wrap {
+        margin-top: 12px;
+        border: 1px solid #d5ddda;
+        border-radius: 12px;
+        background: #edf3ef;
+        padding: 12px;
+        display: flex;
+        gap: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .reg-help-chat-input-wrap input {
+        flex: 1;
+        border: 1px solid #ccd7d2;
+        border-radius: 8px;
+        padding: 14px 16px;
+        font-size: 1.05rem;
+        outline: none;
+    }
+
+    .reg-help-chat-input-wrap button {
+        border: 0;
+        background: #0a813c;
+        color: #fff;
+        border-radius: 8px;
+        min-width: 110px;
+        padding: 14px 28px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .reg-help-chat-input-wrap button:hover {
+        background: #086930;
+    }
+}
+
+@include down(1000px) {
+    body.page-registrar-help .reg-help-bottom {
+        flex-direction: column;
+    }
+
+    body.page-registrar-help .reg-help-contact-grid {
+        flex-direction: column;
+    }
+}
+
+@include down(768px) {
+    body.page-registrar-help .reg-help-topic-layout {
+        grid-template-columns: 1fr;
+    }
+
+    body.page-registrar-help .reg-help-breadcrumb-nav {
+        font-size: 0.9rem;
+    }
+}
+
+@include down(768px) {
+    body.page-registrar-help .reg-help-shell {
+        padding: 10px 12px 4px;
+    }
+
+    body.page-registrar-help .reg-help-title,
+    body.page-registrar-help .reg-help-topic-title,
+    body.page-registrar-help .reg-help-chat-head h2 {
+        font-size: 1.45rem;
+    }
+
+    body.page-registrar-help .reg-help-topic-grid {
+        grid-template-columns: repeat(2, minmax(132px, 1fr));
+    }
+
+    body.page-registrar-help .reg-help-contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.page-registrar-help .reg-help-contact-inline-actions {
+        grid-template-columns: 1fr;
+    }
+
+    body.page-registrar-help .reg-help-chat-bubble {
+        max-width: 88%;
+    }
+}
+
+// - Clickable rows
 .app-table tbody tr {
     cursor: pointer;
     transition: background 0.12s;
     &:hover { background-color: #f0faf4; }
 }
 
-// ΓöÇ Applicant detail view
+// - Applicant detail view
 #applicantDetailView { display: none; }
 
 .appl-detail-header {
@@ -2675,11 +3647,11 @@ select.req-modal-input {
     &.wide input[type="text"] { min-width: 320px; }
 }
 
-// ΓöÇ Panels
+// - Panels
 .applicant-panel { display: none; }
 .applicant-panel.active { display: block; }
 
-// ΓöÇ Under development placeholder
+// - Under development placeholder
 .under-dev-notice {
     display: flex;
     align-items: center;
@@ -2978,7 +3950,7 @@ select.req-modal-input {
     }
 }
 
-// ΓöÇ Schedule of Exam panel
+// - Schedule of Exam panel
 .sched-exam-card {
     background: #fff;
     border: 1px solid #e0e0e0;
@@ -3158,6 +4130,273 @@ select.req-modal-input {
     }
 }
 
+// Final PV overrides: ensure legacy duplicate rules never re-enable heavy effects.
+body.page-profile-view {
+    .content-footer-wrap {
+        background-image: linear-gradient(rgba(0, 104, 55, 0.74), rgba(0, 104, 55, 0.74)), url('../img/schoolbg.png') !important;
+        background-size: cover !important;
+        background-position: center top !important;
+    }
+
+    .pv-page {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .pv-sidebar {
+        width: 100%;
+        max-width: 320px;
+        min-width: 260px;
+        background: rgba(255, 255, 255, 0.92) !important;
+        border: 1px solid rgba(255, 255, 255, 0.72) !important;
+    }
+
+    .pv-body {
+        background: rgba(0, 88, 47, 0.30) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 10px;
+        padding: 10px 12px 12px;
+    }
+
+    .pv-panel-card {
+        background: rgba(0, 104, 55, 0.46) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .pv-body-title {
+        margin: 4px 0 8px;
+        font-size: 0.94rem;
+    }
+
+    .pv-tabs {
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .pv-tab {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.42);
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .pv-tab.active {
+        background: #f2f6f4;
+        border-color: #f2f6f4;
+        color: #1d262c;
+    }
+
+    .pv-sidebar-header {
+        width: 100%;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .pv-avatar-wrap {
+        align-self: center !important;
+        margin: 0 auto 12px !important;
+    }
+
+    .pv-sidebar-info {
+        width: 100%;
+        text-align: center !important;
+    }
+
+    .pv-name,
+    .pv-student-id {
+        text-align: center !important;
+    }
+
+    .pv-meta-row {
+        display: grid !important;
+        grid-template-columns: minmax(118px, 46%) minmax(0, 54%) !important;
+        column-gap: 12px !important;
+        align-items: center !important;
+    }
+
+    .pv-meta-label {
+        font-size: 0.64rem;
+        letter-spacing: 0.05em;
+    }
+
+    .pv-meta-value {
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.24;
+        text-align: right !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pv-label,
+    .pv-sep,
+    .pv-value {
+        font-size: 0.83rem;
+        line-height: 1.22;
+    }
+
+    .pv-label {
+        font-weight: 700;
+        color: rgba(246, 249, 247, 0.95);
+    }
+
+    .pv-value {
+        font-weight: 600;
+    }
+
+    .pv-meta-department,
+    .pv-meta-email,
+    .pv-meta-course {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+}
+
+body.faculty-body.page-profile-view {
+    .pv-meta-status,
+    .pv-meta-department,
+    .pv-meta-position {
+        color: #0a813c;
+        font-weight: 700;
+    }
+
+    .pv-panel-card--compact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+        row-gap: 0;
+    }
+
+    .pv-panel-card--compact-grid .pv-row {
+        margin: 0;
+    }
+
+    .pv-panel-card--split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+    }
+
+    .pv-panel-card--split .pv-grid-col {
+        min-width: 0;
+    }
+}
+
+body.student-body.page-profile-view:not(.faculty-body) {
+    .pv-meta-value,
+    .pv-meta-email,
+    .pv-meta-course {
+        color: #0a813c !important;
+        font-weight: 700;
+    }
+}
+
+@include down(1200px) {
+    body.page-profile-view .pv-sidebar {
+        max-width: 100%;
+        min-width: 0;
+    }
+}
+
+@include down(992px) {
+    body.page-profile-view .pv-meta-row {
+        grid-template-columns: minmax(88px, 44%) minmax(0, 56%) !important;
+        column-gap: 10px !important;
+    }
+
+    body.page-profile-view .pv-row {
+        grid-template-columns: 132px 12px minmax(0, 1fr) !important;
+        gap: 6px;
+    }
+
+    body.page-profile-view .pv-label,
+    body.page-profile-view .pv-sep,
+    body.page-profile-view .pv-value {
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
+}
+
+@include down(576px) {
+    body.page-profile-view .pv-avatar-wrap {
+        width: 88px;
+        height: 88px;
+    }
+
+    body.page-profile-view .pv-meta-row {
+        grid-template-columns: minmax(82px, 46%) minmax(0, 54%) !important;
+    }
+
+    body.page-profile-view .pv-row {
+        grid-template-columns: 118px 10px minmax(0, 1fr) !important;
+        gap: 5px;
+    }
+
+    body.page-profile-view .pv-sep {
+        display: inline !important;
+    }
+
+    body.page-profile-view .pv-label,
+    body.page-profile-view .pv-value {
+        font-size: 0.76rem;
+    }
+}
+
+@include down(1100px) {
+    body.faculty-body.page-profile-view .pv-panel-card--compact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.faculty-body.page-profile-view .pv-panel-card--split {
+        grid-template-columns: 1fr;
+    }
+}
+
+body.faculty-body.page-profile-view {
+    .pv-edu-item {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pv-edu-item-head {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .pv-edu-item--empty {
+        padding: 10px;
+    }
+
+    .pv-row--edu .pv-label {
+        min-width: 160px;
+        max-width: 160px;
+    }
+
+    .pv-row--edu .pv-value {
+        font-weight: 600;
+    }
+}
+
+@include down(768px) {
+    body.faculty-body.page-profile-view .pv-row--edu .pv-label {
+        min-width: 125px;
+        max-width: 125px;
+    }
+}
+
 .applicant-correspondence-date {
     font-size: 13px;
     color: #4d4d4d;
@@ -3242,62 +4481,34 @@ select.req-modal-input {
     }
 }
 
-// ΓöÇ Applicant sidebar
+// Applicant sidebar
 #applicantSidebar { display: none; }
+
 .appl-sidebar-back {
     display: flex;
     align-items: center;
-    .applicant-correspondence-divider {
-        height: 1px;
-        background: #0a813c;
-        margin: 12px 0 16px;
-    }
-
     gap: 12px;
-        padding: 0 2px 2px;
-    }
+    padding: 10px 12px;
     font-size: 0.95rem;
     font-weight: 600;
-        margin: 0 0 18px;
+    margin: 0 0 18px;
     background: rgba(255, 255, 255, 0.15);
     border: none;
     width: 100%;
     text-align: left;
-    .applicant-ref-chip {
     letter-spacing: 0.03em;
+    color: #fff;
     text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+
     &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
     svg { width: 20px; height: 20px; flex-shrink: 0; }
 }
 
-        background: #f4faf6;
-// STUDENT ΓÇö Profile edit page layout overrides
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-
-        .dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #0a813c;
-            position: relative;
-
-            &:before {
-                content: '';
-                position: absolute;
-                left: 4px;
-                top: 2px;
-                width: 4px;
-                height: 7px;
-                border: solid #fff;
-                border-width: 0 2px 2px 0;
-                transform: rotate(45deg);
-            }
-        }
-    }
-body.page-profile-edit {
-.pf-table-controls .pf-entries-control span,
-        margin-top: 10px;
-.sc-table-head .pf-entries-control.sc-show-entry span {
+// STUDENT - Profile edit page layout overrides
+body.page-profile-edit .pf-table-controls .pf-entries-control span,
+body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     margin: 0;
     white-space: nowrap;
 }

@@ -13,6 +13,7 @@ class GraduateTagging extends Model
         'so_number',
         'so_date',
         'suspend_account',
+        'suspend_remarks',
     ];
 
     protected $casts = [

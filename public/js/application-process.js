@@ -20,6 +20,11 @@
     var approvalStatusUrlTemplate = appProcessPage.getAttribute('data-approval-status-url-template') || '';
     var formUrlTemplate = appProcessPage.getAttribute('data-form-url-template') || '';
 
+    var applicationFilterForm = document.getElementById('applicationFilterForm');
+    var appSearchInput = document.getElementById('appSearch');
+    var filterSubmitTimer = null;
+    var filterIsSubmitting = false;
+
     var detailApplicantPk = document.getElementById('detailApplicantPk');
     var detailApplicantId = document.getElementById('detailApplicantId');
     var detailApplicantName = document.getElementById('detailApplicantName');
@@ -49,6 +54,64 @@
 
     var selectedApplicantRow = null;
 
+    function submitFilterForm() {
+        if (!applicationFilterForm || filterIsSubmitting) {
+            return;
+        }
+
+        filterIsSubmitting = true;
+
+        var pageInput = applicationFilterForm.querySelector('input[name="page"]');
+        if (pageInput) {
+            pageInput.value = '1';
+        }
+
+        applicationFilterForm.submit();
+    }
+
+    function bindAutoFilterForm() {
+        if (!applicationFilterForm) {
+            return;
+        }
+
+        applicationFilterForm.querySelectorAll('select, input[type="date"]').forEach(function (field) {
+            field.addEventListener('change', function () {
+                if (filterSubmitTimer) {
+                    clearTimeout(filterSubmitTimer);
+                    filterSubmitTimer = null;
+                }
+                submitFilterForm();
+            });
+        });
+
+        if (!appSearchInput) {
+            return;
+        }
+
+        appSearchInput.addEventListener('input', function () {
+            if (filterSubmitTimer) {
+                clearTimeout(filterSubmitTimer);
+            }
+
+            filterSubmitTimer = setTimeout(function () {
+                submitFilterForm();
+            }, 550);
+        });
+
+        appSearchInput.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter') {
+                return;
+            }
+
+            event.preventDefault();
+            if (filterSubmitTimer) {
+                clearTimeout(filterSubmitTimer);
+                filterSubmitTimer = null;
+            }
+            submitFilterForm();
+        });
+    }
+
     function getUrlFromTemplate(template, applicantPk) {
         if (!template || !applicantPk) {
             return '';
@@ -63,7 +126,13 @@
         }
 
         node.textContent = message || '';
-        node.style.color = isError ? '#b42318' : '#14532d';
+        node.classList.remove('is-error', 'is-success');
+
+        if (!message) {
+            return;
+        }
+
+        node.classList.add(isError ? 'is-error' : 'is-success');
     }
 
     function normalizeApplicationStatus(status) {
@@ -193,23 +262,23 @@
         var score = String(row.getAttribute('data-exam-score') || '').trim();
 
         if (!examDate) {
-            examResultCard.style.display = 'none';
-            examResultNoData.style.display = 'block';
+            examResultCard.classList.add('is-hidden');
+            examResultNoData.classList.remove('is-hidden');
             examResultNoData.textContent = 'No exam result is available yet.';
             return;
         }
 
-        examResultNoData.style.display = 'none';
-        examResultCard.style.display = 'block';
+        examResultNoData.classList.add('is-hidden');
+        examResultCard.classList.remove('is-hidden');
 
         examResultBadge.className = 'result-status-badge result-' + status.toLowerCase();
         examResultBadge.textContent = status.toUpperCase();
 
         if (score !== '') {
-            examResultScoreLine.style.display = 'block';
+            examResultScoreLine.classList.remove('is-hidden');
             examResultScoreText.textContent = score;
         } else {
-            examResultScoreLine.style.display = 'none';
+            examResultScoreLine.classList.add('is-hidden');
             examResultScoreText.textContent = '';
         }
 
@@ -355,6 +424,8 @@
             openApplicant(this);
         });
     });
+
+    bindAutoFilterForm();
 
     initDocumentsSubmittedPanel();
     initApprovalPanel();

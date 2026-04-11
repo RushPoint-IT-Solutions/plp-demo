@@ -2,6 +2,7 @@
 
 @section('title', 'Application To Cross-Enroll - PLP')
 @section('page-title', 'FORMS')
+@section('body-class', 'page-student-forms')
 
 @section('content')
 @php
@@ -15,7 +16,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form ce-form" style="margin-top: 2in;">
+        <div class="cor-container acd-form ce-form">
             <div class="ce-body">
                 <p style="margin: 0 0 8px; font-size: 0.72rem; font-weight: 700; text-align: left;">PLPRO FORM NO. 1G Revised 2023</p>
                 <h2>APPLICATION TO CROSS-ENROLL</h2>

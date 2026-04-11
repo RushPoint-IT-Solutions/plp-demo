@@ -2,6 +2,7 @@
 
 @section('title', 'Application For Completion Of Grade - PLP')
 @section('page-title', 'FORMS')
+@section('body-class', 'page-student-forms')
 
 @section('content')
 @php
@@ -14,7 +15,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form cog-form" style="margin-top: 2in;">
+        <div class="cor-container acd-form cog-form">
             <div class="cog-body comp-body">
                 <p class="cog-form-no-header" style="text-align: left; margin: 0 0 8px;">PLPRO FORM NO. 3C</p>
                 <div class="comp-date-wrap">

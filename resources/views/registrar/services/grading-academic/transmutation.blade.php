@@ -6,91 +6,26 @@
 
 @section('content')
 <div class="pf-page">
-    <div class="ga-page">
-        <style>
-            .ga-trans-table th:nth-child(8),
-            .ga-trans-table td:nth-child(8) {
-                text-align: center !important;
-                padding-left: 0 !important;
-            }
-
-            .ga-trans-table td.ga-state-pass {
-                color: #28a745 !important;
-                font-weight: bold !important;
-            }
-
-            .ga-trans-table td.ga-state-fail {
-                color: #dc3545 !important;
-                font-weight: bold !important;
-            }
-
-            .tm-modal-grid {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 16px;
-                margin-top: 15px;
-            }
-
-            .tm-modal-grid-3 {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 16px;
-                margin-top: 15px;
-            }
-
-            .tm-modal-initial-group {
-                grid-column: span 2;
-                background: #f8f9fa;
-                padding: 12px 16px;
-                border-radius: 6px;
-                border: 1px solid #e2e8f0;
-            }
-
-            .tm-modal-initial-group .req-modal-label {
-                margin-bottom: 12px;
-                display: block;
-                color: #555;
-            }
-
-            .tm-modal-initial-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-            }
-
-            .tm-modal-grid .tm-modal-remarks {
-                margin-left: 0;
-            }
-
-            @media (max-width: 720px) {
-                .tm-modal-grid,
-                .tm-modal-grid-3,
-                .tm-modal-initial-grid {
-                    grid-template-columns: 1fr;
-                }
-                .tm-modal-initial-group {
-                    grid-column: 1 / -1;
-                }
-
-                .ga-trans-table th:nth-child(8),
-                .ga-trans-table td:nth-child(8) {
-                    padding-left: 12px;
-                }
-            }
-        </style>
-        <div class="ga-toolbar">
-            <div class="pf-search-wrap ga-search-wrap">
-                <span class="pf-search-icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                </span>
-                <input type="text" class="pf-search-input" id="tmSearchInput" placeholder="Search SY, Program, Code...">
-            </div>
+    <div class="ga-page" id="tmPage">
+        <form method="GET" action="{{ route('registrar.services.grading-academic.transmutation') }}" class="ga-toolbar" id="tmFilterForm">
+            @include('registrar.components.search-bar', [
+                'id' => 'tmSearchInput',
+                'name' => 'q',
+                'value' => $search,
+                'placeholder' => 'Search SY, Term, Program, Code, Remarks...',
+                'containerClass' => 'ga-search-wrap',
+                'inputClass' => 'js-tm-auto-submit-search',
+                'inputAttributes' => [
+                    'data-tm-auto-submit-search' => '1',
+                ],
+            ])
             <button type="button" class="pf-btn-new ga-btn ga-btn-primary" data-ga-modal-open="gaTransmutationNewModal">+ Add Transmutation</button>
-        </div>
+        </form>
 
         <div class="ga-table-wrap app-table-wrap">
-            <table class="ga-table ga-table-compact app-table ga-trans-table" id="tmTable">
+            <table class="ga-table ga-table-compact app-table ga-trans-table" id="tmTable" data-no-auto-pager="1">
                     <colgroup>
+                        <col class="ga-trans-col-action">
                         <col class="ga-trans-col-sy">
                         <col class="ga-trans-col-term">
                         <col class="ga-trans-col-program">
@@ -98,51 +33,56 @@
                         <col class="ga-trans-col-initial">
                         <col class="ga-trans-col-grade">
                         <col class="ga-trans-col-code">
-                        <col class="ga-trans-col-remarks" style="width: 140px;">
-                        <col class="ga-trans-col-action">
+                        <col class="ga-trans-col-remarks">
                     </colgroup>
                     <thead>
                         <tr class="ga-trans-head-top">
-                            <th rowspan="2" style="text-align: center;">SY</th>
-                            <th rowspan="2" style="text-align: center;">Term</th>
-                            <th rowspan="2" style="text-align: center;">Program</th>
-                            <th colspan="2" style="text-align: center;">Initial Grade</th>
-                            <th rowspan="2" style="text-align: center;">Transmuted Grade</th>
-                            <th rowspan="2" style="text-align: center;">Code</th>
-                            <th rowspan="2" style="text-align: center;">Remarks</th>
-                            <th rowspan="2" style="text-align: center;">Action</th>
+                            <th rowspan="2">Action</th>
+                            <th rowspan="2">SY</th>
+                            <th rowspan="2">Term</th>
+                            <th rowspan="2">Program</th>
+                            <th colspan="2">Initial Grade</th>
+                            <th rowspan="2">Transmuted Grade</th>
+                            <th rowspan="2">Code</th>
+                            <th rowspan="2">Remarks</th>
                         </tr>
                         <tr class="ga-trans-head-sub">
-                            <th style="text-align: center;">From</th>
-                            <th style="text-align: center;">To</th>
+                            <th>From</th>
+                            <th>To</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($transmutationRules as $index => $rule)
-                        <tr data-transmutation-rule-id="{{ $rule->id }}">
-                            <td>{{ $rule->school_year }}</td>
-                            <td>{{ $rule->term }}</td>
-                            <td>{{ $rule->program }}</td>
-                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_from, 2) }}</span></td>
-                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_to, 2) }}</span></td>
-                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->transmuted_grade, 2) }}</span></td>
-                            <td>{{ $rule->code }}</td>
-                            <td class="{{ (stripos($rule->remarks, 'fail') !== false || strtoupper($rule->code) === 'F') ? 'ga-state-fail' : 'ga-state-pass' }}">{{ $rule->remarks }}</td>
+                        <tr
+                            data-transmutation-rule-id="{{ $rule->id }}"
+                            data-academic-term-id="{{ $rule->academic_term_id }}"
+                            data-course-id="{{ $rule->course_id }}"
+                            data-school-year="{{ $rule->resolved_school_year }}"
+                            data-term="{{ $rule->resolved_term }}"
+                        >
                             <td>
-                                <div class="apst-action-btn" data-tm-menu-toggle="tmMenu{{ $index }}" aria-label="Open row actions" title="Actions">
+                                <div class="apst-action-btn" data-tm-menu-toggle="tmMenu{{ ($transmutationRules->firstItem() ?? 1) + $index }}" aria-label="Open row actions" title="Actions">
                                     <span></span><span></span><span></span>
                                 </div>
-                                <div class="apst-dropdown" id="tmMenu{{ $index }}">
-                                    <button type="button" data-ga-open-action="edit" data-ga-item="{{ $rule->program }} {{ $rule->initial_from }}-{{ $rule->initial_to }}" data-ga-id="{{ $rule->id }}">
+                                <div class="apst-dropdown" id="tmMenu{{ ($transmutationRules->firstItem() ?? 1) + $index }}">
+                                    <button type="button" data-ga-open-action="edit" data-ga-item="{{ ($rule->resolved_program !== '' ? $rule->resolved_program : 'Program') . ' ' . number_format((float) $rule->initial_from, 2) . '-' . number_format((float) $rule->initial_to, 2) }}" data-ga-id="{{ $rule->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         Edit
                                     </button>
-                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="{{ $rule->program }} {{ $rule->initial_from }}-{{ $rule->initial_to }}" data-ga-id="{{ $rule->id }}">
+                                    <button type="button" class="apst-del-btn" data-ga-open-action="delete" data-ga-item="{{ ($rule->resolved_program !== '' ? $rule->resolved_program : 'Program') . ' ' . number_format((float) $rule->initial_from, 2) . '-' . number_format((float) $rule->initial_to, 2) }}" data-ga-id="{{ $rule->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                         Delete
                                     </button>
                                 </div>
                             </td>
+                            <td>{{ $rule->resolved_school_year !== '' ? $rule->resolved_school_year : 'N/A' }}</td>
+                            <td>{{ $rule->resolved_term !== '' ? $rule->resolved_term : 'N/A' }}</td>
+                            <td>{{ $rule->resolved_program !== '' ? $rule->resolved_program : 'N/A' }}</td>
+                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_from, 2) }}</span></td>
+                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_to, 2) }}</span></td>
+                            <td><span class="ga-trans-chip">{{ number_format((float) $rule->transmuted_grade, 2) }}</span></td>
+                            <td>{{ strtoupper((string) $rule->code) }}</td>
+                            <td class="{{ (stripos((string) $rule->remarks, 'fail') !== false || strtoupper((string) $rule->code) === 'F') ? 'ga-state-fail' : 'ga-state-pass' }}">{{ $rule->remarks }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="9" class="text-center text-muted py-4">No transmutation rules found.</td></tr>
@@ -151,87 +91,151 @@
             </table>
         </div>
 
-        <div class="req-modal-overlay" id="gaTransmutationNewModal" style="display:none;">
-            <div class="req-modal-box" style="max-width:640px; padding: 25px;">
-                <h3 class="req-modal-title" id="gaTransmutationNewTitle" style="margin-bottom: 20px;">ADD TRANSMUTATION RULE</h3>
+        <div class="ga-table-meta">
+            <div>
+                Showing {{ $transmutationRules->firstItem() ?? 0 }}-{{ $transmutationRules->lastItem() ?? 0 }} of {{ $transmutationRules->total() }}
+            </div>
+        </div>
+
+        <div class="app-table-pager">
+            {{ $transmutationRules->links() }}
+        </div>
+
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationNewModal">
+            <div class="req-modal-box ga-trans-modal-box">
+                <h3 class="req-modal-title ga-trans-modal-title" id="gaTransmutationNewTitle">ADD TRANSMUTATION RULE</h3>
                 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <div class="tm-modal-grid" style="margin-top: 0;">
-                        <div class="req-modal-field-group"><label class="req-modal-label">SY</label><input class="req-modal-input" id="tmNewSy" placeholder="2025-2026"></div>
-                        <div class="req-modal-field-group"><label class="req-modal-label">TERM</label><input class="req-modal-input" id="tmNewTerm" placeholder="First"></div>
-                        
-                        <div class="req-modal-field-group" style="grid-column: 1 / -1;"><label class="req-modal-label">PROGRAM</label><input class="req-modal-input" id="tmNewProgram" placeholder="BSIT"></div>
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid">
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">SY</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmNewSy',
+                                'name' => 'tmNewSy',
+                                'options' => $schoolYearOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select school year',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">TERM</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmNewTerm',
+                                'name' => 'tmNewTerm',
+                                'options' => $termOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select term',
+                            ])
+                        </div>
+
+                        <div class="req-modal-field-group tm-modal-field-group--full">
+                            <label class="req-modal-label">PROGRAM</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmNewProgram',
+                                'name' => 'tmNewProgram',
+                                'options' => $programOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select program',
+                            ])
+                        </div>
                     </div>
                 </div>
 
-                <div style="background: #f8fbf9; border: 1px solid #cce3d6; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <label class="req-modal-label" style="text-align: center; display: block; margin-bottom: 12px; color: #006837;">INITIAL GRADE</label>
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--accent">
+                    <label class="req-modal-label ga-trans-modal-panel__label">INITIAL GRADE</label>
                     <div class="tm-modal-initial-grid">
                         <div class="req-modal-field-group"><label class="req-modal-label">FROM</label><input class="req-modal-input" id="tmNewFrom" placeholder="75.00"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmNewTo" placeholder="79.99"></div>
                     </div>
                 </div>
 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
-                    <div class="tm-modal-grid-3" style="margin-top: 0;">
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid-3">
                         <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED</label><input class="req-modal-input" id="tmNewGrade" placeholder="3.00"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmNewCode" placeholder="P"></div>
                         <div class="req-modal-field-group tm-modal-remarks"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmNewRemarks" placeholder="Passed"></div>
                     </div>
                 </div>
 
-                <div class="req-modal-actions" style="margin-top: 25px; gap: 12px;">
-                    <button type="button" class="req-btn-cancel" data-ga-close style="padding: 10px 20px;">Cancel</button>
-                    <button type="button" class="req-btn-save" data-tm-save-new style="padding: 10px 24px; background: #006837;">Save</button>
+                <div class="req-modal-actions ga-trans-modal-actions">
+                    <button type="button" class="req-btn-cancel ga-trans-btn-cancel" data-ga-close>Cancel</button>
+                    <button type="button" class="req-btn-save ga-trans-btn-save" data-tm-save-new>Save</button>
                 </div>
             </div>
         </div>
 
-        <div class="req-modal-overlay" id="gaTransmutationActionModal" style="display:none;">
-            <div class="req-modal-box" style="max-width:640px; padding: 25px;">
-                <h3 class="req-modal-title" id="gaTransmutationActionTitle" style="margin-bottom: 20px;">EDIT TRANSMUTATION RULE</h3>
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationActionModal">
+            <div class="req-modal-box ga-trans-modal-box">
+                <h3 class="req-modal-title ga-trans-modal-title" id="gaTransmutationActionTitle">EDIT TRANSMUTATION RULE</h3>
                 
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <div class="tm-modal-grid" style="margin-top: 0;">
-                        <div class="req-modal-field-group"><label class="req-modal-label">SY</label><input class="req-modal-input" id="tmEditSy"></div>
-                        <div class="req-modal-field-group"><label class="req-modal-label">TERM</label><input class="req-modal-input" id="tmEditTerm"></div>
-                        
-                        <div class="req-modal-field-group" style="grid-column: 1 / -1;"><label class="req-modal-label">PROGRAM</label><input class="req-modal-input" id="tmEditProgram"></div>
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid">
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">SY</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmEditSy',
+                                'name' => 'tmEditSy',
+                                'options' => $schoolYearOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select school year',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">TERM</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmEditTerm',
+                                'name' => 'tmEditTerm',
+                                'options' => $termOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select term',
+                            ])
+                        </div>
+
+                        <div class="req-modal-field-group tm-modal-field-group--full">
+                            <label class="req-modal-label">PROGRAM</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmEditProgram',
+                                'name' => 'tmEditProgram',
+                                'options' => $programOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select program',
+                            ])
+                        </div>
                     </div>
                 </div>
                     
-                <div style="background: #f8fbf9; border: 1px solid #cce3d6; border-radius: 8px; padding: 15px; margin-bottom: 16px;">
-                    <label class="req-modal-label" style="text-align: center; display: block; margin-bottom: 12px; color: #006837;">INITIAL GRADE</label>
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--accent">
+                    <label class="req-modal-label ga-trans-modal-panel__label">INITIAL GRADE</label>
                     <div class="tm-modal-initial-grid">
                         <div class="req-modal-field-group"><label class="req-modal-label">FROM</label><input class="req-modal-input" id="tmEditFrom"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">TO</label><input class="req-modal-input" id="tmEditTo"></div>
                     </div>
                 </div>
                     
-                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
-                    <div class="tm-modal-grid-3" style="margin-top: 0;">
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <div class="tm-modal-grid-3">
                         <div class="req-modal-field-group"><label class="req-modal-label">TRANSMUTED</label><input class="req-modal-input" id="tmEditGrade"></div>
                         <div class="req-modal-field-group"><label class="req-modal-label">CODE</label><input class="req-modal-input" id="tmEditCode"></div>
                         <div class="req-modal-field-group tm-modal-remarks"><label class="req-modal-label">REMARKS</label><input class="req-modal-input" id="tmEditRemarks"></div>
                     </div>
                 </div>
                 
-                <div class="req-modal-actions" style="margin-top: 25px; gap: 12px;">
-                    <button type="button" class="req-btn-cancel" data-ga-close style="padding: 10px 20px;">Cancel</button>
-                    <button type="button" class="req-btn-save" data-ga-confirm-action style="padding: 10px 24px; background: #006837;">Save</button>
+                <div class="req-modal-actions ga-trans-modal-actions">
+                    <button type="button" class="req-btn-cancel ga-trans-btn-cancel" data-ga-close>Cancel</button>
+                    <button type="button" class="req-btn-save ga-trans-btn-save" data-ga-confirm-action>Save</button>
                 </div>
             </div>
         </div>
 
-        <div class="req-modal-overlay" id="gaTransmutationDeleteModal" style="display:none;">
-            <div class="req-modal-box req-modal-success" style="min-width:300px;">
-                <h3 class="req-modal-title" style="color:#c0392b;" id="gaTransmutationDeleteTitle">DELETE TRANSMUTATION RULE</h3>
-                <p id="gaTransmutationDeleteText" style="font-size:0.88rem; color:#444; margin-bottom:20px; text-align:center;">
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationDeleteModal">
+            <div class="req-modal-box req-modal-success ga-trans-modal-box ga-trans-modal-box--delete">
+                <h3 class="req-modal-title ga-trans-modal-title ga-trans-modal-title--delete" id="gaTransmutationDeleteTitle">DELETE TRANSMUTATION RULE</h3>
+                <p id="gaTransmutationDeleteText" class="ga-trans-delete-text">
                     Are you sure you want to delete this transmutation rule?
                 </p>
-                <div class="req-modal-actions" style="justify-content:center;">
+                <div class="req-modal-actions ga-trans-modal-actions ga-trans-modal-actions--center">
                     <button class="req-btn-cancel" type="button" data-ga-close-delete>Cancel</button>
-                    <button class="req-btn-save" type="button" style="background:#c0392b;" data-ga-confirm-delete>Delete</button>
+                    <button class="req-btn-save ga-trans-btn-save ga-trans-btn-save--danger" type="button" data-ga-confirm-delete>Delete</button>
                 </div>
             </div>
         </div>
@@ -240,12 +244,14 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var page = document.querySelector('.ga-page');
+    var page = document.getElementById('tmPage');
     if (!page) return;
 
-    var table = document.getElementById('tmTable');
+    var filterForm = document.getElementById('tmFilterForm');
+    var searchInput = filterForm ? filterForm.querySelector('[data-tm-auto-submit-search]') : null;
     var actionModal = document.getElementById('gaTransmutationActionModal');
     var deleteModal = document.getElementById('gaTransmutationDeleteModal');
     var actionTitle = document.getElementById('gaTransmutationActionTitle');
@@ -254,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var tmStoreUrl = @json(route('registrar.services.grading-academic.transmutation.store'));
     var tmUpdateUrlTemplate = @json(route('registrar.services.grading-academic.transmutation.update', ['transmutationRule' => '__ID__']));
     var tmDestroyUrlTemplate = @json(route('registrar.services.grading-academic.transmutation.destroy', ['transmutationRule' => '__ID__']));
-    var nextMenuIndex = page.querySelectorAll('[data-tm-menu-toggle]').length;
     var activeRow = null;
     var activeAction = 'edit';
 
@@ -276,8 +281,31 @@ document.addEventListener('DOMContentLoaded', function () {
     var tmEditCode = document.getElementById('tmEditCode');
     var tmEditRemarks = document.getElementById('tmEditRemarks');
 
+    function debounce(fn, delay) {
+        var timer = null;
+
+        return function () {
+            var args = arguments;
+
+            if (timer) {
+                clearTimeout(timer);
+            }
+
+            timer = setTimeout(function () {
+                fn.apply(null, args);
+            }, delay);
+        };
+    }
+
     function cleanNumber(value) {
         return (value || '').trim();
+    }
+
+    function setSelectValue(selectElement, value) {
+        if (!selectElement) return;
+
+        selectElement.value = value || '';
+        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function tmBuildUrl(template, id) {
@@ -312,20 +340,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function setChip(cell, value) {
-        cell.innerHTML = '<span class="ga-trans-chip">' + value + '</span>';
-    }
-
     function fillEditForm(row) {
         if (!row || row.cells.length < 9) return;
-        tmEditSy.value = (row.cells[0].textContent || '').trim();
-        tmEditTerm.value = (row.cells[1].textContent || '').trim();
-        tmEditProgram.value = (row.cells[2].textContent || '').trim();
-        tmEditFrom.value = (row.cells[3].textContent || '').trim();
-        tmEditTo.value = (row.cells[4].textContent || '').trim();
-        tmEditGrade.value = (row.cells[5].textContent || '').trim();
-        tmEditCode.value = (row.cells[6].textContent || '').trim();
-        tmEditRemarks.value = (row.cells[7].textContent || '').trim();
+        setSelectValue(tmEditSy, (row.getAttribute('data-school-year') || '').trim());
+        setSelectValue(tmEditTerm, (row.getAttribute('data-term') || '').trim());
+        setSelectValue(tmEditProgram, (row.getAttribute('data-course-id') || '').trim());
+        tmEditFrom.value = (row.cells[4].textContent || '').trim();
+        tmEditTo.value = (row.cells[5].textContent || '').trim();
+        tmEditGrade.value = (row.cells[6].textContent || '').trim();
+        tmEditCode.value = (row.cells[7].textContent || '').trim();
+        tmEditRemarks.value = (row.cells[8].textContent || '').trim();
     }
 
     function closeActionMenus() {
@@ -440,14 +464,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.target.matches('[data-tm-save-new]')) {
             var sy = (tmNewSy.value || '').trim();
             var term = (tmNewTerm.value || '').trim();
-            var program = (tmNewProgram.value || '').trim();
+            var courseId = (tmNewProgram.value || '').trim();
             var from = cleanNumber(tmNewFrom.value);
             var to = cleanNumber(tmNewTo.value);
             var grade = cleanNumber(tmNewGrade.value);
             var code = (tmNewCode.value || '').trim();
             var remarks = (tmNewRemarks.value || '').trim();
 
-            if (!sy || !term || !program || !from || !to || !grade || !code || !remarks) {
+            if (!sy || !term || !courseId || !from || !to || !grade || !code || !remarks) {
                 if (typeof showRegistrarToast === 'function') {
                     showRegistrarToast('Please fill in all transmutation fields.');
                 }
@@ -457,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tmRequest(tmStoreUrl, 'POST', {
                 school_year: sy,
                 term: term,
-                program: program,
+                course_id: courseId,
                 initial_from: from,
                 initial_to: to,
                 transmuted_grade: grade,
@@ -485,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 tmRequest(tmBuildUrl(tmUpdateUrlTemplate, id), 'PUT', {
                     school_year: (tmEditSy.value || '').trim(),
                     term: (tmEditTerm.value || '').trim(),
-                    program: (tmEditProgram.value || '').trim(),
+                    course_id: (tmEditProgram.value || '').trim(),
                     initial_from: cleanNumber(tmEditFrom.value),
                     initial_to: cleanNumber(tmEditTo.value),
                     transmuted_grade: cleanNumber(tmEditGrade.value),
@@ -542,20 +566,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Filtering logic
-    var searchInput = document.getElementById('tmSearchInput');
-    if (searchInput && table) {
+    if (searchInput && filterForm) {
+        var submitSearch = debounce(function () {
+            filterForm.submit();
+        }, 280);
+
         searchInput.addEventListener('input', function () {
-            var filter = this.value.toLowerCase().trim();
-            var rows = table.querySelectorAll('tbody tr');
-            rows.forEach(function (row) {
-                var text = row.textContent.toLowerCase();
-                if (text.indexOf(filter) > -1) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            submitSearch();
+        });
+
+        searchInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                filterForm.submit();
+            }
         });
     }
 });

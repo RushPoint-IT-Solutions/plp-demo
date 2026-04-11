@@ -33,7 +33,9 @@
             <select class="form-select form-input-long">
                 <option value="" disabled selected>Select Course</option>
                 @foreach($courses as $course)
+                @if(stripos((string) ($course->code ?? ''), 'SHS') === false && stripos((string) ($course->name ?? ''), 'SHS') === false)
                 <option value="{{ $course->id }}">{{ $course->code }}</option>
+                @endif
                 @endforeach
             </select>
         </div>

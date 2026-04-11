@@ -1,4 +1,4 @@
-﻿/* Access module reusable blocks */
+/* Access module reusable blocks */
 .access-module-section {
     position: relative;
     text-align: center;
@@ -388,7 +388,7 @@
     box-shadow: none;
 }
 
-/* Filter grid â€” guarantees cross-row alignment */
+/* Filter grid guarantees cross-row alignment */
 .filter-grid {
     display: grid;
     grid-template-columns: 1fr 240px;
@@ -1074,7 +1074,7 @@
     color: #842029;
 }
 
-/* â”€â”€ Calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Calendar ------------------------------------------- */
 .cal-controls {
     display: flex;
     align-items: flex-start;
@@ -1269,7 +1269,7 @@
     color: #1565c0;
 }
 
-// Event label inside cell â€” anchored to bottom-right
+// Event label inside cell anchored to bottom-right
 .cal-event-label {
     position: absolute;
     bottom: 8px;
@@ -1292,7 +1292,7 @@
     color: #1565c0;
 }
 
-/* â”€â”€ Profile / Setup Wizard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* -- Profile / Setup Wizard ------------------------------- */
 
 // Step indicator
 .setup-steps {
@@ -1395,7 +1395,7 @@
     align-items: center;
 }
 
-// Labels â€” same visual as .form-label-plp (reuse token values)
+// Labels same visual as .form-label-plp (reuse token values)
 .setup-label {
     color: $plp-green;
     font-weight: 700;
@@ -1406,7 +1406,7 @@
     display: block;
 }
 
-// Inputs â€” same visual as .form-input-long (reuse token values)
+// Inputs same visual as .form-input-long (reuse token values)
 .setup-input {
     border: 1px solid #bfbfbf;
     border-radius: $radius-md;
@@ -2079,4 +2079,5 @@
         padding-right: 80px !important;
     }
 }
+
 

@@ -4,12 +4,20 @@
 @section('page-title', 'APPROVAL STATUS')
 
 @section('content')
-<div class="apst-page">
+<div
+    class="apst-page"
+    id="approvalStatusPage"
+    data-fetch-url="{{ route('registrar.process.approval-status.data') }}"
+    data-store-url="{{ route('registrar.process.approval-status.store') }}"
+    data-update-url-template="{{ route('registrar.process.approval-status.update', ['applicationStatus' => '__STATUS_ID__']) }}"
+    data-delete-url-template="{{ route('registrar.process.approval-status.delete', ['applicationStatus' => '__STATUS_ID__']) }}"
+    data-csrf-token="{{ csrf_token() }}"
+>
 
     {{-- Top bar: search + new button --}}
     <div class="apst-topbar">
         <div class="apst-search-box">
-            <input type="text" class="apst-search-input" placeholder="Search Status Code" id="apstSearchInput" oninput="filterRows()">
+            <input type="text" class="apst-search-input" placeholder="Search status code, status, or message" id="apstSearchInput" oninput="filterRows()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                 stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="apst-search-icon">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>

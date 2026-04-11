@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Registrar\Services;
 
 use App\Faculty;
-use App\Course;
 use App\Http\Controllers\Controller;
 use App\Semester;
 use App\Subject;
@@ -32,58 +31,179 @@ class FacultyLoadsController extends Controller
         $faculty = Faculty::findOrFail($facultyId);
 
         $schoolYears = Subject::query()
-            ->select('school_year')
-            ->whereNotNull('school_year')
-            ->where('school_year', '!=', '')
+            ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
+            ->select('at.school_year')
             ->distinct()
-            ->orderBy('school_year', 'desc')
+            ->orderBy('at.school_year', 'desc')
             ->pluck('school_year');
 
         $defaultSchoolYear = $schoolYears->first();
         $selectedSchoolYear = (string) $request->query('school_year', $defaultSchoolYear);
+        if ($selectedSchoolYear !== '' && !$schoolYears->contains($selectedSchoolYear)) {
+            $selectedSchoolYear = (string) $defaultSchoolYear;
+        }
 
-        $semesters = Semester::query()->orderBy('id')->get();
-        $defaultSemester = optional($semesters->firstWhere('name', '2nd Semester'))->name
-            ?? optional($semesters->firstWhere('name', '1st Semester'))->name
-            ?? optional($semesters->first())->name;
-        $selectedSemester = (string) $request->query('semester', $defaultSemester);
+        $rawTerms = Subject::query()
+            ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
+            ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
+                return $q->where('at.school_year', $selectedSchoolYear);
+            })
+            ->select('at.term')
+            ->distinct()
+            ->pluck('at.term');
+
+        if (!$rawTerms->count()) {
+            $rawTerms = Semester::query()->orderBy('id')->pluck('name');
+        }
+
+        $semesterLabels = collect();
+        foreach ($rawTerms as $rawTerm) {
+            $normalized = $this->normalizeSemesterLabel((string) $rawTerm);
+            if ($normalized === '') {
+                continue;
+            }
+            if (!$semesterLabels->contains($normalized)) {
+                $semesterLabels->push($normalized);
+            }
+        }
+
+        $semesterLabels = $semesterLabels->sortBy(function ($label) {
+            return $this->semesterWeight($label);
+        })->values();
+
+        $defaultSemester = '';
+        if ($semesterLabels->contains('Second')) {
+            $defaultSemester = 'Second';
+        } elseif ($semesterLabels->contains('First')) {
+            $defaultSemester = 'First';
+        } elseif ($semesterLabels->count()) {
+            $defaultSemester = (string) $semesterLabels->first();
+        }
+
+        $selectedSemester = $this->normalizeSemesterLabel((string) $request->query('semester', $defaultSemester));
+        if ($selectedSemester !== '' && !$semesterLabels->contains($selectedSemester)) {
+            $selectedSemester = $defaultSemester;
+        }
+
+        $schoolYearOptions = $schoolYears
+            ->map(function ($sy) {
+                return [
+                    'value' => (string) $sy,
+                    'label' => (string) $sy,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $semesterOptions = $semesterLabels
+            ->map(function ($label) {
+                return [
+                    'value' => (string) $label,
+                    'label' => (string) $label,
+                ];
+            })
+            ->values()
+            ->all();
 
         $tab = (string) $request->query('tab', 'load');
         if (!in_array($tab, ['load', 'loading'], true)) {
             $tab = 'load';
         }
 
-        $assignedSubjects = Subject::query()
+        $loadingSearch = trim((string) $request->query('loading_q', ''));
+
+        $assignedSubjectsBaseQuery = Subject::query()
+            ->with(['academicTerm', 'canonicalCourse'])
             ->where('faculty_id', $faculty->id)
             ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
-                return $q->where('school_year', $selectedSchoolYear);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
+                    $termQuery->where('school_year', $selectedSchoolYear);
+                });
             })
             ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
-                return $q->where('semester', $selectedSemester);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSemester) {
+                    $termQuery->whereIn('term', $this->semesterAliases($selectedSemester));
+                });
             })
-            ->orderByRaw('COALESCE(course, "")')
-            ->orderByRaw('COALESCE(year_section, "")')
-            ->orderBy('code')
-            ->get();
+            ->orderByRaw('CASE WHEN subjects.course_id IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('subjects.course_id')
+            ->orderByRaw('COALESCE(subjects.year_section, "")')
+            ->orderBy('subjects.code');
 
-        $availableSubjects = Subject::query()
+        $assignedSubjectsForSchedule = (clone $assignedSubjectsBaseQuery)->get();
+
+        $assignedSubjects = (clone $assignedSubjectsBaseQuery)
+            ->paginate(25, ['subjects.*'], 'assigned_page')
+            ->appends($request->except('assigned_page'));
+
+        $availableSubjectsBaseQuery = Subject::query()
+            ->with('canonicalCourse')
             ->whereNull('faculty_id')
             ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
-                return $q->where('school_year', $selectedSchoolYear);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
+                    $termQuery->where('school_year', $selectedSchoolYear);
+                });
             })
             ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
-                return $q->where('semester', $selectedSemester);
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSemester) {
+                    $termQuery->whereIn('term', $this->semesterAliases($selectedSemester));
+                });
             })
-            ->orderBy('code')
+            ->when($loadingSearch !== '', function ($q) use ($loadingSearch) {
+                $like = '%' . $loadingSearch . '%';
+
+                return $q->where(function ($inner) use ($like) {
+                    $inner->where('subjects.code', 'like', $like)
+                        ->orWhere('subjects.name', 'like', $like)
+                        ->orWhere('subjects.year_section', 'like', $like)
+                        ->orWhere('subjects.days', 'like', $like)
+                        ->orWhereHas('canonicalCourse', function ($courseQuery) use ($like) {
+                            $courseQuery->where('code', 'like', $like)
+                                ->orWhere('name', 'like', $like);
+                        });
+                });
+            })
+            ->orderByRaw('CASE WHEN subjects.course_id IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('subjects.course_id')
+            ->orderByRaw('COALESCE(subjects.year_section, "")')
+            ->orderBy('subjects.code');
+
+        $availableSubjects = (clone $availableSubjectsBaseQuery)
+            ->limit(201)
             ->get();
 
-        $courseNamesByCode = Course::query()->pluck('name', 'code');
+        $availableSubjectsHasMore = $availableSubjects->count() > 200;
+        if ($availableSubjectsHasMore) {
+            $availableSubjects = $availableSubjects->take(200)->values();
+        }
 
-        $groupedSchedule = $assignedSubjects
-            ->groupBy(function (Subject $s) use ($courseNamesByCode) {
-                $courseCode = (string) ($s->course ?? '');
-                if ($courseCode === '') return '—';
-                return (string) ($courseNamesByCode[$courseCode] ?? $courseCode);
+        $availableSubjectOptions = $availableSubjects
+            ->map(function (Subject $sub) {
+                $courseCode = trim((string) optional($sub->canonicalCourse)->code);
+                $section = trim($courseCode . ' ' . trim((string) $sub->year_section));
+                $sectionSuffix = $section !== '' ? (' (' . $section . ')') : '';
+
+                return [
+                    'value' => (string) $sub->id,
+                    'label' => (string) $sub->code . ' — ' . (string) $sub->name . $sectionSuffix,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $groupedSchedule = $assignedSubjectsForSchedule
+            ->groupBy(function (Subject $s) {
+                $courseName = trim((string) optional($s->canonicalCourse)->name);
+                if ($courseName !== '') {
+                    return $courseName;
+                }
+
+                $courseCode = trim((string) optional($s->canonicalCourse)->code);
+                if ($courseCode !== '') {
+                    return $courseCode;
+                }
+
+                return '—';
             })
             ->map(function ($subjectsByCourse) {
                 return $subjectsByCourse
@@ -98,20 +218,24 @@ class FacultyLoadsController extends Controller
             });
 
         $totals = [
-            'lec' => (int) $assignedSubjects->sum(function (Subject $s) { return (int) ($s->lec ?? 0); }),
-            'lab' => (int) $assignedSubjects->sum(function (Subject $s) { return (int) ($s->lab ?? 0); }),
-            'units' => (float) $assignedSubjects->sum(function (Subject $s) { return (float) ($s->units ?? 0); }),
+            'lec' => (int) $assignedSubjectsForSchedule->sum(function (Subject $s) { return (int) ($s->lec ?? 0); }),
+            'lab' => (int) $assignedSubjectsForSchedule->sum(function (Subject $s) { return (int) ($s->lab ?? 0); }),
+            'units' => (float) $assignedSubjectsForSchedule->sum(function (Subject $s) { return (float) ($s->units ?? 0); }),
         ];
 
         return view('registrar.services.classroom-faculty.faculty-loads.show', compact(
             'faculty',
             'tab',
             'schoolYears',
-            'semesters',
+            'schoolYearOptions',
+            'semesterOptions',
             'selectedSchoolYear',
             'selectedSemester',
+            'loadingSearch',
             'assignedSubjects',
-            'availableSubjects',
+            'assignedSubjectsForSchedule',
+            'availableSubjectOptions',
+            'availableSubjectsHasMore',
             'groupedSchedule',
             'totals'
         ));
@@ -128,6 +252,7 @@ class FacultyLoadsController extends Controller
             'load_hours' => ['nullable', 'numeric', 'min:0'],
             'school_year' => ['nullable', 'string'],
             'semester' => ['nullable', 'string'],
+            'loading_q' => ['nullable', 'string', 'max:120'],
         ]);
 
         $subject = Subject::query()
@@ -136,11 +261,10 @@ class FacultyLoadsController extends Controller
             ->firstOrFail();
 
         $subject->faculty_id = $faculty->id;
-        $subject->faculty = $faculty->name; // keep legacy string in sync
         $subject->load_type = $validated['load_type'];
         $subject->credited_tuition_units = $validated['credited_tuition_units'] ?? null;
         $subject->load_hours = $validated['load_hours'] ?? null;
-        $subject->added_by = 'Admin1';
+        $subject->added_by = trim((string) (optional(auth()->user())->name ?: optional(auth()->user())->username ?: 'Registrar'));
         $subject->save();
 
         return redirect()
@@ -148,10 +272,67 @@ class FacultyLoadsController extends Controller
                 'faculty' => $faculty->id,
                 'tab' => 'loading',
                 'school_year' => $validated['school_year'] ?? null,
-                'semester' => $validated['semester'] ?? null,
+                'semester' => $this->normalizeSemesterLabel((string) ($validated['semester'] ?? '')) ?: null,
+                'loading_q' => trim((string) ($validated['loading_q'] ?? '')) ?: null,
             ])
             ->with('status', 'Subject assigned successfully.')
             ->with('status_type', 'success');
+    }
+
+    private function normalizeSemesterLabel(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (strpos($normalized, 'summer') !== false) {
+            return 'Summer';
+        }
+
+        if (strpos($normalized, 'second') !== false || strpos($normalized, '2nd') !== false || $normalized === '2') {
+            return 'Second';
+        }
+
+        if (strpos($normalized, 'first') !== false || strpos($normalized, '1st') !== false || $normalized === '1') {
+            return 'First';
+        }
+
+        return '';
+    }
+
+    private function semesterAliases(string $canonicalLabel): array
+    {
+        if ($canonicalLabel === 'First') {
+            return ['First', '1st Semester', 'First Semester'];
+        }
+
+        if ($canonicalLabel === 'Second') {
+            return ['Second', '2nd Semester', 'Second Semester'];
+        }
+
+        if ($canonicalLabel === 'Summer') {
+            return ['Summer', 'Summer Semester'];
+        }
+
+        return [$canonicalLabel];
+    }
+
+    private function semesterWeight(string $canonicalLabel): int
+    {
+        if ($canonicalLabel === 'First') {
+            return 1;
+        }
+
+        if ($canonicalLabel === 'Second') {
+            return 2;
+        }
+
+        if ($canonicalLabel === 'Summer') {
+            return 3;
+        }
+
+        return 4;
     }
 
     private function yearLabelFromSection(?string $yearSection): string

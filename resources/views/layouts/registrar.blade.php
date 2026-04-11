@@ -49,8 +49,21 @@
                 </button>
 
                 <div class="topbar-icons">
+                    {{-- Help Center --}}
+                    <a href="{{ route('registrar.help.center') }}" class="topbar-icon-link {{ request()->routeIs('registrar.help.*') ? 'is-active' : '' }}" title="Help Center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12a8 8 0 0 1 16 0"/>
+                            <path d="M4 12v5a2 2 0 0 0 2 2h1"/>
+                            <path d="M20 12v5a2 2 0 0 1-2 2h-1"/>
+                            <rect x="3" y="11" width="4" height="6" rx="2"/>
+                            <rect x="17" y="11" width="4" height="6" rx="2"/>
+                            <path d="M12 19v2"/>
+                            <path d="M10 21h4"/>
+                        </svg>
+                    </a>
+
                     {{-- Notification Bell --}}
-                    <a href="#" class="topbar-icon-link" title="Notifications">
+                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -65,7 +78,7 @@
                     </a>
 
                     {{-- Profile Avatar --}}
-                    <a href="#" class="topbar-user">
+                    <a href="#" class="topbar-user topbar-profile-trigger">
                         <div class="topbar-avatar-placeholder topbar-avatar-placeholder--neutral">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>

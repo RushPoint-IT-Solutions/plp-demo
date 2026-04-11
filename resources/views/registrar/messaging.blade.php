@@ -4,138 +4,6 @@
 @section('page-title', 'MESSAGING')
 
 @section('content')
-<style>
-/* Responsive improvements for messaging */
-.messaging-shell {
-    max-width: 100%;
-}
-.msg-content {
-    min-width: 0; /* Important for grid/flex child to NOT blow out container */
-    max-width: 100%;
-}
-.msg-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    display: block; /* Ensure it respects block width */
-}
-.msg-table {
-    min-width: 700px; /* Forces scrolling on small screens */
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border: 1px solid #d6dee8;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #fff;
-}
-.msg-table th, .msg-table td {
-    white-space: nowrap;
-    padding: 10px 12px;
-}
-
-.msg-table thead th {
-    background: #f3f5f7;
-    color: #334155;
-    font-weight: 700;
-    border-bottom: 1px solid #d6dee8;
-}
-
-.msg-table tbody td {
-    color: #475569;
-    border-bottom: 1px solid #d6dee8;
-}
-
-.msg-table tbody tr:nth-child(even) {
-    background: #fafbfc;
-}
-
-.msg-table tbody tr:last-child td {
-    border-bottom: 0;
-}
-
-@media (max-width: 900px) {
-    .msg-sidebar {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-bottom: 20px;
-        padding: 0;
-        background: #fdfdfd;
-        border: 1px solid #eaeaea;
-        border-radius: 8px;
-        min-height: auto;
-        overflow: hidden; /* Contains the active background to the rounded border */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .msg-nav-link {
-        flex: 1 1 0; /* Equal width for all tabs */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
-        padding: 12px 0;
-        border-left: none !important;
-        border-bottom: none !important;
-        border-right: 1px solid #eaeaea;
-        border-radius: 0;
-        background: transparent;
-        color: #777;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transform: none !important; /* Disable desktop hover slide */
-    }
-    .msg-nav-link:last-child {
-        border-right: none;
-    }
-    .msg-nav-link:hover {
-        background: #f4f4f4;
-    }
-    .msg-nav-link.active {
-        background: #0a813c !important;
-        color: #ffffff !important;
-    }
-    .msg-nav-icon {
-        display: none;
-    }
-}
-@media (max-width: 768px) {
-    .msg-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .msg-toolbar-actions {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-    }
-    .msg-search {
-        flex: 1;
-        min-width: 150px;
-    }
-    .msg-search-input {
-        width: 100%;
-    }
-    .msg-compose-btn {
-        flex-shrink: 0;
-    }
-    .msg-footer {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    .pf-modal-actions {
-        flex-direction: column;
-        justify-content: stretch;
-        width: 100%;
-    }
-    .pf-modal-actions button {
-        width: 100%;
-        justify-content: center;
-    }
-}
-</style>
 @php
     $folder = request('folder', 'drafts');
     $messages = [
@@ -159,7 +27,7 @@
     $folderMessages = $messages[$folder] ?? [];
 @endphp
 
-<div class="messaging-page">
+<div class="messaging-page msg-theme-lite">
     <div class="messaging-shell">
         <aside class="msg-sidebar">
             <a href="{{ route('registrar.messaging', ['folder' => 'inbox']) }}" class="msg-nav-link {{ $folder === 'inbox' ? 'active' : '' }}">
@@ -250,40 +118,39 @@
     </div>
 </div>
 
-<div class="pf-modal-overlay" id="composeModal" style="display:none;">
-    <div class="pf-modal-box" style="max-width: 600px; padding-bottom: 24px;">
-        <div class="pf-modal-title" style="text-align: left; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5v14"/><path d="M5 12h14"/>
-                </svg>
-                Compose Message
+<div class="pf-modal-overlay faculty-gs-hidden" id="composeModal" aria-hidden="true">
+    <div class="pf-modal-box msg-compose-modal-box">
+        <div class="msg-compose-modal-head">
+            <div class="msg-compose-modal-title-wrap">
+                <div class="pf-modal-title msg-compose-modal-title">Compose Message</div>
             </div>
-            <button type="button" onclick="closeComposeModal()" aria-label="Close" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: #888; padding: 0; margin: 0; line-height: 1; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f5f5f5'; this.style.color='#d9534f'" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#888'">
+            <button type="button" class="msg-compose-close" id="msgComposeCloseBtn" aria-label="Close compose modal">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </button>
         </div>
+
         <div class="pf-modal-form">
-            <div class="pf-modal-field" style="margin-bottom: 16px;">
+            <div class="pf-modal-field">
                 <label class="pf-modal-label" for="msgTo">To</label>
                 <input type="text" class="pf-modal-input" id="msgTo" placeholder="Enter recipient email or group">
             </div>
-            <div class="pf-modal-field" style="margin-bottom: 16px;">
+            <div class="pf-modal-field">
                 <label class="pf-modal-label" for="msgSubject">Subject</label>
                 <input type="text" class="pf-modal-input" id="msgSubject" placeholder="Enter subject">
             </div>
             <div class="pf-modal-field">
                 <label class="pf-modal-label" for="msgBody">Message</label>
-                <textarea class="pf-modal-input" id="msgBody" rows="7" placeholder="Write your message..." style="resize: vertical;"></textarea>
+                <textarea class="pf-modal-input msg-compose-textarea" id="msgBody" rows="7" placeholder="Write your message..."></textarea>
             </div>
         </div>
-        <div class="pf-modal-actions" style="margin-top: 24px; justify-content: flex-end; gap: 12px;">
-            <button type="button" class="pf-modal-btn-cancel" onclick="closeComposeModal()" style="border: 1px solid #ccc; background: transparent; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; color: #555; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f5f5f5'; this.style.color='#333'" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#555'">Discard</button>
-            <button type="button" class="pf-modal-btn-save" onclick="sendComposeModal()" style="background: #0a813c; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#086a31'" onmouseout="this.style.backgroundColor='#0a813c'">
-                Send 
+
+        <div class="pf-modal-actions msg-compose-modal-actions">
+            <button type="button" class="pf-modal-btn-cancel" id="msgComposeDiscardBtn">Discard</button>
+            <button type="button" class="pf-modal-btn-save msg-compose-send-btn" id="msgComposeSendBtn">
+                Send
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
@@ -292,44 +159,5 @@
 @endsection
 
 @push('scripts')
-<script>
-    function openComposeModal() {
-        document.getElementById('composeModal').style.display = 'flex';
-    }
-
-    function closeComposeModal() {
-        document.getElementById('composeModal').style.display = 'none';
-        document.getElementById('msgTo').value = '';
-        document.getElementById('msgSubject').value = '';
-        document.getElementById('msgBody').value = '';
-    }
-
-    function sendComposeModal() {
-        var to = document.getElementById('msgTo').value.trim();
-        var subject = document.getElementById('msgSubject').value.trim();
-        var body = document.getElementById('msgBody').value.trim();
-        
-        if(!to || !subject || !body) {
-            alert('Please fill in all fields before sending.');
-            return;
-        }
-
-        // Add dummy send feature
-        var sendBtn = document.querySelector('.pf-modal-btn-save');
-        var originalText = sendBtn.innerHTML;
-        sendBtn.innerHTML = 'Sending...';
-        
-        setTimeout(function() {
-            closeComposeModal();
-            alert('Message Sent successfully (Demo)');
-            sendBtn.innerHTML = originalText;
-        }, 800);
-    }
-
-    (function () {
-        var composeBtn = document.getElementById('msgComposeBtn');
-        if (!composeBtn) return;
-        composeBtn.addEventListener('click', openComposeModal);
-    })();
-</script>
+<script src="{{ asset('js/registrar-messaging.js') }}?v={{ file_exists(public_path('js/registrar-messaging.js')) ? filemtime(public_path('js/registrar-messaging.js')) : time() }}"></script>
 @endpush

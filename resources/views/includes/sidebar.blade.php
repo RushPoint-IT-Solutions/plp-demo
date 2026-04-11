@@ -52,7 +52,7 @@
             <span>Events</span>
         </a>
 
-        <div class="sidebar-dropdown">
+        <div class="sidebar-dropdown {{ request()->routeIs('student.forms.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('student.forms.*') ? 'active' : '' }}">
                 {{-- Vuesax linear/document --}}
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">

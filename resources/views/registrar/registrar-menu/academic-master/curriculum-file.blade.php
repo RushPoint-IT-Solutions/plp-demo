@@ -5,29 +5,37 @@
 
 @section('content')
 <div class="pf-page">
-    <div class="cf-page">
+    <div
+        class="cf-page"
+        id="curriculumFilePage"
+        data-course-years='@json($courseYearMap)'
+        data-selected-course-id="{{ $selectedCourseId ?: '' }}"
+        data-selected-curriculum-year="{{ $selectedCurriculumYear }}"
+        data-pre-requisites-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}"
+    >
         <section class="cfg-card cf-toolbar-card">
             <div class="cf-toolbar-grid">
                 <div class="cf-filter-field">
                     <label class="req-modal-label" for="cfProgram">Program</label>
                     <select id="cfProgram" class="req-modal-input">
-                        <option value="">Select Course</option>
-                        <option>BS Computer Science</option>
-                        <option>BS Information Technology</option>
-                        <option>BS Entrepreneurship</option>
+                        @forelse($courses as $course)
+                            <option value="{{ $course->id }}" {{ (string) $selectedCourseId === (string) $course->id ? 'selected' : '' }}>
+                                {{ $course->name ?: $course->description }}
+                            </option>
+                        @empty
+                            <option value="">No Course Available</option>
+                        @endforelse
                     </select>
                 </div>
                 <div class="cf-filter-field">
                     <label class="req-modal-label" for="cfCurriculumYear">Curriculum Year</label>
                     <select id="cfCurriculumYear" class="req-modal-input">
                         <option value="">Curriculum Year</option>
-                        <option>2025-2026</option>
-                        <option>2024-2025</option>
-                        <option>2023-2024</option>
                     </select>
                 </div>
                 <div class="cf-toolbar-action">
-                    <button type="button" class="pf-btn-new">View List</button>
+                    <button type="button" class="pf-btn-new" id="cfViewListBtn">View List</button>
+                    <button type="button" class="pf-btn-new" id="cfOpenPrerequisitesBtn">Open Pre-Requisites</button>
                 </div>
             </div>
         </section>
@@ -44,9 +52,11 @@
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfCopyCourse">Course</label>
                         <select id="cfCopyCourse" class="req-modal-input">
-                            <option value="">Select Course</option>
-                            <option>BS Computer Science</option>
-                            <option>BS Information Technology</option>
+                            @forelse($courses as $course)
+                                <option value="{{ $course->id }}">{{ $course->name ?: $course->description }}</option>
+                            @empty
+                                <option value="">No Course Available</option>
+                            @endforelse
                         </select>
                     </div>
 
@@ -54,8 +64,6 @@
                         <label class="req-modal-label" for="cfCopyCurriculumYear">Curriculum Year</label>
                         <select id="cfCopyCurriculumYear" class="req-modal-input">
                             <option value="">Curriculum Year</option>
-                            <option>2025-2026</option>
-                            <option>2024-2025</option>
                         </select>
                     </div>
 
@@ -92,17 +100,17 @@
                         <label class="req-modal-label" for="cfSetupCurriculumYear">Curriculum Year</label>
                         <select id="cfSetupCurriculumYear" class="req-modal-input">
                             <option value="">Curriculum Year</option>
-                            <option>2025-2026</option>
-                            <option>2024-2025</option>
                         </select>
                     </div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfSetupProgram">Program</label>
                         <select id="cfSetupProgram" class="req-modal-input">
-                            <option value="">Select Course</option>
-                            <option>BS Computer Science</option>
-                            <option>BS Information Technology</option>
+                            @forelse($courses as $course)
+                                <option value="{{ $course->id }}">{{ $course->name ?: $course->description }}</option>
+                            @empty
+                                <option value="">No Course Available</option>
+                            @endforelse
                         </select>
                     </div>
 
@@ -137,4 +145,8 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="{{ asset('js/curriculum-file.js') }}"></script>
+@endpush
 @endsection

@@ -158,6 +158,11 @@
         menu.hidden = !opening;
         toggleBtn.setAttribute('aria-expanded', opening ? 'true' : 'false');
         if (opening) {
+          menu.classList.remove('is-flip-left');
+          var menuRect = menu.getBoundingClientRect();
+          if (menuRect.right > (window.innerWidth - 8)) {
+            menu.classList.add('is-flip-left');
+          }
           wrap.classList.add('is-open');
           if (dashboardRoot) {
             dashboardRoot.classList.add('menu-open');

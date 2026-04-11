@@ -2,6 +2,80 @@
 //   PLP Web System – Custom JavaScript
 // ========================================================
 
+window.PLPComponents = window.PLPComponents || {};
+
+window.PLPComponents.initSelectStyles = function (root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('select[data-plp-select]').forEach(function (select) {
+        select.classList.add('plp-select');
+    });
+};
+
+window.PLPComponents.initServerPagination = function (config) {
+    if (!config || !config.root || !config.form || !config.pageInput) {
+        return null;
+    }
+
+    var root = config.root;
+    var form = config.form;
+    var pageInput = config.pageInput;
+    var currentPage = parseInt(config.currentPage || '1', 10) || 1;
+    var lastPage = Math.max(parseInt(config.lastPage || '1', 10) || 1, 1);
+    var pageSelector = config.pageSelector || '[data-page]';
+    var pageAttribute = config.pageAttribute || 'data-page';
+    var resetToFirstOnSubmit = config.resetToFirstOnSubmit !== false;
+    var submittingPageNavigation = false;
+
+    form.addEventListener('submit', function () {
+        if (resetToFirstOnSubmit && !submittingPageNavigation) {
+            pageInput.value = '1';
+        }
+
+        submittingPageNavigation = false;
+    });
+
+    function submitPage(pageNumber) {
+        var targetPage = Number(pageNumber || 1);
+        if (!Number.isFinite(targetPage)) {
+            return;
+        }
+
+        if (targetPage < 1) {
+            targetPage = 1;
+        }
+
+        if (targetPage > lastPage) {
+            targetPage = lastPage;
+        }
+
+        if (targetPage === currentPage) {
+            return;
+        }
+
+        submittingPageNavigation = true;
+        pageInput.value = String(targetPage);
+        form.submit();
+    }
+
+    root.addEventListener('click', function (event) {
+        var pageButton = event.target.closest(pageSelector);
+        if (!pageButton) {
+            return;
+        }
+
+        event.preventDefault();
+        if (pageButton.disabled || pageButton.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
+
+        submitPage(pageButton.getAttribute(pageAttribute));
+    });
+
+    return {
+        submitPage: submitPage,
+    };
+};
+
 // Wait for DOM to load
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -127,6 +201,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== PROGRAM FILE PAGE =====
     const programFilePage = document.getElementById('programFilePage');
     if (programFilePage) {
+        if (window.PLPComponents && typeof window.PLPComponents.initSelectStyles === 'function') {
+            window.PLPComponents.initSelectStyles(programFilePage);
+        }
+
         const successMessage = programFilePage.getAttribute('data-success');
         if (successMessage && typeof showRegistrarToast === 'function') {
             showRegistrarToast(successMessage, 'success');
@@ -137,48 +215,158 @@ document.addEventListener('DOMContentLoaded', function() {
             openSetupDepartmentsModal();
         }
 
-        const entriesSelect = document.getElementById('pfEntriesLimit');
-        const table = document.getElementById('pfTable');
+        const shouldOpenNew = programFilePage.getAttribute('data-open-new') === '1';
+        if (shouldOpenNew) {
+            openNewProgramModal();
+        }
 
-        if (entriesSelect && table) {
-            const tableBody = table.querySelector('tbody');
-            const tableRows = tableBody ? Array.from(tableBody.querySelectorAll('tr')) : [];
-            const emptyRows = tableRows.filter(function (row) {
-                return row.querySelector('.pf-empty-row') !== null;
+        const topFilterForm = document.getElementById('pfTopFilterForm');
+        const pageInput = document.getElementById('pfPageInput');
+        const currentPage = parseInt(programFilePage.getAttribute('data-current-page') || '1', 10) || 1;
+        const lastPage = parseInt(programFilePage.getAttribute('data-last-page') || '1', 10) || 1;
+
+        if (window.PLPComponents && typeof window.PLPComponents.initServerPagination === 'function' && topFilterForm && pageInput) {
+            window.PLPComponents.initServerPagination({
+                root: programFilePage,
+                form: topFilterForm,
+                pageInput: pageInput,
+                currentPage: currentPage,
+                lastPage: lastPage,
+                pageSelector: '[data-pf-page]',
+                pageAttribute: 'data-pf-page',
+                resetToFirstOnSubmit: true,
             });
-            const dataRows = tableRows.filter(function (row) {
-                return row.querySelector('.pf-empty-row') === null;
+        }
+
+        const editModal = document.getElementById('pfEditProgramModal');
+        const deleteModal = document.getElementById('pfDeleteProgramModal');
+        const editForm = document.getElementById('pfEditProgramForm');
+        const deleteForm = document.getElementById('pfDeleteProgramForm');
+        const deleteText = document.getElementById('pfDeleteProgramText');
+
+        function closeProgramMenus() {
+            programFilePage.querySelectorAll('.apst-dropdown.open').forEach(function (menu) {
+                menu.classList.remove('open');
             });
+        }
 
-            function applyEntryLimit() {
-                const limit = parseInt(entriesSelect.value, 10);
-                const total = dataRows.length;
-                const visibleCount = Number.isNaN(limit) ? total : Math.min(limit, total);
-
-                dataRows.forEach(function (row, index) {
-                    row.style.display = index < visibleCount ? '' : 'none';
-                });
-
-                emptyRows.forEach(function (row) {
-                    row.style.display = total === 0 ? '' : 'none';
-                });
-
-                if (tableBody) {
-                    const oldTotalRow = tableBody.querySelector('.pf-total-row');
-                    if (oldTotalRow) {
-                        oldTotalRow.remove();
-                    }
-
-                    const totalRow = document.createElement('tr');
-                    totalRow.className = 'pf-total-row';
-                    totalRow.innerHTML = '<td colspan="5" class="pf-total-cell">Total Programs: <strong>' + visibleCount + '</strong></td>';
-                    tableBody.appendChild(totalRow);
-                }
+        function positionProgramMenu(menu, trigger) {
+            if (!menu || !trigger) {
+                return;
             }
 
-            entriesSelect.addEventListener('change', applyEntryLimit);
-            applyEntryLimit();
+            const rect = trigger.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.left = (rect.right - 170) + 'px';
+            menu.style.top = (rect.bottom + 6) + 'px';
+            menu.style.zIndex = '2000';
+
+            const menuRect = menu.getBoundingClientRect();
+            if (menuRect.right > window.innerWidth - 8) {
+                menu.style.left = Math.max(8, window.innerWidth - menuRect.width - 8) + 'px';
+            }
+            if (menuRect.bottom > window.innerHeight - 8) {
+                menu.style.top = Math.max(8, rect.top - menuRect.height - 6) + 'px';
+            }
         }
+
+        function openPfEditModal(trigger) {
+            if (!editModal || !editForm) {
+                return;
+            }
+
+            editForm.action = trigger.getAttribute('data-update-url') || '';
+            const codeInput = document.getElementById('pfEditProgramCode');
+            const nameInput = document.getElementById('pfEditProgramName');
+            const departmentInput = document.getElementById('pfEditDepartment');
+            const accreditationInput = document.getElementById('pfEditAccreditation');
+
+            if (codeInput) {
+                codeInput.value = trigger.getAttribute('data-code') || '';
+            }
+            if (nameInput) {
+                nameInput.value = trigger.getAttribute('data-name') || '';
+            }
+            if (departmentInput) {
+                departmentInput.value = trigger.getAttribute('data-department-id') || '';
+            }
+            if (accreditationInput) {
+                accreditationInput.value = trigger.getAttribute('data-accreditation') || 'Pending Review';
+            }
+
+            editModal.style.display = 'flex';
+        }
+
+        function openPfDeleteModal(trigger) {
+            if (!deleteModal || !deleteForm) {
+                return;
+            }
+
+            deleteForm.action = trigger.getAttribute('data-delete-url') || '';
+            if (deleteText) {
+                deleteText.textContent = 'Are you sure you want to delete program "' + (trigger.getAttribute('data-code') || '') + '"?';
+            }
+            deleteModal.style.display = 'flex';
+        }
+
+        programFilePage.addEventListener('click', function (event) {
+            const toggleBtn = event.target.closest('[data-pf-menu-toggle]');
+            if (toggleBtn) {
+                event.preventDefault();
+                const menu = document.getElementById(toggleBtn.getAttribute('data-pf-menu-toggle'));
+                if (!menu) {
+                    return;
+                }
+
+                const willOpen = !menu.classList.contains('open');
+                closeProgramMenus();
+
+                if (willOpen) {
+                    menu.classList.add('open');
+                    positionProgramMenu(menu, toggleBtn);
+                }
+                return;
+            }
+
+            const actionBtn = event.target.closest('[data-pf-action]');
+            if (actionBtn) {
+                event.preventDefault();
+                const menu = actionBtn.closest('.apst-dropdown');
+                const row = menu ? menu.closest('tr') : null;
+                const trigger = row ? row.querySelector('[data-pf-menu-toggle]') : null;
+                const action = actionBtn.getAttribute('data-pf-action');
+
+                closeProgramMenus();
+
+                if (!trigger) {
+                    return;
+                }
+
+                if (action === 'edit') {
+                    openPfEditModal(trigger);
+                } else if (action === 'delete') {
+                    openPfDeleteModal(trigger);
+                }
+                return;
+            }
+
+            if (!event.target.closest('.apst-dropdown')) {
+                closeProgramMenus();
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            const openMenu = programFilePage.querySelector('.apst-dropdown.open');
+            if (!openMenu) {
+                return;
+            }
+
+            const row = openMenu.closest('tr');
+            const trigger = row ? row.querySelector('[data-pf-menu-toggle]') : null;
+            if (trigger) {
+                positionProgramMenu(openMenu, trigger);
+            }
+        });
     }
 });
 
@@ -189,8 +377,6 @@ function openSetupDepartmentsModal() {
 
 function openNewProgramModal() {
     const modal = document.getElementById('newProgramModal');
-    const form = document.getElementById('newProgramForm');
-    if (form) form.reset();
     if (modal) modal.style.display = 'flex';
 }
 
@@ -199,27 +385,18 @@ function closeNewProgramModal() {
     if (modal) modal.style.display = 'none';
 }
 
-function handleNewProgramSave(event) {
-    event.preventDefault();
-    const codeInput = document.getElementById('newProgramCode');
-    const code = codeInput ? codeInput.value.trim() : '';
-
-    if (!code) {
-        if (typeof showRegistrarToast === 'function') {
-            showRegistrarToast('Please fill in required fields.', 'warning');
-        }
-        return false;
-    }
-
-    closeNewProgramModal();
-    if (typeof showRegistrarToast === 'function') {
-        showRegistrarToast('Program "' + code + '" saved successfully.', 'success');
-    }
-    return false;
-}
-
 function closeSetupDepartmentsModal() {
     const modal = document.getElementById('setupDepartmentsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function closePfEditProgramModal() {
+    const modal = document.getElementById('pfEditProgramModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function closePfDeleteProgramModal() {
+    const modal = document.getElementById('pfDeleteProgramModal');
     if (modal) modal.style.display = 'none';
 }
 

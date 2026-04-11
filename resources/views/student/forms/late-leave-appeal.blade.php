@@ -2,6 +2,7 @@
 
 @section('title', 'Appeal For Late Application Of Leave Of Absence - PLP')
 @section('page-title', 'FORMS')
+@section('body-class', 'page-student-forms')
 
 @section('content')
 @php
@@ -13,7 +14,7 @@
             <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
         </div>
 
-        <div class="cor-container acd-form loa-form" style="margin-top: 2in;">
+        <div class="cor-container acd-form loa-form">
             <div class="loa-body">
                 <p style="margin: 0 0 8px; font-weight: 700; text-align: left;">PLPRO FORM NO. 1H-4</p>
                 <div class="loa-top-row">

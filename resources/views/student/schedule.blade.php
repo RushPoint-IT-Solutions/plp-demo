@@ -8,6 +8,36 @@
 @section('content')
 <div class="sched-page-container">
 
+    <div class="sched-print-head d-none d-print-flex" id="schedPrintHead">
+        <div class="sched-print-head-left">
+            <span><strong>NAME:</strong> {{ optional($student)->name ?: 'Student' }}</span>
+            <span><strong>SECTION:</strong> {{ optional($student)->year_level ?: 'N/A' }}</span>
+        </div>
+        <div class="sched-print-head-right" id="schedPrintMetaTop">School Year: 2025-2026 | Semester: Second Semester | Generated: 04/10/2026</div>
+    </div>
+
+    <div class="sched-filter-bar">
+        <div class="sched-filter-row sched-filter-row-main">
+            <div class="sched-filter-group">
+                <label class="app-filter-label" for="schedSchoolYear">School Year</label>
+                <select id="schedSchoolYear" class="app-filter-select">
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2024-2025">2024-2025</option>
+                </select>
+            </div>
+            <div class="sched-filter-group">
+                <label class="app-filter-label" for="schedSemester">Semester</label>
+                <select id="schedSemester" class="app-filter-select">
+                    <option value="Second">Second</option>
+                    <option value="First">First</option>
+                </select>
+            </div>
+            <div class="sched-filter-actions ml-auto">
+                <button type="button" id="schedDownloadBtn" class="btn btn-success btn-view-cor sched-download-btn">Download Schedule</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== Subject List Table ===== -->
     <div class="sched-scroll-wrapper">
     <table class="sched-table">
@@ -22,7 +52,7 @@
                 <th class="sched-th">Faculty</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="schedSubjectTableBody">
             @foreach($subjects as $subject)
             <tr>
                 <td class="sched-td" data-label="Code">{{ $subject->code }}</td>
@@ -31,7 +61,7 @@
                 <td class="sched-td" data-label="Days">{{ $subject->days }}</td>
                 <td class="sched-td" data-label="Time">{{ $subject->time_range }}</td>
                 <td class="sched-td" data-label="Room">{{ $subject->room }}</td>
-                <td class="sched-td" data-label="Faculty">{{ $subject->faculty }}</td>
+                <td class="sched-td" data-label="Faculty">{{ $subject->faculty ?: 'Abelo, M.' }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -42,8 +72,10 @@
     <div class="so-weekly">
         <h2 class="so-weekly-title">My Weekly Schedule</h2>
 
+        <div class="sched-print-meta" id="schedPrintMeta">School Year: 2025-2026 | Semester: Second Semester | Generated: 04/10/2026</div>
+
         <div class="so-weekly-scroll">
-        <div class="so-weekly-grid">
+        <div class="so-weekly-grid" id="schedWeeklyGrid">
 
             @php($dayList = is_iterable($days ?? null) ? $days : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
             @foreach($dayList as $day)
@@ -71,3 +103,7 @@
 
 </div>{{-- /.sched-page-container --}}
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/student-schedule.js') }}"></script>
+@endpush

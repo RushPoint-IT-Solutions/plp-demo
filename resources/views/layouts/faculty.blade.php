@@ -21,10 +21,15 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/faculty-notifications.css') }}">
 
     @stack('styles')
 </head>
-<body class="student-body student-portal-body faculty-body">
+<body class="student-body student-portal-body faculty-body @yield('body-class')">
+    @php
+        $facultyNotifications = isset($facultyNotifications) ? $facultyNotifications : collect();
+        $facultyUnreadNotificationCount = isset($facultyUnreadNotificationCount) ? (int) $facultyUnreadNotificationCount : 0;
+    @endphp
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -47,23 +52,42 @@
 
                 <div class="topbar-icons">
                     {{-- Notification Bell --}}
-                    <a href="#" class="topbar-icon-link" title="Notifications">
+                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications" data-bs-toggle="modal" data-bs-target="#facultyNotificationsModal">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                         </svg>
+                        <span class="faculty-notif-badge {{ $facultyUnreadNotificationCount ? '' : 'd-none' }}">{{ $facultyUnreadNotificationCount > 99 ? '99+' : $facultyUnreadNotificationCount }}</span>
                     </a>
 
                     {{-- Messages --}}
-                    <a href="#" class="topbar-icon-link" title="Messages">
+                    <a href="{{ route('faculty.messaging') }}" class="topbar-icon-link msg-icon {{ request()->routeIs('faculty.messaging') ? 'is-active' : '' }}" title="Messages">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                     </a>
 
                     {{-- Profile Avatar --}}
-                    <a href="#" class="topbar-user">
-                        @if(isset($facultyPhoto) && $facultyPhoto)
+                    @php
+                        $facultyPhoto = null;
+                        $facultyUser = auth()->user();
+                        if ($facultyUser && !empty($facultyUser->faculty_id) && \Illuminate\Support\Facades\Schema::hasTable('master_faculty_files')) {
+                            $facultyRow = \App\MasterFacultyFile::where('code', $facultyUser->username)->first();
+                            if (!$facultyRow && !empty($facultyUser->name)) {
+                                $facultyRow = \App\MasterFacultyFile::where('name', $facultyUser->name)->first();
+                            }
+                            if ($facultyRow && is_array($facultyRow->config_payload)) {
+                                $state = isset($facultyRow->config_payload['form_state']) && is_array($facultyRow->config_payload['form_state'])
+                                    ? $facultyRow->config_payload['form_state']
+                                    : [];
+                                if (!empty($state['profile_photo_path'])) {
+                                    $facultyPhoto = (string) $state['profile_photo_path'];
+                                }
+                            }
+                        }
+                    @endphp
+                    <a href="{{ route('faculty.profile') }}" class="topbar-user topbar-profile-trigger {{ request()->routeIs('faculty.profile') || request()->routeIs('faculty.profile.edit') ? 'is-active' : '' }}" title="Profile">
+                        @if($facultyPhoto)
                             <img src="{{ asset('storage/' . $facultyPhoto) }}" alt="User Avatar" class="topbar-avatar">
                         @else
                             <div class="topbar-avatar-placeholder">
@@ -90,6 +114,58 @@
 
                 {{-- Footer --}}
                 @include('includes.footer')
+            </div>
+        </div>
+    </div>
+
+    <div id="download-toast" class="toast-notification">
+        <span class="toast-message">Saved successfully.</span>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <div
+        class="modal fade faculty-notif-modal"
+        id="facultyNotificationsModal"
+        tabindex="-1"
+        aria-labelledby="facultyNotificationsTitle"
+        aria-hidden="true"
+        data-feed-url="{{ route('faculty.notifications.feed') }}"
+        data-mark-read-url="{{ route('faculty.notifications.mark-read') }}"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="faculty-notif-modal-header">
+                    <h5 class="modal-title" id="facultyNotificationsTitle">NOTIFICATIONS</h5>
+                </div>
+                <div class="faculty-notif-body">
+                    <div class="faculty-notif-list">
+                        @forelse($facultyNotifications as $delivery)
+                            @php
+                                $notification = $delivery->notification;
+                                $notificationUrl = $notification ? (string) $notification->local_source_url : '';
+                            @endphp
+                            <div class="faculty-notif-item {{ !empty($delivery->read_at) ? 'is-read' : '' }}" data-delivery-id="{{ $delivery->id }}">
+                                @if($notification && $notificationUrl)
+                                    <a href="{{ $notificationUrl }}" class="faculty-notif-text">{{ $notification->title }}</a>
+                                @else
+                                    <span class="faculty-notif-text">{{ $notification ? $notification->title : 'New notification' }}</span>
+                                @endif
+                                <button
+                                    type="button"
+                                    class="faculty-notif-dismiss js-faculty-notif-dismiss"
+                                    data-dismiss-url="{{ route('faculty.notifications.dismiss', ['notificationDelivery' => $delivery->id]) }}"
+                                    aria-label="Dismiss notification"
+                                    title="Dismiss"
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                        @empty
+                        @endforelse
+                    </div>
+
+                    <p class="faculty-notif-empty {{ $facultyNotifications->count() ? 'd-none' : '' }}">No new notifications.</p>
+                </div>
             </div>
         </div>
     </div>

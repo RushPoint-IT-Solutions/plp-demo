@@ -12,6 +12,7 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.7.*",
         "laravel/tinker": "^1.0",
+        "mpdf/mpdf": "8.1",
         "spatie/laravel-permission": "2.34"
     },
     "require-dev": {
@@ -20,7 +21,8 @@
         "fzaninotto/faker": "^1.4",
         "mockery/mockery": "^1.0",
         "nunomaduro/collision": "^2.0",
-        "phpunit/phpunit": "^7.0"
+        "phpunit/phpunit": "^7.0",
+        "vimeo/psalm": "^4.30"
     },
     "config": {
         "optimize-autoloader": true,

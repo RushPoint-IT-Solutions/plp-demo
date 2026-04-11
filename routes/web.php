@@ -63,9 +63,9 @@ Route::prefix('apply')->name('applicant.apply.')->group(function () {
         return redirect()->route('applicant.apply.welcome');
     });
     Route::get('/apply-welcome', 'Applicant\ApplicantOnboardingController@welcome')->name('welcome');
-    Route::post('/start', 'Applicant\ApplicantOnboardingController@start')->name('start');
+    Route::post('/start', 'Applicant\ApplicantOnboardingController@start')->name('start')->middleware('throttle:20,1');
     Route::get('/basic-details', 'Applicant\ApplicantOnboardingController@basicDetails')->name('basic-details');
-    Route::post('/basic-details', 'Applicant\ApplicantOnboardingController@storeBasicDetails')->name('basic-details.store');
+    Route::post('/basic-details', 'Applicant\ApplicantOnboardingController@storeBasicDetails')->name('basic-details.store')->middleware('throttle:20,1');
     Route::get('/form-preview', 'Applicant\ApplicantOnboardingController@formPreview')->name('form-preview');
     Route::post('/form-preview', 'Applicant\ApplicantOnboardingController@savePreviewForm')->name('form-preview.save');
     Route::post('/form-preview/step-1', 'Applicant\ApplicantOnboardingController@savePreviewStep1')->name('form-preview.step-1.save');
@@ -116,10 +116,14 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
 Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
+    Route::get('/help-center', 'Registrar\RegistrarController@helpCenter')->name('help.center');
+    Route::get('/help-center/live-chat', 'Registrar\RegistrarController@helpCenterLiveChat')->name('help.live-chat');
+    Route::get('/help-center/{topic}', 'Registrar\RegistrarController@helpCenterTopic')->name('help.topic');
 
     // Process sub-pages
     Route::prefix('process')->name('process.')->group(function () {
         Route::get('/application', 'Registrar\RegistrarController@applicationProcess')->name('application');
+        Route::get('/application/print', 'Registrar\RegistrarController@applicationProcessPrint')->name('application.print');
         Route::get('/application/{applicant}/form', 'Registrar\RegistrarController@applicantFormEditor')->name('application.form.edit');
         Route::post('/application/{applicant}/form', 'Registrar\RegistrarController@saveApplicantFormFromRegistrar')->name('application.form.save');
         Route::post('/application/{applicant}/form/step-1', 'Registrar\RegistrarController@saveApplicantFormStep1FromRegistrar')->name('application.form.step-1.save');
@@ -132,11 +136,20 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
         Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
+        Route::get('/approval-status/data', 'Registrar\RegistrarController@approvalStatusData')->name('approval-status.data');
+        Route::post('/approval-status', 'Registrar\RegistrarController@storeApprovalStatus')->name('approval-status.store');
+        Route::put('/approval-status/{applicationStatus}', 'Registrar\RegistrarController@updateApprovalStatus')->name('approval-status.update');
+        Route::delete('/approval-status/{applicationStatus}', 'Registrar\RegistrarController@destroyApprovalStatus')->name('approval-status.delete');
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
         Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
         Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
+        Route::post('/batch-upload', 'Registrar\RegistrarController@storeBatchUpload')->name('batch-upload.store');
+        Route::get('/batch-upload/image/{studentProfileImage}', 'Registrar\RegistrarController@batchUploadImage')->name('batch-upload.image');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
+        Route::post('/document-list', 'Registrar\RegistrarController@storeDocumentRequirement')->name('document-list.store');
+        Route::put('/document-list/{documentRequirement}', 'Registrar\RegistrarController@updateDocumentRequirement')->name('document-list.update');
+        Route::delete('/document-list/{documentRequirement}', 'Registrar\RegistrarController@destroyDocumentRequirement')->name('document-list.delete');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/unifast', 'Registrar\RegistrarController@reportsUnifast')->name('unifast');
@@ -149,19 +162,43 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         // Academic Master
         Route::prefix('academic-master')->name('academic-master.')->group(function () {
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
+            Route::post('/program-file/department', 'Registrar\RegistrarController@saveDepartmentSetup')->name('program-file.department.store');
             Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
+            Route::put('/program-file/setup/{course}', 'Registrar\RegistrarController@updateProgramSetup')->name('program-file.setup.update');
+            Route::delete('/program-file/setup/{course}', 'Registrar\RegistrarController@destroyProgramSetup')->name('program-file.setup.delete');
             Route::get('/subject-file', 'Registrar\RegistrarController@subjectFile')->name('subject-file');
+            Route::get('/subject-file/data', 'Registrar\RegistrarController@subjectFileData')->name('subject-file.data');
+            Route::post('/subject-file', 'Registrar\RegistrarController@storeSubjectFile')->name('subject-file.store');
+            Route::put('/subject-file/{subjectId}', 'Registrar\RegistrarController@updateSubjectFile')->name('subject-file.update');
+            Route::delete('/subject-file/{subjectId}', 'Registrar\RegistrarController@destroySubjectFile')->name('subject-file.delete');
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
+            Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data')->middleware('throttle:60,1');
+            Route::get('/pre-requisites/download/pdf', 'Registrar\RegistrarController@downloadPreRequisitesPdf')->name('pre-requisites.download')->middleware('throttle:60,1');
+            Route::get('/pre-requisites/subjects/{courseCurriculumSubjectId}/download/pdf', 'Registrar\RegistrarController@downloadPreRequisitesSubjectPdf')->name('pre-requisites.subject.download')->middleware('throttle:60,1');
+            Route::get('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@preRequisitesSubjectDetail')->name('pre-requisites.subject.show')->middleware('throttle:60,1');
+            Route::put('/pre-requisites/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@updatePreRequisitesSubjectDetail')->name('pre-requisites.subject.update')->middleware('throttle:60,1');
             Route::get('/letter-grade', 'Registrar\RegistrarController@letterGrade')->name('letter-grade');
         });
 
         // Scheduling
         Route::prefix('scheduling')->name('scheduling.')->group(function () {
             Route::get('/room-file', 'Registrar\RegistrarController@roomFile')->name('room-file');
+            Route::get('/room-file/data', 'Registrar\RegistrarController@roomFileData')->name('room-file.data')->middleware('throttle:60,1');
+            Route::post('/room-file/buildings', 'Registrar\RegistrarController@storeRoomBuilding')->name('room-file.building.store')->middleware('throttle:60,1');
+            Route::post('/room-file/hallways', 'Registrar\RegistrarController@storeRoomHallway')->name('room-file.hallway.store')->middleware('throttle:60,1');
+            Route::post('/room-file', 'Registrar\RegistrarController@storeRoomFile')->name('room-file.store')->middleware('throttle:60,1');
+            Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
+            Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
+            Route::get('/slot-monitoring/data', 'Registrar\RegistrarController@slotMonitoringData')->name('slot-monitoring.data')->middleware('throttle:60,1');
+            Route::post('/slot-monitoring', 'Registrar\RegistrarController@storeSlotMonitoring')->name('slot-monitoring.store')->middleware('throttle:60,1');
+            Route::put('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@updateSlotMonitoring')->name('slot-monitoring.update')->middleware('throttle:60,1');
+            Route::delete('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@destroySlotMonitoring')->name('slot-monitoring.delete')->middleware('throttle:60,1');
             Route::get('/section-merging', 'Registrar\RegistrarController@sectionMerging')->name('section-merging');
+            Route::get('/section-merging/data', 'Registrar\RegistrarController@sectionMergingData')->name('section-merging.data')->middleware('throttle:60,1');
+            Route::post('/section-merging', 'Registrar\RegistrarController@storeSectionMerging')->name('section-merging.store')->middleware('throttle:60,1');
         });
 
         // Student Management
@@ -230,6 +267,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     Route::prefix('services')->name('services.')->group(function () {
         Route::prefix('classroom-faculty')->name('classroom-faculty.')->group(function () {
             Route::get('/class-list', 'Registrar\Services\ClassListController@index')->name('class-list');
+            Route::get('/class-list/export/{format}', 'Registrar\Services\ClassListController@export')->name('class-list.export');
             Route::get('/attendance', 'Registrar\Services\AttendanceController@index')->name('attendance');
 
             Route::prefix('faculty-loads')->name('faculty-loads.')->group(function () {
@@ -257,6 +295,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationUpdate')->name('transmutation.update');
             Route::delete('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationDestroy')->name('transmutation.destroy');
             Route::get('/deficiency', 'Registrar\Services\GradingAcademicController@deficiency')->name('deficiency');
+            Route::get('/deficiency/students/search', 'Registrar\Services\GradingAcademicController@deficiencyStudentSearch')->name('deficiency.students.search');
             Route::post('/deficiency/students', 'Registrar\Services\GradingAcademicController@deficiencyStudentStore')->name('deficiency.students.store');
             Route::get('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyRecords')->name('deficiency.records');
             Route::post('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyStore')->name('deficiency.store');
@@ -276,6 +315,16 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('student-account')->name('student-account.')->group(function () {
             Route::get('/student-discipline', 'Registrar\Services\StudentAccountController@studentDiscipline')->name('student-discipline');
+            Route::get('/student-discipline/data', 'Registrar\Services\StudentAccountController@studentDisciplineData')->name('student-discipline.data');
+            Route::get('/student-discipline/students/search', 'Registrar\Services\StudentAccountController@studentDisciplineStudentSearch')->name('student-discipline.students.search');
+            Route::get('/student-discipline/programs/search', 'Registrar\Services\StudentAccountController@studentDisciplineProgramSearch')->name('student-discipline.programs.search');
+            Route::post('/student-discipline/students', 'Registrar\Services\StudentAccountController@studentDisciplineStudentStore')->name('student-discipline.students.store');
+            Route::put('/student-discipline/students/{studentDisciplineStudent}', 'Registrar\Services\StudentAccountController@studentDisciplineStudentUpdate')->name('student-discipline.students.update');
+            Route::delete('/student-discipline/students/{studentDisciplineStudent}', 'Registrar\Services\StudentAccountController@studentDisciplineStudentDestroy')->name('student-discipline.students.destroy');
+            Route::get('/student-discipline/students/{studentDisciplineStudent}/records', 'Registrar\Services\StudentAccountController@studentDisciplineRecords')->name('student-discipline.records');
+            Route::post('/student-discipline/students/{studentDisciplineStudent}/records', 'Registrar\Services\StudentAccountController@studentDisciplineRecordStore')->name('student-discipline.records.store');
+            Route::put('/student-discipline/records/{studentDisciplineRecord}', 'Registrar\Services\StudentAccountController@studentDisciplineRecordUpdate')->name('student-discipline.records.update');
+            Route::delete('/student-discipline/records/{studentDisciplineRecord}', 'Registrar\Services\StudentAccountController@studentDisciplineRecordDestroy')->name('student-discipline.records.destroy');
             Route::get('/family', 'Registrar\Services\StudentAccountController@family')->name('family');
             Route::get('/change-password', 'Registrar\Services\StudentAccountController@changePassword')->name('change-password');
         });
@@ -346,6 +395,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 */
 Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
+    Route::get('/help-center', 'Applicant\ApplicantController@helpCenter')->name('help.center');
+    Route::get('/help-center/live-chat', 'Applicant\ApplicantController@helpCenterLiveChat')->name('help.live-chat');
+    Route::get('/help-center/{topic}', 'Applicant\ApplicantController@helpCenterTopic')->name('help.topic');
     Route::post('/application-form/reset-progress', 'Applicant\ApplicantController@resetApplicationFormProgress')->name('application-form.reset-progress');
     Route::post('/application-form/step-1', 'Applicant\ApplicantController@saveApplicationFormStep1')->name('application-form.step-1.save');
     Route::post('/application-form/step-2', 'Applicant\ApplicantController@saveApplicationFormStep2')->name('application-form.step-2.save');
@@ -372,4 +424,11 @@ Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_
     Route::get('/grading-sheet', 'Faculty\FacultyController@gradingSheet')->name('grading-sheet');
     Route::post('/grading-sheet/update', 'Faculty\FacultyController@updateGrades')->name('grading-sheet.update');
     Route::get('/evaluation', 'Faculty\FacultyController@evaluation')->name('evaluation');
+    Route::get('/profile', 'Faculty\FacultyController@profile')->name('profile');
+    Route::get('/profile/edit', 'Faculty\FacultyController@editProfile')->name('profile.edit');
+    Route::post('/profile', 'Faculty\FacultyController@updateProfile')->name('profile.update');
+    Route::get('/messaging', 'Faculty\FacultyController@messaging')->name('messaging');
+    Route::get('/notifications/feed', 'Faculty\FacultyController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Faculty\FacultyController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Faculty\FacultyController@dismissNotification')->name('notifications.dismiss');
 });

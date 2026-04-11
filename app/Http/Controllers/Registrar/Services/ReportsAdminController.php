@@ -124,6 +124,7 @@ class ReportsAdminController extends Controller
             'so_number' => 'nullable|string|max:80',
             'so_date' => 'nullable|date',
             'suspend_account' => 'nullable|boolean',
+            'suspend_remarks' => 'nullable|string|max:255|required_if:suspend_account,1',
         ]);
 
         GraduateTagging::updateOrCreate(
@@ -134,6 +135,9 @@ class ReportsAdminController extends Controller
                 'so_number' => isset($validated['so_number']) ? trim((string) $validated['so_number']) : null,
                 'so_date' => $validated['so_date'] ?? null,
                 'suspend_account' => (bool) ($validated['suspend_account'] ?? false),
+                'suspend_remarks' => (bool) ($validated['suspend_account'] ?? false)
+                    ? (isset($validated['suspend_remarks']) ? trim((string) $validated['suspend_remarks']) : null)
+                    : null,
             ]
         );
 

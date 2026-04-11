@@ -12,8 +12,14 @@
         "watch:sass": "npx sass --watch resources/sass/style.scss:style.sass.css --no-source-map --style=expanded"
     },
     "devDependencies": {
+        "@benborla29/mcp-server-mysql": "^2.0.8",
+        "@berthojoris/mcp-mysql-server": "^1.40.5",
+        "@modelcontextprotocol/server-filesystem": "^2026.1.14",
+        "@playwright/mcp": "^0.0.70",
         "axios": "^0.18",
         "bootstrap": "^4.0.0",
+        "browser-sync": "^2.26.14",
+        "browser-sync-webpack-plugin": "^2.3.0",
         "cross-env": "^5.1",
         "jquery": "^3.2",
         "laravel-mix": "^4.0.7",
@@ -23,9 +29,7 @@
         "sass": "^1.15.2",
         "sass-loader": "^7.1.0",
         "vue": "^2.5.17",
-        "vue-template-compiler": "^2.7.16",
-        "browser-sync": "^2.26.14",
-        "browser-sync-webpack-plugin": "^2.3.0"
+        "vue-template-compiler": "^2.7.16"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.28.0",

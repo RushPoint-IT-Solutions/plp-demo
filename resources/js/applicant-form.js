@@ -151,12 +151,45 @@
 
     initSubmittedCalendar();
 
+    var resetApplicationProgressForm = document.getElementById('resetApplicationProgressForm');
+    if (resetApplicationProgressForm) {
+        resetApplicationProgressForm.addEventListener('submit', function (event) {
+            var confirmMessage = this.getAttribute('data-confirm-message') || 'Reset application progress?';
+            if (!window.confirm(confirmMessage)) {
+                event.preventDefault();
+            }
+        });
+    }
+
     var form = document.getElementById('applicationForm');
     if (!form) {
         return;
     }
 
     var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
+    var stepSaveInProgress = false;
+    var finalSubmitInProgress = false;
+
+    function hasPendingSubmission() {
+        return stepSaveInProgress || finalSubmitInProgress;
+    }
+
+    function toggleActionButtons(isBusy) {
+        form.querySelectorAll('.btn-setup-next, .btn-setup-prev, button[type="submit"]').forEach(function (button) {
+            if (isBusy) {
+                button.setAttribute('data-prev-disabled', button.disabled ? '1' : '0');
+                button.disabled = true;
+                button.classList.add('is-loading');
+                return;
+            }
+
+            button.classList.remove('is-loading');
+            if (button.getAttribute('data-prev-disabled') === '0') {
+                button.disabled = false;
+            }
+            button.removeAttribute('data-prev-disabled');
+        });
+    }
 
     function findRequiredLabel(field) {
         var container = field.closest('.setup-col, .setup-col-sm, .setup-col-toggle, .setup-col--full');
@@ -376,6 +409,10 @@
 
     document.querySelectorAll('.step-item .step-pill').forEach(function (pill) {
         pill.addEventListener('click', function () {
+            if (hasPendingSubmission()) {
+                return;
+            }
+
             var parent = this.closest('.step-item');
             if (!parent) {
                 return;
@@ -387,17 +424,31 @@
 
     document.querySelectorAll('button[data-save-step][data-go-step]').forEach(function (button) {
         button.addEventListener('click', function () {
+            if (hasPendingSubmission()) {
+                showFeedback('Please wait. Your previous action is still processing.', true);
+                return;
+            }
+
             var thisButton = this;
             var stepToSave = parseInt(thisButton.getAttribute('data-save-step') || '1', 10);
             var stepToGo = parseInt(thisButton.getAttribute('data-go-step') || '1', 10);
+            var panelToSave = document.getElementById('step-' + stepToSave);
+
+            if (panelToSave && panelToSave.classList.contains('step-hidden')) {
+                return;
+            }
 
             if (!validateStep(stepToSave)) {
                 return;
             }
 
-            thisButton.disabled = true;
+            stepSaveInProgress = true;
+            toggleActionButtons(true);
+
             saveStep(stepToSave).then(function (ok) {
-                thisButton.disabled = false;
+                stepSaveInProgress = false;
+                toggleActionButtons(false);
+
                 if (ok) {
                     maxUnlockedStep = Math.max(maxUnlockedStep, stepToGo);
                     goToStep(stepToGo, true);
@@ -408,14 +459,40 @@
 
     document.querySelectorAll('button[data-go-step]:not([data-save-step])').forEach(function (button) {
         button.addEventListener('click', function () {
+            if (hasPendingSubmission()) {
+                return;
+            }
+
             var stepToGo = parseInt(this.getAttribute('data-go-step') || '1', 10);
             goToStep(stepToGo, false);
         });
     });
 
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function (event) {
+        if (hasPendingSubmission()) {
+            event.preventDefault();
+            showFeedback('Please wait. Your previous submission is still processing.', true);
+            return;
+        }
+
+        finalSubmitInProgress = true;
+        toggleActionButtons(true);
         setActiveStepInput(4);
     });
+
+    var nativeSubmit = form.submit;
+    if (typeof nativeSubmit === 'function') {
+        form.submit = function () {
+            if (hasPendingSubmission()) {
+                return;
+            }
+
+            finalSubmitInProgress = true;
+            toggleActionButtons(true);
+            setActiveStepInput(4);
+            nativeSubmit.call(form);
+        };
+    }
 
     // Photo upload preview
     var photoInput = document.getElementById('photoInput');
@@ -568,8 +645,7 @@
     }
 
     // Step 4 program type behavior
-    var applyProgramRadios = document.querySelectorAll('input[name="apply_program"]');
-    var applyStrandSelect = document.getElementById('applyStrandSelect');
+    var applyProgramInputs = document.querySelectorAll('input[name="apply_program"]');
     var applyCourseSelect = document.getElementById('applyCourseSelect');
 
     function hasSelectableOption(selectEl) {
@@ -583,23 +659,13 @@
     }
 
     function syncProgramMode() {
-        var selectedProgram = 'senior_high';
-        applyProgramRadios.forEach(function (radio) {
-            if (radio.checked) {
-                selectedProgram = radio.value;
+        var selectedProgram = 'college';
+        applyProgramInputs.forEach(function (input) {
+            var type = (input.type || '').toLowerCase();
+            if ((type === 'radio' && input.checked) || type === 'hidden') {
+                selectedProgram = input.value || 'college';
             }
         });
-
-        if (applyStrandSelect) {
-            var strandEnabled = selectedProgram === 'senior_high';
-            applyStrandSelect.disabled = !strandEnabled;
-            if (strandEnabled) {
-                applyStrandSelect.setAttribute('required', 'required');
-            } else {
-                applyStrandSelect.removeAttribute('required');
-                applyStrandSelect.value = '';
-            }
-        }
 
         if (applyCourseSelect) {
             var courseEnabled = selectedProgram === 'college';
@@ -615,9 +681,11 @@
         syncRequiredIndicators();
     }
 
-    if (applyProgramRadios.length) {
-        applyProgramRadios.forEach(function (radio) {
-            radio.addEventListener('change', syncProgramMode);
+    if (applyProgramInputs.length) {
+        applyProgramInputs.forEach(function (input) {
+            if ((input.type || '').toLowerCase() === 'radio') {
+                input.addEventListener('change', syncProgramMode);
+            }
         });
         syncProgramMode();
     }

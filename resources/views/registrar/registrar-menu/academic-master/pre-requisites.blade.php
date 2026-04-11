@@ -4,55 +4,73 @@
 @section('page-title', 'PRE-REQUISITES')
 
 @section('content')
-<div class="prereq-page">
+<div
+    class="prereq-page"
+    id="prereqPage"
+    data-list-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites.data') }}"
+    data-download-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites.download') }}"
+    data-detail-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.show', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
+    data-save-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.update', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
+    data-subject-download-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.download', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
+    data-csrf-token="{{ csrf_token() }}"
+    data-course-years='@json($courseYearMap)'
+    data-selected-course-id="{{ $selectedCourseId ?: '' }}"
+    data-selected-curriculum-year="{{ $selectedCurriculumYear }}"
+>
 
     {{-- ═══════════ VIEW 1: Filter Bar (always visible) ═══════════ --}}
     <div class="prereq-filter-bar">
         <div class="prereq-filter-left">
             <div class="prereq-filter-group">
                 <span class="app-filter-label">Course</span>
-                <select class="app-filter-select" id="prereqCourse" style="width:100%;">
-                    <option value="BSIT">Bachelor of Science in Information Technology</option>
-                    <option value="BSCS">Bachelor of Science in Computer Science</option>
-                    <option value="BSED">Bachelor of Secondary Education</option>
-                    <option value="BSBA">Bachelor of Science in Business Administration</option>
+                <select class="app-filter-select" id="prereqCourse">
+                    @forelse($courses as $course)
+                        <option value="{{ $course->id }}" {{ (string) $selectedCourseId === (string) $course->id ? 'selected' : '' }}>
+                            {{ $course->name ?: $course->description }}
+                        </option>
+                    @empty
+                        <option value="">No courses available</option>
+                    @endforelse
                 </select>
             </div>
             <div class="prereq-filter-group prereq-filter-group-sm">
                 <span class="app-filter-label">Curriculum Year</span>
-                <select class="app-filter-select" id="prereqYear" style="width:100%;">
-                    <option value="1920">1920</option>
-                    <option value="2021">2021</option>
-                    <option value="2122">2122</option>
-                    <option value="2223">2223</option>
-                </select>
+                <select class="app-filter-select" id="prereqYear"></select>
             </div>
         </div>
         <div class="prereq-filter-right">
-            <button type="button" class="prereq-view-btn" id="btnViewList" onclick="loadPrereqList()">View List</button>
+            <button type="button" class="prereq-view-btn" id="btnViewList">View List</button>
         </div>
     </div>
 
     {{-- ═══════════ VIEW 2: Subject List (hidden until View List clicked) ═══════════ --}}
-    <div class="prereq-list-view" id="prereqListView" style="display:none;">
+    <div class="prereq-list-view" id="prereqListView" hidden>
         <div class="prereq-list-header">
             <h2 class="prereq-program-title" id="prereqProgramTitle"></h2>
-            <button type="button" class="prereq-download-btn" onclick="downloadPrereqPDF()">Download PDF</button>
+            <button type="button" class="prereq-download-btn" id="prereqDownloadBtn">Download PDF</button>
         </div>
 
         <div id="prereqListContent">
             {{-- Dynamic year/semester tables injected here --}}
         </div>
+
+        <div class="prereq-pagination" id="prereqPagination" hidden>
+            <button type="button" class="prereq-pagination-btn" id="prereqPrevPage">Previous</button>
+            <span class="prereq-pagination-info" id="prereqPageInfo">Page 1 of 1</span>
+            <button type="button" class="prereq-pagination-btn" id="prereqNextPage">Next</button>
+        </div>
     </div>
 
     {{-- ═══════════ VIEW 3: Subject Detail / Edit (hidden until row clicked) ═══════════ --}}
-    <div class="prereq-detail-view" id="prereqDetailView" style="display:none;">
+    <div class="prereq-detail-view" id="prereqDetailView" hidden>
         <div class="prereq-detail-banner">
             <div class="prereq-detail-info">
                 <span class="prereq-detail-code" id="prereqDetailCode"></span>
                 <span class="prereq-detail-name" id="prereqDetailName"></span>
             </div>
-            <button type="button" class="prereq-save-btn" onclick="savePrereqDetail()">Save</button>
+            <button type="button" class="prereq-download-btn" id="prereqBackBtn">Back to List</button>
+            <button type="button" class="prereq-download-btn" id="prereqSubjectDownloadBtn">Download Subject PDF</button>
+            <button type="button" class="prereq-save-btn" id="prereqSaveBtn">Save</button>
         </div>
 
         {{-- Pre-requisite(s) --}}
@@ -64,16 +82,16 @@
             <div class="prereq-section-body">
                 <div class="prereq-col">
                     <div class="prereq-search-row">
-                        <input type="text" class="prereq-search-input" id="prereqSearchPre" placeholder="Search..." oninput="filterPrereqAvailable('pre')">
-                        <button type="button" class="prereq-search-btn" onclick="filterPrereqAvailable('pre')">Search</button>
+                        <input type="text" class="prereq-search-input" id="prereqSearchPre" data-type="pre" placeholder="Search...">
+                        <button type="button" class="prereq-search-btn" data-action="search" data-type="pre">Search</button>
                     </div>
-                    <div class="prereq-available-list" id="prereqAvailPre">
+                    <div class="prereq-available-list" id="prereqAvailPre" data-type="pre">
                         {{-- Dynamic available subjects --}}
                     </div>
                 </div>
                 <div class="prereq-col">
                     <div class="prereq-selected-label">-list of pre-requisite subject(s)-</div>
-                    <div class="prereq-selected-list" id="prereqSelPre">
+                    <div class="prereq-selected-list" id="prereqSelPre" data-type="pre">
                         {{-- Dynamic selected subjects --}}
                     </div>
                 </div>
@@ -89,15 +107,15 @@
             <div class="prereq-section-body">
                 <div class="prereq-col">
                     <div class="prereq-search-row">
-                        <input type="text" class="prereq-search-input" id="prereqSearchCo" placeholder="Search..." oninput="filterPrereqAvailable('co')">
-                        <button type="button" class="prereq-search-btn" onclick="filterPrereqAvailable('co')">Search</button>
+                        <input type="text" class="prereq-search-input" id="prereqSearchCo" data-type="co" placeholder="Search...">
+                        <button type="button" class="prereq-search-btn" data-action="search" data-type="co">Search</button>
                     </div>
-                    <div class="prereq-available-list" id="prereqAvailCo">
+                    <div class="prereq-available-list" id="prereqAvailCo" data-type="co">
                     </div>
                 </div>
                 <div class="prereq-col">
                     <div class="prereq-selected-label">-list of co-requisite subject(s)-</div>
-                    <div class="prereq-selected-list" id="prereqSelCo">
+                    <div class="prereq-selected-list" id="prereqSelCo" data-type="co">
                     </div>
                 </div>
             </div>
@@ -112,15 +130,15 @@
             <div class="prereq-section-body">
                 <div class="prereq-col">
                     <div class="prereq-search-row">
-                        <input type="text" class="prereq-search-input" id="prereqSearchEq" placeholder="Search..." oninput="filterPrereqAvailable('eq')">
-                        <button type="button" class="prereq-search-btn" onclick="filterPrereqAvailable('eq')">Search</button>
+                        <input type="text" class="prereq-search-input" id="prereqSearchEq" data-type="equivalent" placeholder="Search...">
+                        <button type="button" class="prereq-search-btn" data-action="search" data-type="equivalent">Search</button>
                     </div>
-                    <div class="prereq-available-list" id="prereqAvailEq">
+                    <div class="prereq-available-list" id="prereqAvailEq" data-type="equivalent">
                     </div>
                 </div>
                 <div class="prereq-col">
                     <div class="prereq-selected-label">-list of equivalent subject(s)-</div>
-                    <div class="prereq-selected-list" id="prereqSelEq">
+                    <div class="prereq-selected-list" id="prereqSelEq" data-type="equivalent">
                     </div>
                 </div>
             </div>

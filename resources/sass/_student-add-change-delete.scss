@@ -2,6 +2,15 @@
 .acd-page {
     padding-top: 8px;
     overflow-x: hidden;
+    overflow-y: visible;
+}
+
+body.page-student-forms .student-main-wrapper,
+body.page-student-forms .content-footer-wrap,
+body.page-student-forms .student-content,
+body.page-student-forms .cor-scroll-wrapper.acd-page {
+    overflow-y: visible !important;
+    max-height: none !important;
 }
 
 .acd-canvas {
@@ -15,7 +24,7 @@
 .acd-actions {
     display: flex;
     justify-content: flex-end;
-    margin: 0 0 8px;
+    margin: 0 0 16px;
 }
 
 .acd-print-btn {
@@ -36,6 +45,7 @@
     width: var(--acd-paper-width);
     min-width: var(--acd-paper-width);
     min-height: 297mm;
+    margin-top: 0 !important;
     border: 1.5px solid #9aa1a8;
     border-radius: 0 !important;
     transform: scale(var(--acd-scale));
@@ -355,6 +365,7 @@
         max-width: 100% !important;
         height: auto !important;
         min-height: auto !important;
+        margin-top: 2in !important;
         transform: none !important;
         border: 1.5px solid #000 !important;
         border-radius: 0 !important;

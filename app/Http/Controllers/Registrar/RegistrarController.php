@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Registrar;
 
+use App\ApplicationStatus;
 use App\Applicant;
 use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
@@ -9,28 +10,78 @@ use App\ApplicantFamilyBackground;
 use App\AlumniTrackerSetting;
 use App\CancellationWaiver;
 use App\Course;
+use App\CourseCurriculum;
+use App\CourseCurriculumSubject;
 use App\CrossEnrollmentRequest;
+use App\CurriculumRequisiteType;
+use App\CurriculumSubjectRequisite;
 use App\Department;
 use App\Faculty;
+use App\Http\Requests\StoreRoomBuildingRequest;
+use App\Http\Requests\StoreRoomHallwayRequest;
+use App\Http\Requests\StoreRoomRequest;
+use App\Http\Requests\StoreSectionMergingRequest;
+use App\Http\Requests\StoreSlotMonitoringRequest;
+use App\Http\Requests\UpdateRoomRequest;
+use App\Http\Requests\UpdateSlotMonitoringRequest;
 use App\Http\Requests\SaveApplicantStep1Request;
 use App\Http\Requests\SaveApplicantStep2Request;
 use App\Http\Requests\SaveApplicantStep3Request;
 use App\Http\Requests\SaveApplicantStep4Request;
 use App\Http\Requests\SubmitApplicantApplicationRequest;
+use App\RegistrarRequirement;
+use App\RegistrarRequirementDefinition;
+use App\RegistrarRequirementPolicy;
+use App\RegistrarRequirementType;
+use App\Room;
+use App\RoomBuilding;
+use App\RoomHallway;
+use App\Semester;
+use App\SectionMergingOperation;
+use App\SlotMonitoring;
 use App\Student;
+use App\StudentProfile;
+use App\StudentProfileImage;
 use App\StudentSubjectGrade;
+use App\Subject;
+use App\SystemSchoolSemester;
+use App\YearBlock;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Schema;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 
 class RegistrarController extends Controller
 {
+    private const ROOM_FILE_DEFAULT_PER_PAGE = 25;
+    private const ROOM_FILE_MIN_PER_PAGE = 10;
+    private const ROOM_FILE_MAX_PER_PAGE = 100;
+    private const ROOM_FILE_DEFAULT_SORT_BY = 'floor_number';
+    private const ROOM_FILE_DEFAULT_SORT_DIR = 'asc';
+    private const ROOM_FILE_ALLOWED_SORT_COLUMNS = [
+        'room_number',
+        'floor_number',
+        'building',
+        'capacity',
+        'program',
+        'updated_by',
+    ];
+
+    private const SLOT_MONITORING_DEFAULT_PER_PAGE = 25;
+    private const SLOT_MONITORING_MIN_PER_PAGE = 10;
+    private const SLOT_MONITORING_MAX_PER_PAGE = 100;
+    private const SLOT_MONITORING_ALLOWED_SEMESTERS = ['First', 'Second', 'Summer'];
+
     /**
      * Registrar Dashboard
      */
@@ -97,6 +148,148 @@ class RegistrarController extends Controller
     public function messaging()
     {
         return view('registrar.messaging');
+    }
+
+    public function helpCenter()
+    {
+        $topics = $this->helpCenterTopics();
+
+        $popularQuestions = [
+            [
+                'question' => 'What documents are required for application?',
+                'answer' => 'You usually need a valid school ID, recent grades/records, and government-issued identification. Check your application step page for the exact list.',
+            ],
+            [
+                'question' => 'How can I track my application status?',
+                'answer' => 'Go to Application Process in your account and open your submitted application. Status updates are posted there in real-time by the registrar.',
+            ],
+            [
+                'question' => 'How do I apply using the system?',
+                'answer' => 'Open Application Process, complete all required fields, review your entries, then submit. You can use the Help Center topic pages for step-by-step guidance.',
+            ],
+        ];
+
+        return view('registrar.help-center.index', [
+            'topics' => $topics,
+            'popularQuestions' => $popularQuestions,
+        ]);
+    }
+
+    public function helpCenterTopic($topic)
+    {
+        $topics = $this->helpCenterTopics();
+        if (!isset($topics[$topic])) {
+            abort(404);
+        }
+
+        return view('registrar.help-center.topic', [
+            'topic' => $topics[$topic],
+        ]);
+    }
+
+    public function helpCenterLiveChat()
+    {
+        return view('registrar.help-center.live-chat');
+    }
+
+    private function helpCenterTopics()
+    {
+        return [
+            'account-issues' => [
+                'slug' => 'account-issues',
+                'title' => 'Account Issues',
+                'subtitle' => 'Common problems: Forgot password, Cannot log in, Did not receive a verification email, and Account is locked.',
+                'icon' => 'account',
+                'steps' => [
+                    ['title' => 'Click "Forgot Password"', 'description' => 'This option is available on the login page below the password field.'],
+                    ['title' => 'Enter your registered email', 'description' => 'Use the same email address used in your registration.'],
+                    ['title' => 'Check your email for reset link', 'description' => 'If not found, check your spam or junk folder.'],
+                    ['title' => 'Create a new password', 'description' => 'Use at least 8 characters with a mix of letters and numbers.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Why can not I log in?', 'a' => 'This usually happens because of a wrong password, inactive account, or pending verification. Try resetting your password first.'],
+                    ['q' => 'How do I reset my password?', 'a' => 'Use the Forgot Password option on login, then follow the instructions sent to your email.'],
+                    ['q' => 'Can I change my email?', 'a' => 'Yes, submit an account update request to registrar support for validation.'],
+                ],
+            ],
+            'application-process' => [
+                'slug' => 'application-process',
+                'title' => 'Application Process',
+                'subtitle' => 'Here is the step-by-step guide on how to apply using the system.',
+                'icon' => 'application',
+                'steps' => [
+                    ['title' => 'Complete the Application Form', 'description' => 'Fill out all required fields in the application form.'],
+                    ['title' => 'Submit your Application', 'description' => 'Review your information and click "Submit".'],
+                    ['title' => 'Log in to your Applicant Account', 'description' => 'Use your registered email and password to track your application status.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Can I edit my application after submitting it?', 'a' => 'Minor updates may be requested from registrar, but major fields are usually locked after submission.'],
+                    ['q' => 'How will I know if my application is successful?', 'a' => 'You will receive updates in your portal status and registered email notifications.'],
+                    ['q' => 'Where can I track my application status?', 'a' => 'Open Application Process from your dashboard and view your current status timeline.'],
+                ],
+            ],
+            'technical-problems' => [
+                'slug' => 'technical-problems',
+                'title' => 'Technical Problems',
+                'subtitle' => 'Try these troubleshooting steps before contacting support.',
+                'icon' => 'technical',
+                'steps' => [
+                    ['title' => 'Refresh the page', 'description' => 'This helps reload the system and fix minor issues.'],
+                    ['title' => 'Clear browser cache', 'description' => 'Old cache files may cause loading problems.'],
+                    ['title' => 'Use Google Chrome or Edge', 'description' => 'These browsers are fully supported by the system.'],
+                    ['title' => 'Check your internet connection', 'description' => 'Ensure you have a stable and strong connection.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Why is the system slow?', 'a' => 'Slow speed can be caused by network instability, browser cache, or peak-hour traffic.'],
+                    ['q' => 'What should I do if I get an error?', 'a' => 'Refresh first, then try again. If it persists, capture a screenshot and contact support.'],
+                ],
+            ],
+            'forms-and-uploads' => [
+                'slug' => 'forms-and-uploads',
+                'title' => 'Forms and Uploads',
+                'subtitle' => 'Guidelines for uploading files and submitting forms correctly.',
+                'icon' => 'forms',
+                'steps' => [
+                    ['title' => 'Prepare clear document scans', 'description' => 'Use readable images or PDF files only.'],
+                    ['title' => 'Check file size limits', 'description' => 'Large files may fail upload due to system limits.'],
+                    ['title' => 'Upload one required file at a time', 'description' => 'Wait for success confirmation before uploading next file.'],
+                ],
+                'faqs' => [
+                    ['q' => 'What file types are accepted?', 'a' => 'Commonly accepted formats are JPG, PNG, and PDF.'],
+                    ['q' => 'Why does upload fail?', 'a' => 'Upload may fail due to unsupported type, large size, or unstable internet connection.'],
+                ],
+            ],
+            'applicant-module' => [
+                'slug' => 'applicant-module',
+                'title' => 'Applicant Module',
+                'subtitle' => 'Quick guide for using applicant portal features.',
+                'icon' => 'module',
+                'steps' => [
+                    ['title' => 'Log in with your registered account', 'description' => 'Use the same credentials from your application registration.'],
+                    ['title' => 'Complete required sections', 'description' => 'Finish profile and requirement steps to avoid delays.'],
+                    ['title' => 'Monitor status updates', 'description' => 'Check your dashboard regularly for new notices.'],
+                ],
+                'faqs' => [
+                    ['q' => 'Can I use one account for multiple applications?', 'a' => 'Use one account per applicant profile to avoid data conflicts.'],
+                    ['q' => 'Where do I see my application number?', 'a' => 'Your application number appears in your profile summary and status page.'],
+                ],
+            ],
+            'security-and-privacy' => [
+                'slug' => 'security-and-privacy',
+                'title' => 'Security and Privacy',
+                'subtitle' => 'Best practices to keep your account and personal data safe.',
+                'icon' => 'security',
+                'steps' => [
+                    ['title' => 'Use a strong password', 'description' => 'Do not reuse passwords from other websites.'],
+                    ['title' => 'Never share your login credentials', 'description' => 'Registrar staff will never ask for your password.'],
+                    ['title' => 'Log out on shared devices', 'description' => 'Always end your session after using public computers.'],
+                ],
+                'faqs' => [
+                    ['q' => 'How is my data protected?', 'a' => 'Your account data is protected with access controls and secure processing policies.'],
+                    ['q' => 'What if I suspect unauthorized access?', 'a' => 'Reset your password immediately and report the incident to support.'],
+                ],
+            ],
+        ];
     }
 
     private function requestBoolean(Request $request, $key)
@@ -172,13 +365,8 @@ class RegistrarController extends Controller
 
     private function upsertApplicationPreference(Applicant $applicant, array $payload)
     {
-        if (($payload['apply_program'] ?? null) === 'senior_high') {
-            $payload['apply_course_id'] = null;
-        }
-
-        if (($payload['apply_program'] ?? null) === 'college') {
-            $payload['apply_strand'] = null;
-        }
+        $payload['apply_program'] = 'college';
+        $payload['apply_strand'] = null;
 
         $record = $applicant->applicationPreference;
         if (!$record) {
@@ -448,6 +636,8 @@ class RegistrarController extends Controller
         }
 
         $validated = $request->validated();
+        $validated['apply_program'] = 'college';
+        $validated['apply_strand'] = null;
 
         $this->upsertApplicationPreference($applicant, $validated);
         $applicant->application_draft_step = max((int) $applicant->application_draft_step, 4);
@@ -566,8 +756,8 @@ class RegistrarController extends Controller
             $this->upsertFamilyBackground($applicant, $step3Payload);
 
             $step4Payload = [
-                'apply_program' => $validated['apply_program'],
-                'apply_strand' => $validated['apply_strand'] ?? null,
+                'apply_program' => 'college',
+                'apply_strand' => null,
                 'apply_course_id' => $validated['apply_course_id'] ?? null,
                 'entry_classification' => $validated['entry_classification'],
                 'year_level' => $validated['year_level'],
@@ -589,16 +779,151 @@ class RegistrarController extends Controller
     /**
      * Process > Application Process
      */
-    public function applicationProcess()
+    public function applicationProcess(Request $request)
     {
-        $applicants = Applicant::query()
-            ->with('applicationPreference.course')
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->appends(request()->query());
+        $filters = $this->normalizeApplicationProcessFilters($request);
 
-        return view('registrar.process.application-process', compact('applicants'));
+        $applicants = $this->buildApplicationProcessQuery($filters)
+            ->paginate($filters['per_page'])
+            ->appends($request->query());
+
+        $courses = Course::query()
+            ->orderBy('name')
+            ->get(['id', 'code', 'name']);
+
+        return view('registrar.process.application-process', compact('applicants', 'courses', 'filters'));
+    }
+
+    public function applicationProcessPrint(Request $request)
+    {
+        $filters = $this->normalizeApplicationProcessFilters($request);
+
+        $applicants = $this->buildApplicationProcessQuery($filters)->get();
+
+        return view('registrar.process.application-process-print', compact('applicants', 'filters'));
+    }
+
+    private function normalizeApplicationProcessFilters(Request $request): array
+    {
+        $allowedPerPage = [10, 25, 50, 100];
+        $allowedSortBy = ['applicant_id', 'applicant_name', 'date_applied', 'date_updated'];
+        $allowedSortDirection = ['asc', 'desc'];
+
+        $fromDate = trim((string) $request->query('from_date', ''));
+        $toDate = trim((string) $request->query('to_date', ''));
+
+        $normalizedFromDate = null;
+        if ($fromDate !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fromDate)) {
+            try {
+                $normalizedFromDate = Carbon::parse($fromDate)->format('Y-m-d');
+            } catch (\Throwable $exception) {
+                $normalizedFromDate = null;
+            }
+        }
+
+        $normalizedToDate = null;
+        if ($toDate !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $toDate)) {
+            try {
+                $normalizedToDate = Carbon::parse($toDate)->format('Y-m-d');
+            } catch (\Throwable $exception) {
+                $normalizedToDate = null;
+            }
+        }
+
+        if (!empty($normalizedFromDate) && !empty($normalizedToDate) && $normalizedFromDate > $normalizedToDate) {
+            $tempDate = $normalizedFromDate;
+            $normalizedFromDate = $normalizedToDate;
+            $normalizedToDate = $tempDate;
+        }
+
+        $courseId = (int) $request->query('course_id', 0);
+        if ($courseId < 1) {
+            $courseId = 0;
+        }
+
+        $search = trim((string) $request->query('search', ''));
+
+        $sortBy = strtolower(trim((string) $request->query('sort_by', 'date_updated')));
+        if (!in_array($sortBy, $allowedSortBy, true)) {
+            $sortBy = 'date_updated';
+        }
+
+        $sortDirection = strtolower(trim((string) $request->query('sort_direction', 'desc')));
+        if (!in_array($sortDirection, $allowedSortDirection, true)) {
+            $sortDirection = 'desc';
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 10;
+        }
+
+        return [
+            'from_date' => $normalizedFromDate,
+            'to_date' => $normalizedToDate,
+            'course_id' => $courseId,
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'per_page' => $perPage,
+        ];
+    }
+
+    private function buildApplicationProcessQuery(array $filters)
+    {
+        $query = Applicant::query()
+            ->with('applicationPreference.course')
+            ->leftJoin('applicant_application_preferences as preferences', 'preferences.applicant_id', '=', 'applicants.id')
+            ->select('applicants.*');
+
+        if (!empty($filters['from_date'])) {
+            $query->whereDate('applicants.created_at', '>=', $filters['from_date']);
+        }
+
+        if (!empty($filters['to_date'])) {
+            $query->whereDate('applicants.created_at', '<=', $filters['to_date']);
+        }
+
+        if (!empty($filters['course_id'])) {
+            $query->where('preferences.apply_course_id', (int) $filters['course_id']);
+        }
+
+        if (!empty($filters['search'])) {
+            $escapedSearch = addcslashes($filters['search'], '\\%_');
+            $likeValue = '%' . $escapedSearch . '%';
+
+            $query->where(function ($searchQuery) use ($likeValue) {
+                $searchQuery->where('applicants.applicant_id', 'like', $likeValue)
+                    ->orWhere('applicants.first_name', 'like', $likeValue)
+                    ->orWhere('applicants.middle_name', 'like', $likeValue)
+                    ->orWhere('applicants.last_name', 'like', $likeValue)
+                    ->orWhereRaw(
+                        "CONCAT(COALESCE(applicants.first_name, ''), ' ', COALESCE(applicants.last_name, '')) LIKE ?",
+                        [$likeValue]
+                    )
+                    ->orWhereRaw(
+                        "CONCAT(COALESCE(applicants.last_name, ''), ', ', COALESCE(applicants.first_name, '')) LIKE ?",
+                        [$likeValue]
+                    );
+            });
+        }
+
+        $sortDirection = $filters['sort_direction'] === 'asc' ? 'asc' : 'desc';
+        if ($filters['sort_by'] === 'applicant_name') {
+            $query->orderBy('applicants.last_name', $sortDirection)
+                ->orderBy('applicants.first_name', $sortDirection)
+                ->orderBy('applicants.middle_name', $sortDirection);
+        } elseif ($filters['sort_by'] === 'applicant_id') {
+            $query->orderBy('applicants.applicant_id', $sortDirection);
+        } elseif ($filters['sort_by'] === 'date_applied') {
+            $query->orderBy('applicants.created_at', $sortDirection);
+        } else {
+            $query->orderBy('applicants.updated_at', $sortDirection);
+        }
+
+        $query->orderBy('applicants.id', 'desc');
+
+        return $query;
     }
 
     public function updateApplicantExamSchedule(Request $request, Applicant $applicant): JsonResponse
@@ -664,6 +989,10 @@ class RegistrarController extends Controller
     {
         $normalized = strtolower(trim((string) $statusLabel));
 
+        if ($normalized === '') {
+            return 'in_process';
+        }
+
         if ($normalized === 'document submitted' || $normalized === 'submitted') {
             return 'submitted';
         }
@@ -688,12 +1017,16 @@ class RegistrarController extends Controller
             return 'accepted';
         }
 
-        return 'in_process';
+        return str_replace(' ', '_', $normalized);
     }
 
     private function mapApprovalStatusDbValueToLabel($statusValue): string
     {
         $normalized = strtolower(trim((string) $statusValue));
+
+        if ($normalized === '') {
+            return 'In Process';
+        }
 
         if ($normalized === 'submitted' || $normalized === 'document submitted') {
             return 'Document Submitted';
@@ -719,13 +1052,13 @@ class RegistrarController extends Controller
             return 'Accepted';
         }
 
-        return 'In Process';
+        return ucwords(str_replace('_', ' ', $normalized));
     }
 
     public function updateApplicantApprovalStatus(Request $request, Applicant $applicant): JsonResponse
     {
         $validated = $request->validate([
-            'application_status' => 'required|in:Document Submitted,On Probation,In Process,Rejected,Incomplete,Accepted',
+            'application_status' => 'required|string|max:120',
         ]);
 
         $applicant->application_status = $this->mapApprovalStatusLabelToDbValue($validated['application_status']);
@@ -774,6 +1107,96 @@ class RegistrarController extends Controller
         return view('registrar.process.approval-status');
     }
 
+    public function approvalStatusData(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+
+        $query = ApplicationStatus::query()->where('is_active', true);
+
+        if ($search !== '') {
+            $query->where(function ($innerQuery) use ($search) {
+                $innerQuery->where('status_code', 'like', '%' . $search . '%')
+                    ->orWhere('status_name', 'like', '%' . $search . '%')
+                    ->orWhere('status_message', 'like', '%' . $search . '%');
+            });
+        }
+
+        $rows = $query->orderBy('status_code')
+            ->orderBy('id')
+            ->get()
+            ->map(function (ApplicationStatus $status) {
+                return $this->approvalStatusRowPayload($status);
+            })
+            ->values();
+
+        return response()->json([
+            'rows' => $rows,
+        ]);
+    }
+
+    public function storeApprovalStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'status_code' => 'required|string|max:10|regex:/^[A-Za-z0-9_-]+$/|unique:application_statuses,status_code',
+            'status' => 'required|string|max:120|unique:application_statuses,status_name',
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        $status = ApplicationStatus::create([
+            'status_code' => strtoupper(trim($validated['status_code'])),
+            'status_name' => trim($validated['status']),
+            'status_message' => trim((string) ($validated['message'] ?? '')),
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Approval status created successfully.',
+            'row' => $this->approvalStatusRowPayload($status),
+        ], 201);
+    }
+
+    public function updateApprovalStatus(Request $request, ApplicationStatus $applicationStatus): JsonResponse
+    {
+        $validated = $request->validate([
+            'status_code' => 'required|string|max:10|regex:/^[A-Za-z0-9_-]+$/|unique:application_statuses,status_code,' . $applicationStatus->id,
+            'status' => 'required|string|max:120|unique:application_statuses,status_name,' . $applicationStatus->id,
+            'message' => 'nullable|string|max:2000',
+        ]);
+
+        $applicationStatus->status_code = strtoupper(trim($validated['status_code']));
+        $applicationStatus->status_name = trim($validated['status']);
+        $applicationStatus->status_message = trim((string) ($validated['message'] ?? ''));
+        $applicationStatus->is_active = true;
+        $applicationStatus->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Approval status updated successfully.',
+            'row' => $this->approvalStatusRowPayload($applicationStatus),
+        ]);
+    }
+
+    public function destroyApprovalStatus(ApplicationStatus $applicationStatus): JsonResponse
+    {
+        $applicationStatus->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Approval status deleted successfully.',
+        ]);
+    }
+
+    private function approvalStatusRowPayload(ApplicationStatus $status): array
+    {
+        return [
+            'id' => $status->id,
+            'code' => (string) $status->status_code,
+            'status' => (string) $status->status_name,
+            'message' => (string) ($status->status_message ?: ''),
+        ];
+    }
+
     /**
      * Process > Exam Category
      */
@@ -795,7 +1218,195 @@ class RegistrarController extends Controller
      */
     public function batchUpload()
     {
-        return view('registrar.process.batch-upload');
+        $recentUploads = collect();
+
+        if (Schema::hasTable('student_profile_images')) {
+            $recentUploads = StudentProfileImage::query()
+                ->with('studentProfile')
+                ->orderByDesc('updated_at')
+                ->limit(50)
+                ->get()
+                ->map(function ($image) {
+                    $profile = $image->studentProfile;
+                    $studentNo = $profile ? (string) $profile->student_no : 'N/A';
+                    $studentName = $profile ? $this->formatStudentProfileName($profile) : 'Unknown Student';
+                    $imageUrl = '';
+
+                    if (!empty($image->storage_path)) {
+                        $imageUrl = route('registrar.process.batch-upload.image', [
+                            'studentProfileImage' => $image->id,
+                        ]);
+                    }
+
+                    return [
+                        'id' => (int) $image->id,
+                        'student_no' => $studentNo,
+                        'student_name' => $studentName,
+                        'original_filename' => (string) $image->original_filename,
+                        'storage_path' => (string) $image->storage_path,
+                        'image_url' => $imageUrl,
+                        'size_kb' => round(((int) $image->size_bytes) / 1024, 2),
+                        'uploaded_at' => optional($image->updated_at)->format('M d, Y h:i A') ?: '-',
+                    ];
+                })
+                ->values();
+        }
+
+        return view('registrar.process.batch-upload', [
+            'recentUploads' => $recentUploads,
+        ]);
+    }
+
+    public function batchUploadImage(StudentProfileImage $studentProfileImage)
+    {
+        $disk = !empty($studentProfileImage->storage_disk) ? (string) $studentProfileImage->storage_disk : 'public';
+        $path = (string) $studentProfileImage->storage_path;
+
+        if (empty($path) || !Storage::disk($disk)->exists($path)) {
+            abort(404);
+        }
+
+        $mimeType = !empty($studentProfileImage->mime_type)
+            ? (string) $studentProfileImage->mime_type
+            : 'image/jpeg';
+
+        return response(
+            Storage::disk($disk)->get($path),
+            200,
+            [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            ]
+        );
+    }
+
+    public function storeBatchUpload(Request $request)
+    {
+        $validated = $request->validate([
+            'images' => 'required|array|min:1',
+            'images.*' => 'required|file|mimes:jpg,jpeg|max:1024',
+        ]);
+
+        if (!Schema::hasTable('student_profile_images')) {
+            return redirect()
+                ->route('registrar.process.batch-upload')
+                ->withErrors(['images' => 'Upload table is not available. Please run migrations first.']);
+        }
+
+        $uploadedRows = [];
+        $skippedRows = [];
+        $files = $validated['images'];
+
+        foreach ($files as $file) {
+            $originalFilename = (string) $file->getClientOriginalName();
+            $studentNo = trim((string) pathinfo($originalFilename, PATHINFO_FILENAME));
+
+            if ($studentNo === '') {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Filename is empty. Use student number as filename.',
+                ];
+                continue;
+            }
+
+            $student = Student::where('student_no', $studentNo)->first();
+            if (!$student) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'No matching student ID found for ' . $studentNo . '.',
+                ];
+                continue;
+            }
+
+            $profile = StudentProfile::where('student_no', $studentNo)->first();
+
+            if (!$profile) {
+                $profile = StudentProfile::create([
+                    'student_id' => $student->id,
+                    'student_no' => $student->student_no,
+                    'first_name' => $student->name,
+                    'profile_complete' => false,
+                ]);
+            }
+
+            if (!$profile) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Student profile could not be created for ' . $studentNo . '.',
+                ];
+                continue;
+            }
+
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+            if ($extension === '') {
+                $extension = 'jpg';
+            }
+
+            $storedFilename = $studentNo . '.' . $extension;
+            $storedPath = $file->storeAs('students/profile-photos', $storedFilename, 'public');
+
+            if (empty($storedPath)) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'File could not be stored. Please try again.',
+                ];
+                continue;
+            }
+
+            $existingImage = StudentProfileImage::where('student_profile_id', $profile->id)->first();
+            if ($existingImage && !empty($existingImage->storage_path) && $existingImage->storage_path !== $storedPath) {
+                Storage::disk($existingImage->storage_disk ?: 'public')->delete($existingImage->storage_path);
+            }
+
+            StudentProfileImage::updateOrCreate(
+                ['student_profile_id' => $profile->id],
+                [
+                    'uploaded_by_user_id' => optional(auth()->user())->id,
+                    'original_filename' => $originalFilename,
+                    'storage_disk' => 'public',
+                    'storage_path' => $storedPath,
+                    'mime_type' => $file->getClientMimeType(),
+                    'size_bytes' => (int) $file->getSize(),
+                ]
+            );
+
+            // Keep existing profile photo field synchronized for legacy pages.
+            $profile->profile_photo_path = $storedPath;
+            $profile->save();
+
+            $uploadedRows[] = [
+                'filename' => $originalFilename,
+                'student_no' => (string) $profile->student_no,
+            ];
+        }
+
+        return redirect()
+            ->route('registrar.process.batch-upload')
+            ->with('batchUploadReport', [
+                'total' => count($files),
+                'uploaded' => $uploadedRows,
+                'skipped' => $skippedRows,
+            ]);
+    }
+
+    private function formatStudentProfileName(StudentProfile $profile)
+    {
+        $parts = [
+            (string) $profile->first_name,
+            (string) $profile->middle_name,
+            (string) $profile->last_name,
+            (string) $profile->suffix,
+        ];
+
+        $parts = array_values(array_filter($parts, function ($value) {
+            return trim((string) $value) !== '';
+        }));
+
+        if (!empty($parts)) {
+            return trim(implode(' ', $parts));
+        }
+
+        return !empty($profile->student_no) ? (string) $profile->student_no : 'Unknown Student';
     }
 
     /**
@@ -803,7 +1414,375 @@ class RegistrarController extends Controller
      */
     public function documentList()
     {
-        return view('registrar.process.document-list');
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $yearLevelOptions = YearBlock::query()
+            ->orderBy('id')
+            ->pluck('label')
+            ->values()
+            ->all();
+
+        if (!count($yearLevelOptions)) {
+            $yearLevelOptions = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+        }
+
+        array_unshift($yearLevelOptions, 'All Year Level');
+
+        $rows = RegistrarRequirement::query()
+            ->with('yearBlock:id,label')
+            ->where(function ($query) use ($activeSemesterId) {
+                $query->whereNull('registrar_requirement_policy_id')
+                    ->orWhereHas('policy', function ($policyQuery) use ($activeSemesterId) {
+                        $policyQuery->where('system_school_semester_id', $activeSemesterId);
+                    });
+            })
+            ->orderBy('applies_to_all_year_levels', 'desc')
+            ->orderBy('year_block_id')
+            ->orderBy('requirement_name')
+            ->orderBy('id')
+            ->get()
+            ->map(function (RegistrarRequirement $requirement) {
+                return $this->documentRequirementRowPayload($requirement);
+            })
+            ->values()
+            ->all();
+
+        return view('registrar.process.document-list', [
+            'requirements' => $rows,
+            'yearLevelOptions' => $yearLevelOptions,
+        ]);
+    }
+
+    public function storeDocumentRequirement(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade_level' => 'required|string|max:50',
+            'document' => 'required|string|max:180',
+            'doc_type' => 'required|in:Medical,Document',
+            'non_filipino' => 'nullable',
+        ]);
+
+        $resolvedYearLevel = $this->resolveDocumentRequirementYearLevel($validated['grade_level']);
+        $documentName = trim((string) $validated['document']);
+        $documentType = trim((string) $validated['doc_type']);
+        $nonFilipino = $this->requestBoolean($request, 'non_filipino');
+
+        $duplicate = $this->findDuplicateDocumentRequirement(
+            $resolvedYearLevel,
+            $documentName,
+            $documentType,
+            $nonFilipino
+        );
+
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'document' => ['This requirement already exists for the selected year level and type.'],
+            ]);
+        }
+
+        $requirement = RegistrarRequirement::create([
+            'year_block_id' => $resolvedYearLevel['year_block_id'],
+            'applies_to_all_year_levels' => $resolvedYearLevel['applies_to_all_year_levels'],
+            'requirement_name' => $documentName,
+            'requirement_type' => $documentType,
+            'non_filipino' => $nonFilipino,
+            'created_by_user_id' => optional(auth()->user())->id,
+        ]);
+
+        $this->syncRequirementPolicyForLegacyRow($requirement);
+
+        $requirement->load('yearBlock:id,label');
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement added successfully.',
+            'row' => $this->documentRequirementRowPayload($requirement),
+        ], 201);
+    }
+
+    public function updateDocumentRequirement(Request $request, RegistrarRequirement $documentRequirement): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade_level' => 'required|string|max:50',
+            'document' => 'required|string|max:180',
+            'doc_type' => 'required|in:Medical,Document',
+            'non_filipino' => 'nullable',
+        ]);
+
+        $resolvedYearLevel = $this->resolveDocumentRequirementYearLevel($validated['grade_level']);
+        $documentName = trim((string) $validated['document']);
+        $documentType = trim((string) $validated['doc_type']);
+        $nonFilipino = $this->requestBoolean($request, 'non_filipino');
+
+        $duplicate = $this->findDuplicateDocumentRequirement(
+            $resolvedYearLevel,
+            $documentName,
+            $documentType,
+            $nonFilipino,
+            $documentRequirement->id
+        );
+
+        if ($duplicate) {
+            throw ValidationException::withMessages([
+                'document' => ['This requirement already exists for the selected year level and type.'],
+            ]);
+        }
+
+        $documentRequirement->year_block_id = $resolvedYearLevel['year_block_id'];
+        $documentRequirement->applies_to_all_year_levels = $resolvedYearLevel['applies_to_all_year_levels'];
+        $documentRequirement->requirement_name = $documentName;
+        $documentRequirement->requirement_type = $documentType;
+        $documentRequirement->non_filipino = $nonFilipino;
+        $documentRequirement->save();
+
+        $this->syncRequirementPolicyForLegacyRow($documentRequirement);
+
+        $documentRequirement->load('yearBlock:id,label');
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement updated successfully.',
+            'row' => $this->documentRequirementRowPayload($documentRequirement),
+        ]);
+    }
+
+    public function destroyDocumentRequirement(RegistrarRequirement $documentRequirement): JsonResponse
+    {
+        $policyId = $documentRequirement->registrar_requirement_policy_id;
+        $definitionId = null;
+
+        if (!empty($policyId)) {
+            $definitionId = RegistrarRequirementPolicy::query()
+                ->where('id', $policyId)
+                ->value('registrar_requirement_definition_id');
+        }
+
+        $documentRequirement->delete();
+
+        $this->cleanupOrphanedRequirementPolicy($policyId, $definitionId);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement deleted successfully.',
+        ]);
+    }
+
+    private function resolveDocumentRequirementYearLevel($gradeLevel): array
+    {
+        $normalized = trim((string) $gradeLevel);
+
+        if ($normalized === '' || strcasecmp($normalized, 'All Year Level') === 0) {
+            return [
+                'year_block_id' => null,
+                'applies_to_all_year_levels' => true,
+            ];
+        }
+
+        $yearBlock = YearBlock::query()
+            ->where('label', $normalized)
+            ->first();
+
+        if (!$yearBlock) {
+            throw ValidationException::withMessages([
+                'grade_level' => ['Selected year level is invalid.'],
+            ]);
+        }
+
+        return [
+            'year_block_id' => $yearBlock->id,
+            'applies_to_all_year_levels' => false,
+        ];
+    }
+
+    private function syncRequirementPolicyForLegacyRow(RegistrarRequirement $requirement)
+    {
+        $typeCode = $this->normalizeRequirementTypeCode($requirement->requirement_type);
+
+        $type = RegistrarRequirementType::query()->firstOrCreate(
+            ['code' => $typeCode],
+            ['name' => $this->resolveRequirementTypeLabel($typeCode)]
+        );
+
+        $definition = RegistrarRequirementDefinition::query()->firstOrCreate(
+            [
+                'requirement_name' => (string) $requirement->requirement_name,
+                'registrar_requirement_type_id' => $type->id,
+                'non_filipino_only' => (bool) $requirement->non_filipino,
+            ],
+            [
+                'created_by_user_id' => $requirement->created_by_user_id,
+            ]
+        );
+
+        $systemSchoolSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $policyQuery = RegistrarRequirementPolicy::query()
+            ->where('registrar_requirement_definition_id', $definition->id)
+            ->where('system_school_semester_id', $systemSchoolSemesterId);
+
+        if ($requirement->applies_to_all_year_levels || empty($requirement->year_block_id)) {
+            $policyQuery->whereNull('year_block_id');
+        } else {
+            $policyQuery->where('year_block_id', $requirement->year_block_id);
+        }
+
+        $policy = $policyQuery->first();
+
+        if (!$policy) {
+            $policy = RegistrarRequirementPolicy::query()->create([
+                'registrar_requirement_definition_id' => $definition->id,
+                'system_school_semester_id' => $systemSchoolSemesterId,
+                'year_block_id' => ($requirement->applies_to_all_year_levels || empty($requirement->year_block_id))
+                    ? null
+                    : $requirement->year_block_id,
+                'created_by_user_id' => $requirement->created_by_user_id,
+            ]);
+        }
+
+        if ((int) $requirement->registrar_requirement_policy_id !== (int) $policy->id) {
+            $requirement->registrar_requirement_policy_id = $policy->id;
+            $requirement->save();
+        }
+    }
+
+    private function resolveActiveRequirementSystemSemesterId()
+    {
+        $latestSemester = SystemSchoolSemester::query()
+            ->orderByDesc('id')
+            ->first();
+
+        if ($latestSemester) {
+            return (int) $latestSemester->id;
+        }
+
+        $yearStart = (int) Carbon::now()->format('Y');
+
+        $createdSemester = SystemSchoolSemester::query()->create([
+            'school_year' => $yearStart . '-' . ($yearStart + 1),
+            'semester' => 'First Semester',
+        ]);
+
+        return (int) $createdSemester->id;
+    }
+
+    private function normalizeRequirementTypeCode($type)
+    {
+        $normalized = strtoupper(trim((string) $type));
+
+        if ($normalized === 'MEDICAL') {
+            return 'MEDICAL';
+        }
+
+        return 'DOCUMENT';
+    }
+
+    private function resolveRequirementTypeLabel($typeCode)
+    {
+        if ($typeCode === 'MEDICAL') {
+            return 'Medical';
+        }
+
+        return 'Document';
+    }
+
+    private function cleanupOrphanedRequirementPolicy($policyId, $definitionId = null)
+    {
+        if (empty($policyId)) {
+            return;
+        }
+
+        $hasLegacyRows = RegistrarRequirement::query()
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->exists();
+
+        if ($hasLegacyRows) {
+            return;
+        }
+
+        $hasStudentStatusRows = DB::table('student_requirement_statuses')
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->exists();
+
+        if ($hasStudentStatusRows) {
+            return;
+        }
+
+        $policy = RegistrarRequirementPolicy::query()->find($policyId);
+
+        if (!$policy) {
+            return;
+        }
+
+        if (empty($definitionId)) {
+            $definitionId = $policy->registrar_requirement_definition_id;
+        }
+
+        $policy->delete();
+
+        if (empty($definitionId)) {
+            return;
+        }
+
+        $hasOtherPolicies = RegistrarRequirementPolicy::query()
+            ->where('registrar_requirement_definition_id', $definitionId)
+            ->exists();
+
+        if (!$hasOtherPolicies) {
+            RegistrarRequirementDefinition::query()
+                ->where('id', $definitionId)
+                ->delete();
+        }
+    }
+
+    private function findDuplicateDocumentRequirement(
+        array $resolvedYearLevel,
+        $documentName,
+        $documentType,
+        $nonFilipino,
+        $ignoreId = null
+    ) {
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $query = RegistrarRequirement::query()
+            ->where('requirement_name', $documentName)
+            ->where('requirement_type', $documentType)
+            ->where('non_filipino', $nonFilipino)
+            ->where('applies_to_all_year_levels', $resolvedYearLevel['applies_to_all_year_levels'])
+            ->where(function ($scopeQuery) use ($activeSemesterId) {
+                $scopeQuery->whereNull('registrar_requirement_policy_id')
+                    ->orWhereHas('policy', function ($policyQuery) use ($activeSemesterId) {
+                        $policyQuery->where('system_school_semester_id', $activeSemesterId);
+                    });
+            });
+
+        if (!empty($resolvedYearLevel['year_block_id'])) {
+            $query->where('year_block_id', $resolvedYearLevel['year_block_id']);
+        } else {
+            $query->whereNull('year_block_id');
+        }
+
+        if (!empty($ignoreId)) {
+            $query->where('id', '<>', $ignoreId);
+        }
+
+        return $query->first();
+    }
+
+    private function documentRequirementRowPayload(RegistrarRequirement $requirement): array
+    {
+        $yearLevel = 'All Year Level';
+
+        if (!$requirement->applies_to_all_year_levels && $requirement->yearBlock) {
+            $yearLevel = (string) $requirement->yearBlock->label;
+        }
+
+        return [
+            'id' => (int) $requirement->id,
+            'year_level' => $yearLevel,
+            'document' => (string) $requirement->requirement_name,
+            'type' => (string) $requirement->requirement_type,
+            'non_filipino' => (bool) $requirement->non_filipino,
+        ];
     }
 
     /**
@@ -812,7 +1791,11 @@ class RegistrarController extends Controller
     public function reports()
     {
         $totalApplicants = Applicant::count();
-        $students4thYear = Student::where('year_level', 'LIKE', '%4%')->count();
+        $students4thYear = Student::query()
+            ->whereHas('yearBlock', function ($yearBlockQuery) {
+                $yearBlockQuery->where('label', 'like', '4%');
+            })
+            ->count();
         $daySeed = (int) Carbon::now()->format('z') + 1;
 
         $useDemoReports = ($totalApplicants <= 15 || $students4thYear <= 15);
@@ -830,9 +1813,10 @@ class RegistrarController extends Controller
             : 0;
 
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
             ->orderByDesc('updated_at')
             ->limit(8)
-            ->get(['name', 'program', 'year_level', 'updated_at']);
+            ->get(['name', 'course_id', 'year_block_id', 'updated_at']);
 
         $requirementPool = [
             'Form 137',
@@ -1149,38 +2133,69 @@ class RegistrarController extends Controller
      */
     public function programFile(Request $request)
     {
+        $departmentId = (int) $request->input('department_id', 0);
+        $programType = trim((string) $request->input('program_type', ''));
+        $programCode = trim((string) $request->input('program_code', ''));
+        $description = trim((string) $request->input('description', ''));
+        $perPage = 25;
+
         $departments = Department::orderBy('description')->get();
         $faculties = Faculty::orderBy('name')->get();
 
-        $programs = Course::with(['department', 'deanDirector'])
-            ->when($request->filled('department_id'), function ($query) use ($request) {
-                $query->where('department_id', $request->input('department_id'));
+        $programsQuery = Course::with(['department', 'deanDirector'])
+            ->when($departmentId > 0, function ($query) use ($departmentId) {
+                $query->where('department_id', $departmentId);
             })
-            ->when($request->filled('program_type'), function ($query) use ($request) {
-                $query->where('program_type', $request->input('program_type'));
+            ->when($programType !== '', function ($query) use ($programType) {
+                if ($programType === 'Pending Review') {
+                    $query->where(function ($pendingQuery) {
+                        $pendingQuery->whereNull('program_file')
+                            ->orWhere('program_file', '')
+                            ->orWhere('program_file', 'Pending Review');
+                    });
+                    return;
+                }
+
+                $query->where('program_file', $programType);
             })
-            ->when($request->filled('program_code'), function ($query) use ($request) {
-                $query->where('code', 'like', '%' . $request->input('program_code') . '%');
+            ->when($programCode !== '', function ($query) use ($programCode) {
+                $query->where('code', 'like', '%' . $programCode . '%');
             })
-            ->when($request->filled('description'), function ($query) use ($request) {
-                $term = $request->input('description');
-                $query->where(function ($subQuery) use ($term) {
-                    $subQuery->where('name', 'like', '%' . $term . '%')
-                        ->orWhere('description', 'like', '%' . $term . '%');
+            ->when($description !== '', function ($query) use ($description) {
+                $query->where(function ($subQuery) use ($description) {
+                    $departmentTable = (new Department)->getTable();
+
+                    $subQuery->where('name', 'like', '%' . $description . '%')
+                        ->orWhere('description', 'like', '%' . $description . '%')
+                        ->orWhere('code', 'like', '%' . $description . '%')
+                        ->orWhereHas('department', function ($departmentQuery) use ($description, $departmentTable) {
+                            $departmentQuery->where($departmentTable . '.description', 'like', '%' . $description . '%')
+                                ->orWhere($departmentTable . '.code', 'like', '%' . $description . '%');
+                        });
                 });
             })
-            ->orderBy('code')
-            ->get();
+            ->orderBy('code');
+
+        $programs = $programsQuery
+            ->paginate($perPage)
+            ->appends([
+                'department_id' => $departmentId > 0 ? $departmentId : null,
+                'program_type' => $programType,
+                'program_code' => $programCode,
+                'description' => $description,
+                'per_page' => $perPage,
+            ]);
 
         return view('registrar.registrar-menu.academic-master.program-file', [
             'departments' => $departments,
             'faculties' => $faculties,
             'programs' => $programs,
             'filters' => [
-                'department_id' => $request->input('department_id', ''),
-                'program_type' => $request->input('program_type', ''),
-                'program_code' => $request->input('program_code', ''),
-                'description' => $request->input('description', ''),
+                'department_id' => $departmentId > 0 ? (string) $departmentId : '',
+                'program_type' => $programType,
+                'program_code' => $programCode,
+                'description' => $description,
+                'per_page' => (string) $perPage,
             ],
         ]);
     }
@@ -1188,25 +2203,49 @@ class RegistrarController extends Controller
     /**
      * Registrar > Academic Master > Program File > Save setup modal
      */
+    public function saveDepartmentSetup(Request $request)
+    {
+        $validated = $request->validate([
+            'dept_code' => 'required|string|max:30|unique:departments,code',
+            'dept_description' => 'required|string|max:255|unique:departments,description',
+        ]);
+
+        Department::create([
+            'code' => $validated['dept_code'],
+            'description' => $validated['dept_description'],
+        ]);
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Department setup saved successfully.');
+    }
+
+    /**
+     * Registrar > Academic Master > Program File > Save add-program modal
+     */
     public function saveProgramSetup(Request $request)
     {
         $validated = $request->validate([
-            'program_type' => 'required|string|max:80',
+            'program_type' => 'nullable|string|max:80',
             'program_code' => 'required|string|max:30|unique:courses,code',
             'department_id' => 'required|exists:departments,id',
-            'description' => 'required|string|max:255',
+            'program_name' => 'required|string|max:255',
+            'accreditation_level' => 'nullable|string|max:120',
             'slots' => 'nullable|integer|min:0',
             'track_category' => 'nullable|in:Academic,TVL,Academic/TVL',
             'non_filipino' => 'nullable|boolean',
             'dean_director_id' => 'nullable|exists:faculties,id',
         ]);
 
+        $accreditationLevel = trim((string) ($validated['accreditation_level'] ?? ''));
+
         Course::create([
             'code' => $validated['program_code'],
-            'name' => $validated['description'],
-            'program_type' => $validated['program_type'],
+            'name' => $validated['program_name'],
+            'program_type' => $validated['program_type'] ?? 'Degree',
             'department_id' => $validated['department_id'],
-            'description' => $validated['description'],
+            'description' => $validated['program_name'],
+            'program_file' => $accreditationLevel !== '' ? $accreditationLevel : 'Pending Review',
             'slots' => $validated['slots'] ?? 0,
             'track_category' => $validated['track_category'] ?? null,
             'non_filipino' => (bool) ($validated['non_filipino'] ?? false),
@@ -1219,6 +2258,45 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar > Academic Master > Program File > Update setup modal
+     */
+    public function updateProgramSetup(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'program_code' => 'required|string|max:30|unique:courses,code,' . $course->id,
+            'department_id' => 'required|exists:departments,id',
+            'program_name' => 'required|string|max:255',
+            'accreditation_level' => 'nullable|string|max:120',
+        ]);
+
+        $accreditationLevel = trim((string) ($validated['accreditation_level'] ?? ''));
+
+        $course->update([
+            'code' => $validated['program_code'],
+            'name' => $validated['program_name'],
+            'description' => $validated['program_name'],
+            'department_id' => $validated['department_id'],
+            'program_file' => $accreditationLevel !== '' ? $accreditationLevel : 'Pending Review',
+        ]);
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Program updated successfully.');
+    }
+
+    /**
+     * Registrar > Academic Master > Program File > Delete setup row
+     */
+    public function destroyProgramSetup(Course $course)
+    {
+        $course->delete();
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file')
+            ->with('program_file_success', 'Program deleted successfully.');
+    }
+
+    /**
      * Registrar > Academic Master > Subject File
      */
     public function subjectFile()
@@ -1226,20 +2304,863 @@ class RegistrarController extends Controller
         return view('registrar.registrar-menu.academic-master.subject-file');
     }
 
+    public function subjectFileData(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+        $sort = strtolower((string) $request->query('sort', 'asc'));
+        if (!in_array($sort, ['asc', 'desc'], true)) {
+            $sort = 'asc';
+        }
+
+        $perPage = (int) $request->query('per_page', 25);
+        if ($perPage < 10) {
+            $perPage = 10;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
+        $page = (int) $request->query('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        $query = Subject::query()
+            ->select([
+                'id',
+                'code',
+                'name',
+                'lec',
+                'lab',
+                'is_core',
+                'is_applied',
+                'is_specialized',
+            ])
+            ->where('is_subject_file_record', true);
+
+        if ($search !== '') {
+            $query->where(function ($innerQuery) use ($search) {
+                $innerQuery->where('code', 'like', $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        $paginator = $query->orderBy('code', $sort)
+            ->orderBy('id', $sort)
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $rows = collect($paginator->items())
+            ->map(function (Subject $subject) {
+                return $this->subjectFileRowPayload($subject);
+            })
+            ->values();
+
+        return response()->json([
+            'rows' => $rows,
+            'meta' => [
+                'page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'last_page' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'sort' => $sort,
+                'search' => $search,
+            ],
+        ]);
+    }
+
+    public function storeSubjectFile(Request $request): JsonResponse
+    {
+        $normalizedCode = strtoupper(trim((string) $request->input('code', '')));
+        $request->merge([
+            'code' => $normalizedCode,
+        ]);
+
+        $validated = $request->validate([
+            'code' => [
+                'required',
+                'string',
+                'max:40',
+                Rule::unique('subjects', 'code')->where(function ($query) {
+                    $query->where('is_subject_file_record', true);
+                }),
+            ],
+            'title' => 'required|string|max:255',
+            'lec' => 'nullable|integer|min:0|max:99',
+            'lab' => 'nullable|integer|min:0|max:99',
+        ]);
+
+        $lec = (int) ($validated['lec'] ?? 0);
+        $lab = (int) ($validated['lab'] ?? 0);
+
+        $subject = Subject::create([
+            'code' => $validated['code'],
+            'name' => trim($validated['title']),
+            'units' => (float) ($lec + $lab),
+            'lec' => $lec,
+            'lab' => $lab,
+            'is_subject_file_record' => true,
+            'is_core' => $this->requestBoolean($request, 'core'),
+            'is_applied' => $this->requestBoolean($request, 'applied'),
+            'is_specialized' => $this->requestBoolean($request, 'specialized'),
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Subject created successfully.',
+            'row' => $this->subjectFileRowPayload($subject),
+        ], 201);
+    }
+
+    public function updateSubjectFile(Request $request, $subjectId): JsonResponse
+    {
+        $subject = Subject::query()
+            ->where('id', (int) $subjectId)
+            ->where('is_subject_file_record', true)
+            ->first();
+
+        if (!$subject) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Subject not found.',
+            ], 404);
+        }
+
+        $normalizedCode = strtoupper(trim((string) $request->input('code', '')));
+        $request->merge([
+            'code' => $normalizedCode,
+        ]);
+
+        $validated = $request->validate([
+            'code' => [
+                'required',
+                'string',
+                'max:40',
+                Rule::unique('subjects', 'code')
+                    ->where(function ($query) {
+                        $query->where('is_subject_file_record', true);
+                    })
+                        ->ignore((int) $subject->id),
+            ],
+            'title' => 'required|string|max:255',
+            'lec' => 'nullable|integer|min:0|max:99',
+            'lab' => 'nullable|integer|min:0|max:99',
+        ]);
+
+        $lec = (int) ($validated['lec'] ?? 0);
+        $lab = (int) ($validated['lab'] ?? 0);
+
+        $subject->code = $validated['code'];
+        $subject->name = trim($validated['title']);
+        $subject->units = (float) ($lec + $lab);
+        $subject->lec = $lec;
+        $subject->lab = $lab;
+        $subject->is_core = $this->requestBoolean($request, 'core');
+        $subject->is_applied = $this->requestBoolean($request, 'applied');
+        $subject->is_specialized = $this->requestBoolean($request, 'specialized');
+        $subject->is_subject_file_record = true;
+        $subject->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Subject updated successfully.',
+            'row' => $this->subjectFileRowPayload($subject),
+        ]);
+    }
+
+    public function destroySubjectFile($subjectId): JsonResponse
+    {
+        $subject = Subject::query()
+            ->where('id', (int) $subjectId)
+            ->where('is_subject_file_record', true)
+            ->first();
+
+        if (!$subject) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Subject not found.',
+            ], 404);
+        }
+
+        $subject->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Subject deleted successfully.',
+        ]);
+    }
+
+    private function subjectFileRowPayload(Subject $subject): array
+    {
+        return [
+            'id' => $subject->id,
+            'code' => (string) $subject->code,
+            'title' => (string) $subject->name,
+            'lec' => (float) ($subject->lec ?: 0),
+            'lab' => (float) ($subject->lab ?: 0),
+            'core' => (bool) $subject->is_core,
+            'applied' => (bool) $subject->is_applied,
+            'specialized' => (bool) $subject->is_specialized,
+        ];
+    }
+
     /**
      * Registrar > Academic Master > Curriculum File
      */
-    public function curriculumFile()
+    public function curriculumFile(Request $request)
     {
-        return view('registrar.registrar-menu.academic-master.curriculum-file');
+        $courses = Course::query()
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'description']);
+
+        $courseYearMap = $this->buildCourseCurriculumYearMap($courses);
+        $selectedCourseId = $this->normalizeSelectedCourseId($request->query('course_id'), $courses, $courseYearMap);
+        $selectedCurriculumYear = $this->normalizeSelectedCurriculumYear(
+            $selectedCourseId,
+            $request->query('curriculum_year'),
+            $courseYearMap
+        );
+
+        return view('registrar.registrar-menu.academic-master.curriculum-file', [
+            'courses' => $courses,
+            'courseYearMap' => $courseYearMap,
+            'selectedCourseId' => $selectedCourseId,
+            'selectedCurriculumYear' => $selectedCurriculumYear,
+        ]);
     }
 
     /**
      * Registrar > Academic Master > Pre-requisites
      */
-    public function preRequisites()
+    public function preRequisites(Request $request)
     {
-        return view('registrar.registrar-menu.academic-master.pre-requisites');
+        $courses = Course::query()
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'description']);
+
+        $courseYearMap = $this->buildCourseCurriculumYearMap($courses);
+        $selectedCourseId = $this->normalizeSelectedCourseId($request->query('course_id'), $courses, $courseYearMap);
+        $selectedCurriculumYear = $this->normalizeSelectedCurriculumYear(
+            $selectedCourseId,
+            $request->query('curriculum_year'),
+            $courseYearMap
+        );
+
+        return view('registrar.registrar-menu.academic-master.pre-requisites', [
+            'courses' => $courses,
+            'courseYearMap' => $courseYearMap,
+            'selectedCourseId' => $selectedCourseId,
+            'selectedCurriculumYear' => $selectedCurriculumYear,
+        ]);
+    }
+
+    public function preRequisitesData(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'curriculum_year' => 'required|string|max:20',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $courseId = (int) $validated['course_id'];
+        $curriculumYear = trim((string) $validated['curriculum_year']);
+        $page = isset($validated['page']) ? (int) $validated['page'] : 1;
+        $perPage = isset($validated['per_page']) ? (int) $validated['per_page'] : 100;
+
+        $payload = $this->buildPreRequisitesListPayload($courseId, $curriculumYear, $page, $perPage);
+
+        return response()->json(array_merge(['ok' => true], $payload));
+    }
+
+    public function preRequisitesSubjectDetail($courseCurriculumSubjectId): JsonResponse
+    {
+        $payload = $this->buildPreRequisitesSubjectPayload((int) $courseCurriculumSubjectId);
+        if (!$payload) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Curriculum subject not found.',
+            ], 404);
+        }
+
+        return response()->json(array_merge(['ok' => true], $payload));
+    }
+
+    public function downloadPreRequisitesPdf(Request $request)
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'curriculum_year' => 'required|string|max:20',
+        ]);
+
+        $courseId = (int) $validated['course_id'];
+        $curriculumYear = trim((string) $validated['curriculum_year']);
+
+        $payload = $this->buildPreRequisitesListPayload($courseId, $curriculumYear, 1, 5000);
+
+        $fileSafeCode = $this->sanitizeFilenameSegment($payload['course']['code'] ?? 'course');
+        $fileSafeYear = $this->sanitizeFilenameSegment($payload['curriculum_year'] ?? $curriculumYear);
+        $filename = 'pre-requisites-' . $fileSafeCode . '-' . $fileSafeYear . '-' . now()->format('Ymd_His') . '.pdf';
+
+        $html = view('registrar.registrar-menu.academic-master.pdf.pre-requisites', [
+            'payload' => $payload,
+            'generatedAt' => now(),
+        ])->render();
+
+        return $this->makePdfDownloadResponse($html, $filename, 'L');
+    }
+
+    public function downloadPreRequisitesSubjectPdf($courseCurriculumSubjectId)
+    {
+        $payload = $this->buildPreRequisitesSubjectPayload((int) $courseCurriculumSubjectId);
+        if (!$payload) {
+            abort(404, 'Curriculum subject not found.');
+        }
+
+        $subjectCode = $this->sanitizeFilenameSegment($payload['subject']['code'] ?? 'subject');
+        $curriculumYear = $this->sanitizeFilenameSegment($payload['curriculum_year'] ?? 'curriculum');
+        $filename = 'subject-config-' . $subjectCode . '-' . $curriculumYear . '-' . now()->format('Ymd_His') . '.pdf';
+
+        $html = view('registrar.registrar-menu.academic-master.pdf.pre-requisites-subject', [
+            'payload' => $payload,
+            'generatedAt' => now(),
+        ])->render();
+
+        return $this->makePdfDownloadResponse($html, $filename, 'P');
+    }
+
+    public function updatePreRequisitesSubjectDetail(Request $request, $courseCurriculumSubjectId): JsonResponse
+    {
+        $curriculumSubjectId = (int) $courseCurriculumSubjectId;
+
+        $assignment = CourseCurriculumSubject::query()->find($curriculumSubjectId);
+        if (!$assignment) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Curriculum subject not found.',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'pre_subject_ids' => 'nullable|array',
+            'pre_subject_ids.*' => 'integer|exists:subjects,id',
+            'co_subject_ids' => 'nullable|array',
+            'co_subject_ids.*' => 'integer|exists:subjects,id',
+            'equivalent_subject_ids' => 'nullable|array',
+            'equivalent_subject_ids.*' => 'integer|exists:subjects,id',
+        ]);
+
+        $allowedSubjectIds = CourseCurriculumSubject::query()
+            ->where('course_curriculum_id', (int) $assignment->course_curriculum_id)
+            ->where('id', '<>', (int) $assignment->id)
+            ->pluck('subject_id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $preIds = collect((array) ($validated['pre_subject_ids'] ?? []))
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $coIds = collect((array) ($validated['co_subject_ids'] ?? []))
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        $equivalentIds = collect((array) ($validated['equivalent_subject_ids'] ?? []))
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ([$preIds, $coIds, $equivalentIds] as $ids) {
+            foreach ($ids as $subjectId) {
+                if (!in_array((int) $subjectId, $allowedSubjectIds, true)) {
+                    throw ValidationException::withMessages([
+                        'pre_subject_ids' => ['One or more selected subjects are not valid for this curriculum.'],
+                    ]);
+                }
+            }
+        }
+
+        $typeIds = [];
+        foreach ([
+            'pre' => 'Pre-requisite',
+            'co' => 'Co-requisite',
+            'equivalent' => 'Equivalent Subject',
+        ] as $code => $name) {
+            $typeIds[$code] = (int) CurriculumRequisiteType::query()
+                ->firstOrCreate(['code' => $code], ['name' => $name])
+                ->id;
+        }
+
+        DB::transaction(function () use ($assignment, $typeIds, $preIds, $coIds, $equivalentIds) {
+            CurriculumSubjectRequisite::query()
+                ->where('course_curriculum_subject_id', (int) $assignment->id)
+                ->delete();
+
+            $rows = [];
+            $groupMap = [
+                'pre' => $preIds,
+                'co' => $coIds,
+                'equivalent' => $equivalentIds,
+            ];
+
+            foreach ($groupMap as $typeCode => $ids) {
+                $sortOrder = 0;
+
+                foreach ($ids as $subjectId) {
+                    $rows[] = [
+                        'course_curriculum_subject_id' => (int) $assignment->id,
+                        'requisite_subject_id' => (int) $subjectId,
+                        'curriculum_requisite_type_id' => (int) $typeIds[$typeCode],
+                        'sort_order' => $sortOrder,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+
+                    $sortOrder++;
+                }
+            }
+
+            if (count($rows)) {
+                DB::table('curriculum_subject_requisites')->insert($rows);
+            }
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Pre-requisite mappings saved successfully.',
+        ]);
+    }
+
+    private function buildPreRequisitesListPayload($courseId, $curriculumYear, $page = 1, $perPage = 100): array
+    {
+        $course = Course::query()->find((int) $courseId);
+        if (!$course) {
+            throw ValidationException::withMessages([
+                'course_id' => ['Course not found.'],
+            ]);
+        }
+
+        $safePage = max((int) $page, 1);
+        $safePerPage = min(max((int) $perPage, 1), 5000);
+
+        $hasCurriculumYearLookup = Schema::hasTable('curriculum_years');
+        $hasCurriculumYearForeign = Schema::hasColumn('course_curricula', 'curriculum_year_id');
+        $curriculumYearId = null;
+        if ($hasCurriculumYearLookup) {
+            $curriculumYearId = DB::table('curriculum_years')
+                ->where('code', (string) $curriculumYear)
+                ->value('id');
+        }
+
+        $curriculum = CourseCurriculum::query()
+            ->where('course_id', (int) $courseId)
+            ->where(function ($query) use ($curriculumYear, $curriculumYearId, $hasCurriculumYearForeign) {
+                $query->where('curriculum_year_code', (string) $curriculumYear);
+
+                if ($hasCurriculumYearForeign && !empty($curriculumYearId)) {
+                    $query->orWhere('curriculum_year_id', (int) $curriculumYearId);
+                }
+            })
+            ->first();
+
+        if (!$curriculum) {
+            return [
+                'course' => [
+                    'id' => (int) $course->id,
+                    'code' => (string) $course->code,
+                    'name' => (string) ($course->name ?: $course->description),
+                ],
+                'curriculum_year' => (string) $curriculumYear,
+                'program_title' => strtoupper((string) ($course->name ?: $course->description)),
+                'years' => [],
+                'meta' => [
+                    'page' => 1,
+                    'per_page' => $safePerPage,
+                    'total' => 0,
+                    'last_page' => 1,
+                ],
+            ];
+        }
+
+        $assignmentQuery = CourseCurriculumSubject::query()
+            ->with(['subject', 'yearBlock', 'semester'])
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->orderBy('display_order')
+            ->orderBy('id');
+
+        $totalAssignments = (int) (clone $assignmentQuery)->count();
+        $lastPage = max((int) ceil($totalAssignments / $safePerPage), 1);
+        if ($safePage > $lastPage) {
+            $safePage = $lastPage;
+        }
+
+        $assignments = $assignmentQuery
+            ->forPage($safePage, $safePerPage)
+            ->get();
+
+        $assignmentIds = $assignments->pluck('id')->map(function ($id) {
+            return (int) $id;
+        })->all();
+
+        $requisiteMap = [];
+        if (count($assignmentIds) > 0) {
+            $requisiteRows = DB::table('curriculum_subject_requisites as csr')
+                ->join('curriculum_requisite_types as crt', 'crt.id', '=', 'csr.curriculum_requisite_type_id')
+                ->join('subjects as rs', 'rs.id', '=', 'csr.requisite_subject_id')
+                ->whereIn('csr.course_curriculum_subject_id', $assignmentIds)
+                ->orderBy('csr.sort_order')
+                ->get([
+                    'csr.course_curriculum_subject_id',
+                    'crt.code as requisite_type_code',
+                    'rs.code as requisite_subject_code',
+                ]);
+
+            foreach ($requisiteRows as $row) {
+                $assignmentId = (int) $row->course_curriculum_subject_id;
+                $typeCode = strtolower(trim((string) $row->requisite_type_code));
+
+                if (!isset($requisiteMap[$assignmentId])) {
+                    $requisiteMap[$assignmentId] = [
+                        'pre' => [],
+                        'co' => [],
+                        'equivalent' => [],
+                    ];
+                }
+
+                if (!array_key_exists($typeCode, $requisiteMap[$assignmentId])) {
+                    continue;
+                }
+
+                $requisiteMap[$assignmentId][$typeCode][] = trim((string) $row->requisite_subject_code);
+            }
+        }
+
+        $assignmentBuckets = [];
+        foreach ($assignments as $assignment) {
+            $assignmentId = (int) $assignment->id;
+            $yearBlockId = (int) $assignment->year_block_id;
+            $semesterId = (int) $assignment->semester_id;
+
+            if (!isset($assignmentBuckets[$yearBlockId])) {
+                $assignmentBuckets[$yearBlockId] = [];
+            }
+
+            if (!isset($assignmentBuckets[$yearBlockId][$semesterId])) {
+                $assignmentBuckets[$yearBlockId][$semesterId] = [];
+            }
+
+            $types = $requisiteMap[$assignmentId] ?? [
+                'pre' => [],
+                'co' => [],
+                'equivalent' => [],
+            ];
+
+            $assignmentBuckets[$yearBlockId][$semesterId][] = [
+                'curriculum_subject_id' => $assignmentId,
+                'subject_id' => (int) $assignment->subject_id,
+                'code' => (string) optional($assignment->subject)->code,
+                'description' => (string) optional($assignment->subject)->name,
+                'credited_units' => (float) $assignment->credited_units,
+                'pre_requisite_text' => count($types['pre']) ? implode(', ', $types['pre']) : 'None',
+                'co_requisite_text' => count($types['co']) ? implode(', ', $types['co']) : 'None',
+                'equivalent_subject_text' => count($types['equivalent']) ? implode(', ', $types['equivalent']) : 'None',
+            ];
+        }
+
+        $yearsPayload = [];
+        $yearBlocks = $this->orderedYearBlocks();
+        $semesters = $this->orderedSemesters();
+
+        foreach ($yearBlocks as $yearBlock) {
+            $semesterPayload = [];
+
+            foreach ($semesters as $semester) {
+                $semesterPayload[] = [
+                    'id' => (int) $semester->id,
+                    'label' => (string) $semester->name,
+                    'subjects' => $assignmentBuckets[(int) $yearBlock->id][(int) $semester->id] ?? [],
+                ];
+            }
+
+            $yearsPayload[] = [
+                'id' => (int) $yearBlock->id,
+                'label' => (string) $yearBlock->label,
+                'semesters' => $semesterPayload,
+            ];
+        }
+
+        $resolvedCurriculumYearCode = trim((string) $curriculum->curriculum_year_code);
+        if ($resolvedCurriculumYearCode === '' && $hasCurriculumYearLookup && !empty($curriculum->curriculum_year_id)) {
+            $lookupCode = DB::table('curriculum_years')
+                ->where('id', (int) $curriculum->curriculum_year_id)
+                ->value('code');
+
+            if (!empty($lookupCode)) {
+                $resolvedCurriculumYearCode = (string) $lookupCode;
+            }
+        }
+
+        if ($resolvedCurriculumYearCode === '') {
+            $resolvedCurriculumYearCode = (string) $curriculumYear;
+        }
+
+        return [
+            'course' => [
+                'id' => (int) $course->id,
+                'code' => (string) $course->code,
+                'name' => (string) ($course->name ?: $course->description),
+            ],
+            'curriculum_year' => $resolvedCurriculumYearCode,
+            'program_title' => strtoupper((string) ($course->name ?: $course->description)),
+            'years' => $yearsPayload,
+            'meta' => [
+                'page' => $safePage,
+                'per_page' => $safePerPage,
+                'total' => $totalAssignments,
+                'last_page' => $lastPage,
+            ],
+        ];
+    }
+
+    private function buildPreRequisitesSubjectPayload($curriculumSubjectId)
+    {
+        $assignment = CourseCurriculumSubject::query()
+            ->with(['subject', 'curriculum.course'])
+            ->find((int) $curriculumSubjectId);
+
+        if (!$assignment) {
+            return null;
+        }
+
+        $availableSubjects = CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $assignment->course_curriculum_id)
+            ->where('id', '<>', (int) $assignment->id)
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get()
+            ->map(function (CourseCurriculumSubject $item) {
+                return [
+                    'subject_id' => (int) $item->subject_id,
+                    'code' => (string) optional($item->subject)->code,
+                    'description' => (string) optional($item->subject)->name,
+                ];
+            })
+            ->unique('subject_id')
+            ->values();
+
+        $selectedRows = CurriculumSubjectRequisite::query()
+            ->with(['requisiteType', 'requisiteSubject'])
+            ->where('course_curriculum_subject_id', (int) $assignment->id)
+            ->orderBy('sort_order')
+            ->get();
+
+        $selected = [
+            'pre' => [],
+            'co' => [],
+            'equivalent' => [],
+        ];
+
+        foreach ($selectedRows as $row) {
+            $typeCode = strtolower((string) optional($row->requisiteType)->code);
+            if (!array_key_exists($typeCode, $selected)) {
+                continue;
+            }
+
+            $selected[$typeCode][] = [
+                'subject_id' => (int) $row->requisite_subject_id,
+                'code' => (string) optional($row->requisiteSubject)->code,
+                'description' => (string) optional($row->requisiteSubject)->name,
+            ];
+        }
+
+        $curriculumYearCode = trim((string) optional($assignment->curriculum)->curriculum_year_code);
+        if ($curriculumYearCode === ''
+            && Schema::hasTable('curriculum_years')
+            && !empty(optional($assignment->curriculum)->curriculum_year_id)) {
+            $lookupCode = DB::table('curriculum_years')
+                ->where('id', (int) optional($assignment->curriculum)->curriculum_year_id)
+                ->value('code');
+
+            if (!empty($lookupCode)) {
+                $curriculumYearCode = (string) $lookupCode;
+            }
+        }
+
+        return [
+            'subject' => [
+                'curriculum_subject_id' => (int) $assignment->id,
+                'subject_id' => (int) $assignment->subject_id,
+                'code' => (string) optional($assignment->subject)->code,
+                'description' => (string) optional($assignment->subject)->name,
+                'credited_units' => (float) $assignment->credited_units,
+            ],
+            'available_subjects' => $availableSubjects,
+            'selected' => $selected,
+            'course' => [
+                'id' => (int) optional(optional($assignment->curriculum)->course)->id,
+                'code' => (string) optional(optional($assignment->curriculum)->course)->code,
+                'name' => (string) (optional(optional($assignment->curriculum)->course)->name ?: optional(optional($assignment->curriculum)->course)->description),
+            ],
+            'curriculum_year' => $curriculumYearCode,
+        ];
+    }
+
+    private function makePdfDownloadResponse($html, $filename, $orientation = 'P')
+    {
+        $tempDir = storage_path('app/mpdf-temp');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0755, true);
+        }
+
+        $format = strtoupper((string) $orientation) === 'L' ? 'A4-L' : 'A4';
+
+        $pdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => $format,
+            'tempDir' => $tempDir,
+            'margin_top' => 10,
+            'margin_right' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+        ]);
+
+        $pdf->WriteHTML((string) $html);
+        $binary = $pdf->Output((string) $filename, Destination::STRING_RETURN);
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    private function sanitizeFilenameSegment($value)
+    {
+        $normalized = strtolower(trim((string) $value));
+        $normalized = preg_replace('/[^a-z0-9]+/', '-', $normalized);
+        $normalized = trim((string) $normalized, '-');
+
+        return $normalized !== '' ? $normalized : 'file';
+    }
+
+    private function buildCourseCurriculumYearMap($courses): array
+    {
+        $courseIds = collect($courses)->pluck('id')->map(function ($id) {
+            return (int) $id;
+        })->values()->all();
+
+        if (!count($courseIds)) {
+            return [];
+        }
+
+        $rowsQuery = DB::table('course_curricula as cc')
+            ->whereIn('cc.course_id', $courseIds)
+            ->orderBy('cc.curriculum_year_code');
+
+        if (Schema::hasTable('curriculum_years') && Schema::hasColumn('course_curricula', 'curriculum_year_id')) {
+            $rowsQuery
+                ->leftJoin('curriculum_years as cy', 'cy.id', '=', 'cc.curriculum_year_id')
+                ->select([
+                    'cc.course_id',
+                    DB::raw('COALESCE(cy.code, cc.curriculum_year_code) as curriculum_year_code'),
+                ]);
+        } else {
+            $rowsQuery->select(['cc.course_id', 'cc.curriculum_year_code']);
+        }
+
+        $rows = $rowsQuery->get();
+
+        $map = [];
+        foreach ($courseIds as $courseId) {
+            $map[$courseId] = [];
+        }
+
+        foreach ($rows as $row) {
+            $courseId = (int) $row->course_id;
+            $yearCode = trim((string) $row->curriculum_year_code);
+
+            if ($yearCode === '') {
+                continue;
+            }
+
+            if (!isset($map[$courseId])) {
+                $map[$courseId] = [];
+            }
+
+            if (!in_array($yearCode, $map[$courseId], true)) {
+                $map[$courseId][] = $yearCode;
+            }
+        }
+
+        return $map;
+    }
+
+    private function normalizeSelectedCourseId($requestedCourseId, $courses, array $courseYearMap)
+    {
+        $requestedId = (int) $requestedCourseId;
+        $availableIds = collect($courses)->pluck('id')->map(function ($id) {
+            return (int) $id;
+        })->values()->all();
+
+        if ($requestedId > 0 && in_array($requestedId, $availableIds, true)) {
+            return $requestedId;
+        }
+
+        foreach ($availableIds as $courseId) {
+            if (count($courseYearMap[$courseId] ?? [])) {
+                return $courseId;
+            }
+        }
+
+        return count($availableIds) ? (int) $availableIds[0] : null;
+    }
+
+    private function normalizeSelectedCurriculumYear($selectedCourseId, $requestedYear, array $courseYearMap)
+    {
+        if (!$selectedCourseId) {
+            return '';
+        }
+
+        $years = $courseYearMap[(int) $selectedCourseId] ?? [];
+        $requested = trim((string) $requestedYear);
+
+        if ($requested !== '' && in_array($requested, $years, true)) {
+            return $requested;
+        }
+
+        return count($years) ? (string) $years[0] : '';
+    }
+
+    private function orderedYearBlocks()
+    {
+        return YearBlock::query()
+            ->whereIn('label', ['1st Year', '2nd Year', '3rd Year', '4th Year'])
+            ->orderByRaw("CASE label WHEN '1st Year' THEN 1 WHEN '2nd Year' THEN 2 WHEN '3rd Year' THEN 3 WHEN '4th Year' THEN 4 ELSE 99 END")
+            ->orderBy('label')
+            ->get(['id', 'label']);
+    }
+
+    private function orderedSemesters()
+    {
+        return Semester::query()
+            ->whereIn('name', ['First Semester', 'Second Semester', 'Summer Semester'])
+            ->orderByRaw("CASE name WHEN 'First Semester' THEN 1 WHEN 'Second Semester' THEN 2 WHEN 'Summer Semester' THEN 3 ELSE 99 END")
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     /**
@@ -1255,7 +3176,660 @@ class RegistrarController extends Controller
      */
     public function roomFile()
     {
+        $this->seedRoomDimensionsIfEmpty();
+
         return view('registrar.registrar-menu.scheduling.room-file');
+    }
+
+    public function roomFileData(Request $request): JsonResponse
+    {
+        $this->seedRoomDimensionsIfEmpty();
+
+        $search = trim((string) $request->input('search', ''));
+        $page = $this->resolveRoomFilePage($request->input('page', 1));
+        $perPage = $this->resolveRoomFilePerPage($request->input('per_page', self::ROOM_FILE_DEFAULT_PER_PAGE));
+        $sortBy = $this->resolveRoomFileSortBy($request->input('sort_by', self::ROOM_FILE_DEFAULT_SORT_BY));
+        $sortDir = $this->resolveRoomFileSortDirection($request->input('sort_dir', self::ROOM_FILE_DEFAULT_SORT_DIR));
+        $includeOptions = $this->requestBoolean($request, 'include_options');
+
+        $query = Room::query()
+            ->select([
+                'rooms.id',
+                'rooms.room_hallway_id',
+                'rooms.room_number',
+                'rooms.floor_number',
+                'rooms.capacity',
+                'rooms.updated_by_user_id',
+                'rooms.updated_at',
+            ])
+            ->with([
+                'hallway.building:id,name',
+                'courses',
+                'updatedBy:id,name',
+            ]);
+
+        if ($search !== '') {
+            $this->applyRoomFileSearch($query, $search);
+            $this->applyRoomFileSearchPriority($query, $search);
+        }
+
+        $this->applyRoomFileSort($query, $sortBy, $sortDir);
+
+        $paginator = $query->paginate($perPage, [
+            'rooms.id',
+            'rooms.room_hallway_id',
+            'rooms.room_number',
+            'rooms.floor_number',
+            'rooms.capacity',
+            'rooms.updated_by_user_id',
+            'rooms.updated_at',
+        ], 'page', $page);
+
+        $rows = $paginator->getCollection()
+            ->map(function (Room $room) {
+                return $this->mapRoomFileRow($room);
+            })
+            ->values();
+
+        $options = null;
+        if ($includeOptions) {
+            $options = $this->roomFileOptionsPayload();
+        }
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'options' => $options,
+            'meta' => [
+                'page' => (int) $paginator->currentPage(),
+                'last_page' => (int) $paginator->lastPage(),
+                'per_page' => (int) $paginator->perPage(),
+                'total' => (int) $paginator->total(),
+                'sort_by' => $sortBy,
+                'sort_dir' => $sortDir,
+            ],
+        ]);
+    }
+
+    public function storeRoomFile(StoreRoomRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids']);
+
+        $room = null;
+
+        DB::beginTransaction();
+        try {
+            $room = Room::create([
+                'room_hallway_id' => (int) $validated['room_hallway_id'],
+                'room_number' => (int) $validated['room_number'],
+                'floor_number' => (int) $validated['floor_number'],
+                'capacity' => (int) $validated['capacity'],
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $room->courses()->sync($courseIds);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateRoomConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate room location entry.',
+                    'errors' => [
+                        'room_number' => ['The room number already exists for the selected floor and hallway.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $room->load(['hallway.building:id,name', 'courses', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'id' => $room->id,
+            'row' => $this->mapRoomFileRow($room),
+        ]);
+    }
+
+    public function storeRoomBuilding(StoreRoomBuildingRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $name = $this->normalizeRoomBuildingName($validated['name']);
+
+        if ($name === '') {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'name' => ['Building name is required.'],
+                ],
+            ], 422);
+        }
+
+        $existing = RoomBuilding::query()
+            ->with([
+                'hallways' => function ($hallwayQuery) {
+                    $hallwayQuery
+                        ->select('id', 'room_building_id', 'name')
+                        ->orderBy('name');
+                },
+            ])
+            ->where('name', $name)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'ok' => true,
+                'existing' => true,
+                'building' => $this->mapRoomBuildingOption($existing),
+            ]);
+        }
+
+        try {
+            $building = RoomBuilding::query()->create([
+                'name' => $name,
+            ]);
+
+            $building->setRelation('hallways', collect());
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateRoomBuildingConstraint($exception)) {
+                $existing = RoomBuilding::query()
+                    ->with([
+                        'hallways' => function ($hallwayQuery) {
+                            $hallwayQuery
+                                ->select('id', 'room_building_id', 'name')
+                                ->orderBy('name');
+                        },
+                    ])
+                    ->where('name', $name)
+                    ->first();
+
+                if ($existing) {
+                    return response()->json([
+                        'ok' => true,
+                        'existing' => true,
+                        'building' => $this->mapRoomBuildingOption($existing),
+                    ]);
+                }
+            }
+
+            throw $exception;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'existing' => false,
+            'building' => $this->mapRoomBuildingOption($building),
+        ]);
+    }
+
+    public function storeRoomHallway(StoreRoomHallwayRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $buildingId = (int) $validated['room_building_id'];
+        $name = $this->normalizeRoomHallwayName($validated['name']);
+
+        if ($name === '') {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'name' => ['Hallway name is required.'],
+                ],
+            ], 422);
+        }
+
+        $existing = RoomHallway::query()
+            ->where('room_building_id', $buildingId)
+            ->where('name', $name)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'ok' => true,
+                'existing' => true,
+                'hallway' => [
+                    'id' => (int) $existing->id,
+                    'name' => (string) $existing->name,
+                    'room_building_id' => (int) $existing->room_building_id,
+                ],
+            ]);
+        }
+
+        try {
+            $hallway = RoomHallway::query()->create([
+                'room_building_id' => $buildingId,
+                'name' => $name,
+            ]);
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateRoomHallwayConstraint($exception)) {
+                $existing = RoomHallway::query()
+                    ->where('room_building_id', $buildingId)
+                    ->where('name', $name)
+                    ->first();
+
+                if ($existing) {
+                    return response()->json([
+                        'ok' => true,
+                        'existing' => true,
+                        'hallway' => [
+                            'id' => (int) $existing->id,
+                            'name' => (string) $existing->name,
+                            'room_building_id' => (int) $existing->room_building_id,
+                        ],
+                    ]);
+                }
+            }
+
+            throw $exception;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'existing' => false,
+            'hallway' => [
+                'id' => (int) $hallway->id,
+                'name' => (string) $hallway->name,
+                'room_building_id' => (int) $hallway->room_building_id,
+            ],
+        ]);
+    }
+
+    public function updateRoomFile(UpdateRoomRequest $request, Room $room): JsonResponse
+    {
+        $validated = $request->validated();
+        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids']);
+
+        DB::beginTransaction();
+        try {
+            $room->update([
+                'room_hallway_id' => (int) $validated['room_hallway_id'],
+                'room_number' => (int) $validated['room_number'],
+                'floor_number' => (int) $validated['floor_number'],
+                'capacity' => (int) $validated['capacity'],
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $room->courses()->sync($courseIds);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateRoomConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate room location entry.',
+                    'errors' => [
+                        'room_number' => ['The room number already exists for the selected floor and hallway.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $room->load(['hallway.building:id,name', 'courses', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapRoomFileRow($room),
+        ]);
+    }
+
+    public function destroyRoomFile(Room $room): JsonResponse
+    {
+        $room->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function applyRoomFileSearch($query, $search)
+    {
+        $term = '%' . $search . '%';
+
+        $query->where(function ($builder) use ($term) {
+            $builder->where('room_number', 'like', $term)
+                ->orWhere('floor_number', 'like', $term)
+                ->orWhere('capacity', 'like', $term)
+                ->orWhereHas('hallway', function ($hallwayQuery) use ($term) {
+                    $hallwayQuery->where('name', 'like', $term)
+                        ->orWhereHas('building', function ($buildingQuery) use ($term) {
+                            $buildingQuery->where('name', 'like', $term);
+                        });
+                })
+                ->orWhereHas('courses', function ($courseQuery) use ($term) {
+                    $courseQuery->where('code', 'like', $term)
+                        ->orWhere('name', 'like', $term);
+                })
+                ->orWhereHas('updatedBy', function ($userQuery) use ($term) {
+                    $userQuery->where('name', 'like', $term);
+                });
+        });
+    }
+
+    private function applyRoomFileSearchPriority($query, $search)
+    {
+        $needle = trim((string) $search);
+        if ($needle === '') {
+            return;
+        }
+
+        $startsWith = $needle . '%';
+        $contains = '%' . $needle . '%';
+
+        $query->orderByRaw(
+            "CASE WHEN CAST(rooms.room_number AS CHAR) = ? THEN 0 WHEN CAST(rooms.room_number AS CHAR) LIKE ? THEN 1 WHEN CAST(rooms.room_number AS CHAR) LIKE ? THEN 2 ELSE 3 END",
+            [$needle, $startsWith, $contains]
+        );
+    }
+
+    private function applyRoomFileSort($query, $sortBy, $sortDir)
+    {
+        switch ($sortBy) {
+            case 'room_number':
+                $query->orderBy('rooms.room_number', $sortDir)
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'building':
+                $query->leftJoin('room_hallways as rf_sort_h', 'rf_sort_h.id', '=', 'rooms.room_hallway_id')
+                    ->leftJoin('room_buildings as rf_sort_b', 'rf_sort_b.id', '=', 'rf_sort_h.room_building_id')
+                    ->orderBy('rf_sort_b.name', $sortDir)
+                    ->orderBy('rf_sort_h.name', $sortDir)
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'capacity':
+                $query->orderBy('rooms.capacity', $sortDir)
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'program':
+                $query->orderByRaw("(SELECT MIN(COALESCE(NULLIF(TRIM(c.code), ''), c.name)) FROM room_course_assignments rca INNER JOIN courses c ON c.id = rca.course_id WHERE rca.room_id = rooms.id) {$sortDir}")
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'updated_by':
+                $query->leftJoin('users as rf_sort_u', 'rf_sort_u.id', '=', 'rooms.updated_by_user_id')
+                    ->orderByRaw("COALESCE(rf_sort_u.name, '') {$sortDir}")
+                    ->orderBy('rooms.floor_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+
+            case 'floor_number':
+            default:
+                $query->orderBy('rooms.floor_number', $sortDir)
+                    ->orderBy('rooms.room_number', self::ROOM_FILE_DEFAULT_SORT_DIR)
+                    ->orderBy('rooms.id', self::ROOM_FILE_DEFAULT_SORT_DIR);
+                return;
+        }
+    }
+
+    private function roomFileOptionsPayload()
+    {
+        $buildings = RoomBuilding::query()
+            ->with([
+                'hallways' => function ($hallwayQuery) {
+                    $hallwayQuery
+                        ->select('id', 'room_building_id', 'name')
+                        ->orderBy('name');
+                },
+            ])
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(function (RoomBuilding $building) {
+                return $this->mapRoomBuildingOption($building);
+            })
+            ->values();
+
+        $programs = Course::query()
+            ->orderBy('code')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                $label = trim((string) $course->code);
+                if ($label === '') {
+                    $label = (string) $course->name;
+                }
+
+                return [
+                    'id' => (int) $course->id,
+                    'code' => (string) $course->code,
+                    'name' => (string) $course->name,
+                    'label' => $label,
+                ];
+            })
+            ->values();
+
+        return [
+            'buildings' => $buildings,
+            'programs' => $programs,
+        ];
+    }
+
+    private function mapRoomFileRow(Room $room)
+    {
+        $buildingName = '';
+        $hallwayName = '';
+
+        if ($room->hallway) {
+            $hallwayName = (string) $room->hallway->name;
+            if ($room->hallway->building) {
+                $buildingName = (string) $room->hallway->building->name;
+            }
+        }
+
+        $programIds = $room->courses
+            ->pluck('id')
+            ->map(function ($courseId) {
+                return (int) $courseId;
+            })
+            ->values()
+            ->all();
+
+        $programLabels = $room->courses
+            ->map(function (Course $course) {
+                $code = trim((string) $course->code);
+                return $code !== '' ? $code : (string) $course->name;
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->values()
+            ->all();
+
+        $updatedByName = 'System';
+        if ($room->updatedBy && trim((string) $room->updatedBy->name) !== '') {
+            $updatedByName = (string) $room->updatedBy->name;
+        }
+
+        $locationLabel = trim($buildingName . ' / ' . $hallwayName, ' /');
+
+        return [
+            'id' => (int) $room->id,
+            'room_number' => (int) $room->room_number,
+            'floor_number' => (int) $room->floor_number,
+            'capacity' => (int) $room->capacity,
+            'room_building_id' => $room->hallway ? (int) $room->hallway->room_building_id : null,
+            'room_hallway_id' => (int) $room->room_hallway_id,
+            'building' => $buildingName,
+            'hallway' => $hallwayName,
+            'location_label' => $locationLabel,
+            'program_ids' => $programIds,
+            'program_labels' => $programLabels,
+            'program_label' => count($programLabels) ? implode(', ', $programLabels) : '-',
+            'updated_by' => $updatedByName,
+            'updated_at' => $room->updated_at ? $room->updated_at->toDateTimeString() : null,
+        ];
+    }
+
+    private function normalizeRoomCourseIds(array $courseIds)
+    {
+        $normalized = [];
+
+        foreach ($courseIds as $courseId) {
+            $id = (int) $courseId;
+            if ($id > 0 && !in_array($id, $normalized, true)) {
+                $normalized[] = $id;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeRoomHallwayName($name)
+    {
+        $normalized = preg_replace('/\s+/', ' ', trim((string) $name));
+
+        return $normalized === null ? '' : $normalized;
+    }
+
+    private function normalizeRoomBuildingName($name)
+    {
+        $normalized = preg_replace('/\s+/', ' ', trim((string) $name));
+
+        return $normalized === null ? '' : $normalized;
+    }
+
+    private function resolveRoomFilePage($page)
+    {
+        $safePage = (int) $page;
+
+        if ($safePage < 1) {
+            return 1;
+        }
+
+        return $safePage;
+    }
+
+    private function resolveRoomFilePerPage($perPage)
+    {
+        $safePerPage = (int) $perPage;
+
+        if ($safePerPage < self::ROOM_FILE_MIN_PER_PAGE) {
+            return self::ROOM_FILE_MIN_PER_PAGE;
+        }
+
+        if ($safePerPage > self::ROOM_FILE_MAX_PER_PAGE) {
+            return self::ROOM_FILE_MAX_PER_PAGE;
+        }
+
+        return $safePerPage;
+    }
+
+    private function resolveRoomFileSortBy($sortBy)
+    {
+        $candidate = strtolower(trim((string) $sortBy));
+
+        if (in_array($candidate, self::ROOM_FILE_ALLOWED_SORT_COLUMNS, true)) {
+            return $candidate;
+        }
+
+        return self::ROOM_FILE_DEFAULT_SORT_BY;
+    }
+
+    private function resolveRoomFileSortDirection($sortDirection)
+    {
+        $candidate = strtolower(trim((string) $sortDirection));
+
+        if ($candidate === 'desc') {
+            return 'desc';
+        }
+
+        return self::ROOM_FILE_DEFAULT_SORT_DIR;
+    }
+
+    private function isDuplicateRoomConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'rooms_location_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
+    private function isDuplicateRoomHallwayConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'room_hallways_building_name_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
+    private function isDuplicateRoomBuildingConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'room_buildings_name_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
+    private function mapRoomBuildingOption(RoomBuilding $building)
+    {
+        $hallways = $building->hallways;
+        if (!$hallways) {
+            $hallways = collect();
+        }
+
+        return [
+            'id' => (int) $building->id,
+            'name' => (string) $building->name,
+            'hallways' => $hallways
+                ->map(function (RoomHallway $hallway) {
+                    return [
+                        'id' => (int) $hallway->id,
+                        'name' => (string) $hallway->name,
+                    ];
+                })
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function seedRoomDimensionsIfEmpty()
+    {
+        if (!Schema::hasTable('room_buildings') || !Schema::hasTable('room_hallways')) {
+            return;
+        }
+
+        if (RoomBuilding::query()->exists()) {
+            return;
+        }
+
+        $defaultBuildings = ['Campus 1', 'Campus 2', 'Campus 3', 'Campus 4'];
+
+        DB::transaction(function () use ($defaultBuildings) {
+            foreach ($defaultBuildings as $buildingName) {
+                $building = RoomBuilding::query()->create([
+                    'name' => $buildingName,
+                ]);
+
+                RoomHallway::query()->create([
+                    'room_building_id' => $building->id,
+                    'name' => 'Main Hallway',
+                ]);
+            }
+        });
     }
 
     /**
@@ -1274,12 +3848,724 @@ class RegistrarController extends Controller
         return view('registrar.registrar-menu.scheduling.slot-monitoring');
     }
 
+    public function slotMonitoringData(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = trim((string) $request->query('semester', ''));
+        $sectionQuery = trim((string) $request->query('section', ''));
+        $courseQuery = trim((string) $request->query('course_query', ''));
+        $courseId = (int) $request->query('course_id', 0);
+        $page = $this->resolveSlotMonitoringPage($request->query('page', 1));
+        $perPage = $this->resolveSlotMonitoringPerPage($request->query('per_page', self::SLOT_MONITORING_DEFAULT_PER_PAGE));
+        $includeOptions = $this->requestBoolean($request, 'include_options');
+        $optionsMode = trim((string) $request->query('options_mode', ''));
+
+        $query = SlotMonitoring::query()
+            ->select([
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+                'updated_by_user_id',
+                'updated_at',
+            ])
+            ->with([
+                'course:id,code,name',
+                'updatedBy:id,name',
+            ]);
+
+        if ($schoolYear !== '') {
+            $query->where('school_year', $schoolYear);
+        }
+
+        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
+            $query->where('semester', $semester);
+        }
+
+        if ($sectionQuery !== '') {
+            $query->where('section', 'like', $sectionQuery . '%');
+        }
+
+        if ($courseId > 0) {
+            $query->where('course_id', $courseId);
+        }
+
+        if ($courseQuery !== '' && strlen($courseQuery) >= 2) {
+            $query->whereHas('course', function ($builder) use ($courseQuery) {
+                $builder->where('code', 'like', $courseQuery . '%')
+                    ->orWhere('name', 'like', '%' . $courseQuery . '%');
+            });
+        }
+
+        $normalizedSearch = preg_replace('/\s+/', ' ', $search);
+        $normalizedSearch = trim((string) $normalizedSearch);
+        if ($normalizedSearch !== '' && strlen($normalizedSearch) >= 2) {
+            $query->where(function ($builder) use ($normalizedSearch) {
+                $builder->where('subject', 'like', $normalizedSearch . '%')
+                    ->orWhere('section', 'like', $normalizedSearch . '%')
+                    ->orWhere('schedule', 'like', '%' . $normalizedSearch . '%');
+            });
+        }
+
+        $paginator = $query
+            ->orderBy('school_year', 'desc')
+            ->orderByRaw("CASE WHEN semester = 'First' THEN 1 WHEN semester = 'Second' THEN 2 WHEN semester = 'Summer' THEN 3 ELSE 4 END")
+            ->orderBy('section')
+            ->orderBy('subject')
+            ->paginate($perPage, [
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+                'updated_by_user_id',
+                'updated_at',
+            ], 'page', $page);
+
+        $rows = $paginator->getCollection()
+            ->map(function (SlotMonitoring $slotMonitoring) {
+                return $this->mapSlotMonitoringRow($slotMonitoring);
+            })
+            ->values();
+
+        $options = null;
+        if ($includeOptions) {
+            $options = $this->slotMonitoringOptionsPayload($schoolYear, $semester, $courseId, $optionsMode);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'options' => $options,
+            'meta' => [
+                'page' => (int) $paginator->currentPage(),
+                'last_page' => (int) $paginator->lastPage(),
+                'per_page' => (int) $paginator->perPage(),
+                'total' => (int) $paginator->total(),
+            ],
+        ]);
+    }
+
+    public function storeSlotMonitoring(StoreSlotMonitoringRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $slotMonitoring = null;
+
+        DB::beginTransaction();
+        try {
+            $slotMonitoring = SlotMonitoring::query()->create([
+                'school_year' => (string) $validated['school_year'],
+                'semester' => (string) $validated['semester'],
+                'course_id' => (int) $validated['course_id'],
+                'section' => (string) $validated['section'],
+                'subject' => (string) $validated['subject'],
+                'schedule' => (string) $validated['schedule'],
+                'total_slots' => (int) $validated['total_slots'],
+                'enrolled_slots' => isset($validated['enrolled_slots']) ? (int) $validated['enrolled_slots'] : 0,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateSlotMonitoringConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate slot entry.',
+                    'errors' => [
+                        'subject' => ['A slot entry with the same school year, semester, course, section, subject, and schedule already exists.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $slotMonitoring->load(['course:id,code,name', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'id' => (int) $slotMonitoring->id,
+            'row' => $this->mapSlotMonitoringRow($slotMonitoring),
+        ]);
+    }
+
+    public function updateSlotMonitoring(UpdateSlotMonitoringRequest $request, SlotMonitoring $slotMonitoring): JsonResponse
+    {
+        $validated = $request->validated();
+
+        DB::beginTransaction();
+        try {
+            $slotMonitoring->update([
+                'school_year' => (string) $validated['school_year'],
+                'semester' => (string) $validated['semester'],
+                'course_id' => (int) $validated['course_id'],
+                'section' => (string) $validated['section'],
+                'subject' => (string) $validated['subject'],
+                'schedule' => (string) $validated['schedule'],
+                'total_slots' => (int) $validated['total_slots'],
+                'enrolled_slots' => isset($validated['enrolled_slots']) ? (int) $validated['enrolled_slots'] : 0,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            DB::commit();
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            if ($this->isDuplicateSlotMonitoringConstraint($exception)) {
+                return response()->json([
+                    'message' => 'Duplicate slot entry.',
+                    'errors' => [
+                        'subject' => ['A slot entry with the same school year, semester, course, section, subject, and schedule already exists.'],
+                    ],
+                ], 422);
+            }
+
+            throw $exception;
+        }
+
+        $slotMonitoring->load(['course:id,code,name', 'updatedBy:id,name']);
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapSlotMonitoringRow($slotMonitoring),
+        ]);
+    }
+
+    public function destroySlotMonitoring(SlotMonitoring $slotMonitoring): JsonResponse
+    {
+        $slotMonitoring->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    private function slotMonitoringOptionsPayload($schoolYear = '', $semester = '', $courseId = 0, $optionsMode = '')
+    {
+        $schoolYears = SlotMonitoring::query()
+            ->select('school_year')
+            ->distinct()
+            ->orderBy('school_year', 'desc')
+            ->pluck('school_year')
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->values();
+
+        if ($schoolYears->isEmpty()) {
+            $year = (int) date('Y');
+            $schoolYears = collect([
+                ($year - 1) . '-' . $year,
+                $year . '-' . ($year + 1),
+            ]);
+        }
+
+        $semesters = collect(self::SLOT_MONITORING_ALLOWED_SEMESTERS)
+            ->merge(
+                SlotMonitoring::query()
+                    ->select('semester')
+                    ->distinct()
+                    ->pluck('semester')
+            )
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->values();
+
+        $normalizedMode = strtolower(trim((string) $optionsMode));
+        if ($normalizedMode === 'filters') {
+            return [
+                'school_years' => $schoolYears,
+                'semesters' => $semesters,
+            ];
+        }
+
+        $courses = Course::query()
+            ->orderBy('code')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                $label = trim((string) $course->code);
+                if ($label === '') {
+                    $label = (string) $course->name;
+                }
+
+                return [
+                    'id' => (int) $course->id,
+                    'code' => (string) $course->code,
+                    'name' => (string) $course->name,
+                    'label' => $label,
+                ];
+            })
+            ->values();
+
+        return [
+            'school_years' => $schoolYears,
+            'semesters' => $semesters,
+            'courses' => $courses,
+        ];
+    }
+
+    private function mapSlotMonitoringRow(SlotMonitoring $slotMonitoring)
+    {
+        $totalSlots = (int) $slotMonitoring->total_slots;
+        $enrolledSlots = (int) $slotMonitoring->enrolled_slots;
+        $utilizationPct = 0;
+
+        if ($totalSlots > 0) {
+            $utilizationPct = (int) round(($enrolledSlots / $totalSlots) * 100);
+        }
+
+        if ($utilizationPct < 0) {
+            $utilizationPct = 0;
+        }
+
+        if ($utilizationPct > 100) {
+            $utilizationPct = 100;
+        }
+
+        $statusLabel = 'Open';
+        if ($utilizationPct >= 90) {
+            $statusLabel = 'Critical';
+        } elseif ($utilizationPct >= 50) {
+            $statusLabel = 'Warning';
+        }
+
+        return [
+            'id' => (int) $slotMonitoring->id,
+            'school_year' => (string) $slotMonitoring->school_year,
+            'semester' => (string) $slotMonitoring->semester,
+            'course_id' => (int) $slotMonitoring->course_id,
+            'course_code' => $slotMonitoring->course ? (string) $slotMonitoring->course->code : '',
+            'course_name' => $slotMonitoring->course ? (string) $slotMonitoring->course->name : '',
+            'section' => (string) $slotMonitoring->section,
+            'subject' => (string) $slotMonitoring->subject,
+            'schedule' => (string) $slotMonitoring->schedule,
+            'total_slots' => $totalSlots,
+            'enrolled_slots' => $enrolledSlots,
+            'utilization_pct' => $utilizationPct,
+            'status_label' => $statusLabel,
+            'updated_by' => $slotMonitoring->updatedBy ? (string) $slotMonitoring->updatedBy->name : 'System',
+            'updated_at' => $slotMonitoring->updated_at ? $slotMonitoring->updated_at->toDateTimeString() : null,
+        ];
+    }
+
+    private function resolveSlotMonitoringPage($page)
+    {
+        $safePage = (int) $page;
+
+        if ($safePage < 1) {
+            return 1;
+        }
+
+        return $safePage;
+    }
+
+    private function resolveSlotMonitoringPerPage($perPage)
+    {
+        $safePerPage = (int) $perPage;
+
+        if ($safePerPage < self::SLOT_MONITORING_MIN_PER_PAGE) {
+            return self::SLOT_MONITORING_MIN_PER_PAGE;
+        }
+
+        if ($safePerPage > self::SLOT_MONITORING_MAX_PER_PAGE) {
+            return self::SLOT_MONITORING_MAX_PER_PAGE;
+        }
+
+        return $safePerPage;
+    }
+
+    private function isDuplicateSlotMonitoringConstraint(QueryException $exception)
+    {
+        if ((string) $exception->getCode() !== '23000') {
+            return false;
+        }
+
+        $message = $exception->getMessage();
+
+        return strpos($message, 'slot_monitorings_unique') !== false
+            || strpos($message, 'Duplicate entry') !== false;
+    }
+
     /**
      * Registrar > Scheduling > Section Merging
      */
     public function sectionMerging()
     {
         return view('registrar.registrar-menu.scheduling.section-merging');
+    }
+
+    public function sectionMergingData(Request $request): JsonResponse
+    {
+        $requestedSchoolYear = trim((string) $request->query('school_year', ''));
+        $requestedSemester = trim((string) $request->query('semester', ''));
+
+        $semesterOrderSql = "FIELD(semester, 'First', 'Second', 'Summer')";
+
+        $configRows = SlotMonitoring::query()
+            ->select([
+                'school_year',
+                'semester',
+                DB::raw('COUNT(*) as row_count'),
+            ])
+            ->whereIn('semester', self::SLOT_MONITORING_ALLOWED_SEMESTERS)
+            ->whereNotNull('school_year')
+            ->where('school_year', '<>', '')
+            ->groupBy('school_year', 'semester')
+            ->orderBy('school_year', 'desc')
+            ->orderByRaw($semesterOrderSql)
+            ->get();
+
+        $schoolYears = [];
+        $semesterMap = [];
+
+        foreach ($configRows as $configRow) {
+            $year = trim((string) $configRow->school_year);
+            $semester = trim((string) $configRow->semester);
+
+            if ($year === '' || $semester === '') {
+                continue;
+            }
+
+            if (!array_key_exists($year, $semesterMap)) {
+                $semesterMap[$year] = [];
+                $schoolYears[] = $year;
+            }
+
+            if (!in_array($semester, $semesterMap[$year], true)) {
+                $semesterMap[$year][] = $semester;
+            }
+        }
+
+        $schoolYear = $requestedSchoolYear;
+        if ($schoolYear === '' || !in_array($schoolYear, $schoolYears, true)) {
+            $schoolYear = !empty($schoolYears) ? (string) $schoolYears[0] : $schoolYear;
+        }
+
+        $semestersForYear = array_key_exists($schoolYear, $semesterMap)
+            ? $semesterMap[$schoolYear]
+            : self::SLOT_MONITORING_ALLOWED_SEMESTERS;
+
+        $semester = $requestedSemester;
+        if ($semester === '' || !in_array($semester, $semestersForYear, true)) {
+            $semester = !empty($semestersForYear) ? (string) $semestersForYear[0] : '';
+        }
+
+        $rowsQuery = SlotMonitoring::query()
+            ->select([
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+            ])
+            ->with(['course:id,code,name']);
+
+        if ($schoolYear !== '') {
+            $rowsQuery->where('school_year', $schoolYear);
+        }
+
+        if ($semester !== '') {
+            $rowsQuery->where('semester', $semester);
+        }
+
+        $rows = $rowsQuery
+            ->orderBy('section')
+            ->orderBy('subject')
+            ->orderBy('id')
+            ->get();
+
+        $mappedRows = $rows
+            ->map(function (SlotMonitoring $slotMonitoring) {
+                return $this->mapSectionMergingRow($slotMonitoring);
+            })
+            ->values();
+
+        $courses = $rows
+            ->map(function (SlotMonitoring $slotMonitoring) {
+                if (!$slotMonitoring->course) {
+                    return null;
+                }
+
+                $courseCode = trim((string) $slotMonitoring->course->code);
+                $courseName = trim((string) $slotMonitoring->course->name);
+                $label = $courseCode;
+
+                if ($label === '') {
+                    $label = $courseName;
+                } elseif ($courseName !== '') {
+                    $label = $label . ' - ' . $courseName;
+                }
+
+                return [
+                    'id' => (int) $slotMonitoring->course->id,
+                    'code' => $courseCode,
+                    'name' => $courseName,
+                    'label' => $label,
+                ];
+            })
+            ->filter(function ($item) {
+                return $item !== null;
+            })
+            ->unique('id')
+            ->sortBy('code')
+            ->values();
+
+        $yearLevels = $mappedRows
+            ->pluck('year_level')
+            ->filter(function ($yearLevel) {
+                return is_int($yearLevel) && $yearLevel > 0;
+            })
+            ->unique()
+            ->sort()
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $mappedRows,
+            'options' => [
+                'courses' => $courses,
+                'year_levels' => $yearLevels,
+                'config' => [
+                    'school_years' => array_values($schoolYears),
+                    'semester_map' => $semesterMap,
+                    'selected_school_year' => (string) $schoolYear,
+                    'selected_semester' => (string) $semester,
+                ],
+            ],
+            'meta' => [
+                'total' => (int) $mappedRows->count(),
+            ],
+        ]);
+    }
+
+    public function storeSectionMerging(StoreSectionMergingRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $sourceSlotId = (int) $validated['source_slot_monitoring_id'];
+        $targetSlotId = (int) $validated['target_slot_monitoring_id'];
+        $schoolYear = (string) $validated['school_year'];
+        $semester = (string) $validated['semester'];
+
+        $source = null;
+        $target = null;
+        $operation = null;
+
+        DB::beginTransaction();
+        try {
+            $source = SlotMonitoring::query()
+                ->where('id', $sourceSlotId)
+                ->lockForUpdate()
+                ->first();
+
+            $target = SlotMonitoring::query()
+                ->where('id', $targetSlotId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$source || !$target) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => [
+                        'source_slot_monitoring_id' => ['One of the selected sections no longer exists.'],
+                    ],
+                ], 422);
+            }
+
+            $consistencyError = $this->resolveSectionMergingConsistencyError($source, $target, $schoolYear, $semester);
+            if ($consistencyError !== null) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $consistencyError,
+                ], 422);
+            }
+
+            $sourceTotalSlots = (int) $source->total_slots;
+            $sourceEnrolledSlots = (int) $source->enrolled_slots;
+            $targetTotalBefore = (int) $target->total_slots;
+            $targetEnrolledBefore = (int) $target->enrolled_slots;
+
+            $targetTotalAfter = $targetTotalBefore + $sourceTotalSlots;
+            $targetEnrolledAfter = $targetEnrolledBefore + $sourceEnrolledSlots;
+
+            $target->update([
+                'total_slots' => $targetTotalAfter,
+                'enrolled_slots' => $targetEnrolledAfter,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $source->update([
+                'total_slots' => 0,
+                'enrolled_slots' => 0,
+                'updated_by_user_id' => auth()->id(),
+            ]);
+
+            $operation = SectionMergingOperation::query()->create([
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+                'source_slot_monitoring_id' => (int) $source->id,
+                'target_slot_monitoring_id' => (int) $target->id,
+                'source_course_id' => (int) $source->course_id,
+                'target_course_id' => (int) $target->course_id,
+                'source_section' => (string) $source->section,
+                'target_section' => (string) $target->section,
+                'source_subject' => (string) $source->subject,
+                'target_subject' => (string) $target->subject,
+                'source_total_slots' => $sourceTotalSlots,
+                'source_enrolled_slots' => $sourceEnrolledSlots,
+                'target_total_slots_before' => $targetTotalBefore,
+                'target_enrolled_slots_before' => $targetEnrolledBefore,
+                'target_total_slots_after' => $targetTotalAfter,
+                'target_enrolled_slots_after' => $targetEnrolledAfter,
+                'merge_status' => 'completed',
+                'merged_by_user_id' => auth()->id(),
+                'merged_at' => Carbon::now(),
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
+
+        $source->load(['course:id,code,name']);
+        $target->load(['course:id,code,name']);
+
+        return response()->json([
+            'ok' => true,
+            'operation_id' => $operation ? (int) $operation->id : null,
+            'message' => 'Sections merged successfully.',
+            'merged_student_count' => $operation ? (int) $operation->source_enrolled_slots : 0,
+            'source_row' => $this->mapSectionMergingRow($source),
+            'target_row' => $this->mapSectionMergingRow($target),
+        ]);
+    }
+
+    private function mapSectionMergingRow(SlotMonitoring $slotMonitoring)
+    {
+        $courseCode = '';
+        $courseName = '';
+
+        if ($slotMonitoring->course) {
+            $courseCode = trim((string) $slotMonitoring->course->code);
+            $courseName = trim((string) $slotMonitoring->course->name);
+        }
+
+        $courseLabel = $courseCode;
+        if ($courseLabel === '') {
+            $courseLabel = $courseName;
+        } elseif ($courseName !== '') {
+            $courseLabel = $courseLabel . ' - ' . $courseName;
+        }
+
+        $yearLevel = $this->extractYearLevelFromSectionLabel((string) $slotMonitoring->section);
+
+        return [
+            'id' => (int) $slotMonitoring->id,
+            'school_year' => (string) $slotMonitoring->school_year,
+            'semester' => (string) $slotMonitoring->semester,
+            'course_id' => (int) $slotMonitoring->course_id,
+            'course_code' => $courseCode,
+            'course_name' => $courseName,
+            'course_label' => $courseLabel,
+            'year_level' => $yearLevel,
+            'section' => (string) $slotMonitoring->section,
+            'subject' => (string) $slotMonitoring->subject,
+            'schedule' => (string) $slotMonitoring->schedule,
+            'total_slots' => (int) $slotMonitoring->total_slots,
+            'enrolled_slots' => (int) $slotMonitoring->enrolled_slots,
+            'source_available' => (int) $slotMonitoring->enrolled_slots > 0,
+        ];
+    }
+
+    private function resolveSectionMergingConsistencyError(SlotMonitoring $source, SlotMonitoring $target, $schoolYear, $semester)
+    {
+        if ((string) $source->school_year !== $schoolYear || (string) $target->school_year !== $schoolYear) {
+            return [
+                'school_year' => ['Selected sections do not match the chosen school year.'],
+            ];
+        }
+
+        if ((string) $source->semester !== $semester || (string) $target->semester !== $semester) {
+            return [
+                'semester' => ['Selected sections do not match the chosen semester.'],
+            ];
+        }
+
+        if ((int) $source->course_id !== (int) $target->course_id) {
+            return [
+                'target_slot_monitoring_id' => ['Source and target sections must belong to the same program.'],
+            ];
+        }
+
+        if (strcasecmp(trim((string) $source->subject), trim((string) $target->subject)) !== 0) {
+            return [
+                'target_slot_monitoring_id' => ['Source and target sections must have the same subject before merging.'],
+            ];
+        }
+
+        if ((int) $source->enrolled_slots <= 0) {
+            return [
+                'source_slot_monitoring_id' => ['Source section has no enrolled students to merge.'],
+            ];
+        }
+
+        return null;
+    }
+
+    private function extractYearLevelFromSectionLabel($section)
+    {
+        $normalized = strtolower(trim((string) $section));
+        if ($normalized === '') {
+            return null;
+        }
+
+        $wordToLevel = [
+            'first' => 1,
+            'second' => 2,
+            'third' => 3,
+            'fourth' => 4,
+            'fifth' => 5,
+            'sixth' => 6,
+        ];
+
+        foreach ($wordToLevel as $word => $value) {
+            if (strpos($normalized, $word) !== false) {
+                return $value;
+            }
+        }
+
+        if (preg_match('/(?:^|\s)([1-9])(?:\s*[-]|\b)/', $normalized, $matches) === 1) {
+            return (int) $matches[1];
+        }
+
+        return null;
     }
 
     /**
@@ -1404,9 +4690,10 @@ class RegistrarController extends Controller
     public function alumniTracker()
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
             ->orderBy('name')
             ->limit(500)
-            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id', 'academic_term_id']);
 
         $alumniRows = $students->map(function ($student) {
             return [
@@ -1526,9 +4813,10 @@ class RegistrarController extends Controller
     public function formsApplicationLeaveAbsenceEnrolled(Request $request)
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
             ->orderBy('name')
             ->limit(500)
-            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id', 'academic_term_id']);
 
         $selectedStudentId = (int) $request->query('student_id', 0);
         if ($selectedStudentId <= 0 && $students->isNotEmpty()) {
@@ -1623,9 +4911,10 @@ class RegistrarController extends Controller
     public function formsOfficialGradeReport()
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
             ->orderBy('name')
             ->limit(200)
-            ->get(['id', 'student_no', 'name', 'program', 'year_level', 'school_year', 'semester']);
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id', 'academic_term_id']);
 
         $gradesByStudent = StudentSubjectGrade::query()
             ->with('subject')
@@ -1937,9 +5226,10 @@ class RegistrarController extends Controller
     public function formsCertificateOfRegistration(Request $request)
     {
         $students = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
             ->orderBy('name')
             ->limit(500)
-            ->get(['id', 'student_no', 'name', 'program', 'year_level']);
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
 
         $selectedStudentId = (int) $request->query('student_id', 0);
 
