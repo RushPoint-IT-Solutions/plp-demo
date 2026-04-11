@@ -51,6 +51,22 @@ class StudentController extends Controller
     }
 
     /**
+     * Show the dedicated COR page.
+     */
+    public function cor()
+    {
+        $student    = $this->currentStudent();
+        $subjects   = $student ? $student->subjects : collect();
+        $semesters  = Semester::all();
+        $courses    = Course::all();
+        $yearBlocks = YearBlock::all();
+
+        return view('student.cor', compact(
+            'student', 'subjects', 'semesters', 'courses', 'yearBlocks'
+        ));
+    }
+
+    /**
      * Show the Grades page.
      */
     public function grades()

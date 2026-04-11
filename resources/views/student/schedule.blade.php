@@ -17,23 +17,26 @@
     </div>
 
     <div class="sched-filter-bar">
-        <div class="sched-filter-row sched-filter-row-main">
-            <div class="sched-filter-group">
-                <label class="app-filter-label" for="schedSchoolYear">School Year</label>
-                <select id="schedSchoolYear" class="app-filter-select">
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2024-2025">2024-2025</option>
-                </select>
+        <div class="sched-filter-row-main d-flex align-items-end justify-content-between w-100 flex-nowrap" style="gap: 20px;">
+            <div class="d-flex align-items-end">
+                <div class="sched-filter-group mr-3">
+                    <label class="app-filter-label" for="schedSchoolYear">School Year</label>
+                    <select id="schedSchoolYear" class="app-filter-select">
+                        <option value="2025-2026">2025-2026</option>
+                        <option value="2024-2025">2024-2025</option>
+                    </select>
+                </div>
+                <div class="sched-filter-group">
+                    <label class="app-filter-label" for="schedSemester">Semester</label>
+                    <select id="schedSemester" class="app-filter-select">
+                        <option value="Second">Second</option>
+                        <option value="First">First</option>
+                    </select>
+                </div>
             </div>
-            <div class="sched-filter-group">
-                <label class="app-filter-label" for="schedSemester">Semester</label>
-                <select id="schedSemester" class="app-filter-select">
-                    <option value="Second">Second</option>
-                    <option value="First">First</option>
-                </select>
-            </div>
-            <div class="sched-filter-actions ml-auto">
-                <button type="button" id="schedDownloadBtn" class="btn btn-success btn-view-cor sched-download-btn">Download Schedule</button>
+            <div class="sched-filter-actions d-flex align-items-end">
+                <a href="{{ route('student.cor') }}" class="btn btn-view-cor mr-3" style="width: auto; padding: 0 30px; display: flex; align-items: center; justify-content: center; height: 42px;">View COR</a>
+                <button type="button" id="schedDownloadBtn" class="btn btn-view-cor sched-download-btn" style="width: auto; padding: 0 30px; height: 42px;">Download Schedule</button>
             </div>
         </div>
     </div>
