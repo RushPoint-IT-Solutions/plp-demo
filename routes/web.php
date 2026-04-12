@@ -214,6 +214,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/faculty-create', 'Registrar\RegistrarController@facultyCreate')->name('faculty-create');
             Route::post('/faculty-create', 'Registrar\RegistrarController@storeFaculty')->name('faculty-create.store');
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
+            Route::post('/grading-sheet/update-phase', 'Registrar\RegistrarController@gradingSheetUpdatePhase')->name('grading-sheet.update-phase')->middleware('throttle:60,1');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
         });
 
@@ -373,6 +374,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/student-grade-file', 'Registrar\Services\AdminToolsController@studentGradeFileStore')->name('student-grade-file.store');
             Route::put('/student-grade-file/{masterStudentGradeFile}', 'Registrar\Services\AdminToolsController@studentGradeFileUpdate')->name('student-grade-file.update');
             Route::delete('/student-grade-file/{masterStudentGradeFile}', 'Registrar\Services\AdminToolsController@studentGradeFileDestroy')->name('student-grade-file.destroy');
+            Route::get('/student-grade-file/records', 'Registrar\Services\AdminToolsController@studentGradeRecords')->name('student-grade-file.records');
+            Route::post('/student-grade-file/records', 'Registrar\Services\AdminToolsController@studentGradeRecordStore')->name('student-grade-file.records.store');
+            Route::put('/student-grade-file/records/{studentGradeRecord}', 'Registrar\Services\AdminToolsController@studentGradeRecordUpdate')->name('student-grade-file.records.update');
+            Route::delete('/student-grade-file/records/{studentGradeRecord}', 'Registrar\Services\AdminToolsController@studentGradeRecordDestroy')->name('student-grade-file.records.destroy');
         });
 
         Route::prefix('student-maintenance')->name('student-maintenance.')->group(function () {

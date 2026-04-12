@@ -91,11 +91,7 @@
             </table>
         </div>
 
-        <div class="ga-table-meta">
-            <div>
-                Showing {{ $transmutationRules->firstItem() ?? 0 }}-{{ $transmutationRules->lastItem() ?? 0 }} of {{ $transmutationRules->total() }}
-            </div>
-        </div>
+        {{-- pagination meta removed per design --}}
 
         <div class="app-table-pager">
             {{ $transmutationRules->links() }}

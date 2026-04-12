@@ -518,7 +518,7 @@ class GradingAcademicController extends Controller
                 });
             })
             ->orderByDesc('students.id')
-            ->paginate(25)
+            ->paginate(10)
             ->appends(request()->except('page'));
 
         $students->getCollection()->transform(function ($student) {

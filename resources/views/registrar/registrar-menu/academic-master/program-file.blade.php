@@ -25,7 +25,7 @@
 
     <form method="GET" action="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="pf-top-filter" id="pfTopFilterForm">
         <input type="hidden" name="page" id="pfPageInput" value="{{ (int) $programs->currentPage() }}">
-        <input type="hidden" name="per_page" id="pfPerPage" value="25">
+        <input type="hidden" name="per_page" id="pfPerPage" value="10">
         <div class="pf-top-filter-grid">
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterDepartment">Department</label>
@@ -131,23 +131,23 @@
         }
     @endphp
 
-    <div class="sf-pagination-bar sf-pagination-compact" id="pfPaginationBar">
-        <div class="rtp-pagination plp-pagination">
-            <nav class="rtp-nav plp-pagination__nav" aria-label="Program File pagination">
-                <div class="rtp-list plp-pagination__list" role="group" aria-label="Page controls">
+    <div class="app-table-pager" id="pfPaginationBar">
+        <div class="rtp-pagination">
+            <nav class="rtp-nav" aria-label="Program File pagination">
+                <div class="rtp-list" role="group" aria-label="Page controls">
                     <button
                         type="button"
-                        class="rtp-page-btn plp-pagination__btn"
+                        class="rtp-page-btn"
                         id="pfPrevBtn"
                         data-pf-page="{{ $pfCurrentPage - 1 }}"
                         aria-label="Previous page"
                         {{ $pfCurrentPage <= 1 ? 'disabled' : '' }}
                     >&lt;</button>
-                    <div class="rtp-pages plp-pagination__pages" id="pfPageNumbers">
+                    <div class="rtp-pages" id="pfPageNumbers">
                         @for($pfPage = $pfStartPage; $pfPage <= $pfEndPage; $pfPage++)
                             <button
                                 type="button"
-                                class="rtp-page-num plp-pagination__page {{ $pfPage === $pfCurrentPage ? 'active is-active' : '' }}"
+                                class="rtp-page-num {{ $pfPage === $pfCurrentPage ? 'active' : '' }}"
                                 data-pf-page="{{ $pfPage }}"
                                 aria-label="Go to page {{ $pfPage }}"
                             >{{ $pfPage }}</button>
@@ -155,7 +155,7 @@
                     </div>
                     <button
                         type="button"
-                        class="rtp-page-btn plp-pagination__btn"
+                        class="rtp-page-btn"
                         id="pfNextBtn"
                         data-pf-page="{{ $pfCurrentPage + 1 }}"
                         aria-label="Next page"

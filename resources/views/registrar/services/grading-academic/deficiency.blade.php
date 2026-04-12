@@ -77,11 +77,18 @@
                         </tr>
                         @endforelse
                     </tbody>
+                    <tfoot class="svc-table-tfoot">
+                        <tr>
+                            <td colspan="6">
+                                <div class="svc-table-stats">
+                                    Total Students: <strong>{{ $students->total() }}</strong>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-            <div class="ga-table-meta">
-                <div>Showing {{ $students->firstItem() ?? 0 }}-{{ $students->lastItem() ?? 0 }} of {{ $students->total() }}</div>
-            </div>
+
             <div class="app-table-pager">
                 {{ $students->links() }}
             </div>

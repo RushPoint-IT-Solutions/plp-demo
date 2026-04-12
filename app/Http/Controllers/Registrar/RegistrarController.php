@@ -43,6 +43,7 @@ use App\Student;
 use App\StudentProfile;
 use App\StudentProfileImage;
 use App\StudentSubjectGrade;
+use App\MasterStudentGradeFile;
 use App\Subject;
 use App\SystemSchoolSemester;
 use App\YearBlock;
@@ -2137,7 +2138,7 @@ class RegistrarController extends Controller
         $programType = trim((string) $request->input('program_type', ''));
         $programCode = trim((string) $request->input('program_code', ''));
         $description = trim((string) $request->input('description', ''));
-        $perPage = 25;
+        $perPage = 10;
 
         $departments = Department::orderBy('description')->get();
         $faculties = Faculty::orderBy('name')->get();
@@ -4665,7 +4666,192 @@ class RegistrarController extends Controller
 
     public function gradingSheet()
     {
-        return view('registrar.registrar-menu.faculty-management.grading-sheet');
+        $subjects = Subject::query()
+            ->with([
+                'students' => function ($query) {
+                    $query->select(
+                        'students.id',
+                        'students.student_no',
+                        'students.name',
+                        'students.course_id',
+                        'students.year_block_id'
+                    );
+                },
+                'studentGrades',
+                'facultyModel:id,name',
+            ])
+            ->orderBy('year_section')
+            ->orderBy('code')
+            ->get();
+
+        $gradingSections = $subjects->map(function ($subject) {
+            $gradeMap = $subject->studentGrades->keyBy('student_id');
+
+            $students = $subject->students->map(function ($student) use ($gradeMap) {
+                $grade = $gradeMap->get($student->id);
+
+                return [
+                    'id' => (int) $student->id,
+                    'studentNo' => (string) $student->student_no,
+                    'name' => (string) $student->name,
+                    'fda' => false,
+                    'na' => false,
+                    'prelim' => $grade && $grade->prelim !== null ? (float) $grade->prelim : null,
+                    'midterm' => $grade && $grade->midterm !== null ? (float) $grade->midterm : null,
+                    'final' => $grade && $grade->final !== null ? (float) $grade->final : null,
+                    'cRating' => $grade && $grade->final_average !== null ? (float) $grade->final_average : null,
+                    'fRating' => $grade && $grade->final_average !== null ? (float) $grade->final_average : null,
+                    'remarks' => $grade ? (string) $grade->remarks : '',
+                ];
+            })->values()->all();
+
+            $midtermPostedAt = $subject->studentGrades
+                ->filter(function ($grade) {
+                    return $grade->midterm !== null;
+                })
+                ->max('updated_at');
+
+            $finalPostedAt = $subject->studentGrades
+                ->filter(function ($grade) {
+                    return $grade->final !== null;
+                })
+                ->max('updated_at');
+
+            return [
+                'id' => (int) $subject->id,
+                'section' => trim((string) ($subject->year_section ?: '-')),
+                'courseCode' => (string) ($subject->code ?: '-'),
+                'description' => (string) ($subject->name ?: '-'),
+                'faculty' => (string) (optional($subject->facultyModel)->name ?: ($subject->faculty ?: '-')),
+                'midterm' => $midtermPostedAt ? Carbon::parse($midtermPostedAt)->format('m/d/Y') : '-',
+                'final' => $finalPostedAt ? Carbon::parse($finalPostedAt)->format('m/d/Y') : '-',
+                'approvedBy' => 'Registrar',
+                'courseFull' => (string) ($subject->name ?: '-'),
+                'schedule' => 'Room No. : ' . (string) ($subject->room ?: 'TBA'),
+                'schoolYear' => (string) ($subject->school_year ?: ''),
+                'term' => (string) ($subject->semester ?: ''),
+                'status' => (string) ($subject->grading_status ?: ''),
+                'students' => $students,
+            ];
+        })->values()->all();
+
+        return view('registrar.registrar-menu.faculty-management.grading-sheet', [
+            'gradingSections' => $gradingSections,
+        ]);
+    }
+
+    public function gradingSheetUpdatePhase(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'phase' => ['required', Rule::in(['midterm', 'final'])],
+            'grades' => 'required|array',
+        ]);
+
+        $phase = (string) $validated['phase'];
+        $subject = Subject::query()->with('students')->findOrFail((int) $validated['subject_id']);
+        $studentIds = $subject->students->pluck('id')->all();
+        $gradesPayload = (array) $validated['grades'];
+
+        foreach ($gradesPayload as $studentId => $rawGrade) {
+            if (!in_array((int) $studentId, $studentIds, true)) {
+                continue;
+            }
+
+            if ($rawGrade === null || $rawGrade === '') {
+                continue;
+            }
+
+            $gradeValue = (float) $rawGrade;
+            if ($gradeValue < 1 || $gradeValue > 5) {
+                continue;
+            }
+
+            $gradeRow = StudentSubjectGrade::firstOrNew([
+                'subject_id' => $subject->id,
+                'student_id' => (int) $studentId,
+            ]);
+
+            $gradeRow->{$phase} = $gradeValue;
+            $gradeRow->final_average = $this->computeRegistrarAverage(
+                $gradeRow->prelim,
+                $gradeRow->midterm,
+                $gradeRow->final
+            );
+            $gradeRow->remarks = $gradeRow->final_average !== null && (float) $gradeRow->final_average <= 3.00
+                ? 'Passed'
+                : ($gradeRow->final_average !== null ? 'Failed' : null);
+            $gradeRow->save();
+
+            $student = $subject->students->firstWhere('id', (int) $studentId);
+            if ($student) {
+                $this->syncStudentGradeSnapshot($student);
+            }
+        }
+
+        $subject->grading_status = 'Submitted';
+        $subject->save();
+
+        $updatedRows = StudentSubjectGrade::query()
+            ->where('subject_id', $subject->id)
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'student_id' => (int) $row->student_id,
+                    'prelim' => $row->prelim !== null ? (float) $row->prelim : null,
+                    'midterm' => $row->midterm !== null ? (float) $row->midterm : null,
+                    'final' => $row->final !== null ? (float) $row->final : null,
+                    'final_average' => $row->final_average !== null ? (float) $row->final_average : null,
+                    'remarks' => (string) ($row->remarks ?: ''),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json([
+            'ok' => true,
+            'subject_id' => (int) $subject->id,
+            'phase' => $phase,
+            'posted_at' => Carbon::now()->format('m/d/Y'),
+            'updated_rows' => $updatedRows,
+        ]);
+    }
+
+    private function computeRegistrarAverage($prelim, $midterm, $final)
+    {
+        $grades = collect([$prelim, $midterm, $final])
+            ->filter(function ($value) {
+                return $value !== null && $value !== '';
+            })
+            ->map(function ($value) {
+                return (float) $value;
+            })
+            ->values();
+
+        if ($grades->count() === 0) {
+            return null;
+        }
+
+        return round($grades->avg(), 2);
+    }
+
+    private function syncStudentGradeSnapshot(Student $student): void
+    {
+        if (!Schema::hasTable('master_student_grade_files')) {
+            return;
+        }
+
+        MasterStudentGradeFile::updateOrCreate(
+            ['student_no' => (string) $student->student_no],
+            [
+                'source_student_id' => $student->id,
+                'student_name' => (string) $student->name,
+                'course' => (string) ($student->program ?: ''),
+                'year_level' => (string) ($student->year_level ?: ''),
+                'snapshot_taken_at' => now(),
+                'is_snapshot' => true,
+            ]
+        );
     }
 
     /**
