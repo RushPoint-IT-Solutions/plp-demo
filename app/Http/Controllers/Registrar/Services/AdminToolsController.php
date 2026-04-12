@@ -10,6 +10,7 @@ use App\MasterFacultyFile;
 use App\MasterStudentGradeFile;
 use App\MasterStudentProfileFile;
 use App\Student;
+use App\StudentGradeRecord;
 use App\StudentUpdateRun;
 use App\SystemAnnouncement;
 use App\SystemGradePosting;
@@ -914,6 +915,135 @@ class AdminToolsController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function studentGradeRecords(Request $request): JsonResponse
+    {
+        $studentNo = trim((string) $request->query('student_no', ''));
+        if ($studentNo === '') {
+            return response()->json(['ok' => true, 'records' => []]);
+        }
+
+        if (Schema::hasTable('student_grade_records')) {
+            $count = StudentGradeRecord::where('student_no', $studentNo)->count();
+            if ($count === 0) {
+                $this->seedStudentGradeRecordsFor($studentNo);
+            }
+        }
+
+        $records = StudentGradeRecord::where('student_no', $studentNo)
+            ->orderByDesc('school_year')
+            ->orderByRaw("CASE WHEN LOWER(term) LIKE '%first%' THEN 1 WHEN LOWER(term) LIKE '%second%' THEN 2 WHEN LOWER(term) LIKE '%summer%' THEN 3 ELSE 4 END")
+            ->orderBy('subject_code')
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'school_year' => $r->school_year,
+                    'term' => $r->term,
+                    'subject_code' => $r->subject_code,
+                    'equiv_subject_code' => $r->equiv_subject_code,
+                    'professor' => $r->professor,
+                    'description' => $r->description,
+                    'units' => $r->units,
+                    'status' => $r->status,
+                    'section_code' => $r->section_code,
+                    'final_grade' => $r->final_grade,
+                    'inc' => (bool) $r->inc,
+                    'grade_status' => $r->grade_status,
+                    'remarks' => $r->remarks,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json(['ok' => true, 'records' => $records]);
+    }
+
+    public function studentGradeRecordStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => 'required|string|max:80',
+            'school_year' => 'required|string|max:30',
+            'term' => 'required|string|max:30',
+            'subject_code' => 'required|string|max:60',
+            'equiv_subject_code' => 'nullable|string|max:60',
+            'professor' => 'nullable|string|max:190',
+            'description' => 'nullable|string|max:255',
+            'units' => 'required|numeric|min:0|max:99',
+            'status' => 'nullable|string|max:30',
+            'section_code' => 'nullable|string|max:60',
+            'final_grade' => 'nullable|numeric',
+            'inc' => 'nullable|boolean',
+            'grade_status' => 'nullable|string|max:10',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        $sourceStudentId = Student::where('student_no', $validated['student_no'])->value('id');
+
+        $record = StudentGradeRecord::create([
+            'student_id' => $sourceStudentId,
+            'student_no' => $validated['student_no'],
+            'school_year' => trim($validated['school_year']),
+            'term' => trim($validated['term']),
+            'subject_code' => trim($validated['subject_code']),
+            'equiv_subject_code' => isset($validated['equiv_subject_code']) ? trim($validated['equiv_subject_code']) : null,
+            'professor' => isset($validated['professor']) ? trim($validated['professor']) : null,
+            'description' => isset($validated['description']) ? trim($validated['description']) : null,
+            'units' => (float) $validated['units'],
+            'status' => isset($validated['status']) ? trim($validated['status']) : null,
+            'section_code' => isset($validated['section_code']) ? trim($validated['section_code']) : null,
+            'final_grade' => isset($validated['final_grade']) ? (float) $validated['final_grade'] : null,
+            'inc' => (bool) ($validated['inc'] ?? false),
+            'grade_status' => isset($validated['grade_status']) ? trim($validated['grade_status']) : null,
+            'remarks' => isset($validated['remarks']) ? trim($validated['remarks']) : null,
+        ]);
+
+        return response()->json(['ok' => true, 'id' => $record->id]);
+    }
+
+    public function studentGradeRecordUpdate(Request $request, StudentGradeRecord $studentGradeRecord): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'term' => 'required|string|max:30',
+            'subject_code' => 'required|string|max:60',
+            'equiv_subject_code' => 'nullable|string|max:60',
+            'professor' => 'nullable|string|max:190',
+            'description' => 'nullable|string|max:255',
+            'units' => 'required|numeric|min:0|max:99',
+            'status' => 'nullable|string|max:30',
+            'section_code' => 'nullable|string|max:60',
+            'final_grade' => 'nullable|numeric',
+            'inc' => 'nullable|boolean',
+            'grade_status' => 'nullable|string|max:10',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        $studentGradeRecord->update([
+            'school_year' => trim($validated['school_year']),
+            'term' => trim($validated['term']),
+            'subject_code' => trim($validated['subject_code']),
+            'equiv_subject_code' => isset($validated['equiv_subject_code']) ? trim($validated['equiv_subject_code']) : null,
+            'professor' => isset($validated['professor']) ? trim($validated['professor']) : null,
+            'description' => isset($validated['description']) ? trim($validated['description']) : null,
+            'units' => (float) $validated['units'],
+            'status' => isset($validated['status']) ? trim($validated['status']) : null,
+            'section_code' => isset($validated['section_code']) ? trim($validated['section_code']) : null,
+            'final_grade' => isset($validated['final_grade']) ? (float) $validated['final_grade'] : null,
+            'inc' => (bool) ($validated['inc'] ?? false),
+            'grade_status' => isset($validated['grade_status']) ? trim($validated['grade_status']) : null,
+            'remarks' => isset($validated['remarks']) ? trim($validated['remarks']) : null,
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function studentGradeRecordDestroy(StudentGradeRecord $studentGradeRecord): JsonResponse
+    {
+        $studentGradeRecord->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
     // Student Maintenance
     public function bedStudentStatus()
     {
@@ -1508,6 +1638,57 @@ class AdminToolsController extends Controller
 
         foreach ($fallbackRows as $row) {
             MasterStudentGradeFile::create($row);
+        }
+    }
+
+    private function seedStudentGradeRecordsFor(string $studentNo): void
+    {
+        $dummyTerms = [
+            ['sy' => '2022-2023', 'term' => 'Second', 'subjects' => [
+                ['code' => 'CDI8', 'equiv' => 'CDI8', 'prof' => null, 'desc' => 'TRAFFIC MANAGEMENT AND TRANSPORT SECURITY', 'units' => 3, 'grade' => 1.75, 'status' => 'P'],
+                ['code' => 'CRIMNLSTC3', 'equiv' => 'CRIMNLSTC3', 'prof' => null, 'desc' => 'FORENSIC CHEMISTRY AND TOXICOLOGY', 'units' => 3, 'grade' => 2.50, 'status' => 'P'],
+                ['code' => 'DT222', 'equiv' => 'DT222', 'prof' => null, 'desc' => 'MARKSMANSHIP & COMBAT SHOOTING', 'units' => 2, 'grade' => 2.00, 'status' => 'P'],
+                ['code' => 'ECO210', 'equiv' => 'ECO210', 'prof' => null, 'desc' => 'BASIC ECONOMICS WITH TAXATION AND AGRARIAN REFORM', 'units' => 3, 'grade' => 2.00, 'status' => 'P'],
+                ['code' => 'ENG212', 'equiv' => 'ENG212', 'prof' => null, 'desc' => 'PHILIPPINE LITERATURE', 'units' => 3, 'grade' => 2.00, 'status' => 'P'],
+                ['code' => 'PHILO202', 'equiv' => 'PHILO202', 'prof' => null, 'desc' => 'LOGIC', 'units' => 3, 'grade' => 2.00, 'status' => 'P'],
+            ]],
+            ['sy' => '2023-2024', 'term' => 'First', 'subjects' => [
+                ['code' => 'CRIM111', 'equiv' => 'CRIM111', 'prof' => null, 'desc' => 'INTRO TO CRIMINOLOGY & PSYCHOLOGY OF CRIMES', 'units' => 3, 'grade' => 1.75, 'status' => 'P'],
+                ['code' => 'ENG111A', 'equiv' => 'ENG111A', 'prof' => null, 'desc' => 'STUDY AND THINKING SKILLS', 'units' => 3, 'grade' => 1.75, 'status' => 'P'],
+                ['code' => 'MATH100', 'equiv' => 'MATH100', 'prof' => null, 'desc' => 'COLLEGE ALGEBRA', 'units' => 3, 'grade' => 1.75, 'status' => 'P'],
+                ['code' => 'SOCSC111', 'equiv' => 'SOCSC111', 'prof' => null, 'desc' => 'GENERAL PSYCHOLOGY W/ POP ED.', 'units' => 3, 'grade' => 1.50, 'status' => 'P'],
+            ]],
+            ['sy' => '2023-2024', 'term' => 'Second', 'subjects' => [
+                ['code' => 'CRIM113', 'equiv' => 'CRIM113', 'prof' => 'MANALAC, REYNALDO ERBER', 'desc' => 'ETHICS AND VALUES', 'units' => 3, 'grade' => 2.00, 'status' => 'P'],
+                ['code' => 'CRIS211', 'equiv' => 'CRIS211', 'prof' => 'CADEJITA AALBasam', 'desc' => 'PERSONAL IDENTIFICATION (FINGERPRINTS)', 'units' => 3, 'grade' => 2.25, 'status' => 'P'],
+                ['code' => 'CRJO313', 'equiv' => 'CRJO313', 'prof' => 'CADEJITA AALBasam', 'desc' => 'QUESTIONED DOCUMENT EXAMINATION', 'units' => 3, 'grade' => 2.50, 'status' => 'P'],
+                ['code' => 'ENG121', 'equiv' => 'ENG121', 'prof' => 'KOMJAK, LURESITA GRAVIOLA', 'desc' => 'COMMUNICATION ARTS 2', 'units' => 3, 'grade' => 1.75, 'status' => 'P'],
+                ['code' => 'FIL121', 'equiv' => 'FIL121', 'prof' => 'SANTOS, ANGELINE MALT', 'desc' => 'PAGBASA AT PAGSULAT TUNGO SA PANANALIKSIK', 'units' => 3, 'grade' => 2.50, 'status' => 'P'],
+                ['code' => 'STAT311', 'equiv' => 'STAT311', 'prof' => 'CAPRILLO, TERESITA', 'desc' => 'BASIC STATISTICS', 'units' => 3, 'grade' => 2.25, 'status' => 'P'],
+            ]],
+        ];
+
+        $sourceStudentId = Student::where('student_no', $studentNo)->value('id');
+
+        foreach ($dummyTerms as $term) {
+            foreach ($term['subjects'] as $subject) {
+                StudentGradeRecord::create([
+                    'student_id' => $sourceStudentId,
+                    'student_no' => $studentNo,
+                    'school_year' => $term['sy'],
+                    'term' => $term['term'],
+                    'subject_code' => $subject['code'],
+                    'equiv_subject_code' => $subject['equiv'],
+                    'professor' => $subject['prof'],
+                    'description' => $subject['desc'],
+                    'units' => $subject['units'],
+                    'section_code' => 'BSCRIM',
+                    'final_grade' => $subject['grade'],
+                    'inc' => false,
+                    'grade_status' => $subject['status'],
+                    'remarks' => null,
+                ]);
+            }
         }
     }
 }
