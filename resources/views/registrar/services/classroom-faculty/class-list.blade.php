@@ -119,10 +119,12 @@
         </div>
     </form>
 
+    @if(!$selectedSubject)
     <div class="svc-actions-row">
         <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" class="svc-btn-pdf">Print Class List (PDF)</a>
         <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'excel'], $exportQuery)) }}" class="svc-btn-excel">Print Class List (Excel)</a>
     </div>
+    @endif
 
     @if($selectedSubject)
         <div class="svc-selected-info">
@@ -132,8 +134,15 @@
             <div><strong>Professor:</strong> {{ strtoupper($selectedProfessorLabel) }}</div>
         </div>
 
-        <div class="cl-back-row">
-            <a href="{{ route('registrar.services.classroom-faculty.class-list', $queryBase) }}" class="svc-link">Back to Subject List</a>
+        <div class="cl-back-row detail-actions-row">
+            <button type="button" class="gs-back-btn" onclick="window.location.href='{{ route('registrar.services.classroom-faculty.class-list', $queryBase) }}'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to Subject List
+            </button>
+            <div class="cl-print-group">
+                <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" class="svc-btn-pdf">Print Class List (PDF)</a>
+                <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'excel'], $exportQuery)) }}" class="svc-btn-excel">Print Class List (Excel)</a>
+            </div>
         </div>
 
         <div class="student-table-wrapper table-responsive">
@@ -162,11 +171,16 @@
                         </tr>
                     @endforelse
                 </tbody>
+                <tfoot class="svc-table-tfoot">
+                    <tr>
+                        <td colspan="5">
+                            <div class="svc-table-stats">
+                                Total Students: <strong>{{ $sectionStudents ? $sectionStudents->total() : 0 }}</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
-        </div>
-
-        <div class="svc-summary-total svc-summary-total-left">
-            Total Students: <strong>{{ $sectionStudents ? $sectionStudents->total() : 0 }}</strong>
         </div>
 
         <div class="app-table-pager cl-pagination">
@@ -223,11 +237,16 @@
                         </tr>
                     @endforelse
                 </tbody>
+                <tfoot class="svc-table-tfoot">
+                    <tr>
+                        <td colspan="5">
+                            <div class="svc-table-stats">
+                                Total Subjects: <strong>{{ $classRows->total() }}</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
-        </div>
-
-        <div class="svc-summary-total">
-            Total Subjects: <strong>{{ $classRows->total() }}</strong>
         </div>
 
         <div class="app-table-pager cl-pagination">

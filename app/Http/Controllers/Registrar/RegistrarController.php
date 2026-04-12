@@ -2138,7 +2138,7 @@ class RegistrarController extends Controller
         $programType = trim((string) $request->input('program_type', ''));
         $programCode = trim((string) $request->input('program_code', ''));
         $description = trim((string) $request->input('description', ''));
-        $perPage = 25;
+        $perPage = 10;
 
         $departments = Department::orderBy('description')->get();
         $faculties = Faculty::orderBy('name')->get();

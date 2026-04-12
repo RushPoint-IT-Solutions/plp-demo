@@ -19,7 +19,7 @@ class ClassListController extends Controller
         $state = $this->resolveState($request);
 
         $classRows = $this->buildSubjectQuery($state['academic_term_ids'], $state['has_term_filter'], $state['search'])
-            ->paginate(25)
+            ->paginate(10)
             ->appends($request->except('page'));
 
         $selectedSubject = null;
@@ -39,7 +39,7 @@ class ClassListController extends Controller
 
             if ($selectedSubject) {
                 $sectionStudents = $this->buildSectionStudentsQuery((int) $selectedSubject->id, $state['search'])
-                    ->paginate(25, ['*'], 'detail_page')
+                    ->paginate(10, ['*'], 'detail_page')
                     ->appends($request->except('detail_page'));
             }
         }

@@ -26,8 +26,8 @@
     }
 </style>
 <div class="pf-page">
-    <form method="GET" action="{{ route('registrar.services.student-account.family') }}" class="svc-filter-panel mb-4 ga-card ga-filter-card sched-filter-bar">
-        <div class="svc-filter-grid ga-filter-grid ga-filter-grid-compact" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: end;">
+    <form method="GET" action="{{ route('registrar.services.student-account.family') }}" class="svc-filter-panel mb-2 ga-card ga-filter-card sched-filter-bar">
+        <div class="svc-filter-grid ga-filter-grid ga-filter-grid-compact" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; align-items: end;">
             <div class="svc-filter-item">
                 <span class="app-filter-label">Student Name / ID</span>
                 <input type="text" name="q" class="app-filter-input pf-search-input" placeholder="Search Name, Student ID" style="width: 100%;" value="{{ $search ?? '' }}">
@@ -59,7 +59,7 @@
         </div>
     </form>
 
-    <div class="svc-actions-row mb-3" style="justify-content: flex-end; gap: 12px; display: flex;">
+    <div class="svc-actions-row mb-2" style="justify-content: flex-end; gap: 12px; display: flex;">
         <button type="button" class="pf-btn-new ga-btn ga-btn-primary" style="display: flex; align-items: center; gap: 6px;" onclick="document.getElementById('famBatchModal').style.display='flex'">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             Batch Family Code
