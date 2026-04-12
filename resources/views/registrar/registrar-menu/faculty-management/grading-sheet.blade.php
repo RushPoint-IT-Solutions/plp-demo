@@ -139,8 +139,14 @@
                         <th>Name</th>
                         <th style="width:38px;">FDA</th>
                         <th style="width:38px;">NA</th>
-                        <th>MIDTERM</th>
-                        <th>FINAL</th>
+                        <th id="gsMidtermHeader" class="gs-grade-header-cell" title="Click to open Midterm grading modal">
+                            <span class="gs-grade-head-title">MIDTERM</span>
+                            <span class="gs-grade-head-hint">Click to open</span>
+                        </th>
+                        <th id="gsFinalHeader" class="gs-grade-header-cell" title="Click to open Final grading modal">
+                            <span class="gs-grade-head-title">FINAL</span>
+                            <span class="gs-grade-head-hint">Click to open</span>
+                        </th>
                         <th>C Rating</th>
                         <th>F Rating</th>
                         <th>Remarks</th>
@@ -153,6 +159,35 @@
         </div>
         <div class="pf-pagination">
             <span class="pf-page-info" id="gsDetailPageInfo">Showing 0 students</span>
+        </div>
+    </div>
+
+    {{-- ═══ Grade Entry Modal ═══ --}}
+    <div class="req-modal-overlay gs-grade-modal-overlay" id="gsGradeModal" style="display:none;" aria-hidden="true">
+        <div class="req-modal-box gs-grade-modal-box" role="dialog" aria-modal="true" aria-labelledby="gsGradeModalTitle">
+            <div class="gs-grade-modal-head">
+                <h3 class="req-modal-title gs-grade-modal-title" id="gsGradeModalTitle">Enter Grade</h3>
+                <button type="button" class="rep-modal-close-x" id="gsGradeModalClose" aria-label="Close">&times;</button>
+            </div>
+            <div class="gs-grade-modal-subtitle" id="gsGradeModalSubtitle"></div>
+
+            <div class="gs-grade-tabs" id="gsGradeTabs"></div>
+
+            <div class="gs-grade-table-wrap">
+                <table class="student-table registrar-table gs-grade-modal-table" id="gsGradeModalTable">
+                    <thead>
+                        <tr>
+                            <th style="width:34px;">#</th>
+                            <th style="width:120px;">Student No</th>
+                            <th>Name</th>
+                            <th style="width:70px;" id="gsGradeColQ1">Q1</th>
+                            <th style="width:70px;" id="gsGradeColQ2">Q2</th>
+                            <th style="width:120px;" id="gsGradeColPe">Percentage Equivalent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gsGradeModalBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

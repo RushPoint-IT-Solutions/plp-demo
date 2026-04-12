@@ -10369,6 +10369,142 @@ select.req-modal-input {
   cursor: pointer;
 }
 
+.gs-grade-header-cell {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.gs-grade-header-cell:hover {
+  background: #1e7b46;
+}
+
+.gs-grade-head-title {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.gs-grade-head-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #edf8f0;
+  opacity: 0.98;
+  line-height: 1.1;
+}
+
+.gs-grade-modal-overlay {
+  z-index: 10020;
+}
+
+#gsGradeModal.req-modal-overlay {
+  align-items: center;
+  padding: 20px;
+}
+
+#gsGradeModal .req-modal-box {
+  width: min(1080px, 95vw);
+  max-width: 1080px;
+  max-height: 92vh;
+  overflow: auto;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.gs-grade-modal-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 0;
+  min-height: 56px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #f1faf4 0%, #e2f1e8 100%);
+  border-bottom: 1px solid #c3d9cb;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.gs-grade-modal-title {
+  grid-column: 2;
+  margin: 0 !important;
+  margin-bottom: 0 !important;
+  text-align: center;
+  width: auto;
+  padding: 0;
+  line-height: 1.2;
+  transform: none;
+  letter-spacing: 0.03em;
+}
+
+.gs-grade-modal-head .rep-modal-close-x {
+  grid-column: 3;
+  justify-self: end;
+  position: static;
+  margin: 0;
+}
+
+.gs-grade-modal-subtitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #355845;
+  margin: 10px 14px 8px;
+}
+
+.gs-grade-tabs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 0 14px 10px;
+}
+
+.gs-grade-tab {
+  border: 1px solid #7fa08d;
+  background: #edf3ef;
+  color: #224130;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.gs-grade-tab.is-active {
+  background: #1b6a3d;
+  border-color: #1b6a3d;
+  color: #ffffff;
+}
+
+.gs-grade-table-wrap {
+  border-top: 1px solid #d0dfd6;
+  padding: 10px 12px 14px;
+  background: #f5faf7;
+  overflow-x: auto;
+}
+
+#gsGradeModalTable {
+  min-width: 960px;
+}
+
+.gs-grade-input {
+  width: 100%;
+  border: 1px solid #9eb5a8;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.74rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.gs-grade-input-readonly {
+  background: #eaf2ed;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .gs-filter-row {
     flex-direction: column;
@@ -10433,6 +10569,24 @@ select.req-modal-input {
   #gsDetailTable th:nth-child(3),
   #gsDetailTable td:nth-child(3) {
     width: 220px;
+  }
+
+  .gs-grade-modal-box {
+    width: 100%;
+    max-height: 94vh;
+    border-radius: 8px;
+  }
+
+  #gsGradeModal.req-modal-overlay {
+    padding: 10px;
+  }
+
+  #gsGradeModal .req-modal-box {
+    width: 100%;
+  }
+
+  #gsGradeModalTable {
+    min-width: 760px;
   }
 }
 
