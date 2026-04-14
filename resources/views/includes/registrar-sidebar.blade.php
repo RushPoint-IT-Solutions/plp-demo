@@ -210,7 +210,6 @@
                     </svg>
                 </a>
                 <div class="sidebar-dropdown-menu">
-                    <a href="{{ route('registrar.registrar-menu.forms.tor') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.tor') ? 'active' : '' }}">TOR</a>
                     <a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') ? 'active' : '' }}">Application Leave of Absence</a>
                     <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
                     <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>
