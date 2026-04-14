@@ -18293,9 +18293,18 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: none;
 }
 
+.page-services-grading-academic .ga-trans-modal-overlay--priority {
+  z-index: 12040;
+}
+
 .page-services-grading-academic .ga-trans-modal-box {
   max-width: 640px;
   padding: 25px;
+}
+
+.page-services-grading-academic .ga-trans-modal-box--copy {
+  max-width: 860px;
+  width: min(860px, 94vw);
 }
 
 .page-services-grading-academic .ga-trans-modal-box--delete {
@@ -18323,6 +18332,11 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   margin-bottom: 16px;
 }
 
+.page-services-grading-academic .ga-trans-modal-box--copy .ga-trans-modal-panel {
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
 .page-services-grading-academic .ga-trans-modal-panel--standard {
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -18348,6 +18362,26 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 .page-services-grading-academic .ga-trans-modal-actions {
   margin-top: 25px;
   gap: 12px;
+}
+
+.page-services-grading-academic .ga-copy-inline-message {
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 4px 0 10px;
+}
+
+.page-services-grading-academic .ga-copy-inline-message.is-error {
+  background: #fdf0f0;
+  border: 1px solid #efc0c0;
+  color: #9e1e1e;
+}
+
+.page-services-grading-academic .ga-copy-inline-message.is-info {
+  background: #edf7f1;
+  border: 1px solid #b7d9c5;
+  color: #1a5c37;
 }
 
 .page-services-grading-academic .ga-trans-modal-actions--center {
@@ -18387,6 +18421,17 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 15px;
+}
+
+.page-services-grading-academic .tm-modal-grid-2x4 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  margin-top: 15px;
+}
+
+.page-services-grading-academic .ga-trans-modal-box--copy .tm-modal-grid-2x4 {
+  margin-top: 10px;
 }
 
 .page-services-grading-academic .tm-modal-initial-group {
@@ -18437,6 +18482,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
     width: 100%;
   }
   .page-services-grading-academic .tm-modal-grid,
+  .page-services-grading-academic .tm-modal-grid-2x4,
   .page-services-grading-academic .tm-modal-grid-3,
   .page-services-grading-academic .tm-modal-initial-grid {
     grid-template-columns: 1fr;

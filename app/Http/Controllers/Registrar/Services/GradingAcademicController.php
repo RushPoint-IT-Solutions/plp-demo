@@ -8,6 +8,7 @@ use App\GradeRule;
 use App\GradingComponent;
 use App\GradingPeriod;
 use App\Course;
+use App\Department;
 use App\Student;
 use App\StudentDeficiency;
 use App\TransmutationRule;
@@ -359,12 +360,169 @@ class GradingAcademicController extends Controller
             'label' => 'Select program',
         ]);
 
+        $departmentOptions = [];
+        if (Schema::hasTable('departments')) {
+            $departmentOptions = Department::query()
+                ->select('id', 'code', 'description')
+                ->orderBy('description')
+                ->get()
+                ->map(function ($department) {
+                    $code = trim((string) $department->code);
+                    $description = trim((string) $department->description);
+                    $label = $description;
+
+                    if ($code !== '' && $description !== '') {
+                        $label = $code . ' - ' . $description;
+                    } elseif ($code !== '') {
+                        $label = $code;
+                    }
+
+                    return [
+                        'value' => (string) $department->id,
+                        'label' => $label,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        array_unshift($departmentOptions, [
+            'value' => '',
+            'label' => 'Select department',
+        ]);
+
         return view('registrar.services.grading-academic.transmutation', [
             'transmutationRules' => $transmutationRules,
             'search' => $search,
             'schoolYearOptions' => $schoolYearOptions,
             'termOptions' => $termOptions,
             'programOptions' => $programOptions,
+            'departmentOptions' => $departmentOptions,
+        ]);
+    }
+
+    public function transmutationCopy(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('transmutation_rules') || !Schema::hasTable('academic_terms') || !Schema::hasTable('courses')) {
+            return response()->json([
+                'ok' => true,
+                'copied_count' => 0,
+                'message' => 'Transmutation tables are not ready yet. Copy saved as no-op.',
+            ]);
+        }
+
+        $request->merge([
+            'from_department_id' => $request->input('from_department_id') !== '' ? $request->input('from_department_id') : null,
+            'from_program_id' => $request->input('from_program_id') !== '' ? $request->input('from_program_id') : null,
+            'to_department_id' => $request->input('to_department_id') !== '' ? $request->input('to_department_id') : null,
+            'to_program_id' => $request->input('to_program_id') !== '' ? $request->input('to_program_id') : null,
+        ]);
+
+        $departmentRule = Schema::hasTable('departments')
+            ? 'nullable|integer|exists:departments,id'
+            : 'nullable';
+
+        $validated = $request->validate([
+            'from_department_id' => $departmentRule,
+            'from_program_id' => 'nullable|integer|exists:courses,id',
+            'from_school_year' => 'required|string|max:20|exists:academic_terms,school_year',
+            'from_term' => 'required|string|in:First,Second,Summer',
+            'to_department_id' => $departmentRule,
+            'to_program_id' => 'required|integer|exists:courses,id',
+            'to_school_year' => 'required|string|max:20|exists:academic_terms,school_year',
+            'to_term' => 'required|string|in:First,Second,Summer',
+        ]);
+
+        $sourceAcademicTermId = $this->resolveAcademicTermId($validated['from_school_year'], $validated['from_term']);
+        $targetAcademicTermId = $this->resolveAcademicTermId($validated['to_school_year'], $validated['to_term']);
+
+        if (!$sourceAcademicTermId || !$targetAcademicTermId) {
+            return response()->json([
+                'message' => 'The selected school year and term combination is invalid.',
+            ], 422);
+        }
+
+        if (!empty($validated['from_program_id']) && !empty($validated['from_department_id'])) {
+            $sourceProgram = Course::query()->find((int) $validated['from_program_id']);
+            if ($sourceProgram && (int) $sourceProgram->department_id !== (int) $validated['from_department_id']) {
+                return response()->json([
+                    'message' => 'Source program does not belong to the selected source department.',
+                ], 422);
+            }
+        }
+
+        $sourceRulesQuery = TransmutationRule::query()
+            ->where('academic_term_id', $sourceAcademicTermId)
+            ->with('canonicalCourse:id,department_id');
+
+        if (!empty($validated['from_program_id'])) {
+            $sourceRulesQuery->where('course_id', (int) $validated['from_program_id']);
+        }
+
+        if (!empty($validated['from_department_id'])) {
+            $sourceRulesQuery->whereHas('canonicalCourse', function ($query) use ($validated) {
+                $query->where('department_id', (int) $validated['from_department_id']);
+            });
+        }
+
+        $sourceRules = $sourceRulesQuery->get();
+        if (!$sourceRules->count()) {
+            $sourceSummary = 'FROM Program + AY + Semester must match existing transmutation rows.';
+            $sampleRule = TransmutationRule::query()
+                ->with(['academicTerm:id,school_year,term', 'canonicalCourse:id,code,name'])
+                ->orderByDesc('id')
+                ->first();
+
+            if ($sampleRule) {
+                $sampleProgram = trim((string) (optional($sampleRule->canonicalCourse)->code ?: optional($sampleRule->canonicalCourse)->name));
+                $sampleYear = trim((string) optional($sampleRule->academicTerm)->school_year);
+                $sampleTerm = $this->canonicalTransmutationTermLabel(optional($sampleRule->academicTerm)->term);
+
+                if ($sampleProgram !== '' && $sampleYear !== '' && $sampleTerm !== '') {
+                    $sourceSummary = 'Try FROM Program: ' . $sampleProgram . ', AY: ' . $sampleYear . ', Semester: ' . $sampleTerm . '.';
+                }
+            }
+
+            return response()->json([
+                'message' => 'No source transmutation rules found for the selected filters. ' . $sourceSummary,
+            ], 422);
+        }
+
+        $targetProgram = Course::query()->find((int) $validated['to_program_id']);
+        if (!$targetProgram) {
+            return response()->json([
+                'message' => 'Target program is invalid.',
+            ], 422);
+        }
+
+        if (!empty($validated['to_department_id']) && (int) $targetProgram->department_id !== (int) $validated['to_department_id']) {
+            return response()->json([
+                'message' => 'Target program does not belong to the selected target department.',
+            ], 422);
+        }
+
+        $copiedCount = 0;
+        foreach ($sourceRules as $rule) {
+            TransmutationRule::updateOrCreate(
+                [
+                    'academic_term_id' => $targetAcademicTermId,
+                    'course_id' => (int) $validated['to_program_id'],
+                    'initial_from' => (float) $rule->initial_from,
+                    'initial_to' => (float) $rule->initial_to,
+                ],
+                [
+                    'transmuted_grade' => (float) $rule->transmuted_grade,
+                    'code' => (string) $rule->code,
+                    'remarks' => (string) $rule->remarks,
+                ]
+            );
+
+            $copiedCount++;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'copied_count' => $copiedCount,
         ]);
     }
 
