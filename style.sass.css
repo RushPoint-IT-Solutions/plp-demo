@@ -9516,6 +9516,18 @@ select.req-modal-input {
   max-width: none;
 }
 
+.page-slot-monitoring .sm-filter-row .rg-listbox,
+.page-slot-monitoring .sm-filter-row .rg-listbox-trigger,
+.page-slot-monitoring .sm-filter-row .rg-listbox-native {
+  width: 100%;
+}
+
+.page-slot-monitoring .sm-filter-row .rg-listbox-trigger {
+  min-height: 34px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .page-slot-monitoring .sm-search-input {
   width: 100%;
   font-family: "Poppins", sans-serif;
@@ -9538,8 +9550,19 @@ select.req-modal-input {
 
 .page-slot-monitoring .sm-action-wrap {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-bottom: 14px;
+  gap: 8px;
+}
+
+.page-slot-monitoring .sm-report-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 0.74rem;
+  letter-spacing: 0.01em;
+  white-space: normal;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .page-slot-monitoring #smTable td.sm-number-cell {
@@ -9723,6 +9746,258 @@ select.req-modal-input {
   background: #c62828;
 }
 
+/* Slot Monitoring Reports */
+.slot-monitoring-report-page {
+  margin: 0;
+  padding: 18px;
+  background: #edf2ef;
+  color: #111;
+  font-family: "Poppins", sans-serif;
+}
+
+.slot-monitoring-report-page .sm-report-shell-viewport {
+  width: 100%;
+  overflow-x: hidden;
+  overflow: visible;
+}
+
+.slot-monitoring-report-page .sm-report-shell {
+  --sm-report-scale: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #cbd6cf;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 26px rgba(16, 44, 31, 0.08);
+}
+
+.slot-monitoring-report-page .sm-report-header {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.slot-monitoring-report-page .sm-report-header.is-actual-size {
+  text-align: center;
+}
+
+.slot-monitoring-report-page .sm-report-school {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #0f4a30;
+  text-transform: uppercase;
+}
+
+.slot-monitoring-report-page .sm-report-title {
+  margin: 6px 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f7b43;
+  text-transform: uppercase;
+}
+
+.slot-monitoring-report-page.report-actual-size .sm-report-title {
+  letter-spacing: 0.03em;
+}
+
+.slot-monitoring-report-page .sm-report-meta {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #2a3c34;
+}
+
+.slot-monitoring-report-page .sm-report-table-wrap {
+  margin-top: 10px;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+
+.slot-monitoring-report-page .sm-report-table-wrap.is-scrollable {
+  overflow-x: auto;
+}
+
+.slot-monitoring-report-page .sm-report-table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.slot-monitoring-report-page .sm-report-table thead th,
+.slot-monitoring-report-page .sm-report-table tbody td,
+.slot-monitoring-report-page .sm-report-table tfoot td {
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  border-bottom: 1px solid #d2ddd6;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.slot-monitoring-report-page .sm-report-table .sm-course-col {
+  font-weight: 700;
+  text-align: center;
+}
+
+.slot-monitoring-report-page .sm-report-table .sm-number-col {
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.slot-monitoring-report-page .sm-report-total-row td {
+  background: #f1f7f3;
+  font-weight: 800;
+}
+
+.slot-monitoring-report-page .sm-report-total-row td:first-child {
+  text-align: center;
+  padding-right: 12px;
+  padding-left: 12px;
+}
+
+.slot-monitoring-report-page .sm-empty-cell {
+  text-align: center;
+  color: #6b7972;
+  padding: 14px 10px;
+}
+
+.slot-monitoring-report-page .sm-report-generated {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: #3a4c44;
+  text-align: right;
+}
+
+.slot-monitoring-report-page .sm-report-table thead th:last-child,
+.slot-monitoring-report-page .sm-report-table tbody td:last-child,
+.slot-monitoring-report-page .sm-report-table tfoot td:last-child {
+  text-align: center;
+}
+
+@media (max-width: 980px) {
+  .slot-monitoring-report-page {
+    padding: 10px;
+  }
+  .slot-monitoring-report-page .sm-report-shell-viewport {
+    overflow-x: hidden;
+  }
+  .slot-monitoring-report-page .sm-report-title {
+    font-size: 1.05rem;
+  }
+  .slot-monitoring-report-page .sm-report-shell {
+    --sm-report-scale: 0.9;
+    transform: scale(var(--sm-report-scale));
+    transform-origin: top center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 12px 10px;
+    border-radius: 10px;
+  }
+  .slot-monitoring-report-page .sm-report-table thead th,
+  .slot-monitoring-report-page .sm-report-table tbody td,
+  .slot-monitoring-report-page .sm-report-table tfoot td {
+    font-size: 0.72rem;
+    padding: 6px 5px;
+    line-height: 1.2;
+  }
+  .slot-monitoring-report-page .sm-report-generated {
+    margin-top: 8px;
+    font-size: 0.72rem;
+  }
+}
+@media (max-width: 768px) {
+  .slot-monitoring-report-page {
+    padding: 8px;
+  }
+  .slot-monitoring-report-page .sm-report-shell-viewport {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .slot-monitoring-report-page .sm-report-shell {
+    --sm-report-scale: 0.84;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 9px 8px;
+    border-radius: 8px;
+  }
+  .slot-monitoring-report-page .sm-report-school {
+    font-size: 0.8rem;
+  }
+  .slot-monitoring-report-page .sm-report-title {
+    font-size: 0.86rem;
+    margin: 4px 0;
+  }
+  .slot-monitoring-report-page .sm-report-meta {
+    font-size: 0.68rem;
+  }
+  .slot-monitoring-report-page .sm-report-table thead th,
+  .slot-monitoring-report-page .sm-report-table tbody td,
+  .slot-monitoring-report-page .sm-report-table tfoot td {
+    font-size: 0.65rem;
+    padding: 4px 3px;
+    line-height: 1.15;
+  }
+  .slot-monitoring-report-page .sm-report-generated {
+    text-align: left;
+    margin-top: 6px;
+    font-size: 0.64rem;
+  }
+}
+@media (max-width: 480px) {
+  .slot-monitoring-report-page {
+    padding: 6px;
+  }
+  .slot-monitoring-report-page .sm-report-shell {
+    --sm-report-scale: 0.78;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 8px 6px;
+  }
+  .slot-monitoring-report-page .sm-report-title {
+    font-size: 0.8rem;
+  }
+  .slot-monitoring-report-page .sm-report-table thead th,
+  .slot-monitoring-report-page .sm-report-table tbody td,
+  .slot-monitoring-report-page .sm-report-table tfoot td {
+    font-size: 0.6rem;
+    padding: 4px 3px;
+  }
+}
+@media print {
+  .slot-monitoring-report-page {
+    background: #fff;
+    padding: 0;
+  }
+  .slot-monitoring-report-page .sm-report-shell {
+    transform: none !important;
+    transform-origin: top left !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .slot-monitoring-report-page .sm-report-shell-viewport {
+    overflow: visible;
+  }
+  .slot-monitoring-report-page .sm-report-table-wrap {
+    overflow: visible;
+  }
+}
 .page-slot-monitoring .sm-danger-btn:hover {
   background: #a31f1f;
 }
@@ -41258,5 +41533,178 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   }
   .registrar-body.page-services-class-list .svc-selected-info {
     grid-template-columns: 1fr;
+  }
+  .registrar-body.page-services-faculty-loads .rfl-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .registrar-body.page-services-faculty-loads .rfl-pagination {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 6px;
+  }
+  .registrar-body.page-services-faculty-loads .rfl-pagination .pagination {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+}
+.applicant-select-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.applicant-select-native {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.applicant-select-native.is-enhanced {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.applicant-select-trigger {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #26463a;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: "Poppins", sans-serif;
+}
+
+.applicant-select-native.is-enhanced + .applicant-select-trigger {
+  display: inline-flex;
+}
+
+.applicant-select-trigger:focus,
+.applicant-select-wrap.is-open .applicant-select-trigger,
+[data-applicant-select].is-open .applicant-select-trigger {
+  outline: none;
+  border-color: #006837;
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.14);
+}
+
+.applicant-select-trigger:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+.applicant-select-trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.applicant-select-trigger-text.is-placeholder {
+  color: #999;
+}
+
+.applicant-select-trigger-caret {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #006837;
+  border-bottom: 2px solid #006837;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.applicant-select-wrap.is-open .applicant-select-trigger-caret,
+[data-applicant-select].is-open .applicant-select-trigger-caret {
+  transform: rotate(225deg) translateY(2px);
+}
+
+.applicant-select-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid rgb(0, 53, 28.0288461538);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(0, 2, 1.0576923077, 0.15);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 35;
+}
+
+.applicant-select-wrap.is-open .applicant-select-menu,
+[data-applicant-select].is-open .applicant-select-menu {
+  display: block;
+}
+
+.applicant-select-option-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1a3f2e;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: "Poppins", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.applicant-select-option-btn:hover,
+.applicant-select-option-btn.is-active {
+  background: rgb(78.5, 255, 171.8413461538);
+  color: #006837;
+}
+
+.applicant-select-option-btn.is-selected {
+  background: #006837;
+  color: #ffffff;
+}
+
+.applicant-select-option-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 104, 55, 0.3);
+}
+
+@media (max-width: 768px) {
+  .applicant-select-trigger {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  .applicant-select-menu {
+    max-height: 300px;
+  }
+  .applicant-select-option-btn {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
   }
 }

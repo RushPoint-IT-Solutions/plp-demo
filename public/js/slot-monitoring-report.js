@@ -81,76 +81,89 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./resources/js/registrar-class-list.js":
-/*!**********************************************!*\
-  !*** ./resources/js/registrar-class-list.js ***!
-  \**********************************************/
+/***/ "./resources/js/slot-monitoring-report.js":
+/*!************************************************!*\
+  !*** ./resources/js/slot-monitoring-report.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 (function () {
-  function onReady(fn) {
+  function onReady(callback) {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', fn);
-    } else {
-      fn();
+      document.addEventListener('DOMContentLoaded', callback);
+      return;
     }
+    callback();
   }
-  function debounce(fn, delay) {
-    var timer = null;
-    return function () {
-      var args = arguments;
-      if (timer) {
-        clearTimeout(timer);
-      }
-      timer = setTimeout(function () {
-        fn.apply(null, args);
-      }, delay);
-    };
+  function schedule(callback) {
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(callback);
+      return;
+    }
+    setTimeout(callback, 0);
   }
   onReady(function () {
-    var page = document.getElementById('classListPage');
-    if (!page) {
+    var wraps = Array.prototype.slice.call(document.querySelectorAll('.sm-report-table-wrap'));
+    if (!wraps.length) {
       return;
     }
-    var filterForm = document.getElementById('clFilterForm');
-    if (!filterForm) {
-      return;
-    }
-    var searchInput = filterForm.querySelector('[data-cl-auto-submit-search]');
-    if (!searchInput) {
-      return;
-    }
-    var submitSearch = debounce(function () {
-      filterForm.submit();
-    }, 280);
-    searchInput.addEventListener('input', function () {
-      submitSearch();
-    });
-    searchInput.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        filterForm.submit();
+    var resizeObserver = null;
+    function updateWrapOverflow(wrap) {
+      var table = wrap.querySelector('.sm-report-table');
+      if (!table) {
+        wrap.classList.remove('is-scrollable');
+        wrap.setAttribute('data-report-scrollable', '0');
+        return;
       }
-    });
+      var wrapWidth = wrap.getBoundingClientRect().width;
+      var tableWidth = table.getBoundingClientRect().width;
+      var shouldScroll = tableWidth > wrapWidth + 4;
+      wrap.classList.toggle('is-scrollable', shouldScroll);
+      wrap.setAttribute('data-report-scrollable', shouldScroll ? '1' : '0');
+    }
+    function refreshAll() {
+      wraps.forEach(updateWrapOverflow);
+    }
+    function refreshSoon() {
+      schedule(refreshAll);
+    }
+    if (typeof ResizeObserver === 'function') {
+      resizeObserver = new ResizeObserver(refreshSoon);
+      wraps.forEach(function (wrap) {
+        resizeObserver.observe(wrap);
+        var table = wrap.querySelector('.sm-report-table');
+        if (table) {
+          resizeObserver.observe(table);
+        }
+      });
+    }
+    window.addEventListener('resize', refreshSoon);
+    if (document.fonts && _typeof(document.fonts.ready) === 'object') {
+      document.fonts.ready.then(refreshSoon)["catch"](function () {
+        refreshSoon();
+      });
+    }
+    refreshSoon();
   });
 })();
 
 /***/ }),
 
-/***/ 13:
-/*!****************************************************!*\
-  !*** multi ./resources/js/registrar-class-list.js ***!
-  \****************************************************/
+/***/ 11:
+/*!******************************************************!*\
+  !*** multi ./resources/js/slot-monitoring-report.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\registrar-class-list.js */"./resources/js/registrar-class-list.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\slot-monitoring-report.js */"./resources/js/slot-monitoring-report.js");
 
 
 /***/ })

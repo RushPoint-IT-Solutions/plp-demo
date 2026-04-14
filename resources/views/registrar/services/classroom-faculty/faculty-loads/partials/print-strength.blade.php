@@ -1,8 +1,9 @@
 @php($blankRows = max(0, 20 - $printRows->count()))
+@php($schoolName = trim((string) config('app.school_name', 'University of Pasig City')) ?: 'University of Pasig City')
 
 <div class="rfl-strength-sheet">
     <div class="rfl-strength-header text-center">
-        <div class="rfl-strength-school">Central Luzon College of Science and Technology, Inc.</div>
+        <div class="rfl-strength-school">{{ $schoolName }}</div>
         <div class="rfl-strength-title">REPORT ON STRENGTH OF CLASSES</div>
         <div class="rfl-strength-subtitle">{{ $printTermLabel }}</div>
     </div>
@@ -33,72 +34,74 @@
         </div>
     </div>
 
-    <table class="rfl-strength-table">
-        <thead>
-            <tr>
-                <th rowspan="2">Subject(s)</th>
-                <th rowspan="2">Subject Code</th>
-                <th rowspan="2">Section</th>
-                <th rowspan="2">Days</th>
-                <th rowspan="2">Time</th>
-                <th rowspan="2">Room</th>
-                <th rowspan="2">Units</th>
-                <th colspan="2">Hours / Week</th>
-                <th rowspan="2">Total Hours</th>
-                <th rowspan="2">No. of Students</th>
-                <th rowspan="2">Campus</th>
-            </tr>
-            <tr>
-                <th>LEC</th>
-                <th>LAB</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($printRows as $row)
+    <div class="student-table-wrapper rfl-strength-table-wrap">
+        <table class="student-table rfl-strength-table">
+            <thead>
                 <tr>
-                    <td>{{ strtoupper($row['subject']) }}</td>
-                    <td>{{ strtoupper($row['code']) }}</td>
-                    <td>{{ $row['section'] !== '' ? $row['section'] : '-' }}</td>
-                    <td>{{ $row['days'] !== '' ? $row['days'] : '-' }}</td>
-                    <td>{{ $row['time'] !== '' ? $row['time'] : '-' }}</td>
-                    <td>{{ $row['room'] !== '' ? $row['room'] : '-' }}</td>
-                    <td>{{ number_format((float) $row['units'], 1) }}</td>
-                    <td>{{ (int) $row['lec'] }}</td>
-                    <td>{{ (int) $row['lab'] }}</td>
-                    <td>{{ number_format((float) $row['total_hours'], 2) }}</td>
-                    <td>{{ (int) $row['students'] }}</td>
-                    <td>{{ strtoupper($row['campus']) }}</td>
+                    <th rowspan="2">Subject(s)</th>
+                    <th rowspan="2">Subject Code</th>
+                    <th rowspan="2">Section</th>
+                    <th rowspan="2">Days</th>
+                    <th rowspan="2">Time</th>
+                    <th rowspan="2">Room</th>
+                    <th rowspan="2">Units</th>
+                    <th colspan="2">Hours / Week</th>
+                    <th rowspan="2">Total Hours</th>
+                    <th rowspan="2">No. of Students</th>
+                    <th rowspan="2">Campus</th>
                 </tr>
-            @endforeach
+                <tr>
+                    <th>LEC</th>
+                    <th>LAB</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($printRows as $row)
+                    <tr>
+                        <td>{{ strtoupper($row['subject']) }}</td>
+                        <td>{{ strtoupper($row['code']) }}</td>
+                        <td>{{ $row['section'] !== '' ? $row['section'] : '-' }}</td>
+                        <td>{{ $row['days'] !== '' ? $row['days'] : '-' }}</td>
+                        <td>{{ $row['time'] !== '' ? $row['time'] : '-' }}</td>
+                        <td>{{ $row['room'] !== '' ? $row['room'] : '-' }}</td>
+                        <td>{{ number_format((float) $row['units'], 1) }}</td>
+                        <td>{{ (int) $row['lec'] }}</td>
+                        <td>{{ (int) $row['lab'] }}</td>
+                        <td>{{ number_format((float) $row['total_hours'], 2) }}</td>
+                        <td>{{ (int) $row['students'] }}</td>
+                        <td>{{ strtoupper($row['campus']) }}</td>
+                    </tr>
+                @endforeach
 
-            @for($i = 0; $i < $blankRows; $i++)
+                @for($i = 0; $i < $blankRows; $i++)
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                @endfor
+            </tbody>
+            <tfoot>
                 <tr>
-                    <td>&nbsp;</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td colspan="7" class="rfl-strength-total-label">TOTAL</td>
+                    <td>{{ (int) ($printTotals['lec'] ?? 0) }}</td>
+                    <td>{{ (int) ($printTotals['lab'] ?? 0) }}</td>
+                    <td>{{ number_format((float) ($printTotals['total_hours'] ?? 0), 2) }}</td>
+                    <td>{{ (int) ($printTotals['students'] ?? 0) }}</td>
                     <td></td>
                 </tr>
-            @endfor
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="7" class="rfl-strength-total-label">TOTAL</td>
-                <td>{{ (int) ($printTotals['lec'] ?? 0) }}</td>
-                <td>{{ (int) ($printTotals['lab'] ?? 0) }}</td>
-                <td>{{ number_format((float) ($printTotals['total_hours'] ?? 0), 2) }}</td>
-                <td>{{ (int) ($printTotals['students'] ?? 0) }}</td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
+            </tfoot>
+        </table>
+    </div>
 
     <div class="rfl-strength-signatures">
         <div class="rfl-strength-sign-block">

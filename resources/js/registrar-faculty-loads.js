@@ -160,6 +160,8 @@
 
             var cssUrls = [
                 configNode.getAttribute('data-bootstrap-css') || '',
+                configNode.getAttribute('data-app-css') || '',
+                configNode.getAttribute('data-style-css') || '',
                 configNode.getAttribute('data-print-css') || ''
             ].filter(function (url) {
                 return url !== '';
@@ -168,6 +170,19 @@
             return cssUrls.map(function (url) {
                 return '<link rel="stylesheet" href="' + url + '">';
             }).join('');
+        }
+
+        function buildPrintFaviconHtml(configNode) {
+            if (!configNode) {
+                return '';
+            }
+
+            var faviconUrl = (configNode.getAttribute('data-favicon') || '').trim();
+            if (faviconUrl === '') {
+                return '';
+            }
+
+            return '<link rel="icon" href="' + faviconUrl + '" type="image/png">';
         }
 
         function printTemplate(templateKey) {
@@ -180,6 +195,7 @@
             }
 
             var styles = buildPrintStylesHtml(config);
+            var favicon = buildPrintFaviconHtml(config);
             var frameDoc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
             if (!frameDoc) {
                 return;
@@ -192,6 +208,7 @@
                 '<meta charset="utf-8">' +
                 '<meta name="viewport" content="width=device-width, initial-scale=1">' +
                 '<title>Faculty Loads Print</title>' +
+                favicon +
                 styles +
                 '</head>' +
                 '<body class="rfl-strength-print-page">' +

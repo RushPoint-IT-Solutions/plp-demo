@@ -66,6 +66,7 @@ class DatabaseSeeder extends Seeder
             FacultySeeder::class,
             StudentDemoDataSeeder::class,
             C3TrashDataSeeder::class,
+            SlotMonitoringReportSeeder::class,
             RegistrarRequirement3nfSeeder::class,
         ]);
 

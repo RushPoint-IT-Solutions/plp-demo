@@ -340,44 +340,54 @@
 }
 
 .rfl-strength-print-page {
-    background: #f5f5f5;
+    background: #edf2ef;
     color: #000;
 }
 
 .rfl-strength-toolbar {
-    max-width: 210mm;
+    max-width: min(210mm, 100%);
     margin: 16px auto 0;
 }
 
 .rfl-strength-sheet {
-    width: 210mm;
+    width: min(210mm, 100%);
     min-height: 297mm;
     margin: 10px auto 16px;
     background: #fff;
-    padding: 1in;
+    padding: 28px 22px;
     color: #000;
     font-size: 10pt;
     box-sizing: border-box;
     transform-origin: top center;
+    border: 1px solid #c8d5cd;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(16, 44, 31, 0.09);
 }
 
 .rfl-strength-header {
     margin-bottom: 18px;
+    border-bottom: 2px solid #d3ddd7;
+    padding-bottom: 10px;
 }
 
 .rfl-strength-school {
     font-weight: 700;
     font-size: 14pt;
+    color: $plp-green;
+    text-transform: uppercase;
 }
 
 .rfl-strength-title {
     font-weight: 800;
     font-size: 18pt;
     margin-top: 6px;
+    color: #0f7b43;
 }
 
 .rfl-strength-subtitle {
     font-size: 11pt;
+    font-weight: 700;
+    color: #314740;
 }
 
 .rfl-strength-meta-row {
@@ -407,36 +417,61 @@
 .rfl-strength-line-fill {
     flex: 1 1 auto;
     min-height: 20px;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #8fa59b;
     padding: 0 4px;
     font-weight: 600;
 }
 
-.rfl-strength-table {
-    width: 100%;
-    border-collapse: collapse;
+.rfl-strength-table-wrap {
     margin-top: 8px;
+    border: 1px solid #d2ddd6;
+    border-radius: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
 }
 
-.rfl-strength-table th,
-.rfl-strength-table td {
-    border: 1px solid #000;
+.rfl-strength-sheet .rfl-strength-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: auto;
+    margin-top: 0;
+}
+
+.rfl-strength-sheet .rfl-strength-table th,
+.rfl-strength-sheet .rfl-strength-table td {
+    border: 1px solid #d2ddd6;
     padding: 4px 5px;
-    font-size: 9pt;
-    line-height: 1.2;
+    font-size: 8.2pt;
+    line-height: 1.15;
     text-align: center;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
-.rfl-strength-table th {
+.rfl-strength-sheet .rfl-strength-table thead th {
+    font-weight: 700;
+    background: $plp-green;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.rfl-strength-sheet .rfl-strength-table tbody tr:hover {
+    background: transparent;
+}
+
+.rfl-strength-sheet .rfl-strength-table tfoot td {
+    background: #f3f8f5;
     font-weight: 800;
 }
 
-.rfl-strength-table td:first-child {
-    text-align: left;
-}
-
 .rfl-strength-total-label {
-    text-align: right !important;
+    text-align: center !important;
     font-weight: 800;
 }
 
@@ -462,7 +497,7 @@
 }
 
 .rfl-strength-sign-line {
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #4f635a;
     min-height: 24px;
     margin-bottom: 4px;
 }
@@ -550,31 +585,124 @@
     margin-bottom: 6px;
 }
 
-.rfl-plotted-table th,
-.rfl-plotted-table td {
-    width: 14.285%;
-    vertical-align: top;
+.rfl-plotted-sheet .rfl-plotted-table {
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
 }
 
-.rfl-plotted-table td {
-    min-height: 260px;
+.rfl-plotted-sheet .rfl-plotted-table th,
+.rfl-plotted-sheet .rfl-plotted-table td {
+    width: 14.285%;
+    vertical-align: top;
+    text-align: center;
+}
+
+.rfl-plotted-sheet .rfl-plotted-table td {
+    min-height: 220px;
 }
 
 .rfl-plotted-item {
-    border: 1px solid #000;
+    border: 1px solid #97aca2;
     border-radius: 2px;
     padding: 4px;
     margin-bottom: 4px;
     text-align: left;
     font-weight: 700;
     line-height: 1.2;
+    background: #f8fbf9;
 }
 
 .rfl-plotted-empty {
     min-height: 18px;
 }
 
+@media (max-width: 768px) {
+    .rfl-strength-toolbar {
+        max-width: 100%;
+        margin: 4px auto 0;
+        padding: 0 4px;
+    }
+
+    .rfl-strength-sheet {
+        width: 100%;
+        min-height: 0;
+        padding: 8px 6px;
+        margin: 4px auto 6px;
+        border-radius: 8px;
+    }
+
+    .rfl-strength-header {
+        margin-bottom: 12px;
+    }
+
+    .rfl-strength-school {
+        font-size: 11pt;
+    }
+
+    .rfl-strength-title {
+        font-size: 13pt;
+    }
+
+    .rfl-strength-subtitle {
+        font-size: 9pt;
+    }
+
+    .rfl-strength-meta-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .rfl-strength-signatures {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .rfl-strength-sign-block--right {
+        max-width: none;
+        margin-top: 0;
+    }
+
+    .rfl-strength-footer-note {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .rfl-strength-toolbar {
+        margin-top: 2px;
+        padding: 0 2px;
+    }
+
+    .rfl-strength-sheet {
+        padding: 6px 4px;
+        margin: 2px auto 4px;
+        border-radius: 6px;
+    }
+
+    .rfl-strength-header {
+        margin-bottom: 10px;
+    }
+
+    .rfl-strength-school {
+        font-size: 10pt;
+    }
+
+    .rfl-strength-title {
+        font-size: 12pt;
+    }
+
+    .rfl-strength-subtitle {
+        font-size: 8pt;
+    }
+}
+
 @media print {
+    @page {
+        size: A4 portrait;
+        margin: 0.25in;
+    }
+
     html,
     body,
     .container,
@@ -593,11 +721,39 @@
     }
 
     .rfl-strength-sheet {
-        padding: 2in 0.5in 0 0.5in !important;
+        width: 210mm !important;
+        max-width: none !important;
+        padding: 0.55in 0.22in 0.08in 0.22in !important;
         margin: 0 auto !important;
-        zoom: 1 !important;
+        zoom: 0.92 !important;
         transform: none !important;
+        transform-origin: top left !important;
         box-shadow: none !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    .rfl-strength-table-wrap {
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    .rfl-strength-sheet .rfl-strength-table {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .rfl-strength-sheet:not(.rfl-plotted-sheet) .rfl-strength-table th,
+    .rfl-strength-sheet:not(.rfl-plotted-sheet) .rfl-strength-table td {
+        font-size: 7.1pt !important;
+        padding: 2px 3px !important;
+    }
+
+    .rfl-strength-sheet.rfl-plotted-sheet .rfl-strength-table th,
+    .rfl-strength-sheet.rfl-plotted-sheet .rfl-strength-table td {
+        font-size: 7.4pt !important;
+        padding: 3px 3px !important;
     }
 
     .rfl-strength-sheet,

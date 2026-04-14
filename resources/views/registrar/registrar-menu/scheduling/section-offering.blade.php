@@ -5,57 +5,76 @@
 @section('body-class', 'page-section-offering')
 
 @section('content')
-<div class="pf-page">
+<div
+    class="pf-page"
+    id="sectionOfferingPage"
+    data-fetch-url="{{ route('registrar.registrar-menu.scheduling.section-offering.data') }}"
+    data-store-url="{{ route('registrar.registrar-menu.scheduling.section-offering.store') }}"
+    data-curriculum-url="{{ route('registrar.registrar-menu.scheduling.section-offering.curriculum-subjects') }}"
+>
 
     {{-- Filter Bar --}}
     <div class="sched-filter-bar">
         <div class="sched-filter-row sched-filter-row-main so-filter-row">
             <div class="sched-filter-group so-filter-search">
                 <span class="app-filter-label">Search Section</span>
-                <input type="text" class="app-filter-input" id="soSectionSearch" placeholder="Type section, adviser, or course" style="width:100%;">
+                <input type="text" class="app-filter-input" id="soSectionSearch" placeholder="Type section, adviser, or course">
             </div>
             <div class="sched-filter-group so-filter-sy">
                 <span class="app-filter-label">School Year</span>
-                <select class="app-filter-select" id="soSY" style="width:100%;">
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2024-2025">2024-2025</option>
-                    <option value="2023-2024">2023-2024</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'soSY',
+                    'name' => 'school_year',
+                    'options' => [['value' => '', 'label' => 'All School Years']],
+                    'selected' => '',
+                    'placeholder' => 'All School Years',
+                ])
             </div>
             <div class="sched-filter-group so-filter-term">
                 <span class="app-filter-label">Semester</span>
-                <select class="app-filter-select" id="soTerm" style="width:100%;">
-                    <option value="First">First</option>
-                    <option value="Second" selected>Second</option>
-                    <option value="Summer">Summer</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'soTerm',
+                    'name' => 'semester',
+                    'options' => [['value' => '', 'label' => 'All Semesters']],
+                    'selected' => '',
+                    'placeholder' => 'All Semesters',
+                ])
             </div>
             <div class="sched-filter-group so-filter-year">
                 <span class="app-filter-label">Year Level</span>
-                <select class="app-filter-select" id="soYearLevel" style="width:100%;">
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                    <option value="Third">Third</option>
-                    <option value="Fourth">Fourth</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'soYearLevel',
+                    'name' => 'year_level',
+                    'options' => [
+                        ['value' => '', 'label' => 'All Year Levels'],
+                        ['value' => 'First', 'label' => 'First'],
+                        ['value' => 'Second', 'label' => 'Second'],
+                        ['value' => 'Third', 'label' => 'Third'],
+                        ['value' => 'Fourth', 'label' => 'Fourth'],
+                    ],
+                    'selected' => '',
+                    'placeholder' => 'All Year Levels',
+                ])
             </div>
             <div class="sched-filter-group so-filter-section">
                 <span class="app-filter-label">Section</span>
-                <select class="app-filter-select" id="soSection" style="width:100%;">
-                    <option value="">All Sections</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'soSection',
+                    'name' => 'section',
+                    'options' => [['value' => '', 'label' => 'All Sections']],
+                    'selected' => '',
+                    'placeholder' => 'All Sections',
+                ])
             </div>
             <div class="sched-filter-group sched-filter-group-lg so-filter-program">
                 <span class="app-filter-label">Course</span>
-                <select class="app-filter-select" id="soProgram" style="width:100%;">
-                    <option value="">All Courses</option>
-                    <option value="BSIT">BSIT</option>
-                    <option value="BSCS">BSCS</option>
-                    <option value="BSED">BSED</option>
-                    <option value="BSAT">BSAT</option>
-                    <option value="BSN">BSN</option>
-                    <option value="BSET">BSET</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'soProgram',
+                    'name' => 'course_id',
+                    'options' => [['value' => '', 'label' => 'All Courses']],
+                    'selected' => '',
+                    'placeholder' => 'All Courses',
+                ])
             </div>
         </div>
     </div>
@@ -71,7 +90,7 @@
         </div>
 
         <div class="student-table-wrapper table-responsive" id="soSectionTableWrap">
-            <table class="student-table registrar-table" id="soSectionTable">
+            <table class="student-table registrar-table" id="soSectionTable" data-no-auto-pager="1">
                 <thead>
                     <tr>
                         <th>Course</th>
@@ -90,8 +109,19 @@
             </table>
         </div>
 
-        <div class="pf-pagination" id="soSectionPageInfo">
-            <span class="pf-page-info" id="soSectionPageText">Showing 0 sections</span>
+        <div class="sf-pagination-bar" id="soSectionPaginationBar">
+            <div class="sf-pagination-left">
+                <span class="pf-page-info" id="soSectionPageText">Showing 0 sections</span>
+            </div>
+            <div class="rtp-pagination">
+                <nav class="rtp-nav" aria-label="Section Offering pagination">
+                    <div class="rtp-list" role="group" aria-label="Page controls">
+                        <button type="button" class="rtp-page-btn" id="soPrevBtn" aria-label="Previous page">&lt;</button>
+                        <div class="rtp-pages" id="soPageNumbers"></div>
+                        <button type="button" class="rtp-page-btn" id="soNextBtn" aria-label="Next page">&gt;</button>
+                    </div>
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -106,7 +136,7 @@
         </div>
 
         <div class="student-table-wrapper table-responsive" id="soTableWrap">
-            <table class="student-table registrar-table" id="soTable">
+            <table class="student-table registrar-table" id="soTable" data-no-auto-pager="1">
                 <thead>
                     <tr>
                         <th>Subject Code</th>
@@ -153,14 +183,13 @@
                 <div class="so-modal-grid">
                     <div class="so-modal-field so-modal-col-6">
                         <label for="soModalProgram">Program</label>
-                        <select id="soModalProgram" class="app-filter-select" style="width:100%;">
-                            <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
-                            <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
-                            <option value="BSED">BSED - Bachelor of Secondary Education</option>
-                            <option value="BSAT">BSAT - Bachelor of Science in Accounting Technology</option>
-                            <option value="BSN">BSN - Bachelor of Science in Nursing</option>
-                            <option value="BSET">BSET - Bachelor of Science in Engineering Technology</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'soModalProgram',
+                            'name' => 'modal_course_id',
+                            'options' => [['value' => '', 'label' => 'Select Course']],
+                            'selected' => '',
+                            'placeholder' => 'Select Course',
+                        ])
                     </div>
 
                     <div class="so-modal-field so-modal-col-3">
@@ -170,21 +199,33 @@
 
                     <div class="so-modal-field so-modal-col-3">
                         <label for="soModalTerm">Term</label>
-                        <select id="soModalTerm" class="app-filter-select" style="width:100%;">
-                            <option value="First">First</option>
-                            <option value="Second" selected>Second</option>
-                            <option value="Summer">Summer</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'soModalTerm',
+                            'name' => 'modal_semester',
+                            'options' => [
+                                ['value' => 'First', 'label' => 'First'],
+                                ['value' => 'Second', 'label' => 'Second'],
+                                ['value' => 'Summer', 'label' => 'Summer'],
+                            ],
+                            'selected' => 'Second',
+                            'placeholder' => 'Select Term',
+                        ])
                     </div>
 
                     <div class="so-modal-field so-modal-col-4">
                         <label for="soModalYearLevel">Year Level</label>
-                        <select id="soModalYearLevel" class="app-filter-select" style="width:100%;">
-                            <option value="First">First Year</option>
-                            <option value="Second">Second Year</option>
-                            <option value="Third">Third Year</option>
-                            <option value="Fourth">Fourth Year</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'soModalYearLevel',
+                            'name' => 'modal_year_level',
+                            'options' => [
+                                ['value' => 'First', 'label' => 'First Year'],
+                                ['value' => 'Second', 'label' => 'Second Year'],
+                                ['value' => 'Third', 'label' => 'Third Year'],
+                                ['value' => 'Fourth', 'label' => 'Fourth Year'],
+                            ],
+                            'selected' => 'First',
+                            'placeholder' => 'Select Year Level',
+                        ])
                     </div>
 
                     <div class="so-modal-field so-modal-col-4">
@@ -244,5 +285,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/section-offering.js') }}"></script>
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+<script src="{{ asset('js/section-offering.js') }}?v={{ file_exists(public_path('js/section-offering.js')) ? filemtime(public_path('js/section-offering.js')) : time() }}"></script>
 @endpush

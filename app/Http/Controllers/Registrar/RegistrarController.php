@@ -20,6 +20,7 @@ use App\Faculty;
 use App\Http\Requests\StoreRoomBuildingRequest;
 use App\Http\Requests\StoreRoomHallwayRequest;
 use App\Http\Requests\StoreRoomRequest;
+use App\Http\Requests\StoreSectionOfferingRequest;
 use App\Http\Requests\StoreSectionMergingRequest;
 use App\Http\Requests\StoreSlotMonitoringRequest;
 use App\Http\Requests\UpdateRoomRequest;
@@ -81,7 +82,29 @@ class RegistrarController extends Controller
     private const SLOT_MONITORING_DEFAULT_PER_PAGE = 25;
     private const SLOT_MONITORING_MIN_PER_PAGE = 10;
     private const SLOT_MONITORING_MAX_PER_PAGE = 100;
+    private const SECTION_OFFERING_DEFAULT_PER_PAGE = 25;
+    private const SECTION_OFFERING_MIN_PER_PAGE = 10;
+    private const SECTION_OFFERING_MAX_PER_PAGE = 100;
     private const SLOT_MONITORING_ALLOWED_SEMESTERS = ['First', 'Second', 'Summer'];
+    private const SLOT_MONITORING_ALLOWED_COLLEGE_NAMES = [
+        'COLLEGE OF NURSING',
+        'COLLEGE OF ARTS AND SCIENCES',
+        'COLLEGE OF COMPUTER STUDIES',
+        'COLLEGE OF ENGINEERING',
+        'COLLEGE OF INTERNATIONAL HOSPITALITY MANAGEMENT',
+        'COLLEGE OF BUSINESS AND ACCOUNTANCY',
+        'COLLEGE OF EDUCATION',
+    ];
+    private const SLOT_MONITORING_ALLOWED_DEPARTMENT_NAMES = [
+        'COLLEGE OF NURSING',
+        'COLLEGE OF ARTS AND SCIENCES',
+        'COLLEGE OF COMPUTER STUDIES',
+        'COLLEGE OF ENGINEERING',
+        'COLLEGE OF INTERNATIONAL HOSPITALITY MANAGEMENT',
+        'COLLEGE OF BUSINESS AND ACCOUNTANCY',
+        'COLLEGE OF BUSINESS ADMINISTRATION',
+        'COLLEGE OF EDUCATION',
+    ];
 
     /**
      * Registrar Dashboard
@@ -3841,19 +3864,1071 @@ class RegistrarController extends Controller
         return view('registrar.registrar-menu.scheduling.section-offering');
     }
 
+    public function sectionOfferingData(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('search', ''));
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = $this->normalizeSlotMonitoringSemester((string) $request->query('semester', ''));
+        $yearLevel = $this->normalizeSectionOfferingYearLevel((string) $request->query('year_level', ''));
+        $sectionQuery = trim((string) $request->query('section', ''));
+        $courseId = (int) $request->query('course_id', 0);
+        $page = $this->resolveSectionOfferingPage($request->query('page', 1));
+        $perPage = $this->resolveSectionOfferingPerPage($request->query('per_page', self::SECTION_OFFERING_DEFAULT_PER_PAGE));
+
+        $rows = $this->buildSectionOfferingSubjectRowsQuery(
+            $schoolYear,
+            $semester,
+            $sectionQuery,
+            $search,
+            $courseId
+        )->get();
+
+        $sectionGroups = $rows->groupBy(function ($row) {
+            $courseIdValue = (int) ($row->course_id ?? 0);
+            $schoolYearValue = trim((string) ($row->school_year ?? ''));
+            $semesterValue = $this->normalizeSlotMonitoringSemester((string) ($row->semester_label ?? ''));
+            $sectionValue = trim((string) ($row->section ?? ''));
+
+            return implode('|', [$courseIdValue, $schoolYearValue, $semesterValue, $sectionValue]);
+        });
+
+        $sections = $sectionGroups
+            ->map(function ($groupRows, $groupKey) {
+                $groupRows = collect($groupRows)->values();
+                $first = $groupRows->first();
+
+                $sectionLabel = trim((string) ($first->section ?? ''));
+                $yearLevelNumeric = $this->extractYearLevelFromSectionLabel($sectionLabel);
+                $yearLevelLabel = $yearLevelNumeric ? $this->sectionOfferingYearLevelLabel($yearLevelNumeric) : 'N/A';
+
+                $courseSlots = (int) ($first->course_slots ?? 0);
+                if ($courseSlots < 1) {
+                    $courseSlots = 50;
+                }
+
+                $facultyNames = $groupRows
+                    ->map(function ($row) {
+                        return trim((string) ($row->faculty_name ?? ''));
+                    })
+                    ->filter(function ($name) {
+                        return $name !== '';
+                    })
+                    ->unique()
+                    ->values();
+
+                $adviser = 'TBA';
+                if ($facultyNames->count() === 1) {
+                    $adviser = (string) $facultyNames->first();
+                } elseif ($facultyNames->count() > 1) {
+                    $adviser = 'Multiple Faculty';
+                }
+
+                $subjects = $groupRows
+                    ->map(function ($row) use ($courseSlots) {
+                        $subjectCode = trim((string) ($row->subject_code ?? ''));
+                        $subjectName = trim((string) ($row->subject_name ?? ''));
+                        $timeStart = trim((string) ($row->time_start ?? ''));
+                        $timeEnd = trim((string) ($row->time_end ?? ''));
+                        $room = trim((string) ($row->room ?? ''));
+
+                        $tuitionUnits = (float) ($row->units ?? 0);
+                        $creditUnits = $row->credited_tuition_units !== null
+                            ? (float) $row->credited_tuition_units
+                            : $tuitionUnits;
+
+                        $professor = trim((string) ($row->faculty_name ?? ''));
+                        if ($professor === '') {
+                            $professor = 'TBA';
+                        }
+
+                        return [
+                            'code' => $subjectCode !== '' ? $subjectCode : 'N/A',
+                            'description' => $subjectName !== '' ? $subjectName : 'N/A',
+                            'lec' => (int) ($row->lec ?? 0),
+                            'lab' => (int) ($row->lab ?? 0),
+                            'tuitionUnits' => $tuitionUnits,
+                            'creditUnits' => $creditUnits,
+                            'room' => $room !== '' ? ('Room#' . $room) : 'TBA',
+                            'professor' => $professor,
+                            'slots' => $courseSlots,
+                            'schedules' => $this->buildSectionOfferingScheduleLines(
+                                (string) ($row->days ?? ''),
+                                $timeStart,
+                                $timeEnd,
+                                $room
+                            ),
+                        ];
+                    })
+                    ->sortBy('code')
+                    ->values();
+
+                return [
+                    'id' => 'so-' . substr(md5((string) $groupKey), 0, 16),
+                    'program' => trim((string) ($first->course_code ?? '')),
+                    'schoolYear' => trim((string) ($first->school_year ?? '')),
+                    'semester' => $this->normalizeSlotMonitoringSemester((string) ($first->semester_label ?? '')),
+                    'yearLevel' => $yearLevelLabel,
+                    'section' => $sectionLabel,
+                    'slots' => $courseSlots,
+                    'adviser' => $adviser,
+                    'description' => '',
+                    'subjects' => $subjects->all(),
+                    'subjectCount' => (int) $subjects->count(),
+                    'courseId' => (int) ($first->course_id ?? 0),
+                ];
+            })
+            ->values();
+
+        if ($yearLevel !== '') {
+            $sections = $sections
+                ->filter(function ($section) use ($yearLevel) {
+                    return (string) ($section['yearLevel'] ?? '') === $yearLevel;
+                })
+                ->values();
+        }
+
+        $sections = $sections
+            ->sort(function ($left, $right) {
+                $leftSchoolYear = (string) ($left['schoolYear'] ?? '');
+                $rightSchoolYear = (string) ($right['schoolYear'] ?? '');
+                if ($leftSchoolYear !== $rightSchoolYear) {
+                    return strcmp($rightSchoolYear, $leftSchoolYear);
+                }
+
+                $leftSemesterWeight = $this->slotMonitoringSemesterWeight((string) ($left['semester'] ?? ''));
+                $rightSemesterWeight = $this->slotMonitoringSemesterWeight((string) ($right['semester'] ?? ''));
+                if ($leftSemesterWeight !== $rightSemesterWeight) {
+                    return $leftSemesterWeight <=> $rightSemesterWeight;
+                }
+
+                $leftProgram = (string) ($left['program'] ?? '');
+                $rightProgram = (string) ($right['program'] ?? '');
+                if ($leftProgram !== $rightProgram) {
+                    return strcmp($leftProgram, $rightProgram);
+                }
+
+                return strcmp((string) ($left['section'] ?? ''), (string) ($right['section'] ?? ''));
+            })
+            ->values();
+
+        $allSections = $sections->values();
+        $totalSections = (int) $allSections->count();
+        $lastPage = max((int) ceil(max($totalSections, 1) / $perPage), 1);
+        if ($page > $lastPage) {
+            $page = $lastPage;
+        }
+
+        $sections = $allSections
+            ->forPage($page, $perPage)
+            ->values();
+
+        $optionsPayload = $this->slotMonitoringOptionsPayload('', '', 0, '');
+
+        $courseOptions = collect($optionsPayload['courses'] ?? [])
+            ->map(function ($course) {
+                return [
+                    'id' => (int) ($course['id'] ?? 0),
+                    'code' => trim((string) ($course['code'] ?? '')),
+                    'name' => trim((string) ($course['name'] ?? '')),
+                    'label' => trim((string) ($course['label'] ?? '')),
+                ];
+            })
+            ->filter(function ($course) {
+                return (int) ($course['id'] ?? 0) > 0;
+            })
+            ->values()
+            ->all();
+
+        $yearLevelOptions = $allSections
+            ->pluck('yearLevel')
+            ->filter(function ($value) {
+                $text = trim((string) $value);
+                return $text !== '' && $text !== 'N/A';
+            })
+            ->unique()
+            ->sortBy(function ($value) {
+                return $this->sectionOfferingYearLevelWeight((string) $value);
+            })
+            ->values()
+            ->all();
+
+        $sectionOptions = $allSections
+            ->pluck('section')
+            ->filter(function ($value) {
+                return trim((string) $value) !== '';
+            })
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        $totalSubjects = (int) $allSections->sum(function ($section) {
+            $subjects = $section['subjects'] ?? [];
+            return is_array($subjects) ? count($subjects) : 0;
+        });
+
+        $visibleSubjects = (int) $sections->sum(function ($section) {
+            $subjects = $section['subjects'] ?? [];
+            return is_array($subjects) ? count($subjects) : 0;
+        });
+
+        return response()->json([
+            'ok' => true,
+            'sections' => $sections->all(),
+            'options' => [
+                'school_years' => collect($optionsPayload['school_years'] ?? [])->values()->all(),
+                'semesters' => collect($optionsPayload['semesters'] ?? [])->values()->all(),
+                'courses' => $courseOptions,
+                'year_levels' => $yearLevelOptions,
+                'sections' => $sectionOptions,
+            ],
+            'meta' => [
+                'page' => $page,
+                'last_page' => $lastPage,
+                'per_page' => $perPage,
+                'total_sections' => $totalSections,
+                'total_subjects' => $totalSubjects,
+                'visible_sections' => (int) $sections->count(),
+                'visible_subjects' => $visibleSubjects,
+            ],
+        ]);
+    }
+
+    public function sectionOfferingCurriculumSubjects(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'semester' => 'required|string|max:30',
+            'year_level' => 'required|string|max:20',
+        ]);
+
+        $courseId = (int) $validated['course_id'];
+        $semester = $this->normalizeSlotMonitoringSemester((string) $validated['semester']);
+        $yearLevel = $this->normalizeSectionOfferingYearLevel((string) $validated['year_level']);
+
+        if ($semester === '') {
+            throw ValidationException::withMessages([
+                'semester' => ['Please select a valid semester.'],
+            ]);
+        }
+
+        if ($yearLevel === '') {
+            throw ValidationException::withMessages([
+                'year_level' => ['Please select a valid year level.'],
+            ]);
+        }
+
+        $yearLevelNumber = $this->sectionOfferingYearLevelWeight($yearLevel);
+        $yearBlockId = $this->resolveSectionOfferingYearBlockId($yearLevelNumber);
+        $semesterIds = $this->resolveSectionOfferingSemesterIds($semester);
+        $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
+
+        if (!$curriculum || !$yearBlockId || !count($semesterIds)) {
+            return response()->json([
+                'ok' => true,
+                'rows' => [],
+                'meta' => [
+                    'course_id' => $courseId,
+                    'curriculum_id' => $curriculum ? (int) $curriculum->id : null,
+                    'curriculum_year' => $curriculum ? (string) $curriculum->curriculum_year_code : '',
+                    'year_level' => $yearLevel,
+                    'semester' => $semester,
+                    'total' => 0,
+                ],
+            ]);
+        }
+
+        $rows = CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->where('year_block_id', (int) $yearBlockId)
+            ->whereIn('semester_id', $semesterIds)
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get()
+            ->map(function (CourseCurriculumSubject $assignment) {
+                $subject = $assignment->subject;
+
+                return [
+                    'id' => (int) $assignment->id,
+                    'subject_id' => (int) $assignment->subject_id,
+                    'code' => trim((string) optional($subject)->code),
+                    'description' => trim((string) optional($subject)->name),
+                    'units' => $subject ? (float) $subject->units : (float) $assignment->credited_units,
+                    'lec' => $subject ? (int) $subject->lec : 0,
+                    'lab' => $subject ? (int) $subject->lab : 0,
+                    'credited_units' => (float) $assignment->credited_units,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'meta' => [
+                'course_id' => $courseId,
+                'curriculum_id' => (int) $curriculum->id,
+                'curriculum_year' => (string) $curriculum->curriculum_year_code,
+                'year_level' => $yearLevel,
+                'semester' => $semester,
+                'total' => (int) $rows->count(),
+            ],
+        ]);
+    }
+
+    public function storeSectionOffering(StoreSectionOfferingRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $courseId = (int) $validated['course_id'];
+        $schoolYear = $this->normalizeSectionOfferingSchoolYear((string) $validated['school_year']);
+        $semester = $this->normalizeSlotMonitoringSemester((string) $validated['semester']);
+        $yearLevel = $this->normalizeSectionOfferingYearLevel((string) $validated['year_level']);
+        $yearLevelNumber = $this->sectionOfferingYearLevelWeight($yearLevel);
+        $sectionCode = $this->sanitizeSectionOfferingSectionCode((string) $validated['section']);
+        $sectionLabel = $this->composeSectionOfferingLabel($yearLevelNumber, $sectionCode);
+        $slots = isset($validated['slots']) ? (int) $validated['slots'] : null;
+        $adviserName = trim((string) ($validated['adviser'] ?? ''));
+
+        $selectedCurriculumSubjectIds = collect((array) ($validated['curriculum_subject_ids'] ?? []))
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->filter(function ($value) {
+                return $value > 0;
+            })
+            ->unique()
+            ->values();
+
+        if ($semester === '') {
+            throw ValidationException::withMessages([
+                'semester' => ['Please select a valid semester.'],
+            ]);
+        }
+
+        if ($yearLevel === '' || $yearLevelNumber > 6) {
+            throw ValidationException::withMessages([
+                'year_level' => ['Please select a valid year level.'],
+            ]);
+        }
+
+        if ($sectionCode === '' || $sectionLabel === '') {
+            throw ValidationException::withMessages([
+                'section' => ['Please provide a valid section code.'],
+            ]);
+        }
+
+        if ($selectedCurriculumSubjectIds->isEmpty()) {
+            throw ValidationException::withMessages([
+                'curriculum_subject_ids' => ['Select at least one curriculum subject.'],
+            ]);
+        }
+
+        $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
+        if (!$curriculum) {
+            throw ValidationException::withMessages([
+                'course_id' => ['No curriculum is configured for the selected course.'],
+            ]);
+        }
+
+        $yearBlockId = $this->resolveSectionOfferingYearBlockId($yearLevelNumber);
+        if (!$yearBlockId) {
+            throw ValidationException::withMessages([
+                'year_level' => ['Year level is not configured in curriculum dimensions.'],
+            ]);
+        }
+
+        $semesterIds = $this->resolveSectionOfferingSemesterIds($semester);
+        if (!count($semesterIds)) {
+            throw ValidationException::withMessages([
+                'semester' => ['Semester is not configured in curriculum dimensions.'],
+            ]);
+        }
+
+        $assignments = CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->where('year_block_id', (int) $yearBlockId)
+            ->whereIn('semester_id', $semesterIds)
+            ->whereIn('id', $selectedCurriculumSubjectIds->all())
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($assignments->count() !== $selectedCurriculumSubjectIds->count()) {
+            throw ValidationException::withMessages([
+                'curriculum_subject_ids' => ['One or more selected curriculum subjects are invalid for the chosen course, year level, or semester.'],
+            ]);
+        }
+
+        $academicTermId = $this->resolveSectionOfferingAcademicTermId($schoolYear, $semester);
+        $facultyId = $this->resolveSectionOfferingFacultyId($adviserName);
+
+        $existingSectionQuery = Subject::query()
+            ->where('course_id', $courseId)
+            ->where('academic_term_id', $academicTermId)
+            ->where('year_section', $sectionLabel);
+
+        if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+            $existingSectionQuery->where(function ($builder) {
+                $builder->whereNull('is_subject_file_record')
+                    ->orWhere('is_subject_file_record', 0);
+            });
+        }
+
+        if ($existingSectionQuery->exists()) {
+            return response()->json([
+                'message' => 'Section already exists for the selected school year, semester, and course.',
+                'errors' => [
+                    'section' => ['Section ' . $sectionLabel . ' already exists.'],
+                ],
+            ], 422);
+        }
+
+        $now = now();
+        $addedBy = auth()->check() ? trim((string) optional(auth()->user())->name) : '';
+        if ($addedBy === '') {
+            $addedBy = null;
+        }
+
+        $rowsToInsert = $assignments
+            ->map(function (CourseCurriculumSubject $assignment) use ($courseId, $academicTermId, $sectionLabel, $facultyId, $addedBy, $now) {
+                $subject = $assignment->subject;
+
+                $code = trim((string) optional($subject)->code);
+                if ($code === '') {
+                    $code = 'SUBJ-' . (int) $assignment->id;
+                }
+
+                $name = trim((string) optional($subject)->name);
+                if ($name === '') {
+                    $name = 'Curriculum Subject ' . (int) $assignment->id;
+                }
+
+                $units = $subject ? (float) $subject->units : (float) $assignment->credited_units;
+                $lec = $subject ? (int) $subject->lec : 0;
+                $lab = $subject ? (int) $subject->lab : 0;
+
+                $creditedTuitionUnits = $subject && $subject->credited_tuition_units !== null
+                    ? (float) $subject->credited_tuition_units
+                    : (float) $assignment->credited_units;
+
+                $loadHours = $subject && $subject->load_hours !== null
+                    ? (float) $subject->load_hours
+                    : null;
+
+                return [
+                    'code' => $code,
+                    'name' => $name,
+                    'is_subject_file_record' => 0,
+                    'units' => $units,
+                    'lec' => $lec,
+                    'lab' => $lab,
+                    'is_core' => $subject ? (int) ((bool) $subject->is_core) : 0,
+                    'is_applied' => $subject ? (int) ((bool) $subject->is_applied) : 0,
+                    'is_specialized' => $subject ? (int) ((bool) $subject->is_specialized) : 0,
+                    'days' => null,
+                    'time_start' => null,
+                    'time_end' => null,
+                    'room' => null,
+                    'faculty_id' => $facultyId,
+                    'year_section' => $sectionLabel,
+                    'course_id' => $courseId,
+                    'academic_term_id' => $academicTermId,
+                    'grading_status_id' => null,
+                    'load_type_id' => null,
+                    'credited_tuition_units' => $creditedTuitionUnits,
+                    'load_hours' => $loadHours,
+                    'added_by' => $addedBy,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (!count($rowsToInsert)) {
+            throw ValidationException::withMessages([
+                'curriculum_subject_ids' => ['Selected curriculum subjects could not be mapped to subject definitions.'],
+            ]);
+        }
+
+        DB::transaction(function () use ($courseId, $slots, $rowsToInsert) {
+            if ($slots && $slots > 0) {
+                Course::query()
+                    ->where('id', $courseId)
+                    ->update(['slots' => $slots]);
+            }
+
+            DB::table('subjects')->insert($rowsToInsert);
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Section created successfully.',
+            'section' => [
+                'course_id' => $courseId,
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+                'year_level' => $yearLevel,
+                'section' => $sectionLabel,
+                'subject_count' => count($rowsToInsert),
+                'adviser' => $adviserName !== '' ? $adviserName : null,
+                'adviser_applied' => $facultyId !== null,
+            ],
+        ], 201);
+    }
+
+    private function resolveSectionOfferingPage($value): int
+    {
+        $page = (int) $value;
+
+        return $page >= 1 ? $page : 1;
+    }
+
+    private function resolveSectionOfferingPerPage($value): int
+    {
+        $safePerPage = (int) $value;
+
+        if ($safePerPage < self::SECTION_OFFERING_MIN_PER_PAGE) {
+            return self::SECTION_OFFERING_MIN_PER_PAGE;
+        }
+
+        if ($safePerPage > self::SECTION_OFFERING_MAX_PER_PAGE) {
+            return self::SECTION_OFFERING_MAX_PER_PAGE;
+        }
+
+        return $safePerPage;
+    }
+
+    private function normalizeSectionOfferingSchoolYear(string $value): string
+    {
+        $normalized = preg_replace('/\s+/', '', trim($value));
+
+        if (preg_match('/^(\d{4})-(\d{4})$/', $normalized, $matches) === 1) {
+            return $matches[1] . '-' . $matches[2];
+        }
+
+        return $normalized;
+    }
+
+    private function resolveSectionOfferingYearBlockId(int $yearLevelNumber)
+    {
+        $labelMap = [
+            1 => '1st Year',
+            2 => '2nd Year',
+            3 => '3rd Year',
+            4 => '4th Year',
+            5 => '5th Year',
+            6 => '6th Year',
+        ];
+
+        $label = $labelMap[$yearLevelNumber] ?? null;
+        if (!$label) {
+            return null;
+        }
+
+        $id = YearBlock::query()
+            ->where('label', $label)
+            ->value('id');
+
+        if ($id) {
+            return (int) $id;
+        }
+
+        $fallbackId = YearBlock::query()
+            ->where('id', $yearLevelNumber)
+            ->value('id');
+
+        return $fallbackId ? (int) $fallbackId : null;
+    }
+
+    private function resolveSectionOfferingSemesterIds(string $semesterCanonical): array
+    {
+        if (!Schema::hasTable('semesters')) {
+            return [];
+        }
+
+        $aliases = collect($this->slotMonitoringSemesterAliases($semesterCanonical))
+            ->push($this->sectionOfferingDatabaseSemesterLabel($semesterCanonical))
+            ->map(function ($value) {
+                return strtolower(trim((string) $value));
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        if (!count($aliases)) {
+            return [];
+        }
+
+        return Semester::query()
+            ->whereIn(DB::raw('LOWER(TRIM(name))'), $aliases)
+            ->pluck('id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function resolveSectionOfferingCurriculum(int $courseId)
+    {
+        $query = CourseCurriculum::query()
+            ->where('course_id', $courseId);
+
+        if (Schema::hasColumn('course_curricula', 'is_active')) {
+            $query->orderByDesc('is_active');
+        }
+
+        return $query
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    private function resolveSectionOfferingAcademicTermId(string $schoolYear, string $semesterCanonical): int
+    {
+        $aliases = collect($this->slotMonitoringSemesterAliases($semesterCanonical))
+            ->map(function ($value) {
+                return strtolower(trim((string) $value));
+            })
+            ->values()
+            ->all();
+
+        $existingId = DB::table('academic_terms')
+            ->where('school_year', $schoolYear)
+            ->whereIn(DB::raw('LOWER(TRIM(term))'), $aliases)
+            ->orderByDesc('id')
+            ->value('id');
+
+        if (!empty($existingId)) {
+            return (int) $existingId;
+        }
+
+        $termLabel = $this->sectionOfferingDatabaseSemesterLabel($semesterCanonical);
+        $canonicalKey = strtolower(trim($schoolYear) . '|' . trim($termLabel));
+
+        try {
+            return (int) DB::table('academic_terms')->insertGetId([
+                'school_year' => $schoolYear,
+                'term' => $termLabel,
+                'canonical_key' => $canonicalKey,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (QueryException $exception) {
+            if ((string) $exception->getCode() === '23000') {
+                $id = DB::table('academic_terms')
+                    ->where('canonical_key', $canonicalKey)
+                    ->value('id');
+
+                if (!empty($id)) {
+                    return (int) $id;
+                }
+            }
+
+            throw $exception;
+        }
+    }
+
+    private function sectionOfferingDatabaseSemesterLabel(string $semesterCanonical): string
+    {
+        if ($semesterCanonical === 'First') {
+            return 'First Semester';
+        }
+
+        if ($semesterCanonical === 'Second') {
+            return 'Second Semester';
+        }
+
+        if ($semesterCanonical === 'Summer') {
+            return 'Summer Semester';
+        }
+
+        return trim($semesterCanonical) !== '' ? trim($semesterCanonical) : 'First Semester';
+    }
+
+    private function sanitizeSectionOfferingSectionCode(string $value): string
+    {
+        $normalized = strtoupper(trim($value));
+        $normalized = preg_replace('/\s+/', '', $normalized);
+        $normalized = preg_replace('/[^A-Z0-9-]/', '', $normalized);
+
+        return trim((string) $normalized, '-');
+    }
+
+    private function composeSectionOfferingLabel(int $yearLevelNumber, string $sectionCode): string
+    {
+        if ($sectionCode === '' || $yearLevelNumber < 1) {
+            return '';
+        }
+
+        if (preg_match('/^([1-6])-?([A-Z0-9]+)$/', $sectionCode, $matches) === 1) {
+            return $matches[1] . '-' . $matches[2];
+        }
+
+        return $yearLevelNumber . '-' . ltrim($sectionCode, '-');
+    }
+
+    private function resolveSectionOfferingFacultyId(string $adviserName)
+    {
+        $normalized = strtolower(trim($adviserName));
+        if ($normalized === '' || !Schema::hasTable('faculties')) {
+            return null;
+        }
+
+        $id = Faculty::query()
+            ->whereRaw('LOWER(TRIM(name)) = ?', [$normalized])
+            ->value('id');
+
+        return $id ? (int) $id : null;
+    }
+
+    private function buildSectionOfferingSubjectRowsQuery($schoolYear = '', $semester = '', $sectionQuery = '', $search = '', $courseId = 0)
+    {
+        $hasFacultyLookup = Schema::hasTable('faculties') && Schema::hasColumn('subjects', 'faculty_id');
+        $hasLegacyFacultyColumn = Schema::hasColumn('subjects', 'faculty');
+
+        $facultyNameCandidates = [];
+        if ($hasFacultyLookup) {
+            $facultyNameCandidates[] = 'sm_faculties.name';
+        }
+        if ($hasLegacyFacultyColumn) {
+            $facultyNameCandidates[] = 'sm_subjects.faculty';
+        }
+
+        $facultyNameExpression = "''";
+        if (count($facultyNameCandidates)) {
+            $facultyNameExpression = 'COALESCE(' . implode(', ', $facultyNameCandidates) . ", '')";
+        }
+
+        $query = $this->slotMonitoringSubjectBaseQuery()
+            ->select([
+                'sm_subjects.id as id',
+                DB::raw('COALESCE(sm_terms.school_year, "") as school_year'),
+                DB::raw('COALESCE(sm_terms.term, "") as semester_label'),
+                DB::raw('COALESCE(sm_subjects.course_id, 0) as course_id'),
+                DB::raw('COALESCE(sm_courses.code, "") as course_code'),
+                DB::raw('COALESCE(sm_courses.name, "") as course_name'),
+                DB::raw('CASE WHEN sm_courses.slots IS NULL OR sm_courses.slots < 1 THEN 50 ELSE sm_courses.slots END as course_slots'),
+                DB::raw('COALESCE(sm_subjects.year_section, "") as section'),
+                DB::raw('COALESCE(sm_subjects.code, "") as subject_code'),
+                DB::raw('COALESCE(sm_subjects.name, "") as subject_name'),
+                DB::raw('COALESCE(sm_subjects.units, 0) as units'),
+                DB::raw('COALESCE(sm_subjects.lec, 0) as lec'),
+                DB::raw('COALESCE(sm_subjects.lab, 0) as lab'),
+                DB::raw('sm_subjects.credited_tuition_units as credited_tuition_units'),
+                DB::raw('COALESCE(sm_subjects.days, "") as days'),
+                DB::raw('COALESCE(sm_subjects.time_start, "") as time_start'),
+                DB::raw('COALESCE(sm_subjects.time_end, "") as time_end'),
+                DB::raw('COALESCE(sm_subjects.room, "") as room'),
+                DB::raw($facultyNameExpression . ' as faculty_name'),
+            ])
+            ->whereNotNull('sm_subjects.year_section')
+            ->whereRaw("TRIM(COALESCE(sm_subjects.year_section, '')) <> ''");
+
+        if ($schoolYear !== '') {
+            $query->where('sm_terms.school_year', $schoolYear);
+        }
+
+        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
+            $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                ->map(function ($value) {
+                    return strtolower(trim((string) $value));
+                })
+                ->values()
+                ->all();
+
+            $query->whereIn(
+                DB::raw('LOWER(TRIM(COALESCE(sm_terms.term, "")))'),
+                $semesterAliases
+            );
+        }
+
+        if ($sectionQuery !== '') {
+            $query->where('sm_subjects.year_section', 'like', '%' . $sectionQuery . '%');
+        }
+
+        if ($courseId > 0) {
+            $query->where('sm_subjects.course_id', $courseId);
+        }
+
+        $normalizedSearch = preg_replace('/\s+/', ' ', $search);
+        $normalizedSearch = trim((string) $normalizedSearch);
+        if ($normalizedSearch !== '' && strlen($normalizedSearch) >= 2) {
+            $query->where(function ($builder) use ($normalizedSearch, $hasFacultyLookup, $hasLegacyFacultyColumn) {
+                $builder->where('sm_subjects.year_section', 'like', '%' . $normalizedSearch . '%')
+                    ->orWhere('sm_subjects.code', 'like', $normalizedSearch . '%')
+                    ->orWhere('sm_subjects.name', 'like', '%' . $normalizedSearch . '%')
+                    ->orWhere('sm_courses.code', 'like', $normalizedSearch . '%')
+                    ->orWhere('sm_courses.name', 'like', '%' . $normalizedSearch . '%');
+
+                if ($hasFacultyLookup) {
+                    $builder->orWhere('sm_faculties.name', 'like', '%' . $normalizedSearch . '%');
+                }
+
+                if ($hasLegacyFacultyColumn) {
+                    $builder->orWhere('sm_subjects.faculty', 'like', '%' . $normalizedSearch . '%');
+                }
+            });
+        }
+
+        return $query
+            ->orderBy('sm_terms.school_year', 'desc')
+            ->orderByRaw("CASE
+                WHEN LOWER(TRIM(COALESCE(sm_terms.term, ''))) IN ('first', '1st semester', 'first semester') THEN 1
+                WHEN LOWER(TRIM(COALESCE(sm_terms.term, ''))) IN ('second', '2nd semester', 'second semester') THEN 2
+                WHEN LOWER(TRIM(COALESCE(sm_terms.term, ''))) IN ('summer', 'summer semester') THEN 3
+                ELSE 4
+            END")
+            ->orderBy('sm_courses.code')
+            ->orderBy('sm_subjects.year_section')
+            ->orderBy('sm_subjects.code')
+            ->orderBy('sm_subjects.id');
+    }
+
+    private function normalizeSectionOfferingYearLevel(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (strpos($normalized, 'first') !== false || $normalized === '1') {
+            return 'First';
+        }
+
+        if (strpos($normalized, 'second') !== false || $normalized === '2') {
+            return 'Second';
+        }
+
+        if (strpos($normalized, 'third') !== false || $normalized === '3') {
+            return 'Third';
+        }
+
+        if (strpos($normalized, 'fourth') !== false || $normalized === '4') {
+            return 'Fourth';
+        }
+
+        if (strpos($normalized, 'fifth') !== false || $normalized === '5') {
+            return 'Fifth';
+        }
+
+        if (strpos($normalized, 'sixth') !== false || $normalized === '6') {
+            return 'Sixth';
+        }
+
+        return '';
+    }
+
+    private function sectionOfferingYearLevelLabel($value): string
+    {
+        $level = (int) $value;
+
+        if ($level === 1) {
+            return 'First';
+        }
+
+        if ($level === 2) {
+            return 'Second';
+        }
+
+        if ($level === 3) {
+            return 'Third';
+        }
+
+        if ($level === 4) {
+            return 'Fourth';
+        }
+
+        if ($level === 5) {
+            return 'Fifth';
+        }
+
+        if ($level === 6) {
+            return 'Sixth';
+        }
+
+        return 'N/A';
+    }
+
+    private function sectionOfferingYearLevelWeight(string $value): int
+    {
+        $normalized = $this->normalizeSectionOfferingYearLevel($value);
+
+        if ($normalized === 'First') {
+            return 1;
+        }
+
+        if ($normalized === 'Second') {
+            return 2;
+        }
+
+        if ($normalized === 'Third') {
+            return 3;
+        }
+
+        if ($normalized === 'Fourth') {
+            return 4;
+        }
+
+        if ($normalized === 'Fifth') {
+            return 5;
+        }
+
+        if ($normalized === 'Sixth') {
+            return 6;
+        }
+
+        return 99;
+    }
+
+    private function buildSectionOfferingScheduleLines($days, $timeStart, $timeEnd, $room)
+    {
+        $start = trim((string) $timeStart);
+        $end = trim((string) $timeEnd);
+
+        $timeRange = 'TBA';
+        if ($start !== '' && $end !== '') {
+            $timeRange = $start . '-' . $end;
+        } elseif ($start !== '' || $end !== '') {
+            $timeRange = $start !== '' ? $start : $end;
+        }
+
+        $roomLabel = trim((string) $room);
+        if ($roomLabel === '') {
+            $roomLabel = 'TBA';
+        } else {
+            $roomLabel = 'Room#' . $roomLabel;
+        }
+
+        $dayTokens = $this->extractSectionOfferingDayTokens((string) $days);
+        if (empty($dayTokens)) {
+            return [$timeRange . ' ' . $roomLabel];
+        }
+
+        return collect($dayTokens)
+            ->map(function ($dayToken) use ($timeRange, $roomLabel) {
+                return $dayToken . ' ' . $timeRange . ' ' . $roomLabel;
+            })
+            ->values()
+            ->all();
+    }
+
+    private function extractSectionOfferingDayTokens($days)
+    {
+        $normalized = strtoupper(trim((string) $days));
+        if ($normalized === '') {
+            return [];
+        }
+
+        $wordMap = [
+            'MONDAY' => 'M',
+            'MON' => 'M',
+            'TUESDAY' => 'T',
+            'TUE' => 'T',
+            'WEDNESDAY' => 'W',
+            'WED' => 'W',
+            'THURSDAY' => 'TH',
+            'THU' => 'TH',
+            'FRIDAY' => 'F',
+            'FRI' => 'F',
+            'SATURDAY' => 'S',
+            'SAT' => 'S',
+            'SUNDAY' => 'SU',
+            'SUN' => 'SU',
+        ];
+
+        foreach ($wordMap as $word => $code) {
+            $normalized = str_replace($word, $code, $normalized);
+        }
+
+        $normalized = preg_replace('/[^A-Z]/', '', $normalized);
+        if ($normalized === '') {
+            return [];
+        }
+
+        $tokens = [];
+        $length = strlen($normalized);
+
+        for ($index = 0; $index < $length; $index++) {
+            $pair = substr($normalized, $index, 2);
+
+            if ($pair === 'TH' || $pair === 'SU') {
+                $tokens[] = $pair;
+                $index++;
+                continue;
+            }
+
+            $single = $normalized[$index];
+            if (in_array($single, ['M', 'T', 'W', 'F', 'S'], true)) {
+                $tokens[] = $single;
+            }
+        }
+
+        return array_values(array_unique($tokens));
+    }
+
     /**
      * Registrar > Scheduling > Slot Monitoring
      */
     public function slotMonitoring()
     {
-        return view('registrar.registrar-menu.scheduling.slot-monitoring');
+        $options = $this->slotMonitoringOptionsPayload('', '', 0, 'filters');
+
+        $schoolYearOptions = collect($options['school_years'] ?? [])
+            ->map(function ($value) {
+                $text = trim((string) $value);
+
+                return [
+                    'value' => $text,
+                    'label' => $text,
+                ];
+            })
+            ->filter(function ($option) {
+                return $option['value'] !== '';
+            })
+            ->values();
+
+        $semesterOptions = collect($options['semesters'] ?? [])
+            ->map(function ($value) {
+                $text = trim((string) $value);
+
+                return [
+                    'value' => $text,
+                    'label' => $text,
+                ];
+            })
+            ->filter(function ($option) {
+                return $option['value'] !== '';
+            })
+            ->values();
+
+        $schoolYearOptions->prepend([
+            'value' => '',
+            'label' => '- All -',
+        ]);
+
+        $semesterOptions->prepend([
+            'value' => '',
+            'label' => '- All -',
+        ]);
+
+        return view('registrar.registrar-menu.scheduling.slot-monitoring', [
+            'schoolYearOptions' => $schoolYearOptions,
+            'semesterOptions' => $semesterOptions,
+        ]);
     }
 
     public function slotMonitoringData(Request $request): JsonResponse
     {
         $search = trim((string) $request->query('search', ''));
         $schoolYear = trim((string) $request->query('school_year', ''));
-        $semester = trim((string) $request->query('semester', ''));
+        $semester = $this->normalizeSlotMonitoringSemester((string) $request->query('semester', ''));
         $sectionQuery = trim((string) $request->query('section', ''));
         $courseQuery = trim((string) $request->query('course_query', ''));
         $courseId = (int) $request->query('course_id', 0);
@@ -3862,80 +4937,20 @@ class RegistrarController extends Controller
         $includeOptions = $this->requestBoolean($request, 'include_options');
         $optionsMode = trim((string) $request->query('options_mode', ''));
 
-        $query = SlotMonitoring::query()
-            ->select([
-                'id',
-                'school_year',
-                'semester',
-                'course_id',
-                'section',
-                'subject',
-                'schedule',
-                'total_slots',
-                'enrolled_slots',
-                'updated_by_user_id',
-                'updated_at',
-            ])
-            ->with([
-                'course:id,code,name',
-                'updatedBy:id,name',
-            ]);
+        $query = $this->buildSlotMonitoringSubjectRowsQuery(
+            $schoolYear,
+            $semester,
+            $sectionQuery,
+            $courseQuery,
+            $search,
+            $courseId
+        );
 
-        if ($schoolYear !== '') {
-            $query->where('school_year', $schoolYear);
-        }
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
-        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
-            $query->where('semester', $semester);
-        }
-
-        if ($sectionQuery !== '') {
-            $query->where('section', 'like', $sectionQuery . '%');
-        }
-
-        if ($courseId > 0) {
-            $query->where('course_id', $courseId);
-        }
-
-        if ($courseQuery !== '' && strlen($courseQuery) >= 2) {
-            $query->whereHas('course', function ($builder) use ($courseQuery) {
-                $builder->where('code', 'like', $courseQuery . '%')
-                    ->orWhere('name', 'like', '%' . $courseQuery . '%');
-            });
-        }
-
-        $normalizedSearch = preg_replace('/\s+/', ' ', $search);
-        $normalizedSearch = trim((string) $normalizedSearch);
-        if ($normalizedSearch !== '' && strlen($normalizedSearch) >= 2) {
-            $query->where(function ($builder) use ($normalizedSearch) {
-                $builder->where('subject', 'like', $normalizedSearch . '%')
-                    ->orWhere('section', 'like', $normalizedSearch . '%')
-                    ->orWhere('schedule', 'like', '%' . $normalizedSearch . '%');
-            });
-        }
-
-        $paginator = $query
-            ->orderBy('school_year', 'desc')
-            ->orderByRaw("CASE WHEN semester = 'First' THEN 1 WHEN semester = 'Second' THEN 2 WHEN semester = 'Summer' THEN 3 ELSE 4 END")
-            ->orderBy('section')
-            ->orderBy('subject')
-            ->paginate($perPage, [
-                'id',
-                'school_year',
-                'semester',
-                'course_id',
-                'section',
-                'subject',
-                'schedule',
-                'total_slots',
-                'enrolled_slots',
-                'updated_by_user_id',
-                'updated_at',
-            ], 'page', $page);
-
-        $rows = $paginator->getCollection()
-            ->map(function (SlotMonitoring $slotMonitoring) {
-                return $this->mapSlotMonitoringRow($slotMonitoring);
+        $rows = collect($paginator->items())
+            ->map(function ($row) {
+                return $this->mapSlotMonitoringSubjectRow($row);
             })
             ->values();
 
@@ -3954,6 +4969,53 @@ class RegistrarController extends Controller
                 'per_page' => (int) $paginator->perPage(),
                 'total' => (int) $paginator->total(),
             ],
+        ]);
+    }
+
+    public function slotMonitoringReport(Request $request, $reportType)
+    {
+        $normalizedReportType = strtolower(trim((string) $reportType));
+        if (!in_array($normalizedReportType, ['actual-size', 'under-20', 'dissolved', 'closed'], true)) {
+            abort(404);
+        }
+
+        $search = trim((string) $request->query('search', ''));
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = $this->normalizeSlotMonitoringSemester((string) $request->query('semester', ''));
+        $sectionQuery = trim((string) $request->query('section', ''));
+        $courseQuery = trim((string) $request->query('course_query', ''));
+        $courseId = (int) $request->query('course_id', 0);
+
+        $query = $this->buildSlotMonitoringSubjectRowsQuery(
+            $schoolYear,
+            $semester,
+            $sectionQuery,
+            $courseQuery,
+            $search,
+            $courseId
+        );
+
+        if ($normalizedReportType === 'under-20') {
+            $query->whereRaw('COALESCE(sm_enrollment_totals.enrolled_slots, 0) <= 20');
+        } elseif ($normalizedReportType === 'dissolved') {
+            $query->whereRaw('COALESCE(sm_enrollment_totals.enrolled_slots, 0) = 0');
+        } elseif ($normalizedReportType === 'closed') {
+            $query->whereRaw('COALESCE(sm_enrollment_totals.enrolled_slots, 0) >= CASE WHEN sm_courses.slots IS NULL OR sm_courses.slots < 1 THEN 50 ELSE sm_courses.slots END');
+        }
+
+        $rows = $query->get()
+            ->map(function ($row) {
+                return $this->mapSlotMonitoringSubjectRow($row);
+            })
+            ->values();
+
+        return view('registrar.registrar-menu.scheduling.slot-monitoring-report', [
+            'reportType' => $normalizedReportType,
+            'reportTitle' => $this->slotMonitoringReportTitle($normalizedReportType),
+            'selectedSchoolYear' => $schoolYear !== '' ? $schoolYear : 'All',
+            'selectedSemester' => $semester !== '' ? $semester : 'All',
+            'generatedAt' => Carbon::now(),
+            'rows' => $rows,
         ]);
     }
 
@@ -4053,11 +5115,15 @@ class RegistrarController extends Controller
 
     private function slotMonitoringOptionsPayload($schoolYear = '', $semester = '', $courseId = 0, $optionsMode = '')
     {
-        $schoolYears = SlotMonitoring::query()
-            ->select('school_year')
+        $baseQuery = $this->slotMonitoringSubjectBaseQuery();
+
+        $schoolYears = (clone $baseQuery)
+            ->select('sm_terms.school_year')
+            ->whereNotNull('sm_terms.school_year')
+            ->whereRaw("TRIM(sm_terms.school_year) <> ''")
             ->distinct()
-            ->orderBy('school_year', 'desc')
-            ->pluck('school_year')
+            ->orderBy('sm_terms.school_year', 'desc')
+            ->pluck('sm_terms.school_year')
             ->map(function ($value) {
                 return trim((string) $value);
             })
@@ -4074,20 +5140,30 @@ class RegistrarController extends Controller
             ]);
         }
 
+        $semesterQuery = clone $baseQuery;
+        if ($schoolYear !== '') {
+            $semesterQuery->where('sm_terms.school_year', $schoolYear);
+        }
+
         $semesters = collect(self::SLOT_MONITORING_ALLOWED_SEMESTERS)
             ->merge(
-                SlotMonitoring::query()
-                    ->select('semester')
+                $semesterQuery
+                    ->select('sm_terms.term')
+                    ->whereNotNull('sm_terms.term')
+                    ->whereRaw("TRIM(sm_terms.term) <> ''")
                     ->distinct()
-                    ->pluck('semester')
+                    ->pluck('sm_terms.term')
+                    ->map(function ($value) {
+                        return $this->normalizeSlotMonitoringSemester((string) $value);
+                    })
             )
-            ->map(function ($value) {
-                return trim((string) $value);
-            })
             ->filter(function ($value) {
                 return $value !== '';
             })
             ->unique()
+            ->sortBy(function ($value) {
+                return $this->slotMonitoringSemesterWeight((string) $value);
+            })
             ->values();
 
         $normalizedMode = strtolower(trim((string) $optionsMode));
@@ -4098,10 +5174,37 @@ class RegistrarController extends Controller
             ];
         }
 
-        $courses = Course::query()
-            ->orderBy('code')
-            ->get(['id', 'code', 'name'])
-            ->map(function (Course $course) {
+        $courseQueryBuilder = $this->slotMonitoringSubjectBaseQuery()
+            ->select([
+                'sm_courses.id',
+                'sm_courses.code',
+                'sm_courses.name',
+            ])
+            ->whereNotNull('sm_courses.id');
+
+        if ($schoolYear !== '') {
+            $courseQueryBuilder->where('sm_terms.school_year', $schoolYear);
+        }
+
+        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
+            $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                ->map(function ($value) {
+                    return strtolower(trim((string) $value));
+                })
+                ->values()
+                ->all();
+
+            $courseQueryBuilder->whereIn(
+                DB::raw('LOWER(TRIM(COALESCE(sm_terms.term, "")))'),
+                $semesterAliases
+            );
+        }
+
+        $courses = $courseQueryBuilder
+            ->distinct()
+            ->orderBy('sm_courses.code')
+            ->get()
+            ->map(function ($course) {
                 $label = trim((string) $course->code);
                 if ($label === '') {
                     $label = (string) $course->name;
@@ -4121,6 +5224,339 @@ class RegistrarController extends Controller
             'semesters' => $semesters,
             'courses' => $courses,
         ];
+    }
+
+    private function buildSlotMonitoringSubjectRowsQuery($schoolYear = '', $semester = '', $sectionQuery = '', $courseQuery = '', $search = '', $courseId = 0)
+    {
+        $hasFacultyLookup = Schema::hasTable('faculties') && Schema::hasColumn('subjects', 'faculty_id');
+        $facultyNameCandidates = [];
+        if ($hasFacultyLookup) {
+            $facultyNameCandidates[] = 'sm_faculties.name';
+        }
+        if (Schema::hasColumn('subjects', 'faculty')) {
+            $facultyNameCandidates[] = 'sm_subjects.faculty';
+        }
+
+        $facultyNameExpression = "''";
+        if (count($facultyNameCandidates)) {
+            $facultyNameExpression = 'COALESCE(' . implode(', ', $facultyNameCandidates) . ", '')";
+        }
+
+        $enrollmentTotals = DB::table('student_subject as sm_student_subject')
+            ->select([
+                'sm_student_subject.subject_id',
+                DB::raw('COUNT(*) as enrolled_slots'),
+            ])
+            ->groupBy('sm_student_subject.subject_id');
+
+        $query = $this->slotMonitoringSubjectBaseQuery()
+            ->leftJoinSub($enrollmentTotals, 'sm_enrollment_totals', function ($join) {
+                $join->on('sm_enrollment_totals.subject_id', '=', 'sm_subjects.id');
+            })
+            ->select([
+                'sm_subjects.id as id',
+                DB::raw('COALESCE(sm_terms.school_year, "") as school_year'),
+                DB::raw('COALESCE(sm_terms.term, "") as semester_label'),
+                DB::raw('COALESCE(sm_subjects.course_id, 0) as course_id'),
+                DB::raw('COALESCE(sm_courses.code, "") as course_code'),
+                DB::raw('COALESCE(sm_courses.name, "") as course_name'),
+                DB::raw('COALESCE(sm_subjects.year_section, "") as section'),
+                DB::raw('COALESCE(sm_subjects.code, "") as subject_code'),
+                DB::raw('COALESCE(sm_subjects.name, "") as subject_name'),
+                DB::raw($facultyNameExpression . ' as faculty_name'),
+                DB::raw('COALESCE(sm_subjects.days, "") as days'),
+                DB::raw('COALESCE(sm_subjects.time_start, "") as time_start'),
+                DB::raw('COALESCE(sm_subjects.time_end, "") as time_end'),
+                DB::raw('COALESCE(sm_subjects.room, "") as room'),
+                DB::raw('CASE WHEN sm_courses.slots IS NULL OR sm_courses.slots < 1 THEN 50 ELSE sm_courses.slots END as total_slots'),
+                DB::raw('COALESCE(sm_enrollment_totals.enrolled_slots, 0) as enrolled_slots'),
+            ]);
+
+        if ($schoolYear !== '') {
+            $query->where('sm_terms.school_year', $schoolYear);
+        }
+
+        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
+            $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                ->map(function ($value) {
+                    return strtolower(trim((string) $value));
+                })
+                ->values()
+                ->all();
+
+            $query->whereIn(
+                DB::raw('LOWER(TRIM(COALESCE(sm_terms.term, "")))'),
+                $semesterAliases
+            );
+        }
+
+        if ($sectionQuery !== '') {
+            $query->where('sm_subjects.year_section', 'like', $sectionQuery . '%');
+        }
+
+        if ($courseId > 0) {
+            $query->where('sm_subjects.course_id', $courseId);
+        }
+
+        if ($courseQuery !== '' && strlen($courseQuery) >= 2) {
+            $query->where(function ($builder) use ($courseQuery) {
+                $builder->where('sm_courses.code', 'like', $courseQuery . '%')
+                    ->orWhere('sm_courses.name', 'like', '%' . $courseQuery . '%');
+            });
+        }
+
+        $normalizedSearch = preg_replace('/\s+/', ' ', $search);
+        $normalizedSearch = trim((string) $normalizedSearch);
+        if ($normalizedSearch !== '' && strlen($normalizedSearch) >= 2) {
+            $query->where(function ($builder) use ($normalizedSearch) {
+                $builder->where('sm_subjects.code', 'like', $normalizedSearch . '%')
+                    ->orWhere('sm_subjects.name', 'like', '%' . $normalizedSearch . '%')
+                    ->orWhere('sm_subjects.year_section', 'like', $normalizedSearch . '%')
+                    ->orWhereRaw(
+                        "CONCAT_WS(' ', COALESCE(sm_subjects.days, ''), COALESCE(sm_subjects.time_start, ''), COALESCE(sm_subjects.time_end, ''), COALESCE(sm_subjects.room, '')) LIKE ?",
+                        ['%' . $normalizedSearch . '%']
+                    );
+            });
+        }
+
+        return $query
+            ->orderBy('sm_terms.school_year', 'desc')
+            ->orderByRaw("CASE
+                WHEN LOWER(TRIM(COALESCE(sm_terms.term, ''))) IN ('first', '1st semester', 'first semester') THEN 1
+                WHEN LOWER(TRIM(COALESCE(sm_terms.term, ''))) IN ('second', '2nd semester', 'second semester') THEN 2
+                WHEN LOWER(TRIM(COALESCE(sm_terms.term, ''))) IN ('summer', 'summer semester') THEN 3
+                ELSE 4
+            END")
+            ->orderBy('sm_subjects.year_section')
+            ->orderBy('sm_subjects.code')
+            ->orderBy('sm_subjects.id');
+    }
+
+    private function slotMonitoringSubjectBaseQuery()
+    {
+        $query = DB::table('subjects as sm_subjects')
+            ->leftJoin('courses as sm_courses', 'sm_courses.id', '=', 'sm_subjects.course_id')
+            ->leftJoin('departments as sm_departments', 'sm_departments.id', '=', 'sm_courses.department_id')
+            ->leftJoin('academic_terms as sm_terms', 'sm_terms.id', '=', 'sm_subjects.academic_term_id')
+            ->whereNotNull('sm_subjects.course_id');
+
+        if (Schema::hasTable('faculties') && Schema::hasColumn('subjects', 'faculty_id')) {
+            $query->leftJoin('faculties as sm_faculties', 'sm_faculties.id', '=', 'sm_subjects.faculty_id');
+        }
+
+        if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+            $query->where(function ($builder) {
+                $builder->whereNull('sm_subjects.is_subject_file_record')
+                    ->orWhere('sm_subjects.is_subject_file_record', 0);
+            });
+        }
+
+        $hasCollegeDimension = Schema::hasTable('colleges')
+            && Schema::hasColumn('courses', 'college_id')
+            && Schema::hasColumn('colleges', 'name');
+
+        if ($hasCollegeDimension) {
+            $query->leftJoin('colleges as sm_colleges', 'sm_colleges.id', '=', 'sm_courses.college_id');
+        }
+
+        $this->applySlotMonitoringCollegeRestriction($query, $hasCollegeDimension);
+
+        return $query;
+    }
+
+    private function applySlotMonitoringCollegeRestriction($query, $hasCollegeDimension)
+    {
+        if ($hasCollegeDimension) {
+            $query->where(function ($builder) {
+                $builder->whereIn(
+                    DB::raw('UPPER(TRIM(COALESCE(sm_colleges.name, "")))'),
+                    self::SLOT_MONITORING_ALLOWED_COLLEGE_NAMES
+                )->orWhereIn(
+                    DB::raw('UPPER(TRIM(COALESCE(sm_departments.description, "")))'),
+                    self::SLOT_MONITORING_ALLOWED_DEPARTMENT_NAMES
+                );
+            });
+
+            return;
+        }
+
+        $query->whereIn(
+            DB::raw('UPPER(TRIM(COALESCE(sm_departments.description, "")))'),
+            self::SLOT_MONITORING_ALLOWED_DEPARTMENT_NAMES
+        );
+    }
+
+    private function mapSlotMonitoringSubjectRow($row)
+    {
+        $totalSlots = (int) ($row->total_slots ?? 0);
+        if ($totalSlots < 1) {
+            $totalSlots = 50;
+        }
+
+        $enrolledSlots = (int) ($row->enrolled_slots ?? 0);
+        if ($enrolledSlots < 0) {
+            $enrolledSlots = 0;
+        }
+
+        $utilizationPct = 0;
+        if ($totalSlots > 0) {
+            $utilizationPct = (int) round(($enrolledSlots / $totalSlots) * 100);
+        }
+
+        if ($utilizationPct < 0) {
+            $utilizationPct = 0;
+        }
+
+        if ($utilizationPct > 100) {
+            $utilizationPct = 100;
+        }
+
+        $statusLabel = 'Open';
+        if ($enrolledSlots <= 0) {
+            $statusLabel = 'Dissolved';
+        } elseif ($enrolledSlots >= $totalSlots) {
+            $statusLabel = 'Closed';
+        } elseif ($utilizationPct >= 90) {
+            $statusLabel = 'Critical';
+        } elseif ($utilizationPct >= 50) {
+            $statusLabel = 'Warning';
+        }
+
+        $semesterLabel = $this->normalizeSlotMonitoringSemester((string) ($row->semester_label ?? ''));
+        if ($semesterLabel === '') {
+            $semesterLabel = trim((string) ($row->semester_label ?? ''));
+        }
+
+        $subjectCode = trim((string) ($row->subject_code ?? ''));
+        $subjectName = trim((string) ($row->subject_name ?? ''));
+        $subjectLabel = $subjectCode !== '' ? $subjectCode : $subjectName;
+        $facultyName = trim((string) ($row->faculty_name ?? ''));
+
+        return [
+            'id' => (int) ($row->id ?? 0),
+            'school_year' => trim((string) ($row->school_year ?? '')),
+            'semester' => $semesterLabel,
+            'course_id' => (int) ($row->course_id ?? 0),
+            'course_code' => trim((string) ($row->course_code ?? '')),
+            'course_name' => trim((string) ($row->course_name ?? '')),
+            'section' => trim((string) ($row->section ?? '')),
+            'subject' => $subjectLabel,
+            'faculty_name' => $facultyName,
+            'schedule' => $this->formatSlotMonitoringSchedule(
+                (string) ($row->days ?? ''),
+                (string) ($row->time_start ?? ''),
+                (string) ($row->time_end ?? ''),
+                (string) ($row->room ?? '')
+            ),
+            'total_slots' => $totalSlots,
+            'enrolled_slots' => $enrolledSlots,
+            'utilization_pct' => $utilizationPct,
+            'status_label' => $statusLabel,
+        ];
+    }
+
+    private function formatSlotMonitoringSchedule($days, $timeStart, $timeEnd, $room)
+    {
+        $parts = [];
+
+        $dayLabel = trim((string) $days);
+        if ($dayLabel !== '') {
+            $parts[] = strtoupper($dayLabel);
+        }
+
+        $start = trim((string) $timeStart);
+        $end = trim((string) $timeEnd);
+        if ($start !== '' || $end !== '') {
+            if ($start !== '' && $end !== '') {
+                $parts[] = $start . '-' . $end;
+            } else {
+                $parts[] = $start !== '' ? $start : $end;
+            }
+        }
+
+        $roomLabel = trim((string) $room);
+        if ($roomLabel !== '') {
+            $parts[] = 'Room#' . $roomLabel;
+        }
+
+        if (empty($parts)) {
+            return '-';
+        }
+
+        return implode(' | ', $parts);
+    }
+
+    private function normalizeSlotMonitoringSemester(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (strpos($normalized, 'summer') !== false) {
+            return 'Summer';
+        }
+
+        if (strpos($normalized, 'second') !== false || strpos($normalized, '2nd') !== false || $normalized === '2') {
+            return 'Second';
+        }
+
+        if (strpos($normalized, 'first') !== false || strpos($normalized, '1st') !== false || $normalized === '1') {
+            return 'First';
+        }
+
+        return '';
+    }
+
+    private function slotMonitoringSemesterAliases(string $canonicalLabel): array
+    {
+        if ($canonicalLabel === 'First') {
+            return ['First', '1st Semester', 'First Semester'];
+        }
+
+        if ($canonicalLabel === 'Second') {
+            return ['Second', '2nd Semester', 'Second Semester'];
+        }
+
+        if ($canonicalLabel === 'Summer') {
+            return ['Summer', 'Summer Semester'];
+        }
+
+        return [$canonicalLabel];
+    }
+
+    private function slotMonitoringSemesterWeight(string $canonicalLabel): int
+    {
+        if ($canonicalLabel === 'First') {
+            return 1;
+        }
+
+        if ($canonicalLabel === 'Second') {
+            return 2;
+        }
+
+        if ($canonicalLabel === 'Summer') {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    private function slotMonitoringReportTitle(string $reportType): string
+    {
+        if ($reportType === 'actual-size') {
+            return 'ACTUAL SIZE';
+        }
+
+        if ($reportType === 'under-20') {
+            return 'List of Subject(s) with 20 and below student(s) enrolled';
+        }
+
+        if ($reportType === 'dissolved') {
+            return 'List of Dissolved Subjects';
+        }
+
+        return 'List of Closed Subjects';
     }
 
     private function mapSlotMonitoringRow(SlotMonitoring $slotMonitoring)

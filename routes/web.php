@@ -192,8 +192,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
             Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
+            Route::get('/section-offering/data', 'Registrar\RegistrarController@sectionOfferingData')->name('section-offering.data')->middleware('throttle:60,1');
+            Route::get('/section-offering/curriculum-subjects', 'Registrar\RegistrarController@sectionOfferingCurriculumSubjects')->name('section-offering.curriculum-subjects')->middleware('throttle:60,1');
+            Route::post('/section-offering', 'Registrar\RegistrarController@storeSectionOffering')->name('section-offering.store')->middleware('throttle:60,1');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
             Route::get('/slot-monitoring/data', 'Registrar\RegistrarController@slotMonitoringData')->name('slot-monitoring.data')->middleware('throttle:60,1');
+            Route::get('/slot-monitoring/reports/{reportType}', 'Registrar\RegistrarController@slotMonitoringReport')->name('slot-monitoring.report')->middleware('throttle:60,1')->where('reportType', 'actual-size|under-20|dissolved|closed');
             Route::post('/slot-monitoring', 'Registrar\RegistrarController@storeSlotMonitoring')->name('slot-monitoring.store')->middleware('throttle:60,1');
             Route::put('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@updateSlotMonitoring')->name('slot-monitoring.update')->middleware('throttle:60,1');
             Route::delete('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@destroySlotMonitoring')->name('slot-monitoring.delete')->middleware('throttle:60,1');

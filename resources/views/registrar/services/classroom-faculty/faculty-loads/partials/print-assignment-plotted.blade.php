@@ -1,6 +1,8 @@
+@php($schoolName = trim((string) config('app.school_name', 'University of Pasig City')) ?: 'University of Pasig City')
+
 <div class="rfl-strength-sheet rfl-assignment-sheet rfl-plotted-sheet">
     <div class="rfl-strength-header text-center">
-        <div class="rfl-strength-school">Central Luzon College of Science and Technology, Inc.</div>
+        <div class="rfl-strength-school">{{ $schoolName }}</div>
         <div class="rfl-strength-title">FACULTY ASSIGNMENT FORM - PLOTTED</div>
         <div class="rfl-strength-subtitle">{{ $printTermLabel }}</div>
     </div>
@@ -25,33 +27,35 @@
         </div>
     </div>
 
-    <table class="rfl-strength-table rfl-plotted-table">
-        <thead>
-            <tr>
-                @foreach($weekDays as $dayName)
-                    <th>{{ strtoupper($dayName) }}</th>
-                @endforeach
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                @foreach($weekDays as $dayName)
-                    <td>
-                        @forelse($scheduleByDay[$dayName] as $entry)
-                            <div class="rfl-plotted-item">
-                                <div>{{ $entry['time'] }}</div>
-                                <div>{{ $entry['code'] }}</div>
-                                <div>{{ $entry['section'] !== '' ? $entry['section'] : '-' }}</div>
-                                <div>{{ $entry['room'] !== '' ? $entry['room'] : '-' }}</div>
-                            </div>
-                        @empty
-                            <div class="rfl-plotted-empty">-</div>
-                        @endforelse
-                    </td>
-                @endforeach
-            </tr>
-        </tbody>
-    </table>
+    <div class="student-table-wrapper rfl-strength-table-wrap">
+        <table class="student-table rfl-strength-table rfl-plotted-table">
+            <thead>
+                <tr>
+                    @foreach($weekDays as $dayName)
+                        <th>{{ strtoupper($dayName) }}</th>
+                    @endforeach
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    @foreach($weekDays as $dayName)
+                        <td>
+                            @forelse($scheduleByDay[$dayName] as $entry)
+                                <div class="rfl-plotted-item">
+                                    <div>{{ $entry['time'] }}</div>
+                                    <div>{{ $entry['code'] }}</div>
+                                    <div>{{ $entry['section'] !== '' ? $entry['section'] : '-' }}</div>
+                                    <div>{{ $entry['room'] !== '' ? $entry['room'] : '-' }}</div>
+                                </div>
+                            @empty
+                                <div class="rfl-plotted-empty">-</div>
+                            @endforelse
+                        </td>
+                    @endforeach
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div class="rfl-strength-footer-note">Generated {{ $printGeneratedAt->format('m/d/Y h:i A') }}</div>
 </div>

@@ -1,12 +1,12 @@
 ---
 name: "sass-css-disciplinarian"
-description: "Prevents inline CSS/JS in Blade files; enforces SASS/SCSS usage with best practices."
+description: "Prevents inline CSS/JS in Blade files; enforces SASS/SCSS usage and standardizes dropdown, pagination, and search-bar behavior."
 ---
 
 # SASS CSS Disciplinarian
 
 ## Purpose
-Enforce strict separation of concerns for Laravel Blade, SASS, and JavaScript to keep templates clean and prevent styling/script conflicts across contributors.
+Enforce strict separation of concerns for Laravel Blade, SASS, and JavaScript to keep templates clean, prevent styling/script conflicts across contributors, and keep dropdowns, pagination, and search bars consistent across the UI.
 
 ## Hard Rules (Non-Negotiable)
 - NEVER write `<style>` tags in Blade (`.blade.php`) files.
@@ -24,6 +24,15 @@ Enforce strict separation of concerns for Laravel Blade, SASS, and JavaScript to
 - Use BEM naming (`Block__Element--Modifier`) or a clear component-based naming structure.
 - Avoid `!important` unless absolutely necessary and documented.
 - Keep responsive styles close to their component by placing `@media` rules inside the same selector block.
+
+## UI Review Standard
+Whenever a Blade page or shared component includes dropdowns, pagination, or search bars, verify them together in the browser before finalizing the change.
+
+- Confirm dropdown list styling matches the shared standard and stays usable at mobile widths.
+- Confirm pagination uses the same reusable server-driven logic and preserves active filters or query parameters.
+- Confirm search bars behave like searchable list pickers when the source list is large, instead of forcing a long native dropdown.
+- Confirm buttons, lists, and pager controls do not clip or overflow on iPhone SE-sized layouts.
+- Confirm the interaction logic is consistent across the page: the same component state should open, highlight, select, and close in the same way everywhere.
 
 ## Styled Dropdown Standard (Reusable)
 Use this pattern whenever dropdown option lists must be visually designed (green highlight, radius, white panel, etc.) and behavior must be consistent across browsers.
@@ -45,7 +54,7 @@ Use this pattern whenever dropdown option lists must be visually designed (green
 - Never rely on native browser `<option>` popup styling for final UI design.
 
 ## Searchable Dropdown List Standard (Single-Open, Focus-Driven)
-Use this for autocomplete/search inputs that render `.smrg-search-dropdown` option lists.
+Use this for autocomplete/search inputs that render `.smrg-search-dropdown` option lists, especially when a large dropdown should be replaced with a searchable list for students, subjects, sections, faculty, rooms, or any other high-volume entity.
 
 - Canonical Blade component for this project:
   - `resources/views/registrar/components/search-dropdown-input.blade.php`
@@ -59,6 +68,9 @@ Use this for autocomplete/search inputs that render `.smrg-search-dropdown` opti
 - Close lists on click outside, modal close, and Escape key.
 - Selecting an option should close the current list and populate the input/hidden value.
 - Never keep multiple search dropdowns visible simultaneously; this is a strict UX rule.
+- Prefer this pattern over a native `<select>` whenever the option set is large enough to become hard to scan or tap on mobile.
+- Search results may be client-filtered or server-filtered, but the interaction model should remain the same.
+- The visible list should behave like a lookup panel, not a static dropdown dump.
 
 ## Pagination Component Rule
 - Pagination styling must be reusable via shared component classes (not page-only selectors).
@@ -66,6 +78,8 @@ Use this for autocomplete/search inputs that render `.smrg-search-dropdown` opti
   - Submit `page`/`per_page` back to backend.
   - Do not render all rows client-side.
   - Keep click handlers generic and configurable by data attributes.
+  - Preserve current search and filter state in every pagination link.
+  - Keep pagination controls responsive so they do not clip on narrow screens.
 
 ## Blade + Asset Integration Rules
 - Blade should reference compiled assets only.
@@ -88,8 +102,10 @@ Before finalizing any Blade change:
 3. Confirm no inline JS handlers exist.
 4. Confirm custom styles are in `resources/sass/` (or `resources/assets/sass/` in legacy modules) and compiled.
 5. Confirm custom scripts are in `resources/js/` (or `resources/assets/js/` in legacy modules) and compiled.
-6. For styled dropdowns, confirm active highlight follows current hover/focus target.
-7. For Student forms, confirm desktop has one vertical scrollbar and print keeps a 2in top form margin.
+6. For styled dropdowns, confirm active highlight follows current hover/focus target and the list stays inside the viewport.
+7. For pagination, confirm links preserve current filters/search terms and remain usable on mobile.
+8. For search bars used as large-list substitutes, confirm the results list shows the right matches, closes correctly, and supports keyboard and touch selection.
+9. For Student forms, confirm desktop has one vertical scrollbar and print keeps a 2in top form margin.
 
 ## STOP COMMAND
 WAITING_FOR_HUMAN_OK
