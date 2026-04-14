@@ -338,3 +338,278 @@
     font-weight: 900;
     color: $plp-green;
 }
+
+.rfl-strength-print-page {
+    background: #f5f5f5;
+    color: #000;
+}
+
+.rfl-strength-toolbar {
+    max-width: 210mm;
+    margin: 16px auto 0;
+}
+
+.rfl-strength-sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10px auto 16px;
+    background: #fff;
+    padding: 1in;
+    color: #000;
+    font-size: 10pt;
+    box-sizing: border-box;
+    transform-origin: top center;
+}
+
+.rfl-strength-header {
+    margin-bottom: 18px;
+}
+
+.rfl-strength-school {
+    font-weight: 700;
+    font-size: 14pt;
+}
+
+.rfl-strength-title {
+    font-weight: 800;
+    font-size: 18pt;
+    margin-top: 6px;
+}
+
+.rfl-strength-subtitle {
+    font-size: 11pt;
+}
+
+.rfl-strength-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+.rfl-strength-meta-left,
+.rfl-strength-meta-right {
+    flex: 1 1 0;
+}
+
+.rfl-strength-line-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.rfl-strength-line-label {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.rfl-strength-line-fill {
+    flex: 1 1 auto;
+    min-height: 20px;
+    border-bottom: 1px solid #000;
+    padding: 0 4px;
+    font-weight: 600;
+}
+
+.rfl-strength-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.rfl-strength-table th,
+.rfl-strength-table td {
+    border: 1px solid #000;
+    padding: 4px 5px;
+    font-size: 9pt;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.rfl-strength-table th {
+    font-weight: 800;
+}
+
+.rfl-strength-table td:first-child {
+    text-align: left;
+}
+
+.rfl-strength-total-label {
+    text-align: right !important;
+    font-weight: 800;
+}
+
+.rfl-strength-signatures {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.rfl-strength-sign-block {
+    flex: 1 1 0;
+}
+
+.rfl-strength-sign-block--right {
+    max-width: 210px;
+    margin-top: 22px;
+}
+
+.rfl-strength-sign-label {
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.rfl-strength-sign-line {
+    border-bottom: 1px solid #000;
+    min-height: 24px;
+    margin-bottom: 4px;
+}
+
+.rfl-strength-sign-role {
+    text-align: center;
+    font-weight: 800;
+}
+
+.rfl-strength-sign-date {
+    margin-top: 6px;
+    text-align: center;
+}
+
+.rfl-strength-footer-note {
+    margin-top: 20px;
+    text-align: right;
+    font-size: 8pt;
+    font-weight: 700;
+}
+
+.rfl-print-actions {
+    align-items: center;
+}
+
+.rfl-print-actions .rfl-add-btn {
+    min-width: 230px;
+    font-size: 0.82rem;
+}
+
+/* Responsive tweaks for very small screens (iPhone SE and similar) */
+@media (max-width: 640px) {
+    .page-services-faculty-loads {
+        .rfl-print-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .rfl-print-actions .rfl-add-btn {
+            min-width: 0;
+            width: 100%;
+            padding: 8px 12px;
+            white-space: normal;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Make the assign row wrap and let the Add button stack under the subject select */
+        .rfl-assign-top {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .rfl-assign-top .rfl-add-btn {
+            min-width: 0;
+            width: 100%;
+            order: 2;
+        }
+
+        .rfl-subject-select {
+            width: 100%;
+            order: 1;
+        }
+    }
+}
+
+#rflPrintFrame {
+    position: fixed;
+    right: -9999px;
+    bottom: -9999px;
+    width: 0;
+    height: 0;
+    border: 0;
+    visibility: hidden;
+}
+
+.rfl-assignment-table th,
+.rfl-assignment-table td {
+    font-size: 8pt;
+}
+
+.rfl-plotted-sheet .rfl-strength-subtitle {
+    margin-bottom: 6px;
+}
+
+.rfl-plotted-table th,
+.rfl-plotted-table td {
+    width: 14.285%;
+    vertical-align: top;
+}
+
+.rfl-plotted-table td {
+    min-height: 260px;
+}
+
+.rfl-plotted-item {
+    border: 1px solid #000;
+    border-radius: 2px;
+    padding: 4px;
+    margin-bottom: 4px;
+    text-align: left;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.rfl-plotted-empty {
+    min-height: 18px;
+}
+
+@media print {
+    html,
+    body,
+    .container,
+    .container-fluid {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    .rfl-strength-print-page {
+        background: #fff !important;
+    }
+
+    .rfl-strength-toolbar {
+        display: none !important;
+    }
+
+    .rfl-strength-sheet {
+        padding: 2in 0.5in 0 0.5in !important;
+        margin: 0 auto !important;
+        zoom: 1 !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .rfl-strength-sheet,
+    .rfl-strength-sheet * {
+        font-size: 8pt !important;
+        line-height: 1.2 !important;
+    }
+
+    .rfl-strength-sheet input,
+    .rfl-strength-sheet textarea,
+    .rfl-strength-sheet select {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}

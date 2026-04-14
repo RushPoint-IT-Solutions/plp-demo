@@ -276,6 +276,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
                 Route::get('/', 'Registrar\Services\FacultyLoadsController@index')->name('index');
                 Route::get('/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('show');
                 Route::post('/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('assign');
+                Route::get('/{faculty}/print-strength-of-classes', 'Registrar\Services\FacultyLoadsController@printStrengthOfClasses')->name('print-strength-of-classes');
             });
         });
 

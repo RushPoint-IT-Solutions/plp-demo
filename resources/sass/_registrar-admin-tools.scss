@@ -2188,4 +2188,20 @@
   .registrar-body.page-services-class-list .svc-selected-info {
     grid-template-columns: 1fr;
   }
+
+  .registrar-body.page-services-faculty-loads .rfl-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .registrar-body.page-services-faculty-loads .rfl-pagination {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 6px;
+  }
+
+  .registrar-body.page-services-faculty-loads .rfl-pagination .pagination {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
 }
