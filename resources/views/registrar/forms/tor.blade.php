@@ -6,6 +6,87 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
+    @php($torEmbedded = in_array(strtolower((string) request()->query('embedded', '0')), ['1', 'true', 'yes'], true))
+    @php($torPreviewOnly = in_array(strtolower((string) request()->query('preview_only', '0')), ['1', 'true', 'yes'], true))
+    @if($torEmbedded)
+    .sidebar-overlay,
+    .student-topbar,
+    .student-page-header,
+    .content-footer-wrap > .plp-footer,
+    .plp-sidebar,
+    .registrar-topbar,
+    .plp-footer,
+    .sidebar-logout,
+    .sidebar-brand,
+    .sidebar-nav {
+        display: none !important;
+    }
+
+    .registrar-layout,
+    .student-layout,
+    .student-main-wrapper,
+    .registrar-main,
+    .pf-page,
+    .ga-page {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    @endif
+
+    @if($torPreviewOnly)
+    .student-topbar,
+    .student-page-header,
+    .plp-sidebar,
+    .sidebar-overlay,
+    .content-footer-wrap > .plp-footer {
+        display: none !important;
+    }
+
+    .student-content {
+        padding: 0 !important;
+    }
+
+    .app-filter-bar,
+    .ga-table-controls,
+    .ga-table-wrap {
+        display: none !important;
+    }
+
+    .ga-page {
+        padding: 0 !important;
+        min-height: auto !important;
+    }
+
+    #torPreviewModal {
+        display: flex !important;
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    #torPreviewModal .tor-preview-modal-box {
+        width: 100% !important;
+        max-width: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    #torPreviewModal .tor-preview-head {
+        display: none !important;
+    }
+
+    #torPreviewModal button[onclick="torClosePreview()"] {
+        display: none !important;
+    }
+
+    #torPreviewModal .req-modal-actions {
+        padding-top: 10px !important;
+        justify-content: center !important;
+    }
+    @endif
+
     @media print {
         @page { size: A4 portrait; margin: 10mm; }
     }
@@ -231,4 +312,13 @@
 
 @push('scripts')
 <script src="{{ asset('js/tor.js') }}?v={{ time() }}"></script>
+@if($torPreviewOnly)
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof torOpenPreview === 'function') {
+        torOpenPreview(1);
+    }
+});
+</script>
+@endif
 @endpush

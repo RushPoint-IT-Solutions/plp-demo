@@ -294,6 +294,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/grading-components/{gradingComponent}', 'Registrar\Services\GradingAcademicController@gradingComponentsDestroy')->name('grading-components.destroy');
             Route::get('/transmutation', 'Registrar\Services\GradingAcademicController@transmutation')->name('transmutation');
             Route::post('/transmutation', 'Registrar\Services\GradingAcademicController@transmutationStore')->name('transmutation.store');
+            Route::post('/transmutation/copy', 'Registrar\Services\GradingAcademicController@transmutationCopy')->name('transmutation.copy');
             Route::put('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationUpdate')->name('transmutation.update');
             Route::delete('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationDestroy')->name('transmutation.destroy');
             Route::get('/deficiency', 'Registrar\Services\GradingAcademicController@deficiency')->name('deficiency');

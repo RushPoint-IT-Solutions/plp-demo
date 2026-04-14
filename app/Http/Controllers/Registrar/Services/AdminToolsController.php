@@ -950,6 +950,8 @@ class AdminToolsController extends Controller
                     'inc' => (bool) $r->inc,
                     'grade_status' => $r->grade_status,
                     'remarks' => $r->remarks,
+                    'created_at' => optional($r->created_at)->toDateTimeString(),
+                    'updated_at' => optional($r->updated_at)->toDateTimeString(),
                 ];
             })
             ->values()

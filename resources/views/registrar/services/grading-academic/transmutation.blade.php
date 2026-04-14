@@ -7,20 +7,13 @@
 @section('content')
 <div class="pf-page">
     <div class="ga-page" id="tmPage">
-        <form method="GET" action="{{ route('registrar.services.grading-academic.transmutation') }}" class="ga-toolbar" id="tmFilterForm">
-            @include('registrar.components.search-bar', [
-                'id' => 'tmSearchInput',
-                'name' => 'q',
-                'value' => $search,
-                'placeholder' => 'Search SY, Term, Program, Code, Remarks...',
-                'containerClass' => 'ga-search-wrap',
-                'inputClass' => 'js-tm-auto-submit-search',
-                'inputAttributes' => [
-                    'data-tm-auto-submit-search' => '1',
-                ],
-            ])
+        <div class="ga-toolbar" id="tmFilterForm">
+            <div></div>
+            <div class="ga-inline-btns">
+                <button type="button" class="pf-btn-new ga-btn ga-btn-muted" data-ga-modal-open="gaTransmutationCopyModal">Copy Transmutation</button>
             <button type="button" class="pf-btn-new ga-btn ga-btn-primary" data-ga-modal-open="gaTransmutationNewModal">+ Add Transmutation</button>
-        </form>
+            </div>
+        </div>
 
         <div class="ga-table-wrap app-table-wrap">
             <table class="ga-table ga-table-compact app-table ga-trans-table" id="tmTable" data-no-auto-pager="1">
@@ -235,6 +228,120 @@
                 </div>
             </div>
         </div>
+
+        <div class="req-modal-overlay ga-trans-modal-overlay ga-trans-modal-overlay--priority" id="gaTransmutationMessageModal">
+            <div class="req-modal-box ga-trans-modal-box ga-trans-modal-box--delete">
+                <h3 class="req-modal-title ga-trans-modal-title" id="gaTransmutationMessageTitle">NOTICE</h3>
+                <p id="gaTransmutationMessageText" class="ga-trans-delete-text">Message</p>
+                <div class="req-modal-actions ga-trans-modal-actions ga-trans-modal-actions--center">
+                    <button class="req-btn-save ga-trans-btn-save" type="button" data-ga-close-message>OK</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="req-modal-overlay ga-trans-modal-overlay" id="gaTransmutationCopyModal">
+            <div class="req-modal-box ga-trans-modal-box ga-trans-modal-box--copy">
+                <h3 class="req-modal-title ga-trans-modal-title">COPY TRANSMUTATION</h3>
+                <div class="ga-copy-inline-message" id="tmCopyInlineMessage" style="display:none;" role="alert" aria-live="polite"></div>
+
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--standard">
+                    <label class="req-modal-label ga-trans-modal-panel__label">FROM</label>
+                    <div class="tm-modal-grid-2x4">
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">Department</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyFromDepartment',
+                                'name' => 'tmCopyFromDepartment',
+                                'options' => $departmentOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select department',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">Program</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyFromProgram',
+                                'name' => 'tmCopyFromProgram',
+                                'options' => $programOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select program',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">AY</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyFromSchoolYear',
+                                'name' => 'tmCopyFromSchoolYear',
+                                'options' => $schoolYearOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select school year',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">Semester</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyFromTerm',
+                                'name' => 'tmCopyFromTerm',
+                                'options' => $termOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select term',
+                            ])
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ga-trans-modal-panel ga-trans-modal-panel--accent">
+                    <label class="req-modal-label ga-trans-modal-panel__label">TO</label>
+                    <div class="tm-modal-grid-2x4">
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">Department</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyToDepartment',
+                                'name' => 'tmCopyToDepartment',
+                                'options' => $departmentOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select department',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">Program</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyToProgram',
+                                'name' => 'tmCopyToProgram',
+                                'options' => $programOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select program',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">AY</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyToSchoolYear',
+                                'name' => 'tmCopyToSchoolYear',
+                                'options' => $schoolYearOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select school year',
+                            ])
+                        </div>
+                        <div class="req-modal-field-group">
+                            <label class="req-modal-label">Semester</label>
+                            @include('registrar.components.listbox-select', [
+                                'id' => 'tmCopyToTerm',
+                                'name' => 'tmCopyToTerm',
+                                'options' => $termOptions,
+                                'selected' => '',
+                                'placeholder' => 'Select term',
+                            ])
+                        </div>
+                    </div>
+                </div>
+
+                <div class="req-modal-actions ga-trans-modal-actions ga-trans-modal-actions--center">
+                    <button type="button" class="req-btn-cancel ga-trans-btn-cancel" data-ga-close>Cancel</button>
+                    <button type="button" class="req-btn-save ga-trans-btn-save" data-tm-copy-rules>Copy</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -246,14 +353,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var page = document.getElementById('tmPage');
     if (!page) return;
 
-    var filterForm = document.getElementById('tmFilterForm');
-    var searchInput = filterForm ? filterForm.querySelector('[data-tm-auto-submit-search]') : null;
     var actionModal = document.getElementById('gaTransmutationActionModal');
     var deleteModal = document.getElementById('gaTransmutationDeleteModal');
+    var copyModal = document.getElementById('gaTransmutationCopyModal');
+    var messageModal = document.getElementById('gaTransmutationMessageModal');
     var actionTitle = document.getElementById('gaTransmutationActionTitle');
     var deleteText = document.getElementById('gaTransmutationDeleteText');
+    var messageTitle = document.getElementById('gaTransmutationMessageTitle');
+    var messageText = document.getElementById('gaTransmutationMessageText');
     var csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
     var tmStoreUrl = @json(route('registrar.services.grading-academic.transmutation.store'));
+    var tmCopyUrl = @json(route('registrar.services.grading-academic.transmutation.copy'));
     var tmUpdateUrlTemplate = @json(route('registrar.services.grading-academic.transmutation.update', ['transmutationRule' => '__ID__']));
     var tmDestroyUrlTemplate = @json(route('registrar.services.grading-academic.transmutation.destroy', ['transmutationRule' => '__ID__']));
     var activeRow = null;
@@ -277,24 +387,23 @@ document.addEventListener('DOMContentLoaded', function () {
     var tmEditCode = document.getElementById('tmEditCode');
     var tmEditRemarks = document.getElementById('tmEditRemarks');
 
-    function debounce(fn, delay) {
-        var timer = null;
-
-        return function () {
-            var args = arguments;
-
-            if (timer) {
-                clearTimeout(timer);
-            }
-
-            timer = setTimeout(function () {
-                fn.apply(null, args);
-            }, delay);
-        };
-    }
+    var tmCopyFromDepartment = document.getElementById('tmCopyFromDepartment');
+    var tmCopyFromProgram = document.getElementById('tmCopyFromProgram');
+    var tmCopyFromSchoolYear = document.getElementById('tmCopyFromSchoolYear');
+    var tmCopyFromTerm = document.getElementById('tmCopyFromTerm');
+    var tmCopyToDepartment = document.getElementById('tmCopyToDepartment');
+    var tmCopyToProgram = document.getElementById('tmCopyToProgram');
+    var tmCopyToSchoolYear = document.getElementById('tmCopyToSchoolYear');
+    var tmCopyToTerm = document.getElementById('tmCopyToTerm');
+    var tmCopyInlineMessage = document.getElementById('tmCopyInlineMessage');
 
     function cleanNumber(value) {
         return (value || '').trim();
+    }
+
+    function normalizeOptionalId(value) {
+        var trimmed = (value || '').trim();
+        return trimmed === '' ? null : trimmed;
     }
 
     function setSelectValue(selectElement, value) {
@@ -321,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(function (response) {
             if (!response.ok) {
                 return response.json().catch(function () { return {}; }).then(function (data) {
-                    var firstError = 'Request failed.';
+                    var firstError = (data && data.message) ? data.message : 'Request failed.';
                     if (data && data.errors) {
                         var keys = Object.keys(data.errors);
                         if (keys.length && data.errors[keys[0]] && data.errors[keys[0]][0]) {
@@ -334,6 +443,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
             return response.json().catch(function () { return { ok: true }; });
         });
+    }
+
+    function openMessageModal(title, message) {
+        if (messageTitle) {
+            messageTitle.textContent = title || 'NOTICE';
+        }
+
+        if (messageText) {
+            messageText.textContent = message || 'Request failed.';
+        }
+
+        closeModal(copyModal);
+        closeModal(actionModal);
+        closeModal(deleteModal);
+
+        openModal('gaTransmutationMessageModal');
+    }
+
+    function showCopyInlineMessage(message, isError) {
+        if (!tmCopyInlineMessage) {
+            return;
+        }
+
+        tmCopyInlineMessage.textContent = message || '';
+        tmCopyInlineMessage.classList.remove('is-error', 'is-info');
+        tmCopyInlineMessage.classList.add(isError ? 'is-error' : 'is-info');
+        tmCopyInlineMessage.style.display = message ? 'block' : 'none';
     }
 
     function fillEditForm(row) {
@@ -422,6 +558,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var openBtn = event.target.closest('[data-ga-modal-open]');
         if (openBtn) {
             openModal(openBtn.getAttribute('data-ga-modal-open'));
+            if (openBtn.getAttribute('data-ga-modal-open') === 'gaTransmutationCopyModal') {
+                showCopyInlineMessage('', true);
+            }
             return;
         }
 
@@ -457,6 +596,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        if (event.target.matches('[data-ga-close-message]')) {
+            closeModal(messageModal);
+            return;
+        }
+
         if (event.target.matches('[data-tm-save-new]')) {
             var sy = (tmNewSy.value || '').trim();
             var term = (tmNewTerm.value || '').trim();
@@ -489,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 window.location.reload();
             }).catch(function (error) {
-                alert(error.message || 'Unable to save transmutation rule.');
+                openMessageModal('ADD TRANSMUTATION FAILED', error.message || 'Unable to save transmutation rule.');
             });
             return;
         }
@@ -498,7 +642,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (activeAction === 'edit' && activeRow && activeRow.cells.length >= 9) {
                 var id = activeRow.getAttribute('data-transmutation-rule-id');
                 if (!id) {
-                    alert('Missing transmutation rule id.');
+                    openMessageModal('EDIT TRANSMUTATION FAILED', 'Missing transmutation rule id.');
                     return;
                 }
 
@@ -517,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     window.location.reload();
                 }).catch(function (error) {
-                    alert(error.message || 'Unable to update transmutation rule.');
+                    openMessageModal('EDIT TRANSMUTATION FAILED', error.message || 'Unable to update transmutation rule.');
                 });
             } else {
                 closeModal(actionModal);
@@ -529,7 +673,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (activeRow) {
                 var id = activeRow.getAttribute('data-transmutation-rule-id');
                 if (!id) {
-                    alert('Missing transmutation rule id.');
+                    openMessageModal('DELETE TRANSMUTATION FAILED', 'Missing transmutation rule id.');
                     return;
                 }
 
@@ -539,10 +683,47 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     window.location.reload();
                 }).catch(function (error) {
-                    alert(error.message || 'Unable to delete transmutation rule.');
+                    openMessageModal('DELETE TRANSMUTATION FAILED', error.message || 'Unable to delete transmutation rule.');
                 });
             }
             closeModal(deleteModal);
+            return;
+        }
+
+        if (event.target.matches('[data-tm-copy-rules]')) {
+            var payload = {
+                from_department_id: normalizeOptionalId(tmCopyFromDepartment.value),
+                from_program_id: normalizeOptionalId(tmCopyFromProgram.value),
+                from_school_year: (tmCopyFromSchoolYear.value || '').trim(),
+                from_term: (tmCopyFromTerm.value || '').trim(),
+                to_department_id: normalizeOptionalId(tmCopyToDepartment.value),
+                to_program_id: normalizeOptionalId(tmCopyToProgram.value),
+                to_school_year: (tmCopyToSchoolYear.value || '').trim(),
+                to_term: (tmCopyToTerm.value || '').trim()
+            };
+
+            if (!payload.from_school_year || !payload.from_term || !payload.to_program_id || !payload.to_school_year || !payload.to_term) {
+                showCopyInlineMessage('Please fill in required source and target fields.', true);
+                return;
+            }
+
+            showCopyInlineMessage('', true);
+
+            tmRequest(tmCopyUrl, 'POST', payload).then(function (data) {
+                if (typeof showRegistrarToast === 'function') {
+                    var copiedCount = data && data.copied_count ? data.copied_count : 0;
+                    if (data && data.message) {
+                        showRegistrarToast(data.message);
+                    } else {
+                        showRegistrarToast('Copied ' + copiedCount + ' transmutation rule(s) successfully.');
+                    }
+                }
+                closeModal(copyModal);
+                window.location.reload();
+            }).catch(function (error) {
+                showCopyInlineMessage(error.message || 'Unable to copy transmutation rules.', true);
+            });
+
             return;
         }
     });
@@ -562,22 +743,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if (searchInput && filterForm) {
-        var submitSearch = debounce(function () {
-            filterForm.submit();
-        }, 280);
-
-        searchInput.addEventListener('input', function () {
-            submitSearch();
-        });
-
-        searchInput.addEventListener('keydown', function (event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                filterForm.submit();
-            }
-        });
-    }
 });
 </script>
 @endpush

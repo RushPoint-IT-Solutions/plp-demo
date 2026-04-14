@@ -210,7 +210,6 @@
                     </svg>
                 </a>
                 <div class="sidebar-dropdown-menu">
-                    <a href="{{ route('registrar.registrar-menu.forms.tor') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.tor') ? 'active' : '' }}">TOR</a>
                     <a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') ? 'active' : '' }}">Application Leave of Absence</a>
                     <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
                     <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>
@@ -297,7 +296,7 @@
                 </div>
 
                 <div class="sidebar-nested-dropdown">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.master-files.*') ? 'active' : '' }}">
+                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ (request()->routeIs('registrar.admin-tools.master-files.*') || request()->routeIs('registrar.admin-tools.student-maintenance.*')) ? 'active' : '' }}">
                         Master Files
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
@@ -305,15 +304,6 @@
                         <a href="{{ route('registrar.admin-tools.master-files.faculty-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.faculty-file') ? 'active' : '' }}">Faculty File</a>
                         <a href="{{ route('registrar.admin-tools.master-files.student-profile') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-profile') ? 'active' : '' }}">Student Profile</a>
                         <a href="{{ route('registrar.admin-tools.master-files.student-grade-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-grade-file') ? 'active' : '' }}">Student Grade File</a>
-                    </div>
-                </div>
-
-                <div class="sidebar-nested-dropdown">
-                    <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.student-maintenance.*') ? 'active' : '' }}">
-                        Student Maintenance
-                        <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </a>
-                    <div class="sidebar-nested-menu">
                         <a href="{{ route('registrar.admin-tools.student-maintenance.bed-student-status') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.bed-student-status') ? 'active' : '' }}">BED Student Status</a>
                         <a href="{{ route('registrar.admin-tools.student-maintenance.bed-days') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.bed-days') ? 'active' : '' }}">BED Days</a>
                         <a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>

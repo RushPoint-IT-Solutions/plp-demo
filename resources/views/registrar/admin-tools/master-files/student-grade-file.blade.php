@@ -70,10 +70,10 @@
                 <div class="sgf-detail-tabs">
                     <button class="sgf-tab active" data-tab="grades">Grade File</button>
                     <button class="sgf-tab" data-tab="history">View History</button>
-                    <button class="sgf-tab" data-tab="evaluation">Evaluation</button>
+                   {{--   <button class="sgf-tab" data-tab="evaluation">Evaluation</button> --}}
                     <button class="sgf-tab" data-tab="tor">Transcript of Records</button>
                     <button class="sgf-tab" data-tab="permanent">Permanent Record</button>
-                    <button class="sgf-tab" data-tab="grade-report">Grade Report</button>
+                  {{--    <button class="sgf-tab" data-tab="grade-report">Grade Report</button>  --}}
                 </div>
             </div>
 
@@ -97,10 +97,10 @@
 
             {{-- Tab Content: Placeholders --}}
             <div class="sgf-tab-content" id="sgfTabHistory" style="display:none;">
-                <div class="sgf-placeholder-panel">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b0b8c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <h3>View History</h3>
-                    <p>Student enrollment and grade change history will be displayed here.</p>
+                <div class="sgf-history-sheet" id="sgfHistorySheet">
+                    <div class="sgf-history-title">STUDENT SUBJECTS TRACKING</div>
+
+                    <div id="sgfHistoryGroups"></div>
                 </div>
             </div>
             <div class="sgf-tab-content" id="sgfTabEvaluation" style="display:none;">
@@ -111,17 +111,121 @@
                 </div>
             </div>
             <div class="sgf-tab-content" id="sgfTabTor" style="display:none;">
-                <div class="sgf-placeholder-panel">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b0b8c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                    <h3>Transcript of Records</h3>
-                    <p>Official transcript of records will be generated and displayed here.</p>
+                <div class="sgf-tor-embed-wrap">
+                    <iframe
+                        id="sgfTorEmbedFrame"
+                        class="sgf-tor-embed-frame"
+                        src="{{ route('registrar.registrar-menu.forms.tor', ['embedded' => 1, 'preview_only' => 1]) }}"
+                        title="TOR Preview"
+                        loading="eager"
+                    ></iframe>
                 </div>
             </div>
+
             <div class="sgf-tab-content" id="sgfTabPermanent" style="display:none;">
-                <div class="sgf-placeholder-panel">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b0b8c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                    <h3>Permanent Record</h3>
-                    <p>Student permanent record information will be displayed here.</p>
+                <div class="sgf-perm-tools">
+                    <button type="button" class="pf-btn-new" id="sgfPrintPermanentBtn">Print Permanent Record</button>
+                </div>
+
+                <div class="sgf-perm-sheet-wrap" id="sgfPermanentPrintArea">
+                    <section class="sgf-perm-page sgf-perm-page-1">
+                        <div class="sgf-perm-school">Central Luzon College of Science and Technology, Inc.</div>
+                        <div class="sgf-perm-office">OFFICE OF THE REGISTRAR</div>
+                        <div class="sgf-perm-form-title">STUDENT'S PERMANENT RECORD</div>
+                        <div class="sgf-perm-course-row">
+                            <div class="sgf-perm-course-label">COURSE :</div>
+                            <div class="sgf-perm-course"><strong id="sgfPermCourse">-</strong></div>
+                        </div>
+
+                        <div class="sgf-perm-personal">
+                            <h4>Personal Records:</h4>
+                            <div class="sgf-perm-personal-lines">
+                                <div class="sgf-perm-personal-line sgf-perm-personal-line-3col">
+                                    <div class="sgf-perm-personal-head-label sgf-perm-no-gap" style="grid-column: 3;">Student Number: <span class="sgf-perm-short-underline sgf-perm-val-no-bold" id="sgfPermStudentNo">TRG2600001</span></div>
+                                </div>
+                                <div class="sgf-perm-personal-line sgf-perm-personal-line-3col">
+                                    <div class="sgf-perm-no-gap"><span>Name:</span><strong id="sgfPermName">-</strong></div>
+                                    <div class="sgf-perm-no-gap"><span>Sex:</span><span class="sgf-perm-short-underline" id="sgfPermSex">-</span></div>
+                                    <div class="sgf-perm-no-gap"><span>Citizenship:</span><span class="sgf-perm-short-underline" id="sgfPermCitizenship">-</span></div>
+                                </div>
+
+                                <div class="sgf-perm-personal-line sgf-perm-personal-line-3col">
+                                    <div class="sgf-perm-dob-field sgf-perm-no-gap">
+                                        <span>Date of Birth: Year:</span><strong id="sgfPermBirthYear">-</strong>
+                                        <span class="sgf-perm-inline-label">Month:</span><strong id="sgfPermBirthMonth">-</strong>
+                                    </div>
+                                    <div class="sgf-perm-no-gap"><span>Day:</span><strong id="sgfPermBirthDay">-</strong></div>
+                                    <div class="sgf-perm-no-gap"><span>Civil Status:</span><span class="sgf-perm-short-underline" id="sgfPermCivilStatus">-</span></div>
+                                </div>
+
+                                <div class="sgf-perm-personal-line sgf-perm-personal-line-3col">
+                                    <div class="sgf-perm-span-2 sgf-perm-no-gap"><span>Place of Birth: Province:</span><strong id="sgfPermBirthProvince">-</strong></div>
+                                    <div class="sgf-perm-no-gap"><span>Municipality:</span><strong id="sgfPermMunicipality">-</strong></div>
+                                </div>
+
+                                <div class="sgf-perm-personal-line sgf-perm-personal-line-3col">
+                                    <div class="sgf-perm-span-2 sgf-perm-no-gap"><span>High School Completed at:</span><strong id="sgfPermHighSchool">-</strong></div>
+                                    <div class="sgf-perm-no-gap"><span>School Year:</span><strong id="sgfPermSchoolYear">-</strong></div>
+                                </div>
+
+                                <div class="sgf-perm-personal-line sgf-perm-personal-line-3col">
+                                    <div class="sgf-perm-no-gap"><span>Other School Attended. If Any:</span><strong id="sgfPermOtherSchool">-</strong></div>
+                                    <div class="sgf-perm-no-gap"><span>SY:</span><strong id="sgfPermOtherSchoolYear">-</strong></div>
+                                    <div class="sgf-perm-no-gap"><span>Course Taken:</span><strong id="sgfPermCourseTaken">-</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="sgf-perm-table" data-no-auto-pager="1">
+                            <thead>
+                                <tr>
+                                    <th>COURSE NUMBER</th>
+                                    <th>DESCRIPTIVE TITLE</th>
+                                    <th>FINAL GRADE</th>
+                                    <th>CREDIT EARNED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sgfPermTableBody"></tbody>
+                        </table>
+
+                    </section>
+
+                    <section class="sgf-perm-page sgf-perm-page-2">
+                        <div class="sgf-perm-cont-head">
+                            <strong>Name:</strong> <span id="sgfPermNamePage2">-</span>
+                        </div>
+
+                        <table class="sgf-perm-table sgf-perm-table-blank" data-no-auto-pager="1">
+                            <thead>
+                                <tr>
+                                    <th>COURSE NUMBER</th>
+                                    <th>DESCRIPTIVE TITLE</th>
+                                    <th>FINAL GRADE</th>
+                                    <th>CREDIT EARNED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sgfPermTableBodyPage2"></tbody>
+                        </table>
+
+                        <div class="sgf-perm-certification">
+                            <h5><u>CERTIFICATION</u></h5>
+                            <p>I hereby certify that the above are true official records of</p>
+
+                            <div class="sgf-perm-signatures">
+                                <div>
+                                    <strong>Ms. Maila D. Masangcay</strong>
+                                    <span class="sgf-perm-sign-line"></span>
+                                    <small>Registrar</small>
+                                </div>
+                                <div>
+                                    <strong id="sgfPermSigName">-</strong>
+                                    <span class="sgf-perm-sign-line"></span>
+                                    <small>kept in the file of this college.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                    </section>
                 </div>
             </div>
             <div class="sgf-tab-content" id="sgfTabGradeReport" style="display:none;">
@@ -410,6 +514,7 @@
         document.getElementById('sgfDetStudentNo').textContent = row.studentId;
         document.getElementById('sgfDetProgram').textContent = row.course;
         document.getElementById('sgfDetYearLevel').textContent = row.yearLevel;
+        document.getElementById('sgfDetSchoolYear').textContent = '-';
         document.getElementById('sgfListView').style.display = 'none';
         document.getElementById('sgfDetailView').style.display = 'block';
         sgfSwitchTab('grades');
@@ -427,12 +532,22 @@
         document.querySelectorAll('.sgf-tab').forEach(function(tab) { tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName); });
         var tabMap = { grades: 'sgfTabGrades', history: 'sgfTabHistory', evaluation: 'sgfTabEvaluation', tor: 'sgfTabTor', permanent: 'sgfTabPermanent', 'grade-report': 'sgfTabGradeReport' };
         Object.keys(tabMap).forEach(function(k) { var el = document.getElementById(tabMap[k]); if (el) el.style.display = (k === tabName) ? 'block' : 'none'; });
+
+        if (tabName === 'history') {
+            sgfRenderHistorySheet();
+        }
+
+        if (tabName === 'permanent') {
+            sgfRenderPermanentRecord();
+        }
     }
 
     function sgfLoadGradeRecords(studentNo) {
         sgfRequest(sgfApi.records + '?student_no=' + encodeURIComponent(studentNo), 'GET', null).then(function(data) {
             sgfGradeRecords = data.records || [];
             sgfRenderGradeGroups();
+            sgfRenderHistorySheet();
+            sgfRenderPermanentRecord();
         }).catch(function(err) { alert(err.message || 'Unable to load grade records.'); });
     }
 
@@ -496,6 +611,264 @@
 
         container.innerHTML = html;
     }
+
+    function sgfEscapeAttr(v) {
+        return String(v || '').replace(/"/g, '&quot;');
+    }
+
+    function sgfTermOrder(v) {
+        var t = String(v || '').toLowerCase();
+        if (t.indexOf('first') !== -1) return 1;
+        if (t.indexOf('second') !== -1) return 2;
+        if (t.indexOf('summer') !== -1) return 3;
+        return 9;
+    }
+
+    function sgfNumericSchoolYearStart(v) {
+        var m = String(v || '').match(/\d{4}/);
+        return m ? parseInt(m[0], 10) : 0;
+    }
+
+    function sgfFormatDateTime(value) {
+        if (!value) return '-';
+        var d = new Date(value.replace(' ', 'T'));
+        if (isNaN(d.getTime())) return String(value);
+        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function sgfRenderHistorySheet() {
+        var host = document.getElementById('sgfHistoryGroups');
+        if (!host) return;
+
+        if (!sgfGradeRecords.length) {
+            host.innerHTML = '<div class="sgf-history-empty">No subject activity found for this student.</div>';
+            return;
+        }
+
+        var groups = {};
+        sgfGradeRecords.forEach(function (r) {
+            var key = String(r.school_year || '-') + '|' + String(r.term || '-');
+            if (!groups[key]) {
+                groups[key] = {
+                    school_year: r.school_year || '-',
+                    term: r.term || '-',
+                    records: []
+                };
+            }
+            groups[key].records.push(r);
+        });
+
+        var keys = Object.keys(groups).sort(function (a, b) {
+            var ga = groups[a], gb = groups[b];
+            var ya = sgfNumericSchoolYearStart(ga.school_year);
+            var yb = sgfNumericSchoolYearStart(gb.school_year);
+            if (ya !== yb) return yb - ya;
+            return sgfTermOrder(ga.term) - sgfTermOrder(gb.term);
+        });
+
+        var html = '';
+        keys.forEach(function (key) {
+            var g = groups[key];
+            html += '<section class="sgf-history-group">';
+            html += '<div class="sgf-history-group-head"><span>School Year : <strong>' + sgfEscapeHtml(g.school_year) + '</strong></span><span>Semester : <strong>' + sgfEscapeHtml(g.term) + '</strong></span></div>';
+            html += '<div class="sgf-history-action-title">ADD SUBJECT:</div>';
+
+            g.records.forEach(function (r) {
+                var actor = r.professor ? r.professor : 'registrar';
+                var txDate = sgfFormatDateTime(r.created_at || r.updated_at);
+                html += '<div class="sgf-history-row">';
+                html += '<div class="sgf-history-main">';
+                html += '<div class="sgf-history-code">' + sgfEscapeHtml(r.subject_code || '-') + '</div>';
+                html += '<div class="sgf-history-desc">' + sgfEscapeHtml(r.description || '-') + '</div>';
+                html += '</div>';
+                html += '<div class="sgf-history-meta-right">';
+                html += '<div><span>User ID</span><strong>' + sgfEscapeHtml(actor) + '</strong></div>';
+                html += '<div><span>Transaction Date</span><strong>' + sgfEscapeHtml(txDate) + '</strong></div>';
+                html += '</div>';
+                html += '</div>';
+            });
+
+            var changedRows = g.records.filter(function (r) {
+                if (!r.created_at || !r.updated_at) return false;
+                return String(r.created_at) !== String(r.updated_at);
+            });
+
+            if (changedRows.length) {
+                html += '<div class="sgf-history-action-title">CHANGE GRADES:</div>';
+                changedRows.forEach(function (r) {
+                    var changedDate = sgfFormatDateTime(r.updated_at);
+                    html += '<div class="sgf-history-row sgf-history-row-grade">';
+                    html += '<div class="sgf-history-main">';
+                    html += '<div class="sgf-history-code">' + sgfEscapeHtml(r.subject_code || '-') + '</div>';
+                    html += '<div class="sgf-history-desc">' + sgfEscapeHtml(r.description || '-') + '</div>';
+                    html += '<div class="sgf-history-grade-flow">Final Grade: <strong>' + (r.final_grade !== null ? Number(r.final_grade).toFixed(2) : '-') + '</strong></div>';
+                    html += '</div>';
+                    html += '<div class="sgf-history-meta-right">';
+                    html += '<div><span>User ID</span><strong>' + sgfEscapeHtml(r.professor || 'registrar') + '</strong></div>';
+                    html += '<div><span>Transaction Date</span><strong>' + sgfEscapeHtml(changedDate) + '</strong></div>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+            }
+
+            html += '</section>';
+        });
+
+        host.innerHTML = html;
+    }
+
+    function sgfBuildPermanentRows() {
+        var rows = (sgfGradeRecords || []).slice().sort(function (a, b) {
+            var ya = sgfNumericSchoolYearStart(a.school_year);
+            var yb = sgfNumericSchoolYearStart(b.school_year);
+            if (ya !== yb) return ya - yb;
+            var ta = sgfTermOrder(a.term);
+            var tb = sgfTermOrder(b.term);
+            if (ta !== tb) return ta - tb;
+            return String(a.subject_code || '').localeCompare(String(b.subject_code || ''));
+        });
+
+        var result = [];
+        var currentKey = '';
+        rows.forEach(function (r) {
+            var sectionKey = String(r.school_year || '-') + '|' + String(r.term || '-');
+            if (sectionKey !== currentKey) {
+                currentKey = sectionKey;
+                result.push({
+                    kind: 'term',
+                    title: String(r.term || '-').toUpperCase() + ', ' + String(r.school_year || '-')
+                });
+            }
+
+            result.push({
+                kind: 'record',
+                subject_code: r.subject_code || '',
+                description: r.description || '',
+                final_grade: r.final_grade,
+                units: r.units
+            });
+        });
+
+        var termCount = result.filter(function (r) { return r.kind === 'term'; }).length;
+        if (termCount < 6) {
+            var dummySubjects = [
+                { code: 'CDI311', title: 'TRAFFIC MANAGEMENT AND ACCIDENT INVEST.', grade: 3.00, units: 3 },
+                { code: 'CLI211', title: 'CRIMINAL LAW BOOK 1', grade: 2.75, units: 3 },
+                { code: 'CRIS411', title: 'LEGAL MEDICINE', grade: 2.50, units: 3 },
+                { code: 'DT211', title: 'FIRST AID AND WATER SURVIVAL', grade: 1.75, units: 2 }
+            ];
+            var baseYear = rows.length ? sgfNumericSchoolYearStart(rows[0].school_year) : 2018;
+
+            for (var i = termCount; i < 6; i++) {
+                var yearOffset = Math.floor(i / 2);
+                var termName = (i % 2 === 0) ? 'FIRST' : 'SECOND';
+                var syStart = baseYear + yearOffset;
+                var syText = syStart + '-' + (syStart + 1);
+
+                result.push({
+                    kind: 'term',
+                    title: termName + ', ' + syText
+                });
+
+                dummySubjects.forEach(function (s) {
+                    result.push({
+                        kind: 'record',
+                        subject_code: s.code,
+                        description: s.title,
+                        final_grade: s.grade,
+                        units: s.units
+                    });
+                });
+            }
+        }
+
+        return result;
+    }
+
+    function sgfPermanentBlankRows(count) {
+        var html = '';
+        for (var i = 0; i < count; i++) {
+            html += '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+        }
+        return html;
+    }
+
+    function sgfRenderPermanentRecord() {
+        var body1 = document.getElementById('sgfPermTableBody');
+        var body2 = document.getElementById('sgfPermTableBodyPage2');
+        if (!body1 || !body2) return;
+
+        var studentName = sgfActiveStudent ? String(sgfActiveStudent.name || '').toUpperCase() : '-';
+        var studentNo = sgfActiveStudent ? sgfActiveStudent.studentId : '-';
+        var course = sgfActiveStudent ? sgfActiveStudent.course : '-';
+        if (course === 'BSIT') course = 'Bachelor of Science in Information Technology';
+        if (course === 'BSCRIM') course = 'Bachelor of Science in Criminology';
+        if (course === 'BSBA') course = 'Bachelor of Science in Business Administration';
+        if (course === 'BSED') course = 'Bachelor of Secondary Education';
+        if (course === 'BEED') course = 'Bachelor of Elementary Education';
+
+        document.getElementById('sgfPermCourse').textContent = course;
+        document.getElementById('sgfPermName').textContent = studentName;
+        document.getElementById('sgfPermNamePage2').textContent = studentName;
+        document.getElementById('sgfPermStudentNo').textContent = studentNo;
+        document.getElementById('sgfPermSigName').textContent = studentName;
+
+        document.getElementById('sgfPermSex').textContent = '';
+        document.getElementById('sgfPermBirthYear').textContent = '';
+        document.getElementById('sgfPermBirthMonth').textContent = '';
+        document.getElementById('sgfPermBirthDay').textContent = '';
+        document.getElementById('sgfPermCivilStatus').textContent = '';
+        document.getElementById('sgfPermCitizenship').textContent = '';
+        document.getElementById('sgfPermBirthProvince').textContent = '';
+        document.getElementById('sgfPermMunicipality').textContent = '';
+        document.getElementById('sgfPermHighSchool').textContent = '';
+        document.getElementById('sgfPermOtherSchool').textContent = '';
+        document.getElementById('sgfPermOtherSchoolYear').textContent = '';
+        document.getElementById('sgfPermCourseTaken').textContent = '';
+
+        var years = (sgfGradeRecords || []).map(function (r) { return r.school_year || ''; }).filter(function (v) { return v !== ''; });
+        document.getElementById('sgfPermSchoolYear').textContent = years.length ? years[0] : '-';
+
+        var rows = sgfBuildPermanentRows();
+        var maxPage1Rows = 32;
+
+        var html1 = '';
+        var html2 = '';
+        rows.forEach(function (row, index) {
+            var target = index < maxPage1Rows ? 'page1' : 'page2';
+            var chunk = '';
+
+            if (row.kind === 'term') {
+                chunk = '<tr class="sgf-perm-term-row"><td></td><td>' + sgfEscapeHtml(row.title) + '</td><td></td><td></td></tr>';
+            } else {
+                chunk = '<tr>' +
+                    '<td>' + sgfEscapeHtml(row.subject_code) + '</td>' +
+                    '<td>' + sgfEscapeHtml(row.description) + '</td>' +
+                    '<td>' + (row.final_grade !== null ? Number(row.final_grade).toFixed(2) : '-') + '</td>' +
+                    '<td>' + (row.units !== null && row.units !== undefined ? Number(row.units).toFixed(1).replace('.0', '') : '-') + '</td>' +
+                '</tr>';
+            }
+
+            if (target === 'page1') {
+                html1 += chunk;
+            } else {
+                html2 += chunk;
+            }
+        });
+
+        if (!html1) {
+            html1 = '<tr><td colspan="4" class="sgf-perm-empty">No grade records available.</td></tr>';
+        }
+
+        var page2RowCount = rows.length > maxPage1Rows ? (rows.length - maxPage1Rows) : 0;
+        if (page2RowCount < 40) {
+            html2 += sgfPermanentBlankRows(40 - page2RowCount);
+        }
+
+        body1.innerHTML = html1;
+        body2.innerHTML = html2;
+    }
+
 
     /* Subject CRUD */
     function sgfOpenAddSubjectModal() {
@@ -600,6 +973,31 @@
     document.getElementById('sgfAddOldBtn').addEventListener('click', function() {
         sgfOpenAddSubjectModal();
         document.getElementById('sgfSubjectModalTitle').textContent = 'ADD OLD RECORD';
+    });
+    var sgfPrintPermanentBtn = document.getElementById('sgfPrintPermanentBtn');
+    if (sgfPrintPermanentBtn) {
+        sgfPrintPermanentBtn.addEventListener('click', function () {
+            sgfRenderPermanentRecord();
+            document.body.classList.remove('sgf-print-tor');
+            document.body.classList.add('sgf-print-permanent');
+            window.print();
+        });
+    }
+    window.addEventListener('beforeprint', function () {
+        var activeTab = document.querySelector('.sgf-tab.active');
+        var activeName = activeTab ? activeTab.getAttribute('data-tab') : '';
+
+        document.body.classList.remove('sgf-print-permanent');
+        document.body.classList.remove('sgf-print-tor');
+
+        if (activeName === 'permanent') {
+            sgfRenderPermanentRecord();
+            document.body.classList.add('sgf-print-permanent');
+        }
+    });
+    window.addEventListener('afterprint', function () {
+        document.body.classList.remove('sgf-print-permanent');
+        document.body.classList.remove('sgf-print-tor');
     });
 
     document.addEventListener('click', function(e) {

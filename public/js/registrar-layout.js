@@ -1,4 +1,36 @@
 (function () {
+    function closeSiblingTopDropdowns(currentDropdown) {
+        if (!currentDropdown || !currentDropdown.parentElement) {
+            return;
+        }
+
+        Array.prototype.forEach.call(currentDropdown.parentElement.children, function (dropdown) {
+            if (!dropdown.classList || !dropdown.classList.contains('sidebar-dropdown')) {
+                return;
+            }
+
+            if (dropdown !== currentDropdown) {
+                dropdown.classList.remove('open');
+            }
+        });
+    }
+
+    function closeSiblingNestedDropdowns(currentNested) {
+        if (!currentNested || !currentNested.parentElement) {
+            return;
+        }
+
+        Array.prototype.forEach.call(currentNested.parentElement.children, function (nested) {
+            if (!nested.classList || !nested.classList.contains('sidebar-nested-dropdown')) {
+                return;
+            }
+
+            if (nested !== currentNested) {
+                nested.classList.remove('open');
+            }
+        });
+    }
+
     function bindSidebarDropdownToggles() {
         document.querySelectorAll('.sidebar-dropdown-toggle').forEach(function (toggle) {
             toggle.addEventListener('click', function (e) {
@@ -6,7 +38,9 @@
                 var dropdown = this.closest('.sidebar-dropdown');
                 var menu = dropdown ? dropdown.querySelector('.sidebar-dropdown-menu') : null;
                 if (menu && (menu.querySelector('.sidebar-sublink') || menu.querySelector('.sidebar-nested-dropdown'))) {
-                    dropdown.classList.toggle('open');
+                    var willOpen = !dropdown.classList.contains('open');
+                    closeSiblingTopDropdowns(dropdown);
+                    dropdown.classList.toggle('open', willOpen);
                 }
             });
         });
@@ -16,7 +50,9 @@
                 e.preventDefault();
                 var nested = this.closest('.sidebar-nested-dropdown');
                 if (nested) {
-                    nested.classList.toggle('open');
+                    var willOpen = !nested.classList.contains('open');
+                    closeSiblingNestedDropdowns(nested);
+                    nested.classList.toggle('open', willOpen);
                 }
             });
         });
