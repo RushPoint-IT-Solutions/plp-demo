@@ -7,6 +7,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class SubmitApplicantApplicationRequest extends FormRequest
 {
+    protected function prepareForValidation()
+    {
+        $currentYear = (int) now()->year;
+
+        $this->merge([
+            'school_year' => $currentYear . '-' . ($currentYear + 1),
+            'application_date' => now()->toDateString(),
+        ]);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      *

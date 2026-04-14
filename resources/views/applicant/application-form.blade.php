@@ -18,6 +18,7 @@
     @php($selectedCalendarDate = $calendarScheduleDate->format('Y-m-d'))
     @php($startYear = now()->year)
     @php($defaultSchoolYear = $startYear . '-' . ($startYear + 1))
+    @php($autoApplicationDate = now()->format('Y-m-d'))
     @php($routeParams = isset($formRouteParams) && is_array($formRouteParams) ? $formRouteParams : [])
     @php($saveRouteName = isset($formRouteNames['save']) ? $formRouteNames['save'] : 'applicant.application-form.save')
     @php($step1RouteName = isset($formRouteNames['step1']) ? $formRouteNames['step1'] : 'applicant.application-form.step-1.save')
@@ -638,14 +639,16 @@
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">School Year</label>
-                        <input type="text" name="school_year" class="setup-input" value="{{ old('school_year', optional($pref)->school_year ?: $defaultSchoolYear) }}" required>
+                        <input type="hidden" name="school_year" value="{{ $defaultSchoolYear }}">
+                        <input type="text" class="setup-input" value="{{ $defaultSchoolYear }}" disabled aria-label="Current School Year">
                     </div>
                 </div>
 
                 <div class="setup-row setup-row--app-meta">
                     <div class="setup-col setup-col-sm setup-col--w-220">
                         <label class="setup-label">Application Date</label>
-                        <input type="date" name="application_date" class="setup-input" value="{{ old('application_date', optional(optional($pref)->application_date)->format('Y-m-d') ?: now()->format('Y-m-d')) }}" required>
+                        <input type="hidden" name="application_date" value="{{ $autoApplicationDate }}">
+                        <input type="date" class="setup-input" value="{{ $autoApplicationDate }}" disabled aria-label="Application Date">
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-160">
                         <label class="setup-label">Campus</label>
