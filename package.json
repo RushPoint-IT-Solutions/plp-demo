@@ -16,6 +16,7 @@
         "@berthojoris/mcp-mysql-server": "^1.40.5",
         "@modelcontextprotocol/server-filesystem": "^2026.1.14",
         "@playwright/mcp": "^0.0.70",
+        "@playwright/test": "^1.59.1",
         "axios": "^0.18",
         "bootstrap": "^4.0.0",
         "browser-sync": "^2.26.14",

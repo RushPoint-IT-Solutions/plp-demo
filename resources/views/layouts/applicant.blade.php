@@ -142,6 +142,9 @@
     <!-- Applicant Sidebar JS -->
     <script src="{{ asset('js/applicant-layout.js') }}"></script>
 
+    <!-- Applicant Select Dropdown JS -->
+    <script src="{{ mix('js/applicant-select.js') }}"></script>
+
     @stack('scripts')
 </body>
 </html>

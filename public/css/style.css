@@ -43074,3 +43074,166 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   }
 }
 
+.applicant-select-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.applicant-select-native {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.applicant-select-native.is-enhanced {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.applicant-select-trigger {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #26463a;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: "Poppins", sans-serif;
+}
+
+.applicant-select-native.is-enhanced + .applicant-select-trigger {
+  display: inline-flex;
+}
+
+.applicant-select-trigger:focus,
+.applicant-select-wrap.is-open .applicant-select-trigger,
+[data-applicant-select].is-open .applicant-select-trigger {
+  outline: none;
+  border-color: #006837;
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.14);
+}
+
+.applicant-select-trigger:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+.applicant-select-trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.applicant-select-trigger-text.is-placeholder {
+  color: #999;
+}
+
+.applicant-select-trigger-caret {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #006837;
+  border-bottom: 2px solid #006837;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.applicant-select-wrap.is-open .applicant-select-trigger-caret,
+[data-applicant-select].is-open .applicant-select-trigger-caret {
+  transform: rotate(225deg) translateY(2px);
+}
+
+.applicant-select-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid rgb(0, 53, 28.0288461538);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(0, 2, 1.0576923077, 0.15);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 35;
+}
+
+.applicant-select-wrap.is-open .applicant-select-menu,
+[data-applicant-select].is-open .applicant-select-menu {
+  display: block;
+}
+
+.applicant-select-option-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1a3f2e;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: "Poppins", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.applicant-select-option-btn:hover,
+.applicant-select-option-btn.is-active {
+  background: rgb(78.5, 255, 171.8413461538);
+  color: #006837;
+}
+
+.applicant-select-option-btn.is-selected {
+  background: #006837;
+  color: #ffffff;
+}
+
+.applicant-select-option-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 104, 55, 0.3);
+}
+
+@media (max-width: 768px) {
+  .applicant-select-trigger {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .applicant-select-menu {
+    max-height: 300px;
+  }
+
+  .applicant-select-option-btn {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}
+

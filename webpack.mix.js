@@ -13,6 +13,7 @@ const mix = require('laravel-mix');
 
 mix.js('resources/js/app.js', 'public/js')
    .js('resources/js/applicant-form.js', 'public/js')
+   .js('resources/js/applicant-select.js', 'public/js')
    .js('resources/js/student-profile.js', 'public/js')
    .js('resources/js/student-sidebar-dropdown.js', 'public/js')
    .js('resources/js/section-offering.js', 'public/js')

@@ -742,12 +742,16 @@
             selectEl.appendChild(opt);
         });
         selectEl.disabled = false;
+        // Dispatch change event for enhanced dropdowns to rebuild their menus
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function resetSelect(selectEl, placeholder) {
         selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
         selectEl.disabled = true;
         selectEl.value = '';
+        // Dispatch change event for enhanced dropdowns to rebuild their menus
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function setupCascade(prefix, addressData) {

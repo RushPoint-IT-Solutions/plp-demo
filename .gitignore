@@ -11,6 +11,12 @@ npm-debug.log
 yarn-error.log
 .playwright-mcp
 .security-audits/
+.ai-memory/
 scripts
 QWEN.md
 .qwen
+error.log
+n.log
+sass-build.log
+tests
+test-results

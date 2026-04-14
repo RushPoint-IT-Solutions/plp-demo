@@ -81,33 +81,38 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./resources/js/registrar-listbox-select.js":
-/*!**************************************************!*\
-  !*** ./resources/js/registrar-listbox-select.js ***!
-  \**************************************************/
+/***/ "./resources/js/applicant-select.js":
+/*!******************************************!*\
+  !*** ./resources/js/applicant-select.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
 (function () {
   function getWrappers() {
-    return Array.prototype.slice.call(document.querySelectorAll('[data-listbox-select]'));
+    return Array.prototype.slice.call(document.querySelectorAll('[data-applicant-select]'));
   }
   var wrappers = getWrappers();
   if (!wrappers.length) {
     return;
   }
+  wrappers.forEach(function (wrapper) {
+    if (!wrapper.classList.contains('applicant-select-wrap')) {
+      wrapper.classList.add('applicant-select-wrap');
+    }
+  });
   function getEnabledButtons(menu) {
-    return Array.prototype.filter.call(menu.querySelectorAll('.rg-listbox-option-btn'), function (button) {
+    return Array.prototype.filter.call(menu.querySelectorAll('.applicant-select-option-btn'), function (button) {
       return !button.disabled;
     });
   }
   function setActiveOption(menu, optionButton, shouldFocus) {
-    menu.querySelectorAll('.rg-listbox-option-btn').forEach(function (button) {
+    menu.querySelectorAll('.applicant-select-option-btn').forEach(function (button) {
       button.classList.remove('is-active');
       button.setAttribute('tabindex', '-1');
     });
@@ -130,7 +135,7 @@
     if (!buttons.length) {
       return null;
     }
-    var active = menu.querySelector('.rg-listbox-option-btn.is-active');
+    var active = menu.querySelector('.applicant-select-option-btn.is-active');
     var currentIndex = buttons.indexOf(active);
     if (currentIndex < 0) {
       currentIndex = 0;
@@ -191,17 +196,38 @@
     var selectedOption = select.options[select.selectedIndex];
     var fallback = select.getAttribute('data-placeholder') || '';
     currentText.textContent = selectedOption ? selectedOption.textContent : fallback;
-    menu.querySelectorAll('.rg-listbox-option-btn').forEach(function (button) {
+
+    // Update placeholder class
+    if (selectedOption && selectedOption.value) {
+      currentText.classList.remove('is-placeholder');
+    } else {
+      currentText.classList.add('is-placeholder');
+    }
+    menu.querySelectorAll('.applicant-select-option-btn').forEach(function (button) {
       var value = button.getAttribute('data-option-value');
       button.classList.toggle('is-selected', value === select.value);
     });
   }
+  function refreshMenu(select, menu, currentText, wrapper) {
+    // Rebuild all option buttons from the native select options
+    menu.innerHTML = '';
+
+    // Skip the first option (placeholder) when building buttons
+    var options = Array.prototype.slice.call(select.options);
+    if (options.length > 0 && options[0].value === '') {
+      options = options.slice(1);
+    }
+    options.forEach(function (option, index) {
+      buildOptionButton(option, select, menu, currentText, wrapper, index);
+    });
+    refreshSelection(select, menu, currentText);
+  }
   function buildOptionButton(option, select, menu, currentText, wrapper, index) {
     var item = document.createElement('li');
-    item.className = 'rg-listbox-option';
+    item.className = 'applicant-select-option';
     var button = document.createElement('button');
     button.type = 'button';
-    button.className = 'rg-listbox-option-btn';
+    button.className = 'applicant-select-option-btn';
     button.textContent = option.textContent || '';
     button.id = select.id + '-option-' + index;
     button.setAttribute('role', 'option');
@@ -209,9 +235,12 @@
     if (option.disabled) {
       button.disabled = true;
     }
-    if (option.selected) {
+    if (option.selected && option.value !== '') {
       button.classList.add('is-selected');
       currentText.textContent = option.textContent || '';
+      currentText.classList.remove('is-placeholder');
+    } else if (option.value === '') {
+      currentText.classList.add('is-placeholder');
     }
     button.addEventListener('mouseenter', function () {
       setActiveOption(menu, button, false);
@@ -226,7 +255,7 @@
     menu.appendChild(item);
   }
   wrappers.forEach(function (wrapper) {
-    var select = wrapper.querySelector('select.js-rg-listbox-native');
+    var select = wrapper.querySelector('select.applicant-select-native');
     var trigger = wrapper.querySelector('[data-select-trigger]');
     var currentText = wrapper.querySelector('[data-select-current]');
     var menu = wrapper.querySelector('[data-select-menu]');
@@ -237,11 +266,20 @@
     menu.innerHTML = '';
     trigger.setAttribute('aria-controls', select.id + '-custom-menu');
     menu.id = select.id + '-custom-menu';
-    Array.prototype.forEach.call(select.options, function (option, index) {
+
+    // Skip the first option (placeholder) when building buttons
+    var options = Array.prototype.slice.call(select.options);
+    if (options.length > 0 && options[0].value === '') {
+      options = options.slice(1);
+    }
+    options.forEach(function (option, index) {
       buildOptionButton(option, select, menu, currentText, wrapper, index);
     });
+    wrapper._optionCount = select.options.length;
     refreshSelection(select, menu, currentText);
-    trigger.addEventListener('click', function () {
+    trigger.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
       if (wrapper.classList.contains('is-open')) {
         closeSelect(wrapper);
         return;
@@ -263,14 +301,22 @@
           openSelect(wrapper, trigger, menu, select);
           return;
         }
-        commitOption(menu.querySelector('.rg-listbox-option-btn.is-active'), select, wrapper);
+        commitOption(menu.querySelector('.applicant-select-option-btn.is-active'), select, wrapper);
       }
       if (event.key === 'Escape') {
         closeSelect(wrapper);
       }
     });
     select.addEventListener('change', function () {
-      refreshSelection(select, menu, currentText);
+      // Check if options were added (dynamic population)
+      var currentOptionCount = select.options.length;
+      if (currentOptionCount !== (wrapper._optionCount || 0)) {
+        // Options changed - rebuild the menu
+        wrapper._optionCount = currentOptionCount;
+        refreshMenu(select, menu, currentText, wrapper);
+      } else {
+        refreshSelection(select, menu, currentText);
+      }
     });
     menu.addEventListener('keydown', function (event) {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -280,7 +326,7 @@
       }
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        commitOption(menu.querySelector('.rg-listbox-option-btn.is-active'), select, wrapper);
+        commitOption(menu.querySelector('.applicant-select-option-btn.is-active'), select, wrapper);
         return;
       }
       if (event.key === 'Escape') {
@@ -288,9 +334,12 @@
         trigger.focus();
       }
     });
+    menu.addEventListener('click', function (event) {
+      event.stopPropagation();
+    });
   });
   document.addEventListener('click', function (event) {
-    if (!event.target.closest('[data-listbox-select]')) {
+    if (!event.target.closest('[data-applicant-select]')) {
       closeAll();
     }
   });
@@ -303,14 +352,14 @@
 
 /***/ }),
 
-/***/ 11:
-/*!********************************************************!*\
-  !*** multi ./resources/js/registrar-listbox-select.js ***!
-  \********************************************************/
+/***/ 2:
+/*!************************************************!*\
+  !*** multi ./resources/js/applicant-select.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\registrar-listbox-select.js */"./resources/js/registrar-listbox-select.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\applicant-select.js */"./resources/js/applicant-select.js");
 
 
 /***/ })

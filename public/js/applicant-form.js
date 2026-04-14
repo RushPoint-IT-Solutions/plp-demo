@@ -716,11 +716,19 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       selectEl.appendChild(opt);
     });
     selectEl.disabled = false;
+    // Dispatch change event for enhanced dropdowns to rebuild their menus
+    selectEl.dispatchEvent(new Event('change', {
+      bubbles: true
+    }));
   }
   function resetSelect(selectEl, placeholder) {
     selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
     selectEl.disabled = true;
     selectEl.value = '';
+    // Dispatch change event for enhanced dropdowns to rebuild their menus
+    selectEl.dispatchEvent(new Event('change', {
+      bubbles: true
+    }));
   }
   function setupCascade(prefix, addressData) {
     var regionEl = document.querySelector('[name="' + prefix + '_region"]');
@@ -872,7 +880,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! c:\Users\micha\Desktop\OJT\plp-demo\resources\js\applicant-form.js */"./resources/js/applicant-form.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\applicant-form.js */"./resources/js/applicant-form.js");
 
 
 /***/ })
