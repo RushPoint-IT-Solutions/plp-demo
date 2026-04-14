@@ -12,3 +12,5 @@ yarn-error.log
 .playwright-mcp
 .security-audits/
 scripts
+QWEN.md
+.qwen

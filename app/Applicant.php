@@ -25,6 +25,7 @@ class Applicant extends Model
         'exam_result_status_id',
         'application_status', 'application_draft_step', 'application_submitted_at', 'application_portal_stage',
         'application_status_id',
+        'college_id',
     ];
 
     protected $casts = [
@@ -73,6 +74,11 @@ class Applicant extends Model
     public function examResultStatusLookup()
     {
         return $this->belongsTo(ApplicantExamResultStatus::class, 'exam_result_status_id');
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(College::class);
     }
 
     public function getApplicationStatusAttribute($value)
