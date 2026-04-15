@@ -137,23 +137,10 @@
             <div class="cfg-card-head">
                 <h3>Account Access Permissions</h3>
             </div>
-            <div class="ua-access-meta">
-                <div class="ua-access-user-note" id="uaAccessUserNote">No user selected. Select a row to preview/edit access permissions.</div>
-                <div class="ua-access-copy-wrap">
-                    <label class="app-filter-label" for="uaCopyAccessFrom">Copy Access From</label>
-                    <select id="uaCopyAccessFrom" class="app-filter-select">
-                        <option value="">- select user -</option>
-                    </select>
-                    <button type="button" class="ua-copy-access-btn" id="uaCopyAccessBtn">Copy</button>
-                </div>
+            <div style="padding: 20px 24px; text-align: center; color: #666; background: #fafafa; border: 1px dashed #ddd; border-radius: 6px; margin: 20px;">
+                <p style="margin-bottom: 12px; font-size: 0.95rem;">Access Permissions are now managed via the Action Menu.</p>
+                <button type="button" class="pf-btn-new" onclick="var p=uaGetSelectedUser(); if(!p) { alert('Select a Registrar account first.'); return; } if(String(p.userType).toLowerCase() !== 'registrar') { alert('Access Control is only for Registrar accounts.'); return; } uaOpenAccessModal(p.userId);">Manage Access Control</button>
             </div>
-
-            <div class="ua-access-quick-wrap">
-                <div class="ua-access-quick-title">Quick Access Options</div>
-                <div class="ua-access-quick-options" id="uaAccessQuickOptions"></div>
-            </div>
-            <div class="ua-access-grid" id="uaAccessGrid"></div>
-            <div class="ua-access-footnote">UI-only preview for now. Access values are kept in-page until backend mapping is wired.</div>
         </section>
     </div>
 </div>
@@ -168,9 +155,58 @@
         </div>
     </div>
 </div>
+
+<!-- Access Control Modal -->
+<div class="req-modal-overlay" id="uaAccessModalOverlay" style="display:none;" onclick="if(event.target===this) uaCloseAccessModal()">
+    <div class="req-modal-box" style="width: 900px; max-width: 95vw; padding: 0; display: flex; flex-direction: column; max-height: 90vh;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 8px 8px 0 0; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <h3 id="uaAccessModalNote" style="margin: 0; font-size: 1.1rem; color: #333; font-weight: 600;">Access Control &mdash; User</h3>
+            </div>
+            <button type="button" onclick="uaCloseAccessModal()" style="background:none; border:none; color:#888; cursor:pointer;" aria-label="Close" title="Close"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        
+        <div style="padding: 20px; overflow-y: auto; flex: 1; background: #f9fbfd;">
+            <div style="background: #eef7fd; border: 1px solid #c8e1f5; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; color: #206b9b; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div>These settings override the role defaults for this user only. Toggles are pre-filled with the role's current permissions.</div>
+            </div>
+
+            <div class="ua-access-copy-wrap" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <label class="app-filter-label" for="uaCopyAccessFrom" style="margin: 0; width: auto;">Copy Access From:</label>
+                <select id="uaCopyAccessFrom" class="app-filter-select" style="max-width: 300px; margin: 0;">
+                    <option value="">- select user -</option>
+                </select>
+                <button type="button" class="ua-copy-access-btn pf-btn-new" id="uaCopyAccessBtn" style="padding: 6px 12px; margin: 0;">Copy Settings</button>
+            </div>
+
+            <div class="ua-access-quick-wrap" style="margin: 0 0 20px 0; background: #fff; padding: 16px; border: 1px solid #eaeaea; border-radius: 6px;">
+                <div class="ua-access-quick-title" style="margin-top: 0;">Quick Access Options</div>
+                <div class="ua-access-quick-options" id="uaAccessQuickOptions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;"></div>
+            </div>
+            
+            <div style="background: #fff; border: 1px solid #eaeaea; border-radius: 6px; padding: 16px;">
+                <div class="ua-access-grid" id="uaAccessGrid"></div>
+            </div>
+            <div class="ua-access-footnote" style="margin-top: 16px;">UI-only preview for now. Access values are kept in-memory until backend mapping is wired.</div>
+        </div>
+
+        <div style="padding: 16px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; background: #fff; border-radius: 0 0 8px 8px; flex-shrink: 0;">
+            <button type="button" class="req-btn-cancel" onclick="uaCloseAccessModal()">Cancel</button>
+            <button type="button" class="req-btn-save" onclick="uaSaveAccessModal()" style="background: #10b981; min-width: 120px;">Save Access</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
+<style>
+    /* Fixed position to ensure it bursts outside scrolled wrappers */
+    #uaTable .apst-dropdown {
+        position: fixed;
+    }
+</style>
 <script>
     var uaUsers = @json($accountUsers ?? []);
     var uaUpdateTemplate = '{{ route('registrar.admin-tools.access-management.user-accounts.update', ['user' => '__ID__']) }}';
@@ -179,7 +215,7 @@
     var uaSelectedUserId = '';
     var uaPendingDeletePk = '';
     var uaCurrentPage = 1;
-    var uaPageSize = 10;
+    var uaPageSize = 5;
     var uaFiltersApplied = false;
     var uaAccessStateByUserId = {};
     var uaAccessQuickToggleItems = [
@@ -240,6 +276,67 @@
         }
     ];
 
+    function uaFocusRow(userId) {
+        var match = uaUsers.find(function(u) { return u.userId === userId; });
+        if (match) uaFillCredentials(match);
+    }
+
+    function uaOpenAccessModal(userId) {
+        var match = uaUsers.find(function(u) { return u.userId === userId; });
+        if (match) {
+            uaFillCredentials(match);
+            document.getElementById('uaAccessModalNote').innerHTML = 'Access Control &mdash; <strong style="color: #0b5c16;">' + uaEscapeHtml(match.fullName) + '</strong> <span style="font-weight: normal; color: #888;">(' + uaEscapeHtml(match.userType) + ')</span>';
+            document.getElementById('uaAccessModalOverlay').style.display = 'flex';
+        }
+    }
+
+    function uaCloseAccessModal() {
+        document.getElementById('uaAccessModalOverlay').style.display = 'none';
+        uaCloseActionMenus();
+    }
+
+    function uaSaveAccessModal() {
+        alert('Access settings for ' + uaSelectedUserId + ' saved (Preview UI).');
+        uaCloseAccessModal();
+    }
+
+    function uaCloseActionMenus() {
+        document.querySelectorAll('.apst-dropdown.open').forEach(function(m) {
+            m.classList.remove('open', 'drop-up');
+            m.style.top = ''; m.style.left = ''; m.style.right = ''; m.style.bottom = '';
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-ua-menu-toggle]');
+        if (btn) {
+            var menuId = btn.getAttribute('data-ua-menu-toggle');
+            var menu = document.getElementById(menuId);
+            if (!menu) return;
+            var isOpen = menu.classList.contains('open');
+            uaCloseActionMenus();
+            if (isOpen) return;
+
+            var rect = btn.getBoundingClientRect();
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - rect.left + 4) + 'px';
+            if (window.innerHeight - rect.bottom < 150) {
+                menu.classList.add('drop-up');
+                menu.style.top = 'auto';
+                menu.style.bottom = (window.innerHeight - rect.top) + 'px';
+            } else {
+                menu.style.top = rect.top + 'px';
+                menu.style.bottom = 'auto';
+            }
+            menu.classList.add('open');
+            return;
+        }
+
+        if (!e.target.closest('.apst-dropdown')) {
+            uaCloseActionMenus();
+        }
+    });
+
     function uaUpdateUrl(id) {
         return uaUpdateTemplate.replace('__ID__', String(id));
     }
@@ -288,11 +385,21 @@
         return String(value || '').trim().toLowerCase();
     }
 
-    function uaBuildDeleteAction(pk) {
-        return '' +
-            '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-pk="' + uaEscapeHtml(pk) + '" title="Delete">' +
-                '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
-            '</button>';
+    function uaBuildActionMenu(user) {
+        var menuId = 'uaMenu_' + user.pk;
+        var editAction;
+
+        if (String(user.userType).toLowerCase() === 'registrar') {
+            editAction = '<button type="button" onclick="uaOpenAccessModal(\'' + uaEscapeHtml(user.userId) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>Edit Access</button>';
+        } else {
+            editAction = '<button type="button" onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>';
+        }
+
+        return '<div class="apst-action-btn" data-ua-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
+            '<div class="apst-dropdown" id="' + menuId + '">' +
+                editAction +
+                '<button type="button" class="apst-del-btn" onclick="uaOpenDeleteModal(\'' + uaEscapeHtml(user.pk) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
+            '</div>';
     }
 
     function uaBuildStatusBadge(isInactive) {
@@ -402,12 +509,12 @@
             var selectedClass = user.userId === uaSelectedUserId ? ' class="ua-selected-row"' : '';
             return '' +
                 '<tr data-ua-index="' + index + '" data-ua-user-id="' + uaEscapeHtml(user.userId) + '"' + selectedClass + '>' +
-                    '<td>' + (startIndex + rowIndex + 1) + '</td>' +
-                    '<td>' + uaEscapeHtml(user.userId) + '</td>' +
-                    '<td>' + uaEscapeHtml(user.fullName) + '</td>' +
-                    '<td>' + uaEscapeHtml(user.userType) + '</td>' +
-                    '<td>' + uaBuildStatusBadge(user.inactive) + '</td>' +
-                    '<td style="text-align:center;">' + uaBuildDeleteAction(user.pk) + '</td>' +
+                    '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + (startIndex + rowIndex + 1) + '</td>' +
+                    '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.userId) + '</td>' +
+                    '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.fullName) + '</td>' +
+                    '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.userType) + '</td>' +
+                    '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaBuildStatusBadge(user.inactive) + '</td>' +
+                    '<td style="text-align:center;">' + uaBuildActionMenu(user) + '</td>' +
                 '</tr>';
         }).join('');
 
@@ -754,10 +861,13 @@
         var html = uaAccessQuickToggleItems.map(function(itemName, index) {
             var checked = state && state.quick[itemName] ? 'checked' : '';
             return '' +
-                '<label class="setup-checkbox-label ua-access-check">' +
-                    '<input type="checkbox" class="req-checkbox-input" data-ua-quick-index="' + index + '" ' + checked + (disabled ? ' disabled' : '') + '>' +
-                    '<span>' + uaEscapeHtml(itemName) + '</span>' +
-                '</label>';
+                '<div style="display:flex; align-items:center; gap:8px;">' +
+                    '<label class="toggle-switch ua-access-check">' +
+                        '<input type="checkbox" class="req-checkbox-input" data-ua-quick-index="' + index + '" ' + checked + (disabled ? ' disabled' : '') + '>' +
+                        '<span class="toggle-slider"></span>' +
+                    '</label>' +
+                    '<span class="toggle-text">' + uaEscapeHtml(itemName) + '</span>' +
+                '</div>';
         }).join('');
 
         mount.innerHTML = html;
@@ -773,8 +883,8 @@
                 return '' +
                     '<tr>' +
                         '<td>' + uaEscapeHtml(itemName) + '</td>' +
-                        '<td class="ua-access-rw-col"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="r" ' + (itemState.r ? 'checked ' : '') + (disabled ? 'disabled' : '') + '></td>' +
-                        '<td class="ua-access-rw-col"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="w" ' + (itemState.w ? 'checked ' : '') + (disabled ? 'disabled' : '') + '></td>' +
+                        '<td class="ua-access-rw-col"><label class="toggle-switch" style="margin:auto"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="r" ' + (itemState.r ? 'checked ' : '') + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></td>' +
+                        '<td class="ua-access-rw-col"><label class="toggle-switch" style="margin:auto"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="w" ' + (itemState.w ? 'checked ' : '') + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></td>' +
                     '</tr>';
             }).join('');
 
@@ -784,8 +894,8 @@
                         '<thead>' +
                             '<tr>' +
                                 '<th>' + uaEscapeHtml(group.title) + '</th>' +
-                                '<th class="ua-access-rw-col"><span class="ua-access-rw-head"><span class="ua-access-rw-text">R</span><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="r" ' + (disabled ? 'disabled' : '') + '></span></th>' +
-                                '<th class="ua-access-rw-col"><span class="ua-access-rw-head"><span class="ua-access-rw-text">W</span><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="w" ' + (disabled ? 'disabled' : '') + '></span></th>' +
+                                '<th class="ua-access-rw-col"><div style="display:flex; flex-direction:column; align-items:center; gap:4px"><span class="ua-access-rw-text">View</span><label class="toggle-switch"><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="r" ' + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></div></th>' +
+                                '<th class="ua-access-rw-col"><div style="display:flex; flex-direction:column; align-items:center; gap:4px"><span class="ua-access-rw-text">Edit</span><label class="toggle-switch"><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="w" ' + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></div></th>' +
                             '</tr>' +
                         '</thead>' +
                         '<tbody>' + rows + '</tbody>' +
@@ -797,14 +907,8 @@
     }
 
     function uaRenderAccessView() {
-        var accessCard = document.getElementById('uaAccessCard');
-        var note = document.getElementById('uaAccessUserNote');
         var selectedUser = uaGetSelectedUser();
         var canManageAccess = uaCanManageAccess(selectedUser);
-
-        if (accessCard) {
-            accessCard.style.display = canManageAccess ? '' : 'none';
-        }
 
         if (!canManageAccess) {
             return;
@@ -813,17 +917,10 @@
         var state = uaGetSelectedAccessState();
         var disabled = !state;
 
-        if (note) {
-            note.textContent = disabled
-                ? 'No user selected. Select a row to preview/edit access permissions.'
-                : 'Editing access for ' + uaSelectedUserId + '.';
-        }
-
         uaRenderAccessQuickOptions(state, disabled);
         uaRenderAccessGrid(state, disabled);
 
-        // Safety cleanup in case shared auto-pager mounts were inserted before no-auto flags applied.
-        document.querySelectorAll('.ua-access-card .rtp-pagination, .ua-access-card .pf-pagination, .ua-access-card .app-table-pager').forEach(function(node) {
+        document.querySelectorAll('#uaAccessModalOverlay .rtp-pagination, #uaAccessModalOverlay .pf-pagination, #uaAccessModalOverlay .app-table-pager').forEach(function(node) {
             if (node && node.parentNode) {
                 node.parentNode.removeChild(node);
             }
