@@ -5322,8 +5322,20 @@ select:hover {
   grid-column: span 4;
 }
 
+.so-modal-col-5 {
+  grid-column: span 5;
+}
+
 .so-modal-col-6 {
   grid-column: span 6;
+}
+
+.so-modal-col-7 {
+  grid-column: span 7;
+}
+
+.so-modal-col-8 {
+  grid-column: span 8;
 }
 
 .so-modal-col-12 {
@@ -5465,6 +5477,241 @@ select:hover {
   border-color: #005028;
 }
 
+#soEditSubjectModal {
+  z-index: 1250;
+}
+
+#soEditSubjectModal .so-edit-modal-dialog {
+  max-width: 980px;
+}
+
+#soEditSubjectModal .so-edit-modal-header {
+  border-bottom: 1px solid #e6edf2;
+  padding-bottom: 12px;
+}
+
+#soEditSubjectModal .so-edit-modal-grid {
+  row-gap: 12px;
+}
+
+#soEditSubjectModal .so-edit-warning {
+  margin-bottom: 12px;
+  border: 1px solid #f0c6c6;
+  border-radius: 8px;
+  background: #fff7f7;
+  color: #b54747;
+  font-size: 0.96rem;
+  font-style: italic;
+  line-height: 1.45;
+  padding: 9px 12px;
+}
+
+#soEditSubjectModal .so-edit-section {
+  border: 1px solid #d9e4dd;
+  border-radius: 10px;
+  background: #fbfdfb;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+#soEditSubjectModal .so-edit-section:last-child {
+  margin-bottom: 0;
+}
+
+#soEditSubjectModal .so-edit-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#soEditSubjectModal .so-edit-section-title {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #0f5132;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+#soEditSubjectModal .so-edit-section-head .so-edit-section-title {
+  margin-bottom: 0;
+}
+
+#soEditSubjectModal .so-edit-readonly {
+  background: #ffffff;
+  border: 1px solid #cfd8df;
+  color: #374151;
+}
+
+#soEditSubjectModal .so-modal-field label {
+  font-size: 0.72rem;
+  color: #5b6470;
+}
+
+#soEditSubjectModal .so-edit-slots {
+  text-align: center;
+}
+
+#soEditSubjectModal .so-edit-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px dashed #c9d9cf;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+#soEditSubjectModal .so-edit-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+#soEditSubjectModal .so-edit-check input {
+  margin: 0;
+}
+
+#soEditSubjectModal .so-edit-close-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 6px 0 10px;
+}
+
+#soEditSubjectModal .so-edit-schedule-wrap {
+  border: 1px solid #b8d4c1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+#soEditSubjectModal .so-edit-schedule-table {
+  margin-bottom: 0;
+}
+
+#soEditSubjectModal .so-edit-schedule-table thead th {
+  background: #006837;
+  color: #ffffff;
+  border-right: 1px solid #1a7a4d;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  padding: 10px 8px;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#soEditSubjectModal .so-edit-schedule-table thead .so-edit-schedule-main-head {
+  text-align: center;
+}
+
+#soEditSubjectModal .so-edit-schedule-table thead th:last-child {
+  border-right: 0;
+  text-align: center;
+  width: 110px;
+}
+
+#soEditSubjectModal .so-edit-schedule-table thead .so-edit-schedule-subhead-row th {
+  font-size: 0.72rem;
+  padding: 6px 8px;
+  text-align: center;
+  background: #0a7c42;
+}
+
+#soEditSubjectModal .so-edit-schedule-table tbody td {
+  padding: 8px;
+  vertical-align: middle;
+  border-top: 1px solid #d9e2dc;
+  background: #ffffff;
+  text-align: center;
+}
+
+#soEditSubjectModal .so-edit-schedule-table tbody td:first-child,
+#soEditSubjectModal .so-edit-schedule-table tbody td:nth-child(4) {
+  text-align: left;
+}
+
+#soEditSubjectModal .so-edit-day-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#soEditSubjectModal .so-edit-day-cell .app-filter-select {
+  min-width: 132px;
+}
+
+#soEditSubjectModal .so-edit-time-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f7faf8;
+  border: 1px solid #cfdbd3;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+#soEditSubjectModal .so-edit-time-select {
+  min-width: 48px;
+  height: 30px;
+  border: 1px solid #cfd8df;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.8rem;
+  padding: 0 4px;
+}
+
+#soEditSubjectModal .so-edit-time-divider {
+  color: #6b7280;
+  font-weight: 700;
+  padding-bottom: 6px;
+}
+
+#soEditSubjectModal .so-edit-room-select {
+  background: #ffffff;
+  border: 1px solid #cfd8df;
+  min-width: 136px;
+}
+
+#soEditSubjectModal .so-edit-lab-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#soEditSubjectModal .so-edit-day-cell .req-checkbox-input,
+#soEditSubjectModal .so-edit-lab-cell .req-checkbox-input,
+#soEditSubjectModal .so-edit-check .req-checkbox-input {
+  margin: 0;
+}
+
+#soEditSubjectModal .so-edit-add-row-btn {
+  border: 1px solid #0a813c;
+  background: #ffffff;
+  color: #0a813c;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+#soEditSubjectModal .so-edit-add-row-btn:hover {
+  background: #0a813c;
+  color: #ffffff;
+}
+
 @media (max-width: 920px) {
   .page-section-offering .so-filter-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5496,10 +5743,13 @@ select:hover {
 
   .so-modal-col-3,
   .so-modal-col-4,
+  .so-modal-col-5,
   .so-modal-col-6 {
     grid-column: span 3;
   }
 
+  .so-modal-col-7,
+  .so-modal-col-8,
   .so-modal-col-12 {
     grid-column: span 6;
   }
@@ -5521,6 +5771,10 @@ select:hover {
 
   .so-curriculum-btn {
     min-width: 120px;
+  }
+
+  #soEditSubjectModal .so-edit-section-head {
+    align-items: flex-start;
   }
 }
 
@@ -5577,6 +5831,37 @@ select:hover {
   .so-modal-col-12,
   .so-modal-field-wide {
     grid-column: span 1;
+  }
+
+  #soEditSubjectModal .so-edit-section {
+    padding: 12px;
+  }
+
+  #soEditSubjectModal .so-edit-section-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  #soEditSubjectModal .so-edit-section-head .so-modal-btn {
+    width: 100%;
+  }
+
+  #soEditSubjectModal .so-edit-flags {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #soEditSubjectModal .so-edit-day-cell {
+    flex-wrap: wrap;
+  }
+
+  #soEditSubjectModal .so-edit-time-select {
+    min-width: 40px;
+  }
+
+  #soEditSubjectModal .so-edit-schedule-table {
+    min-width: 680px;
   }
 
   .so-curriculum-actions {
