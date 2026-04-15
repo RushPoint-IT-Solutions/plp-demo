@@ -88,11 +88,14 @@
         }
 
         document.addEventListener('click', function (e) {
-            if (!e.target.closest('.plp-sidebar')) {
-                document.querySelectorAll('.sidebar-dropdown.open, .sidebar-nested-dropdown.open').forEach(function (el) {
-                    el.classList.remove('open');
-                });
-                openActiveSidebarBranches();
+            if (!sidebar || !overlay) {
+                return;
+            }
+
+            var clickedInsideSidebar = e.target.closest('.plp-sidebar');
+            if (!clickedInsideSidebar && sidebar.classList.contains('sidebar-open')) {
+                sidebar.classList.remove('sidebar-open');
+                overlay.classList.remove('active');
             }
         });
     }

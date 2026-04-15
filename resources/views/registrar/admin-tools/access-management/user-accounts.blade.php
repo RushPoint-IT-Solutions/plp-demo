@@ -53,6 +53,7 @@
                             <th style="width:60px;">#</th>
                             <th>User ID</th>
                             <th>Name</th>
+                            <th>Email</th>
                             <th>User Type</th>
                             <th>Status</th>
                             <th style="width:90px;">Action</th>
@@ -145,7 +146,7 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="uaDeleteModal" style="display:none;" onclick="if(event.target===this) uaCloseDeleteModal()">
+<div class="req-modal-overlay" id="uaDeleteModal" style="display:none; z-index: 100000;" onclick="if(event.target===this) uaCloseDeleteModal()">
     <div class="req-modal-box req-modal-success" style="min-width:320px;">
         <h3 class="req-modal-title" style="color:#c0392b;">DELETE ACCOUNT</h3>
         <p id="uaDeleteModalText" style="font-size:0.88rem; color:#444; margin-bottom:20px; text-align:center;">Are you sure you want to delete this account?</p>
@@ -157,8 +158,8 @@
 </div>
 
 <!-- Access Control Modal -->
-<div class="req-modal-overlay" id="uaAccessModalOverlay" style="display:none;" onclick="if(event.target===this) uaCloseAccessModal()">
-    <div class="req-modal-box" style="width: 900px; max-width: 95vw; padding: 0; display: flex; flex-direction: column; max-height: 90vh;">
+<div class="req-modal-overlay" id="uaAccessModalOverlay" style="display:none; z-index: 100000;" onclick="if(event.target===this) uaCloseAccessModal()">
+    <div class="req-modal-box ua-access-modal-box" style="width: 900px; max-width: 95vw; padding: 0; display: flex; flex-direction: column; max-height: 90vh;">
         <div style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 8px 8px 0 0; flex-shrink: 0;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -167,10 +168,10 @@
             <button type="button" onclick="uaCloseAccessModal()" style="background:none; border:none; color:#888; cursor:pointer;" aria-label="Close" title="Close"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
         
-        <div style="padding: 20px; overflow-y: auto; flex: 1; background: #f9fbfd;">
-            <div style="background: #eef7fd; border: 1px solid #c8e1f5; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; color: #206b9b; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 10px;">
+        <div class="ua-access-modal-body" style="padding: 20px; overflow-y: auto; flex: 1; background: #f9fbfd;">
+            <div class="ua-access-note" style="background: #f5f7fa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; color: #43505d; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                <div>These settings override the role defaults for this user only. Toggles are pre-filled with the role's current permissions.</div>
+                <div class="ua-access-note-text">These settings override the role defaults for this user only. Toggles are pre-filled with the role's current permissions.</div>
             </div>
 
             <div class="ua-access-copy-wrap" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -181,12 +182,19 @@
                 <button type="button" class="ua-copy-access-btn pf-btn-new" id="uaCopyAccessBtn" style="padding: 6px 12px; margin: 0;">Copy Settings</button>
             </div>
 
-            <div class="ua-access-quick-wrap" style="margin: 0 0 20px 0; background: #fff; padding: 16px; border: 1px solid #eaeaea; border-radius: 6px;">
-                <div class="ua-access-quick-title" style="margin-top: 0;">Quick Access Options</div>
-                <div class="ua-access-quick-options" id="uaAccessQuickOptions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;"></div>
+            <div class="ua-access-quick-wrap" style="margin: 0 0 20px 0; background: #fff; padding: 12px 14px; border: 1px solid #eaeaea; border-radius: 6px;">
+                <button type="button" id="uaQuickAccessToggle" class="ua-access-quick-toggle" style="width: 100%; display: flex; align-items: center; justify-content: space-between; background: #fff; border: 0; padding: 0; cursor: pointer;">
+                    <span class="ua-access-quick-title" style="margin: 0; color: #2f3a34; font-weight: 600;">Quick Access Options</span>
+                    <span id="uaQuickAccessToggleIcon" class="ua-quick-toggle-icon" style="color: #63736c; font-size: 0.9rem; display:inline-flex; align-items:center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </span>
+                </button>
+                <div id="uaQuickAccessPanel" class="ua-quick-panel is-hidden" style="margin-top: 10px;">
+                    <div class="ua-access-quick-options" id="uaAccessQuickOptions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;"></div>
+                </div>
             </div>
             
-            <div style="background: #fff; border: 1px solid #eaeaea; border-radius: 6px; padding: 16px;">
+            <div class="ua-access-grid-shell" style="background: #fff; border: 1px solid #eaeaea; border-radius: 6px; padding: 16px;">
                 <div class="ua-access-grid" id="uaAccessGrid"></div>
             </div>
             <div class="ua-access-footnote" style="margin-top: 16px;">UI-only preview for now. Access values are kept in-memory until backend mapping is wired.</div>
@@ -194,7 +202,7 @@
 
         <div style="padding: 16px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; background: #fff; border-radius: 0 0 8px 8px; flex-shrink: 0;">
             <button type="button" class="req-btn-cancel" onclick="uaCloseAccessModal()">Cancel</button>
-            <button type="button" class="req-btn-save" onclick="uaSaveAccessModal()" style="background: #10b981; min-width: 120px;">Save Access</button>
+            <button type="button" class="req-btn-save" onclick="uaSaveAccessModal()" style="background: #0b5c16; min-width: 120px;">Save Access</button>
         </div>
     </div>
 </div>
@@ -205,6 +213,97 @@
     /* Fixed position to ensure it bursts outside scrolled wrappers */
     #uaTable .apst-dropdown {
         position: fixed;
+        z-index: 10001;
+    }
+
+    .page-user-accounts .ua-access-modal-box {
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+    }
+
+    .page-user-accounts .ua-access-modal-body {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .page-user-accounts .ua-access-note,
+    .page-user-accounts .ua-access-quick-wrap,
+    .page-user-accounts .ua-access-grid-shell {
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    .page-user-accounts .ua-selected-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        width: 100%;
+        min-height: 68px;
+        gap: 4px;
+    }
+
+    .page-user-accounts .ua-selected-label,
+    .page-user-accounts .ua-selected-value {
+        margin: 0;
+        text-align: left;
+        width: 100%;
+    }
+
+    .page-user-accounts .ua-selected-label {
+        font-size: 0.68rem;
+        line-height: 1.2;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6d7b73;
+    }
+
+    .page-user-accounts .ua-selected-value {
+        font-size: 0.93rem;
+        line-height: 1.35;
+        color: #1f2a24;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .page-user-accounts .ua-access-note-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .page-user-accounts .ua-quick-panel.is-hidden {
+        display: none;
+    }
+
+    .page-user-accounts .ua-quick-toggle-icon {
+        transition: transform 0.18s ease;
+        transform-origin: center;
+    }
+
+    .page-user-accounts .ua-quick-toggle-icon.is-open {
+        transform: rotate(180deg);
+    }
+
+    /* Display Account Credentials selected user row as 4 columns on large screens */
+    @media (min-width: 900px) {
+        .page-user-accounts .ua-selected-user {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-user-accounts .ua-access-note {
+            align-items: flex-start;
+        }
+
+        .page-user-accounts .ua-selected-value {
+            font-size: 0.88rem;
+        }
+
+        .page-user-accounts .ua-access-note-text {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+        }
     }
 </style>
 <script>
@@ -276,17 +375,36 @@
         }
     ];
 
+    function uaToggleCategory(key, rowElement) {
+        var rows = document.querySelectorAll('.ua-item-' + key);
+        var iconWrapper = rowElement.querySelector('.ua-cat-icon');
+        var isHidden = rows.length > 0 && rows[0].style.display === 'none';
+
+        rows.forEach(function(row) {
+            row.style.display = isHidden ? 'table-row' : 'none';
+        });
+
+        if (iconWrapper) {
+            if (isHidden) {
+                iconWrapper.classList.add('open');
+            } else {
+                iconWrapper.classList.remove('open');
+            }
+        }
+    }
+
     function uaFocusRow(userId) {
-        var match = uaUsers.find(function(u) { return u.userId === userId; });
+        var match = uaUsers.find(function(u) { return String(u.userId) === String(userId); });
         if (match) uaFillCredentials(match);
     }
 
     function uaOpenAccessModal(userId) {
-        var match = uaUsers.find(function(u) { return u.userId === userId; });
+        var match = uaUsers.find(function(u) { return String(u.userId) === String(userId); });
         if (match) {
             uaFillCredentials(match);
             document.getElementById('uaAccessModalNote').innerHTML = 'Access Control &mdash; <strong style="color: #0b5c16;">' + uaEscapeHtml(match.fullName) + '</strong> <span style="font-weight: normal; color: #888;">(' + uaEscapeHtml(match.userType) + ')</span>';
             document.getElementById('uaAccessModalOverlay').style.display = 'flex';
+            uaCloseActionMenus();
         }
     }
 
@@ -387,12 +505,10 @@
 
     function uaBuildActionMenu(user) {
         var menuId = 'uaMenu_' + user.pk;
-        var editAction;
+        var editAction = '';
 
         if (String(user.userType).toLowerCase() === 'registrar') {
             editAction = '<button type="button" onclick="uaOpenAccessModal(\'' + uaEscapeHtml(user.userId) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>Edit Access</button>';
-        } else {
-            editAction = '<button type="button" onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>';
         }
 
         return '<div class="apst-action-btn" data-ua-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
@@ -413,7 +529,7 @@
         var rows = document.querySelectorAll('#uaTableBody tr[data-ua-user-id]');
         rows.forEach(function(row) {
             row.classList.remove('ua-selected-row');
-            if (uaSelectedUserId && row.getAttribute('data-ua-user-id') === uaSelectedUserId) {
+            if (uaSelectedUserId && row.getAttribute('data-ua-user-id') === String(uaSelectedUserId)) {
                 row.classList.add('ua-selected-row');
             }
         });
@@ -506,12 +622,13 @@
         var rows = pageItems.map(function(item, rowIndex) {
             var user = item.user;
             var index = item.index;
-            var selectedClass = user.userId === uaSelectedUserId ? ' class="ua-selected-row"' : '';
+            var selectedClass = String(user.userId) === String(uaSelectedUserId) ? ' class="ua-selected-row"' : '';
             return '' +
                 '<tr data-ua-index="' + index + '" data-ua-user-id="' + uaEscapeHtml(user.userId) + '"' + selectedClass + '>' +
                     '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + (startIndex + rowIndex + 1) + '</td>' +
                     '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.userId) + '</td>' +
                     '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.fullName) + '</td>' +
+                    '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.email || '-') + '</td>' +
                     '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaEscapeHtml(user.userType) + '</td>' +
                     '<td onclick="uaFocusRow(\'' + uaEscapeHtml(user.userId) + '\')">' + uaBuildStatusBadge(user.inactive) + '</td>' +
                     '<td style="text-align:center;">' + uaBuildActionMenu(user) + '</td>' +
@@ -519,7 +636,7 @@
         }).join('');
 
         if (!rows) {
-            rows = '<tr><td colspan="6" class="sc-empty-row">No user accounts found.</td></tr>';
+            rows = '<tr><td colspan="7" class="sc-empty-row">No user accounts found.</td></tr>';
         }
 
         body.innerHTML = rows;
@@ -551,7 +668,7 @@
     function uaGetSelectedUser() {
         if (!uaSelectedUserId) return null;
         return uaUsers.find(function(item) {
-            return item && item.userId === uaSelectedUserId;
+            return item && String(item.userId) === String(uaSelectedUserId);
         }) || null;
     }
 
@@ -596,6 +713,7 @@
         uaPendingDeletePk = user.pk;
         document.getElementById('uaDeleteModalText').textContent = 'Are you sure you want to delete account for ' + user.fullName + '?';
         document.getElementById('uaDeleteModal').style.display = 'flex';
+        uaCloseActionMenus();
     }
 
     function uaCloseDeleteModal() {
@@ -646,7 +764,7 @@
 
     function uaResetForm() {
         if (uaSelectedUserId) {
-            var user = uaUsers.find(function(item) { return item.userId === uaSelectedUserId; });
+            var user = uaUsers.find(function(item) { return String(item.userId) === String(uaSelectedUserId); });
             if (user) {
                 uaFillCredentials(user);
                 return;
@@ -877,33 +995,72 @@
         var mount = document.getElementById('uaAccessGrid');
         if (!mount) return;
 
-        var html = uaAccessGroups.map(function(group) {
-            var rows = group.items.map(function(itemName) {
+        var html = '<table class="app-table cfg-table" style="width: 100%; border-collapse: separate; border-spacing: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">' +
+            '<thead>' +
+                '<tr style="background: #fff;">' +
+                    '<th style="background:#fff !important; text-align: left; padding: 12px 16px; border-bottom: 2px solid #e0e6ed; color:#1f2a24 !important; font-weight:700;">Module / Permission</th>' +
+                    '<th style="background:#fff !important; width: 80px; text-align: center; padding: 12px; border-bottom: 2px solid #e0e6ed; color:#1f2a24 !important; font-weight:700;">View</th>' +
+                    '<th style="background:#fff !important; width: 80px; text-align: center; padding: 12px; border-bottom: 2px solid #e0e6ed; color:#1f2a24 !important; font-weight:700;">Edit</th>' +
+                '</tr>' +
+            '</thead>' +
+            '<tbody>';
+
+        var openSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+        var closedSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle; transition: transform 0.2s; transform: rotate(-90deg);"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+        uaAccessGroups.forEach(function(group) {
+            var allR = true;
+            var allW = true;
+            
+            var rowsHtml = group.items.map(function(itemName) {
                 var itemState = state && state.groups[group.key] && state.groups[group.key][itemName] ? state.groups[group.key][itemName] : { r: false, w: false };
+                if (!itemState.r) allR = false;
+                if (!itemState.w) allW = false;
+
                 return '' +
-                    '<tr>' +
-                        '<td>' + uaEscapeHtml(itemName) + '</td>' +
-                        '<td class="ua-access-rw-col"><label class="toggle-switch" style="margin:auto"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="r" ' + (itemState.r ? 'checked ' : '') + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></td>' +
-                        '<td class="ua-access-rw-col"><label class="toggle-switch" style="margin:auto"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="w" ' + (itemState.w ? 'checked ' : '') + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></td>' +
+                    '<tr class="ua-item-' + uaEscapeHtml(group.key) + '" style="display:none; transition: all 0.2s;">' +
+                        '<td style="padding: 10px 15px 10px 45px; border-bottom: 1px solid #f0f0f0; color: #555; font-size: 0.9rem;">' + uaEscapeHtml(itemName) + '</td>' +
+                        '<td style="text-align: center; border-bottom: 1px solid #f0f0f0;">' +
+                            '<label class="toggle-switch" style="margin:auto"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="r" ' + (itemState.r ? 'checked ' : '') + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label>' +
+                        '</td>' +
+                        '<td style="text-align: center; border-bottom: 1px solid #f0f0f0;">' +
+                            '<label class="toggle-switch" style="margin:auto"><input type="checkbox" class="req-checkbox-input" data-ua-group="' + uaEscapeHtml(group.key) + '" data-ua-item="' + uaEscapeHtml(itemName) + '" data-ua-mode="w" ' + (itemState.w ? 'checked ' : '') + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label>' +
+                        '</td>' +
                     '</tr>';
             }).join('');
 
-            return '' +
-                '<div class="ua-access-group">' +
-                    '<table class="ua-access-table" data-no-auto-pager="1" aria-label="' + uaEscapeHtml(group.title) + ' access table">' +
-                        '<thead>' +
-                            '<tr>' +
-                                '<th>' + uaEscapeHtml(group.title) + '</th>' +
-                                '<th class="ua-access-rw-col"><div style="display:flex; flex-direction:column; align-items:center; gap:4px"><span class="ua-access-rw-text">View</span><label class="toggle-switch"><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="r" ' + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></div></th>' +
-                                '<th class="ua-access-rw-col"><div style="display:flex; flex-direction:column; align-items:center; gap:4px"><span class="ua-access-rw-text">Edit</span><label class="toggle-switch"><input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="w" ' + (disabled ? 'disabled' : '') + '><span class="toggle-slider"></span></label></div></th>' +
-                            '</tr>' +
-                        '</thead>' +
-                        '<tbody>' + rows + '</tbody>' +
-                    '</table>' +
-                '</div>';
-        }).join('');
+            html += '' +
+                '<tr style="background: #fff; cursor: pointer; border-bottom: 1px solid #e6ebf1;" onclick="uaToggleCategory(\'' + uaEscapeHtml(group.key) + '\', this)">' +
+                    '<td style="padding: 12px 16px; font-weight: 600; color: #2f3a34; border-bottom: 1px solid #e6ebf1;">' +
+                        '<span class="ua-cat-icon" style="display:inline-flex; align-items:center;">' + closedSvg + '</span>' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px; vertical-align:middle; color:#6b7780;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>' +
+                        uaEscapeHtml(group.title) + 
+                    '</td>' +
+                    '<td style="text-align: center; border-bottom: 1px solid #e6ebf1;">' +
+                        '<label class="toggle-switch" style="margin:auto" onclick="event.stopPropagation();">' +
+                            '<input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="r" ' + (allR ? 'checked ' : '') + (disabled ? 'disabled' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</td>' +
+                    '<td style="text-align: center; border-bottom: 1px solid #e6ebf1;">' +
+                        '<label class="toggle-switch" style="margin:auto" onclick="event.stopPropagation();">' +
+                            '<input type="checkbox" class="req-checkbox-input ua-access-head-check" data-ua-group-master="' + uaEscapeHtml(group.key) + '" data-ua-mode="w" ' + (allW ? 'checked ' : '') + (disabled ? 'disabled' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</td>' +
+                '</tr>' + rowsHtml;
+        });
+
+        html += '</tbody></table>';
 
         mount.innerHTML = html;
+        var style = document.getElementById('uaAccessStyle');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'uaAccessStyle';
+            style.innerHTML = '.ua-cat-icon.open svg { transform: rotate(0deg) !important; } .ua-access-grid { padding:0; overflow:hidden;}';
+            document.head.appendChild(style);
+        }
     }
 
     function uaRenderAccessView() {
@@ -973,6 +1130,17 @@
 
     document.getElementById('uaAccessQuickOptions').addEventListener('change', uaHandleAccessInteractions);
     document.getElementById('uaAccessGrid').addEventListener('change', uaHandleAccessInteractions);
+
+    var uaQuickAccessToggle = document.getElementById('uaQuickAccessToggle');
+    var uaQuickAccessPanel = document.getElementById('uaQuickAccessPanel');
+    var uaQuickAccessToggleIcon = document.getElementById('uaQuickAccessToggleIcon');
+    if (uaQuickAccessToggle && uaQuickAccessPanel && uaQuickAccessToggleIcon) {
+        uaQuickAccessToggle.addEventListener('click', function() {
+            var isHidden = uaQuickAccessPanel.classList.contains('is-hidden');
+            uaQuickAccessPanel.classList.toggle('is-hidden');
+            uaQuickAccessToggleIcon.classList.toggle('is-open', isHidden);
+        });
+    }
 
     document.getElementById('uaCopyAccessBtn').addEventListener('click', function() {
         var sourceId = document.getElementById('uaCopyAccessFrom').value;
@@ -1046,4 +1214,5 @@
     uaRenderAccessView();
 </script>
 @endpush
+
 
