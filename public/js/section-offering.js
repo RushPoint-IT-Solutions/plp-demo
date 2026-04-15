@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var scheduleLines = (item.schedules || []).map(function (line) {
           return '<div class="so-schedule-line">' + escapeHtml(line) + '</div>';
         }).join('');
-        return '' + '<tr>' + '<td>' + escapeHtml(item.code) + '</td>' + '<td>' + escapeHtml(item.description) + '</td>' + '<td>' + escapeHtml(item.lec) + '</td>' + '<td>' + escapeHtml(item.lab) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits) + '</td>' + '<td>' + escapeHtml(item.creditUnits) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room) + '</td>' + '<td>' + escapeHtml(item.professor) + '</td>' + '<td>' + escapeHtml(item.slots) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
+        return '' + '<tr class="so-subject-row" data-code="' + escapeHtml(item.code) + '" style="cursor:pointer;" title="Click to edit subject details">' + '<td>' + escapeHtml(item.code) + '</td>' + '<td>' + escapeHtml(item.description) + '</td>' + '<td>' + escapeHtml(item.lec) + '</td>' + '<td>' + escapeHtml(item.lab) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits) + '</td>' + '<td>' + escapeHtml(item.creditUnits) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room) + '</td>' + '<td>' + escapeHtml(item.professor) + '</td>' + '<td>' + escapeHtml(item.slots) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
       }).join('');
     }
     if (soPageText) {
@@ -828,6 +828,35 @@ document.addEventListener('DOMContentLoaded', function () {
       clearSectionDetails();
     });
   }
+  var soEditSubjectModal = document.getElementById('soEditSubjectModal');
+  var soCloseEditSubjectTop = document.getElementById('soCloseEditSubjectTop');
+  var soCloseEditSubjectBtn = document.getElementById('soCloseEditSubjectBtn');
+  if (soBody) {
+    soBody.addEventListener('click', function (e) {
+      var tr = e.target.closest('.so-subject-row');
+      if (!tr) return;
+      var code = tr.getAttribute('data-code');
+      if (!sectionState.selectedSectionId) return;
+      var section = getSectionById(sectionState.selectedSectionId);
+      var subject = (section.subjects || []).find(function (s) {
+        return s.code === code;
+      });
+      if (!subject) return;
+      document.getElementById('soEditSubjectTitle').textContent = subject.code + ' - ' + subject.description;
+      document.getElementById('soEditSectionCode').value = section.program + ' ' + (section.yearLevel === 'First' ? '1' : section.yearLevel === 'Second' ? '2' : section.yearLevel === 'Third' ? '3' : '4') + '-' + section.section;
+      document.getElementById('soEditTotalSlots').value = subject.slots || 30;
+      if (soEditSubjectModal) {
+        soEditSubjectModal.style.display = '';
+      }
+    });
+  }
+  function closeEditSubjectModal() {
+    if (soEditSubjectModal) {
+      soEditSubjectModal.style.display = 'none';
+    }
+  }
+  if (soCloseEditSubjectTop) soCloseEditSubjectTop.addEventListener('click', closeEditSubjectModal);
+  if (soCloseEditSubjectBtn) soCloseEditSubjectBtn.addEventListener('click', closeEditSubjectModal);
   populateSectionFilterOptions();
   applyFilters();
 });
