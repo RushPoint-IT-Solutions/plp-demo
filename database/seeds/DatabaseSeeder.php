@@ -68,6 +68,7 @@ class DatabaseSeeder extends Seeder
             C3TrashDataSeeder::class,
             SlotMonitoringReportSeeder::class,
             RegistrarRequirement3nfSeeder::class,
+            SystemConfigurationSeeder::class,
         ]);
 
         if ((bool) env('SEED_HIGH_VOLUME_TRASH', false)) {

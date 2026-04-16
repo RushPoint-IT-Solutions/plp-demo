@@ -348,6 +348,18 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/configuration/grade-posting', 'Registrar\Services\AdminToolsController@configurationGradePostingStore')->name('configuration.grade-posting.store');
             Route::put('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingUpdate')->name('configuration.grade-posting.update');
             Route::delete('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingDestroy')->name('configuration.grade-posting.destroy');
+            Route::post('/configuration/signature', 'Registrar\Services\AdminToolsController@configurationSignatureStore')->name('configuration.signature.store');
+            Route::put('/configuration/signature/{systemConfigNameSignature}', 'Registrar\Services\AdminToolsController@configurationSignatureUpdate')->name('configuration.signature.update');
+            Route::delete('/configuration/signature/{systemConfigNameSignature}', 'Registrar\Services\AdminToolsController@configurationSignatureDestroy')->name('configuration.signature.destroy');
+            Route::post('/configuration/cutoff', 'Registrar\Services\AdminToolsController@configurationCutoffStore')->name('configuration.cutoff.store');
+            Route::put('/configuration/cutoff/{systemCutoffEntry}', 'Registrar\Services\AdminToolsController@configurationCutoffUpdate')->name('configuration.cutoff.update');
+            Route::delete('/configuration/cutoff/{systemCutoffEntry}', 'Registrar\Services\AdminToolsController@configurationCutoffDestroy')->name('configuration.cutoff.destroy');
+            Route::post('/configuration/curriculum-display', 'Registrar\Services\AdminToolsController@configurationCurriculumDisplayStore')->name('configuration.curriculum-display.store');
+            Route::put('/configuration/curriculum-display/{systemCurriculumDisplaySetting}', 'Registrar\Services\AdminToolsController@configurationCurriculumDisplayUpdate')->name('configuration.curriculum-display.update');
+            Route::delete('/configuration/curriculum-display/{systemCurriculumDisplaySetting}', 'Registrar\Services\AdminToolsController@configurationCurriculumDisplayDestroy')->name('configuration.curriculum-display.destroy');
+            Route::post('/configuration/report-details', 'Registrar\Services\AdminToolsController@configurationReportDetailsSave')->name('configuration.report-details.save');
+            Route::post('/configuration/email-sender', 'Registrar\Services\AdminToolsController@configurationEmailSenderSave')->name('configuration.email-sender.save');
+            Route::post('/configuration/overdue-inc/process', 'Registrar\Services\AdminToolsController@configurationOverdueIncProcess')->name('configuration.overdue-inc.process');
             Route::get('/admission-config', 'Registrar\Services\AdminToolsController@admissionConfig')->name('admission-config');
             Route::get('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendar')->name('academic-calendar');
             Route::post('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendarStore')->name('academic-calendar.store');

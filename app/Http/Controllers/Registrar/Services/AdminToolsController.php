@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Registrar\Services;
 
 use App\BedDay;
 use App\BedStudentStatus;
+use App\AcademicTerm;
 use App\Faculty;
 use App\Http\Controllers\Controller;
 use App\MasterFacultyFile;
@@ -13,7 +14,15 @@ use App\Student;
 use App\StudentGradeRecord;
 use App\StudentUpdateRun;
 use App\SystemAnnouncement;
+use App\SystemConfigNameSignature;
+use App\SystemConfigSignatureDesignation;
+use App\SystemCurriculumDisplaySetting;
+use App\SystemCutoffEntry;
+use App\SystemCutoffType;
+use App\SystemEmailSenderSetting;
 use App\SystemGradePosting;
+use App\SystemIncProcessRun;
+use App\SystemReportDetailSetting;
 use App\SystemSchoolSemester;
 use App\ReportPermission;
 use App\AcademicCalendarEvent;
@@ -24,8 +33,11 @@ use App\UserAccountStatus;
 use App\YearBlock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class AdminToolsController extends Controller
 {
@@ -33,6 +45,26 @@ class AdminToolsController extends Controller
     {
         $schoolSemRows = [];
         $gradePostingRows = [];
+        $signatureDesignationRows = [];
+        $signatureRows = [];
+        $cutoffTypeRows = [];
+        $cutoffDateRows = [];
+        $sectionCutoffRows = [];
+        $cutoffConfigRows = [];
+        $curriculumDisplayRows = [];
+        $reportDetails = [
+            'region' => '',
+            'division' => '',
+            'schoolId' => '',
+            'schoolName' => '',
+            'contactDetails' => '',
+        ];
+        $emailSender = [
+            'email' => '',
+            'passwordMasked' => '',
+        ];
+        $latestIncRun = null;
+        $academicTermRows = $this->buildAcademicTermRows();
 
         if (Schema::hasTable('system_school_semesters')) {
             if (SystemSchoolSemester::query()->count() === 0) {
@@ -40,13 +72,14 @@ class AdminToolsController extends Controller
             }
 
             $schoolSemRows = SystemSchoolSemester::query()
+                ->with('academicTerm')
                 ->orderByDesc('id')
                 ->get()
                 ->map(function ($row) {
                     return [
                         'id' => $row->id,
-                        'sy' => (string) $row->school_year,
-                        'semester' => (string) $row->semester,
+                        'sy' => (string) ($row->school_year ?: ''),
+                        'semester' => (string) ($row->semester ?: ''),
                     ];
                 })
                 ->values()
@@ -59,14 +92,15 @@ class AdminToolsController extends Controller
             }
 
             $gradePostingRows = SystemGradePosting::query()
+                ->with('academicTerm')
                 ->orderByDesc('date_from')
                 ->orderByDesc('id')
                 ->get()
                 ->map(function ($row) {
                     return [
                         'id' => $row->id,
-                        'sy' => (string) $row->school_year,
-                        'semester' => (string) $row->semester,
+                        'sy' => (string) ($row->school_year ?: ''),
+                        'semester' => (string) ($row->semester ?: ''),
                         'period' => (string) $row->period,
                         'dateFrom' => optional($row->date_from)->format('Y-m-d') ?: '',
                     ];
@@ -75,7 +109,150 @@ class AdminToolsController extends Controller
                 ->all();
         }
 
-        return view('registrar.admin-tools.system-config.configuration', compact('schoolSemRows', 'gradePostingRows'));
+        if (Schema::hasTable('system_config_signature_designations')) {
+            $signatureDesignationRows = SystemConfigSignatureDesignation::query()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'code' => (string) $row->code,
+                        'name' => (string) $row->name,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        if (Schema::hasTable('system_config_name_signatures')) {
+            $signatureRows = SystemConfigNameSignature::query()
+                ->with('designation')
+                ->orderBy('designation_id')
+                ->get()
+                ->map(function ($row) {
+                    return $this->mapSignatureRow($row);
+                })
+                ->values()
+                ->all();
+        }
+
+        if (Schema::hasTable('system_cutoff_types')) {
+            $cutoffTypeRows = SystemCutoffType::query()
+                ->orderBy('name')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'code' => (string) $row->code,
+                        'name' => (string) $row->name,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        if (Schema::hasTable('system_cutoff_entries')) {
+            $cutoffRows = SystemCutoffEntry::query()
+                ->with(['cutoffType', 'academicTerm'])
+                ->orderByDesc('cutoff_date')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function ($row) {
+                    return $this->mapCutoffRow($row);
+                })
+                ->values();
+
+            $cutoffDateRows = $cutoffRows->filter(function ($row) {
+                return in_array((string) ($row['typeCode'] ?? ''), ['ENROLLMENT', 'FACULTY_LOADING'], true);
+            })->values()->all();
+
+            $sectionCutoffRows = $cutoffRows->filter(function ($row) {
+                return (string) ($row['typeCode'] ?? '') === 'SECTION_OFFERING';
+            })->values()->all();
+
+            $cutoffConfigRows = $cutoffRows->filter(function ($row) {
+                return (string) ($row['typeCode'] ?? '') === 'CHANGING_DELETING_ADDING';
+            })->values()->all();
+        }
+
+        if (Schema::hasTable('system_curriculum_display_settings')) {
+            $curriculumDisplayRows = SystemCurriculumDisplaySetting::query()
+                ->with('academicTerm')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function ($row) {
+                    return $this->mapCurriculumDisplayRow($row);
+                })
+                ->values()
+                ->all();
+        }
+
+        if (Schema::hasTable('system_report_detail_settings')) {
+            $reportDetailRow = SystemReportDetailSetting::query()
+                ->where('is_active', true)
+                ->orderByDesc('id')
+                ->first();
+
+            if ($reportDetailRow) {
+                $reportDetails = [
+                    'region' => (string) $reportDetailRow->region,
+                    'division' => (string) $reportDetailRow->division,
+                    'schoolId' => (string) $reportDetailRow->school_id,
+                    'schoolName' => (string) $reportDetailRow->school_name,
+                    'contactDetails' => (string) $reportDetailRow->contact_details,
+                ];
+            }
+        }
+
+        if (Schema::hasTable('system_email_sender_settings')) {
+            $emailSenderRow = SystemEmailSenderSetting::query()
+                ->where('is_active', true)
+                ->orderByDesc('id')
+                ->first();
+
+            if ($emailSenderRow) {
+                $emailSender = [
+                    'email' => (string) $emailSenderRow->sender_email,
+                    'passwordMasked' => '********',
+                ];
+            }
+        }
+
+        if (Schema::hasTable('system_inc_process_runs')) {
+            $latestRun = SystemIncProcessRun::query()
+                ->with('academicTerm')
+                ->orderByDesc('id')
+                ->first();
+
+            if ($latestRun) {
+                $latestIncRun = [
+                    'schoolYear' => (string) ($latestRun->school_year ?: ''),
+                    'semester' => (string) ($latestRun->semester ?: ''),
+                    'processedCount' => (int) $latestRun->processed_count,
+                    'createdAt' => optional($latestRun->created_at)->format('Y-m-d H:i:s') ?: '',
+                ];
+            }
+        }
+
+        return view(
+            'registrar.admin-tools.system-config.configuration',
+            compact(
+                'schoolSemRows',
+                'gradePostingRows',
+                'signatureDesignationRows',
+                'signatureRows',
+                'cutoffTypeRows',
+                'cutoffDateRows',
+                'sectionCutoffRows',
+                'cutoffConfigRows',
+                'curriculumDisplayRows',
+                'reportDetails',
+                'emailSender',
+                'latestIncRun',
+                'academicTermRows'
+            )
+        );
     }
 
     public function admissionConfig()
@@ -301,7 +478,21 @@ class AdminToolsController extends Controller
             'semester' => 'required|string|max:30',
         ]);
 
-        $row = SystemSchoolSemester::create($validated);
+        $schoolYear = $this->sanitizeSchoolYear($validated['school_year']);
+        $semester = $this->normalizeSemesterLabel($validated['semester']);
+
+        $row = SystemSchoolSemester::query()
+            ->get()
+            ->first(function (SystemSchoolSemester $candidate) use ($schoolYear, $semester) {
+                return $this->matchesSchoolSemester($candidate, $schoolYear, $semester);
+            });
+
+        if (!$row) {
+            $row = SystemSchoolSemester::create([
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+            ]);
+        }
 
         return response()->json([
             'ok' => true,
@@ -320,7 +511,26 @@ class AdminToolsController extends Controller
             'semester' => 'required|string|max:30',
         ]);
 
-        $systemSchoolSemester->update($validated);
+        $schoolYear = $this->sanitizeSchoolYear($validated['school_year']);
+        $semester = $this->normalizeSemesterLabel($validated['semester']);
+
+        $hasDuplicate = SystemSchoolSemester::query()
+            ->where('id', '!=', $systemSchoolSemester->id)
+            ->get()
+            ->contains(function (SystemSchoolSemester $candidate) use ($schoolYear, $semester) {
+                return $this->matchesSchoolSemester($candidate, $schoolYear, $semester);
+            });
+
+        if ($hasDuplicate) {
+            throw ValidationException::withMessages([
+                'school_year' => ['The selected School Year and Semester already exists.'],
+            ]);
+        }
+
+        $systemSchoolSemester->update([
+            'school_year' => $schoolYear,
+            'semester' => $semester,
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -330,6 +540,13 @@ class AdminToolsController extends Controller
                 'semester' => (string) $systemSchoolSemester->semester,
             ],
         ]);
+    }
+
+    private function matchesSchoolSemester(SystemSchoolSemester $row, string $schoolYear, string $semester): bool
+    {
+        return trim((string) $row->school_year) === trim((string) $schoolYear)
+            && trim((string) $this->normalizeSemesterLabel((string) $row->semester))
+                === trim((string) $this->normalizeSemesterLabel($semester));
     }
 
     public function configurationSchoolSemDestroy(SystemSchoolSemester $systemSchoolSemester): JsonResponse
@@ -348,7 +565,12 @@ class AdminToolsController extends Controller
             'date_from' => 'required|date',
         ]);
 
-        $row = SystemGradePosting::create($validated);
+        $row = SystemGradePosting::create([
+            'school_year' => $this->sanitizeSchoolYear($validated['school_year']),
+            'semester' => $this->normalizeSemesterLabel($validated['semester']),
+            'period' => trim((string) $validated['period']),
+            'date_from' => $validated['date_from'],
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -371,7 +593,12 @@ class AdminToolsController extends Controller
             'date_from' => 'required|date',
         ]);
 
-        $systemGradePosting->update($validated);
+        $systemGradePosting->update([
+            'school_year' => $this->sanitizeSchoolYear($validated['school_year']),
+            'semester' => $this->normalizeSemesterLabel($validated['semester']),
+            'period' => trim((string) $validated['period']),
+            'date_from' => $validated['date_from'],
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -390,6 +617,395 @@ class AdminToolsController extends Controller
         $systemGradePosting->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    public function configurationSignatureStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'designation_id' => 'required|integer|exists:system_config_signature_designations,id',
+            'signer_name' => 'required|string|max:190',
+            'signature_file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $row = SystemConfigNameSignature::query()->firstOrNew([
+            'designation_id' => (int) $validated['designation_id'],
+        ]);
+
+        if ($request->hasFile('signature_file') && !empty($row->signature_path)) {
+            Storage::disk('public')->delete($row->signature_path);
+        }
+
+        $row->signer_name = trim((string) $validated['signer_name']);
+        $row->is_active = true;
+
+        if ($request->hasFile('signature_file')) {
+            $row->signature_path = $request->file('signature_file')->store('registrar/signatures', 'public');
+        }
+
+        $row->save();
+        $row->load('designation');
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapSignatureRow($row),
+        ]);
+    }
+
+    public function configurationSignatureUpdate(Request $request, SystemConfigNameSignature $systemConfigNameSignature): JsonResponse
+    {
+        $validated = $request->validate([
+            'designation_id' => 'required|integer|exists:system_config_signature_designations,id',
+            'signer_name' => 'required|string|max:190',
+            'signature_file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $duplicateDesignation = SystemConfigNameSignature::query()
+            ->where('designation_id', (int) $validated['designation_id'])
+            ->where('id', '!=', $systemConfigNameSignature->id)
+            ->exists();
+
+        if ($duplicateDesignation) {
+            return response()->json([
+                'message' => 'The selected designation already has a signature entry.',
+                'errors' => [
+                    'designation_id' => ['Choose another designation or edit the existing row.'],
+                ],
+            ], 422);
+        }
+
+        if ($request->hasFile('signature_file') && !empty($systemConfigNameSignature->signature_path)) {
+            Storage::disk('public')->delete($systemConfigNameSignature->signature_path);
+        }
+
+        $systemConfigNameSignature->designation_id = (int) $validated['designation_id'];
+        $systemConfigNameSignature->signer_name = trim((string) $validated['signer_name']);
+        $systemConfigNameSignature->is_active = true;
+
+        if ($request->hasFile('signature_file')) {
+            $systemConfigNameSignature->signature_path = $request->file('signature_file')->store('registrar/signatures', 'public');
+        }
+
+        $systemConfigNameSignature->save();
+        $systemConfigNameSignature->load('designation');
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapSignatureRow($systemConfigNameSignature),
+        ]);
+    }
+
+    public function configurationSignatureDestroy(SystemConfigNameSignature $systemConfigNameSignature): JsonResponse
+    {
+        if (!empty($systemConfigNameSignature->signature_path)) {
+            Storage::disk('public')->delete($systemConfigNameSignature->signature_path);
+        }
+
+        $systemConfigNameSignature->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function configurationCutoffStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'type_code' => 'required|string|max:80|exists:system_cutoff_types,code',
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'event_date' => 'nullable|date',
+            'cutoff_date' => 'required|date',
+            'student_no' => 'nullable|string|max:80',
+            'notes' => 'nullable|string|max:190',
+        ]);
+
+        $typeCode = strtoupper(trim((string) $validated['type_code']));
+        $cutoffType = SystemCutoffType::query()->where('code', $typeCode)->first();
+        if (!$cutoffType) {
+            return response()->json([
+                'message' => 'The selected cut-off type is invalid.',
+                'errors' => [
+                    'type_code' => ['Unknown cut-off type.'],
+                ],
+            ], 422);
+        }
+
+        $row = new SystemCutoffEntry();
+        $row->cutoff_type_id = $cutoffType->id;
+        $row->student_no = isset($validated['student_no']) ? trim((string) $validated['student_no']) : null;
+        $row->event_date = $validated['event_date'] ?? null;
+        $row->cutoff_date = $validated['cutoff_date'];
+        $row->notes = isset($validated['notes']) ? trim((string) $validated['notes']) : null;
+        $row->school_year = $this->sanitizeSchoolYear($validated['school_year']);
+        $row->semester = $this->normalizeSemesterLabel($validated['semester']);
+        $row->save();
+        $row->load(['cutoffType', 'academicTerm']);
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapCutoffRow($row),
+        ]);
+    }
+
+    public function configurationCutoffUpdate(Request $request, SystemCutoffEntry $systemCutoffEntry): JsonResponse
+    {
+        $validated = $request->validate([
+            'type_code' => 'required|string|max:80|exists:system_cutoff_types,code',
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'event_date' => 'nullable|date',
+            'cutoff_date' => 'required|date',
+            'student_no' => 'nullable|string|max:80',
+            'notes' => 'nullable|string|max:190',
+        ]);
+
+        $typeCode = strtoupper(trim((string) $validated['type_code']));
+        $cutoffType = SystemCutoffType::query()->where('code', $typeCode)->first();
+        if (!$cutoffType) {
+            return response()->json([
+                'message' => 'The selected cut-off type is invalid.',
+                'errors' => [
+                    'type_code' => ['Unknown cut-off type.'],
+                ],
+            ], 422);
+        }
+
+        $systemCutoffEntry->cutoff_type_id = $cutoffType->id;
+        $systemCutoffEntry->student_no = isset($validated['student_no']) ? trim((string) $validated['student_no']) : null;
+        $systemCutoffEntry->event_date = $validated['event_date'] ?? null;
+        $systemCutoffEntry->cutoff_date = $validated['cutoff_date'];
+        $systemCutoffEntry->notes = isset($validated['notes']) ? trim((string) $validated['notes']) : null;
+        $systemCutoffEntry->school_year = $this->sanitizeSchoolYear($validated['school_year']);
+        $systemCutoffEntry->semester = $this->normalizeSemesterLabel($validated['semester']);
+        $systemCutoffEntry->save();
+        $systemCutoffEntry->load(['cutoffType', 'academicTerm']);
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapCutoffRow($systemCutoffEntry),
+        ]);
+    }
+
+    public function configurationCutoffDestroy(SystemCutoffEntry $systemCutoffEntry): JsonResponse
+    {
+        $systemCutoffEntry->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function configurationCurriculumDisplayStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'display_status' => 'required|string|in:Display,Hide',
+        ]);
+
+        $schoolYear = $this->sanitizeSchoolYear($validated['school_year']);
+        $semester = $this->normalizeSemesterLabel($validated['semester']);
+        $term = $this->resolveAcademicTerm($schoolYear, $semester);
+
+        $row = SystemCurriculumDisplaySetting::query()->updateOrCreate(
+            ['academic_term_id' => $term->id],
+            ['display_status' => trim((string) $validated['display_status'])]
+        );
+        $row->load('academicTerm');
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapCurriculumDisplayRow($row),
+        ]);
+    }
+
+    public function configurationCurriculumDisplayUpdate(Request $request, SystemCurriculumDisplaySetting $systemCurriculumDisplaySetting): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'display_status' => 'required|string|in:Display,Hide',
+        ]);
+
+        $schoolYear = $this->sanitizeSchoolYear($validated['school_year']);
+        $semester = $this->normalizeSemesterLabel($validated['semester']);
+        $term = $this->resolveAcademicTerm($schoolYear, $semester);
+
+        $systemCurriculumDisplaySetting->update([
+            'academic_term_id' => $term->id,
+            'display_status' => trim((string) $validated['display_status']),
+        ]);
+        $systemCurriculumDisplaySetting->load('academicTerm');
+
+        return response()->json([
+            'ok' => true,
+            'row' => $this->mapCurriculumDisplayRow($systemCurriculumDisplaySetting),
+        ]);
+    }
+
+    public function configurationCurriculumDisplayDestroy(SystemCurriculumDisplaySetting $systemCurriculumDisplaySetting): JsonResponse
+    {
+        $systemCurriculumDisplaySetting->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function configurationReportDetailsSave(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'region' => 'required|string|max:190',
+            'division' => 'required|string|max:190',
+            'school_id' => 'required|string|max:120',
+            'school_name' => 'required|string|max:190',
+            'contact_details' => 'required|string|max:255',
+        ]);
+
+        $row = SystemReportDetailSetting::query()
+            ->where('is_active', true)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$row) {
+            $row = new SystemReportDetailSetting();
+            $row->is_active = true;
+        }
+
+        $row->region = trim((string) $validated['region']);
+        $row->division = trim((string) $validated['division']);
+        $row->school_id = trim((string) $validated['school_id']);
+        $row->school_name = trim((string) $validated['school_name']);
+        $row->contact_details = trim((string) $validated['contact_details']);
+        $row->save();
+
+        SystemReportDetailSetting::query()
+            ->where('id', '!=', $row->id)
+            ->update(['is_active' => false]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'region' => (string) $row->region,
+                'division' => (string) $row->division,
+                'schoolId' => (string) $row->school_id,
+                'schoolName' => (string) $row->school_name,
+                'contactDetails' => (string) $row->contact_details,
+            ],
+        ]);
+    }
+
+    public function configurationEmailSenderSave(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:190',
+            'password' => 'nullable|string|min:6|max:190',
+        ]);
+
+        $row = SystemEmailSenderSetting::query()
+            ->where('is_active', true)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$row) {
+            $row = new SystemEmailSenderSetting();
+            $row->is_active = true;
+        }
+
+        $passwordInput = trim((string) ($validated['password'] ?? ''));
+        if (!$row->exists && $passwordInput === '') {
+            return response()->json([
+                'message' => 'Password is required for first-time email sender setup.',
+                'errors' => [
+                    'password' => ['Please provide a password.'],
+                ],
+            ], 422);
+        }
+
+        $row->sender_email = trim((string) $validated['email']);
+        if ($passwordInput !== '') {
+            $row->sender_password_encrypted = Crypt::encryptString($passwordInput);
+        }
+        $row->save();
+
+        SystemEmailSenderSetting::query()
+            ->where('id', '!=', $row->id)
+            ->update(['is_active' => false]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'email' => (string) $row->sender_email,
+                'passwordMasked' => '********',
+            ],
+        ]);
+    }
+
+    public function configurationOverdueIncProcess(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('student_grade_records')) {
+            return response()->json([
+                'message' => 'Student grade records table is unavailable.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+        ]);
+
+        $schoolYear = $this->sanitizeSchoolYear($validated['school_year']);
+        $semester = $this->normalizeSemesterLabel($validated['semester']);
+        $aliases = $this->semesterAliases($semester);
+
+        $baseQuery = StudentGradeRecord::query()
+            ->whereRaw('TRIM(school_year) = ?', [$schoolYear])
+            ->where('inc', true)
+            ->where(function ($query) use ($aliases) {
+                foreach ($aliases as $index => $alias) {
+                    if ($index === 0) {
+                        $query->whereRaw('LOWER(TRIM(term)) = ?', [$alias]);
+                    } else {
+                        $query->orWhereRaw('LOWER(TRIM(term)) = ?', [$alias]);
+                    }
+                }
+            });
+
+        $processedCount = (int) (clone $baseQuery)->count();
+        $updatedCount = 0;
+
+        if ($processedCount > 0) {
+            $updatedCount = (int) (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereNull('remarks')->orWhereRaw('TRIM(remarks) = ?', ['']);
+                })
+                ->update([
+                    'remarks' => 'Overdue INC processed on ' . now()->format('Y-m-d'),
+                ]);
+        }
+
+        $notes = 'Matched ' . $processedCount . ' INC record(s); updated ' . $updatedCount . ' remarks.';
+
+        $runRow = null;
+        if (Schema::hasTable('system_inc_process_runs')) {
+            $run = new SystemIncProcessRun([
+                'triggered_by_user_id' => $request->user() ? (int) $request->user()->id : null,
+                'processed_count' => $processedCount,
+                'notes' => $notes,
+            ]);
+            $run->school_year = $schoolYear;
+            $run->semester = $semester;
+            $run->save();
+
+            $runRow = [
+                'schoolYear' => (string) ($run->school_year ?: ''),
+                'semester' => (string) ($run->semester ?: ''),
+                'processedCount' => (int) $run->processed_count,
+                'createdAt' => optional($run->created_at)->format('Y-m-d H:i:s') ?: '',
+            ];
+        }
+
+        return response()->json([
+            'ok' => true,
+            'processedCount' => $processedCount,
+            'updatedCount' => $updatedCount,
+            'message' => $notes,
+            'run' => $runRow,
+        ]);
     }
 
     // Access Management
@@ -1297,6 +1913,166 @@ class AdminToolsController extends Controller
             'affected_count' => $affectedCount,
             'message' => 'Action processed successfully.',
         ]);
+    }
+
+    private function buildAcademicTermRows(): array
+    {
+        if (!Schema::hasTable('academic_terms')) {
+            return [];
+        }
+
+        return AcademicTerm::query()
+            ->orderByDesc('school_year')
+            ->orderByRaw("CASE
+                WHEN LOWER(TRIM(term)) IN ('first', '1st semester', 'first semester') THEN 1
+                WHEN LOWER(TRIM(term)) IN ('second', '2nd semester', 'second semester') THEN 2
+                WHEN LOWER(TRIM(term)) IN ('summer', 'summer semester') THEN 3
+                ELSE 4
+            END")
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($row) {
+                $normalizedSemester = $this->normalizeSemesterLabel((string) $row->term);
+
+                return [
+                    'id' => (int) $row->id,
+                    'schoolYear' => (string) $row->school_year,
+                    'semester' => $normalizedSemester,
+                    'label' => (string) $row->school_year . ' - ' . $normalizedSemester,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function mapSignatureRow(SystemConfigNameSignature $row): array
+    {
+        $designationName = '';
+        if ($row->relationLoaded('designation') && $row->designation) {
+            $designationName = (string) $row->designation->name;
+        }
+
+        if ($designationName === '' && $row->designation_id) {
+            $designationName = (string) SystemConfigSignatureDesignation::query()
+                ->where('id', $row->designation_id)
+                ->value('name');
+        }
+
+        $signatureUrl = '';
+        if (!empty($row->signature_path)) {
+            $signatureUrl = asset('storage/' . ltrim((string) $row->signature_path, '/'));
+        }
+
+        return [
+            'id' => $row->id,
+            'designationId' => (int) $row->designation_id,
+            'designation' => $designationName,
+            'name' => (string) $row->signer_name,
+            'signaturePath' => (string) ($row->signature_path ?: ''),
+            'signatureUrl' => $signatureUrl,
+        ];
+    }
+
+    private function mapCutoffRow(SystemCutoffEntry $row): array
+    {
+        $typeCode = '';
+        $typeName = '';
+
+        if ($row->relationLoaded('cutoffType') && $row->cutoffType) {
+            $typeCode = (string) $row->cutoffType->code;
+            $typeName = (string) $row->cutoffType->name;
+        }
+
+        if ($typeCode === '' || $typeName === '') {
+            $typeRow = SystemCutoffType::query()
+                ->where('id', $row->cutoff_type_id)
+                ->first();
+
+            if ($typeRow) {
+                $typeCode = (string) $typeRow->code;
+                $typeName = (string) $typeRow->name;
+            }
+        }
+
+        return [
+            'id' => $row->id,
+            'typeCode' => $typeCode,
+            'type' => $typeName,
+            'sy' => (string) ($row->school_year ?: ''),
+            'semester' => (string) ($row->semester ?: ''),
+            'eventDate' => optional($row->event_date)->format('Y-m-d') ?: '',
+            'cutoffDate' => optional($row->cutoff_date)->format('Y-m-d') ?: '',
+            'studentNo' => (string) ($row->student_no ?: ''),
+            'notes' => (string) ($row->notes ?: ''),
+        ];
+    }
+
+    private function mapCurriculumDisplayRow(SystemCurriculumDisplaySetting $row): array
+    {
+        return [
+            'id' => $row->id,
+            'sy' => (string) ($row->school_year ?: ''),
+            'semester' => (string) ($row->semester ?: ''),
+            'status' => (string) $row->display_status,
+        ];
+    }
+
+    private function sanitizeSchoolYear($schoolYear): string
+    {
+        return trim((string) $schoolYear);
+    }
+
+    private function normalizeSemesterLabel($semester): string
+    {
+        $normalized = strtolower(trim((string) $semester));
+
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (in_array($normalized, ['first', '1st', '1st semester', 'first semester'], true)) {
+            return 'First';
+        }
+
+        if (in_array($normalized, ['second', '2nd', '2nd semester', 'second semester'], true)) {
+            return 'Second';
+        }
+
+        if (in_array($normalized, ['summer', 'summer semester'], true)) {
+            return 'Summer';
+        }
+
+        return ucfirst($normalized);
+    }
+
+    private function semesterAliases(string $semester): array
+    {
+        $normalized = strtolower(trim($semester));
+
+        if ($normalized === 'first') {
+            return ['first', '1st semester', 'first semester'];
+        }
+
+        if ($normalized === 'second') {
+            return ['second', '2nd semester', 'second semester'];
+        }
+
+        if ($normalized === 'summer') {
+            return ['summer', 'summer semester'];
+        }
+
+        return [$normalized];
+    }
+
+    private function resolveAcademicTerm(string $schoolYear, string $semester): AcademicTerm
+    {
+        $normalizedSchoolYear = $this->sanitizeSchoolYear($schoolYear);
+        $normalizedSemester = $this->normalizeSemesterLabel($semester);
+
+        return AcademicTerm::firstOrCreate(
+            ['canonical_key' => strtolower($normalizedSchoolYear . '|' . $normalizedSemester)],
+            ['school_year' => $normalizedSchoolYear, 'term' => $normalizedSemester]
+        );
     }
 
     private function resolveCourseId($courseValue)
