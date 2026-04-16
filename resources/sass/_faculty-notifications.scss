@@ -1,45 +1,4 @@
-.faculty-body,
-.parent-portal-body {
-    .topbar-user.topbar-profile-trigger {
-        background-color: #f0f0f0;
-        color: #444;
-        box-shadow: none;
-        transform: none;
-
-        &:hover,
-        &:focus-visible {
-            background-color: #e8f4ed;
-            color: $student-shell-green;
-            box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
-            transform: translateY(-1px);
-        }
-
-        &.is-active {
-            background-color: $student-shell-green;
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
-            transform: none;
-        }
-    }
-
-    .topbar-avatar-placeholder,
-    .topbar-avatar-placeholder--neutral {
-        background-color: transparent;
-        color: inherit;
-    }
-
-    .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,
-    .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,
-    .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder {
-        background-color: transparent;
-        color: inherit;
-    }
-
-    .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
-    .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral {
-        color: #fff;
-    }
-
+.faculty-body {
     .topbar-icon-link {
         position: relative;
     }
