@@ -258,6 +258,20 @@
     padding-right: 44px;
 }
 
+.login-password-wrapper .login-input[type="password"] {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.login-password-wrapper .login-input[type="password"]::-ms-reveal,
+.login-password-wrapper .login-input[type="password"]::-ms-clear,
+.login-password-wrapper .login-input[type="password"]::-webkit-credentials-auto-fill-button,
+.login-password-wrapper .login-input[type="password"]::-webkit-password-toggle-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 .password-toggle-btn {
     position: absolute;
     right: 12px;

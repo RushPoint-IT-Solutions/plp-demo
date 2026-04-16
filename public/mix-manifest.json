@@ -1,7 +1,7 @@
 {
     "/js/app.js": "/js/app.js?id=10bff9f7930b23cf1973",
     "/css/app.css": "/css/app.css?id=1662db35b1aed6bf28c5",
-    "/css/style.css": "/css/style.css?id=50f561d20bc20f580688",
+    "/css/style.css": "/css/style.css?id=4fb8fe74e4273dc638e2",
     "/css/faculty-notifications.css": "/css/faculty-notifications.css?id=80dcf6ed3ac6f03e4c3f",
     "/css/certificate-gwa.css": "/css/certificate-gwa.css?id=0f2531b5f92fbda54aae",
     "/css/certificate-graduation-8c2.css": "/css/certificate-graduation-8c2.css?id=48038a14ca6ea4fba93b",
@@ -22,6 +22,7 @@
     "/js/registrar-loa-enrolled.js": "/js/registrar-loa-enrolled.js?id=371d517fe5b234170ddf",
     "/js/registrar-request-form-f137a.js": "/js/registrar-request-form-f137a.js?id=c485126813765e721c53",
     "/js/registrar-system-config-configuration.js": "/js/registrar-system-config-configuration.js?id=ae5e70b20af4af667759",
+    "/js/registrar-user-accounts.js": "/js/registrar-user-accounts.js?id=29278a5f5c828aa9be52",
     "/js/section-offering.js": "/js/section-offering.js?id=f3f859d5c431d32d79f6",
     "/js/slot-monitoring-report.js": "/js/slot-monitoring-report.js?id=2b8b580fe3962a4f8cf6",
     "/js/student-profile.js": "/js/student-profile.js?id=91ffa4d613bd7fd7e8e7",
