@@ -8,11 +8,13 @@
 
     toggle.addEventListener('click', function () {
         sidebar.classList.toggle('sidebar-open');
+        overlay.classList.toggle('active');
         overlay.classList.toggle('overlay-visible');
     });
 
     overlay.addEventListener('click', function () {
         sidebar.classList.remove('sidebar-open');
+        overlay.classList.remove('active');
         overlay.classList.remove('overlay-visible');
     });
 

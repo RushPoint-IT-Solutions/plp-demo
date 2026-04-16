@@ -300,6 +300,11 @@
   position: fixed;
 }
 
+#pfPaginationBar {
+  margin-top: 2px;
+  padding-top: 2px;
+}
+
 @media (max-width: 991px) {
   .pf-top-filter-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

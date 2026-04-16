@@ -4,6 +4,744 @@
     padding: 6px 0 0;
 }
 
+.page-registrar-grading-sheet {
+    .gs-filter-bar {
+        background: #f7f7f7;
+        border: 1px solid #dfe6e1;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .gs-filter-select {
+        height: 37px;
+        border: 1px solid #bcc7bf;
+        border-radius: 7px;
+        font-size: 0.8rem;
+    }
+
+    .gs-section-banner-v2 {
+        background: #f9faf9;
+        border: 1px solid #b9dbbf;
+        border-radius: 11px;
+    }
+
+    .gs-detail-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .gs-detail-toolbar-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .gs-print-btn {
+        min-height: 34px;
+        border: 0;
+        border-radius: 8px;
+        background: #00753d;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 7px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .gs-print-btn:hover {
+        background: #005e31;
+    }
+
+    .gs-print-btn.gs-print-secondary {
+        background: #2c7cb6;
+    }
+
+    .gs-print-btn.gs-print-secondary:hover {
+        background: #1f6697;
+    }
+
+    .gs-grade-header-cell {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.15s ease;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+    }
+
+    .gs-grade-header-cell:hover {
+        background: #1e7b46;
+    }
+
+    .gs-grade-head-title,
+    .gs-grade-head-hint {
+        display: block;
+        text-align: center;
+        line-height: 1.1;
+    }
+
+    .gs-grade-head-title {
+        font-size: 0.79rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .gs-grade-head-hint {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+        margin-top: 2px;
+    }
+
+    .gs-grade-na {
+        color: #9aa3ad;
+        font-style: italic;
+        font-weight: 600;
+    }
+
+    .gs-remarks-failed {
+        color: #1f1f1f;
+        font-weight: 700;
+    }
+
+    .gs-grade-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 12010;
+        background: rgba(0, 0, 0, 0.34);
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    #gsGradeModal.req-modal-overlay {
+        align-items: center;
+        padding: 20px;
+    }
+
+    #gsGradeModal .req-modal-box.gs-grade-modal-box {
+        width: min(1080px, 95vw);
+        max-width: 1080px;
+        min-width: 0;
+        max-height: 92vh;
+        overflow: auto;
+        background: #fbfbfb;
+        border: 1px solid #d5e1d8;
+        border-radius: 10px;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gs-grade-modal-head {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        margin-bottom: 0;
+        min-height: 56px;
+        padding: 0 14px;
+        background: linear-gradient(180deg, #f1faf4 0%, #e2f1e8 100%);
+        border-bottom: 1px solid #c3d9cb;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .gs-grade-modal-title {
+        grid-column: 2;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+        text-align: center;
+        width: auto;
+        padding: 0;
+        line-height: 1.2;
+        transform: none;
+        letter-spacing: 0.03em;
+        font-size: 1.55rem;
+        text-transform: uppercase;
+        color: #0a6f39;
+        font-weight: 800;
+    }
+
+    .gs-grade-modal-head .rep-modal-close-x {
+        grid-column: 3;
+        justify-self: end;
+        position: static;
+        margin: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid #ccd9d0;
+        background: #f4f7f5;
+        color: #6b7370;
+        font-size: 1.35rem;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .gs-grade-modal-subtitle {
+        padding: 8px 14px 3px;
+        color: #3e5247;
+        font-weight: 700;
+        font-size: 0.78rem;
+    }
+
+    .gs-grade-tabs {
+        padding: 4px 14px 8px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .gs-grade-tab {
+        border: 1px solid #a8bcb0;
+        background: #e7efea;
+        color: #3b4f45;
+        border-radius: 6px;
+        min-height: 28px;
+        padding: 4px 9px;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+
+    .gs-grade-tab.is-active {
+        background: #0a6f39;
+        color: #fff;
+        border-color: #0a6f39;
+    }
+
+    .gs-grade-table-wrap {
+        padding: 0 12px 12px;
+        overflow: auto;
+    }
+
+    .gs-grade-modal-table {
+        min-width: 960px;
+    }
+
+    .gs-grade-modal-table thead th {
+        background: #006837;
+        color: #fff;
+        border: 0;
+        text-transform: uppercase;
+        font-size: 0.73rem;
+        letter-spacing: 0.2px;
+    }
+
+    .gs-grade-modal-table tbody tr:nth-child(even) {
+        background: #f4f8f5;
+    }
+
+    .gs-grade-modal-table td {
+        vertical-align: middle;
+        font-size: 0.8rem;
+    }
+
+    .gs-grade-input {
+        width: 100%;
+        height: 26px;
+        border: 1px solid #aec2b5;
+        border-radius: 5px;
+        background: #fff;
+        text-align: center;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #313131;
+        padding: 2px 6px;
+    }
+
+    .gs-grade-input-readonly {
+        background: #dfe8e3;
+    }
+
+    @include down(991px) {
+        .gs-detail-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .gs-detail-toolbar-right {
+            width: 100%;
+        }
+
+        .gs-print-btn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    @include down(768px) {
+        #gsGradeModal .req-modal-box.gs-grade-modal-box {
+            min-width: 0;
+            max-height: calc(100vh - 16px);
+        }
+
+        .gs-grade-modal-title {
+            font-size: 1.15rem;
+        }
+
+        .gs-grade-tabs {
+            padding-top: 8px;
+        }
+    }
+}
+
+// Registrar page-specific style restoration (migrated from legacy for safer scoping)
+.page-services-class-list {
+    .svc-top-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
+        gap: 12px;
+        align-items: stretch;
+        margin-bottom: 12px;
+    }
+
+    .svc-search-card,
+    .svc-config-card {
+        background: #ecf5ee;
+        border: 1px solid #d7e7db;
+        border-radius: 4px;
+        padding: 10px;
+    }
+
+    .svc-config-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+        align-items: end;
+    }
+
+    .svc-actions-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .svc-btn-pdf,
+    .svc-btn-excel {
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .svc-btn-pdf { background: #ff4b4b; }
+    .svc-btn-excel { background: #0f7b43; }
+
+    .svc-link {
+        color: #0f7b43;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .svc-link:hover {
+        text-decoration: underline;
+    }
+
+    .svc-table {
+        min-width: 860px;
+    }
+
+    .at-top-row {
+        display: grid;
+        grid-template-columns: minmax(230px, 1fr) minmax(430px, 1.25fr);
+        gap: 8px;
+        align-items: start;
+        border: 1px solid #d7dde2;
+        border-radius: 10px;
+        background: #f8fafb;
+        padding: 10px;
+    }
+
+    .at-config-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(210px, 1fr) auto;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .at-config-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .at-config-action {
+        display: flex;
+        align-items: end;
+    }
+
+    .at-btn-set {
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        min-width: 52px;
+    }
+}
+
+.svc-selected-info {
+    background: #ecf5ee;
+    border: 1px solid #d7e7db;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 16px;
+    font-size: 0.8rem;
+    color: #2f4c3c;
+}
+
+.page-deficiency {
+    .ga-filter-grid-deficiency {
+        grid-template-columns: 2.2fr repeat(3, minmax(140px, 1fr));
+        align-items: end;
+    }
+
+    .ga-filter-search {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .ga-search-wrap-wide {
+        max-width: none;
+        width: 100%;
+    }
+
+    .df-detail-toolbar {
+        margin-bottom: 20px;
+    }
+
+    .df-list-table-wrap {
+        margin-top: 14px;
+    }
+
+    .df-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-color: #d1d5db;
+        background: #fff;
+    }
+
+    .df-back-btn:hover {
+        border-color: #0f7b43;
+    }
+
+    .df-students-table th,
+    .df-students-table td {
+        vertical-align: middle;
+    }
+
+    .df-col-action,
+    .df-col-index,
+    .df-col-program,
+    .df-col-year,
+    .df-col-completed,
+    .df-col-action-detail,
+    #dfStudentsTable th,
+    #dfStudentsTable td {
+        text-align: center;
+    }
+
+    .df-col-action { width: 76px; }
+    .df-col-index { width: 58px; }
+    .df-col-program { width: 170px; }
+    .df-col-year { width: 120px; }
+    .df-col-completed { width: 106px; }
+
+    .df-empty-row {
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .df-student-link {
+        color: #1f2937;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .df-student-link:hover,
+    .df-student-link:focus {
+        color: #0f7b43;
+        text-decoration: underline;
+    }
+
+    #dfStudentsTable td:first-child,
+    #dfTable td:last-child {
+        position: relative;
+    }
+
+    #dfStudentsTable td:first-child .apst-action-btn,
+    #dfTable td:last-child .apst-action-btn {
+        margin: 0 auto;
+    }
+
+    #dfStudentsTable .apst-dropdown {
+        left: calc(50% + 21px);
+        right: auto;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    #dfTable .apst-dropdown {
+        left: auto;
+        right: calc(100% + 6px);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    #dfStudentsTable .apst-dropdown.drop-up,
+    #dfTable .apst-dropdown.drop-up {
+        top: auto;
+        bottom: 0;
+        transform: none;
+    }
+
+    .apst-action-btn.apst-action-btn-eye {
+        gap: 0;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 999px;
+        border-color: #9bcfb3;
+        background: #ecf9f1;
+        box-shadow: 0 1px 2px rgba(6, 78, 59, 0.16);
+        transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .apst-action-btn.apst-action-btn-eye span { display: none; }
+    .apst-action-btn.apst-action-btn-eye svg { color: #0f7b43; }
+
+    .apst-action-btn.apst-action-btn-eye:hover,
+    .apst-action-btn.apst-action-btn-eye:focus {
+        background: #dbf2e5;
+        border-color: #6bb38b;
+        transform: translateY(-1px);
+    }
+
+    .df-student-modal-box { max-width: 500px; }
+    .df-deficiency-modal-box { max-width: 620px; }
+    .df-summary-modal-box { max-width: 500px; text-align: center; }
+
+    .df-summary-body {
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .df-summary-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.9rem;
+        color: #444;
+    }
+
+    .df-summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .df-summary-status {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 12px;
+    }
+
+    .df-summary-status.is-pending {
+        color: #d93025;
+        background: #ffe5e5;
+    }
+
+    .df-summary-status.is-completed {
+        color: #0b7a39;
+        background: #ddf8e8;
+    }
+}
+
+@media (max-width: 1000px) {
+    .page-services-class-list .svc-top-row {
+        grid-template-columns: 1fr;
+    }
+
+    .page-services-class-list .svc-config-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .page-services-class-list .svc-config-action {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 900px) {
+}
+
+@media (max-width: 860px) {
+    .page-deficiency .ga-inline-actions-deficiency {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-deficiency .ga-inline-btns {
+        width: 100%;
+    }
+
+    .page-deficiency .ga-inline-btns .ga-btn {
+        flex: 1;
+        width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-services-class-list .svc-actions-row {
+        flex-direction: column;
+    }
+
+    .page-services-class-list .svc-btn-pdf,
+    .page-services-class-list .svc-btn-excel {
+        width: 100%;
+    }
+
+    .svc-selected-info {
+        grid-template-columns: 1fr;
+    }
+
+    .page-services-class-list .at-config-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-services-class-list .at-config-item {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .page-services-class-list .at-config-action {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .page-services-class-list .at-btn-set {
+        width: 100%;
+        min-height: 36px;
+        border-radius: 8px;
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-services-class-list .at-top-row {
+        grid-template-columns: 1fr;
+    }
+
+    .page-services-class-list .at-search-wrap {
+        max-width: 100%;
+    }
+
+    .page-services-class-list .at-config-card {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid #d2d9df;
+        padding-top: 8px;
+    }
+}
+
+@media (max-width: 1180px) {
+    .page-deficiency .ga-filter-grid-deficiency {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
+    }
+}
+
+.sched-page-container .sched-filter-row-main {
+    display: flex;
+    gap: 12px;
+}
+
+.sched-page-container .sched-filter-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.sched-page-container .sched-filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.sched-page-container .sched-action-btn {
+    min-height: 42px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+@include down(768px) {
+    .sched-page-container .sched-filter-row-main {
+        align-items: stretch !important;
+        flex-wrap: wrap;
+    }
+
+    .sched-page-container .sched-filter-controls {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .sched-page-container .sched-filter-group {
+        margin-right: 0 !important;
+        max-width: none;
+    }
+
+    .sched-page-container .sched-filter-actions {
+        width: 100%;
+        margin-left: 0;
+        align-items: stretch;
+        justify-content: stretch;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sched-page-container .sched-filter-actions .sched-action-btn,
+    .sched-page-container .sched-filter-actions .sched-download-btn,
+    .sched-page-container .sched-filter-actions .btn-view-cor {
+        width: 100%;
+        min-width: 0;
+        margin-right: 0 !important;
+    }
+}
+
+@include down(480px) {
+    .sched-page-container .sched-filter-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
 // Applicant sidebar
 #applicantSidebar { display: none; }
 
@@ -729,6 +1467,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     .parent-portal-body .plp-sidebar {
         position: fixed;
         top: 0;
+        z-index: 1000;
     }
 
     .parent-portal-body .student-main-wrapper {

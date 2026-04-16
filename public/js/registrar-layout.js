@@ -76,7 +76,8 @@
         var overlay = document.getElementById('sidebarOverlay');
 
         if (sidebarToggle && sidebar && overlay) {
-            sidebarToggle.addEventListener('click', function () {
+            sidebarToggle.addEventListener('click', function (e) {
+                e.stopPropagation();
                 sidebar.classList.toggle('sidebar-open');
                 overlay.classList.toggle('active');
             });
@@ -93,7 +94,8 @@
             }
 
             var clickedInsideSidebar = e.target.closest('.plp-sidebar');
-            if (!clickedInsideSidebar && sidebar.classList.contains('sidebar-open')) {
+            var clickedToggle = sidebarToggle && (e.target === sidebarToggle || e.target.closest('#sidebarToggle'));
+            if (!clickedInsideSidebar && !clickedToggle && sidebar.classList.contains('sidebar-open')) {
                 sidebar.classList.remove('sidebar-open');
                 overlay.classList.remove('active');
             }

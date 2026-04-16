@@ -187,7 +187,8 @@
         });
     </script>
 
-    <script src="{{ asset('js/student-layout.js') }}"></script>
-    <script src="{{ asset('js/student-sidebar-dropdown.js') }}"></script>
+    <script src="{{ asset('js/student-layout.js') }}?v={{ file_exists(public_path('js/student-layout.js')) ? filemtime(public_path('js/student-layout.js')) : time() }}"></script>
+    <script src="{{ asset('js/student-sidebar-dropdown.js') }}?v={{ file_exists(public_path('js/student-sidebar-dropdown.js')) ? filemtime(public_path('js/student-sidebar-dropdown.js')) : time() }}"></script>
+
 </body>
 </html>
