@@ -336,9 +336,7 @@
                 <label class="req-modal-label">Period</label>
                 <select id="cfgGPPeriod" class="req-modal-input">
                     <option value="">-Select-</option>
-                    <option value="Prelim">Prelim</option>
                     <option value="Midterm">Midterm</option>
-                    <option value="Pre-Final">Pre-Final</option>
                     <option value="Final">Final</option>
                 </select>
             </div>

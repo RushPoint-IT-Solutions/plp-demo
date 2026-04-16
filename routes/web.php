@@ -38,7 +38,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 | Student & Applicant also get their own login pages.
 */
 Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module.login')
-    ->where('module', 'registrar|accounting|cashier|faculty|student|applicant');
+    ->where('module', 'registrar|accounting|cashier|faculty|student|applicant|parent');
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +52,7 @@ Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login'
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
 Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
+Route::get('/parent/create-account', 'Portal\ParentController@showCreateAccount')->name('parent.create-account');
 
 /*
 |--------------------------------------------------------------------------
@@ -107,6 +108,27 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
     Route::get('/profile/edit', 'Student\StudentController@editProfile')->name('profile.edit');
     Route::post('/profile', 'Student\StudentController@updateProfile')->name('profile.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Parent Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('parent')->name('parent.')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('parent.grades');
+    })->name('access-module');
+    Route::get('/help-center', 'Portal\ParentController@helpCenter')->name('help.center');
+    Route::get('/help-center/live-chat', 'Portal\ParentController@helpCenterLiveChat')->name('help.live-chat');
+    Route::get('/help-center/{topic}', 'Portal\ParentController@helpCenterTopic')->name('help.topic');
+    Route::get('/profile', 'Portal\ParentController@profile')->name('profile');
+    Route::get('/grades', 'Portal\ParentController@grades')->name('grades');
+    Route::get('/student-profile', 'Portal\ParentController@studentProfile')->name('student-profile');
+    Route::get('/calendar', 'Portal\ParentController@calendar')->name('calendar');
+    Route::get('/contact-us', 'Portal\ParentController@contactUs')->name('contact-us');
+    Route::get('/change-password', 'Portal\ParentController@changePassword')->name('change-password');
+    Route::get('/messaging', 'Portal\ParentController@messaging')->name('messaging');
 });
 
 /*

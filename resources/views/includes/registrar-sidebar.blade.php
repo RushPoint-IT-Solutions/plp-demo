@@ -33,7 +33,7 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application</a>
+                <a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application List</a>
                 <a href="{{ route('registrar.process.citizenship') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.citizenship') ? 'active' : '' }}">Citizenship</a>
                 <a href="{{ route('registrar.process.religion') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion') ? 'active' : '' }}">Religion</a>
                 <a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>
@@ -232,25 +232,8 @@
                         </div>
                     </div>
 
-                    <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'open' : '' }}">
-                        <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'active' : '' }}">
-                            Copy Of Grades (COG)
-                            <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </a>
-                        <div class="sidebar-nested-menu">
-                            <a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cog.copy-of-grades') ? 'active' : '' }}">Copy Of Grades (COG)</a>
-                        </div>
-                    </div>
-
-                    <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.cor.*') ? 'open' : '' }}">
-                        <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.cor.*') ? 'active' : '' }}">
-                            Certificate of Registration (COR)
-                            <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </a>
-                        <div class="sidebar-nested-menu">
-                            <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cor.certificate-of-registration') ? 'active' : '' }}">Certificate of Registration (COR)</a>
-                        </div>
-                    </div>
+                    <a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'active' : '' }}">Copy Of Grades (COG)</a>
+                    <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cor.*') ? 'active' : '' }}">Certificate of Registration (COR)</a>
                 </div>
             </div>
 

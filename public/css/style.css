@@ -32139,6 +32139,205 @@ body.page-profile-edit .student-content {
   box-shadow: 0 4px 16px rgba(26, 110, 26, 0.35);
 }
 
+.login-parent-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.login-submit-btn--block {
+  width: 100%;
+  max-width: 260px;
+  min-width: 0;
+}
+
+.login-parent-caption {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.login-parent-create-link {
+  color: #0a7d3f;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.login-parent-create-link:visited {
+  color: #0a7d3f;
+}
+
+.login-parent-create-link:hover,
+.login-parent-create-link:focus {
+  color: #145a14;
+}
+
+.login-parent-create-link-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+}
+
+.login-parent-create-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(12, 22, 16, 0.08);
+}
+
+.login-parent-create-modal.is-open {
+  display: flex;
+}
+
+.login-parent-create-modal-dialog {
+  width: min(900px, 100%);
+  pointer-events: auto;
+}
+
+.login-parent-create-modal-content {
+  border-radius: 28px;
+  border: 0;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+}
+
+.login-parent-create-modal-content .modal-body {
+  padding: 28px 34px 30px;
+  background: #f4f4f4;
+}
+
+.login-parent-create-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #5f5f5f;
+  font-size: 1.2rem;
+  line-height: 1;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-parent-create-close:hover,
+.login-parent-create-close:focus {
+  background: #ebeff1;
+  color: #1d1d1d;
+}
+
+.login-parent-create-title {
+  text-align: center;
+  margin: 0 0 20px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #121212;
+  letter-spacing: 0.02em;
+}
+
+.login-parent-create-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.login-parent-create-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #0a7d3f;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.login-parent-create-field label span {
+  color: #ef5b5b;
+  margin-left: 2px;
+}
+
+.login-parent-create-field .form-control {
+  height: 42px;
+  border: 1px solid #d2d2d2;
+  border-radius: 6px;
+  font-size: 0.93rem;
+  box-shadow: none;
+  padding: 0 12px;
+  background: #fff;
+}
+
+.login-parent-create-field .form-control:disabled,
+.login-parent-create-field .form-control[readonly] {
+  opacity: 1;
+  background: #fff;
+  color: #2d2d2d;
+  cursor: text;
+  pointer-events: auto;
+}
+
+.login-parent-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.login-parent-create-actions .btn {
+  min-width: 106px;
+  height: 42px;
+  border-radius: 10px;
+  border: 0;
+  background: #0a7d3f;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+body.login-body .modal-backdrop.show {
+  opacity: 0.24;
+}
+
+@media (max-width: 991px) {
+  .login-parent-create-modal-dialog {
+    width: 100%;
+  }
+
+  .login-parent-create-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .login-parent-create-modal-content .modal-body {
+    padding: 20px 16px 22px;
+  }
+
+  .login-parent-create-title {
+    font-size: 1.55rem;
+    margin-bottom: 16px;
+  }
+
+  .login-parent-create-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
 .login-bg-wrapper .plp-footer {
   background-color: transparent;
   border-top: 2px dashed rgba(255, 255, 255, 0.5);
@@ -34126,12 +34325,677 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   text-align: left;
 }
 
+.parent-grades-snapshot-page {
+  max-width: 100%;
+  padding-right: 2px;
+}
+
+.parent-grades-snapshot-page .parent-grades-student-row {
+  max-width: 420px;
+  margin-bottom: 16px;
+}
+
+.parent-grades-snapshot-page .parent-grades-term-block {
+  border: 1px solid #d7e2da;
+  border-radius: 12px;
+  background: #f8fbf9;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.parent-grades-snapshot-page .parent-grades-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.parent-grades-snapshot-page .parent-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.parent-grades-snapshot-page .parent-meta-item span {
+  font-size: 0.74rem;
+  color: #2f5e43;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.parent-grades-snapshot-page .parent-meta-item .parent-meta-value,
+.parent-grades-snapshot-page .parent-meta-item .parent-meta-note {
+  display: block;
+  padding: 0;
+  font-size: 0.84rem;
+  color: #202020;
+  line-height: 1.35;
+  font-weight: 600;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.parent-grades-snapshot-page .parent-meta-item .parent-meta-note {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #3d3d3d;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table {
+  font-size: 0.79rem;
+  min-width: 1180px;
+  background: #fff;
+  border: 1px solid #d4ddd7;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th,
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td {
+  padding: 9px 10px;
+  vertical-align: top;
+  white-space: normal;
+  line-height: 1.35;
+  border-color: #dbe5df;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  background: #006837;
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table tbody tr:nth-child(even) {
+  background: #fcfefd;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(3),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(3),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(4),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(4) {
+  text-align: left;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(1),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(1),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(2),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(2),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(5),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(5),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(6),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(6),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(7),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(7),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(8),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(8),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(9),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(9),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(10),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(10) {
+  white-space: nowrap;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(3),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(3) {
+  min-width: 260px;
+}
+
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-th:nth-child(4),
+.parent-grades-snapshot-page .parent-grade-grid-table .sched-td:nth-child(4) {
+  min-width: 170px;
+}
+
+.parent-student-profile-page .parent-student-picker {
+  max-width: 430px;
+  margin-bottom: 14px;
+}
+
+.parent-student-profile-page .parent-student-card {
+  border: 1px solid #d5ddd8;
+  border-radius: 12px;
+  background: #f8fbf9;
+  padding: 14px;
+}
+
+.parent-student-profile-page .parent-student-profile-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.parent-student-profile-page .parent-student-profile-grid--top {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.parent-student-profile-page .parent-student-profile-grid--address,
+.parent-student-profile-page .parent-student-profile-grid--bio {
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.parent-student-profile-page .parent-student-profile-grid--identity {
+  grid-template-columns: 1.1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.parent-student-profile-page .parent-student-profile-grid--acad1 {
+  grid-template-columns: 1fr;
+}
+
+.parent-student-profile-page .parent-student-profile-grid--acad2 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.parent-student-profile-page .parent-student-profile-grid--transfer {
+  grid-template-columns: 2fr 1fr 1.2fr;
+  margin-bottom: 0;
+}
+
+.parent-student-profile-page .parent-student-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #187646;
+  text-transform: uppercase;
+}
+
+.parent-student-profile-page .parent-student-field input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #cfd8d1;
+  border-radius: 5px;
+  padding: 6px 10px;
+  background: #f3f5f4;
+  color: #424242;
+  font-size: 0.8rem;
+}
+
+.parent-student-profile-page .parent-student-field--sm {
+  max-width: 180px;
+}
+
+.parent-student-profile-page .parent-student-field--wide {
+  min-width: 0;
+}
+
+.parent-student-profile-page .parent-student-divider {
+  height: 1px;
+  margin: 12px 0 14px;
+  background: #93c7a8;
+}
+
+.parent-student-profile-page .parent-student-transfer-row {
+  margin: 2px 0 10px;
+}
+
+.parent-student-profile-page .parent-student-transfer-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.parent-student-profile-page .parent-student-transfer-check span {
+  font-size: 0.72rem;
+  color: #18633f;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.parent-student-profile-page .parent-student-transfer-check input[type=checkbox] {
+  width: 14px;
+  height: 14px;
+  margin-top: 0;
+}
+
+.parent-profile-snapshot-page .parent-profile-form-grid {
+  display: grid;
+  grid-template-columns: 0.6fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+  max-width: 740px;
+}
+
+.parent-profile-snapshot-page .parent-profile-email-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: 740px;
+  margin-bottom: 16px;
+}
+
+.parent-profile-snapshot-page .parent-form-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #0a813c;
+}
+
+.parent-profile-snapshot-page .parent-form-field input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid #cbcbcb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #f2f2f2;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.parent-profile-snapshot-page .parent-form-field-email {
+  flex: 1;
+}
+
+.parent-profile-snapshot-page .parent-save-email-btn {
+  height: 36px;
+  border: 0;
+  border-radius: 5px;
+  padding: 0 14px;
+  background: #0a813c;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.parent-profile-snapshot-page .parent-linked-children-box {
+  border: 1px solid #cfcfcf;
+  border-radius: 10px;
+  background: #f4f4f4;
+  padding: 12px;
+  min-height: 260px;
+}
+
+.parent-profile-snapshot-page .parent-linked-children-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.parent-profile-snapshot-page .parent-child-table .sched-th,
+.parent-profile-snapshot-page .parent-child-table .sched-td {
+  padding: 7px 10px;
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.parent-profile-snapshot-page .parent-child-table .sched-th {
+  background: #006837;
+  color: #fff;
+}
+
+.parent-link-child-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 7px;
+  border: 1px solid #0a813c;
+  background: #f7fbf8;
+  color: #0a813c;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.parent-link-child-btn:hover,
+.parent-link-child-btn:focus {
+  background: #edf7f0;
+  color: #0a813c;
+  text-decoration: none;
+}
+
+.parent-empty-note {
+  color: #61716a;
+  font-size: 0.85rem;
+}
+
+.parent-link-modal {
+  border-radius: 12px;
+  border: 1px solid #dadada;
+}
+
+.parent-contact-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 0 0;
+}
+
+.parent-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.parent-contact-card {
+  border: 1px solid #1c915d;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fcfcfc 0%, #f4f6f5 100%);
+  min-height: 300px;
+  box-shadow: 0 8px 18px rgba(9, 33, 20, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: 24px 24px 18px;
+}
+
+.parent-contact-icon-wrap {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  background: #e8f4ed;
+  border: 1px solid #c9e1d2;
+  box-shadow: inset 0 0 0 4px #f4faf7;
+}
+
+.parent-contact-icon {
+  color: #0f0f0f;
+  line-height: 0;
+}
+
+.parent-contact-card-title {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1f6a44;
+}
+
+.parent-contact-value {
+  margin: 0 0 10px;
+  font-size: 2.08rem;
+  font-weight: 800;
+  color: #0f1211;
+  line-height: 1.1;
+}
+
+.parent-contact-value a {
+  color: #2675dc;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.parent-contact-value a:hover,
+.parent-contact-value a:focus {
+  color: #1658ad;
+}
+
+.parent-contact-note {
+  margin: 0;
+  max-width: 460px;
+  font-size: 0.96rem;
+  line-height: 1.45;
+  color: #252525;
+}
+
+.parent-contact-guidelines {
+  border-radius: 12px;
+  background: #d7d9d8;
+  border: 1px solid #ced1cf;
+  padding: 16px 18px;
+  color: #171717;
+  box-shadow: 0 6px 14px rgba(18, 18, 18, 0.06);
+}
+
+.parent-contact-guidelines h4 {
+  margin: 0 0 8px;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.parent-contact-guidelines p {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.parent-contact-guidelines ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.parent-contact-guidelines li {
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.parent-account-profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.parent-account-profile-page .parent-account-profile-card,
+.parent-account-profile-page .parent-account-linked-card {
+  border: 1px solid #d5ddd8;
+  border-radius: 12px;
+  background: #f8fbf9;
+  padding: 14px;
+}
+
+.parent-account-profile-page .parent-account-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.parent-account-profile-page .parent-account-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8f3eb;
+  color: #1e7148;
+  border: 1px solid #cfe0d4;
+  flex-shrink: 0;
+}
+
+.parent-account-profile-page .parent-account-head-meta h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1d1d1d;
+}
+
+.parent-account-profile-page .parent-account-head-meta p {
+  margin: 2px 0 0;
+  font-size: 0.84rem;
+  color: #42684f;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.parent-account-profile-page .parent-account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.parent-account-profile-page .parent-account-field label {
+  display: block;
+  margin: 0 0 3px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #1d7348;
+  text-transform: uppercase;
+}
+
+.parent-account-profile-page .parent-account-value {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid #ced8d1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #222;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.parent-account-profile-page .parent-account-field--wide {
+  grid-column: span 2;
+}
+
+.parent-account-profile-page .parent-account-linked-card h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #21563b;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.parent-account-profile-page .parent-account-linked-table {
+  min-width: 760px;
+}
+
+.parent-account-profile-page .parent-account-linked-table .sched-th {
+  background: #006837;
+  color: #fff;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+
+.parent-account-profile-page .parent-account-linked-table .sched-th,
+.parent-account-profile-page .parent-account-linked-table .sched-td {
+  padding: 8px 10px;
+  border-color: #dbe4de;
+  font-size: 0.8rem;
+}
+
+.parent-portal-body .student-page-header {
+  min-height: 40px;
+  height: 40px;
+  font-size: 1.05rem;
+  line-height: 1;
+  letter-spacing: 0.6px;
+  flex-shrink: 0;
+}
+
+.parent-portal-body .student-layout {
+  align-items: stretch;
+}
+
+.parent-portal-body .plp-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  max-height: 100vh;
+  z-index: 40;
+}
+
+.parent-portal-body .student-main-wrapper {
+  margin-left: 285px;
+  width: calc(100% - 285px);
+}
+
+.parent-portal-body .student-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+}
+
+.parent-portal-body .student-main-wrapper,
+.parent-portal-body .content-footer-wrap,
+.parent-portal-body .student-content {
+  max-height: none !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+.parent-grades-snapshot-page .grades-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
 @media (max-width: 991px) {
   .section-offering-page,
   .grades-page,
   .events-page,
   .profile-page {
     max-width: 100%;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parent-grades-snapshot-page .parent-grades-term-block {
+    padding: 12px;
+  }
+
+  .parent-student-profile-page .parent-student-profile-grid--top,
+  .parent-student-profile-page .parent-student-profile-grid--address,
+  .parent-student-profile-page .parent-student-profile-grid--bio,
+  .parent-student-profile-page .parent-student-profile-grid--identity,
+  .parent-student-profile-page .parent-student-profile-grid--acad2,
+  .parent-student-profile-page .parent-student-profile-grid--transfer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parent-account-profile-page .parent-account-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parent-account-profile-page .parent-account-field--wide {
+    grid-column: span 2;
+  }
+
+  .parent-profile-snapshot-page .parent-profile-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parent-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parent-contact-card {
+    min-height: 260px;
+  }
+
+  .parent-contact-value {
+    font-size: 1.7rem;
+  }
+
+  .parent-contact-icon-wrap {
+    width: 96px;
+    height: 96px;
+  }
+
+  .parent-portal-body .plp-sidebar {
+    position: fixed;
+    top: 0;
+  }
+
+  .parent-portal-body .student-main-wrapper {
+    margin-left: 0;
+    width: 100%;
   }
 }
 
@@ -34141,6 +35005,92 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   .events-page,
   .profile-page {
     padding-top: 0;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parent-student-profile-page .parent-student-card {
+    padding: 12px 10px;
+  }
+
+  .parent-student-profile-page .parent-student-profile-grid--top,
+  .parent-student-profile-page .parent-student-profile-grid--address,
+  .parent-student-profile-page .parent-student-profile-grid--bio,
+  .parent-student-profile-page .parent-student-profile-grid--identity,
+  .parent-student-profile-page .parent-student-profile-grid--acad2,
+  .parent-student-profile-page .parent-student-profile-grid--transfer {
+    grid-template-columns: 1fr;
+  }
+
+  .parent-student-profile-page .parent-student-field--sm {
+    max-width: 100%;
+  }
+
+  .parent-account-profile-page .parent-account-profile-card,
+  .parent-account-profile-page .parent-account-linked-card {
+    padding: 12px 10px;
+  }
+
+  .parent-account-profile-page .parent-account-profile-head {
+    align-items: flex-start;
+  }
+
+  .parent-account-profile-page .parent-account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parent-account-profile-page .parent-account-field--wide {
+    grid-column: auto;
+  }
+
+  .parent-profile-snapshot-page .parent-profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parent-profile-snapshot-page .parent-profile-email-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .parent-contact-page {
+    padding-top: 0;
+  }
+
+  .parent-contact-card {
+    padding: 18px 12px 14px;
+  }
+
+  .parent-contact-icon svg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .parent-contact-icon-wrap {
+    width: 82px;
+    height: 82px;
+  }
+
+  .parent-contact-value {
+    font-size: 1.35rem;
+  }
+
+  .parent-contact-note {
+    font-size: 0.84rem;
+  }
+
+  .parent-contact-guidelines {
+    padding: 12px;
+  }
+
+  .parent-contact-guidelines h4 {
+    font-size: 1.2rem;
+  }
+
+  .parent-contact-guidelines p,
+  .parent-contact-guidelines li {
+    font-size: 0.88rem;
   }
 }
 
@@ -35435,6 +36385,8 @@ body.page-profile-view .pv-layout {
 
 .student-portal-body .topbar-icon-link.msg-icon:hover,
 .student-portal-body .topbar-icon-link.msg-icon:focus-visible,
+.student-portal-body .topbar-icon-link.topbar-help-icon:hover,
+.student-portal-body .topbar-icon-link.topbar-help-icon:focus-visible,
 .student-portal-body .topbar-icon-link.topbar-notif-icon:hover,
 .student-portal-body .topbar-icon-link.topbar-notif-icon:focus-visible {
   background-color: #e8f4ed;
@@ -35444,6 +36396,7 @@ body.page-profile-view .pv-layout {
 }
 
 .student-portal-body .topbar-icon-link.msg-icon.is-active,
+.student-portal-body .topbar-icon-link.topbar-help-icon.is-active,
 .student-portal-body .topbar-icon-link.topbar-notif-icon.is-active {
   background-color: #0a813c;
   color: #fff;
@@ -35457,22 +36410,29 @@ body.page-profile-view .pv-layout {
 }
 
 .student-portal-body .topbar-user.topbar-profile-trigger {
-  border-radius: 999px;
-  padding: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  padding: 0;
+  justify-content: center;
   background-color: #f0f0f0;
+  color: #444;
   transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .student-portal-body .topbar-user.topbar-profile-trigger:hover,
 .student-portal-body .topbar-user.topbar-profile-trigger:focus-visible {
   background-color: #e8f4ed;
+  color: #0a813c;
   box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
   transform: translateY(-1px);
 }
 
 .student-portal-body .topbar-user.topbar-profile-trigger.is-active {
-  background-color: #e8f4ed;
+  background-color: #0a813c;
+  color: #fff;
   box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
+  transform: none;
 }
 
 .student-portal-body .topbar-avatar-placeholder,
@@ -35484,7 +36444,25 @@ body.page-profile-view .pv-layout {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #0a813c;
+}
+
+.student-portal-body .topbar-avatar-placeholder {
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
+  color: inherit;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.student-portal-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,
+.student-portal-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder {
+  background-color: transparent;
+  color: inherit;
+}
+
+.student-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder {
+  background-color: transparent;
+  color: #fff;
 }
 
 .student-portal-body .topbar-avatar-image {
@@ -35495,7 +36473,22 @@ body.page-profile-view .pv-layout {
 }
 
 .student-portal-body .topbar-avatar-placeholder--neutral {
-  background-color: #ccc;
+  background-color: transparent;
+  color: inherit;
+}
+
+.student-portal-body {
+  /* Higher specificity than students.css to avoid duplicate legacy overrides. */
+}
+
+.student-portal-body .student-topbar .topbar-user.topbar-profile-trigger .topbar-avatar-placeholder,
+.student-portal-body .student-topbar .topbar-user.topbar-profile-trigger .topbar-avatar-placeholder--neutral {
+  background-color: transparent;
+}
+
+.student-portal-body .student-topbar .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
+.student-portal-body .student-topbar .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral {
+  color: #fff;
 }
 
 /* Restore registrar sidebar baseline behavior (match original shared menu look) */
