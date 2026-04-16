@@ -113,22 +113,49 @@
                         <th>Final</th>
                         <th>Final Average</th>
                         <th>Remarks</th>
+                        <th style="width:88px;">Action</th>
                     </tr>
                 </thead>
                 <tbody id="gradingDetailBody"></tbody>
             </table>
         </div>
 
+        <div id="gradingRowEditPayload"></div>
+
             <div class="rtp-pagination faculty-gs-pager faculty-gs-hidden" id="gradingDetailPager">
                 <nav class="rtp-nav" aria-label="Table pagination">
                     <div class="rtp-list" id="gradingDetailPagerList"></div>
                 </nav>
             </div>
-
-        <div class="faculty-detail-actions faculty-gs-hidden" id="gradingInputAction">
-            <button type="button" class="btn-view-list" id="gradingInputBtn">Input Grades</button>
-        </div>
     </form>
+
+    <div class="req-modal-overlay fgs-row-edit-overlay" id="gradingRowEditModal" style="display:none;" aria-hidden="true">
+        <div class="req-modal-box fgs-row-edit-box" role="dialog" aria-modal="true" aria-labelledby="gradingRowEditTitle">
+            <div class="fgs-row-edit-head">
+                <h3 class="req-modal-title fgs-row-edit-title" id="gradingRowEditTitle">Edit Student Grades</h3>
+                <button type="button" class="rep-modal-close-x" id="gradingRowEditClose" aria-label="Close">&times;</button>
+            </div>
+            <div class="fgs-row-edit-student" id="gradingRowEditStudent"></div>
+            <div class="fgs-row-edit-fields">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="gradingRowEditMidterm">MIDTERM</label>
+                    <input type="number" class="req-modal-input" id="gradingRowEditMidterm" min="1" max="5" step="0.01" placeholder="1.00 to 5.00">
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="gradingRowEditFinal">FINAL</label>
+                    <input type="number" class="req-modal-input" id="gradingRowEditFinal" min="1" max="5" step="0.01" placeholder="1.00 to 5.00">
+                </div>
+                <div class="req-modal-field-group fgs-row-edit-field-remarks">
+                    <label class="req-modal-label" for="gradingRowEditRemarks">REMARKS</label>
+                    <textarea class="req-modal-input" id="gradingRowEditRemarks" rows="2" placeholder="Type remarks"></textarea>
+                </div>
+            </div>
+            <div class="req-modal-actions">
+                <button type="button" class="req-btn-cancel" id="gradingRowEditCancel">Cancel</button>
+                <button type="button" class="req-btn-save" id="gradingRowEditSave">Save</button>
+            </div>
+        </div>
+    </div>
 
     <div id="gradingSheetData" data-subjects='@json($gradingSubjects)'></div>
 

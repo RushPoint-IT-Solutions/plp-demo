@@ -34284,6 +34284,112 @@ body.login-body .modal-backdrop.show {
   padding: 6px 0 0;
 }
 
+.faculty-grading-sheet-page .fgs-col-action {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-btn {
+  min-height: 28px;
+  border: 1px solid #11733f;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0c6f3a;
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  line-height: 1;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-btn:hover {
+  background: #e8f4ed;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12020;
+  background: rgba(0, 0, 0, 0.34);
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-box {
+  width: min(460px, 96vw);
+  max-width: 460px;
+  border-radius: 10px;
+  border: 1px solid #d5e1d8;
+  background: #ffffff;
+  padding: 0;
+  overflow: hidden;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: #edf6f0;
+  border-bottom: 1px solid #d7e6db;
+  padding: 10px 12px;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-head .rep-modal-close-x {
+  position: static;
+  margin: 0;
+  justify-self: end;
+  width: 32px;
+  height: 32px;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-title {
+  margin: 0 !important;
+  color: #0a6f39;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-student {
+  padding: 10px 14px 2px;
+  color: #374540;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 8px 14px 0;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-field-remarks {
+  grid-column: 1/-1;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-fields .req-modal-label {
+  font-size: 0.7rem;
+  margin-bottom: 4px;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-fields .req-modal-input {
+  height: 34px;
+  font-size: 0.79rem;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-fields textarea.req-modal-input {
+  min-height: 46px;
+  max-height: 58px;
+  height: 46px;
+  resize: none;
+}
+
+.faculty-grading-sheet-page .fgs-row-edit-box .req-modal-actions {
+  padding: 12px 14px 14px;
+}
+
 .page-registrar-grading-sheet .gs-filter-bar {
   background: #f7f7f7;
   border: 1px solid #dfe6e1;
