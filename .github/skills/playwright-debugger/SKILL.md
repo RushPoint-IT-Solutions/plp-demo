@@ -22,7 +22,25 @@ To prevent accidental server strain during normal debugging, wait at least 1000m
 
 ## Workflow (Steps 1–9)
 
-1) **Get Inputs** - Prompt for: Target URL, Emulate Mobile (Default: Yes), Enable Security Fuzzing (Default: Yes).
+1) **Get Inputs** - Prompt for: Target URL, Emulate Mobile (Default: Yes), Enable Security Fuzzing (Default: Yes), and **User Role** (one of `student`, `faculty`, `applicant`, `registrar`; default: `student`).
+
+## Credentials (Default mapping)
+
+- student: username `student`, password `student`
+- faculty: username `faculty`, password `faculty`
+- applicant: username `applicant`, password `applicant`
+- registrar: username `admin`, password `password`
+
+These are the default credentials the agent should try when the target page requires authentication. If the user supplies explicit credentials, prefer those.
+
+## Pre-Navigation & Login Strategy
+
+- Always attempt to navigate directly to the requested Target URL first using `browser_navigate`. The goal is to reach the actual target page before deciding to log in.
+- If navigation to the Target URL redirects to a login page or shows a login form, detect that and then perform login using the role provided (or default mapping). Detect login forms by presence of common selectors (e.g., `input[type="text"]`, `input[name*=user]`, `input[type="password"]`, `form[action*="login"]`).
+- If the environment always lands on a student-login landing page, the agent should still call `browser_navigate(<target-url>)` first. If a redirect occurs, sign in as the requested role and then re-navigate to the Target URL to confirm access.
+- If already authenticated as a different user, prefer to sign out (if a sign-out link is present) then sign in using the requested role to get a clean session.
+
+Notes: this pre-navigation step prevents the agent from always authenticating as `student` when the server redirects to a common login entrypoint. It also makes the Playwright run more deterministic for pages behind role-based gates.
 
 2) **Strict Mobile Configuration & Navigation**
 - Emulate **iPhone SE** (375×667 pixels). Force viewport constraints via `browser_evaluate`.

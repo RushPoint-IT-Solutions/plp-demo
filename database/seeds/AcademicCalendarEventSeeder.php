@@ -15,6 +15,8 @@ class AcademicCalendarEventSeeder extends Seeder
         $now = now();
         $hasEventTypeColumn = Schema::hasColumn('academic_calendar_events', 'event_type');
         $hasEventTypeIdColumn = Schema::hasColumn('academic_calendar_events', 'event_type_id');
+        $hasAudienceTypesTable = Schema::hasTable('academic_calendar_audience_types');
+        $hasEventAudienceTable = Schema::hasTable('academic_calendar_event_audiences');
 
         $eventTypeIds = [];
         if ($hasEventTypeIdColumn && Schema::hasTable('academic_event_types')) {
@@ -26,6 +28,21 @@ class AcademicCalendarEventSeeder extends Seeder
             }
 
             $eventTypeIds = DB::table('academic_event_types')->pluck('id', 'code')->toArray();
+        }
+
+        $audienceTypeIds = [];
+        if ($hasAudienceTypesTable) {
+            foreach (['student', 'faculty', 'applicant'] as $code) {
+                DB::table('academic_calendar_audience_types')->updateOrInsert(
+                    ['code' => $code],
+                    ['label' => ucfirst($code), 'created_at' => $now, 'updated_at' => $now]
+                );
+            }
+
+            $audienceTypeIds = DB::table('academic_calendar_audience_types')
+                ->whereIn('code', ['student', 'faculty', 'applicant'])
+                ->pluck('id', 'code')
+                ->toArray();
         }
 
         $events = [
@@ -94,6 +111,28 @@ class AcademicCalendarEventSeeder extends Seeder
                     'created_at' => $now,
                 ])
             );
+
+            if ($hasEventAudienceTable && !empty($audienceTypeIds)) {
+                $eventId = DB::table('academic_calendar_events')
+                    ->where('event_date', $event['event_date'])
+                    ->where('title', $event['title'])
+                    ->value('id');
+
+                if ($eventId) {
+                    foreach ($audienceTypeIds as $audienceTypeId) {
+                        DB::table('academic_calendar_event_audiences')->updateOrInsert(
+                            [
+                                'academic_calendar_event_id' => (int) $eventId,
+                                'audience_type_id' => (int) $audienceTypeId,
+                            ],
+                            [
+                                'updated_at' => $now,
+                                'created_at' => $now,
+                            ]
+                        );
+                    }
+                }
+            }
         }
     }
 }

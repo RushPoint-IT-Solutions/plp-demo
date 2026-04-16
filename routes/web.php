@@ -117,6 +117,9 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
 Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
+    Route::get('/notifications/feed', 'Registrar\RegistrarController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Registrar\RegistrarController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Registrar\RegistrarController@dismissNotification')->name('notifications.dismiss');
     Route::get('/help-center', 'Registrar\RegistrarController@helpCenter')->name('help.center');
     Route::get('/help-center/live-chat', 'Registrar\RegistrarController@helpCenterLiveChat')->name('help.live-chat');
     Route::get('/help-center/{topic}', 'Registrar\RegistrarController@helpCenterTopic')->name('help.topic');

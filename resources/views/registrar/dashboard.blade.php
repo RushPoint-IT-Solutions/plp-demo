@@ -18,6 +18,9 @@
     $sparklinePath = $dashboardData['sparklinePath'] ?? 'M 2,44 L 24,38 L 46,33 L 68,26 L 90,22 L 108,18';
     $sparklineAreaPath = $dashboardData['sparklineAreaPath'] ?? 'M 2,44 L 24,38 L 46,33 L 68,26 L 90,22 L 108,18 L 108,56 L 2,56 Z';
     $todayLabel = 'Today, ' . now()->format('j M Y');
+    $dashboardAnnouncements = is_array($dashboardAnnouncements ?? null) ? $dashboardAnnouncements : [];
+    $announcementPreviewLimit = 3;
+    $announcementHasExtras = count($dashboardAnnouncements) > $announcementPreviewLimit;
 @endphp
 <div class="reg-dashboard">
 
@@ -81,133 +84,37 @@
                 </div>
             </div>
 
-            <div class="reg-announce-item pinned">
-                <div class="reg-announce-dot"></div>
-                <div class="reg-announce-text">
-                    <div class="reg-announce-title">Outing schedule for every departement</div>
-                    <div class="reg-announce-time">5 Minutes ago</div>
-                </div>
-                <button type="button" class="reg-icon-btn reg-pin-btn active" title="Pinned" aria-pressed="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
-                </button>
-                <div class="reg-more-wrap">
-                    <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            @forelse($dashboardAnnouncements as $index => $announcement)
+                @php
+                    $isPinned = ($index === 0);
+                    $isExtra = ($index >= $announcementPreviewLimit);
+                @endphp
+                <div class="reg-announce-item{{ $isPinned ? ' pinned' : '' }}{{ $isExtra ? ' reg-announce-extra' : '' }}" @if($isExtra) hidden @endif>
+                    <div class="reg-announce-dot"></div>
+                    <div class="reg-announce-text">
+                        <div class="reg-announce-title">{{ $announcement['title'] }}</div>
+                        <div class="reg-announce-time">{{ $announcement['timeLabel'] }}</div>
+                        <div class="reg-announce-audience">{{ $announcement['audienceLabel'] }}</div>
+                    </div>
+                    <button type="button" class="reg-icon-btn reg-pin-btn{{ $isPinned ? ' active' : '' }}" title="{{ $isPinned ? 'Pinned' : 'Pin' }}" aria-pressed="{{ $isPinned ? 'true' : 'false' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
                     </button>
-                    <div class="reg-more-menu" role="menu" hidden>
-                        <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
-                        <button type="button" class="reg-more-action" data-action="archive">Archive</button>
-                        <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
+                    <div class="reg-more-wrap">
+                        <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </button>
+                        <div class="reg-more-menu" role="menu" hidden>
+                            <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
+                            <button type="button" class="reg-more-action" data-action="archive">Archive</button>
+                            <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="reg-announce-empty">No active announcements for staff right now.</div>
+            @endforelse
 
-            <div class="reg-announce-item">
-                <div class="reg-announce-dot"></div>
-                <div class="reg-announce-text">
-                    <div class="reg-announce-title">Meeting HR Department</div>
-                    <div class="reg-announce-time">Yesterday, 12:30 PM</div>
-                </div>
-                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
-                </button>
-                <div class="reg-more-wrap">
-                    <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </button>
-                    <div class="reg-more-menu" role="menu" hidden>
-                        <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
-                        <button type="button" class="reg-more-action" data-action="archive">Archive</button>
-                        <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="reg-announce-item">
-                <div class="reg-announce-dot"></div>
-                <div class="reg-announce-text">
-                    <div class="reg-announce-title">IT Department need two more talents for UX/UI Designer position</div>
-                    <div class="reg-announce-time">Yesterday, 09:15 AM</div>
-                </div>
-                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
-                </button>
-                <div class="reg-more-wrap">
-                    <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </button>
-                    <div class="reg-more-menu" role="menu" hidden>
-                        <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
-                        <button type="button" class="reg-more-action" data-action="archive">Archive</button>
-                        <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="reg-announce-item reg-announce-extra" hidden>
-                <div class="reg-announce-dot"></div>
-                <div class="reg-announce-text">
-                    <div class="reg-announce-title">Deadline for grade submission moved to Friday</div>
-                    <div class="reg-announce-time">Mar 27, 2026 · 04:20 PM</div>
-                </div>
-                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
-                </button>
-                <div class="reg-more-wrap">
-                    <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </button>
-                    <div class="reg-more-menu" role="menu" hidden>
-                        <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
-                        <button type="button" class="reg-more-action" data-action="archive">Archive</button>
-                        <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="reg-announce-item reg-announce-extra" hidden>
-                <div class="reg-announce-dot"></div>
-                <div class="reg-announce-text">
-                    <div class="reg-announce-title">Room reassignment for Computer Lab sections</div>
-                    <div class="reg-announce-time">Mar 26, 2026 · 11:10 AM</div>
-                </div>
-                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
-                </button>
-                <div class="reg-more-wrap">
-                    <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </button>
-                    <div class="reg-more-menu" role="menu" hidden>
-                        <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
-                        <button type="button" class="reg-more-action" data-action="archive">Archive</button>
-                        <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="reg-announce-item reg-announce-extra" hidden>
-                <div class="reg-announce-dot"></div>
-                <div class="reg-announce-text">
-                    <div class="reg-announce-title">Scholarship renewal list is available for review</div>
-                    <div class="reg-announce-time">Mar 25, 2026 · 03:45 PM</div>
-                </div>
-                <button type="button" class="reg-icon-btn reg-pin-btn" title="Pin" aria-pressed="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m-6 2V2"/><path d="M8 4h8l-1 7 3 3v2H6v-2l3-3-1-7z"/><path d="M12 16v6"/></svg>
-                </button>
-                <div class="reg-more-wrap">
-                    <button type="button" class="reg-icon-btn reg-more-toggle" title="More options" aria-haspopup="menu" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </button>
-                    <div class="reg-more-menu" role="menu" hidden>
-                        <button type="button" class="reg-more-action" data-action="edit">Edit title</button>
-                        <button type="button" class="reg-more-action" data-action="archive">Archive</button>
-                        <button type="button" class="reg-more-action danger" data-action="remove">Remove</button>
-                    </div>
-                </div>
-            </div>
-
-            <a href="#" class="reg-see-all" data-expanded="false">See More Announcements</a>
+            <a href="#" class="reg-see-all{{ $announcementHasExtras ? '' : ' reg-see-all-hidden' }}" data-expanded="false">See More Announcements</a>
         </div>
 
         {{-- Upcoming Schedule --}}

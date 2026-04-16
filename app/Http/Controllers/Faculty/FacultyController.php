@@ -9,6 +9,7 @@ use App\FacultyEvaluation;
 use App\NotificationDelivery;
 use App\NotificationType;
 use App\PortalNotification;
+use App\SystemAnnouncement;
 use App\Subject;
 use App\StudentSubjectGrade;
 use App\User;
@@ -96,6 +97,7 @@ class FacultyController extends Controller
     {
         $this->syncEvaluationNotificationsForFaculty($user);
         $this->syncCalendarNotificationsForFaculty($user);
+        $this->syncAnnouncementNotificationsForFaculty($user);
     }
 
     private function activeFacultyNotifications($user = null)
@@ -249,6 +251,11 @@ class FacultyController extends Controller
         $today = now()->startOfDay();
         $events = AcademicCalendarEvent::query()
             ->where('is_active', true)
+            ->where(function ($query) use ($today) {
+                $query->whereNull('post_until')
+                    ->orWhereDate('post_until', '>=', $today->toDateString());
+            })
+            ->visibleToAudience('faculty')
             ->orderBy('id')
             ->get(['id', 'event_date', 'title', 'venue', 'created_at', 'post_until']);
 
@@ -301,6 +308,106 @@ class FacultyController extends Controller
                 ],
                 [
                     'delivered_at' => $event->created_at ?: now(),
+                ]
+            );
+        }
+    }
+
+    private function syncAnnouncementNotificationsForFaculty($user)
+    {
+        if (!$user || $user->module !== 'faculty') {
+            return;
+        }
+
+        if (!Schema::hasTable('system_announcements')
+            || !Schema::hasTable('notification_types')
+            || !Schema::hasTable('portal_notifications')
+            || !Schema::hasTable('notification_deliveries')) {
+            return;
+        }
+
+        $type = NotificationType::query()->firstOrCreate(
+            ['code' => 'SYSTEM_ANNOUNCEMENT_POSTED'],
+            ['name' => 'System Announcement Posted']
+        );
+
+        $today = now()->toDateString();
+        $announcements = SystemAnnouncement::query()
+            ->activeOn($today)
+            ->visibleToAudience(SystemAnnouncement::AUDIENCE_FACULTY)
+            ->orderBy('id')
+            ->get(['id', 'title', 'date_from', 'date_to', 'created_at', 'announcement_type_id', 'content']);
+
+        foreach ($announcements as $announcement) {
+            $titleValue = trim((string) $announcement->title);
+            $title = $titleValue !== ''
+                ? 'Announcement: ' . $titleValue
+                : 'New Registrar Announcement';
+
+            $dateFromLabel = optional($announcement->date_from)->format('M d, Y');
+            $dateToLabel = optional($announcement->date_to)->format('M d, Y');
+
+            $content = trim((string) $announcement->content);
+            $message = $content !== '' ? $content : 'A registrar announcement is available';
+            if ($dateFromLabel && $dateToLabel && $dateFromLabel !== $dateToLabel) {
+                $message .= ' Effective from ' . $dateFromLabel . ' to ' . $dateToLabel . '.';
+            } elseif ($dateFromLabel) {
+                $message .= ' Effective on ' . $dateFromLabel . '.';
+            } elseif ($dateToLabel) {
+                $message .= ' Available until ' . $dateToLabel . '.';
+            }
+
+            if (!preg_match('/[.!?]$/', $message)) {
+                $message .= '.';
+            }
+
+            $notification = PortalNotification::query()->firstOrCreate(
+                [
+                    'source_module' => 'system_announcement',
+                    'source_reference' => 'system_announcement:' . $announcement->id,
+                ],
+                [
+                    'notification_type_id' => $type->id,
+                    'title' => $title,
+                    'message' => $message,
+                    'source_url' => '',
+                    'created_by_user_id' => null,
+                ]
+            );
+
+            $hasChanges = false;
+
+            if ((int) $notification->notification_type_id !== (int) $type->id) {
+                $notification->notification_type_id = $type->id;
+                $hasChanges = true;
+            }
+
+            if ((string) $notification->title !== (string) $title) {
+                $notification->title = $title;
+                $hasChanges = true;
+            }
+
+            if ((string) $notification->message !== (string) $message) {
+                $notification->message = $message;
+                $hasChanges = true;
+            }
+
+            if ((string) ($notification->source_url ?: '') !== '') {
+                $notification->source_url = '';
+                $hasChanges = true;
+            }
+
+            if ($hasChanges) {
+                $notification->save();
+            }
+
+            NotificationDelivery::query()->firstOrCreate(
+                [
+                    'portal_notification_id' => $notification->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'delivered_at' => $announcement->created_at ?: now(),
                 ]
             );
         }
@@ -479,9 +586,17 @@ class FacultyController extends Controller
         $calendarEvents = [];
 
         if (Schema::hasTable('academic_calendar_events')) {
+            $today = now()->toDateString();
+
             $calendarEvents = AcademicCalendarEvent::query()
                 ->where('is_active', true)
+                ->where(function ($query) use ($today) {
+                    $query->whereNull('post_until')
+                        ->orWhereDate('post_until', '>=', $today);
+                })
+                ->visibleToAudience('faculty')
                 ->orderBy('event_date')
+                ->orderBy('time_from')
                 ->get()
                 ->map(function ($event) {
                     return [
@@ -894,10 +1009,24 @@ class FacultyController extends Controller
                 return [
                     'delivery_id' => (int) $delivery->id,
                     'title' => $notification ? (string) $notification->title : 'New notification',
+                    'message' => $notification ? (string) $notification->message : '',
                     'source_url' => $notification ? (string) $notification->local_source_url : '',
+                    'source_module' => $notification ? (string) $notification->source_module : '',
+                    'source_reference' => $notification ? (string) $notification->source_reference : '',
                     'is_read' => !empty($delivery->read_at),
                     'dismiss_url' => route('faculty.notifications.dismiss', ['notificationDelivery' => $delivery->id], false),
                 ];
+            })
+            ->unique(function ($item) {
+                $sourceModule = (string) ($item['source_module'] ?? 'general');
+                $sourceReference = trim((string) ($item['source_reference'] ?? ''));
+
+                if ($sourceReference !== '') {
+                    return $sourceModule . '|' . $sourceReference;
+                }
+
+                $fallback = strtolower(trim((string) ($item['title'] ?? '')) . '|' . trim((string) ($item['message'] ?? '')));
+                return $sourceModule . '|' . $fallback;
             })
             ->values();
 

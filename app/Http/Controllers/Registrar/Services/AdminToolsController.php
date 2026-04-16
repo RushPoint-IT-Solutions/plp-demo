@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Registrar\Services;
 use App\BedDay;
 use App\BedStudentStatus;
 use App\AcademicTerm;
+use App\AnnouncementType;
 use App\Faculty;
 use App\Http\Controllers\Controller;
 use App\MasterFacultyFile;
 use App\MasterStudentGradeFile;
 use App\MasterStudentProfileFile;
+use App\NotificationDelivery;
+use App\NotificationType;
+use App\PortalNotification;
 use App\Student;
 use App\StudentGradeRecord;
 use App\StudentUpdateRun;
@@ -25,6 +29,7 @@ use App\SystemIncProcessRun;
 use App\SystemReportDetailSetting;
 use App\SystemSchoolSemester;
 use App\ReportPermission;
+use App\AcademicCalendarAudienceType;
 use App\AcademicCalendarEvent;
 use App\Course;
 use App\StudentProfile;
@@ -34,6 +39,7 @@ use App\YearBlock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -265,21 +271,19 @@ class AdminToolsController extends Controller
         $calendarRows = [];
 
         if (Schema::hasTable('academic_calendar_events')) {
-            $calendarRows = AcademicCalendarEvent::query()
+            $calendarQuery = AcademicCalendarEvent::query()
                 ->orderBy('event_date')
-                ->orderBy('time_from')
+                ->orderBy('time_from');
+
+            if (Schema::hasTable('academic_calendar_event_audiences')
+                && Schema::hasTable('academic_calendar_audience_types')) {
+                $calendarQuery->with('audienceTypes');
+            }
+
+            $calendarRows = $calendarQuery
                 ->get()
                 ->map(function ($event) {
-                    return [
-                        'id' => $event->id,
-                        'date' => optional($event->event_date)->format('Y-m-d'),
-                        'timeFrom' => $event->time_from ? substr((string) $event->time_from, 0, 5) : '',
-                        'timeTo' => $event->time_to ? substr((string) $event->time_to, 0, 5) : '',
-                        'event' => (string) $event->title,
-                        'venue' => (string) ($event->venue ?? ''),
-                        'inCharge' => (string) ($event->in_charge ?? ''),
-                        'postUntil' => optional($event->post_until)->format('Y-m-d') ?: optional($event->event_date)->format('Y-m-d'),
-                    ];
+                    return $this->mapAcademicCalendarRow($event);
                 })
                 ->values()
                 ->all();
@@ -293,24 +297,39 @@ class AdminToolsController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'timeFrom' => 'required|date_format:H:i',
-            'timeTo' => 'required|date_format:H:i',
+            'timeTo' => 'required|date_format:H:i|after:timeFrom',
             'event' => 'required|string|max:190',
             'venue' => 'nullable|string|max:190',
             'inCharge' => 'nullable|string|max:190',
-            'postUntil' => 'nullable|date',
+            'postUntil' => 'nullable|date|after_or_equal:date',
+            'audiences' => 'nullable|array',
+            'audiences.*' => 'nullable|string|in:student,faculty,applicant',
         ]);
 
-        $event = AcademicCalendarEvent::create([
-            'event_date' => $validated['date'],
-            'time_from' => $validated['timeFrom'],
-            'time_to' => $validated['timeTo'],
-            'title' => $validated['event'],
-            'venue' => $validated['venue'] ?? null,
-            'in_charge' => $validated['inCharge'] ?? null,
-            'post_until' => $validated['postUntil'] ?? $validated['date'],
-            'event_type' => 'Registrar Event',
-            'is_active' => true,
-        ]);
+        $audienceCodes = $this->normalizeAcademicCalendarAudiences($validated['audiences'] ?? null);
+
+        $event = DB::transaction(function () use ($validated, $audienceCodes) {
+            $createdEvent = AcademicCalendarEvent::create([
+                'event_date' => $validated['date'],
+                'time_from' => $validated['timeFrom'],
+                'time_to' => $validated['timeTo'],
+                'title' => $validated['event'],
+                'venue' => $validated['venue'] ?? null,
+                'in_charge' => $validated['inCharge'] ?? null,
+                'post_until' => $validated['postUntil'] ?? $validated['date'],
+                'event_type' => 'event',
+                'is_active' => true,
+            ]);
+
+            $this->syncAcademicCalendarAudiences($createdEvent, $audienceCodes);
+
+            return $createdEvent;
+        });
+
+        if (Schema::hasTable('academic_calendar_event_audiences')
+            && Schema::hasTable('academic_calendar_audience_types')) {
+            $event->load('audienceTypes');
+        }
 
         return response()->json([
             'ok' => true,
@@ -323,22 +342,35 @@ class AdminToolsController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'timeFrom' => 'required|date_format:H:i',
-            'timeTo' => 'required|date_format:H:i',
+            'timeTo' => 'required|date_format:H:i|after:timeFrom',
             'event' => 'required|string|max:190',
             'venue' => 'nullable|string|max:190',
             'inCharge' => 'nullable|string|max:190',
-            'postUntil' => 'nullable|date',
+            'postUntil' => 'nullable|date|after_or_equal:date',
+            'audiences' => 'nullable|array',
+            'audiences.*' => 'nullable|string|in:student,faculty,applicant',
         ]);
 
-        $academicCalendarEvent->update([
-            'event_date' => $validated['date'],
-            'time_from' => $validated['timeFrom'],
-            'time_to' => $validated['timeTo'],
-            'title' => $validated['event'],
-            'venue' => $validated['venue'] ?? null,
-            'in_charge' => $validated['inCharge'] ?? null,
-            'post_until' => $validated['postUntil'] ?? $validated['date'],
-        ]);
+        $audienceCodes = $this->normalizeAcademicCalendarAudiences($validated['audiences'] ?? null);
+
+        DB::transaction(function () use ($academicCalendarEvent, $validated, $audienceCodes) {
+            $academicCalendarEvent->update([
+                'event_date' => $validated['date'],
+                'time_from' => $validated['timeFrom'],
+                'time_to' => $validated['timeTo'],
+                'title' => $validated['event'],
+                'venue' => $validated['venue'] ?? null,
+                'in_charge' => $validated['inCharge'] ?? null,
+                'post_until' => $validated['postUntil'] ?? $validated['date'],
+            ]);
+
+            $this->syncAcademicCalendarAudiences($academicCalendarEvent, $audienceCodes);
+        });
+
+        if (Schema::hasTable('academic_calendar_event_audiences')
+            && Schema::hasTable('academic_calendar_audience_types')) {
+            $academicCalendarEvent->load('audienceTypes');
+        }
 
         return response()->json([
             'ok' => true,
@@ -357,12 +389,15 @@ class AdminToolsController extends Controller
     {
         $announcementRows = [];
 
+        $this->ensureAnnouncementAudienceLookups();
+
         if (Schema::hasTable('system_announcements')) {
             if (SystemAnnouncement::query()->count() === 0) {
                 $this->seedAnnouncements();
             }
 
             $announcementRows = SystemAnnouncement::query()
+                ->with(['announcementTypeLookup', 'canonicalCourse'])
                 ->orderByDesc('date_from')
                 ->orderByDesc('id')
                 ->get()
@@ -382,37 +417,111 @@ class AdminToolsController extends Controller
             'from' => 'required|date',
             'to' => 'required|date|after_or_equal:from',
             'title' => 'required|string|max:255',
-            'type' => 'nullable|string|max:40',
+            'type' => 'required|string|max:40',
             'program' => 'nullable|string|max:120',
             'content' => 'required|string',
         ]);
 
+        $audienceCode = $this->normalizeAnnouncementAudienceCode($validated['type'] ?? null);
+        if (!$audienceCode) {
+            return response()->json([
+                'message' => 'The selected audience is invalid.',
+                'errors' => [
+                    'type' => ['Audience must be Everyone, Students, Faculty, Staff, or Applicant.'],
+                ],
+            ], 422);
+        }
+
         $programValue = isset($validated['program']) ? trim((string) $validated['program']) : '';
         $programValue = $programValue !== '' ? $programValue : 'All Programs';
         $courseId = null;
+        $announcementTypeId = $this->resolveAnnouncementTypeId($audienceCode);
+        $hasProgramColumn = Schema::hasColumn('system_announcements', 'program');
+        $hasCourseColumn = Schema::hasColumn('system_announcements', 'course_id');
 
         if (strtolower($programValue) !== 'all programs') {
-            $courseId = $this->resolveCourseId($programValue);
+            if ($hasCourseColumn) {
+                $courseId = $this->resolveCourseId($programValue);
 
-            if (!$courseId) {
+                if (!$courseId) {
+                    return response()->json([
+                        'message' => 'The selected program is invalid.',
+                        'errors' => [
+                            'program' => ['Program must match an existing course code or name.'],
+                        ],
+                    ], 422);
+                }
+            } elseif (!$hasProgramColumn) {
                 return response()->json([
-                    'message' => 'The selected program is invalid.',
+                    'message' => 'Program targeting is unavailable in the current announcement schema.',
                     'errors' => [
-                        'program' => ['Program must match an existing course code or name.'],
+                        'program' => ['Program selection is not supported by the current database schema.'],
                     ],
                 ], 422);
             }
         }
 
-        $announcement = SystemAnnouncement::create([
+        $duplicatePayload = [
+            'from' => $validated['from'],
+            'to' => $validated['to'],
+            'title' => $validated['title'],
+            'audience_code' => $audienceCode,
+            'announcement_type_id' => $announcementTypeId,
+            'program' => $programValue,
+            'content' => $validated['content'],
+        ];
+
+        if ($hasCourseColumn) {
+            $duplicatePayload['course_id'] = $courseId;
+        }
+
+        $existingAnnouncement = $this->findDuplicateAnnouncement($duplicatePayload);
+
+        if ($existingAnnouncement) {
+            $this->syncAnnouncementPortalNotification(
+                $existingAnnouncement,
+                $request->user() ? (int) $request->user()->id : null
+            );
+
+            if ($existingAnnouncement->relationLoaded('announcementTypeLookup') === false
+                || $existingAnnouncement->relationLoaded('canonicalCourse') === false) {
+                $existingAnnouncement->load(['announcementTypeLookup', 'canonicalCourse']);
+            }
+
+            return response()->json([
+                'ok' => true,
+                'already_exists' => true,
+                'row' => $this->mapAnnouncementRow($existingAnnouncement),
+            ]);
+        }
+
+        $announcementPayload = [
             'date_from' => $validated['from'],
             'date_to' => $validated['to'],
             'title' => $validated['title'],
-            'announcement_type' => $validated['type'] ?? 'Everyone',
-            'program' => $programValue,
-            'course_id' => $courseId,
+            'announcement_type' => $audienceCode,
             'content' => $validated['content'],
-        ]);
+        ];
+
+        if ($hasProgramColumn) {
+            $announcementPayload['program'] = $programValue;
+        }
+
+        if ($hasCourseColumn) {
+            $announcementPayload['course_id'] = $courseId;
+        }
+
+        if (Schema::hasColumn('system_announcements', 'announcement_type_id')) {
+            $announcementPayload['announcement_type_id'] = $announcementTypeId;
+        }
+
+        $announcement = SystemAnnouncement::create($announcementPayload);
+        $announcement->load(['announcementTypeLookup', 'canonicalCourse']);
+
+        $this->syncAnnouncementPortalNotification(
+            $announcement,
+            $request->user() ? (int) $request->user()->id : null
+        );
 
         return response()->json([
             'ok' => true,
@@ -426,37 +535,103 @@ class AdminToolsController extends Controller
             'from' => 'required|date',
             'to' => 'required|date|after_or_equal:from',
             'title' => 'required|string|max:255',
-            'type' => 'nullable|string|max:40',
+            'type' => 'required|string|max:40',
             'program' => 'nullable|string|max:120',
             'content' => 'required|string',
         ]);
 
+        $audienceCode = $this->normalizeAnnouncementAudienceCode($validated['type'] ?? null);
+        if (!$audienceCode) {
+            return response()->json([
+                'message' => 'The selected audience is invalid.',
+                'errors' => [
+                    'type' => ['Audience must be Everyone, Students, Faculty, Staff, or Applicant.'],
+                ],
+            ], 422);
+        }
+
         $programValue = isset($validated['program']) ? trim((string) $validated['program']) : '';
         $programValue = $programValue !== '' ? $programValue : 'All Programs';
         $courseId = null;
+        $announcementTypeId = $this->resolveAnnouncementTypeId($audienceCode);
+        $hasProgramColumn = Schema::hasColumn('system_announcements', 'program');
+        $hasCourseColumn = Schema::hasColumn('system_announcements', 'course_id');
 
         if (strtolower($programValue) !== 'all programs') {
-            $courseId = $this->resolveCourseId($programValue);
+            if ($hasCourseColumn) {
+                $courseId = $this->resolveCourseId($programValue);
 
-            if (!$courseId) {
+                if (!$courseId) {
+                    return response()->json([
+                        'message' => 'The selected program is invalid.',
+                        'errors' => [
+                            'program' => ['Program must match an existing course code or name.'],
+                        ],
+                    ], 422);
+                }
+            } elseif (!$hasProgramColumn) {
                 return response()->json([
-                    'message' => 'The selected program is invalid.',
+                    'message' => 'Program targeting is unavailable in the current announcement schema.',
                     'errors' => [
-                        'program' => ['Program must match an existing course code or name.'],
+                        'program' => ['Program selection is not supported by the current database schema.'],
                     ],
                 ], 422);
             }
         }
 
-        $systemAnnouncement->update([
+        $duplicatePayload = [
+            'from' => $validated['from'],
+            'to' => $validated['to'],
+            'title' => $validated['title'],
+            'audience_code' => $audienceCode,
+            'announcement_type_id' => $announcementTypeId,
+            'program' => $programValue,
+            'content' => $validated['content'],
+            'exclude_id' => (int) $systemAnnouncement->id,
+        ];
+
+        if ($hasCourseColumn) {
+            $duplicatePayload['course_id'] = $courseId;
+        }
+
+        $duplicateAnnouncement = $this->findDuplicateAnnouncement($duplicatePayload);
+
+        if ($duplicateAnnouncement) {
+            return response()->json([
+                'message' => 'A matching announcement already exists.',
+                'errors' => [
+                    'title' => ['This announcement already exists.'],
+                ],
+            ], 422);
+        }
+
+        $announcementPayload = [
             'date_from' => $validated['from'],
             'date_to' => $validated['to'],
             'title' => $validated['title'],
-            'announcement_type' => $validated['type'] ?? 'Everyone',
-            'program' => $programValue,
-            'course_id' => $courseId,
+            'announcement_type' => $audienceCode,
             'content' => $validated['content'],
-        ]);
+        ];
+
+        if ($hasProgramColumn) {
+            $announcementPayload['program'] = $programValue;
+        }
+
+        if ($hasCourseColumn) {
+            $announcementPayload['course_id'] = $courseId;
+        }
+
+        if (Schema::hasColumn('system_announcements', 'announcement_type_id')) {
+            $announcementPayload['announcement_type_id'] = $announcementTypeId;
+        }
+
+        $systemAnnouncement->update($announcementPayload);
+        $systemAnnouncement->load(['announcementTypeLookup', 'canonicalCourse']);
+
+        $this->syncAnnouncementPortalNotification(
+            $systemAnnouncement,
+            $request->user() ? (int) $request->user()->id : null
+        );
 
         return response()->json([
             'ok' => true,
@@ -466,6 +641,7 @@ class AdminToolsController extends Controller
 
     public function announcementDestroy(SystemAnnouncement $systemAnnouncement): JsonResponse
     {
+        $this->removeAnnouncementPortalNotification($systemAnnouncement);
         $systemAnnouncement->delete();
 
         return response()->json(['ok' => true]);
@@ -2153,20 +2329,438 @@ class AdminToolsController extends Controller
             'venue' => (string) ($event->venue ?? ''),
             'inCharge' => (string) ($event->in_charge ?? ''),
             'postUntil' => optional($event->post_until)->format('Y-m-d') ?: optional($event->event_date)->format('Y-m-d'),
+            'audiences' => $this->resolveAcademicCalendarAudiences($event),
         ];
+    }
+
+    private function normalizeAcademicCalendarAudiences($audiences): array
+    {
+        $allowedCodes = ['student', 'faculty', 'applicant'];
+        if (!is_array($audiences) || empty($audiences)) {
+            return $allowedCodes;
+        }
+
+        $normalizedCodes = collect($audiences)
+            ->map(function ($code) {
+                return strtolower(trim((string) $code));
+            })
+            ->filter(function ($code) use ($allowedCodes) {
+                return in_array($code, $allowedCodes, true);
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        return empty($normalizedCodes) ? $allowedCodes : $normalizedCodes;
+    }
+
+    private function syncAcademicCalendarAudiences(AcademicCalendarEvent $event, array $audienceCodes): void
+    {
+        if (!Schema::hasTable('academic_calendar_event_audiences')
+            || !Schema::hasTable('academic_calendar_audience_types')) {
+            return;
+        }
+
+        $audienceTypeIds = [];
+        foreach ($audienceCodes as $audienceCode) {
+            $audienceType = AcademicCalendarAudienceType::query()->firstOrCreate(
+                ['code' => $audienceCode],
+                ['label' => ucfirst($audienceCode)]
+            );
+
+            $audienceTypeIds[] = (int) $audienceType->id;
+        }
+
+        $event->audienceTypes()->sync($audienceTypeIds);
+    }
+
+    private function resolveAcademicCalendarAudiences(AcademicCalendarEvent $event): array
+    {
+        $defaultAudiences = ['student', 'faculty', 'applicant'];
+
+        if (!Schema::hasTable('academic_calendar_event_audiences')
+            || !Schema::hasTable('academic_calendar_audience_types')) {
+            return $defaultAudiences;
+        }
+
+        $audienceTypes = $event->relationLoaded('audienceTypes')
+            ? $event->getRelation('audienceTypes')
+            : $event->audienceTypes()->get(['code']);
+
+        $resolvedCodes = $audienceTypes
+            ->pluck('code')
+            ->map(function ($code) {
+                return strtolower(trim((string) $code));
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return empty($resolvedCodes) ? $defaultAudiences : $resolvedCodes;
     }
 
     private function mapAnnouncementRow(SystemAnnouncement $announcement): array
     {
+        $audienceCode = $this->normalizeAnnouncementAudienceCode($announcement->announcement_type) ?: SystemAnnouncement::AUDIENCE_EVERYONE;
+        $resolvedProgram = trim((string) $announcement->program);
+
+        if ($resolvedProgram === '') {
+            $course = $announcement->relationLoaded('canonicalCourse')
+                ? $announcement->getRelation('canonicalCourse')
+                : null;
+
+            if (!$course && !empty($announcement->course_id)) {
+                $course = Course::query()
+                    ->select('id', 'code', 'name')
+                    ->find((int) $announcement->course_id);
+            }
+
+            if ($course) {
+                $resolvedProgram = trim((string) ($course->code ?: $course->name));
+            }
+        }
+
+        if ($resolvedProgram === '') {
+            $resolvedProgram = 'All Programs';
+        }
+
         return [
             'id' => $announcement->id,
             'from' => optional($announcement->date_from)->format('Y-m-d') ?: '',
             'to' => optional($announcement->date_to)->format('Y-m-d') ?: '',
             'title' => (string) $announcement->title,
-            'type' => (string) ($announcement->announcement_type ?: 'Everyone'),
-            'program' => (string) ($announcement->program ?: 'All Programs'),
+            'type' => $audienceCode,
+            'typeLabel' => $this->announcementAudienceLabel($audienceCode),
+            'program' => $resolvedProgram,
             'content' => (string) $announcement->content,
         ];
+    }
+
+    private function announcementAudienceOptions(): array
+    {
+        return [
+            SystemAnnouncement::AUDIENCE_EVERYONE => 'Everyone',
+            SystemAnnouncement::AUDIENCE_STUDENTS => 'Students',
+            SystemAnnouncement::AUDIENCE_FACULTY => 'Faculty',
+            SystemAnnouncement::AUDIENCE_STAFF => 'Staff',
+            SystemAnnouncement::AUDIENCE_APPLICANT => 'Applicant',
+        ];
+    }
+
+    private function announcementAudienceAliases(): array
+    {
+        return [
+            'everyone' => SystemAnnouncement::AUDIENCE_EVERYONE,
+            'all' => SystemAnnouncement::AUDIENCE_EVERYONE,
+            'all users' => SystemAnnouncement::AUDIENCE_EVERYONE,
+            'all user' => SystemAnnouncement::AUDIENCE_EVERYONE,
+            'students' => SystemAnnouncement::AUDIENCE_STUDENTS,
+            'student' => SystemAnnouncement::AUDIENCE_STUDENTS,
+            'faculty' => SystemAnnouncement::AUDIENCE_FACULTY,
+            'teacher' => SystemAnnouncement::AUDIENCE_FACULTY,
+            'teachers' => SystemAnnouncement::AUDIENCE_FACULTY,
+            'staff' => SystemAnnouncement::AUDIENCE_STAFF,
+            'registrar' => SystemAnnouncement::AUDIENCE_STAFF,
+            'admin' => SystemAnnouncement::AUDIENCE_STAFF,
+            'administrator' => SystemAnnouncement::AUDIENCE_STAFF,
+            'applicant' => SystemAnnouncement::AUDIENCE_APPLICANT,
+            'applicants' => SystemAnnouncement::AUDIENCE_APPLICANT,
+        ];
+    }
+
+    private function normalizeAnnouncementAudienceCode($value)
+    {
+        $normalized = strtolower(trim((string) $value));
+        if ($normalized === '') {
+            return SystemAnnouncement::AUDIENCE_EVERYONE;
+        }
+
+        $aliases = $this->announcementAudienceAliases();
+        if (isset($aliases[$normalized])) {
+            return $aliases[$normalized];
+        }
+
+        return null;
+    }
+
+    private function announcementAudienceLabel(string $audienceCode): string
+    {
+        $options = $this->announcementAudienceOptions();
+        return $options[$audienceCode] ?? $options[SystemAnnouncement::AUDIENCE_EVERYONE];
+    }
+
+    private function ensureAnnouncementAudienceLookups(): void
+    {
+        if (!Schema::hasTable('announcement_types')) {
+            return;
+        }
+
+        foreach ($this->announcementAudienceOptions() as $code => $label) {
+            AnnouncementType::query()->updateOrCreate(
+                ['code' => $code],
+                ['label' => $label]
+            );
+        }
+    }
+
+    private function resolveAnnouncementTypeId(string $audienceCode): ?int
+    {
+        if (!Schema::hasTable('announcement_types')) {
+            return null;
+        }
+
+        $normalizedCode = $this->normalizeAnnouncementAudienceCode($audienceCode) ?: SystemAnnouncement::AUDIENCE_EVERYONE;
+
+        $lookup = AnnouncementType::query()
+            ->whereRaw('LOWER(TRIM(code)) = ?', [$normalizedCode])
+            ->first();
+
+        if (!$lookup) {
+            $lookup = AnnouncementType::query()->create([
+                'code' => $normalizedCode,
+                'label' => $this->announcementAudienceLabel($normalizedCode),
+            ]);
+        }
+
+        return $lookup ? (int) $lookup->id : null;
+    }
+
+    private function findDuplicateAnnouncement(array $payload): ?SystemAnnouncement
+    {
+        if (!Schema::hasTable('system_announcements')) {
+            return null;
+        }
+
+        $normalizedAudience = $this->normalizeAnnouncementAudienceCode($payload['audience_code'] ?? null)
+            ?: SystemAnnouncement::AUDIENCE_EVERYONE;
+        $normalizedTitle = strtolower(trim((string) ($payload['title'] ?? '')));
+        $normalizedProgram = strtolower(trim((string) ($payload['program'] ?? 'All Programs')));
+        $normalizedContent = strtolower(trim((string) ($payload['content'] ?? '')));
+
+        $hasProgramColumn = Schema::hasColumn('system_announcements', 'program');
+        $hasCourseColumn = Schema::hasColumn('system_announcements', 'course_id');
+        $hasAnnouncementTypeColumn = Schema::hasColumn('system_announcements', 'announcement_type');
+        $hasAnnouncementTypeIdColumn = Schema::hasColumn('system_announcements', 'announcement_type_id');
+
+        $query = SystemAnnouncement::query()
+            ->whereDate('date_from', (string) ($payload['from'] ?? ''))
+            ->whereDate('date_to', (string) ($payload['to'] ?? ''))
+            ->whereRaw('LOWER(TRIM(title)) = ?', [$normalizedTitle])
+            ->whereRaw('LOWER(TRIM(content)) = ?', [$normalizedContent]);
+
+        if ($hasAnnouncementTypeColumn) {
+            $query->whereRaw('LOWER(TRIM(announcement_type)) = ?', [$normalizedAudience]);
+        } elseif ($hasAnnouncementTypeIdColumn) {
+            $announcementTypeId = isset($payload['announcement_type_id']) ? (int) $payload['announcement_type_id'] : 0;
+            if ($announcementTypeId > 0) {
+                $query->where('announcement_type_id', $announcementTypeId);
+            } else {
+                $query->whereNull('announcement_type_id');
+            }
+        }
+
+        if ($hasProgramColumn) {
+            $query->whereRaw('LOWER(TRIM(program)) = ?', [$normalizedProgram]);
+        }
+
+        if (!empty($payload['exclude_id'])) {
+            $query->where('id', '!=', (int) $payload['exclude_id']);
+        }
+
+        if ($hasCourseColumn && array_key_exists('course_id', $payload)) {
+            if (!empty($payload['course_id'])) {
+                $query->where('course_id', (int) $payload['course_id']);
+            } else {
+                $query->whereNull('course_id');
+            }
+        }
+
+        return $query->orderByDesc('id')->first();
+    }
+
+    private function buildAnnouncementNotificationPayload(SystemAnnouncement $announcement): array
+    {
+        $titleText = trim((string) $announcement->title);
+        $title = $titleText !== ''
+            ? 'Announcement: ' . $titleText
+            : 'New Registrar Announcement';
+
+        $content = trim((string) $announcement->content);
+        $message = $content !== '' ? $content : 'A registrar announcement is available.';
+
+        $fromLabel = optional($announcement->date_from)->format('M d, Y');
+        $toLabel = optional($announcement->date_to)->format('M d, Y');
+        $dateText = '';
+
+        if ($fromLabel && $toLabel && $fromLabel !== $toLabel) {
+            $dateText = 'Effective from ' . $fromLabel . ' to ' . $toLabel . '.';
+        } elseif ($fromLabel) {
+            $dateText = 'Effective on ' . $fromLabel . '.';
+        } elseif ($toLabel) {
+            $dateText = 'Available until ' . $toLabel . '.';
+        }
+
+        if ($dateText !== '') {
+            if ($message !== '' && !preg_match('/[.!?]$/', $message)) {
+                $message .= '.';
+            }
+
+            $message = trim($message . ' ' . $dateText);
+        }
+
+        return [
+            'title' => $title,
+            'message' => $message,
+        ];
+    }
+
+    private function syncAnnouncementPortalNotification(SystemAnnouncement $announcement, ?int $createdByUserId = null): void
+    {
+        if (!Schema::hasTable('notification_types')
+            || !Schema::hasTable('portal_notifications')) {
+            return;
+        }
+
+        $type = NotificationType::query()->firstOrCreate(
+            ['code' => 'SYSTEM_ANNOUNCEMENT_POSTED'],
+            ['name' => 'System Announcement Posted']
+        );
+
+        $payload = $this->buildAnnouncementNotificationPayload($announcement);
+
+        $notification = PortalNotification::query()->firstOrCreate(
+            [
+                'source_module' => 'system_announcement',
+                'source_reference' => 'system_announcement:' . $announcement->id,
+            ],
+            [
+                'notification_type_id' => $type->id,
+                'title' => $payload['title'],
+                'message' => $payload['message'],
+                'source_url' => '',
+                'created_by_user_id' => $createdByUserId,
+            ]
+        );
+
+        $hasChanges = false;
+
+        if ((int) $notification->notification_type_id !== (int) $type->id) {
+            $notification->notification_type_id = $type->id;
+            $hasChanges = true;
+        }
+
+        if ((string) $notification->title !== (string) $payload['title']) {
+            $notification->title = (string) $payload['title'];
+            $hasChanges = true;
+        }
+
+        if ((string) $notification->message !== (string) $payload['message']) {
+            $notification->message = (string) $payload['message'];
+            $hasChanges = true;
+        }
+
+        if ((string) ($notification->source_url ?: '') !== '') {
+            $notification->source_url = '';
+            $hasChanges = true;
+        }
+
+        if ($createdByUserId && empty($notification->created_by_user_id)) {
+            $notification->created_by_user_id = $createdByUserId;
+            $hasChanges = true;
+        }
+
+        if ($hasChanges) {
+            $notification->save();
+        }
+
+        $this->syncAnnouncementNotificationDeliveries($notification, $announcement);
+    }
+
+    private function announcementAudienceTargetModules(string $audienceCode): array
+    {
+        $normalizedAudience = $this->normalizeAnnouncementAudienceCode($audienceCode) ?: SystemAnnouncement::AUDIENCE_EVERYONE;
+
+        $map = [
+            SystemAnnouncement::AUDIENCE_EVERYONE => ['student', 'faculty', 'registrar', 'applicant'],
+            SystemAnnouncement::AUDIENCE_STUDENTS => ['student'],
+            SystemAnnouncement::AUDIENCE_FACULTY => ['faculty'],
+            SystemAnnouncement::AUDIENCE_STAFF => ['registrar'],
+            SystemAnnouncement::AUDIENCE_APPLICANT => ['applicant'],
+        ];
+
+        return $map[$normalizedAudience] ?? $map[SystemAnnouncement::AUDIENCE_EVERYONE];
+    }
+
+    private function syncAnnouncementNotificationDeliveries(PortalNotification $notification, SystemAnnouncement $announcement): void
+    {
+        if (!Schema::hasTable('notification_deliveries') || !Schema::hasTable('users')) {
+            return;
+        }
+
+        $targetModules = $this->announcementAudienceTargetModules((string) $announcement->announcement_type);
+        $targetUserIds = User::query()
+            ->whereIn('module', $targetModules)
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        if (empty($targetUserIds)) {
+            NotificationDelivery::query()
+                ->where('portal_notification_id', $notification->id)
+                ->delete();
+
+            return;
+        }
+
+        NotificationDelivery::query()
+            ->where('portal_notification_id', $notification->id)
+            ->whereNotIn('user_id', $targetUserIds)
+            ->delete();
+
+        $deliveredAt = $announcement->created_at ?: now();
+
+        foreach ($targetUserIds as $targetUserId) {
+            NotificationDelivery::query()->firstOrCreate(
+                [
+                    'portal_notification_id' => $notification->id,
+                    'user_id' => $targetUserId,
+                ],
+                [
+                    'delivered_at' => $deliveredAt,
+                ]
+            );
+        }
+    }
+
+    private function removeAnnouncementPortalNotification(SystemAnnouncement $announcement): void
+    {
+        if (!Schema::hasTable('portal_notifications')) {
+            return;
+        }
+
+        $notifications = PortalNotification::query()
+            ->where('source_module', 'system_announcement')
+            ->where('source_reference', 'system_announcement:' . $announcement->id)
+            ->get();
+
+        if ($notifications->isEmpty()) {
+            return;
+        }
+
+        foreach ($notifications as $notification) {
+            if (Schema::hasTable('notification_deliveries')) {
+                NotificationDelivery::query()
+                    ->where('portal_notification_id', $notification->id)
+                    ->delete();
+            }
+
+            $notification->delete();
+        }
     }
 
     private function splitUserName(string $fullName): array
@@ -2216,26 +2810,32 @@ class AdminToolsController extends Controller
 
     private function seedAnnouncements(): void
     {
+        $this->ensureAnnouncementAudienceLookups();
+
+        $hasProgramColumn = Schema::hasColumn('system_announcements', 'program');
+
         $rows = [
             [
                 'date_from' => '2026-01-13',
                 'date_to' => '2026-01-31',
                 'title' => 'Academic Year 2025-2026 Midterm Examination',
-                'announcement_type' => 'Everyone',
-                'program' => 'All Programs',
+                'announcement_type' => SystemAnnouncement::AUDIENCE_EVERYONE,
                 'content' => 'Midterm examinations will run from January 13 to January 31. Please settle pending requirements.',
             ],
             [
                 'date_from' => '2026-02-15',
                 'date_to' => '2026-02-22',
                 'title' => 'Final Examination Week Advisory',
-                'announcement_type' => 'Students',
-                'program' => 'All Programs',
+                'announcement_type' => SystemAnnouncement::AUDIENCE_STUDENTS,
                 'content' => 'Final examination schedule and assigned rooms are available at the registrar help desk.',
             ],
         ];
 
         foreach ($rows as $row) {
+            if ($hasProgramColumn) {
+                $row['program'] = 'All Programs';
+            }
+
             SystemAnnouncement::create($row);
         }
     }

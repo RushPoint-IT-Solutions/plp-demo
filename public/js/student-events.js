@@ -16,28 +16,35 @@ document.addEventListener("DOMContentLoaded", function() {
     const calendarEvents = {};
     const dbEvents = Array.isArray(window.calendarEventsData) ? window.calendarEventsData : [];
 
-    dbEvents.forEach(function (item) {
-        if (!item || !item.date || !item.label) return;
-        calendarEvents[item.date] = {
-            type: item.type === 'holiday' ? 'holiday' : 'event',
-            label: item.label
-        };
-    });
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, function(ch) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
 
-    // Static fallback when DB has no events yet.
-    if (Object.keys(calendarEvents).length === 0) {
-        calendarEvents["2026-03-09"] = { type: "holiday", label: "Araw ng Kagitingan" };
-        calendarEvents["2026-03-17"] = { type: "event", label: "University Foundation Day" };
-        calendarEvents["2026-03-20"] = { type: "event", label: "Intramurals Opening" };
-        calendarEvents["2026-03-28"] = { type: "holiday", label: "Maundy Thursday" };
-        calendarEvents["2026-04-01"] = { type: "holiday", label: "Eid al-Fitr" };
-        calendarEvents["2026-04-09"] = { type: "holiday", label: "Araw ng Kagitingan" };
-        calendarEvents["2026-04-14"] = { type: "event", label: "Midterm Exams Start" };
-        calendarEvents["2026-04-25"] = { type: "event", label: "Career Fair 2026" };
-        calendarEvents["2026-05-01"] = { type: "holiday", label: "Labor Day" };
-        calendarEvents["2026-05-12"] = { type: "event", label: "Final Exams Start" };
-        calendarEvents["2026-06-12"] = { type: "holiday", label: "Independence Day" };
+            return map[ch] || ch;
+        });
     }
+
+    dbEvents.forEach(function (item) {
+        if (!item || !item.date || !item.label) {
+            return;
+        }
+
+        const key = String(item.date);
+        if (!Array.isArray(calendarEvents[key])) {
+            calendarEvents[key] = [];
+        }
+
+        calendarEvents[key].push({
+            type: item.type === 'holiday' ? 'holiday' : 'event',
+            label: String(item.label)
+        });
+    });
 
     function dateKey(y, m, d) {
         return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -71,12 +78,29 @@ document.addEventListener("DOMContentLoaded", function() {
                     let html = `<div class="day-number">${dateCount}</div>`;
 
                     const key = dateKey(year, month, dateCount);
-                    const ev = calendarEvents[key];
-                    if (ev) {
-                        cell.classList.add(ev.type === 'holiday' ? 'holiday-cell' : 'event-cell');
-                        html += `<span class="cal-event-label">${ev.label}</span>`;
-                        cell.dataset.eventType = ev.type;
-                        cell.dataset.eventLabel = ev.label;
+                    const eventsForDate = Array.isArray(calendarEvents[key]) ? calendarEvents[key] : [];
+                    if (eventsForDate.length > 0) {
+                        const hasHoliday = eventsForDate.some(function(eventItem) {
+                            return eventItem.type === 'holiday';
+                        });
+                        const hasRegularEvent = eventsForDate.some(function(eventItem) {
+                            return eventItem.type === 'event';
+                        });
+
+                        if (hasHoliday && hasRegularEvent) {
+                            cell.classList.add('mixed-event-cell');
+                        } else if (hasHoliday) {
+                            cell.classList.add('holiday-cell');
+                        } else {
+                            cell.classList.add('event-cell');
+                        }
+
+                        html += `<span class="cal-event-label">${escapeHtml(eventsForDate[0].label)}</span>`;
+                        if (eventsForDate.length > 1) {
+                            html += `<span class="cal-event-more">+${eventsForDate.length - 1} more</span>`;
+                        }
+
+                        cell.dataset.eventItems = JSON.stringify(eventsForDate);
                     }
 
                     cell.innerHTML = html;
@@ -132,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!isMobileView()) return;
 
         const cell = e.target.closest(".cal-td");
-        if (!cell || !cell.dataset.eventLabel) return;
+        if (!cell || !cell.dataset.eventItems) return;
 
         // If tapping the same cell, just toggle off
         if (activePopup && activePopup._cell === cell) {
@@ -142,18 +166,36 @@ document.addEventListener("DOMContentLoaded", function() {
 
         closeEventPopup();
 
-        const type = cell.dataset.eventType;
-        const label = cell.dataset.eventLabel;
+        let items = [];
+        try {
+            items = JSON.parse(cell.dataset.eventItems || '[]');
+        } catch (error) {
+            items = [];
+        }
+
+        if (!Array.isArray(items) || items.length === 0) {
+            return;
+        }
+
+        const eventRows = items.map(function(item) {
+            const eventType = item && item.type === 'holiday' ? 'holiday' : 'event';
+            const eventTypeLabel = eventType === 'holiday' ? 'Holiday' : 'University Event';
+
+            return (
+                `<div class="cal-popup-item">` +
+                    `<div class="cal-popup-type popup-${eventType}">` +
+                        `<span class="popup-dot"></span>` +
+                        `${eventTypeLabel}` +
+                    `</div>` +
+                    `<div class="cal-popup-label">${escapeHtml(item && item.label ? item.label : '')}</div>` +
+                `</div>`
+            );
+        }).join('');
 
         const popup = document.createElement("div");
         popup.className = "cal-event-popup";
         popup._cell = cell;
-        popup.innerHTML =
-            `<div class="cal-popup-type popup-${type}">` +
-                `<span class="popup-dot"></span>` +
-                `${type === 'holiday' ? 'Holiday' : 'University Event'}` +
-            `</div>` +
-            `<div class="cal-popup-label">${label}</div>`;
+        popup.innerHTML = `<div class="cal-popup-list">${eventRows}</div>`;
 
         document.body.appendChild(popup);
 
@@ -185,7 +227,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.addEventListener("click", function(e) {
         if (!activePopup) return;
         if (activePopup.contains(e.target)) return;
-        if (e.target.closest(".cal-td[data-event-label]")) return;
+        if (e.target.closest(".cal-td[data-event-items]")) return;
         closeEventPopup();
     });
 

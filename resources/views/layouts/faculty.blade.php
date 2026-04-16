@@ -143,9 +143,20 @@
                             @php
                                 $notification = $delivery->notification;
                                 $notificationUrl = $notification ? (string) $notification->local_source_url : '';
+                                $isAnnouncementNotification = $notification && (string) $notification->source_module === 'system_announcement';
+                                $notificationMessage = $notification ? (string) $notification->message : '';
                             @endphp
                             <div class="faculty-notif-item {{ !empty($delivery->read_at) ? 'is-read' : '' }}" data-delivery-id="{{ $delivery->id }}">
-                                @if($notification && $notificationUrl)
+                                @if($isAnnouncementNotification)
+                                    <button
+                                        type="button"
+                                        class="faculty-notif-text faculty-notif-open js-faculty-notif-open"
+                                        data-title="{{ $notification ? $notification->title : 'Announcement' }}"
+                                        data-message="{{ $notificationMessage }}"
+                                    >
+                                        {{ $notification ? $notification->title : 'Announcement' }}
+                                    </button>
+                                @elseif($notification && $notificationUrl)
                                     <a href="{{ $notificationUrl }}" class="faculty-notif-text">{{ $notification->title }}</a>
                                 @else
                                     <span class="faculty-notif-text">{{ $notification ? $notification->title : 'New notification' }}</span>
@@ -165,6 +176,28 @@
                     </div>
 
                     <p class="faculty-notif-empty {{ $facultyNotifications->count() ? 'd-none' : '' }}">No new notifications.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade faculty-notif-detail-modal"
+        id="facultyNotificationDetailModal"
+        tabindex="-1"
+        aria-labelledby="facultyNotificationDetailTitle"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="faculty-notif-modal-header">
+                    <h5 class="modal-title" id="facultyNotificationDetailTitle">Announcement</h5>
+                </div>
+                <div class="faculty-notif-body">
+                    <p class="faculty-notif-detail-message" id="facultyNotificationDetailMessage">No details available.</p>
+                </div>
+                <div class="faculty-notif-detail-footer">
+                    <button type="button" class="faculty-notif-detail-close" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

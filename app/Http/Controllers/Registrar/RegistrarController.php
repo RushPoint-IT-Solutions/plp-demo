@@ -44,7 +44,11 @@ use App\Student;
 use App\StudentProfile;
 use App\StudentProfileImage;
 use App\StudentSubjectGrade;
+use App\SystemAnnouncement;
 use App\MasterStudentGradeFile;
+use App\NotificationDelivery;
+use App\NotificationType;
+use App\PortalNotification;
 use App\Subject;
 use App\SystemSchoolSemester;
 use App\YearBlock;
@@ -106,6 +110,19 @@ class RegistrarController extends Controller
         'COLLEGE OF EDUCATION',
     ];
 
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = auth()->user();
+            $this->syncRegistrarNotificationsForUser($user);
+
+            view()->share('registrarNotifications', $this->activeRegistrarNotifications($user));
+            view()->share('registrarUnreadNotificationCount', $this->registrarUnreadNotificationCount($user));
+
+            return $next($request);
+        });
+    }
+
     /**
      * Registrar Dashboard
      */
@@ -150,6 +167,7 @@ class RegistrarController extends Controller
         }
         $trendPercent = $this->computeLastMonthPercent($trendValues);
         $sparklinePaths = $this->buildSparklinePaths($trendValues, 110, 60);
+        $dashboardAnnouncements = $this->activeAnnouncementsForAudience(SystemAnnouncement::AUDIENCE_STAFF, 8);
 
         return view('registrar.dashboard', [
             'dashboardData' => [
@@ -163,7 +181,76 @@ class RegistrarController extends Controller
                 'sparklinePath' => $sparklinePaths['line'],
                 'sparklineAreaPath' => $sparklinePaths['area'],
             ],
+            'dashboardAnnouncements' => $dashboardAnnouncements,
         ]);
+    }
+
+    private function activeAnnouncementsForAudience(string $audienceCode, int $limit = 6): array
+    {
+        if (!Schema::hasTable('system_announcements')) {
+            return [];
+        }
+
+        $today = now()->toDateString();
+        $safeLimit = max(1, $limit);
+
+        return SystemAnnouncement::query()
+            ->with('announcementTypeLookup')
+            ->activeOn($today)
+            ->visibleToAudience($audienceCode)
+            ->orderByDesc('date_from')
+            ->orderByDesc('id')
+            ->limit($safeLimit)
+            ->get()
+            ->map(function (SystemAnnouncement $announcement) {
+                $audienceCodeResolved = SystemAnnouncement::normalizeAudienceCode($announcement->announcement_type);
+
+                return [
+                    'id' => (int) $announcement->id,
+                    'title' => trim((string) $announcement->title),
+                    'timeLabel' => $this->formatAnnouncementDateRange($announcement),
+                    'audienceCode' => $audienceCodeResolved,
+                    'audienceLabel' => $this->dashboardAnnouncementAudienceLabel($audienceCodeResolved),
+                ];
+            })
+            ->filter(function ($row) {
+                return $row['title'] !== '';
+            })
+            ->values()
+            ->all();
+    }
+
+    private function formatAnnouncementDateRange(SystemAnnouncement $announcement): string
+    {
+        $from = optional($announcement->date_from)->format('M d, Y');
+        $to = optional($announcement->date_to)->format('M d, Y');
+
+        if ($from && $to && $from !== $to) {
+            return $from . ' - ' . $to;
+        }
+
+        if ($from) {
+            return $from;
+        }
+
+        if ($to) {
+            return $to;
+        }
+
+        return 'Date not specified';
+    }
+
+    private function dashboardAnnouncementAudienceLabel(string $audienceCode): string
+    {
+        $labels = [
+            SystemAnnouncement::AUDIENCE_EVERYONE => 'Everyone',
+            SystemAnnouncement::AUDIENCE_STUDENTS => 'Students',
+            SystemAnnouncement::AUDIENCE_FACULTY => 'Faculty',
+            SystemAnnouncement::AUDIENCE_STAFF => 'Staff',
+            SystemAnnouncement::AUDIENCE_APPLICANT => 'Applicant',
+        ];
+
+        return $labels[$audienceCode] ?? $labels[SystemAnnouncement::AUDIENCE_EVERYONE];
     }
 
     /**
@@ -172,6 +259,252 @@ class RegistrarController extends Controller
     public function messaging()
     {
         return view('registrar.messaging');
+    }
+
+    private function activeRegistrarNotifications($user = null)
+    {
+        $user = $user ?: auth()->user();
+
+        if (!$user || $user->module !== 'registrar') {
+            return collect();
+        }
+
+        if (!Schema::hasTable('notification_deliveries') || !Schema::hasTable('portal_notifications')) {
+            return collect();
+        }
+
+        return NotificationDelivery::query()
+            ->with(['notification.type'])
+            ->where('user_id', $user->id)
+            ->whereNull('dismissed_at')
+            ->orderByDesc('delivered_at')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    private function registrarUnreadNotificationCount($user = null)
+    {
+        $user = $user ?: auth()->user();
+
+        if (!$user || $user->module !== 'registrar') {
+            return 0;
+        }
+
+        if (!Schema::hasTable('notification_deliveries')) {
+            return 0;
+        }
+
+        return (int) NotificationDelivery::query()
+            ->where('user_id', $user->id)
+            ->whereNull('dismissed_at')
+            ->whereNull('read_at')
+            ->count();
+    }
+
+    private function syncRegistrarNotificationsForUser($user)
+    {
+        $this->syncAnnouncementNotificationsForRegistrar($user);
+    }
+
+    private function syncAnnouncementNotificationsForRegistrar($user)
+    {
+        if (!$user || $user->module !== 'registrar') {
+            return;
+        }
+
+        if (!Schema::hasTable('system_announcements')
+            || !Schema::hasTable('notification_types')
+            || !Schema::hasTable('portal_notifications')
+            || !Schema::hasTable('notification_deliveries')) {
+            return;
+        }
+
+        $type = NotificationType::query()->firstOrCreate(
+            ['code' => 'SYSTEM_ANNOUNCEMENT_POSTED'],
+            ['name' => 'System Announcement Posted']
+        );
+
+        $today = now()->toDateString();
+        $announcements = SystemAnnouncement::query()
+            ->activeOn($today)
+            ->visibleToAudience(SystemAnnouncement::AUDIENCE_STAFF)
+            ->orderBy('id')
+            ->get(['id', 'title', 'date_from', 'date_to', 'created_at', 'content']);
+
+        foreach ($announcements as $announcement) {
+            $titleValue = trim((string) $announcement->title);
+            $title = $titleValue !== ''
+                ? 'Announcement: ' . $titleValue
+                : 'New Registrar Announcement';
+
+            $content = trim((string) $announcement->content);
+            $message = $content !== '' ? $content : 'A registrar announcement is available';
+
+            $dateFromLabel = optional($announcement->date_from)->format('M d, Y');
+            $dateToLabel = optional($announcement->date_to)->format('M d, Y');
+
+            if ($dateFromLabel && $dateToLabel && $dateFromLabel !== $dateToLabel) {
+                $message .= ' Effective from ' . $dateFromLabel . ' to ' . $dateToLabel . '.';
+            } elseif ($dateFromLabel) {
+                $message .= ' Effective on ' . $dateFromLabel . '.';
+            } elseif ($dateToLabel) {
+                $message .= ' Available until ' . $dateToLabel . '.';
+            }
+
+            if (!preg_match('/[.!?]$/', $message)) {
+                $message .= '.';
+            }
+
+            $notification = PortalNotification::query()->firstOrCreate(
+                [
+                    'source_module' => 'system_announcement',
+                    'source_reference' => 'system_announcement:' . $announcement->id,
+                ],
+                [
+                    'notification_type_id' => $type->id,
+                    'title' => $title,
+                    'message' => $message,
+                    'source_url' => '',
+                    'created_by_user_id' => null,
+                ]
+            );
+
+            $hasChanges = false;
+
+            if ((int) $notification->notification_type_id !== (int) $type->id) {
+                $notification->notification_type_id = $type->id;
+                $hasChanges = true;
+            }
+
+            if ((string) $notification->title !== (string) $title) {
+                $notification->title = $title;
+                $hasChanges = true;
+            }
+
+            if ((string) $notification->message !== (string) $message) {
+                $notification->message = $message;
+                $hasChanges = true;
+            }
+
+            if ((string) ($notification->source_url ?: '') !== '') {
+                $notification->source_url = '';
+                $hasChanges = true;
+            }
+
+            if ($hasChanges) {
+                $notification->save();
+            }
+
+            NotificationDelivery::query()->firstOrCreate(
+                [
+                    'portal_notification_id' => $notification->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'delivered_at' => $announcement->created_at ?: now(),
+                ]
+            );
+        }
+    }
+
+    public function dismissNotification(Request $request, $notificationDelivery)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        if (!Schema::hasTable('notification_deliveries')) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => true]);
+            }
+
+            return back();
+        }
+
+        $delivery = NotificationDelivery::query()
+            ->where('id', (int) $notificationDelivery)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $delivery->dismissed_at = now();
+        if (empty($delivery->read_at)) {
+            $delivery->read_at = now();
+        }
+        $delivery->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
+
+        return back();
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        if (!Schema::hasTable('notification_deliveries')) {
+            return response()->json(['ok' => true, 'unread_count' => 0]);
+        }
+
+        NotificationDelivery::query()
+            ->where('user_id', $user->id)
+            ->whereNull('dismissed_at')
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return response()->json(['ok' => true, 'unread_count' => 0]);
+    }
+
+    public function notificationsFeed(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        $this->syncRegistrarNotificationsForUser($user);
+
+        $notifications = $this->activeRegistrarNotifications($user)
+            ->map(function ($delivery) {
+                $notification = $delivery->notification;
+
+                return [
+                    'delivery_id' => (int) $delivery->id,
+                    'title' => $notification ? (string) $notification->title : 'New notification',
+                    'message' => $notification ? (string) $notification->message : '',
+                    'source_url' => $notification ? (string) $notification->local_source_url : '',
+                    'source_module' => $notification ? (string) $notification->source_module : '',
+                    'source_reference' => $notification ? (string) $notification->source_reference : '',
+                    'is_read' => !empty($delivery->read_at),
+                    'dismiss_url' => route('registrar.notifications.dismiss', ['notificationDelivery' => $delivery->id], false),
+                ];
+            })
+            ->unique(function ($item) {
+                $sourceModule = (string) ($item['source_module'] ?? 'general');
+                $sourceReference = trim((string) ($item['source_reference'] ?? ''));
+
+                if ($sourceReference !== '') {
+                    return $sourceModule . '|' . $sourceReference;
+                }
+
+                $fallback = strtolower(trim((string) ($item['title'] ?? '')) . '|' . trim((string) ($item['message'] ?? '')));
+                return $sourceModule . '|' . $fallback;
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'unread_count' => $this->registrarUnreadNotificationCount($user),
+            'notifications' => $notifications,
+        ]);
     }
 
     public function helpCenter()

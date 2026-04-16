@@ -581,9 +581,17 @@ class ApplicantController extends Controller
         $calendarEvents = [];
 
         if (Schema::hasTable('academic_calendar_events')) {
+            $today = now()->toDateString();
+
             $calendarEvents = AcademicCalendarEvent::query()
                 ->where('is_active', true)
+                ->where(function ($query) use ($today) {
+                    $query->whereNull('post_until')
+                        ->orWhereDate('post_until', '>=', $today);
+                })
+                ->visibleToAudience('applicant')
                 ->orderBy('event_date')
+                ->orderBy('time_from')
                 ->get()
                 ->map(function ($event) {
                     return [
