@@ -376,6 +376,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('access-management')->name('access-management.')->group(function () {
             Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
+            Route::get('/user-accounts/data', 'Registrar\Services\AdminToolsController@userAccountsData')->name('user-accounts.data');
             Route::put('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsUpdate')->name('user-accounts.update');
             Route::delete('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsDestroy')->name('user-accounts.destroy');
             Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');

@@ -1187,35 +1187,150 @@ class AdminToolsController extends Controller
     // Access Management
     public function userAccounts()
     {
-        $users = User::query()
-            ->orderBy('name')
-            ->orderBy('username')
-            ->get(['id', 'username', 'name', 'module']);
+        return view('registrar.admin-tools.access-management.user-accounts', [
+            'userAccountDataUrl' => route('registrar.admin-tools.access-management.user-accounts.data'),
+            'userAccountUpdateTemplate' => route('registrar.admin-tools.access-management.user-accounts.update', ['user' => '__ID__']),
+            'userAccountDeleteTemplate' => route('registrar.admin-tools.access-management.user-accounts.destroy', ['user' => '__ID__']),
+        ]);
+    }
 
-        $statusMap = collect();
-        if (Schema::hasTable('user_account_statuses')) {
-            $statusMap = UserAccountStatus::query()
-                ->whereIn('user_id', $users->pluck('id')->all())
-                ->get(['user_id', 'is_inactive'])
-                ->pluck('is_inactive', 'user_id');
+    public function userAccountsData(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'nullable|string|max:190',
+            'last_name' => 'nullable|string|max:190',
+            'first_name' => 'nullable|string|max:190',
+            'user_type' => 'nullable|string|max:50',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $page = (int) ($validated['page'] ?? 1);
+        $perPage = (int) ($validated['per_page'] ?? 10);
+
+        $hasNormalizedTables = $this->hasNormalizedUserAccountTables();
+        $hasLegacyStatusTable = Schema::hasTable('user_account_statuses');
+
+        $query = User::query()
+            ->select([
+                'users.id',
+                'users.username',
+                'users.name',
+                'users.email',
+                'users.module',
+            ]);
+
+        if ($hasLegacyStatusTable) {
+            $query
+                ->leftJoin('user_account_statuses as uas', 'uas.user_id', '=', 'users.id')
+                ->addSelect(DB::raw('COALESCE(uas.is_inactive, 0) as legacy_is_inactive'));
+        } else {
+            $query->addSelect(DB::raw('0 as legacy_is_inactive'));
         }
 
-        $accountUsers = $users->map(function ($user) use ($statusMap) {
-            $fullName = trim((string) ($user->name ?: $user->username));
-            list($lastName, $firstName) = $this->splitUserName($fullName);
+        if ($hasNormalizedTables) {
+            $query
+                ->leftJoin('user_account_profiles as uap', 'uap.user_id', '=', 'users.id')
+                ->leftJoin('user_account_types as uat', 'uat.id', '=', 'uap.user_account_type_id')
+                ->leftJoin('user_account_states as ust', 'ust.id', '=', 'uap.user_account_state_id')
+                ->addSelect([
+                    DB::raw('COALESCE(uap.is_sample, 0) as profile_is_sample'),
+                    DB::raw('COALESCE(uat.code, users.module) as normalized_type_code'),
+                    DB::raw('COALESCE(uat.name, users.module) as normalized_type_name'),
+                    DB::raw("COALESCE(ust.code, '') as normalized_state_code"),
+                ]);
+        }
 
-            return [
-                'pk' => $user->id,
-                'userId' => (string) $user->username,
-                'lastName' => $lastName,
-                'firstName' => $firstName,
-                'fullName' => $fullName,
-                'userType' => ucfirst((string) ($user->module ?: 'user')),
-                'inactive' => (bool) $statusMap->get($user->id, false),
-            ];
-        })->values()->all();
+        if (!empty($validated['user_id'])) {
+            $needle = '%' . trim((string) $validated['user_id']) . '%';
+            $query->where('users.username', 'like', $needle);
+        }
 
-        return view('registrar.admin-tools.access-management.user-accounts', compact('accountUsers'));
+        if (!empty($validated['last_name'])) {
+            $needle = '%' . trim((string) $validated['last_name']) . '%';
+            $query->where('users.name', 'like', $needle);
+        }
+
+        if (!empty($validated['first_name'])) {
+            $needle = '%' . trim((string) $validated['first_name']) . '%';
+            $query->where('users.name', 'like', $needle);
+        }
+
+        if (!empty($validated['user_type'])) {
+            $typeValue = strtolower(trim((string) $validated['user_type']));
+
+            if ($hasNormalizedTables) {
+                $query->where(function ($inner) use ($typeValue) {
+                    $inner->whereRaw('LOWER(COALESCE(uat.code, users.module)) = ?', [$typeValue])
+                        ->orWhereRaw('LOWER(COALESCE(uat.name, users.module)) = ?', [$typeValue]);
+                });
+            } else {
+                $query->whereRaw('LOWER(users.module) = ?', [$typeValue]);
+            }
+        }
+
+        $paginator = $query
+            ->orderBy('users.name')
+            ->orderBy('users.username')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $rows = collect($paginator->items())
+            ->map(function ($row) use ($hasNormalizedTables) {
+                $fullName = trim((string) ($row->name ?: $row->username));
+                list($lastName, $firstName) = $this->splitUserName($fullName);
+
+                $typeCode = $this->normalizeModuleCode((string) ($row->module ?: 'user'));
+                $typeName = ucfirst($typeCode);
+
+                if ($hasNormalizedTables) {
+                    $normalizedTypeCode = trim((string) ($row->normalized_type_code ?: ''));
+                    $normalizedTypeName = trim((string) ($row->normalized_type_name ?: ''));
+                    if ($normalizedTypeCode !== '') {
+                        $typeCode = $this->normalizeModuleCode($normalizedTypeCode);
+                    }
+                    if ($normalizedTypeName !== '') {
+                        $typeName = $normalizedTypeName;
+                    }
+                }
+
+                $isInactive = $this->parseBooleanInput($row->legacy_is_inactive);
+                if ($hasNormalizedTables) {
+                    $stateCode = strtolower(trim((string) ($row->normalized_state_code ?: '')));
+                    if ($stateCode === 'active') {
+                        $isInactive = false;
+                    } elseif ($stateCode === 'inactive') {
+                        $isInactive = true;
+                    }
+                }
+
+                return [
+                    'pk' => (int) $row->id,
+                    'userId' => (string) $row->username,
+                    'lastName' => $lastName,
+                    'firstName' => $firstName,
+                    'fullName' => $fullName,
+                    'userType' => $typeName,
+                    'userTypeCode' => $typeCode,
+                    'email' => (string) ($row->email ?: ''),
+                    'inactive' => $isInactive,
+                    'isSample' => $hasNormalizedTables ? $this->parseBooleanInput($row->profile_is_sample) : false,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'meta' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ],
+        ]);
     }
 
     public function userAccountsUpdate(Request $request, User $user): JsonResponse
@@ -1223,28 +1338,53 @@ class AdminToolsController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|string|max:190|unique:users,username,' . $user->id,
             'full_name' => 'nullable|string|max:190',
+            'email' => 'nullable|email|max:190|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6|max:190',
-            'inactive' => 'nullable|boolean',
+            'inactive' => 'nullable',
+            'user_type' => 'nullable|string|max:50',
         ]);
 
         $user->username = (string) $validated['user_id'];
         if (!empty($validated['full_name'])) {
             $user->name = (string) $validated['full_name'];
         }
+
+        if (array_key_exists('email', $validated)) {
+            $user->email = $validated['email'] !== '' ? (string) $validated['email'] : null;
+        }
+
+        $typeCode = $this->normalizeModuleCode((string) ($validated['user_type'] ?? $user->module));
+        $user->module = $typeCode;
+
         if (!empty($validated['password'])) {
             $user->password = Hash::make((string) $validated['password']);
             $user->force_password_reset = false;
         }
+
         $user->save();
+
+        $inactive = $this->parseBooleanInput($request->input('inactive', false));
 
         if (Schema::hasTable('user_account_statuses')) {
             UserAccountStatus::updateOrCreate(
                 ['user_id' => $user->id],
-                ['is_inactive' => (bool) ($validated['inactive'] ?? false)]
+                ['is_inactive' => $inactive]
             );
         }
 
+        $this->syncUserAccountProfile($user, $inactive, $typeCode);
+
         list($lastName, $firstName) = $this->splitUserName((string) ($user->name ?: $user->username));
+        $typeName = ucfirst($typeCode);
+
+        if ($this->hasNormalizedUserAccountTables()) {
+            $lookupName = DB::table('user_account_types')
+                ->where('code', $typeCode)
+                ->value('name');
+            if (!empty($lookupName)) {
+                $typeName = (string) $lookupName;
+            }
+        }
 
         return response()->json([
             'ok' => true,
@@ -1254,8 +1394,10 @@ class AdminToolsController extends Controller
                 'lastName' => $lastName,
                 'firstName' => $firstName,
                 'fullName' => (string) ($user->name ?: $user->username),
-                'userType' => ucfirst((string) ($user->module ?: 'user')),
-                'inactive' => (bool) ($validated['inactive'] ?? false),
+                'userType' => $typeName,
+                'userTypeCode' => $typeCode,
+                'email' => (string) ($user->email ?: ''),
+                'inactive' => $inactive,
             ],
         ]);
     }
@@ -1272,6 +1414,102 @@ class AdminToolsController extends Controller
         $user->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    private function hasNormalizedUserAccountTables(): bool
+    {
+        return Schema::hasTable('user_account_profiles')
+            && Schema::hasTable('user_account_types')
+            && Schema::hasTable('user_account_states');
+    }
+
+    private function syncUserAccountProfile(User $user, bool $inactive, string $typeCode): void
+    {
+        if (!$this->hasNormalizedUserAccountTables()) {
+            return;
+        }
+
+        $normalizedCode = $this->normalizeModuleCode($typeCode);
+        $now = now();
+
+        DB::table('user_account_types')->updateOrInsert(
+            ['code' => $normalizedCode],
+            [
+                'name' => ucfirst($normalizedCode),
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        DB::table('user_account_states')->updateOrInsert(
+            ['code' => 'active'],
+            [
+                'name' => 'Active',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        DB::table('user_account_states')->updateOrInsert(
+            ['code' => 'inactive'],
+            [
+                'name' => 'Inactive',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        $typeId = DB::table('user_account_types')->where('code', $normalizedCode)->value('id');
+        $stateId = DB::table('user_account_states')
+            ->where('code', $inactive ? 'inactive' : 'active')
+            ->value('id');
+
+        if (!$typeId || !$stateId) {
+            return;
+        }
+
+        $currentIsSample = DB::table('user_account_profiles')
+            ->where('user_id', $user->id)
+            ->value('is_sample');
+
+        DB::table('user_account_profiles')->updateOrInsert(
+            ['user_id' => $user->id],
+            [
+                'user_account_type_id' => $typeId,
+                'user_account_state_id' => $stateId,
+                'is_sample' => $this->parseBooleanInput($currentIsSample),
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+    }
+
+    private function normalizeModuleCode(string $moduleCode): string
+    {
+        $code = strtolower(trim($moduleCode));
+        if ($code === '') {
+            return 'user';
+        }
+
+        if ($code === 'administrator') {
+            return 'admin';
+        }
+
+        return $code;
+    }
+
+    private function parseBooleanInput($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return ((int) $value) === 1;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+        return in_array($normalized, ['1', 'true', 'on', 'yes'], true);
     }
 
     public function reportAccess()

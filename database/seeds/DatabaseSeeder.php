@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             ApplicantBulkSeeder::class,
             RegistrarAuthSeeder::class,
             FacultyAuthSeeder::class,
+            UserAccount3nfSeeder::class,
             HighVolumeFacultySeeder::class,
             StudentSeeder::class,
             StudentFirstLoginDemoSeeder::class,

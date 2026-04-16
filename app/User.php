@@ -57,6 +57,16 @@ class User extends Authenticatable
         return $this->belongsTo(Applicant::class);
     }
 
+    public function accountProfile()
+    {
+        return $this->hasOne(UserAccountProfile::class);
+    }
+
+    public function accountStatus()
+    {
+        return $this->hasOne(UserAccountStatus::class);
+    }
+
     public function notificationDeliveries()
     {
         return $this->hasMany(NotificationDelivery::class);
