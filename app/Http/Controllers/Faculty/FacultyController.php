@@ -569,6 +569,7 @@ class FacultyController extends Controller
             $prelim = isset($row['prelim']) && $row['prelim'] !== '' ? (float) $row['prelim'] : null;
             $midterm = isset($row['midterm']) && $row['midterm'] !== '' ? (float) $row['midterm'] : null;
             $final = isset($row['final']) && $row['final'] !== '' ? (float) $row['final'] : null;
+            $remarksInput = isset($row['remarks']) ? trim((string) $row['remarks']) : '';
 
             if ($prelim === null || $midterm === null || $final === null) {
                 continue;
@@ -579,7 +580,7 @@ class FacultyController extends Controller
             }
 
             $average = round(($prelim + $midterm + $final) / 3, 2);
-            $remarks = $average <= 3.00 ? 'Passed' : 'Failed';
+            $remarks = $remarksInput !== '' ? $remarksInput : ($average <= 3.00 ? 'Passed' : 'Failed');
 
             StudentSubjectGrade::updateOrCreate(
                 ['subject_id' => $subject->id, 'student_id' => $student->id],

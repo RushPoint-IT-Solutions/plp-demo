@@ -49874,7 +49874,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var scheduleLines = (item.schedules || []).map(function (line) {
           return '<div class="so-schedule-line">' + escapeHtml(line) + '</div>';
         }).join('');
-        return '' + '<tr>' + '<td>' + escapeHtml(item.code) + '</td>' + '<td>' + escapeHtml(item.description) + '</td>' + '<td>' + escapeHtml(item.lec) + '</td>' + '<td>' + escapeHtml(item.lab) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits) + '</td>' + '<td>' + escapeHtml(item.creditUnits) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room) + '</td>' + '<td>' + escapeHtml(item.professor) + '</td>' + '<td>' + escapeHtml(item.slots) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
+        return '' + '<tr class="so-subject-row" data-code="' + escapeHtml(item.code) + '" style="cursor:pointer;" title="Click to edit subject details" onmouseover="this.style.backgroundColor=\'#f4faf5\'" onmouseout="this.style.backgroundColor=\'\'">' + '<td><span style="color:#0a5d2a; font-weight:700; text-decoration:underline;">' + escapeHtml(item.code) + '</span></td>' + '<td>' + escapeHtml(item.description) + '</td>' + '<td>' + escapeHtml(item.lec) + '</td>' + '<td>' + escapeHtml(item.lab) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits) + '</td>' + '<td>' + escapeHtml(item.creditUnits) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room) + '</td>' + '<td>' + escapeHtml(item.professor) + '</td>' + '<td>' + escapeHtml(item.slots) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
       }).join('');
     }
     if (soPageText) {
@@ -50145,6 +50145,191 @@ document.addEventListener('DOMContentLoaded', function () {
       clearSectionDetails();
     });
   }
+  var soEditSubjectModal = document.getElementById('soEditSubjectModal');
+  var soEditSubjectTitle = document.getElementById('soEditSubjectTitle');
+  var soEditSectionCode = document.getElementById('soEditSectionCode');
+  var soEditDescription = document.getElementById('soEditDescription');
+  var soEditTotalSlots = document.getElementById('soEditTotalSlots');
+  var soEditScheduleBody = document.getElementById('soEditScheduleBody');
+  var soCloseEditSubjectTop = document.getElementById('soCloseEditSubjectTop');
+  var soSaveEditSubjectBtn = document.getElementById('soSaveEditSubjectBtn');
+  function normalizeYearLevelToNumber(level) {
+    if (level === 'First') return '1';
+    if (level === 'Second') return '2';
+    if (level === 'Third') return '3';
+    if (level === 'Fourth') return '4';
+    return '';
+  }
+  function getDayLabelFromCode(dayCode) {
+    var code = String(dayCode || '').toUpperCase();
+    var dayMap = {
+      'M': 'Monday',
+      'T': 'Tuesday',
+      'W': 'Wednesday',
+      'TH': 'Thursday',
+      'F': 'Friday',
+      'S': 'Saturday',
+      'SU': 'Sunday'
+    };
+    return dayMap[code] || 'Monday';
+  }
+  function parseTimeRange(rangeText) {
+    var text = String(rangeText || '').trim();
+    var matched = text.match(/^(\d{1,2}):(\d{2})(AM|PM)-(\d{1,2}):(\d{2})(AM|PM)$/i);
+    if (!matched) {
+      return null;
+    }
+    function toTwoDigits(value) {
+      var str = String(value || '');
+      return str.length === 1 ? '0' + str : str;
+    }
+    return {
+      fromHour: toTwoDigits(matched[1]),
+      fromMinute: matched[2],
+      fromMeridiem: matched[3].toUpperCase(),
+      toHour: toTwoDigits(matched[4]),
+      toMinute: matched[5],
+      toMeridiem: matched[6].toUpperCase()
+    };
+  }
+  function buildSelectHtml(options, selectedValue, className) {
+    var selected = String(selectedValue || '');
+    var optionsHtml = options.map(function (opt) {
+      var optValue = String(opt);
+      var isSelected = optValue === selected ? ' selected' : '';
+      return '<option value="' + escapeHtml(optValue) + '"' + isSelected + '>' + escapeHtml(optValue) + '</option>';
+    }).join('');
+    return '<select class="' + className + '">' + optionsHtml + '</select>';
+  }
+  function buildRoomSelectHtml(subject, selectedRoom) {
+    var roomList = [];
+    var selected = String(selectedRoom || '').trim();
+    if (subject && subject.room) {
+      String(subject.room).split('/').forEach(function (part) {
+        var room = String(part || '').trim();
+        if (room && roomList.indexOf(room) === -1) {
+          roomList.push(room);
+        }
+      });
+    }
+    if (selected && roomList.indexOf(selected) === -1) {
+      roomList.unshift(selected);
+    }
+    roomList.unshift('-select room-');
+    return buildSelectHtml(roomList, selected || '-select room-', 'app-filter-select so-edit-room-select');
+  }
+  function buildScheduleEditorRow(parsed, subject) {
+    var timeParts = parseTimeRange(parsed.time);
+    var fromHour = timeParts ? timeParts.fromHour : '--';
+    var fromMinute = timeParts ? timeParts.fromMinute : '--';
+    var fromMeridiem = timeParts ? timeParts.fromMeridiem : '--';
+    var toHour = timeParts ? timeParts.toHour : '--';
+    var toMinute = timeParts ? timeParts.toMinute : '--';
+    var toMeridiem = timeParts ? timeParts.toMeridiem : '--';
+    var dayLabel = getDayLabelFromCode(parsed.day);
+    var dayChecked = parsed.day || parsed.time || parsed.room ? ' checked' : '';
+    var labChecked = Number(subject.lab || 0) > 0 ? ' checked' : '';
+    var daySelect = buildSelectHtml(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], dayLabel, 'app-filter-select');
+    var hourOptions = ['--', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+    var minuteOptions = ['--', '00', '30'];
+    var meridiemOptions = ['--', 'AM', 'PM'];
+    var fromTimeHtml = '' + '<div class="so-edit-time-inline">' + buildSelectHtml(hourOptions, fromHour, 'so-edit-time-select') + '<span>:</span>' + buildSelectHtml(minuteOptions, fromMinute, 'so-edit-time-select') + buildSelectHtml(meridiemOptions, fromMeridiem, 'so-edit-time-select') + '</div>';
+    var toTimeHtml = '' + '<div class="so-edit-time-inline">' + buildSelectHtml(hourOptions, toHour, 'so-edit-time-select') + '<span>:</span>' + buildSelectHtml(minuteOptions, toMinute, 'so-edit-time-select') + buildSelectHtml(meridiemOptions, toMeridiem, 'so-edit-time-select') + '</div>';
+    return '' + '<tr>' + '<td>' + '<div class="so-edit-day-cell">' + daySelect + '<input type="checkbox" class="req-checkbox-input" aria-label="Enable day row"' + dayChecked + '>' + '</div>' + '</td>' + '<td>' + fromTimeHtml + '</td>' + '<td>' + toTimeHtml + '</td>' + '<td>' + buildRoomSelectHtml(subject, parsed.room) + '</td>' + '<td>' + '<div class="so-edit-lab-cell">' + '<input type="checkbox" class="req-checkbox-input" aria-label="Lab subject"' + labChecked + '>' + '<button type="button" class="so-edit-add-row-btn" aria-label="Add schedule row">+ Add</button>' + '</div>' + '</td>' + '</tr>';
+  }
+  function buildEmptyScheduleEditorRow() {
+    var emptyParsed = {
+      day: '',
+      time: '',
+      room: ''
+    };
+    return buildScheduleEditorRow(emptyParsed, {
+      lab: 0,
+      room: ''
+    });
+  }
+  function fillSubjectScheduleEditor(subject) {
+    if (!subject || !soEditScheduleBody) {
+      return;
+    }
+    var schedules = subject.schedules && subject.schedules.length ? subject.schedules : [''];
+    soEditScheduleBody.innerHTML = schedules.map(function (line) {
+      return buildScheduleEditorRow(parseScheduleLine(line), subject);
+    }).join('');
+  }
+  if (soEditScheduleBody) {
+    soEditScheduleBody.addEventListener('click', function (event) {
+      var addBtn = event.target.closest ? event.target.closest('.so-edit-add-row-btn') : null;
+      if (!addBtn) {
+        return;
+      }
+      event.preventDefault();
+      soEditScheduleBody.insertAdjacentHTML('beforeend', buildEmptyScheduleEditorRow());
+    });
+  }
+  function openEditSubjectModal(section, subject) {
+    if (!soEditSubjectModal || !section || !subject) {
+      return;
+    }
+    if (soEditSubjectTitle) {
+      soEditSubjectTitle.textContent = subject.code + ' - ' + subject.description;
+    }
+    if (soEditSectionCode) {
+      soEditSectionCode.value = section.program + ' ' + normalizeYearLevelToNumber(section.yearLevel) + '-' + section.section;
+    }
+    if (soEditDescription) {
+      soEditDescription.value = subject.description || '';
+    }
+    if (soEditTotalSlots) {
+      soEditTotalSlots.value = subject.slots || 30;
+    }
+    fillSubjectScheduleEditor(subject);
+    soEditSubjectModal.classList.add('is-open');
+    soEditSubjectModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  if (soBody) {
+    soBody.addEventListener('click', function (e) {
+      var target = e.target;
+      var tr = target.closest ? target.closest('.so-subject-row') : null;
+      if (!tr) {
+        return;
+      }
+      var code = tr.getAttribute('data-code');
+      if (!sectionState.selectedSectionId || !code) {
+        return;
+      }
+      var section = getSectionById(sectionState.selectedSectionId);
+      if (!section) {
+        return;
+      }
+      var subject = (section.subjects || []).find(function (s) {
+        return s.code === code;
+      });
+      openEditSubjectModal(section, subject);
+    });
+  }
+  function closeEditSubjectModal() {
+    if (soEditSubjectModal) {
+      soEditSubjectModal.classList.remove('is-open');
+      soEditSubjectModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+  }
+  if (soCloseEditSubjectTop) soCloseEditSubjectTop.addEventListener('click', closeEditSubjectModal);
+  if (soSaveEditSubjectBtn) soSaveEditSubjectBtn.addEventListener('click', closeEditSubjectModal);
+  if (soEditSubjectModal) {
+    soEditSubjectModal.addEventListener('click', function (event) {
+      if (event.target === soEditSubjectModal) {
+        closeEditSubjectModal();
+      }
+    });
+  }
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && soEditSubjectModal && soEditSubjectModal.classList.contains('is-open')) {
+      closeEditSubjectModal();
+    }
+  });
   populateSectionFilterOptions();
   applyFilters();
 });

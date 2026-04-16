@@ -9,10 +9,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var detailSearch = document.getElementById('gradingDetailSearch');
     var detailPager = document.getElementById('gradingDetailPager');
     var detailPagerList = document.getElementById('gradingDetailPagerList');
-    var inputAction = document.getElementById('gradingInputAction');
-    var inputBtn = document.getElementById('gradingInputBtn');
     var backBtn = document.getElementById('gradingBackBtn');
     var subjectIdInput = document.getElementById('gradingSubjectIdInput');
+    var rowEditPayload = document.getElementById('gradingRowEditPayload');
+    var rowEditModal = document.getElementById('gradingRowEditModal');
+    var rowEditStudent = document.getElementById('gradingRowEditStudent');
+    var rowEditMidterm = document.getElementById('gradingRowEditMidterm');
+    var rowEditFinal = document.getElementById('gradingRowEditFinal');
+    var rowEditRemarks = document.getElementById('gradingRowEditRemarks');
+    var rowEditClose = document.getElementById('gradingRowEditClose');
+    var rowEditCancel = document.getElementById('gradingRowEditCancel');
+    var rowEditSave = document.getElementById('gradingRowEditSave');
     var schoolYearSelect = document.getElementById('fgsSchoolYear');
     var semesterSelect = document.getElementById('fgsSemester');
     var statusSelect = document.getElementById('fgsStatus');
@@ -36,10 +43,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var filteredSubjects = allSubjects.slice();
     var activeSubject = null;
-    var isEditing = false;
     var detailPage = 1;
     var detailPageSize = 10;
     var detailButtonWindow = 5;
+    var activeStudentId = null;
 
     function escapeHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function (ch) {
@@ -204,10 +211,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return html;
     }
 
-    function renderDetailPager(totalPages, editing) {
+    function renderDetailPager(totalPages) {
         if (!detailPager || !detailPagerList) return;
 
-        if (editing || totalPages <= 1) {
+        if (totalPages <= 1) {
             detailPager.classList.add('faculty-gs-hidden');
             detailPagerList.innerHTML = '';
             return;
@@ -220,9 +227,13 @@ document.addEventListener('DOMContentLoaded', function () {
             + '<button type="button" class="rtp-page-btn" aria-label="Next page" ' + (detailPage >= totalPages ? 'disabled' : '') + ' data-detail-next="1">&#x203A;</button>';
     }
 
-    function buildReadOnlyRows(students) {
+    function buildReadOnlyRows(students, canEdit) {
         var html = '';
         students.forEach(function (st, index) {
+            var editButton = canEdit
+                ? '<button type="button" class="fgs-row-edit-btn" data-student-id="' + escapeHtml(st.id) + '">Edit</button>'
+                : '<span class="text-muted">-</span>';
+
             html += '<tr>'
                 + '<td>' + (index + 1) + '</td>'
                 + '<td>' + escapeHtml(st.student_no || '-') + '</td>'
@@ -232,91 +243,115 @@ document.addEventListener('DOMContentLoaded', function () {
                 + '<td>' + escapeHtml(st.final || '') + '</td>'
                 + '<td>' + escapeHtml(st.final_average || '') + '</td>'
                 + '<td>' + escapeHtml(st.remarks || '') + '</td>'
+                + '<td class="fgs-col-action">' + editButton + '</td>'
                 + '</tr>';
         });
         return html;
     }
 
-    function buildEditableRows(students) {
-        var html = '';
-        students.forEach(function (st, index) {
-            html += '<tr>'
-                + '<td>' + (index + 1) + '</td>'
-                + '<td>' + escapeHtml(st.student_no || '-') + '</td>'
-                + '<td>' + escapeHtml(st.name || '') + '</td>'
-                + '<td><input type="number" min="1" max="5" step="0.01" class="grading-input" name="grades[' + st.id + '][prelim]" value="' + escapeHtml(st.prelim || '') + '"></td>'
-                + '<td><input type="number" min="1" max="5" step="0.01" class="grading-input" name="grades[' + st.id + '][midterm]" value="' + escapeHtml(st.midterm || '') + '"></td>'
-                + '<td><input type="number" min="1" max="5" step="0.01" class="grading-input" name="grades[' + st.id + '][final]" value="' + escapeHtml(st.final || '') + '"></td>'
-                + '<td><input type="text" class="grading-input grading-readonly" name="grades[' + st.id + '][final_average]" value="' + escapeHtml(st.final_average || '') + '" readonly></td>'
-                + '<td><input type="text" class="grading-input grading-readonly" name="grades[' + st.id + '][remarks]" value="' + escapeHtml(st.remarks || '') + '" readonly></td>'
-                + '</tr>';
-        });
-        return html;
-    }
-
-    function wireAutoCompute() {
-        var rows = detailBody.querySelectorAll('tr');
-        rows.forEach(function (row) {
-            var prelimEl = row.querySelector('input[name*="[prelim]"]');
-            var midtermEl = row.querySelector('input[name*="[midterm]"]');
-            var finalEl = row.querySelector('input[name*="[final]"]:not([name*="final_average"])');
-            var averageEl = row.querySelector('input[name*="[final_average]"]');
-            var remarksEl = row.querySelector('input[name*="[remarks]"]');
-
-            if (!prelimEl || !midtermEl || !finalEl || !averageEl || !remarksEl) {
-                return;
-            }
-
-            var recalc = function () {
-                computeRow(prelimEl, midtermEl, finalEl, averageEl, remarksEl);
-            };
-
-            prelimEl.addEventListener('input', recalc);
-            midtermEl.addEventListener('input', recalc);
-            finalEl.addEventListener('input', recalc);
-            recalc();
-        });
-    }
-
-    function renderDetail(subject, editing) {
+    function renderDetail(subject) {
         var students = getFilteredStudents((subject && subject.students) ? subject.students : []);
         var pageStudents = students;
         var total = students.length;
         var totalPages = Math.max(1, Math.ceil(total / detailPageSize));
+        var canEdit = String(subject.status || '').toLowerCase() !== 'submitted';
 
         if (detailPage > totalPages) {
             detailPage = totalPages;
         }
 
-        if (!editing) {
-            var start = (detailPage - 1) * detailPageSize;
-            pageStudents = students.slice(start, start + detailPageSize);
-        }
+        var start = (detailPage - 1) * detailPageSize;
+        pageStudents = students.slice(start, start + detailPageSize);
 
         if (!pageStudents.length) {
-            detailBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">No students found.</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-3">No students found.</td></tr>';
         } else {
-            detailBody.innerHTML = editing ? buildEditableRows(pageStudents) : buildReadOnlyRows(pageStudents);
+            detailBody.innerHTML = buildReadOnlyRows(pageStudents, canEdit);
         }
 
         detailTitle.textContent = subject.name || '';
         detailSection.textContent = subject.section || '';
         subjectIdInput.value = subject.id || '';
 
-        if (String(subject.status || '').toLowerCase() === 'submitted' && !editing) {
-            inputAction.classList.add('faculty-gs-hidden');
-        } else {
-            inputAction.classList.remove('faculty-gs-hidden');
+        renderDetailPager(totalPages);
+    }
+
+    function getStudentById(subject, studentId) {
+        var students = (subject && subject.students) ? subject.students : [];
+        for (var i = 0; i < students.length; i += 1) {
+            if (String(students[i].id) === String(studentId)) {
+                return students[i];
+            }
+        }
+        return null;
+    }
+
+    function closeRowEditModal() {
+        if (!rowEditModal) return;
+        rowEditModal.style.display = 'none';
+        rowEditModal.setAttribute('aria-hidden', 'true');
+        activeStudentId = null;
+    }
+
+    function openRowEditModal(studentId) {
+        if (!activeSubject || !rowEditModal) return;
+        var student = getStudentById(activeSubject, studentId);
+        if (!student) return;
+
+        activeStudentId = String(student.id);
+        if (rowEditStudent) {
+            rowEditStudent.textContent = String(student.student_no || '') + ' - ' + String(student.name || '');
+        }
+        if (rowEditMidterm) rowEditMidterm.value = student.midterm || '';
+        if (rowEditFinal) rowEditFinal.value = student.final || '';
+        if (rowEditRemarks) rowEditRemarks.value = student.remarks || '';
+
+        rowEditModal.style.display = 'flex';
+        rowEditModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function saveRowEdit() {
+        if (!activeSubject || !activeStudentId || !rowEditPayload) return;
+
+        var student = getStudentById(activeSubject, activeStudentId);
+        if (!student) return;
+
+        var midterm = rowEditMidterm ? rowEditMidterm.value.trim() : '';
+        var finalGrade = rowEditFinal ? rowEditFinal.value.trim() : '';
+        var remarks = rowEditRemarks ? rowEditRemarks.value.trim() : '';
+
+        var prelim = String(student.prelim || '').trim();
+        if (!midterm) {
+            midterm = String(student.midterm || '').trim();
+        }
+        if (!finalGrade) {
+            finalGrade = String(student.final || '').trim();
         }
 
-        if (editing) {
-            inputBtn.textContent = 'Update Grades';
-            wireAutoCompute();
-        } else {
-            inputBtn.textContent = 'Input Grades';
+        if (!prelim || !midterm || !finalGrade) {
+            alert('Missing grade values. Midterm and Final can be edited, but Prelim must already exist in the record.');
+            return;
         }
 
-        renderDetailPager(totalPages, editing);
+        var prelimNum = parseFloat(prelim);
+        var midtermNum = parseFloat(midterm);
+        var finalNum = parseFloat(finalGrade);
+        if (Number.isNaN(prelimNum) || Number.isNaN(midtermNum) || Number.isNaN(finalNum)
+            || prelimNum < 1 || prelimNum > 5
+            || midtermNum < 1 || midtermNum > 5
+            || finalNum < 1 || finalNum > 5) {
+            alert('Grades must be valid values from 1.00 to 5.00.');
+            return;
+        }
+
+        rowEditPayload.innerHTML = '';
+        rowEditPayload.innerHTML = ''
+            + '<input type="hidden" name="grades[' + activeStudentId + '][prelim]" value="' + escapeHtml(prelim) + '">'
+            + '<input type="hidden" name="grades[' + activeStudentId + '][midterm]" value="' + escapeHtml(midterm) + '">'
+            + '<input type="hidden" name="grades[' + activeStudentId + '][final]" value="' + escapeHtml(finalGrade) + '">'
+            + '<input type="hidden" name="grades[' + activeStudentId + '][remarks]" value="' + escapeHtml(remarks) + '">';
+
+        detailView.submit();
     }
 
     function openGradingDetail(subjectId) {
@@ -326,10 +361,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!subject) return;
 
         activeSubject = subject;
-        isEditing = false;
         detailPage = 1;
         if (detailSearch) detailSearch.value = '';
-        renderDetail(subject, false);
+        renderDetail(subject);
         subjectView.classList.add('faculty-gs-hidden');
         detailView.classList.remove('faculty-gs-hidden');
         setFilterMode(true);
@@ -383,19 +417,19 @@ document.addEventListener('DOMContentLoaded', function () {
         detailSearch.addEventListener('input', function () {
             if (!activeSubject) return;
             detailPage = 1;
-            renderDetail(activeSubject, isEditing);
+            renderDetail(activeSubject);
         });
     }
 
     if (detailPagerList) {
         detailPagerList.addEventListener('click', function (event) {
-            if (!activeSubject || isEditing) return;
+            if (!activeSubject) return;
 
             var prevBtn = event.target.closest('[data-detail-prev]');
             if (prevBtn) {
                 if (detailPage > 1) {
                     detailPage -= 1;
-                    renderDetail(activeSubject, false);
+                    renderDetail(activeSubject);
                 }
                 return;
             }
@@ -403,29 +437,34 @@ document.addEventListener('DOMContentLoaded', function () {
             var nextBtn = event.target.closest('[data-detail-next]');
             if (nextBtn) {
                 detailPage += 1;
-                renderDetail(activeSubject, false);
+                renderDetail(activeSubject);
                 return;
             }
 
             var pageBtn = event.target.closest('[data-detail-page]');
             if (pageBtn) {
                 detailPage = parseInt(pageBtn.getAttribute('data-detail-page'), 10) || 1;
-                renderDetail(activeSubject, false);
+                renderDetail(activeSubject);
             }
         });
     }
 
-    if (inputBtn) {
-        inputBtn.addEventListener('click', function () {
-            if (!activeSubject) return;
+    if (detailBody) {
+        detailBody.addEventListener('click', function (event) {
+            var editBtn = event.target.closest('.fgs-row-edit-btn');
+            if (!editBtn) return;
+            openRowEditModal(editBtn.getAttribute('data-student-id'));
+        });
+    }
 
-            if (!isEditing) {
-                isEditing = true;
-                renderDetail(activeSubject, true);
-                return;
+    if (rowEditClose) rowEditClose.addEventListener('click', closeRowEditModal);
+    if (rowEditCancel) rowEditCancel.addEventListener('click', closeRowEditModal);
+    if (rowEditSave) rowEditSave.addEventListener('click', saveRowEdit);
+    if (rowEditModal) {
+        rowEditModal.addEventListener('click', function (event) {
+            if (event.target === rowEditModal) {
+                closeRowEditModal();
             }
-
-            detailView.submit();
         });
     }
 

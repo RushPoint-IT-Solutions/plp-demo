@@ -128,6 +128,10 @@
             </table>
         </div>
 
+        <div class="so-subject-hint" style="padding:8px 12px; font-size:12px; color:#2f4f3e;">
+            Click a subject code or row to open the schedule editor modal.
+        </div>
+
         <div class="pf-pagination" id="soPageInfo">
             <span class="pf-page-info" id="soPageText">Showing 0 subjects</span>
         </div>
@@ -240,9 +244,132 @@
             </div>
         </div>
     </div>
+
+    {{-- Edit Subject Schedule Modal --}}
+    <div class="so-modal" id="soEditSubjectModal" aria-hidden="true">
+        <div class="so-modal-dialog so-edit-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="soEditSubjectTitle">
+            <div class="so-modal-header so-edit-modal-header">
+                <h3 class="so-modal-title" id="soEditSubjectTitle">CC103 - Computer Programming 2</h3>
+                <button type="button" class="so-modal-close" id="soCloseEditSubjectTop" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="so-modal-body">
+                <section class="so-edit-section so-edit-section-details">
+                    <div class="so-edit-section-title">Section Details</div>
+
+                    <div class="so-edit-warning" role="status">
+                        Some students are already enrolled to this section, changing the section is not allowed.
+                    </div>
+
+                    <div class="so-modal-grid so-edit-modal-grid">
+                        <div class="so-modal-field so-modal-col-8">
+                            <label for="soEditSectionCode">Section Code</label>
+                            <input id="soEditSectionCode" type="text" class="app-filter-input so-edit-readonly" disabled>
+                        </div>
+
+                        <div class="so-modal-field so-modal-col-4">
+                            <label for="soEditTotalSlots">Total Slots</label>
+                            <input id="soEditTotalSlots" type="number" class="app-filter-input so-edit-readonly so-edit-slots" value="30">
+                        </div>
+
+                        <div class="so-modal-field so-modal-col-12">
+                            <label for="soEditDescription">Description</label>
+                            <input id="soEditDescription" type="text" class="app-filter-input so-edit-readonly">
+                        </div>
+
+                        <div class="so-modal-field so-modal-col-12">
+                            <div class="so-edit-flags">
+                                <label for="soEditOpenSection" class="so-edit-check">
+                                    <input type="checkbox" class="req-checkbox-input" id="soEditOpenSection" checked>
+                                    <span>Open Section</span>
+                                </label>
+                                <label for="soEditBlockSection" class="so-edit-check">
+                                    <input type="checkbox" class="req-checkbox-input" id="soEditBlockSection">
+                                    <span>Block Section</span>
+                                </label>
+                                <label for="soEditTutorial" class="so-edit-check">
+                                    <input type="checkbox" class="req-checkbox-input" id="soEditTutorial">
+                                    <span>Tutorial</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="so-edit-section-schedule">
+                    <div class="so-edit-section-head">
+                        <div class="so-edit-section-title">Schedule Assignment</div>
+                        <button type="button" class="so-modal-btn so-modal-btn-primary" id="soSaveEditSubjectBtn">Save</button>
+                    </div>
+
+                    <div class="table-responsive so-edit-schedule-wrap">
+                    <table class="student-table registrar-table so-edit-schedule-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Day of the Week</th>
+                                <th colspan="2" class="so-edit-schedule-main-head">Schedule</th>
+                                <th rowspan="2">Room No.</th>
+                                <th rowspan="2">Lab</th>
+                            </tr>
+                            <tr class="so-edit-schedule-subhead-row">
+                                <th>From</th>
+                                <th>To</th>
+                            </tr>
+                        </thead>
+                        <tbody id="soEditScheduleBody">
+                            <tr>
+                                <td>
+                                    <div class="so-edit-day-cell">
+                                        <select id="soEditDay" class="app-filter-select">
+                                            <option>Monday</option>
+                                            <option>Tuesday</option>
+                                            <option>Wednesday</option>
+                                            <option>Thursday</option>
+                                            <option>Friday</option>
+                                            <option>Saturday</option>
+                                            <option>Sunday</option>
+                                        </select>
+                                        <input type="checkbox" id="soEditDayEnabled" class="req-checkbox-input" aria-label="Enable day row">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="so-edit-time-inline">
+                                        <select id="soEditFromHour" class="so-edit-time-select"><option>--</option><option>07</option><option>08</option></select>
+                                        <span>:</span>
+                                        <select id="soEditFromMinute" class="so-edit-time-select"><option>--</option><option>00</option><option>30</option></select>
+                                        <select id="soEditFromMeridiem" class="so-edit-time-select"><option>--</option><option>AM</option><option>PM</option></select>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="so-edit-time-inline">
+                                        <select id="soEditToHour" class="so-edit-time-select"><option>--</option><option>09</option><option>10</option></select>
+                                        <span>:</span>
+                                        <select id="soEditToMinute" class="so-edit-time-select"><option>--</option><option>00</option><option>30</option></select>
+                                        <select id="soEditToMeridiem" class="so-edit-time-select"><option>--</option><option>AM</option><option>PM</option></select>
+                                    </div>
+                                </td>
+                                <td>
+                                    <select id="soEditRoom" class="app-filter-select so-edit-room-select">
+                                        <option>-select room-</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="so-edit-lab-cell">
+                                        <input type="checkbox" id="soEditLab" class="req-checkbox-input" aria-label="Lab subject">
+                                        <button type="button" class="so-edit-add-row-btn" aria-label="Add schedule row"><i class="fa fa-plus-circle"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </section>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/section-offering.js') }}"></script>
+<script src="{{ asset('js/section-offering.js') }}?v={{ time() }}"></script>
 @endpush

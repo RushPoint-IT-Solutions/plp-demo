@@ -2,7 +2,7 @@
 
 @section('title', 'PLP - Deficiency')
 @section('page-title', 'DEFICIENCY')
-@section('body-class', 'page-services-grading-academic')
+@section('body-class', 'page-services-grading-academic page-deficiency')
 
 @section('content')
 @php

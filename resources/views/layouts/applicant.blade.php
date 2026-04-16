@@ -71,7 +71,7 @@
 
                 <div class="topbar-icons">
                     {{-- Help Center --}}
-                    <a href="{{ route('applicant.help.center') }}" class="topbar-icon-link {{ request()->routeIs('applicant.help.*') ? 'is-active' : '' }}" title="Help Center">
+                    <a href="{{ route('applicant.help.center') }}" class="topbar-icon-link topbar-help-icon {{ request()->routeIs('applicant.help.*') ? 'is-active' : '' }}" title="Help Center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 12a8 8 0 0 1 16 0"/>
                             <path d="M4 12v5a2 2 0 0 0 2 2h1"/>
@@ -103,8 +103,8 @@
                         @if(isset($applicant) && $applicant->photo)
                             <img src="{{ asset('storage/' . $applicant->photo) }}" alt="User Avatar" class="topbar-avatar">
                         @else
-                            <div class="topbar-avatar-placeholder">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <div class="topbar-avatar-placeholder topbar-avatar-placeholder--neutral">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>

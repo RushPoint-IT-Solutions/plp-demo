@@ -395,10 +395,16 @@ class AdminToolsController extends Controller
     // Access Management
     public function userAccounts()
     {
+        $hasEmailColumn = Schema::hasColumn('users', 'email');
+        $userColumns = ['id', 'username', 'name', 'module'];
+        if ($hasEmailColumn) {
+            $userColumns[] = 'email';
+        }
+
         $users = User::query()
             ->orderBy('name')
             ->orderBy('username')
-            ->get(['id', 'username', 'name', 'module']);
+            ->get($userColumns);
 
         $statusMap = collect();
         if (Schema::hasTable('user_account_statuses')) {
@@ -408,13 +414,14 @@ class AdminToolsController extends Controller
                 ->pluck('is_inactive', 'user_id');
         }
 
-        $accountUsers = $users->map(function ($user) use ($statusMap) {
+        $accountUsers = $users->map(function ($user) use ($statusMap, $hasEmailColumn) {
             $fullName = trim((string) ($user->name ?: $user->username));
             list($lastName, $firstName) = $this->splitUserName($fullName);
 
             return [
                 'pk' => $user->id,
                 'userId' => (string) $user->username,
+            'email' => $hasEmailColumn ? (string) ($user->email ?: '') : '',
                 'lastName' => $lastName,
                 'firstName' => $firstName,
                 'fullName' => $fullName,
