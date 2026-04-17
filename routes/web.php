@@ -38,7 +38,7 @@ Route::get('/home', 'HomeController@index')->name('home');
 | Student & Applicant also get their own login pages.
 */
 Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module.login')
-    ->where('module', 'registrar|accounting|cashier|faculty|student|applicant');
+    ->where('module', 'registrar|accounting|cashier|faculty|student|applicant|parent');
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +51,7 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
 Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
+Route::post('/login/parent', 'Admin\AdminController@parentLogin')->name('parent.login.submit')->middleware('throttle:20,1');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 
 /*
@@ -107,6 +108,19 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
     Route::get('/profile/edit', 'Student\StudentController@editProfile')->name('profile.edit');
     Route::post('/profile', 'Student\StudentController@updateProfile')->name('profile.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Parent Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'force_password_reset'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('parent.dashboard');
+    })->name('access-module');
+
+    Route::get('/dashboard', 'ParentModule\ParentController@dashboard')->name('dashboard');
 });
 
 /*

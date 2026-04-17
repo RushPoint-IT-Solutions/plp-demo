@@ -28,6 +28,8 @@ class RedirectIfAuthenticated
                         return redirect()->route('faculty.load');
                     case 'applicant':
                         return redirect()->route('applicant.application-form');
+                    case 'parent':
+                        return redirect()->route('parent.dashboard');
                     case 'student':
                     default:
                         return redirect()->route('student.grades');

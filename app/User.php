@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'username', 'email', 'password', 'module', 'force_password_reset', 'student_id', 'faculty_id', 'registrar_id', 'applicant_id',
+        'name', 'username', 'email', 'password', 'module', 'force_password_reset', 'student_id', 'faculty_id', 'registrar_id', 'applicant_id', 'parent_id',
     ];
 
     /**
@@ -55,6 +55,11 @@ class User extends Authenticatable
     public function applicant()
     {
         return $this->belongsTo(Applicant::class);
+    }
+
+    public function parentProfile()
+    {
+        return $this->belongsTo(ParentAccount::class, 'parent_id');
     }
 
     public function accountProfile()

@@ -56,6 +56,7 @@ class DatabaseSeeder extends Seeder
             HighVolumeFacultySeeder::class,
             StudentSeeder::class,
             StudentFirstLoginDemoSeeder::class,
+            ParentAuthSeeder::class,
             AcademicCalendarEventSeeder::class,
             GradeRuleSeeder::class,
             TransmutationRuleSeeder::class,
@@ -144,5 +145,6 @@ class DatabaseSeeder extends Seeder
         ]);
         
         $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student, first-reset student 2026A00001/PLP-2026A00001, applicant 2526B0177/PLP-2526B0177, applicant/applicant');
+        $this->command->info('Parent sample login: parent/parent (linked to PARENT-0001).');
     }
 }

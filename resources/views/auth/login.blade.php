@@ -8,16 +8,18 @@
         {{-- Module Title --}}
         <h2 class="login-card-title">{{ strtoupper($module) }} LOGIN</h2>
 
-        <form method="POST" action="{{ $module === 'student' ? route('student.login.submit') : ($module === 'applicant' ? route('applicant.login.submit') : (in_array($module, ['registrar', 'faculty']) ? route('module.login.submit') : route('demo.login'))) }}">
+        <form method="POST" action="{{ $module === 'student' ? route('student.login.submit') : ($module === 'applicant' ? route('applicant.login.submit') : ($module === 'parent' ? route('parent.login.submit') : (in_array($module, ['registrar', 'faculty']) ? route('module.login.submit') : route('demo.login'))) ) }}">
             @csrf
 
             {{-- Pass the module through so we redirect to the right pages --}}
             <input type="hidden" name="module" value="{{ $module }}">
 
-            {{-- Username / Student Number / Applicant Number --}}
+            {{-- Username / Student Number / Applicant Number / Parent Number --}}
             <div class="login-field-group">
                 @if($module === 'applicant')
                     <label for="username" class="login-label">APPLICANT NUMBER</label>
+                @elseif($module === 'parent')
+                    <label for="username" class="login-label">PARENT NUMBER / USERNAME</label>
                 @elseif($module === 'student')
                     <label for="username" class="login-label">STUDENT NUMBER / USERNAME</label>
                 @else
@@ -29,7 +31,7 @@
                     class="login-input{{ $errors->has('username') ? ' is-invalid' : '' }}"
                     name="username"
                     value="{{ old('username') }}"
-                    placeholder="{{ $module === 'applicant' ? 'Enter Applicant Number' : ($module === 'student' ? 'Enter Student Number or Username' : 'Enter Username') }}"
+                    placeholder="{{ $module === 'applicant' ? 'Enter Applicant Number' : ($module === 'student' ? 'Enter Student Number or Username' : ($module === 'parent' ? 'Enter Parent Number or Username' : 'Enter Username')) }}"
                     required
                     autofocus
                 >
