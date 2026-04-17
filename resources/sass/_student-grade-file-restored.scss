@@ -433,12 +433,12 @@
   margin-top: 8px;
   position: relative;
   min-height: 20px;
-  padding-left: 60px;
+  padding-left: 34px;
 }
 
 .page-student-grade-file .sgf-perm-course-label {
   position: absolute;
-  left: 60px;
+  left: 34px;
   top: 1px;
   font-size: 0.74rem;
   font-weight: 400;
@@ -465,7 +465,7 @@
 .page-student-grade-file .sgf-perm-personal-head {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
-  align-items: end;
+  align-items: flex-end;
   gap: 10px;
   margin-bottom: 4px;
 }

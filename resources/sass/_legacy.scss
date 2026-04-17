@@ -101,7 +101,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(180px, 230px) minmax(140px, 190px) auto;
   gap: 12px;
-  align-items: end;
+  align-items: flex-end;
   justify-content: start;
 }
 
@@ -5072,7 +5072,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(220px, 2.1fr) repeat(5, minmax(110px, 1fr));
   gap: 14px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-section-offering .so-filter-row .sched-filter-group {
@@ -6683,7 +6683,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(150px, 1.2fr) minmax(140px, 1fr) minmax(130px, 0.9fr) minmax(200px, 1.5fr) minmax(98px, 108px);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-toolbar-actions {
@@ -6782,7 +6782,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(120px, auto) minmax(140px, auto) minmax(220px, 1.25fr) minmax(120px, auto);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-item-program-type {
@@ -9962,7 +9962,7 @@ select.req-modal-input {
   display: grid;
   grid-template-columns: minmax(220px, 2.1fr) repeat(5, minmax(110px, 1fr));
   gap: 14px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-section-offering .so-filter-row .sched-filter-group,
@@ -9984,7 +9984,7 @@ select.req-modal-input {
   display: grid;
   grid-template-columns: 150px 130px 140px 210px minmax(220px, 1fr);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-slot-monitoring .sm-filter-row .sched-filter-group {
@@ -11257,7 +11257,7 @@ select.req-modal-input {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .adm-setting-field {
@@ -14264,7 +14264,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 .rfl-filters {
   display: flex;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
   margin: 16px 0 10px;
   flex-wrap: wrap;
 }
@@ -14845,7 +14845,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(360px, 1fr) auto;
   gap: 10px 14px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-faculty-loads .rfl-load-type-group {
@@ -15110,7 +15110,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(180px, 220px) minmax(160px, 200px) auto;
   gap: 14px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .smrg-config-field,
@@ -15438,7 +15438,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-alumni-tracker .at-config-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-alumni-tracker .at-btn-set {
@@ -15452,7 +15452,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(200px, 1.35fr) minmax(150px, 0.95fr) minmax(240px, 1.45fr) max-content;
   gap: 6px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-alumni-tracker .at-program-group {
@@ -15775,7 +15775,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(0, 220px) minmax(0, 220px);
   gap: 10px 14px;
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 10px;
 }
 
@@ -16306,7 +16306,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-student-discipline .sd-criteria-item {
@@ -17673,7 +17673,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-class-list .svc-config-inline-label {
@@ -17809,7 +17809,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-class-list .at-config-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-class-list .at-btn-set {
@@ -17831,7 +17831,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: repeat(5, minmax(130px, 1fr)) auto;
   gap: 10px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-attendance .svc-filter-item {
@@ -17852,7 +17852,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-attendance .svc-filter-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-attendance .svc-filter-action .pf-btn-new {
@@ -18581,12 +18581,12 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-grading-academic .ga-filter-grid-periods {
   grid-template-columns: repeat(5, minmax(120px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-grading-academic .ga-filter-grid-periods-lite {
   grid-template-columns: repeat(7, minmax(120px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-grading-academic .ga-filter-grid-periods .ga-filter-placeholder {
@@ -18641,7 +18641,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-grading-academic .ga-filter-grid-deficiency {
   grid-template-columns: 2.2fr repeat(3, minmax(140px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-grading-academic .ga-filter-search {
@@ -20879,7 +20879,7 @@ body.page-profile-edit .student-content {
 .page-student-grade-file .sgf-toolbar {
   display: grid;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-user-accounts .ua-filter-grid {
@@ -22309,7 +22309,7 @@ body.page-profile-edit .student-content {
 
 .page-faculty-file-config .ffc-grid-top {
   grid-template-columns: minmax(240px, 2.1fr) minmax(150px, 1fr) minmax(150px, 1fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-faculty-file-config .ffc-grid-top .app-filter-input,
@@ -22688,7 +22688,7 @@ body.page-profile-edit .student-content {
 .rfl-filters {
   display: flex;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
   margin: 16px 0 10px;
   flex-wrap: wrap;
 }
@@ -23012,7 +23012,7 @@ body.page-profile-edit .student-content {
 .registrar-body .page-student-profile .sp-toolbar,
 .registrar-body .page-student-grade-file .sgf-toolbar {
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .registrar-body .page-user-accounts .ua-filter-grid {
@@ -28842,7 +28842,7 @@ body.page-profile-edit .student-content {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(92px, 108px);
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-toolbar-actions {
@@ -28927,7 +28927,7 @@ body.page-profile-edit .student-content {
   display: grid;
   grid-template-columns: minmax(120px, auto) minmax(140px, auto) minmax(220px, 1.25fr) minmax(120px, auto);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-item-program-type {
@@ -30443,7 +30443,7 @@ body.page-profile-edit .student-content {
 }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: flex-end; }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
@@ -30530,7 +30530,7 @@ body.page-profile-edit .student-content {
 }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: flex-end; }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
