@@ -3,17 +3,26 @@
 namespace App\Http\Controllers\Portal;
 
 use App\AcademicCalendarEvent;
+use App\AcademicCalendarAudienceType;
 use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Http\Controllers\Controller;
+use App\ParentContactRequest;
+use App\ParentContactRequestChannel;
+use App\ParentContactRequestStatus;
+use App\ParentContactRequestTopic;
 use App\ParentStudentLink;
 use App\Student;
 use App\StudentDeficiency;
 use App\StudentGradeRecord;
+use App\StudentProfile;
 use App\StudentSubjectGrade;
 use App\SystemAnnouncement;
+use App\SystemReportDetailSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 class ParentController extends Controller
 {
@@ -478,11 +487,20 @@ class ParentController extends Controller
     public function calendar()
     {
         $calendarEvents = [];
+        $audienceCode = $this->parentCalendarAudienceCode();
 
         if (Schema::hasTable('academic_calendar_events')) {
+            $today = now()->toDateString();
+
             $calendarEvents = AcademicCalendarEvent::query()
                 ->where('is_active', true)
+                ->where(function ($query) use ($today) {
+                    $query->whereNull('post_until')
+                        ->orWhereDate('post_until', '>=', $today);
+                })
+                ->visibleToAudience($audienceCode)
                 ->orderBy('event_date')
+                ->orderBy('time_from')
                 ->get()
                 ->map(function ($event) {
                     return [
@@ -499,6 +517,19 @@ class ParentController extends Controller
         }
 
         return view('parent.calendar', compact('calendarEvents'));
+    }
+
+    private function parentCalendarAudienceCode()
+    {
+        if (!Schema::hasTable('academic_calendar_audience_types')) {
+            return 'student';
+        }
+
+        $hasParentAudience = AcademicCalendarAudienceType::query()
+            ->whereRaw('LOWER(code) = ?', ['parent'])
+            ->exists();
+
+        return $hasParentAudience ? 'parent' : 'student';
     }
 
     public function messaging()
@@ -651,50 +682,563 @@ class ParentController extends Controller
         ];
     }
 
-    public function studentProfile()
+    public function studentProfile(Request $request)
     {
         $currentStudent = $this->currentStudent();
         $children = $this->linkedChildren($currentStudent);
-        $selectedChildId = request('child');
+        $selectedChildId = $request->query('child');
         $selectedChild = $this->resolveSelectedChild($children, $selectedChildId);
 
         $student = null;
         if ($selectedChild && !empty($selectedChild['id'])) {
-            $student = Student::with('subjects')->find($selectedChild['id']);
+            $student = Student::with(['canonicalCourse', 'yearBlock', 'user', 'academicTerm'])->find($selectedChild['id']);
         }
 
         if (!$student && $currentStudent && (!$selectedChild || (string) ($selectedChild['id'] ?? '') === (string) $currentStudent->id)) {
             $student = $currentStudent;
         }
 
-        $nameParts = $this->splitNameParts($student ? $student->name : optional(Auth::user())->name);
-
-        if (trim($nameParts['first']) === '' && trim($nameParts['middle']) === '' && trim($nameParts['last']) === '') {
-            $nameParts = [
-                'first' => 'Emelie',
-                'middle' => 'Tamayo',
-                'last' => 'Garma',
-            ];
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'yearBlock', 'user', 'academicTerm']);
         }
+
+        if ($selectedChild && isset($selectedChild['id'])) {
+            $selectedChildId = (string) $selectedChild['id'];
+        } else {
+            $selectedChildId = null;
+        }
+
+        $studentFieldVisibility = [
+            'section' => Schema::hasColumn('students', 'section'),
+            'admission_status' => Schema::hasColumn('students', 'admission_status'),
+            'admission_year' => Schema::hasColumn('students', 'admission_year'),
+            'enrollment_status' => Schema::hasColumn('students', 'enrollment_status'),
+            'academic_status' => Schema::hasColumn('students', 'academic_status'),
+        ];
+
+        $profile = $this->findStudentProfileRecord($student);
+        $profileData = $this->buildStudentProfileData($student, $profile, Auth::user());
 
         return view('parent.student-profile', [
             'user' => Auth::user(),
             'student' => $student,
+            'profile' => $profile,
+            'profileData' => $profileData,
             'children' => $children,
-            'nameParts' => $nameParts,
             'selectedChild' => $selectedChild,
             'selectedChildId' => $selectedChildId,
+            'studentFieldVisibility' => $studentFieldVisibility,
         ]);
     }
 
-    public function contactUs()
+    public function contactUs(Request $request)
     {
-        return view('parent.contact-us');
+        $currentStudent = $this->currentStudent();
+        $children = $this->linkedChildren($currentStudent);
+        $selectedChild = $this->resolveSelectedChild($children, $request->query('child'));
+        $selectedChildId = $selectedChild && isset($selectedChild['id'])
+            ? (string) $selectedChild['id']
+            : '';
+
+        $topics = collect();
+        if (Schema::hasTable('parent_contact_request_topics')) {
+            $topics = ParentContactRequestTopic::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $channels = collect();
+        if (Schema::hasTable('parent_contact_request_channels')) {
+            $channels = ParentContactRequestChannel::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $recentRequests = collect();
+        $user = Auth::user();
+        if ($user && $user->parent_id && Schema::hasTable('parent_contact_requests')) {
+            $recentRequests = ParentContactRequest::query()
+                ->with([
+                    'topic:id,name',
+                    'status:id,name',
+                    'channel:id,name',
+                    'student:id,student_no,name',
+                ])
+                ->where('parent_id', $user->parent_id)
+                ->orderByDesc('created_at')
+                ->paginate(8);
+        }
+
+        $supportContacts = $this->supportContacts();
+
+        return view('parent.contact-us', [
+            'children' => $children,
+            'selectedChildId' => $selectedChildId,
+            'topics' => $topics,
+            'channels' => $channels,
+            'recentRequests' => $recentRequests,
+            'supportEmail' => $supportContacts['email'],
+            'supportEmailComposeUrl' => 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=' . rawurlencode((string) $supportContacts['email']),
+            'supportPhone' => $supportContacts['phone'],
+            'supportContactDetails' => $supportContacts['contact_details'],
+        ]);
     }
 
     public function changePassword()
     {
-        return view('parent.change-password');
+        return view('parent.change-password', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string', 'max:255'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:64',
+                'different:current_password',
+                'confirmed',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+            ],
+        ], [
+            'password.regex' => 'New password must include uppercase, lowercase, and numeric characters.',
+        ]);
+
+        if (!Hash::check($validated['current_password'], (string) $user->password)) {
+            return back()
+                ->withErrors(['current_password' => 'Current password is incorrect.'])
+                ->withInput($request->except(['current_password', 'password', 'password_confirmation']));
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->force_password_reset = false;
+        $user->save();
+
+        return redirect()->route('parent.change-password')
+            ->with('status', 'Password updated successfully.');
+    }
+
+    public function submitContactUs(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->parent_id) {
+            abort(403);
+        }
+
+        if (!Schema::hasTable('parent_contact_requests')
+            || !Schema::hasTable('parent_contact_request_topics')
+            || !Schema::hasTable('parent_contact_request_channels')
+            || !Schema::hasTable('parent_contact_request_statuses')) {
+            return redirect()->route('parent.contact-us')
+                ->withErrors(['contact' => 'Contact request setup is not available yet.']);
+        }
+
+        $activeTopicIds = ParentContactRequestTopic::query()
+            ->where('is_active', true)
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
+
+        $activeChannelIds = ParentContactRequestChannel::query()
+            ->where('is_active', true)
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
+
+        $validated = $request->validate([
+            'child' => ['nullable', 'integer'],
+            'topic_id' => ['required', 'integer', Rule::in($activeTopicIds)],
+            'channel_id' => ['required', 'integer', Rule::in($activeChannelIds)],
+            'subject' => ['required', 'string', 'max:190'],
+            'message' => ['required', 'string', 'max:4000'],
+        ]);
+
+        $children = $this->linkedChildren($this->currentStudent());
+        $allowedStudentIds = $children
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->filter(function ($id) {
+                return $id > 0;
+            })
+            ->values()
+            ->all();
+
+        $studentId = null;
+        if (!empty($validated['child'])) {
+            $candidateId = (int) $validated['child'];
+            if (!in_array($candidateId, $allowedStudentIds, true)) {
+                return redirect()->route('parent.contact-us')
+                    ->withErrors(['child' => 'Selected child is not linked to your account.'])
+                    ->withInput();
+            }
+
+            $studentId = $candidateId;
+        }
+
+        $statusId = ParentContactRequestStatus::query()->where('code', 'NEW')->value('id');
+        if (!$statusId) {
+            $statusId = ParentContactRequestStatus::query()->orderBy('sort_order')->value('id');
+        }
+
+        if (!$statusId) {
+            return redirect()->route('parent.contact-us')
+                ->withErrors(['contact' => 'Contact request status setup is missing.'])
+                ->withInput();
+        }
+
+        $referenceNo = $this->generateContactReferenceNo();
+        $parentProfile = $user->parentProfile;
+
+        ParentContactRequest::query()->create([
+            'reference_no' => $referenceNo,
+            'parent_id' => $user->parent_id,
+            'student_id' => $studentId,
+            'topic_id' => (int) $validated['topic_id'],
+            'status_id' => (int) $statusId,
+            'channel_id' => (int) $validated['channel_id'],
+            'submitted_by_user_id' => $user->id,
+            'subject' => trim((string) $validated['subject']),
+            'message' => trim((string) $validated['message']),
+            'contact_email_snapshot' => $this->nullableText($user->email ?: optional($parentProfile)->email),
+            'contact_mobile_snapshot' => $this->nullableText(optional($parentProfile)->mobile_number),
+            'submitted_at' => now(),
+        ]);
+
+        return redirect()->route('parent.contact-us')
+            ->with('status', 'Your inquiry was submitted successfully. Reference No: ' . $referenceNo);
+    }
+
+    private function findStudentProfileRecord($student)
+    {
+        if (!$student || !Schema::hasTable('student_profiles')) {
+            return null;
+        }
+
+        $studentId = (int) data_get($student, 'id');
+        $studentNo = trim((string) data_get($student, 'student_no'));
+
+        if ($studentId <= 0 && $studentNo === '') {
+            return null;
+        }
+
+        $relations = ['profileImage'];
+
+        if (Schema::hasTable('ph_regions')
+            && Schema::hasColumn('student_profiles', 'present_region_id')
+            && Schema::hasColumn('student_profiles', 'permanent_region_id')) {
+            $relations[] = 'presentRegion:id,region_name';
+            $relations[] = 'permanentRegion:id,region_name';
+        }
+
+        if (Schema::hasTable('ph_provinces')
+            && Schema::hasColumn('student_profiles', 'present_province_id')
+            && Schema::hasColumn('student_profiles', 'permanent_province_id')) {
+            $relations[] = 'presentProvince:id,province_name';
+            $relations[] = 'permanentProvince:id,province_name';
+        }
+
+        if (Schema::hasTable('ph_municipalities')
+            && Schema::hasColumn('student_profiles', 'present_municipality_id')
+            && Schema::hasColumn('student_profiles', 'permanent_municipality_id')) {
+            $relations[] = 'presentMunicipality:id,municipality_name';
+            $relations[] = 'permanentMunicipality:id,municipality_name';
+        }
+
+        $hasProfileCompleteColumn = Schema::hasColumn('student_profiles', 'profile_complete');
+
+        if ($studentNo !== '') {
+            $profileByStudentNoQuery = StudentProfile::query()
+                ->with($relations)
+                ->where('student_no', $studentNo);
+
+            if ($hasProfileCompleteColumn) {
+                $profileByStudentNoQuery->orderByDesc('profile_complete');
+            }
+
+            $profileByStudentNo = $profileByStudentNoQuery
+                ->orderByDesc('id')
+                ->first();
+
+            if ($profileByStudentNo) {
+                return $profileByStudentNo;
+            }
+        }
+
+        if ($studentId > 0) {
+            $profileByStudentIdQuery = StudentProfile::query()
+                ->with($relations)
+                ->where('student_id', $studentId);
+
+            if ($hasProfileCompleteColumn) {
+                $profileByStudentIdQuery->orderByDesc('profile_complete');
+            }
+
+            return $profileByStudentIdQuery
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        return null;
+    }
+
+    private function buildStudentProfileData($student, $profile, $user)
+    {
+        $studentNo = trim((string) data_get($student, 'student_no'));
+        $studentName = trim((string) data_get($student, 'name'));
+
+        if ($studentName === '') {
+            $studentName = trim(implode(' ', array_filter([
+                trim((string) data_get($profile, 'first_name')),
+                trim((string) data_get($profile, 'middle_name')),
+                trim((string) data_get($profile, 'last_name')),
+                trim((string) data_get($profile, 'suffix')),
+            ])));
+        }
+
+        $presentRegion = trim((string) optional(data_get($profile, 'presentRegion'))->region_name);
+        if ($presentRegion === '') {
+            $presentRegion = trim((string) data_get($profile, 'present_region'));
+        }
+
+        $presentProvince = trim((string) optional(data_get($profile, 'presentProvince'))->province_name);
+        if ($presentProvince === '') {
+            $presentProvince = trim((string) data_get($profile, 'present_province'));
+        }
+
+        $presentMunicipality = trim((string) optional(data_get($profile, 'presentMunicipality'))->municipality_name);
+        if ($presentMunicipality === '') {
+            $presentMunicipality = trim((string) data_get($profile, 'present_municipality'));
+        }
+
+        $permanentRegion = trim((string) optional(data_get($profile, 'permanentRegion'))->region_name);
+        if ($permanentRegion === '') {
+            $permanentRegion = trim((string) data_get($profile, 'permanent_region'));
+        }
+
+        $permanentProvince = trim((string) optional(data_get($profile, 'permanentProvince'))->province_name);
+        if ($permanentProvince === '') {
+            $permanentProvince = trim((string) data_get($profile, 'permanent_province'));
+        }
+
+        $permanentMunicipality = trim((string) optional(data_get($profile, 'permanentMunicipality'))->municipality_name);
+        if ($permanentMunicipality === '') {
+            $permanentMunicipality = trim((string) data_get($profile, 'permanent_municipality'));
+        }
+
+        $presentAddress = $this->formatAddressLine([
+            trim((string) data_get($profile, 'present_street')),
+            trim((string) data_get($profile, 'present_barangay')),
+            $presentMunicipality,
+            $presentProvince,
+            $presentRegion,
+            trim((string) data_get($profile, 'present_zipcode')),
+        ]);
+
+        $permanentAddress = $this->formatAddressLine([
+            trim((string) data_get($profile, 'permanent_street')),
+            trim((string) data_get($profile, 'permanent_barangay')),
+            $permanentMunicipality,
+            $permanentProvince,
+            $permanentRegion,
+            trim((string) data_get($profile, 'permanent_zipcode')),
+        ]);
+
+        $programCode = trim((string) data_get($student, 'program'));
+        $programName = trim((string) optional(data_get($student, 'canonicalCourse'))->name);
+        $program = $programCode;
+        if ($program === '') {
+            $program = $programName;
+        } elseif ($programName !== '' && strcasecmp($programCode, $programName) !== 0) {
+            $program = $programCode . ' - ' . $programName;
+        }
+
+        $yearLevel = trim((string) data_get($student, 'year_level'));
+        if ($yearLevel === '') {
+            $yearLevel = trim((string) optional(data_get($student, 'yearBlock'))->label);
+        }
+
+        $dateOfBirth = '';
+        if ($profile && $profile->date_of_birth) {
+            $dateOfBirth = $profile->date_of_birth->format('F d, Y');
+        }
+
+        $studentUserEmail = trim((string) data_get($student, 'user.email'));
+
+        return [
+            'student_no' => $this->displayText($studentNo),
+            'student_name' => $this->displayText($studentName),
+            'contact_no' => $this->displayText(
+                trim((string) data_get($profile, 'mobile_number')) !== ''
+                    ? data_get($profile, 'mobile_number')
+                    : data_get($student, 'contact_no')
+            ),
+            'email' => $this->displayText(
+                trim((string) data_get($profile, 'student_email')) !== ''
+                    ? data_get($profile, 'student_email')
+                    : ($studentUserEmail !== ''
+                        ? $studentUserEmail
+                        : (data_get($student, 'email') ?: optional($user)->email))
+            ),
+            'residential_address' => $this->displayText($presentAddress),
+            'present_region' => $this->displayText($presentRegion),
+            'present_province' => $this->displayText($presentProvince),
+            'present_municipality' => $this->displayText($presentMunicipality),
+            'permanent_address' => $this->displayText($permanentAddress),
+            'date_of_birth' => $this->displayText($dateOfBirth),
+            'place_of_birth' => $this->displayText(data_get($profile, 'place_of_birth')),
+            'gender' => $this->displayText(
+                trim((string) data_get($profile, 'gender')) !== ''
+                    ? data_get($profile, 'gender')
+                    : data_get($student, 'sex')
+            ),
+            'religion' => $this->displayText(data_get($profile, 'religion')),
+            'citizenship' => $this->displayText(data_get($profile, 'nationality')),
+            'civil_status' => $this->displayText(data_get($profile, 'civil_status')),
+            'program' => $this->displayText($program),
+            'year_level' => $this->displayText($yearLevel),
+            'section' => $this->displayText(data_get($student, 'section')),
+            'curriculum_year' => $this->displayText(data_get($student, 'curriculum')),
+            'admission_status' => $this->displayText(data_get($student, 'admission_status')),
+            'admission_year' => $this->displayText(data_get($student, 'admission_year')),
+            'enrollment_status' => $this->displayText(data_get($student, 'enrollment_status')),
+            'academic_status' => $this->displayText(data_get($student, 'academic_status')),
+            'photo_url' => $this->resolveProfilePhotoUrl($profile),
+        ];
+    }
+
+    private function resolveProfilePhotoUrl($profile)
+    {
+        if (!$profile) {
+            return null;
+        }
+
+        $profilePhotoPath = trim((string) data_get($profile, 'profile_photo_path'));
+        if ($profilePhotoPath !== '') {
+            return asset('storage/' . ltrim($profilePhotoPath, '/'));
+        }
+
+        $profileImage = data_get($profile, 'profileImage');
+        $storagePath = trim((string) data_get($profileImage, 'storage_path'));
+        if ($storagePath === '') {
+            return null;
+        }
+
+        return asset('storage/' . ltrim($storagePath, '/'));
+    }
+
+    private function formatAddressLine(array $segments)
+    {
+        $values = [];
+        foreach ($segments as $segment) {
+            $text = trim((string) $segment);
+            if ($text === '') {
+                continue;
+            }
+
+            $values[] = $text;
+        }
+
+        if (count($values) === 0) {
+            return null;
+        }
+
+        return implode(', ', $values);
+    }
+
+    private function displayText($value)
+    {
+        $text = trim((string) $value);
+        return $text === '' ? 'N/A' : $text;
+    }
+
+    private function nullableText($value)
+    {
+        $text = trim((string) $value);
+        return $text === '' ? null : $text;
+    }
+
+    private function supportContacts()
+    {
+        $contactDetails = null;
+
+        if (Schema::hasTable('system_report_detail_settings')) {
+            $settingsRow = SystemReportDetailSetting::query()
+                ->where('is_active', true)
+                ->orderByDesc('id')
+                ->first();
+
+            if (!$settingsRow) {
+                $settingsRow = SystemReportDetailSetting::query()
+                    ->orderByDesc('id')
+                    ->first();
+            }
+
+            $contactDetails = $settingsRow ? trim((string) $settingsRow->contact_details) : null;
+        }
+
+        $supportEmail = 'registrar@plpasig.edu.ph';
+        $supportPhone = '+63 2 8628 1014';
+
+        $sourceText = trim((string) $contactDetails);
+        if ($sourceText !== '') {
+            $emailProbe = preg_replace('/(?i)(bcc:|cc:|to:)/', ' ', $sourceText);
+            $emailCandidates = preg_split('/[\s,;]+/', (string) $emailProbe);
+
+            foreach ((array) $emailCandidates as $candidate) {
+                $token = trim((string) $candidate, "\t\n\r\0\x0B<>()[]{}\"'");
+                if ($token === '') {
+                    continue;
+                }
+
+                if (filter_var($token, FILTER_VALIDATE_EMAIL)) {
+                    $supportEmail = strtolower($token);
+                    break;
+                }
+            }
+
+            if (preg_match('/(\+?[0-9][0-9\-\s\(\)]{6,}[0-9])/', $sourceText, $phoneMatches)) {
+                $supportPhone = trim((string) $phoneMatches[1]);
+            }
+        }
+
+        return [
+            'email' => $supportEmail,
+            'phone' => $supportPhone,
+            'contact_details' => $this->nullableText($contactDetails),
+        ];
+    }
+
+    private function generateContactReferenceNo()
+    {
+        do {
+            $token = strtoupper(substr(md5(uniqid((string) mt_rand(1000, 9999), true)), 0, 6));
+            $referenceNo = 'PCR-' . now()->format('YmdHis') . '-' . $token;
+        } while (ParentContactRequest::query()->where('reference_no', $referenceNo)->exists());
+
+        return $referenceNo;
     }
 
     public function profile()

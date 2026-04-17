@@ -17,9 +17,11 @@ class StudentProfile extends Model
 
         'present_street', 'present_barangay', 'present_zipcode',
         'present_municipality', 'present_province', 'present_region',
+        'present_region_id', 'present_province_id', 'present_municipality_id',
         'present_location_address_id',
         'permanent_street', 'permanent_barangay', 'permanent_zipcode',
         'permanent_municipality', 'permanent_province', 'permanent_region',
+        'permanent_region_id', 'permanent_province_id', 'permanent_municipality_id',
         'permanent_location_address_id',
         'same_as_present', 'is_orphan', 'is_first_gen', 'is_4ps',
         'has_disability', 'is_foreign',
@@ -44,6 +46,12 @@ class StudentProfile extends Model
 
     protected $casts = [
         'date_of_birth'    => 'date',
+        'present_region_id' => 'integer',
+        'present_province_id' => 'integer',
+        'present_municipality_id' => 'integer',
+        'permanent_region_id' => 'integer',
+        'permanent_province_id' => 'integer',
+        'permanent_municipality_id' => 'integer',
         'same_as_present'  => 'boolean',
         'is_orphan'        => 'boolean',
         'is_first_gen'     => 'boolean',
@@ -59,6 +67,41 @@ class StudentProfile extends Model
     public function profileImage()
     {
         return $this->hasOne(StudentProfileImage::class);
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    public function presentRegion()
+    {
+        return $this->belongsTo(PhRegion::class, 'present_region_id');
+    }
+
+    public function presentProvince()
+    {
+        return $this->belongsTo(PhProvince::class, 'present_province_id');
+    }
+
+    public function presentMunicipality()
+    {
+        return $this->belongsTo(PhMunicipality::class, 'present_municipality_id');
+    }
+
+    public function permanentRegion()
+    {
+        return $this->belongsTo(PhRegion::class, 'permanent_region_id');
+    }
+
+    public function permanentProvince()
+    {
+        return $this->belongsTo(PhProvince::class, 'permanent_province_id');
+    }
+
+    public function permanentMunicipality()
+    {
+        return $this->belongsTo(PhMunicipality::class, 'permanent_municipality_id');
     }
 
     public function optionValues()

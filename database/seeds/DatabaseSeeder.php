@@ -67,6 +67,7 @@ class DatabaseSeeder extends Seeder
             CourseCurriculumSubjectMatrixSeeder::class,
             FacultySeeder::class,
             StudentDemoDataSeeder::class,
+            StudentProfileBackfillSeeder::class,
             C3TrashDataSeeder::class,
             SlotMonitoringReportSeeder::class,
             RegistrarRequirement3nfSeeder::class,

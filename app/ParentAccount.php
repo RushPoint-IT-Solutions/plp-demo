@@ -34,6 +34,11 @@ class ParentAccount extends Model
         return $this->hasMany(ParentStudentLink::class, 'parent_id');
     }
 
+    public function contactRequests()
+    {
+        return $this->hasMany(ParentContactRequest::class, 'parent_id');
+    }
+
     public function students()
     {
         return $this->belongsToMany(Student::class, 'parent_student_links', 'parent_id', 'student_id')

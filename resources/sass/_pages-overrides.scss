@@ -1114,6 +1114,18 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
         margin-bottom: 14px;
     }
 
+    .parent-student-profile-child-wrap {
+        max-width: 100%;
+
+        .applicant-select-trigger {
+            min-height: 38px;
+        }
+
+        .applicant-select-menu {
+            max-height: 240px;
+        }
+    }
+
     .parent-student-top-wrap {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 148px;
@@ -1254,6 +1266,15 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     .parent-student-profile-icon {
         line-height: 0;
         color: #a1a8a4;
+    }
+
+    .parent-student-profile-photo {
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #c8d3cc;
+        background: #ffffff;
     }
 
     .parent-student-field--sm {
@@ -1509,6 +1530,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     font-weight: 800;
     color: #111417;
     line-height: 1.1;
+    word-break: break-word;
 
     a {
         color: #2675dc;
@@ -1561,6 +1583,207 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     li {
         font-size: 1rem;
         line-height: 1.42;
+    }
+}
+
+.parent-contact-alert {
+    margin-bottom: 12px;
+    border-radius: 10px;
+}
+
+.parent-contact-form-shell,
+.parent-contact-history-shell {
+    border-radius: 14px;
+    border: 1px solid #d3dfd8;
+    background: #ffffff;
+    box-shadow: 0 10px 20px rgba(18, 39, 28, 0.07);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.parent-contact-section-title {
+    margin: 0 0 12px;
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1a6b43;
+}
+
+.parent-contact-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.parent-contact-field {
+    .app-filter-label {
+        margin-bottom: 6px;
+        display: inline-block;
+    }
+}
+
+.parent-contact-field--full {
+    grid-column: span 3;
+}
+
+.parent-contact-select-wrap {
+    .applicant-select-trigger {
+        min-height: 38px;
+    }
+
+    .applicant-select-menu {
+        max-height: 240px;
+    }
+}
+
+.parent-contact-textarea {
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid #cfd8d1;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.86rem;
+    color: #29322d;
+    background: #ffffff;
+
+    &:focus {
+        outline: none;
+        border-color: #9bc9b0;
+        box-shadow: 0 0 0 3px rgba(16, 110, 68, 0.12);
+    }
+}
+
+.parent-contact-error {
+    margin: 6px 0 0;
+    color: #c52f2f;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.parent-contact-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.parent-contact-history-table {
+    min-width: 900px;
+
+    .sched-th,
+    .sched-td {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    .sched-th {
+        background: #006837;
+        color: #ffffff;
+    }
+}
+
+.parent-contact-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 82px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #e9f4ee;
+    color: #1f6f49;
+}
+
+.parent-contact-status-new,
+.parent-contact-status-in-review {
+    background: #fff4e2;
+    color: #8a5a00;
+}
+
+.parent-contact-status-resolved,
+.parent-contact-status-closed {
+    background: #e8f4ec;
+    color: #1f6f49;
+}
+
+.parent-contact-pagination {
+    margin-top: 12px;
+}
+
+.parent-password-page {
+    display: flex;
+    justify-content: center;
+    padding: 18px 0 24px;
+}
+
+.parent-password-card {
+    width: min(520px, 100%);
+    border: 1px solid #d5ddd8;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 14px 28px rgba(14, 41, 28, 0.09);
+    padding: 18px;
+}
+
+.parent-password-head {
+    margin-bottom: 12px;
+
+    h2 {
+        margin: 0;
+        font-size: 1.24rem;
+        font-weight: 800;
+        color: #173524;
+    }
+
+    p {
+        margin: 6px 0 0;
+        color: #3b6a50;
+        font-size: 0.86rem;
+        font-weight: 600;
+    }
+}
+
+.parent-password-form {
+    display: grid;
+    gap: 12px;
+}
+
+.parent-password-field {
+    label {
+        display: inline-block;
+        margin-bottom: 6px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #1c6f47;
+    }
+}
+
+.parent-password-hint {
+    margin: 6px 0 0;
+    font-size: 0.76rem;
+    color: #51655a;
+}
+
+.parent-password-error {
+    margin: 6px 0 0;
+    color: #c52f2f;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.parent-password-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+
+    .req-btn-cancel {
+        text-decoration: none;
     }
 }
 
@@ -1810,6 +2033,22 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
         height: 96px;
     }
 
+    .parent-contact-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .parent-contact-field--full {
+        grid-column: span 2;
+    }
+
+    .parent-contact-history-table {
+        min-width: 760px;
+    }
+
+    .parent-password-card {
+        max-width: 100%;
+    }
+
     .parent-portal-body .plp-sidebar {
         position: fixed;
         top: 0;
@@ -1965,6 +2204,32 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
         li {
             font-size: 0.88rem;
         }
+    }
+
+    .parent-contact-form-shell,
+    .parent-contact-history-shell {
+        padding: 12px;
+    }
+
+    .parent-contact-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .parent-contact-field--full {
+        grid-column: auto;
+    }
+
+    .parent-password-page {
+        padding-top: 8px;
+    }
+
+    .parent-password-card {
+        padding: 12px;
+    }
+
+    .parent-password-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
     }
 }
 

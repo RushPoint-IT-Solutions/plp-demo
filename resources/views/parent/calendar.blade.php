@@ -4,7 +4,7 @@
 @section('page-title', 'UNIVERSITY EVENTS CALENDAR')
 
 @section('content')
-<div class="events-page">
+<div class="events-page parent-calendar-page" id="parentCalendarPage" data-calendar-events='@json($calendarEvents ?? [])'>
 
     <div class="cal-controls">
         <div class="cal-nav">
@@ -49,9 +49,6 @@
 </div>
 
 @push('scripts')
-<script>
-    window.calendarEventsData = @json($calendarEvents ?? []);
-</script>
-<script src="{{ asset('js/student-events.js') }}"></script>
+<script src="{{ mix('js/parent-calendar-events.js') }}"></script>
 @endpush
 @endsection

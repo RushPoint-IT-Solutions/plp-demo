@@ -135,7 +135,9 @@ Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'fo
     Route::get('/student-profile', 'Portal\ParentController@studentProfile')->name('student-profile');
     Route::get('/calendar', 'Portal\ParentController@calendar')->name('calendar');
     Route::get('/contact-us', 'Portal\ParentController@contactUs')->name('contact-us');
+    Route::post('/contact-us', 'Portal\ParentController@submitContactUs')->name('contact-us.submit')->middleware('throttle:20,1');
     Route::get('/change-password', 'Portal\ParentController@changePassword')->name('change-password');
+    Route::post('/change-password', 'Portal\ParentController@updatePassword')->name('change-password.update')->middleware('throttle:10,1');
     Route::get('/messaging', 'Portal\ParentController@messaging')->name('messaging');
     Route::get('/notifications/feed', 'Portal\ParentController@notificationsFeed')->name('notifications.feed');
     Route::post('/notifications/mark-read', 'Portal\ParentController@markNotificationsRead')->name('notifications.mark-read');
