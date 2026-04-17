@@ -7,6 +7,16 @@
         font-family: 'Arial Narrow', Arial, sans-serif;
         font-size: 8pt;
         line-height: 1.2;
+
+        /* COR is a print form; hide any globally injected pagination controls. */
+        .pagination,
+        .rtp-pagination,
+        .pf-pagination,
+        .app-table-pager,
+        .page-link,
+        .page-item {
+            display: none !important;
+        }
     }
 
     .cor-registrar-toolbar {
@@ -520,6 +530,15 @@
     }
 
     .cor-registrar-toolbar {
+        display: none !important;
+    }
+
+    .registrar-body .cor-registrar-page .pagination,
+    .registrar-body .cor-registrar-page .rtp-pagination,
+    .registrar-body .cor-registrar-page .pf-pagination,
+    .registrar-body .cor-registrar-page .app-table-pager,
+    .registrar-body .cor-registrar-page .page-link,
+    .registrar-body .cor-registrar-page .page-item {
         display: none !important;
     }
 

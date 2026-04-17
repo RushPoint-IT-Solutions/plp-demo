@@ -44,7 +44,7 @@
 
 	<div class="parent-linked-children-box">
 		<div class="parent-linked-children-head">
-			<button type="button" class="parent-link-child-btn" data-bs-toggle="modal" data-bs-target="#parentLinkChildModal">
+			<button type="button" class="req-btn-save parent-link-child-btn" data-bs-toggle="modal" data-bs-target="#parentLinkChildModal">
 				Link another child
 			</button>
 		</div>
@@ -81,24 +81,24 @@
 <div class="modal fade" id="parentLinkChildModal" tabindex="-1" aria-labelledby="parentLinkChildModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content parent-link-modal">
-			<div class="modal-header">
+			<div class="modal-header parent-link-modal-head">
 				<h5 class="modal-title" id="parentLinkChildModalLabel">Link Another Child</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
-			<div class="modal-body">
+			<div class="modal-body parent-link-modal-body">
 				<p class="parent-empty-note">This is a frontend preview only. Backend linking will be added later.</p>
 				<div class="mb-3">
-					<label class="form-label-plp" for="childStudentNo">Student Number</label>
-					<input id="childStudentNo" type="text" class="form-control" placeholder="Enter student number">
+					<label class="req-modal-label" for="childStudentNo">Student Number</label>
+					<input id="childStudentNo" type="text" class="req-modal-input" placeholder="Enter student number">
 				</div>
 				<div class="mb-0">
-					<label class="form-label-plp" for="childBirthDate">Birthdate</label>
-					<input id="childBirthDate" type="date" class="form-control">
+					<label class="req-modal-label" for="childBirthDate">Birthdate</label>
+					<input id="childBirthDate" type="date" class="req-modal-input">
 				</div>
 			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-				<button type="button" class="btn btn-success" data-bs-dismiss="modal">Link Child</button>
+			<div class="modal-footer parent-link-modal-actions">
+				<button type="button" class="req-btn-cancel" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="req-btn-save" data-bs-dismiss="modal">Link Child</button>
 			</div>
 		</div>
 	</div>

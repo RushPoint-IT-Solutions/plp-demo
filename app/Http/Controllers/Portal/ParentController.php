@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Portal;
 use App\AcademicCalendarEvent;
 use App\Http\Controllers\Controller;
 use App\Student;
+use App\StudentDeficiency;
 use App\StudentSubjectGrade;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -61,21 +62,21 @@ class ParentController extends Controller
     {
         return collect([
             [
-                'id' => 1,
-                'student_no' => '232418456',
-                'name' => 'Aleya Mae T. Garma',
-                'course' => 'BSMT',
-                'year_level' => '3',
-                'birthdate' => 'July 28, 2004',
-                'status' => 'Linked',
-            ],
-            [
                 'id' => 2,
                 'student_no' => '232418412',
                 'name' => 'Julius T. Garma',
                 'course' => 'BSMT',
                 'year_level' => '3',
                 'birthdate' => 'February 5, 2001',
+                'status' => 'Linked',
+            ],
+            [
+                'id' => 1,
+                'student_no' => '232418456',
+                'name' => 'Aleya Mae T. Garma',
+                'course' => 'BSMT',
+                'year_level' => '3',
+                'birthdate' => 'July 28, 2004',
                 'status' => 'Linked',
             ],
         ]);
@@ -168,10 +169,49 @@ class ParentController extends Controller
         ];
     }
 
+    private function resolveSelectedChild($children, $selectedChildId)
+    {
+        if (!$children || $children->isEmpty()) {
+            return null;
+        }
+
+        if ($selectedChildId === null || $selectedChildId === '') {
+            $default = $children->first(function ($child) {
+                $name = strtolower(trim((string) ($child['name'] ?? '')));
+                return strpos($name, 'julius') !== false;
+            });
+
+            return $default ?: $children->first();
+        }
+
+        $matched = $children->first(function ($child) use ($selectedChildId) {
+            return (string) ($child['id'] ?? '') === (string) $selectedChildId;
+        });
+
+        return $matched ?: $children->first();
+    }
+
+    private function shouldUseSampleDeficiency($selectedChild)
+    {
+        $name = strtolower(trim((string) data_get($selectedChild, 'name')));
+        return $name !== '' && strpos($name, 'aleya') !== false;
+    }
+
     public function grades()
     {
-        $student = $this->currentStudent();
-        $children = $this->linkedChildren($student);
+        $currentStudent = $this->currentStudent();
+        $children = $this->linkedChildren($currentStudent);
+        $selectedChildId = request('child');
+        $selectedChild = $this->resolveSelectedChild($children, $selectedChildId);
+
+        $student = null;
+        if ($selectedChild && !empty($selectedChild['id'])) {
+            $student = Student::with('subjects')->find($selectedChild['id']);
+        }
+
+        if (!$student && $currentStudent && (!$selectedChild || (string) ($selectedChild['id'] ?? '') === (string) $currentStudent->id)) {
+            $student = $currentStudent;
+        }
 
         $gradeRows = collect();
         if ($student) {
@@ -179,6 +219,37 @@ class ParentController extends Controller
                 ->where('student_id', $student->id)
                 ->get();
         }
+
+        $deficiencyItems = collect();
+        if ($student) {
+            $deficiencyItems = StudentDeficiency::query()
+                ->where('student_id', $student->id)
+                ->where(function ($query) {
+                    $query->whereNull('is_completed')
+                        ->orWhere('is_completed', false);
+                })
+                ->orderByDesc('id')
+                ->get()
+                ->map(function ($item) {
+                    $department = trim((string) $item->department);
+                    $remarks = trim((string) $item->remarks);
+
+                    if ($department !== '' && $remarks !== '') {
+                        return $department . ' - ' . $remarks;
+                    }
+
+                    return $remarks !== '' ? $remarks : ($department !== '' ? $department : 'Unsettled deficiency');
+                });
+        }
+
+        if ($deficiencyItems->isEmpty() && $this->shouldUseSampleDeficiency($selectedChild)) {
+            $deficiencyItems = collect([
+                'Registrar - Pending Grades in Laboratory Class',
+                'Unreturned library book: Maritime Safety Vol. 2',
+            ]);
+        }
+
+        $hasDeficiencies = $deficiencyItems->isNotEmpty();
 
         $semesterOptions = $gradeRows
             ->map(function ($row) {
@@ -230,7 +301,11 @@ class ParentController extends Controller
             'gradeRows',
             'semesterOptions',
             'selectedSemester',
-            'termSections'
+            'termSections',
+            'selectedChildId',
+            'selectedChild',
+            'hasDeficiencies',
+            'deficiencyItems'
         ));
     }
 
@@ -412,8 +487,20 @@ class ParentController extends Controller
 
     public function studentProfile()
     {
-        $student = $this->currentStudent();
-        $children = $this->linkedChildren($student);
+        $currentStudent = $this->currentStudent();
+        $children = $this->linkedChildren($currentStudent);
+        $selectedChildId = request('child');
+        $selectedChild = $this->resolveSelectedChild($children, $selectedChildId);
+
+        $student = null;
+        if ($selectedChild && !empty($selectedChild['id'])) {
+            $student = Student::with('subjects')->find($selectedChild['id']);
+        }
+
+        if (!$student && $currentStudent && (!$selectedChild || (string) ($selectedChild['id'] ?? '') === (string) $currentStudent->id)) {
+            $student = $currentStudent;
+        }
+
         $nameParts = $this->splitNameParts($student ? $student->name : optional(Auth::user())->name);
 
         if (trim($nameParts['first']) === '' && trim($nameParts['middle']) === '' && trim($nameParts['last']) === '') {
@@ -429,6 +516,8 @@ class ParentController extends Controller
             'student' => $student,
             'children' => $children,
             'nameParts' => $nameParts,
+            'selectedChild' => $selectedChild,
+            'selectedChildId' => $selectedChildId,
         ]);
     }
 

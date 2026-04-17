@@ -738,7 +738,7 @@ $loae-border-color: #000;
     /* Ensure staff grid boxes align signature blocks to the bottom */
     .loae-grid--staff {
         /* align grid items to end so boxes sit at the bottom of the row */
-        align-items: end;
+        align-items: flex-end;
 
         /* Make each staff box a column flex container so inner elements can use margin-top:auto */
         > .loae-box {
@@ -1119,7 +1119,7 @@ $loae-border-color: #000;
 
     /* Ensure staff grid boxes behave as flex columns in print and push signature lines to bottom */
     .registrar-body .loae-grid--staff {
-        align-items: end !important;
+        align-items: flex-end !important;
     }
 
     .registrar-body .loae-grid--staff > .loae-box {

@@ -152,7 +152,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(180px, 230px) minmax(140px, 190px) auto;
   gap: 12px;
-  align-items: end;
+  align-items: flex-end;
   justify-content: start;
 }
 
@@ -5146,7 +5146,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(220px, 2.1fr) repeat(5, minmax(110px, 1fr));
   gap: 14px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-section-offering .so-filter-row .sched-filter-group {
@@ -6783,7 +6783,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(150px, 1.2fr) minmax(140px, 1fr) minmax(130px, 0.9fr) minmax(200px, 1.5fr) minmax(98px, 108px);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-toolbar-actions {
@@ -6881,7 +6881,7 @@ select:hover {
   display: grid;
   grid-template-columns: minmax(120px, auto) minmax(140px, auto) minmax(220px, 1.25fr) minmax(120px, auto);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-item-program-type {
@@ -10074,7 +10074,7 @@ select.req-modal-input {
   display: grid;
   grid-template-columns: minmax(220px, 2.1fr) repeat(5, minmax(110px, 1fr));
   gap: 14px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-section-offering .so-filter-row .sched-filter-group,
@@ -10097,7 +10097,7 @@ select.req-modal-input {
   display: grid;
   grid-template-columns: 150px 130px 140px 210px minmax(220px, 1fr);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-slot-monitoring .sm-filter-row .sched-filter-group {
@@ -11607,7 +11607,7 @@ select.req-modal-input {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .adm-setting-field {
@@ -14815,7 +14815,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 .rfl-filters {
   display: flex;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
   margin: 16px 0 10px;
   flex-wrap: wrap;
 }
@@ -15400,7 +15400,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(360px, 1fr) auto;
   gap: 10px 14px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-faculty-loads .rfl-load-type-group {
@@ -15665,7 +15665,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(180px, 220px) minmax(160px, 200px) auto;
   gap: 14px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .smrg-config-field,
@@ -15994,7 +15994,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-alumni-tracker .at-config-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-alumni-tracker .at-btn-set {
@@ -16008,7 +16008,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(200px, 1.35fr) minmax(150px, 0.95fr) minmax(240px, 1.45fr) max-content;
   gap: 6px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-alumni-tracker .at-program-group {
@@ -16330,7 +16330,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: minmax(0, 220px) minmax(0, 220px);
   gap: 10px 14px;
-  align-items: end;
+  align-items: flex-end;
   margin-bottom: 10px;
 }
 
@@ -16869,7 +16869,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-student-discipline .sd-criteria-item {
@@ -18240,7 +18240,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-class-list .svc-config-inline-label {
@@ -18380,7 +18380,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-class-list .at-config-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-class-list .at-btn-set {
@@ -18402,7 +18402,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: grid;
   grid-template-columns: repeat(5, minmax(130px, 1fr)) auto;
   gap: 10px 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-attendance .svc-filter-item {
@@ -18423,7 +18423,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-attendance .svc-filter-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-attendance .svc-filter-action .pf-btn-new {
@@ -19153,12 +19153,12 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-grading-academic .ga-filter-grid-periods {
   grid-template-columns: repeat(5, minmax(120px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-grading-academic .ga-filter-grid-periods-lite {
   grid-template-columns: repeat(7, minmax(120px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-grading-academic .ga-filter-grid-periods .ga-filter-placeholder {
@@ -19213,7 +19213,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
 
 .page-services-grading-academic .ga-filter-grid-deficiency {
   grid-template-columns: 2.2fr repeat(3, minmax(140px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-grading-academic .ga-filter-search {
@@ -21454,7 +21454,7 @@ body.page-profile-edit .student-content {
 .page-student-grade-file .sgf-toolbar {
   display: grid;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-user-accounts .ua-filter-grid {
@@ -22882,7 +22882,7 @@ body.page-profile-edit .student-content {
 
 .page-faculty-file-config .ffc-grid-top {
   grid-template-columns: minmax(240px, 2.1fr) minmax(150px, 1fr) minmax(150px, 1fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-faculty-file-config .ffc-grid-top .app-filter-input,
@@ -23265,7 +23265,7 @@ body.page-profile-edit .student-content {
 .rfl-filters {
   display: flex;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
   margin: 16px 0 10px;
   flex-wrap: wrap;
 }
@@ -23590,7 +23590,7 @@ body.page-profile-edit .student-content {
 .registrar-body .page-student-profile .sp-toolbar,
 .registrar-body .page-student-grade-file .sgf-toolbar {
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .registrar-body .page-user-accounts .ua-filter-grid {
@@ -29422,7 +29422,7 @@ body.page-profile-edit .student-content {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(92px, 108px);
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-toolbar-actions {
@@ -29507,7 +29507,7 @@ body.page-profile-edit .student-content {
   display: grid;
   grid-template-columns: minmax(120px, auto) minmax(140px, auto) minmax(220px, 1.25fr) minmax(120px, auto);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-item-program-type {
@@ -31037,7 +31037,7 @@ body.page-profile-edit .student-content {
 
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-address {
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-acad {
@@ -31224,7 +31224,7 @@ body.page-profile-edit .student-content {
 
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address {
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad {
@@ -34702,7 +34702,7 @@ body.login-body .modal-backdrop.show {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-class-list .svc-actions-row {
@@ -34771,7 +34771,7 @@ body.login-body .modal-backdrop.show {
 
 .page-services-class-list .at-config-action {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-services-class-list .at-btn-set {
@@ -34796,7 +34796,7 @@ body.login-body .modal-backdrop.show {
 
 .page-deficiency .ga-filter-grid-deficiency {
   grid-template-columns: 2.2fr repeat(3, minmax(140px, 1fr));
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-deficiency .ga-filter-search {
@@ -35217,6 +35217,67 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   margin-bottom: 18px;
 }
 
+.parent-grades-snapshot-page .parent-grades-deficiency-shell {
+  border: 1px solid #d7e2da;
+  border-radius: 12px;
+  background: #f8fbf9;
+  padding: 20px;
+  margin-bottom: 18px;
+  min-height: clamp(360px, 100vh - 360px, 520px);
+  height: clamp(360px, 100vh - 360px, 520px);
+  max-height: calc(100vh - 260px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.parent-grades-snapshot-page .parent-grades-deficiency-alert {
+  width: 100%;
+  max-width: 960px;
+  margin: 0;
+  border: 1px solid #ff8f8f;
+  border-radius: 12px;
+  background: #fff4f4;
+  padding: 20px 26px;
+  color: #2f2f2f;
+}
+
+.parent-grades-snapshot-page .parent-grades-deficiency-alert h2 {
+  margin: 0 0 10px;
+  font-size: 2.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #111;
+}
+
+.parent-grades-snapshot-page .parent-grades-deficiency-alert .parent-grades-alert-icon {
+  width: 34px;
+  height: 34px;
+  color: #ff1f1f;
+  flex: 0 0 auto;
+}
+
+.parent-grades-snapshot-page .parent-grades-deficiency-alert p {
+  max-width: 840px;
+  margin: 0 auto 10px;
+  font-size: 1.16rem;
+  line-height: 1.4;
+}
+
+.parent-grades-snapshot-page .parent-grades-deficiency-alert ul {
+  max-width: 840px;
+  margin: 0 auto;
+  padding-left: 22px;
+  color: #da2e2e;
+  font-weight: 600;
+  line-height: 1.45;
+  font-size: 1.08rem;
+}
+
 .parent-grades-snapshot-page .parent-grades-meta-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -35333,6 +35394,13 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   margin-bottom: 14px;
 }
 
+.parent-student-profile-page .parent-student-top-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 148px;
+  gap: 10px;
+  align-items: start;
+}
+
 .parent-student-profile-page .parent-student-card {
   border: 1px solid #d5ddd8;
   border-radius: 12px;
@@ -35347,7 +35415,12 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 }
 
 .parent-student-profile-page .parent-student-profile-grid--top {
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1.2fr);
+}
+
+.parent-student-profile-page .parent-student-field--top-email {
+  grid-column: auto;
+  max-width: none;
 }
 
 .parent-student-profile-page .parent-student-profile-grid--address,
@@ -35359,12 +35432,20 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   grid-template-columns: 1.1fr 1fr 1fr 1fr 1fr 1fr;
 }
 
-.parent-student-profile-page .parent-student-profile-grid--acad1 {
-  grid-template-columns: 1fr;
+.parent-student-profile-page .parent-student-profile-grid--acad2 {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.15fr) minmax(0, 0.72fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
-.parent-student-profile-page .parent-student-profile-grid--acad2 {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+.parent-student-profile-page .parent-student-field--program {
+  grid-column: span 2;
+}
+
+.parent-student-profile-page .parent-student-field--acad-compact {
+  max-width: none;
+}
+
+.parent-student-profile-page .parent-student-field--acad-status {
+  grid-column: span 2;
 }
 
 .parent-student-profile-page .parent-student-profile-grid--transfer {
@@ -35382,7 +35463,8 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   text-transform: uppercase;
 }
 
-.parent-student-profile-page .parent-student-field input {
+.parent-student-profile-page .parent-student-field input,
+.parent-student-profile-page .parent-student-field select {
   width: 100%;
   height: 34px;
   border: 1px solid #cfd8d1;
@@ -35393,8 +35475,67 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   font-size: 0.8rem;
 }
 
+.parent-student-profile-page .parent-student-field select {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  cursor: default;
+  background-image: none;
+  padding-right: 10px;
+}
+
+.parent-student-profile-page .parent-student-field select:disabled {
+  color: #424242;
+  opacity: 1;
+}
+
+.parent-student-profile-page .parent-student-field .parent-student-readonly-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23718179' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+  padding-right: 32px;
+}
+
+.parent-student-profile-page .parent-student-profile-panel {
+  border: 1px solid #d3dad5;
+  border-radius: 8px;
+  background: #f2f5f3;
+  min-height: 136px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #7d8782;
+  padding: 8px 6px;
+}
+
+.parent-student-profile-page .parent-student-profile-panel .parent-student-profile-label {
+  margin: 0 0 3px;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  color: #6a756f;
+}
+
+.parent-student-profile-page .parent-student-profile-panel p {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  color: #7f8783;
+}
+
+.parent-student-profile-page .parent-student-profile-icon {
+  line-height: 0;
+  color: #a1a8a4;
+}
+
 .parent-student-profile-page .parent-student-field--sm {
-  max-width: 180px;
+  max-width: none;
 }
 
 .parent-student-profile-page .parent-student-field--wide {
@@ -35426,8 +35567,6 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 }
 
 .parent-student-profile-page .parent-student-transfer-check input[type=checkbox] {
-  width: 14px;
-  height: 14px;
   margin-top: 0;
 }
 
@@ -35509,24 +35648,13 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 }
 
 .parent-link-child-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 14px;
+  min-height: 34px;
   border-radius: 7px;
-  border: 1px solid #0a813c;
-  background: #f7fbf8;
-  color: #0a813c;
+  padding: 8px 18px;
+  font-size: 0.82rem;
   font-weight: 700;
-  font-size: 0.85rem;
-  text-decoration: none;
-}
-
-.parent-link-child-btn:hover,
-.parent-link-child-btn:focus {
-  background: #edf7f0;
-  color: #0a813c;
-  text-decoration: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .parent-empty-note {
@@ -35535,69 +35663,122 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 }
 
 .parent-link-modal {
+  overflow: hidden;
   border-radius: 12px;
-  border: 1px solid #dadada;
+  border: 1px solid #d6e2db;
+  box-shadow: 0 16px 34px rgba(12, 42, 28, 0.16);
+}
+
+.parent-link-modal .parent-link-modal-head {
+  border-bottom: 1px solid #e5ece8;
+  padding: 14px 16px 12px;
+  background: #ffffff;
+}
+
+.parent-link-modal .modal-title {
+  font-size: 0.92rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #0a6f39;
+}
+
+.parent-link-modal .btn-close {
+  width: 0.82em;
+  height: 0.82em;
+  opacity: 0.72;
+}
+
+.parent-link-modal .parent-link-modal-body {
+  padding: 14px 16px 10px;
+}
+
+.parent-link-modal .parent-empty-note {
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.parent-link-modal .req-modal-label {
+  margin-bottom: 4px;
+}
+
+.parent-link-modal .req-modal-input {
+  height: 36px;
+}
+
+.parent-link-modal .parent-link-modal-actions {
+  border-top: 1px solid #e8efea;
+  background: #ffffff;
+  padding: 10px 16px 14px;
+  gap: 10px;
+}
+
+.parent-link-modal .req-btn-cancel,
+.parent-link-modal .req-btn-save {
+  min-width: 112px;
 }
 
 .parent-contact-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 10px 0 0;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 10px 0 16px;
 }
 
 .parent-contact-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  margin-bottom: 20px;
+  gap: 20px;
+  margin-bottom: 18px;
 }
 
 .parent-contact-card {
-  border: 1px solid #1c915d;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #fcfcfc 0%, #f4f6f5 100%);
-  min-height: 300px;
-  box-shadow: 0 8px 18px rgba(9, 33, 20, 0.1);
+  border: 1px solid #cfe1d7;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%);
+  min-height: 420px;
+  box-shadow: 0 14px 28px rgba(14, 41, 28, 0.09);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   text-align: center;
-  padding: 24px 24px 18px;
+  padding: 34px 24px 24px;
 }
 
 .parent-contact-icon-wrap {
-  width: 110px;
-  height: 110px;
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
-  background: #e8f4ed;
-  border: 1px solid #c9e1d2;
-  box-shadow: inset 0 0 0 4px #f4faf7;
+  margin-bottom: 14px;
+  background: radial-gradient(circle at 30% 25%, #f7fcf9 0%, #e5f2eb 100%);
+  border: 1px solid #c7ddd2;
+  box-shadow: inset 0 0 0 4px #f2f9f5, 0 4px 10px rgba(12, 44, 29, 0.08);
 }
 
 .parent-contact-icon {
-  color: #0f0f0f;
+  color: #132219;
   line-height: 0;
 }
 
 .parent-contact-card-title {
-  margin: 0 0 4px;
-  font-size: 0.9rem;
+  margin: 0 0 8px;
+  font-size: 0.94rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #1f6a44;
+  color: #147447;
 }
 
 .parent-contact-value {
   margin: 0 0 10px;
-  font-size: 2.08rem;
+  font-size: 2.28rem;
   font-weight: 800;
-  color: #0f1211;
+  color: #111417;
   line-height: 1.1;
 }
 
@@ -35614,41 +35795,44 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 
 .parent-contact-note {
   margin: 0;
-  max-width: 460px;
-  font-size: 0.96rem;
+  max-width: 540px;
+  font-size: 1.02rem;
   line-height: 1.45;
-  color: #252525;
+  color: #1f2723;
 }
 
 .parent-contact-guidelines {
-  border-radius: 12px;
-  background: #d7d9d8;
-  border: 1px solid #ced1cf;
-  padding: 16px 18px;
-  color: #171717;
-  box-shadow: 0 6px 14px rgba(18, 18, 18, 0.06);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f8faf9 0%, #edf3ef 100%);
+  border: 1px solid #d3dfd8;
+  padding: 18px 20px;
+  min-height: 0;
+  height: auto;
+  align-self: start;
+  color: #1a1f1d;
+  box-shadow: 0 10px 20px rgba(18, 39, 28, 0.07);
 }
 
 .parent-contact-guidelines h4 {
   margin: 0 0 8px;
-  font-size: 1.55rem;
+  font-size: 1.42rem;
   font-weight: 800;
 }
 
 .parent-contact-guidelines p {
-  margin: 0 0 6px;
-  font-size: 1rem;
+  margin: 0 0 8px;
+  font-size: 1.05rem;
   line-height: 1.35;
 }
 
 .parent-contact-guidelines ul {
   margin: 0;
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
 .parent-contact-guidelines li {
-  font-size: 0.98rem;
-  line-height: 1.35;
+  font-size: 1rem;
+  line-height: 1.42;
 }
 
 .parent-account-profile-page {
@@ -35824,6 +36008,17 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     padding: 12px;
   }
 
+  .parent-grades-snapshot-page .parent-grades-deficiency-shell {
+    padding: 12px;
+    min-height: clamp(300px, 100vh - 330px, 460px);
+    height: clamp(300px, 100vh - 330px, 460px);
+    max-height: calc(100vh - 230px);
+  }
+
+  .parent-student-profile-page .parent-student-top-wrap {
+    grid-template-columns: minmax(0, 1fr) 126px;
+  }
+
   .parent-student-profile-page .parent-student-profile-grid--top,
   .parent-student-profile-page .parent-student-profile-grid--address,
   .parent-student-profile-page .parent-student-profile-grid--bio,
@@ -35831,6 +36026,13 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   .parent-student-profile-page .parent-student-profile-grid--acad2,
   .parent-student-profile-page .parent-student-profile-grid--transfer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parent-student-profile-page .parent-student-field--program,
+  .parent-student-profile-page .parent-student-field--acad-compact,
+  .parent-student-profile-page .parent-student-field--acad-status {
+    grid-column: auto;
+    max-width: 100%;
   }
 
   .parent-account-profile-page .parent-account-grid {
@@ -35850,7 +36052,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   }
 
   .parent-contact-card {
-    min-height: 260px;
+    min-height: 310px;
   }
 
   .parent-contact-value {
@@ -35886,11 +36088,45 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     grid-template-columns: 1fr;
   }
 
+  .parent-grades-snapshot-page .parent-grades-deficiency-shell {
+    padding: 10px;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    align-items: flex-start;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert {
+    padding: 14px 14px;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert h2 {
+    font-size: 1.85rem;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert .parent-grades-alert-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert p,
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert li {
+    font-size: 0.95rem;
+  }
+
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert p,
+  .parent-grades-snapshot-page .parent-grades-deficiency-alert ul {
+    max-width: 100%;
+  }
+
+  .parent-student-profile-page .parent-student-top-wrap {
+    grid-template-columns: minmax(0, 1fr) 104px;
+  }
+
   .parent-student-profile-page .parent-student-card {
     padding: 12px 10px;
   }
 
-  .parent-student-profile-page .parent-student-profile-grid--top,
   .parent-student-profile-page .parent-student-profile-grid--address,
   .parent-student-profile-page .parent-student-profile-grid--bio,
   .parent-student-profile-page .parent-student-profile-grid--identity,
@@ -35899,7 +36135,17 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     grid-template-columns: 1fr;
   }
 
+  .parent-student-profile-page .parent-student-profile-grid--top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .parent-student-profile-page .parent-student-field--sm {
+    max-width: 100%;
+  }
+
+  .parent-student-profile-page .parent-student-field--program,
+  .parent-student-profile-page .parent-student-field--acad-compact,
+  .parent-student-profile-page .parent-student-field--acad-status {
     max-width: 100%;
   }
 
@@ -35935,6 +36181,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 
   .parent-contact-card {
     padding: 18px 12px 14px;
+    min-height: 250px;
   }
 
   .parent-contact-icon svg {
@@ -35966,6 +36213,21 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   .parent-contact-guidelines p,
   .parent-contact-guidelines li {
     font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .parent-student-profile-page .parent-student-top-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .parent-student-profile-page .parent-student-profile-panel {
+    min-height: 96px;
+    width: 100%;
+  }
+
+  .parent-student-profile-page .parent-student-profile-grid--top {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -40944,7 +41206,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 12px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .cf-filter-field,
@@ -41005,7 +41267,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
   gap: 10px;
   margin-bottom: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .cfg-filter-row-tight {
@@ -41190,7 +41452,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(92px, 108px);
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-toolbar-actions {
@@ -41284,14 +41546,14 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.4fr);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-dept-setup-form-row {
   display: grid;
   grid-template-columns: minmax(150px, 0.9fr) minmax(260px, 1.5fr) auto;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-item-dept-code .pf-modal-label,
@@ -42914,7 +43176,7 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 .page-student-grade-file .sgf-toolbar {
   display: grid;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-user-accounts .ua-filter-grid {
@@ -44158,7 +44420,7 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 
 .page-faculty-file-config .ffc-grid-top {
   grid-template-columns: minmax(240px, 2.1fr) minmax(150px, 1fr) minmax(150px, 1fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-faculty-file-config .ffc-grid-top .app-filter-input,
@@ -44678,7 +44940,7 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-address {
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-acad {
@@ -44865,7 +45127,7 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address {
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad {
@@ -45778,12 +46040,12 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   margin-top: 8px;
   position: relative;
   min-height: 20px;
-  padding-left: 60px;
+  padding-left: 34px;
 }
 
 .page-student-grade-file .sgf-perm-course-label {
   position: absolute;
-  left: 60px;
+  left: 34px;
   top: 1px;
   font-size: 0.74rem;
   font-weight: 400;
@@ -45810,7 +46072,7 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 .page-student-grade-file .sgf-perm-personal-head {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
-  align-items: end;
+  align-items: flex-end;
   gap: 10px;
   margin-bottom: 4px;
 }

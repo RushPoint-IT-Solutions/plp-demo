@@ -6,8 +6,11 @@
 @section('content')
 <div class="parent-student-profile-page">
     @php
-        $studentNo = $student && !empty($student->student_no) ? $student->student_no : '232418456';
-        $studentName = $student && !empty($student->name) ? $student->name : trim(($nameParts['first'] ?? 'Aleya Mae') . ' ' . ($nameParts['middle'] ?? 'T.') . ' ' . ($nameParts['last'] ?? 'Garma'));
+        $selectedNo = !empty($selectedChild['student_no']) ? $selectedChild['student_no'] : null;
+        $selectedName = !empty($selectedChild['name']) ? $selectedChild['name'] : null;
+
+        $studentNo = $student && !empty($student->student_no) ? $student->student_no : ($selectedNo ?: '232418456');
+        $studentName = $student && !empty($student->name) ? $student->name : ($selectedName ?: trim(($nameParts['first'] ?? 'Aleya Mae') . ' ' . ($nameParts['middle'] ?? 'T.') . ' ' . ($nameParts['last'] ?? 'Garma')));
         $contactNo = $student && !empty($student->contact_no) ? $student->contact_no : '09123456789';
         $email = $student && !empty($student->email) ? $student->email : (optional($user)->email ?: 'test@gmail.com');
         $residentialAddress = $student && !empty($student->address) ? $student->address : 'Travesia, Guinobatan, Albay';
@@ -32,41 +35,58 @@
         $admissionYear = $student && !empty($student->admission_year) ? $student->admission_year : '2023-2024';
         $enrollmentStatus = $student && !empty($student->enrollment_status) ? $student->enrollment_status : 'Regular';
         $academicStatus = $student && !empty($student->academic_status) ? $student->academic_status : 'Regular';
+
+        $regionOptions = ['I-Ilocos Region', 'II-Cagayan Valley', 'III-Central Luzon', 'IV-A CALABARZON', 'IV-B MIMAROPA', 'V-Bicol Region', 'NCR'];
+        $provinceOptions = ['Albay', 'Camarines Norte', 'Camarines Sur', 'Catanduanes', 'Masbate', 'Sorsogon'];
+        $municipalityOptions = ['Guinobatan', 'Daraga', 'Legazpi City', 'Ligao City', 'Tabaco City', 'Polangui'];
     @endphp
 
-    <div class="parent-student-picker">
-        <label class="app-filter-label">STUDENT</label>
-        <select class="form-select form-input-long" disabled>
+    <form method="GET" action="{{ route('parent.student-profile') }}" class="parent-student-picker">
+        <label class="app-filter-label" for="parentStudentProfileChild">STUDENT</label>
+        <select id="parentStudentProfileChild" name="child" class="form-select form-input-long" onchange="this.form.submit()">
             @if(!empty($children) && count($children) > 0)
                 @foreach($children as $child)
-                    <option{{ $child['student_no'] === $studentNo ? ' selected' : '' }}>
-                        {{ $child['name'] ?: $studentName }}{{ $child['student_no'] ? ' (' . $child['student_no'] . ')' : '' }}
+                    <option value="{{ $child['id'] }}" {{ (string) ($child['id'] ?? '') === (string) ($selectedChildId ?: data_get($selectedChild, 'id')) ? 'selected' : '' }}>
+                        {{ $child['name'] ?: $studentName }}{{ !empty($child['student_no']) ? ' (' . $child['student_no'] . ')' : '' }}
                     </option>
                 @endforeach
             @else
                 <option selected>{{ $studentName }} ({{ $studentNo }})</option>
             @endif
         </select>
-    </div>
+    </form>
 
     <section class="parent-student-card">
-        <div class="parent-student-profile-grid parent-student-profile-grid--top">
-            <div class="parent-student-field parent-student-field--sm">
-                <label>STUDENT NO.</label>
-                <input type="text" value="{{ $studentNo }}" readonly>
+        <div class="parent-student-top-wrap">
+            <div class="parent-student-profile-grid parent-student-profile-grid--top">
+                <div class="parent-student-field parent-student-field--sm">
+                    <label>STUDENT NO.</label>
+                    <input type="text" value="{{ $studentNo }}" readonly>
+                </div>
+                <div class="parent-student-field">
+                    <label>STUDENT NAME</label>
+                    <input type="text" value="{{ $studentName }}" readonly>
+                </div>
+                <div class="parent-student-field">
+                    <label>CONTACT NO.</label>
+                    <input type="text" value="{{ $contactNo }}" readonly>
+                </div>
+                <div class="parent-student-field parent-student-field--top-email">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" value="{{ $email }}" readonly>
+                </div>
             </div>
-            <div class="parent-student-field">
-                <label>STUDENT NAME</label>
-                <input type="text" value="{{ $studentName }}" readonly>
-            </div>
-            <div class="parent-student-field">
-                <label>CONTACT NO.</label>
-                <input type="text" value="{{ $contactNo }}" readonly>
-            </div>
-            <div class="parent-student-field">
-                <label>EMAIL ADDRESS</label>
-                <input type="email" value="{{ $email }}" readonly>
-            </div>
+
+            <aside class="parent-student-profile-panel" aria-label="Student profile photo panel">
+                <span class="parent-student-profile-label">PROFILE</span>
+                <div class="parent-student-profile-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </div>
+                <p>No Photo Uploaded</p>
+            </aside>
         </div>
 
         <div class="parent-student-profile-grid parent-student-profile-grid--address">
@@ -76,15 +96,27 @@
             </div>
             <div class="parent-student-field">
                 <label>REGION</label>
-                <input type="text" value="{{ $region }}" readonly>
+                <select class="parent-student-readonly-select" disabled>
+                    @foreach($regionOptions as $regionOption)
+                        <option value="{{ $regionOption }}" {{ $regionOption === $region ? 'selected' : '' }}>{{ $regionOption }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="parent-student-field">
                 <label>PROVINCE</label>
-                <input type="text" value="{{ $province }}" readonly>
+                <select class="parent-student-readonly-select" disabled>
+                    @foreach($provinceOptions as $provinceOption)
+                        <option value="{{ $provinceOption }}" {{ $provinceOption === $province ? 'selected' : '' }}>{{ $provinceOption }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="parent-student-field">
                 <label>MUNICIPALITY</label>
-                <input type="text" value="{{ $municipality }}" readonly>
+                <select class="parent-student-readonly-select" disabled>
+                    @foreach($municipalityOptions as $municipalityOption)
+                        <option value="{{ $municipalityOption }}" {{ $municipalityOption === $municipality ? 'selected' : '' }}>{{ $municipalityOption }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
@@ -136,19 +168,16 @@
 
         <div class="parent-student-divider"></div>
 
-        <div class="parent-student-profile-grid parent-student-profile-grid--acad1">
-            <div class="parent-student-field parent-student-field--wide">
+        <div class="parent-student-profile-grid parent-student-profile-grid--acad2">
+            <div class="parent-student-field parent-student-field--program">
                 <label>COURSE / PROGRAM</label>
                 <input type="text" value="{{ $program }}" readonly>
             </div>
-        </div>
-
-        <div class="parent-student-profile-grid parent-student-profile-grid--acad2">
-            <div class="parent-student-field">
+            <div class="parent-student-field parent-student-field--acad-compact">
                 <label>YEAR LEVEL</label>
                 <input type="text" value="{{ $yearLevel }}" readonly>
             </div>
-            <div class="parent-student-field">
+            <div class="parent-student-field parent-student-field--acad-compact">
                 <label>SECTION</label>
                 <input type="text" value="{{ $section }}" readonly>
             </div>
@@ -168,7 +197,7 @@
                 <label>ENROLLMENT STATUS</label>
                 <input type="text" value="{{ $enrollmentStatus }}" readonly>
             </div>
-            <div class="parent-student-field">
+            <div class="parent-student-field parent-student-field--acad-status">
                 <label>ACADEMIC STATUS</label>
                 <input type="text" value="{{ $academicStatus }}" readonly>
             </div>
@@ -178,7 +207,7 @@
 
         <div class="parent-student-transfer-row">
             <label class="parent-student-transfer-check">
-                <input type="checkbox" disabled>
+                <input type="checkbox" class="req-checkbox-input" disabled>
                 <span>TAG THIS STUDENT AS TRANSFER</span>
             </label>
         </div>

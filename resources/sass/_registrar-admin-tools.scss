@@ -33,7 +33,7 @@
 .page-student-grade-file .sgf-toolbar {
   display: grid;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-user-accounts .ua-filter-grid {
@@ -1277,7 +1277,7 @@
 
 .page-faculty-file-config .ffc-grid-top {
   grid-template-columns: minmax(240px, 2.1fr) minmax(150px, 1fr) minmax(150px, 1fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-faculty-file-config .ffc-grid-top .app-filter-input,
@@ -1778,7 +1778,7 @@
 }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: flex-end; }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
@@ -1865,7 +1865,7 @@
 }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: flex-end; }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
