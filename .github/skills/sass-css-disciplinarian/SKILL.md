@@ -264,7 +264,11 @@ Accessibility & integration notes:
 - Test on desktop and mobile browsers; some Android OEM browsers render file/date controls differently—the above rules are progressive enhancements, not hard fallbacks.
 - If you need consistent dropdown/listbox behavior for file type lists or date presets, implement a small JS wrapper that toggles a visually matched list while keeping the native inputs for form submission.
 - For flatpickr month/year headers, style the closed controls in SASS with explicit selectors such as `.flatpickr-monthDropdown-months`, `.numInputWrapper`, `.arrowUp`, and `.arrowDown` so month selection and year stepping stay visible and on-brand.
+- If a flatpickr month picker must open downward, prefer `position: 'below'` first so the calendar has room beneath the field; if the browser still flips the native month popup upward, do not fight it with CSS, replace the month selector with a custom downward listbox control instead.
 - If the browser still renders the month popup list natively, treat that as an OS limitation; keep the closed control polished and, if full theming is required, replace the control with a custom JS listbox instead of forcing native option styling.
+- For mobile modals containing flatpickr, top-align the modal and make the body scrollable instead of vertically centering a taller dialog; otherwise the picker can be clipped off-screen.
+- For the PLP calendar look, prefer a white panel with a thin green border, subtle green focus rings, and an outlined selected-day treatment so the control reads as branded without becoming visually heavy.
+- If the year text is getting cut by the spinner arrows, widen the `.numInputWrapper`, narrow the arrow hit area, and reduce the year font slightly before falling back to a custom year control.
 
 Where to place this:
 

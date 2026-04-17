@@ -54,6 +54,8 @@ Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('a
 Route::post('/login/parent', 'Admin\AdminController@parentLogin')->name('parent.login.submit')->middleware('throttle:20,1');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 Route::get('/parent/create-account', 'Portal\ParentController@showCreateAccount')->name('parent.create-account');
+Route::get('/parent/create-account/students', 'Auth\ParentCreateAccountController@studentLookup')->name('parent.create-account.students')->middleware('throttle:60,1');
+Route::post('/parent/create-account', 'Auth\ParentCreateAccountController@store')->name('parent.create-account.submit')->middleware('throttle:10,1');
 
 /*
 |--------------------------------------------------------------------------

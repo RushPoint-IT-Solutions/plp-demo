@@ -10,6 +10,7 @@ class ParentAccount extends Model
 
     protected $fillable = [
         'parent_no',
+        'honorific_id',
         'first_name',
         'last_name',
         'middle_name',
@@ -17,6 +18,11 @@ class ParentAccount extends Model
         'email',
         'mobile_number',
     ];
+
+    public function honorific()
+    {
+        return $this->belongsTo(ParentHonorific::class, 'honorific_id');
+    }
 
     public function user()
     {

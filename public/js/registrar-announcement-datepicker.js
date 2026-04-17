@@ -19,6 +19,7 @@
             appendTo: modalOverlay || document.body,
             allowInput: true,
             clickOpens: true,
+            position: 'below',
             disableMobile: true,
             dateFormat: 'Y-m-d',
             altFormat: 'M j, Y',

@@ -33,7 +33,10 @@ class ParentController extends Controller
 
     public function showCreateAccount()
     {
-        return view('parent.create-account');
+        return redirect()->route('module.login', [
+            'module' => 'parent',
+            'open_create_account' => 1,
+        ]);
     }
 
     protected function portalNotificationModule(): string

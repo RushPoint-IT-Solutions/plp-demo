@@ -31316,6 +31316,20 @@ body.page-profile-edit .student-content {
   padding-right: 44px;
 }
 
+.login-password-wrapper .login-input[type=password] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.login-password-wrapper .login-input[type=password]::-ms-reveal,
+.login-password-wrapper .login-input[type=password]::-ms-clear,
+.login-password-wrapper .login-input[type=password]::-webkit-credentials-auto-fill-button,
+.login-password-wrapper .login-input[type=password]::-webkit-password-toggle-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .password-toggle-btn {
   position: absolute;
   right: 12px;
@@ -31325,9 +31339,12 @@ body.page-profile-edit .student-content {
   border: none;
   cursor: pointer;
   padding: 0;
+  width: 44px;
+  height: 44px;
   line-height: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .password-toggle-btn:hover svg {
@@ -31367,6 +31384,11 @@ body.page-profile-edit .student-content {
   color: #0a7d3f;
   font-weight: 700;
   text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 6px;
+  margin: -12px -6px;
 }
 
 .login-forgot a:hover {
@@ -31437,7 +31459,11 @@ body.page-profile-edit .student-content {
 .login-parent-create-link-btn {
   border: 0;
   background: transparent;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  margin: -12px -8px;
   line-height: 1;
 }
 
@@ -31475,10 +31501,10 @@ body.page-profile-edit .student-content {
 
 .login-parent-create-close {
   position: absolute;
-  top: 10px;
-  right: 12px;
-  width: 30px;
-  height: 30px;
+  top: 6px;
+  right: 8px;
+  width: 42px;
+  height: 42px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -31512,6 +31538,9 @@ body.page-profile-edit .student-content {
   gap: 14px;
 }
 
+.login-parent-create-field {
+  position: relative;
+}
 .login-parent-create-field label {
   display: block;
   margin-bottom: 7px;
@@ -31540,6 +31569,118 @@ body.page-profile-edit .student-content {
   color: #2d2d2d;
   cursor: text;
   pointer-events: auto;
+}
+.login-parent-create-field .form-control[type=date] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #ffffff;
+  background-image: linear-gradient(180deg, rgba(236, 249, 242, 0.45) 0%, rgba(255, 255, 255, 0) 100%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f7a4e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: 0 0, right 12px center;
+  background-size: auto, 16px 16px;
+  color: #1f4735;
+  padding-right: 42px;
+  cursor: pointer;
+}
+.login-parent-create-field .form-control[type=date]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0;
+  width: 20px;
+  height: 20px;
+}
+.login-parent-create-field .form-control[type=date]:focus,
+.login-parent-create-field .form-control[type=date]:focus-visible {
+  border-color: #0f7a4e;
+  box-shadow: 0 0 0 3px rgba(15, 122, 78, 0.16);
+}
+.login-parent-create-field .login-parent-select-wrap {
+  width: 100%;
+}
+.login-parent-create-field .login-parent-select-wrap .applicant-select-trigger {
+  min-height: 42px;
+  border: 1px solid #d2d2d2;
+  border-radius: 6px;
+  box-shadow: none;
+  padding-left: 12px;
+  padding-right: 36px;
+  background: #ffffff;
+}
+.login-parent-create-field .login-parent-select-wrap .applicant-select-trigger-text {
+  font-size: 0.93rem;
+  font-weight: 500;
+  color: #1f4735;
+}
+.login-parent-create-field .login-parent-select-wrap .applicant-select-menu {
+  z-index: 90;
+  border: 1px solid #b8d8c5;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 104, 55, 0.14);
+  max-height: 220px;
+}
+.login-parent-create-field .login-parent-select-wrap .applicant-select-option-btn:hover,
+.login-parent-create-field .login-parent-select-wrap .applicant-select-option-btn:focus,
+.login-parent-create-field .login-parent-select-wrap .applicant-select-option-btn.is-active {
+  border-left-color: #0f7b43;
+  background: linear-gradient(90deg, #eef8f2 0%, #f7fcf9 100%);
+}
+.login-parent-create-field .login-parent-select-wrap .applicant-select-option-btn.is-selected {
+  border-left-color: #0f7b43;
+  background: #e8f6ee;
+}
+.login-parent-create-field .login-parent-select-wrap.is-invalid .applicant-select-trigger {
+  border-color: #dc3545;
+}
+.login-parent-create-field .login-parent-student-search-wrap {
+  width: 100%;
+}
+.login-parent-create-field .login-parent-student-search-wrap .smrg-search-input {
+  min-height: 42px;
+  border: 1px solid #d2d2d2;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #1f4735;
+}
+.login-parent-create-field .login-parent-student-search-wrap .smrg-search-input:focus {
+  border-color: #0f7a4e;
+  box-shadow: 0 0 0 3px rgba(15, 122, 78, 0.16);
+}
+.login-parent-create-field .login-parent-student-search-wrap .smrg-search-dropdown {
+  z-index: 95;
+  border: 1px solid #b8d8c5;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 104, 55, 0.14);
+  max-height: 220px;
+}
+.login-parent-create-field .login-parent-student-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.login-parent-create-field .login-parent-student-option-main {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #14532d;
+}
+.login-parent-create-field .login-parent-student-option-sub {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #3c5f4c;
+  line-height: 1.2;
+}
+.login-parent-create-field .login-parent-student-search-wrap.is-invalid .smrg-search-input {
+  border-color: #dc3545;
+}
+.login-parent-create-field .login-parent-password-guidelines {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #d7e7dd;
+  border-radius: 10px;
+  background: #f7fcf9;
+  color: #2f5443;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .login-parent-create-actions {
@@ -37650,77 +37791,79 @@ body.page-profile-view .pv-layout {
   font-size: 0.84rem;
 }
 
-#anModal .an-date-display {
+.an-date-display {
   width: 100%;
   min-height: 42px;
-  border: 1px solid #c8d8cf;
+  border: 2px solid #0f7a4e !important;
   border-radius: 12px;
   padding: 8px 14px;
-  background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
+  background: #ffffff !important;
   color: #1f4735;
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+  box-shadow: 0 0 0 2px rgba(15, 122, 78, 0.08) !important;
 }
 
-#anModal .an-date-display:focus,
-#anModal .an-date-display:focus-visible {
+.an-date-display:focus,
+.an-date-display:focus-visible {
   outline: none;
   border-color: #0f7a4e;
-  box-shadow: 0 0 0 3px rgba(15, 122, 78, 0.14);
+  box-shadow: 0 0 0 4px rgba(15, 122, 78, 0.16) !important;
 }
 
-#anModal .flatpickr-calendar {
+.an-flatpickr-calendar {
   font-family: "Poppins", sans-serif;
-  border: 1px solid #cfe2d6;
+  border: 2px solid #0f7a4e !important;
   border-radius: 16px;
-  box-shadow: 0 18px 40px rgba(12, 58, 35, 0.18);
+  background: #ffffff !important;
+  box-shadow: 0 16px 32px rgba(12, 58, 35, 0.16) !important;
   overflow: hidden;
   z-index: 10020;
 }
 
-#anModal .flatpickr-calendar.open {
+.an-flatpickr-calendar.open {
   z-index: 10020;
 }
 
-#anModal .flatpickr-months {
-  background: linear-gradient(180deg, #f8fcf9 0%, #eef8f2 100%);
-  padding-top: 6px;
-  padding-bottom: 4px;
+.an-flatpickr-calendar .flatpickr-months {
+  background: linear-gradient(180deg, #f6fbf8 0%, #eef8f2 100%) !important;
+  padding-top: 8px;
+  padding-bottom: 6px;
 }
 
-#anModal .flatpickr-months .flatpickr-month {
+.an-flatpickr-calendar .flatpickr-months .flatpickr-month {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 12px;
+  padding: 0 10px;
   fill: #0f7a4e;
   color: #1f4735;
-  height: 46px;
+  height: 44px;
 }
 
-#anModal .flatpickr-current-month {
+.an-flatpickr-calendar .flatpickr-current-month {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   color: #1f4735;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper {
-  width: 88px;
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper {
+  width: 78px;
   height: 34px;
-  border: 1px solid #c8d8cf;
+  border: 1px solid #0f7a4e !important;
   border-radius: 10px;
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: #ffffff !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 122, 78, 0.08) !important;
 }
 
-#anModal .flatpickr-current-month input.cur-year {
+.an-flatpickr-calendar .flatpickr-current-month input.cur-year {
   width: calc(100% - 22px);
   height: 34px;
   padding: 0 6px;
@@ -37728,73 +37871,73 @@ body.page-profile-view .pv-layout {
   appearance: textfield;
   -moz-appearance: textfield;
   color: #1f4735;
-  font-size: 0.96rem;
+  font-size: 0.94rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-#anModal .flatpickr-current-month .flatpickr-monthDropdown-months {
-  min-width: 132px;
-  height: 36px;
-  border: 1px solid #c8d8cf;
-  border-radius: 12px;
+.an-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months {
+  min-width: 126px;
+  height: 34px;
+  border: 1px solid #0f7a4e !important;
+  border-radius: 10px;
   padding: 0 34px 0 12px;
-  background-color: #ffffff;
-  background-image: linear-gradient(180deg, rgba(236, 249, 242, 0.45) 0%, rgba(255, 255, 255, 0) 100%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f7a4e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 10 12 15 17 10'%3E%3C/polyline%3E%3C/svg%3E");
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f7a4e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 10 12 15 17 10'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat, no-repeat;
-  background-position: 0 0, right 11px center;
-  background-size: auto, 12px 12px;
+  background-position: right 11px center;
+  background-size: 12px 12px;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   cursor: pointer;
   color: #1f4735;
-  font-size: 0.83rem;
+  font-size: 0.84rem;
   font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(15, 122, 78, 0.08) !important;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-#anModal .flatpickr-current-month .flatpickr-monthDropdown-months:hover,
-#anModal .flatpickr-current-month .flatpickr-monthDropdown-months:focus,
-#anModal .flatpickr-current-month .flatpickr-monthDropdown-months:focus-visible {
+.an-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+.an-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months:focus,
+.an-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months:focus-visible {
   outline: none;
   border-color: #0f7a4e;
-  box-shadow: 0 0 0 3px rgba(15, 122, 78, 0.14);
+  box-shadow: 0 0 0 4px rgba(15, 122, 78, 0.16) !important;
 }
 
-#anModal .flatpickr-current-month .flatpickr-monthDropdown-months option {
+.an-flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months option {
   color: #1f4735;
   font-weight: 600;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span {
   width: 22px;
   opacity: 1;
   border: 0;
-  background: #eef8f2;
+  background: #edf8f1 !important;
   transition: background-color 0.18s ease, color 0.18s ease;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span:hover {
-  background: #e2f2ea;
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span:hover {
+  background: #dff0e4 !important;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span.arrowUp {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowUp {
   top: 0;
   right: 0;
   border-left: 1px solid #d5e5db;
   border-bottom: 1px solid #d5e5db;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span.arrowDown {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowDown {
   top: 50%;
   right: 0;
   border-left: 1px solid #d5e5db;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span.arrowUp:after,
-#anModal .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowUp:after,
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowDown:after {
   opacity: 1;
   left: 50%;
   margin-left: -4px;
@@ -37802,72 +37945,86 @@ body.page-profile-view .pv-layout {
   border-right: 4px solid transparent;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowUp:after {
   top: 10px;
   border-bottom: 5px solid #0f7a4e;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowDown:after {
   top: 7px;
   border-top: 5px solid #0f7a4e;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span:hover:after {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span:hover:after {
   border-bottom-color: #075c2f;
   border-top-color: #075c2f;
 }
 
-#anModal .flatpickr-current-month .numInputWrapper span:active {
+.an-flatpickr-calendar .flatpickr-current-month .numInputWrapper span:active {
   background: #d8eee0;
 }
 
-#anModal .flatpickr-weekdays {
-  background: #f8fcf9;
+.an-flatpickr-calendar .flatpickr-weekdays {
+  background: #ffffff !important;
+  border-top: 1px solid #dfeee5;
+  border-bottom: 1px solid #dfeee5;
 }
 
-#anModal .flatpickr-weekday {
-  color: #5c7566;
+.an-flatpickr-calendar .flatpickr-weekday {
+  color: #5f7567;
   font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
 }
 
-#anModal .flatpickr-day {
-  border-radius: 10px;
+.an-flatpickr-calendar .flatpickr-day {
+  border-radius: 11px;
   color: #244539;
   font-weight: 600;
+  box-shadow: none;
 }
 
-#anModal .flatpickr-day:hover,
-#anModal .flatpickr-day:focus {
-  background: #e7f5ec;
-  border-color: #d3e8da;
+.an-flatpickr-calendar .flatpickr-day:hover,
+.an-flatpickr-calendar .flatpickr-day:focus {
+  background: #e7f4eb !important;
+  border-color: #c8e0d0 !important;
+  color: #1f4735;
 }
 
-#anModal .flatpickr-day.today {
+.an-flatpickr-calendar .flatpickr-day.today {
+  background: #ffffff;
   border-color: #0f7a4e;
   color: #0f7a4e;
+  box-shadow: inset 0 0 0 1px rgba(15, 122, 78, 0.18) !important;
 }
 
-#anModal .flatpickr-day.selected,
-#anModal .flatpickr-day.startRange,
-#anModal .flatpickr-day.endRange,
-#anModal .flatpickr-day.selected:hover,
-#anModal .flatpickr-day.startRange:hover,
-#anModal .flatpickr-day.endRange:hover {
-  background: #0f7a4e;
+.an-flatpickr-calendar .flatpickr-day.selected,
+.an-flatpickr-calendar .flatpickr-day.startRange,
+.an-flatpickr-calendar .flatpickr-day.endRange,
+.an-flatpickr-calendar .flatpickr-day.selected:hover,
+.an-flatpickr-calendar .flatpickr-day.startRange:hover,
+.an-flatpickr-calendar .flatpickr-day.endRange:hover {
+  background: #ffffff;
   border-color: #0f7a4e;
-  color: #ffffff;
+  color: #0f7a4e;
+  box-shadow: inset 0 0 0 2px rgba(15, 122, 78, 0.28) !important;
 }
 
-#anModal .flatpickr-prev-month,
-#anModal .flatpickr-next-month {
+.an-flatpickr-calendar .flatpickr-prev-month,
+.an-flatpickr-calendar .flatpickr-next-month {
   color: #0f7a4e;
   fill: #0f7a4e;
 }
 
-#anModal .flatpickr-prev-month:hover,
-#anModal .flatpickr-next-month:hover {
+.an-flatpickr-calendar .flatpickr-prev-month:hover,
+.an-flatpickr-calendar .flatpickr-next-month:hover {
   color: #075c2f;
   fill: #075c2f;
+}
+
+.an-flatpickr-calendar .flatpickr-day.prevMonthDay,
+.an-flatpickr-calendar .flatpickr-day.nextMonthDay {
+  color: #b2c2ba;
 }
 
 .ga-page .ga-table .tog-input {
@@ -42429,6 +42586,22 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   outline-offset: 2px;
 }
 
+.page-user-accounts .ua-filter-grid .app-filter-input,
+.page-user-accounts .ua-filter-grid .ua-filter-select,
+.page-user-accounts .ua-form-grid .app-filter-input {
+  border: 1px solid #c5ddce;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.page-user-accounts .ua-filter-grid .app-filter-input:focus,
+.page-user-accounts .ua-filter-grid .ua-filter-select:focus,
+.page-user-accounts .ua-form-grid .app-filter-input:focus {
+  outline: none;
+  border-color: #0f7b43;
+  box-shadow: 0 0 0 3px rgba(15, 123, 67, 0.14);
+}
+
 .page-user-accounts .ua-selected-user {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -42461,6 +42634,107 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
 .page-user-accounts .ua-form-grid .app-filter-input,
 .page-user-accounts .ua-form-grid .ua-password-wrap {
   max-width: 420px;
+}
+
+.page-user-accounts .ua-credential-search-wrap {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+}
+
+.page-user-accounts .ua-credential-search-wrap .smrg-search-dropdown {
+  position: static;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: 100%;
+  margin-top: 6px;
+  max-height: 300px;
+  padding: 6px;
+  border-color: #b6d4bf;
+  border-radius: 12px;
+  box-shadow: 0 14px 30px rgba(12, 84, 45, 0.16);
+}
+
+.page-user-accounts .ua-credential-search-wrap .smrg-search-dropdown::-webkit-scrollbar {
+  width: 10px;
+}
+
+.page-user-accounts .ua-credential-search-wrap .smrg-search-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.page-user-accounts .ua-credential-search-wrap .smrg-search-dropdown::-webkit-scrollbar-thumb {
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #c5ddce;
+}
+
+.page-user-accounts .ua-credential-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 52px;
+  padding: 10px 12px;
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #264f3b;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.page-user-accounts .ua-credential-option-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+
+.page-user-accounts .ua-credential-option-id {
+  display: block;
+  color: #0f3d23;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.page-user-accounts .ua-credential-option-name {
+  display: block;
+  color: #4f685a;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.page-user-accounts .ua-credential-option:hover,
+.page-user-accounts .ua-credential-option:focus,
+.page-user-accounts .ua-credential-option.is-active,
+.page-user-accounts .ua-credential-option.is-active:hover {
+  border-left-color: #0f7b43;
+  background: linear-gradient(90deg, #eef8f2 0%, #f7fcf9 100%);
+  box-shadow: inset 0 0 0 1px rgba(15, 123, 67, 0.08);
+}
+
+.page-user-accounts .ua-credential-option.is-selected {
+  border-left-color: #0d6f3c;
+  background: #e8f6ee;
+}
+
+.page-user-accounts .ua-credential-search-wrap .smrg-search-empty {
+  padding: 10px 12px;
+  color: #5d7063;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.page-user-accounts .ua-table-meta .rtp-pagination {
+  padding: 0;
 }
 
 .page-user-accounts .ua-form-note {
@@ -42531,6 +42805,54 @@ body.page-student-forms .cor-scroll-wrapper.acd-page {
   margin-top: 12px;
 }
 
+.page-user-accounts .ua-col-index {
+  width: 60px;
+}
+
+.page-user-accounts .ua-col-action,
+.page-user-accounts .ua-col-action-cell {
+  width: 90px;
+  text-align: center;
+}
+
+.page-user-accounts .ua-delete-modal.doclist-modal-hidden {
+  display: none;
+}
+
+.page-user-accounts .ua-delete-modal-title {
+  color: #c0392b;
+}
+
+.page-user-accounts .ua-delete-modal-text {
+  font-size: 0.88rem;
+  color: #444;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.page-user-accounts .ua-delete-modal-actions {
+  justify-content: center;
+}
+
+.page-user-accounts .ua-delete-modal-confirm {
+  background: #c0392b;
+}
+
+.page-user-accounts .ua-delete-modal-confirm:hover {
+  background: #a93226;
+}
+
+@media (max-width: 767px) {
+  .page-user-accounts .ua-credential-search-wrap {
+    max-width: 100%;
+  }
+  .page-user-accounts .ua-credential-search-wrap .smrg-search-dropdown {
+    max-height: 42vh;
+  }
+  .page-user-accounts .ua-credential-option {
+    min-height: 48px;
+  }
+}
 .page-report-access .ra-type-filter,
 .page-report-access .ra-modal-head,
 .page-report-access .ra-modal-tools,
