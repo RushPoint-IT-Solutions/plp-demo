@@ -7,6 +7,7 @@ use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
 use App\ApplicantFamilyBackground;
 use App\AcademicCalendarEvent;
+use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Course;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveApplicantStep1Request;
@@ -22,9 +23,26 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use App\SystemAnnouncement;
 
 class ApplicantController extends Controller
 {
+    use PortalNotifications;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = Auth::user();
+
+            $this->syncPortalNotificationsForUser($user);
+
+            view()->share('applicantNotifications', $this->portalNotificationPayloads($user));
+            view()->share('applicantUnreadNotificationCount', $this->portalUnreadNotificationCount($user));
+
+            return $next($request);
+        });
+    }
+
     private function requestBoolean(Request $request, $key)
     {
         $value = $request->input($key);
@@ -42,6 +60,46 @@ class ApplicantController extends Controller
         }
 
         return false;
+    }
+
+    protected function portalNotificationModule(): string
+    {
+        return 'applicant';
+    }
+
+    protected function portalNotificationAudience(): string
+    {
+        return SystemAnnouncement::AUDIENCE_APPLICANT;
+    }
+
+    protected function portalNotificationRoutePrefix(): string
+    {
+        return 'applicant';
+    }
+
+    protected function portalNotificationFallbackTitle(): string
+    {
+        return 'New Applicant Notification';
+    }
+
+    protected function portalNotificationFallbackMessage(): string
+    {
+        return 'A new applicant announcement is available';
+    }
+
+    public function notificationsFeed(Request $request)
+    {
+        return $this->portalNotificationsFeed($request);
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        return $this->markPortalNotificationsRead($request);
+    }
+
+    public function dismissNotification(Request $request, $notificationDelivery)
+    {
+        return $this->dismissPortalNotification($request, $notificationDelivery);
     }
 
     private function getApplicant()

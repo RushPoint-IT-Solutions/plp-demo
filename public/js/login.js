@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function openModal() {
+        modal.hidden = false;
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('parent-create-modal-open');
@@ -49,8 +50,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function closeModal() {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        modal.hidden = true;
         document.body.classList.remove('parent-create-modal-open');
     }
+
+    closeModal();
 
     trigger.addEventListener('click', function (event) {
         event.preventDefault();

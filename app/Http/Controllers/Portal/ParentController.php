@@ -3,18 +3,77 @@
 namespace App\Http\Controllers\Portal;
 
 use App\AcademicCalendarEvent;
+use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Http\Controllers\Controller;
 use App\Student;
 use App\StudentDeficiency;
 use App\StudentSubjectGrade;
+use App\SystemAnnouncement;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 
 class ParentController extends Controller
 {
+    use PortalNotifications;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = Auth::user();
+
+            $this->syncPortalNotificationsForUser($user);
+
+            view()->share('parentNotifications', $this->portalNotificationPayloads($user));
+            view()->share('parentUnreadNotificationCount', $this->portalUnreadNotificationCount($user));
+
+            return $next($request);
+        });
+    }
+
     public function showCreateAccount()
     {
         return view('parent.create-account');
+    }
+
+    protected function portalNotificationModule(): string
+    {
+        return 'parent';
+    }
+
+    protected function portalNotificationAudience(): string
+    {
+        return SystemAnnouncement::AUDIENCE_STUDENTS;
+    }
+
+    protected function portalNotificationRoutePrefix(): string
+    {
+        return 'parent';
+    }
+
+    protected function portalNotificationFallbackTitle(): string
+    {
+        return 'New Parent Notification';
+    }
+
+    protected function portalNotificationFallbackMessage(): string
+    {
+        return 'A student announcement is available';
+    }
+
+    public function notificationsFeed(Request $request)
+    {
+        return $this->portalNotificationsFeed($request);
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        return $this->markPortalNotificationsRead($request);
+    }
+
+    public function dismissNotification(Request $request, $notificationDelivery)
+    {
+        return $this->dismissPortalNotification($request, $notificationDelivery);
     }
 
     private function currentStudent()

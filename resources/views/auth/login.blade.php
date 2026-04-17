@@ -101,7 +101,7 @@
 </div>
 
 @if($module === 'parent')
-<div class="login-parent-create-modal" id="parentCreateAccountModal" tabindex="-1" aria-labelledby="parentCreateAccountModalLabel" aria-hidden="true">
+<div class="login-parent-create-modal" id="parentCreateAccountModal" tabindex="-1" aria-labelledby="parentCreateAccountModalLabel" aria-hidden="true" hidden>
     <div class="login-parent-create-modal-dialog" role="dialog" aria-modal="true">
         <div class="modal-content login-parent-create-modal-content">
             <div class="modal-body">

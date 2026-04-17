@@ -109,6 +109,9 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
     Route::get('/profile/edit', 'Student\StudentController@editProfile')->name('profile.edit');
     Route::post('/profile', 'Student\StudentController@updateProfile')->name('profile.update');
+    Route::get('/notifications/feed', 'Student\StudentController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Student\StudentController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Student\StudentController@dismissNotification')->name('notifications.dismiss');
 });
 
 /*
@@ -132,6 +135,9 @@ Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'fo
     Route::get('/contact-us', 'Portal\ParentController@contactUs')->name('contact-us');
     Route::get('/change-password', 'Portal\ParentController@changePassword')->name('change-password');
     Route::get('/messaging', 'Portal\ParentController@messaging')->name('messaging');
+    Route::get('/notifications/feed', 'Portal\ParentController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Portal\ParentController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Portal\ParentController@dismissNotification')->name('notifications.dismiss');
 });
 
 /*
@@ -462,6 +468,9 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
     Route::get('/calendar', 'Applicant\ApplicantController@calendar')->name('calendar');
     Route::get('/correspondence', 'Applicant\ApplicantController@correspondence')->name('correspondence');
     Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');
+    Route::get('/notifications/feed', 'Applicant\ApplicantController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Applicant\ApplicantController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Applicant\ApplicantController@dismissNotification')->name('notifications.dismiss');
 });
 
 /*
