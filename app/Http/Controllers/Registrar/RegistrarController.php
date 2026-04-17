@@ -846,21 +846,40 @@ class RegistrarController extends Controller
 
     private function syncLinkedUserFromApplicant(Applicant $applicant)
     {
-        $user = User::query()->where('applicant_id', $applicant->id)->first();
+        $user = User::query()
+            ->where('applicant_id', $applicant->id)
+            ->first();
+
         if (!$user) {
-            return;
+            $username = $this->buildApplicantUsernameForAccount($applicant);
+            $defaultPasswordSeed = trim((string) $applicant->last_name);
+            if ($defaultPasswordSeed === '') {
+                $defaultPasswordSeed = $username;
+            }
+
+            $user = new User();
+            $user->username = $username;
+            $user->password = Hash::make(strtoupper($defaultPasswordSeed));
+            $user->force_password_reset = true;
         }
 
-        $user->name = trim(implode(' ', array_filter([
+        $fullName = trim(implode(' ', array_filter([
             $applicant->first_name,
             $applicant->middle_name,
             $applicant->last_name,
         ])));
+        if ($fullName === '') {
+            $fullName = (string) $user->username;
+        }
+
+        $user->name = $fullName;
+        $user->module = 'applicant';
+        $user->applicant_id = $applicant->id;
 
         if (!empty($applicant->email_address)) {
             $emailTaken = User::query()
                 ->where('email', $applicant->email_address)
-                ->where('id', '<>', $user->id)
+                ->where('id', '<>', $user->id ?: 0)
                 ->exists();
 
             if (!$emailTaken) {
@@ -869,6 +888,99 @@ class RegistrarController extends Controller
         }
 
         $user->save();
+        $this->syncApplicantUserAccountProfile($user);
+    }
+
+    private function buildApplicantUsernameForAccount(Applicant $applicant)
+    {
+        $baseUsername = trim((string) $applicant->applicant_id);
+        if ($baseUsername === '') {
+            $baseUsername = 'APP' . str_pad((string) $applicant->id, 6, '0', STR_PAD_LEFT);
+        }
+
+        $candidate = $baseUsername;
+        $counter = 1;
+
+        while (User::query()->where('username', $candidate)->exists()) {
+            $candidate = $baseUsername . '-' . $counter;
+            $counter++;
+        }
+
+        return $candidate;
+    }
+
+    private function syncApplicantUserAccountProfile(User $user)
+    {
+        if (!Schema::hasTable('user_account_profiles')
+            || !Schema::hasTable('user_account_types')
+            || !Schema::hasTable('user_account_states')) {
+            return;
+        }
+
+        $now = now();
+
+        DB::table('user_account_types')->updateOrInsert(
+            ['code' => 'applicant'],
+            [
+                'name' => 'Applicant',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        DB::table('user_account_states')->updateOrInsert(
+            ['code' => 'active'],
+            [
+                'name' => 'Active',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        DB::table('user_account_states')->updateOrInsert(
+            ['code' => 'inactive'],
+            [
+                'name' => 'Inactive',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        $typeId = DB::table('user_account_types')->where('code', 'applicant')->value('id');
+        $activeStateId = DB::table('user_account_states')->where('code', 'active')->value('id');
+
+        if (!$typeId || !$activeStateId) {
+            return;
+        }
+
+        $existingIsSample = DB::table('user_account_profiles')
+            ->where('user_id', $user->id)
+            ->value('is_sample');
+
+        DB::table('user_account_profiles')->updateOrInsert(
+            ['user_id' => $user->id],
+            [
+                'user_account_type_id' => (int) $typeId,
+                'user_account_state_id' => (int) $activeStateId,
+                'is_sample' => $this->profileFlagToInt($existingIsSample),
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+    }
+
+    private function profileFlagToInt($value)
+    {
+        if (is_bool($value)) {
+            return $value ? 1 : 0;
+        }
+
+        if (is_numeric($value)) {
+            return ((int) $value) === 1 ? 1 : 0;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+        return in_array($normalized, ['1', 'true', 'on', 'yes'], true) ? 1 : 0;
     }
 
     public function applicantFormEditor(Applicant $applicant)
@@ -1228,17 +1340,21 @@ class RegistrarController extends Controller
 
     private function buildApplicationProcessQuery(array $filters)
     {
+        $appliedDateExpression = Schema::hasColumn('applicants', 'application_submitted_at')
+            ? 'COALESCE(applicants.application_submitted_at, applicants.created_at)'
+            : 'applicants.created_at';
+
         $query = Applicant::query()
-            ->with('applicationPreference.course')
+            ->with(['applicationPreference.course', 'applicationStatusLookup'])
             ->leftJoin('applicant_application_preferences as preferences', 'preferences.applicant_id', '=', 'applicants.id')
             ->select('applicants.*');
 
         if (!empty($filters['from_date'])) {
-            $query->whereDate('applicants.created_at', '>=', $filters['from_date']);
+            $query->whereRaw('DATE(' . $appliedDateExpression . ') >= ?', [$filters['from_date']]);
         }
 
         if (!empty($filters['to_date'])) {
-            $query->whereDate('applicants.created_at', '<=', $filters['to_date']);
+            $query->whereRaw('DATE(' . $appliedDateExpression . ') <= ?', [$filters['to_date']]);
         }
 
         if (!empty($filters['course_id'])) {
@@ -1273,7 +1389,7 @@ class RegistrarController extends Controller
         } elseif ($filters['sort_by'] === 'applicant_id') {
             $query->orderBy('applicants.applicant_id', $sortDirection);
         } elseif ($filters['sort_by'] === 'date_applied') {
-            $query->orderBy('applicants.created_at', $sortDirection);
+            $query->orderByRaw($appliedDateExpression . ' ' . $sortDirection);
         } else {
             $query->orderBy('applicants.updated_at', $sortDirection);
         }

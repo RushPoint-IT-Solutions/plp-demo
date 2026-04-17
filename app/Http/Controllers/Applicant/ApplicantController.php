@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 
@@ -183,19 +184,41 @@ class ApplicantController extends Controller
     private function syncUserFromApplicant($user, Applicant $applicant)
     {
         if (!$user) {
-            return;
+            $user = User::query()
+                ->where('applicant_id', $applicant->id)
+                ->first();
         }
 
-        $user->name = trim(implode(' ', array_filter([
+        if (!$user) {
+            $username = $this->buildApplicantUsername($applicant);
+            $defaultPasswordSeed = trim((string) $applicant->last_name);
+            if ($defaultPasswordSeed === '') {
+                $defaultPasswordSeed = $username;
+            }
+
+            $user = new User();
+            $user->username = $username;
+            $user->password = Hash::make(strtoupper($defaultPasswordSeed));
+            $user->force_password_reset = true;
+        }
+
+        $fullName = trim(implode(' ', array_filter([
             $applicant->first_name,
             $applicant->middle_name,
             $applicant->last_name,
         ])));
+        if ($fullName === '') {
+            $fullName = (string) $user->username;
+        }
+
+        $user->name = $fullName;
+        $user->module = 'applicant';
+        $user->applicant_id = $applicant->id;
 
         if (!empty($applicant->email_address)) {
             $emailTaken = User::query()
                 ->where('email', $applicant->email_address)
-                ->where('id', '<>', $user->id)
+                ->where('id', '<>', $user->id ?: 0)
                 ->exists();
 
             if (!$emailTaken) {
@@ -204,6 +227,99 @@ class ApplicantController extends Controller
         }
 
         $user->save();
+        $this->syncApplicantUserAccountProfile($user);
+    }
+
+    private function buildApplicantUsername(Applicant $applicant)
+    {
+        $baseUsername = trim((string) $applicant->applicant_id);
+        if ($baseUsername === '') {
+            $baseUsername = 'APP' . str_pad((string) $applicant->id, 6, '0', STR_PAD_LEFT);
+        }
+
+        $candidate = $baseUsername;
+        $counter = 1;
+
+        while (User::query()->where('username', $candidate)->exists()) {
+            $candidate = $baseUsername . '-' . $counter;
+            $counter++;
+        }
+
+        return $candidate;
+    }
+
+    private function syncApplicantUserAccountProfile(User $user)
+    {
+        if (!Schema::hasTable('user_account_profiles')
+            || !Schema::hasTable('user_account_types')
+            || !Schema::hasTable('user_account_states')) {
+            return;
+        }
+
+        $now = now();
+
+        DB::table('user_account_types')->updateOrInsert(
+            ['code' => 'applicant'],
+            [
+                'name' => 'Applicant',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        DB::table('user_account_states')->updateOrInsert(
+            ['code' => 'active'],
+            [
+                'name' => 'Active',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        DB::table('user_account_states')->updateOrInsert(
+            ['code' => 'inactive'],
+            [
+                'name' => 'Inactive',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        $typeId = DB::table('user_account_types')->where('code', 'applicant')->value('id');
+        $activeStateId = DB::table('user_account_states')->where('code', 'active')->value('id');
+
+        if (!$typeId || !$activeStateId) {
+            return;
+        }
+
+        $existingIsSample = DB::table('user_account_profiles')
+            ->where('user_id', $user->id)
+            ->value('is_sample');
+
+        DB::table('user_account_profiles')->updateOrInsert(
+            ['user_id' => $user->id],
+            [
+                'user_account_type_id' => (int) $typeId,
+                'user_account_state_id' => (int) $activeStateId,
+                'is_sample' => $this->toBooleanInt($existingIsSample),
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+    }
+
+    private function toBooleanInt($value)
+    {
+        if (is_bool($value)) {
+            return $value ? 1 : 0;
+        }
+
+        if (is_numeric($value)) {
+            return ((int) $value) === 1 ? 1 : 0;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+        return in_array($normalized, ['1', 'true', 'on', 'yes'], true) ? 1 : 0;
     }
 
     private function applyStep1Payload(Applicant $applicant, array $validated, Request $request)
