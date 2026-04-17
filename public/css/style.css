@@ -43254,6 +43254,163 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   padding-top: 8px;
 }
 
+.page-user-accounts .ua-col-action-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.page-user-accounts .ua-col-action-cell .doclist-action-btn {
+  min-width: 34px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-user-accounts .ua-access-btn {
+  border-color: #0f7b43;
+  color: #0f7b43;
+}
+
+.page-user-accounts .ua-access-btn:hover {
+  background: #eef9f2;
+  border-color: #0f7b43;
+}
+
+.page-user-accounts .ua-access-modal-box {
+  width: min(980px, 96vw);
+  max-width: min(980px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+}
+
+.page-user-accounts .ua-access-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.page-user-accounts .ua-access-modal-title {
+  margin: 0;
+  color: #114f33;
+  font-size: 1.18rem;
+  font-weight: 800;
+}
+
+.page-user-accounts .ua-access-modal-note {
+  margin: 8px 0 12px;
+  font-size: 0.82rem;
+  color: #4c645a;
+}
+
+.page-user-accounts .ua-access-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.page-user-accounts .ua-access-copy-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label label" "select action";
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.page-user-accounts .ua-access-copy-wrap .app-filter-label {
+  grid-area: label;
+  margin: 0;
+  white-space: normal;
+}
+
+.page-user-accounts .ua-access-copy-wrap .app-filter-select {
+  grid-area: select;
+  width: 100%;
+  min-width: 0;
+}
+
+.page-user-accounts .ua-access-copy-wrap .ua-copy-access-btn {
+  grid-area: action;
+  min-width: 118px;
+}
+
+.page-user-accounts .ua-access-table-wrap {
+  max-height: 52vh;
+  overflow: auto;
+  border: 1px solid #d4e3da;
+  border-radius: 10px;
+}
+
+.page-user-accounts .ua-access-table {
+  min-width: 100%;
+  margin-bottom: 0;
+}
+
+.page-user-accounts .ua-access-table th:first-child,
+.page-user-accounts .ua-access-table td:first-child {
+  width: 58%;
+}
+
+.page-user-accounts .ua-access-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.page-user-accounts .ua-access-table tbody td:first-child {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.page-user-accounts .ua-access-rw-col {
+  text-align: center;
+}
+
+.page-user-accounts .ua-access-rw-col .req-checkbox-input {
+  margin: 0 auto;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .page-user-accounts .ua-access-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-col-action-cell .doclist-action-btn,
+  .page-user-accounts .rtp-page-btn,
+  .page-user-accounts .rtp-page-num,
+  .page-user-accounts .ua-clear-btn,
+  .page-user-accounts .ua-search-btn,
+  .page-user-accounts .ua-copy-access-btn,
+  .page-user-accounts .req-btn-cancel,
+  .page-user-accounts .req-btn-save {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .page-user-accounts .ua-col-action-cell .doclist-action-btn,
+  .page-user-accounts .rtp-page-btn,
+  .page-user-accounts .rtp-page-num {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .page-user-accounts .ua-access-copy-wrap {
+    grid-template-columns: 1fr;
+    grid-template-areas: "label" "select" "action";
+    align-items: stretch;
+  }
+
+  .page-user-accounts .ua-access-copy-wrap .ua-copy-access-btn {
+    width: 100%;
+  }
+}
+
 /* Graduation Clearance checklist adjustments (UI parity with forms.css) */
 
 .gc-check-row.gc-check-row-office-only {

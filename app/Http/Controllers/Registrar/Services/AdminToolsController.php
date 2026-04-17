@@ -29,6 +29,9 @@ use App\SystemIncProcessRun;
 use App\SystemReportDetailSetting;
 use App\SystemSchoolSemester;
 use App\ReportPermission;
+use App\AccessControlModule;
+use App\AccessControlPermissionType;
+use App\UserAccessControl;
 use App\AcademicCalendarAudienceType;
 use App\AcademicCalendarEvent;
 use App\Course;
@@ -1191,6 +1194,9 @@ class AdminToolsController extends Controller
             'userAccountDataUrl' => route('registrar.admin-tools.access-management.user-accounts.data'),
             'userAccountUpdateTemplate' => route('registrar.admin-tools.access-management.user-accounts.update', ['user' => '__ID__']),
             'userAccountDeleteTemplate' => route('registrar.admin-tools.access-management.user-accounts.destroy', ['user' => '__ID__']),
+            'userAccessControlModulesUrl' => route('registrar.admin-tools.access-management.user-accounts.access-control.modules'),
+            'userAccessControlShowTemplate' => route('registrar.admin-tools.access-management.user-accounts.access-control.show', ['user' => '__ID__']),
+            'userAccessControlUpdateTemplate' => route('registrar.admin-tools.access-management.user-accounts.access-control.update', ['user' => '__ID__']),
         ]);
     }
 
@@ -1333,6 +1339,116 @@ class AdminToolsController extends Controller
         ]);
     }
 
+    public function userAccountAccessControlModules(): JsonResponse
+    {
+        if (!$this->hasUserAccessControlTables()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Access control tables are unavailable. Please run the access-control migration first.',
+            ], 422);
+        }
+
+        $metadata = $this->fetchAccessControlMetadata();
+
+        return response()->json([
+            'ok' => true,
+            'modules' => $metadata['modules'],
+            'permissionTypes' => $metadata['permissionTypes'],
+        ]);
+    }
+
+    public function userAccountAccessControlShow(User $user): JsonResponse
+    {
+        if (!$this->hasUserAccessControlTables()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Access control tables are unavailable. Please run the access-control migration first.',
+            ], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'data' => $this->buildUserAccessControlPayload($user),
+        ]);
+    }
+
+    public function userAccountAccessControlUpdate(Request $request, User $user): JsonResponse
+    {
+        if (!$this->hasUserAccessControlTables()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Access control tables are unavailable. Please run the access-control migration first.',
+            ], 422);
+        }
+
+        $permissionInput = $request->input('permissions');
+        if (!is_array($permissionInput) || empty($permissionInput)) {
+            throw ValidationException::withMessages([
+                'permissions' => ['Please provide module permissions before saving access control.'],
+            ]);
+        }
+
+        $metadata = $this->fetchAccessControlMetadata();
+        $moduleIdByCode = $metadata['moduleIdByCode'];
+        $permissionTypeIdByCode = $metadata['permissionTypeIdByCode'];
+
+        foreach ($permissionInput as $moduleCode => $actions) {
+            if (!array_key_exists($moduleCode, $moduleIdByCode)) {
+                throw ValidationException::withMessages([
+                    'permissions' => ['Unknown module code: ' . $moduleCode],
+                ]);
+            }
+
+            if (!is_array($actions)) {
+                throw ValidationException::withMessages([
+                    'permissions' => ['Invalid permission payload for module: ' . $moduleCode],
+                ]);
+            }
+
+            foreach ($actions as $permissionCode => $allowed) {
+                if (!array_key_exists($permissionCode, $permissionTypeIdByCode)) {
+                    throw ValidationException::withMessages([
+                        'permissions' => ['Unknown permission type: ' . $permissionCode],
+                    ]);
+                }
+            }
+        }
+
+        $rows = [];
+        $now = now();
+
+        foreach ($moduleIdByCode as $moduleCode => $moduleId) {
+            $moduleActions = [];
+            if (array_key_exists($moduleCode, $permissionInput) && is_array($permissionInput[$moduleCode])) {
+                $moduleActions = $permissionInput[$moduleCode];
+            }
+
+            foreach ($permissionTypeIdByCode as $permissionCode => $permissionTypeId) {
+                $rows[] = [
+                    'user_id' => $user->id,
+                    'access_control_module_id' => $moduleId,
+                    'access_control_permission_type_id' => $permissionTypeId,
+                    'is_allowed' => $this->parseBooleanInput(array_key_exists($permissionCode, $moduleActions) ? $moduleActions[$permissionCode] : false),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        DB::transaction(function () use ($user, $rows) {
+            UserAccessControl::query()->where('user_id', $user->id)->delete();
+            if (!empty($rows)) {
+                UserAccessControl::query()->insert($rows);
+            }
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Access control saved successfully.',
+            'data' => $this->buildUserAccessControlPayload($user),
+        ]);
+    }
+
     public function userAccountsUpdate(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
@@ -1421,6 +1537,177 @@ class AdminToolsController extends Controller
         return Schema::hasTable('user_account_profiles')
             && Schema::hasTable('user_account_types')
             && Schema::hasTable('user_account_states');
+    }
+
+    private function hasUserAccessControlTables(): bool
+    {
+        return Schema::hasTable('access_control_modules')
+            && Schema::hasTable('access_control_permission_types')
+            && Schema::hasTable('user_access_controls');
+    }
+
+    private function fetchAccessControlMetadata(): array
+    {
+        $moduleRows = AccessControlModule::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'parent_id']);
+
+        $permissionTypeRows = AccessControlPermissionType::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'code', 'label']);
+
+        $modules = $moduleRows
+            ->map(function ($row) {
+                return [
+                    'id' => (int) $row->id,
+                    'code' => (string) $row->code,
+                    'name' => (string) $row->name,
+                    'parentId' => $row->parent_id ? (int) $row->parent_id : null,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $permissionTypes = $permissionTypeRows
+            ->map(function ($row) {
+                return [
+                    'id' => (int) $row->id,
+                    'code' => (string) $row->code,
+                    'label' => (string) $row->label,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'moduleRows' => $moduleRows,
+            'permissionTypeRows' => $permissionTypeRows,
+            'modules' => $modules,
+            'permissionTypes' => $permissionTypes,
+            'moduleIdByCode' => $moduleRows->pluck('id', 'code')->toArray(),
+            'permissionTypeIdByCode' => $permissionTypeRows->pluck('id', 'code')->toArray(),
+        ];
+    }
+
+    private function buildDefaultUserAccessMatrix(string $moduleCode, array $modules, array $permissionTypes): array
+    {
+        $matrix = [];
+
+        foreach ($modules as $module) {
+            $code = (string) $module['code'];
+            $matrix[$code] = [];
+
+            foreach ($permissionTypes as $permissionType) {
+                $matrix[$code][(string) $permissionType['code']] = false;
+            }
+        }
+
+        $normalizedModuleCode = $this->normalizeModuleCode($moduleCode);
+        if ($normalizedModuleCode === 'admin' || $normalizedModuleCode === 'registrar') {
+            foreach ($matrix as $code => $actions) {
+                foreach ($actions as $permissionCode => $flag) {
+                    $matrix[$code][$permissionCode] = true;
+                }
+            }
+
+            return $matrix;
+        }
+
+        if (!array_key_exists($normalizedModuleCode, $matrix)) {
+            return $matrix;
+        }
+
+        if (array_key_exists('view', $matrix[$normalizedModuleCode])) {
+            $matrix[$normalizedModuleCode]['view'] = true;
+        }
+        if (array_key_exists('edit', $matrix[$normalizedModuleCode])) {
+            $matrix[$normalizedModuleCode]['edit'] = true;
+        }
+
+        return $matrix;
+    }
+
+    private function buildUserAccessControlPayload(User $user): array
+    {
+        $metadata = $this->fetchAccessControlMetadata();
+        $moduleRows = $metadata['moduleRows'];
+        $permissionTypeRows = $metadata['permissionTypeRows'];
+        $modules = $metadata['modules'];
+        $permissionTypes = $metadata['permissionTypes'];
+
+        $moduleIds = $moduleRows->pluck('id')->all();
+        $permissionTypeIds = $permissionTypeRows->pluck('id')->all();
+
+        $storedRows = UserAccessControl::query()
+            ->where('user_id', $user->id)
+            ->whereIn('access_control_module_id', $moduleIds)
+            ->whereIn('access_control_permission_type_id', $permissionTypeIds)
+            ->get(['access_control_module_id', 'access_control_permission_type_id', 'is_allowed']);
+
+        $storedMap = [];
+        foreach ($storedRows as $row) {
+            $moduleId = (int) $row->access_control_module_id;
+            $permissionTypeId = (int) $row->access_control_permission_type_id;
+            if (!array_key_exists($moduleId, $storedMap)) {
+                $storedMap[$moduleId] = [];
+            }
+
+            $storedMap[$moduleId][$permissionTypeId] = $this->parseBooleanInput($row->is_allowed);
+        }
+
+        $defaultMatrix = [];
+        if ($storedRows->isEmpty()) {
+            $defaultMatrix = $this->buildDefaultUserAccessMatrix((string) ($user->module ?: ''), $modules, $permissionTypes);
+        }
+
+        $modulePayload = $moduleRows->map(function ($module) use ($permissionTypeRows, $storedMap, $defaultMatrix) {
+            $moduleId = (int) $module->id;
+            $moduleCode = (string) $module->code;
+
+            $actions = [];
+            foreach ($permissionTypeRows as $permissionType) {
+                $permissionTypeId = (int) $permissionType->id;
+                $permissionCode = (string) $permissionType->code;
+
+                $allowedFromStore = false;
+                if (array_key_exists($moduleId, $storedMap) && array_key_exists($permissionTypeId, $storedMap[$moduleId])) {
+                    $allowedFromStore = $storedMap[$moduleId][$permissionTypeId];
+                }
+
+                if (!empty($defaultMatrix)) {
+                    $allowedFromStore = $this->parseBooleanInput(
+                        isset($defaultMatrix[$moduleCode]) && array_key_exists($permissionCode, $defaultMatrix[$moduleCode])
+                            ? $defaultMatrix[$moduleCode][$permissionCode]
+                            : false
+                    );
+                }
+
+                $actions[$permissionCode] = $allowedFromStore;
+            }
+
+            return [
+                'id' => $moduleId,
+                'code' => $moduleCode,
+                'name' => (string) $module->name,
+                'parentId' => $module->parent_id ? (int) $module->parent_id : null,
+                'actions' => $actions,
+            ];
+        })->values()->all();
+
+        return [
+            'user' => [
+                'id' => (int) $user->id,
+                'userId' => (string) $user->username,
+                'name' => (string) ($user->name ?: $user->username),
+                'userType' => ucfirst((string) ($user->module ?: 'user')),
+            ],
+            'permissionTypes' => $permissionTypes,
+            'modules' => $modulePayload,
+            'source' => $storedRows->isEmpty() ? 'role-default' : 'explicit',
+        ];
     }
 
     private function syncUserAccountProfile(User $user, bool $inactive, string $typeCode): void

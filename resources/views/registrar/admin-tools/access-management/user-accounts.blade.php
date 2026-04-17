@@ -12,6 +12,9 @@
         data-data-endpoint="{{ $userAccountDataUrl }}"
         data-update-template="{{ $userAccountUpdateTemplate }}"
         data-delete-template="{{ $userAccountDeleteTemplate }}"
+        data-access-modules-endpoint="{{ $userAccessControlModulesUrl }}"
+        data-access-show-template="{{ $userAccessControlShowTemplate }}"
+        data-access-update-template="{{ $userAccessControlUpdateTemplate }}"
         data-csrf-token="{{ csrf_token() }}"
     >
         <section class="cfg-card ua-filter-card">
@@ -67,7 +70,7 @@
                 </table>
             </div>
             <div class="ua-table-meta">
-                <div class="ua-table-caption">Select a row or type a valid User ID to load Account Credentials.</div>
+                <div class="ua-table-caption">Select a row to load credentials. Use the shield icon in Action to open Access Control.</div>
                 <div class="app-table-pager"></div>
             </div>
         </section>
@@ -155,6 +158,52 @@
         <div class="req-modal-actions ua-delete-modal-actions">
             <button type="button" class="req-btn-cancel" id="uaDeleteCancelBtn">Cancel</button>
             <button type="button" class="req-btn-save ua-delete-modal-confirm" id="uaDeleteConfirmBtn">Delete</button>
+        </div>
+    </div>
+</div>
+
+<div class="req-modal-overlay doclist-modal-hidden ua-access-modal" id="uaAccessModal" aria-hidden="true">
+    <div class="req-modal-box ua-access-modal-box" role="dialog" aria-modal="true" aria-labelledby="uaAccessModalTitle">
+        <div class="ua-access-modal-head">
+            <h3 class="ua-access-modal-title" id="uaAccessModalTitle">Access Control - <span id="uaAccessModalUserLabel">-</span></h3>
+            <button type="button" class="rep-modal-close-x" id="uaAccessCloseX" aria-label="Close access control">&times;</button>
+        </div>
+
+        <p class="ua-access-modal-note">These settings override role defaults for this user. Save to persist the access-control matrix in the database.</p>
+
+        <div class="ua-access-meta">
+            <div class="ua-access-copy-wrap">
+                <label class="app-filter-label" for="uaCopyAccessFrom">Copy Access From:</label>
+                <select id="uaCopyAccessFrom" class="app-filter-select">
+                    <option value="">- select user -</option>
+                </select>
+                <button type="button" class="ua-copy-access-btn" id="uaCopyAccessBtn">Copy Settings</button>
+            </div>
+
+            <div class="ua-access-copy-wrap">
+                <label class="app-filter-label" for="uaAccessQuickPreset">Quick Access Options:</label>
+                <select id="uaAccessQuickPreset" class="app-filter-select">
+                    <option value="">- select preset -</option>
+                    <option value="full_access">Full Access</option>
+                    <option value="view_only">View Only</option>
+                    <option value="no_access">No Access</option>
+                </select>
+                <button type="button" class="ua-copy-access-btn" id="uaApplyAccessPresetBtn">Apply</button>
+            </div>
+        </div>
+
+        <div class="app-table-wrap ua-access-table-wrap">
+            <table class="app-table ua-access-table" id="uaAccessTable" data-no-auto-pager="1">
+                <thead id="uaAccessTableHead"></thead>
+                <tbody id="uaAccessTableBody"></tbody>
+            </table>
+        </div>
+
+        <p class="ua-access-footnote" id="uaAccessFootnote">Changes are saved per user and can be copied from another account before saving.</p>
+
+        <div class="ua-bottom-actions">
+            <button type="button" class="req-btn-cancel" id="uaAccessCancelBtn">Cancel</button>
+            <button type="button" class="req-btn-save" id="uaAccessSaveBtn">Save Access</button>
         </div>
     </div>
 </div>

@@ -7,6 +7,9 @@
     var dataEndpoint = root.getAttribute('data-data-endpoint') || '';
     var updateTemplate = root.getAttribute('data-update-template') || '';
     var deleteTemplate = root.getAttribute('data-delete-template') || '';
+    var accessControlModulesEndpoint = root.getAttribute('data-access-modules-endpoint') || '';
+    var accessControlShowTemplate = root.getAttribute('data-access-show-template') || '';
+    var accessControlUpdateTemplate = root.getAttribute('data-access-update-template') || '';
     var csrfToken = root.getAttribute('data-csrf-token') || '';
 
     var state = {
@@ -18,9 +21,22 @@
         perPage: 10,
         total: 0,
         from: 0,
+        accessControl: {
+            targetUserId: null,
+            targetUserLabel: '',
+            source: 'explicit',
+            permissionTypes: [],
+            modules: [],
+            matrix: {},
+        },
     };
 
     var listRequestState = {
+        controller: null,
+        sequence: 0,
+    };
+
+    var accessControlRequestState = {
         controller: null,
         sequence: 0,
     };
@@ -87,6 +103,19 @@
         deleteModalText: document.getElementById('uaDeleteModalText'),
         deleteCancelBtn: document.getElementById('uaDeleteCancelBtn'),
         deleteConfirmBtn: document.getElementById('uaDeleteConfirmBtn'),
+
+        accessModal: document.getElementById('uaAccessModal'),
+        accessModalUserLabel: document.getElementById('uaAccessModalUserLabel'),
+        accessTableHead: document.getElementById('uaAccessTableHead'),
+        accessTableBody: document.getElementById('uaAccessTableBody'),
+        accessFootnote: document.getElementById('uaAccessFootnote'),
+        accessCloseX: document.getElementById('uaAccessCloseX'),
+        accessCancelBtn: document.getElementById('uaAccessCancelBtn'),
+        accessSaveBtn: document.getElementById('uaAccessSaveBtn'),
+        accessCopySelect: document.getElementById('uaCopyAccessFrom'),
+        accessCopyBtn: document.getElementById('uaCopyAccessBtn'),
+        accessPresetSelect: document.getElementById('uaAccessQuickPreset'),
+        accessPresetApplyBtn: document.getElementById('uaApplyAccessPresetBtn'),
     };
 
     function uaNormalize(value) {
@@ -119,6 +148,14 @@
 
     function uaBuildDeleteUrl(id) {
         return deleteTemplate.replace('__ID__', String(id));
+    }
+
+    function uaBuildAccessShowUrl(id) {
+        return accessControlShowTemplate.replace('__ID__', String(id));
+    }
+
+    function uaBuildAccessUpdateUrl(id) {
+        return accessControlUpdateTemplate.replace('__ID__', String(id));
     }
 
     function uaGetFilters() {
@@ -311,6 +348,9 @@
                     '<td>' + uaEscapeHtml(user.userType) + '</td>' +
                     '<td>' + uaStatusBadge(user.inactive) + '</td>' +
                     '<td class="ua-col-action-cell">' +
+                        '<button type="button" class="doclist-action-btn ua-access-btn" data-ua-access-user-pk="' + uaEscapeHtml(user.pk) + '" title="Access Control">' +
+                            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>' +
+                        '</button>' +
                         '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-pk="' + uaEscapeHtml(user.pk) + '" title="Delete">' +
                             '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' +
                         '</button>' +
@@ -910,6 +950,428 @@
         }
     }
 
+    function uaCloneAccessMatrix(matrix) {
+        var cloned = {};
+
+        Object.keys(matrix || {}).forEach(function (moduleCode) {
+            cloned[moduleCode] = Object.assign({}, matrix[moduleCode] || {});
+        });
+
+        return cloned;
+    }
+
+    function uaBuildAccessMatrixFromModules(modules) {
+        var matrix = {};
+
+        (modules || []).forEach(function (module) {
+            var moduleCode = String(module && module.code ? module.code : '');
+            if (!moduleCode) {
+                return;
+            }
+
+            matrix[moduleCode] = {};
+
+            var actions = module && module.actions && typeof module.actions === 'object' ? module.actions : {};
+            Object.keys(actions).forEach(function (permissionCode) {
+                matrix[moduleCode][permissionCode] = !!actions[permissionCode];
+            });
+        });
+
+        return matrix;
+    }
+
+    function uaEnsureAccessMatrix(modules, permissionTypes, matrix) {
+        var normalized = {};
+        var source = matrix || {};
+
+        (modules || []).forEach(function (module) {
+            var moduleCode = String(module && module.code ? module.code : '');
+            if (!moduleCode) {
+                return;
+            }
+
+            normalized[moduleCode] = {};
+
+            (permissionTypes || []).forEach(function (permissionType) {
+                var permissionCode = String(permissionType && permissionType.code ? permissionType.code : '');
+                if (!permissionCode) {
+                    return;
+                }
+
+                normalized[moduleCode][permissionCode] = !!(
+                    source[moduleCode] && Object.prototype.hasOwnProperty.call(source[moduleCode], permissionCode)
+                        ? source[moduleCode][permissionCode]
+                        : false
+                );
+            });
+        });
+
+        return normalized;
+    }
+
+    function uaSetAccessFootnote(sourceMode) {
+        if (!els.accessFootnote) {
+            return;
+        }
+
+        if (sourceMode === 'role-default') {
+            els.accessFootnote.textContent = 'No explicit rows yet. You are seeing role-default permissions and can save overrides for this user.';
+            return;
+        }
+
+        els.accessFootnote.textContent = 'Changes are saved per user and can be copied from another account before saving.';
+    }
+
+    function uaPopulateAccessCopyOptions() {
+        if (!els.accessCopySelect) {
+            return;
+        }
+
+        var previousValue = els.accessCopySelect.value;
+        while (els.accessCopySelect.options.length > 0) {
+            els.accessCopySelect.remove(0);
+        }
+
+        els.accessCopySelect.add(new Option('- select user -', ''));
+
+        var targetUserId = state.accessControl.targetUserId ? String(state.accessControl.targetUserId) : '';
+        var users = (state.rows || [])
+            .filter(function (row) {
+                return String(row.pk) !== targetUserId;
+            })
+            .sort(function (a, b) {
+                var nameA = uaNormalize(a.fullName || a.userId);
+                var nameB = uaNormalize(b.fullName || b.userId);
+
+                if (nameA === nameB) {
+                    var idA = uaNormalize(a.userId);
+                    var idB = uaNormalize(b.userId);
+                    return idA < idB ? -1 : 1;
+                }
+
+                return nameA < nameB ? -1 : 1;
+            });
+
+        users.forEach(function (user) {
+            var label = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+            els.accessCopySelect.add(new Option(label, String(user.pk)));
+        });
+
+        var hasPrevious = Array.prototype.some.call(els.accessCopySelect.options, function (option) {
+            return option.value === previousValue;
+        });
+
+        els.accessCopySelect.value = hasPrevious ? previousValue : '';
+    }
+
+    function uaRenderAccessControlTable() {
+        if (!els.accessTableHead || !els.accessTableBody) {
+            return;
+        }
+
+        var permissionTypes = state.accessControl.permissionTypes || [];
+        var modules = state.accessControl.modules || [];
+
+        if (!permissionTypes.length || !modules.length) {
+            els.accessTableHead.innerHTML = '<tr><th>Module / Permission</th><th>View</th><th>Edit</th></tr>';
+            els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Access-control schema is not available yet.</td></tr>';
+            return;
+        }
+
+        var headColumns = permissionTypes.map(function (permissionType) {
+            return '<th class="ua-access-rw-col">' + uaEscapeHtml(permissionType.label || permissionType.code) + '</th>';
+        }).join('');
+
+        els.accessTableHead.innerHTML = '<tr><th>Module / Permission</th>' + headColumns + '</tr>';
+
+        var bodyRows = modules.map(function (module) {
+            var moduleCode = String(module.code || '');
+            var cells = permissionTypes.map(function (permissionType) {
+                var permissionCode = String(permissionType.code || '');
+                var checked = !!(
+                    state.accessControl.matrix[moduleCode]
+                    && Object.prototype.hasOwnProperty.call(state.accessControl.matrix[moduleCode], permissionCode)
+                    && state.accessControl.matrix[moduleCode][permissionCode]
+                );
+
+                return '' +
+                    '<td class="ua-access-rw-col">' +
+                        '<input type="checkbox" class="req-checkbox-input" data-ua-ac-module="' + uaEscapeHtml(moduleCode) + '" data-ua-ac-permission="' + uaEscapeHtml(permissionCode) + '" ' + (checked ? 'checked' : '') + '>' +
+                    '</td>';
+            }).join('');
+
+            return '' +
+                '<tr>' +
+                    '<td>' + uaEscapeHtml(module.name || moduleCode) + '</td>' +
+                    cells +
+                '</tr>';
+        }).join('');
+
+        els.accessTableBody.innerHTML = bodyRows;
+    }
+
+    function uaOpenAccessModalShell() {
+        if (!els.accessModal) {
+            return;
+        }
+
+        els.accessModal.classList.remove('doclist-modal-hidden');
+        els.accessModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function uaCloseAccessModal() {
+        if (!els.accessModal) {
+            return;
+        }
+
+        state.accessControl.targetUserId = null;
+        state.accessControl.targetUserLabel = '';
+
+        els.accessModal.classList.add('doclist-modal-hidden');
+        els.accessModal.setAttribute('aria-hidden', 'true');
+    }
+
+    async function uaFetchAccessControlPayload(userId) {
+        var numericId = parseInt(userId, 10);
+        if (!numericId) {
+            return null;
+        }
+
+        var json = await uaApiRequest(uaBuildAccessShowUrl(numericId), 'GET', null);
+        return json && json.data ? json.data : null;
+    }
+
+    async function uaPrimeAccessControlMetadata() {
+        if (!accessControlModulesEndpoint) {
+            return;
+        }
+
+        try {
+            var json = await uaApiRequest(accessControlModulesEndpoint, 'GET', null);
+            if (!json || json.ok === false) {
+                return;
+            }
+
+            if (Array.isArray(json.permissionTypes) && !state.accessControl.permissionTypes.length) {
+                state.accessControl.permissionTypes = json.permissionTypes;
+            }
+
+            if (Array.isArray(json.modules) && !state.accessControl.modules.length) {
+                state.accessControl.modules = json.modules.map(function (module) {
+                    return {
+                        id: module.id,
+                        code: module.code,
+                        name: module.name,
+                        parentId: module.parentId,
+                        actions: {},
+                    };
+                });
+
+                state.accessControl.matrix = uaEnsureAccessMatrix(
+                    state.accessControl.modules,
+                    state.accessControl.permissionTypes,
+                    {}
+                );
+            }
+        } catch (error) {
+            // Metadata warm-up is optional.
+        }
+    }
+
+    async function uaOpenAccessModal(userPk) {
+        if (!els.accessModal || !els.accessTableBody || !els.accessModalUserLabel) {
+            return;
+        }
+
+        var user = state.rows.find(function (row) {
+            return String(row.pk) === String(userPk);
+        }) || null;
+
+        if (!user && state.selectedUser && String(state.selectedUser.pk) === String(userPk)) {
+            user = state.selectedUser;
+        }
+
+        if (!user) {
+            alert('Unable to open access control for the selected user.');
+            return;
+        }
+
+        if (accessControlRequestState.controller) {
+            accessControlRequestState.controller.abort();
+        }
+
+        accessControlRequestState.controller = new AbortController();
+        accessControlRequestState.sequence += 1;
+        var requestSequence = accessControlRequestState.sequence;
+
+        state.accessControl.targetUserId = user.pk;
+        state.accessControl.targetUserLabel = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+
+        els.accessModalUserLabel.textContent = state.accessControl.targetUserLabel;
+        uaSetAccessFootnote('explicit');
+        uaOpenAccessModalShell();
+        els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Loading access control...</td></tr>';
+
+        try {
+            var json = await uaApiRequest(uaBuildAccessShowUrl(user.pk), 'GET', null, {
+                signal: accessControlRequestState.controller.signal,
+                allowAbort: true,
+            });
+
+            if (requestSequence !== accessControlRequestState.sequence) {
+                return;
+            }
+
+            var payload = json && json.data ? json.data : null;
+            if (!payload) {
+                throw new Error('Unable to read access-control payload.');
+            }
+
+            state.accessControl.source = String(payload.source || 'explicit');
+            state.accessControl.permissionTypes = Array.isArray(payload.permissionTypes) ? payload.permissionTypes : [];
+            state.accessControl.modules = Array.isArray(payload.modules) ? payload.modules : [];
+
+            var matrix = uaBuildAccessMatrixFromModules(state.accessControl.modules);
+            state.accessControl.matrix = uaEnsureAccessMatrix(
+                state.accessControl.modules,
+                state.accessControl.permissionTypes,
+                matrix
+            );
+
+            if (!state.accessControl.permissionTypes.length || !state.accessControl.modules.length) {
+                throw new Error('Access-control schema is unavailable. Please run the access-control migration first.');
+            }
+
+            uaRenderAccessControlTable();
+            uaPopulateAccessCopyOptions();
+            uaSetAccessFootnote(state.accessControl.source);
+        } catch (error) {
+            if (error && error.name === 'AbortError') {
+                return;
+            }
+
+            uaCloseAccessModal();
+            alert(error.message || 'Unable to load access control.');
+        } finally {
+            if (requestSequence === accessControlRequestState.sequence) {
+                accessControlRequestState.controller = null;
+            }
+        }
+    }
+
+    function uaApplyAccessPreset() {
+        if (!els.accessPresetSelect) {
+            return;
+        }
+
+        var preset = String(els.accessPresetSelect.value || '');
+        if (!preset) {
+            alert('Please choose a quick-access option first.');
+            return;
+        }
+
+        var permissionTypes = state.accessControl.permissionTypes || [];
+        var modules = state.accessControl.modules || [];
+
+        state.accessControl.matrix = uaEnsureAccessMatrix(modules, permissionTypes, state.accessControl.matrix);
+
+        modules.forEach(function (module) {
+            var moduleCode = String(module.code || '');
+            if (!moduleCode || !state.accessControl.matrix[moduleCode]) {
+                return;
+            }
+
+            permissionTypes.forEach(function (permissionType) {
+                var permissionCode = String(permissionType.code || '');
+                if (!permissionCode) {
+                    return;
+                }
+
+                if (preset === 'full_access') {
+                    state.accessControl.matrix[moduleCode][permissionCode] = true;
+                    return;
+                }
+
+                if (preset === 'view_only') {
+                    state.accessControl.matrix[moduleCode][permissionCode] = permissionCode === 'view';
+                    return;
+                }
+
+                state.accessControl.matrix[moduleCode][permissionCode] = false;
+            });
+        });
+
+        uaRenderAccessControlTable();
+    }
+
+    async function uaCopyAccessFromUser() {
+        if (!els.accessCopySelect) {
+            return;
+        }
+
+        var sourceUserId = parseInt(els.accessCopySelect.value, 10);
+        if (!sourceUserId) {
+            alert('Please select a user to copy access from.');
+            return;
+        }
+
+        try {
+            var payload = await uaFetchAccessControlPayload(sourceUserId);
+            if (!payload) {
+                throw new Error('Unable to load the source user access settings.');
+            }
+
+            var sourceModules = Array.isArray(payload.modules) ? payload.modules : [];
+            var sourceMatrix = uaBuildAccessMatrixFromModules(sourceModules);
+
+            state.accessControl.matrix = uaEnsureAccessMatrix(
+                state.accessControl.modules,
+                state.accessControl.permissionTypes,
+                sourceMatrix
+            );
+
+            uaRenderAccessControlTable();
+            if (els.accessFootnote) {
+                els.accessFootnote.textContent = 'Copied access settings from the selected user. Click Save Access to persist changes.';
+            }
+        } catch (error) {
+            alert(error.message || 'Unable to copy access settings.');
+        }
+    }
+
+    async function uaSaveAccessControl() {
+        var targetUserId = parseInt(state.accessControl.targetUserId, 10);
+        if (!targetUserId) {
+            alert('Select a user before saving access control.');
+            return;
+        }
+
+        var matrix = uaCloneAccessMatrix(state.accessControl.matrix);
+
+        try {
+            var json = await uaApiRequest(uaBuildAccessUpdateUrl(targetUserId), 'PUT', {
+                permissions: matrix,
+            });
+
+            var payload = json && json.data ? json.data : null;
+            if (payload && Array.isArray(payload.modules) && Array.isArray(payload.permissionTypes)) {
+                state.accessControl.source = String(payload.source || 'explicit');
+                state.accessControl.permissionTypes = payload.permissionTypes;
+                state.accessControl.modules = payload.modules;
+                state.accessControl.matrix = uaEnsureAccessMatrix(
+                    state.accessControl.modules,
+                    state.accessControl.permissionTypes,
+                    uaBuildAccessMatrixFromModules(payload.modules)
+                );
+            }
+
+            uaCloseAccessModal();
+            alert('Access control saved.');
+        } catch (error) {
+            alert(error.message || 'Unable to save access control.');
+        }
+    }
+
     async function uaSaveSelected() {
         if (!state.selectedUser || !state.selectedUser.pk) {
             alert('Please select a user account first.');
@@ -1025,6 +1487,14 @@
 
         if (els.tableBody) {
             els.tableBody.addEventListener('click', function (event) {
+                var accessBtn = event.target.closest('[data-ua-access-user-pk]');
+                if (accessBtn) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    uaOpenAccessModal(accessBtn.getAttribute('data-ua-access-user-pk'));
+                    return;
+                }
+
                 var deleteBtn = event.target.closest('[data-ua-delete-user-pk]');
                 if (deleteBtn) {
                     event.preventDefault();
@@ -1100,10 +1570,70 @@
             });
         }
 
+        if (els.accessTableBody) {
+            els.accessTableBody.addEventListener('change', function (event) {
+                var checkbox = event.target.closest('[data-ua-ac-module][data-ua-ac-permission]');
+                if (!checkbox) {
+                    return;
+                }
+
+                var moduleCode = checkbox.getAttribute('data-ua-ac-module') || '';
+                var permissionCode = checkbox.getAttribute('data-ua-ac-permission') || '';
+                if (!moduleCode || !permissionCode) {
+                    return;
+                }
+
+                if (!state.accessControl.matrix[moduleCode]) {
+                    state.accessControl.matrix[moduleCode] = {};
+                }
+
+                state.accessControl.matrix[moduleCode][permissionCode] = !!checkbox.checked;
+            });
+        }
+
+        if (els.accessCopyBtn) {
+            els.accessCopyBtn.addEventListener('click', function () {
+                uaCopyAccessFromUser();
+            });
+        }
+
+        if (els.accessPresetApplyBtn) {
+            els.accessPresetApplyBtn.addEventListener('click', function () {
+                uaApplyAccessPreset();
+            });
+        }
+
+        if (els.accessSaveBtn) {
+            els.accessSaveBtn.addEventListener('click', function () {
+                uaSaveAccessControl();
+            });
+        }
+
+        if (els.accessCancelBtn) {
+            els.accessCancelBtn.addEventListener('click', function () {
+                uaCloseAccessModal();
+            });
+        }
+
+        if (els.accessCloseX) {
+            els.accessCloseX.addEventListener('click', function () {
+                uaCloseAccessModal();
+            });
+        }
+
+        if (els.accessModal) {
+            els.accessModal.addEventListener('click', function (event) {
+                if (event.target === els.accessModal) {
+                    uaCloseAccessModal();
+                }
+            });
+        }
+
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 uaCloseCredentialSearchDropdowns();
                 uaCloseDeleteModal();
+                uaCloseAccessModal();
             }
         });
     }
@@ -1118,6 +1648,7 @@
         }
     }
 
+    uaPrimeAccessControlMetadata();
     uaWireEvents();
     uaPreventAutofillArtifacts();
     uaSetSelectedSummary(null);

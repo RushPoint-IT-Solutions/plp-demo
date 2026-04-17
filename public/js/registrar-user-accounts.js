@@ -95,6 +95,7 @@
 
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 (function () {
@@ -105,6 +106,9 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   var dataEndpoint = root.getAttribute('data-data-endpoint') || '';
   var updateTemplate = root.getAttribute('data-update-template') || '';
   var deleteTemplate = root.getAttribute('data-delete-template') || '';
+  var accessControlModulesEndpoint = root.getAttribute('data-access-modules-endpoint') || '';
+  var accessControlShowTemplate = root.getAttribute('data-access-show-template') || '';
+  var accessControlUpdateTemplate = root.getAttribute('data-access-update-template') || '';
   var csrfToken = root.getAttribute('data-csrf-token') || '';
   var state = {
     selectedUser: null,
@@ -114,9 +118,21 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     lastPage: 1,
     perPage: 10,
     total: 0,
-    from: 0
+    from: 0,
+    accessControl: {
+      targetUserId: null,
+      targetUserLabel: '',
+      source: 'explicit',
+      permissionTypes: [],
+      modules: [],
+      matrix: {}
+    }
   };
   var listRequestState = {
+    controller: null,
+    sequence: 0
+  };
+  var accessControlRequestState = {
     controller: null,
     sequence: 0
   };
@@ -173,7 +189,19 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     deleteModal: document.getElementById('uaDeleteModal'),
     deleteModalText: document.getElementById('uaDeleteModalText'),
     deleteCancelBtn: document.getElementById('uaDeleteCancelBtn'),
-    deleteConfirmBtn: document.getElementById('uaDeleteConfirmBtn')
+    deleteConfirmBtn: document.getElementById('uaDeleteConfirmBtn'),
+    accessModal: document.getElementById('uaAccessModal'),
+    accessModalUserLabel: document.getElementById('uaAccessModalUserLabel'),
+    accessTableHead: document.getElementById('uaAccessTableHead'),
+    accessTableBody: document.getElementById('uaAccessTableBody'),
+    accessFootnote: document.getElementById('uaAccessFootnote'),
+    accessCloseX: document.getElementById('uaAccessCloseX'),
+    accessCancelBtn: document.getElementById('uaAccessCancelBtn'),
+    accessSaveBtn: document.getElementById('uaAccessSaveBtn'),
+    accessCopySelect: document.getElementById('uaCopyAccessFrom'),
+    accessCopyBtn: document.getElementById('uaCopyAccessBtn'),
+    accessPresetSelect: document.getElementById('uaAccessQuickPreset'),
+    accessPresetApplyBtn: document.getElementById('uaApplyAccessPresetBtn')
   };
   function uaNormalize(value) {
     return String(value || '').trim().toLowerCase();
@@ -201,6 +229,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   }
   function uaBuildDeleteUrl(id) {
     return deleteTemplate.replace('__ID__', String(id));
+  }
+  function uaBuildAccessShowUrl(id) {
+    return accessControlShowTemplate.replace('__ID__', String(id));
+  }
+  function uaBuildAccessUpdateUrl(id) {
+    return accessControlUpdateTemplate.replace('__ID__', String(id));
   }
   function uaGetFilters() {
     return {
@@ -390,7 +424,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     }
     var html = state.rows.map(function (user, index) {
       var rowNo = (state.from || 0) + index;
-      return '' + '<tr data-ua-user-pk="' + uaEscapeHtml(user.pk) + '">' + '<td>' + rowNo + '</td>' + '<td>' + uaEscapeHtml(user.userId) + '</td>' + '<td>' + uaEscapeHtml(user.fullName) + '</td>' + '<td>' + uaEscapeHtml(user.userType) + '</td>' + '<td>' + uaStatusBadge(user.inactive) + '</td>' + '<td class="ua-col-action-cell">' + '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-pk="' + uaEscapeHtml(user.pk) + '" title="Delete">' + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' + '</button>' + '</td>' + '</tr>';
+      return '' + '<tr data-ua-user-pk="' + uaEscapeHtml(user.pk) + '">' + '<td>' + rowNo + '</td>' + '<td>' + uaEscapeHtml(user.userId) + '</td>' + '<td>' + uaEscapeHtml(user.fullName) + '</td>' + '<td>' + uaEscapeHtml(user.userType) + '</td>' + '<td>' + uaStatusBadge(user.inactive) + '</td>' + '<td class="ua-col-action-cell">' + '<button type="button" class="doclist-action-btn ua-access-btn" data-ua-access-user-pk="' + uaEscapeHtml(user.pk) + '" title="Access Control">' + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>' + '</button>' + '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-pk="' + uaEscapeHtml(user.pk) + '" title="Delete">' + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' + '</button>' + '</td>' + '</tr>';
     }).join('');
     els.tableBody.innerHTML = html;
     uaHighlightSelectedRow();
@@ -935,21 +969,461 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     }));
     return _uaConfirmDelete.apply(this, arguments);
   }
+  function uaCloneAccessMatrix(matrix) {
+    var cloned = {};
+    Object.keys(matrix || {}).forEach(function (moduleCode) {
+      cloned[moduleCode] = Object.assign({}, matrix[moduleCode] || {});
+    });
+    return cloned;
+  }
+  function uaBuildAccessMatrixFromModules(modules) {
+    var matrix = {};
+    (modules || []).forEach(function (module) {
+      var moduleCode = String(module && module.code ? module.code : '');
+      if (!moduleCode) {
+        return;
+      }
+      matrix[moduleCode] = {};
+      var actions = module && module.actions && _typeof(module.actions) === 'object' ? module.actions : {};
+      Object.keys(actions).forEach(function (permissionCode) {
+        matrix[moduleCode][permissionCode] = !!actions[permissionCode];
+      });
+    });
+    return matrix;
+  }
+  function uaEnsureAccessMatrix(modules, permissionTypes, matrix) {
+    var normalized = {};
+    var source = matrix || {};
+    (modules || []).forEach(function (module) {
+      var moduleCode = String(module && module.code ? module.code : '');
+      if (!moduleCode) {
+        return;
+      }
+      normalized[moduleCode] = {};
+      (permissionTypes || []).forEach(function (permissionType) {
+        var permissionCode = String(permissionType && permissionType.code ? permissionType.code : '');
+        if (!permissionCode) {
+          return;
+        }
+        normalized[moduleCode][permissionCode] = !!(source[moduleCode] && Object.prototype.hasOwnProperty.call(source[moduleCode], permissionCode) ? source[moduleCode][permissionCode] : false);
+      });
+    });
+    return normalized;
+  }
+  function uaSetAccessFootnote(sourceMode) {
+    if (!els.accessFootnote) {
+      return;
+    }
+    if (sourceMode === 'role-default') {
+      els.accessFootnote.textContent = 'No explicit rows yet. You are seeing role-default permissions and can save overrides for this user.';
+      return;
+    }
+    els.accessFootnote.textContent = 'Changes are saved per user and can be copied from another account before saving.';
+  }
+  function uaPopulateAccessCopyOptions() {
+    if (!els.accessCopySelect) {
+      return;
+    }
+    var previousValue = els.accessCopySelect.value;
+    while (els.accessCopySelect.options.length > 0) {
+      els.accessCopySelect.remove(0);
+    }
+    els.accessCopySelect.add(new Option('- select user -', ''));
+    var targetUserId = state.accessControl.targetUserId ? String(state.accessControl.targetUserId) : '';
+    var users = (state.rows || []).filter(function (row) {
+      return String(row.pk) !== targetUserId;
+    }).sort(function (a, b) {
+      var nameA = uaNormalize(a.fullName || a.userId);
+      var nameB = uaNormalize(b.fullName || b.userId);
+      if (nameA === nameB) {
+        var idA = uaNormalize(a.userId);
+        var idB = uaNormalize(b.userId);
+        return idA < idB ? -1 : 1;
+      }
+      return nameA < nameB ? -1 : 1;
+    });
+    users.forEach(function (user) {
+      var label = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+      els.accessCopySelect.add(new Option(label, String(user.pk)));
+    });
+    var hasPrevious = Array.prototype.some.call(els.accessCopySelect.options, function (option) {
+      return option.value === previousValue;
+    });
+    els.accessCopySelect.value = hasPrevious ? previousValue : '';
+  }
+  function uaRenderAccessControlTable() {
+    if (!els.accessTableHead || !els.accessTableBody) {
+      return;
+    }
+    var permissionTypes = state.accessControl.permissionTypes || [];
+    var modules = state.accessControl.modules || [];
+    if (!permissionTypes.length || !modules.length) {
+      els.accessTableHead.innerHTML = '<tr><th>Module / Permission</th><th>View</th><th>Edit</th></tr>';
+      els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Access-control schema is not available yet.</td></tr>';
+      return;
+    }
+    var headColumns = permissionTypes.map(function (permissionType) {
+      return '<th class="ua-access-rw-col">' + uaEscapeHtml(permissionType.label || permissionType.code) + '</th>';
+    }).join('');
+    els.accessTableHead.innerHTML = '<tr><th>Module / Permission</th>' + headColumns + '</tr>';
+    var bodyRows = modules.map(function (module) {
+      var moduleCode = String(module.code || '');
+      var cells = permissionTypes.map(function (permissionType) {
+        var permissionCode = String(permissionType.code || '');
+        var checked = !!(state.accessControl.matrix[moduleCode] && Object.prototype.hasOwnProperty.call(state.accessControl.matrix[moduleCode], permissionCode) && state.accessControl.matrix[moduleCode][permissionCode]);
+        return '' + '<td class="ua-access-rw-col">' + '<input type="checkbox" class="req-checkbox-input" data-ua-ac-module="' + uaEscapeHtml(moduleCode) + '" data-ua-ac-permission="' + uaEscapeHtml(permissionCode) + '" ' + (checked ? 'checked' : '') + '>' + '</td>';
+      }).join('');
+      return '' + '<tr>' + '<td>' + uaEscapeHtml(module.name || moduleCode) + '</td>' + cells + '</tr>';
+    }).join('');
+    els.accessTableBody.innerHTML = bodyRows;
+  }
+  function uaOpenAccessModalShell() {
+    if (!els.accessModal) {
+      return;
+    }
+    els.accessModal.classList.remove('doclist-modal-hidden');
+    els.accessModal.setAttribute('aria-hidden', 'false');
+  }
+  function uaCloseAccessModal() {
+    if (!els.accessModal) {
+      return;
+    }
+    state.accessControl.targetUserId = null;
+    state.accessControl.targetUserLabel = '';
+    els.accessModal.classList.add('doclist-modal-hidden');
+    els.accessModal.setAttribute('aria-hidden', 'true');
+  }
+  function uaFetchAccessControlPayload(_x8) {
+    return _uaFetchAccessControlPayload.apply(this, arguments);
+  }
+  function _uaFetchAccessControlPayload() {
+    _uaFetchAccessControlPayload = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(userId) {
+      var numericId, json;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.n) {
+          case 0:
+            numericId = parseInt(userId, 10);
+            if (numericId) {
+              _context5.n = 1;
+              break;
+            }
+            return _context5.a(2, null);
+          case 1:
+            _context5.n = 2;
+            return uaApiRequest(uaBuildAccessShowUrl(numericId), 'GET', null);
+          case 2:
+            json = _context5.v;
+            return _context5.a(2, json && json.data ? json.data : null);
+        }
+      }, _callee5);
+    }));
+    return _uaFetchAccessControlPayload.apply(this, arguments);
+  }
+  function uaPrimeAccessControlMetadata() {
+    return _uaPrimeAccessControlMetadata.apply(this, arguments);
+  }
+  function _uaPrimeAccessControlMetadata() {
+    _uaPrimeAccessControlMetadata = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      var json, _t6;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.p = _context6.n) {
+          case 0:
+            if (accessControlModulesEndpoint) {
+              _context6.n = 1;
+              break;
+            }
+            return _context6.a(2);
+          case 1:
+            _context6.p = 1;
+            _context6.n = 2;
+            return uaApiRequest(accessControlModulesEndpoint, 'GET', null);
+          case 2:
+            json = _context6.v;
+            if (!(!json || json.ok === false)) {
+              _context6.n = 3;
+              break;
+            }
+            return _context6.a(2);
+          case 3:
+            if (Array.isArray(json.permissionTypes) && !state.accessControl.permissionTypes.length) {
+              state.accessControl.permissionTypes = json.permissionTypes;
+            }
+            if (Array.isArray(json.modules) && !state.accessControl.modules.length) {
+              state.accessControl.modules = json.modules.map(function (module) {
+                return {
+                  id: module.id,
+                  code: module.code,
+                  name: module.name,
+                  parentId: module.parentId,
+                  actions: {}
+                };
+              });
+              state.accessControl.matrix = uaEnsureAccessMatrix(state.accessControl.modules, state.accessControl.permissionTypes, {});
+            }
+            _context6.n = 5;
+            break;
+          case 4:
+            _context6.p = 4;
+            _t6 = _context6.v;
+          case 5:
+            return _context6.a(2);
+        }
+      }, _callee6, null, [[1, 4]]);
+    }));
+    return _uaPrimeAccessControlMetadata.apply(this, arguments);
+  }
+  function uaOpenAccessModal(_x9) {
+    return _uaOpenAccessModal.apply(this, arguments);
+  }
+  function _uaOpenAccessModal() {
+    _uaOpenAccessModal = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(userPk) {
+      var user, requestSequence, json, payload, matrix, _t7;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.p = _context7.n) {
+          case 0:
+            if (!(!els.accessModal || !els.accessTableBody || !els.accessModalUserLabel)) {
+              _context7.n = 1;
+              break;
+            }
+            return _context7.a(2);
+          case 1:
+            user = state.rows.find(function (row) {
+              return String(row.pk) === String(userPk);
+            }) || null;
+            if (!user && state.selectedUser && String(state.selectedUser.pk) === String(userPk)) {
+              user = state.selectedUser;
+            }
+            if (user) {
+              _context7.n = 2;
+              break;
+            }
+            alert('Unable to open access control for the selected user.');
+            return _context7.a(2);
+          case 2:
+            if (accessControlRequestState.controller) {
+              accessControlRequestState.controller.abort();
+            }
+            accessControlRequestState.controller = new AbortController();
+            accessControlRequestState.sequence += 1;
+            requestSequence = accessControlRequestState.sequence;
+            state.accessControl.targetUserId = user.pk;
+            state.accessControl.targetUserLabel = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+            els.accessModalUserLabel.textContent = state.accessControl.targetUserLabel;
+            uaSetAccessFootnote('explicit');
+            uaOpenAccessModalShell();
+            els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Loading access control...</td></tr>';
+            _context7.p = 3;
+            _context7.n = 4;
+            return uaApiRequest(uaBuildAccessShowUrl(user.pk), 'GET', null, {
+              signal: accessControlRequestState.controller.signal,
+              allowAbort: true
+            });
+          case 4:
+            json = _context7.v;
+            if (!(requestSequence !== accessControlRequestState.sequence)) {
+              _context7.n = 5;
+              break;
+            }
+            return _context7.a(2);
+          case 5:
+            payload = json && json.data ? json.data : null;
+            if (payload) {
+              _context7.n = 6;
+              break;
+            }
+            throw new Error('Unable to read access-control payload.');
+          case 6:
+            state.accessControl.source = String(payload.source || 'explicit');
+            state.accessControl.permissionTypes = Array.isArray(payload.permissionTypes) ? payload.permissionTypes : [];
+            state.accessControl.modules = Array.isArray(payload.modules) ? payload.modules : [];
+            matrix = uaBuildAccessMatrixFromModules(state.accessControl.modules);
+            state.accessControl.matrix = uaEnsureAccessMatrix(state.accessControl.modules, state.accessControl.permissionTypes, matrix);
+            if (!(!state.accessControl.permissionTypes.length || !state.accessControl.modules.length)) {
+              _context7.n = 7;
+              break;
+            }
+            throw new Error('Access-control schema is unavailable. Please run the access-control migration first.');
+          case 7:
+            uaRenderAccessControlTable();
+            uaPopulateAccessCopyOptions();
+            uaSetAccessFootnote(state.accessControl.source);
+            _context7.n = 10;
+            break;
+          case 8:
+            _context7.p = 8;
+            _t7 = _context7.v;
+            if (!(_t7 && _t7.name === 'AbortError')) {
+              _context7.n = 9;
+              break;
+            }
+            return _context7.a(2);
+          case 9:
+            uaCloseAccessModal();
+            alert(_t7.message || 'Unable to load access control.');
+          case 10:
+            _context7.p = 10;
+            if (requestSequence === accessControlRequestState.sequence) {
+              accessControlRequestState.controller = null;
+            }
+            return _context7.f(10);
+          case 11:
+            return _context7.a(2);
+        }
+      }, _callee7, null, [[3, 8, 10, 11]]);
+    }));
+    return _uaOpenAccessModal.apply(this, arguments);
+  }
+  function uaApplyAccessPreset() {
+    if (!els.accessPresetSelect) {
+      return;
+    }
+    var preset = String(els.accessPresetSelect.value || '');
+    if (!preset) {
+      alert('Please choose a quick-access option first.');
+      return;
+    }
+    var permissionTypes = state.accessControl.permissionTypes || [];
+    var modules = state.accessControl.modules || [];
+    state.accessControl.matrix = uaEnsureAccessMatrix(modules, permissionTypes, state.accessControl.matrix);
+    modules.forEach(function (module) {
+      var moduleCode = String(module.code || '');
+      if (!moduleCode || !state.accessControl.matrix[moduleCode]) {
+        return;
+      }
+      permissionTypes.forEach(function (permissionType) {
+        var permissionCode = String(permissionType.code || '');
+        if (!permissionCode) {
+          return;
+        }
+        if (preset === 'full_access') {
+          state.accessControl.matrix[moduleCode][permissionCode] = true;
+          return;
+        }
+        if (preset === 'view_only') {
+          state.accessControl.matrix[moduleCode][permissionCode] = permissionCode === 'view';
+          return;
+        }
+        state.accessControl.matrix[moduleCode][permissionCode] = false;
+      });
+    });
+    uaRenderAccessControlTable();
+  }
+  function uaCopyAccessFromUser() {
+    return _uaCopyAccessFromUser.apply(this, arguments);
+  }
+  function _uaCopyAccessFromUser() {
+    _uaCopyAccessFromUser = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      var sourceUserId, payload, sourceModules, sourceMatrix, _t8;
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.p = _context8.n) {
+          case 0:
+            if (els.accessCopySelect) {
+              _context8.n = 1;
+              break;
+            }
+            return _context8.a(2);
+          case 1:
+            sourceUserId = parseInt(els.accessCopySelect.value, 10);
+            if (sourceUserId) {
+              _context8.n = 2;
+              break;
+            }
+            alert('Please select a user to copy access from.');
+            return _context8.a(2);
+          case 2:
+            _context8.p = 2;
+            _context8.n = 3;
+            return uaFetchAccessControlPayload(sourceUserId);
+          case 3:
+            payload = _context8.v;
+            if (payload) {
+              _context8.n = 4;
+              break;
+            }
+            throw new Error('Unable to load the source user access settings.');
+          case 4:
+            sourceModules = Array.isArray(payload.modules) ? payload.modules : [];
+            sourceMatrix = uaBuildAccessMatrixFromModules(sourceModules);
+            state.accessControl.matrix = uaEnsureAccessMatrix(state.accessControl.modules, state.accessControl.permissionTypes, sourceMatrix);
+            uaRenderAccessControlTable();
+            if (els.accessFootnote) {
+              els.accessFootnote.textContent = 'Copied access settings from the selected user. Click Save Access to persist changes.';
+            }
+            _context8.n = 6;
+            break;
+          case 5:
+            _context8.p = 5;
+            _t8 = _context8.v;
+            alert(_t8.message || 'Unable to copy access settings.');
+          case 6:
+            return _context8.a(2);
+        }
+      }, _callee8, null, [[2, 5]]);
+    }));
+    return _uaCopyAccessFromUser.apply(this, arguments);
+  }
+  function uaSaveAccessControl() {
+    return _uaSaveAccessControl.apply(this, arguments);
+  }
+  function _uaSaveAccessControl() {
+    _uaSaveAccessControl = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+      var targetUserId, matrix, json, payload, _t9;
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.p = _context9.n) {
+          case 0:
+            targetUserId = parseInt(state.accessControl.targetUserId, 10);
+            if (targetUserId) {
+              _context9.n = 1;
+              break;
+            }
+            alert('Select a user before saving access control.');
+            return _context9.a(2);
+          case 1:
+            matrix = uaCloneAccessMatrix(state.accessControl.matrix);
+            _context9.p = 2;
+            _context9.n = 3;
+            return uaApiRequest(uaBuildAccessUpdateUrl(targetUserId), 'PUT', {
+              permissions: matrix
+            });
+          case 3:
+            json = _context9.v;
+            payload = json && json.data ? json.data : null;
+            if (payload && Array.isArray(payload.modules) && Array.isArray(payload.permissionTypes)) {
+              state.accessControl.source = String(payload.source || 'explicit');
+              state.accessControl.permissionTypes = payload.permissionTypes;
+              state.accessControl.modules = payload.modules;
+              state.accessControl.matrix = uaEnsureAccessMatrix(state.accessControl.modules, state.accessControl.permissionTypes, uaBuildAccessMatrixFromModules(payload.modules));
+            }
+            uaCloseAccessModal();
+            alert('Access control saved.');
+            _context9.n = 5;
+            break;
+          case 4:
+            _context9.p = 4;
+            _t9 = _context9.v;
+            alert(_t9.message || 'Unable to save access control.');
+          case 5:
+            return _context9.a(2);
+        }
+      }, _callee9, null, [[2, 4]]);
+    }));
+    return _uaSaveAccessControl.apply(this, arguments);
+  }
   function uaSaveSelected() {
     return _uaSaveSelected.apply(this, arguments);
   }
   function _uaSaveSelected() {
-    _uaSaveSelected = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var payload, json, _t6;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.p = _context5.n) {
+    _uaSaveSelected = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+      var payload, json, _t0;
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.p = _context0.n) {
           case 0:
             if (!(!state.selectedUser || !state.selectedUser.pk)) {
-              _context5.n = 1;
+              _context0.n = 1;
               break;
             }
             alert('Please select a user account first.');
-            return _context5.a(2);
+            return _context0.a(2);
           case 1:
             payload = {
               user_id: (els.formUserId ? els.formUserId.value : '').trim(),
@@ -960,35 +1434,35 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               user_type: (els.formUserType ? els.formUserType.value : '').trim()
             };
             if (payload.user_id) {
-              _context5.n = 2;
+              _context0.n = 2;
               break;
             }
             alert('Please enter a User ID.');
-            return _context5.a(2);
+            return _context0.a(2);
           case 2:
-            _context5.p = 2;
-            _context5.n = 3;
+            _context0.p = 2;
+            _context0.n = 3;
             return uaApiRequest(uaBuildUpdateUrl(state.selectedUser.pk), 'PUT', payload);
           case 3:
-            json = _context5.v;
+            json = _context0.v;
             if (json.row) {
               state.selectedUser = json.row;
               uaFillForm(json.row);
             }
-            _context5.n = 4;
+            _context0.n = 4;
             return uaFetchRows(state.currentPage);
           case 4:
             alert('Account credentials updated.');
-            _context5.n = 6;
+            _context0.n = 6;
             break;
           case 5:
-            _context5.p = 5;
-            _t6 = _context5.v;
-            alert(_t6.message || 'Unable to update account credentials.');
+            _context0.p = 5;
+            _t0 = _context0.v;
+            alert(_t0.message || 'Unable to update account credentials.');
           case 6:
-            return _context5.a(2);
+            return _context0.a(2);
         }
-      }, _callee5, null, [[2, 5]]);
+      }, _callee0, null, [[2, 5]]);
     }));
     return _uaSaveSelected.apply(this, arguments);
   }
@@ -1064,6 +1538,13 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     }
     if (els.tableBody) {
       els.tableBody.addEventListener('click', function (event) {
+        var accessBtn = event.target.closest('[data-ua-access-user-pk]');
+        if (accessBtn) {
+          event.preventDefault();
+          event.stopPropagation();
+          uaOpenAccessModal(accessBtn.getAttribute('data-ua-access-user-pk'));
+          return;
+        }
         var deleteBtn = event.target.closest('[data-ua-delete-user-pk]');
         if (deleteBtn) {
           event.preventDefault();
@@ -1127,10 +1608,60 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         }
       });
     }
+    if (els.accessTableBody) {
+      els.accessTableBody.addEventListener('change', function (event) {
+        var checkbox = event.target.closest('[data-ua-ac-module][data-ua-ac-permission]');
+        if (!checkbox) {
+          return;
+        }
+        var moduleCode = checkbox.getAttribute('data-ua-ac-module') || '';
+        var permissionCode = checkbox.getAttribute('data-ua-ac-permission') || '';
+        if (!moduleCode || !permissionCode) {
+          return;
+        }
+        if (!state.accessControl.matrix[moduleCode]) {
+          state.accessControl.matrix[moduleCode] = {};
+        }
+        state.accessControl.matrix[moduleCode][permissionCode] = !!checkbox.checked;
+      });
+    }
+    if (els.accessCopyBtn) {
+      els.accessCopyBtn.addEventListener('click', function () {
+        uaCopyAccessFromUser();
+      });
+    }
+    if (els.accessPresetApplyBtn) {
+      els.accessPresetApplyBtn.addEventListener('click', function () {
+        uaApplyAccessPreset();
+      });
+    }
+    if (els.accessSaveBtn) {
+      els.accessSaveBtn.addEventListener('click', function () {
+        uaSaveAccessControl();
+      });
+    }
+    if (els.accessCancelBtn) {
+      els.accessCancelBtn.addEventListener('click', function () {
+        uaCloseAccessModal();
+      });
+    }
+    if (els.accessCloseX) {
+      els.accessCloseX.addEventListener('click', function () {
+        uaCloseAccessModal();
+      });
+    }
+    if (els.accessModal) {
+      els.accessModal.addEventListener('click', function (event) {
+        if (event.target === els.accessModal) {
+          uaCloseAccessModal();
+        }
+      });
+    }
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
         uaCloseCredentialSearchDropdowns();
         uaCloseDeleteModal();
+        uaCloseAccessModal();
       }
     });
   }
@@ -1143,6 +1674,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       els.formPassword.type = 'password';
     }
   }
+  uaPrimeAccessControlMetadata();
   uaWireEvents();
   uaPreventAutofillArtifacts();
   uaSetSelectedSummary(null);
