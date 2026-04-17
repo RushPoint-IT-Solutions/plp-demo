@@ -2,6 +2,7 @@
 
 @section('title', 'PLP - Grading Sheet')
 @section('page-title', 'GRADING SHEET')
+@section('body-class', 'page-registrar-grading-sheet')
 
 @section('content')
 <div class="pf-page">
@@ -207,6 +208,7 @@
             </div>
         </div>
     </div>
+
 </div>
 @endsection
 

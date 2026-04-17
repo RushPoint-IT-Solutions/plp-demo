@@ -1,0 +1,960 @@
+/* Restored Student Grade File detail/history/TOR/permanent styles from main-intern */
+
+.page-student-grade-file .sgf-name-link {
+  color: #006837;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.page-student-grade-file .sgf-name-link:hover {
+  text-decoration: underline;
+  color: #005028;
+}
+
+/* Short underline for compact fields (Student Number, Citizenship, Civil Status, Sex) */
+.page-student-grade-file .sgf-perm-short-underline {
+  display: inline-block;
+  min-width: 60px;
+  flex: 1 1 auto;
+  border-bottom: 1px solid #333;
+  padding: 0 2px 1px 2px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  line-height: 1;
+  vertical-align: middle;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.page-student-grade-file .sgf-perm-personal-head-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+.page-student-grade-file .sgf-perm-personal-head-label {
+  font-size: 0.7rem;
+  font-weight: 400;
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+.page-student-grade-file .sgf-perm-val-no-bold {
+  font-weight: 400 !important;
+}
+
+.page-student-grade-file .sgf-detail-header {
+  margin-bottom: 14px;
+}
+
+.page-student-grade-file .sgf-detail-info-panel {
+  background: #f8fbf9;
+  border: 1px solid #dbe8e0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+
+.page-student-grade-file .sgf-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  margin-bottom: 4px;
+  font-size: 0.82rem;
+  color: #333;
+}
+
+.page-student-grade-file .sgf-info-row strong {
+  color: #006837;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.page-student-grade-file .sgf-detail-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.page-student-grade-file .sgf-tab {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.page-student-grade-file .sgf-tab:hover {
+  color: #006837;
+}
+
+.page-student-grade-file .sgf-tab.active {
+  color: #006837;
+  border-bottom-color: #006837;
+}
+
+.page-student-grade-file .sgf-detail-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.page-student-grade-file .sgf-detail-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.page-student-grade-file .sgf-btn-action {
+  font-size: 0.78rem !important;
+  padding: 6px 14px !important;
+}
+
+.page-student-grade-file .sgf-btn-delete {
+  background: #c0392b !important;
+  border-color: #c0392b !important;
+}
+
+.page-student-grade-file .sgf-btn-delete:hover {
+  background: #a93226 !important;
+}
+
+.page-student-grade-file .sgf-btn-transferee {
+  background: #e67e22 !important;
+  border-color: #e67e22 !important;
+}
+
+.page-student-grade-file .sgf-btn-transferee:hover {
+  background: #d35400 !important;
+}
+
+.page-student-grade-file .sgf-btn-old {
+  background: #2980b9 !important;
+  border-color: #2980b9 !important;
+}
+
+.page-student-grade-file .sgf-btn-old:hover {
+  background: #2471a3 !important;
+}
+
+.page-student-grade-file .sgf-term-group {
+  margin-bottom: 18px;
+}
+
+.page-student-grade-file .sgf-term-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #006837;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px 6px 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.page-student-grade-file .sgf-term-label,
+.page-student-grade-file .sgf-term-sep {
+  letter-spacing: 0.03em;
+}
+
+.page-student-grade-file .sgf-grade-table {
+  border-radius: 0 0 6px 6px;
+  margin-top: 0 !important;
+}
+
+.page-student-grade-file .sgf-grade-table thead th {
+  font-size: 0.7rem;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+.page-student-grade-file .sgf-grade-table tbody td {
+  font-size: 0.75rem;
+  padding: 5px 8px;
+}
+
+.page-student-grade-file .sgf-grade-table tbody td a {
+  color: #006837;
+  text-decoration: none;
+}
+
+.page-student-grade-file .sgf-row-edit-btn,
+.page-student-grade-file .sgf-row-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.page-student-grade-file .sgf-row-edit-btn {
+  color: #006837;
+}
+
+.page-student-grade-file .sgf-row-edit-btn:hover {
+  background: #e8f5e9;
+}
+
+.page-student-grade-file .sgf-row-del-btn {
+  color: #c0392b;
+}
+
+.page-student-grade-file .sgf-row-del-btn:hover {
+  background: #fbe9e7;
+}
+
+.page-student-grade-file .sgf-wga-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff8e1;
+  border: 1px solid #e2d397;
+  border-top: none;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  color: #5d4e37;
+  font-weight: 500;
+  border-radius: 0 0 6px 6px;
+}
+
+.page-student-grade-file .sgf-wga-total {
+  font-weight: 700;
+  color: #006837;
+}
+
+.page-student-grade-file .sgf-wga-label {
+  margin-left: auto;
+}
+
+.page-student-grade-file .sgf-wga-label strong {
+  color: #c0392b;
+  font-size: 0.9rem;
+}
+
+.page-student-grade-file .sgf-placeholder-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #8896a6;
+  gap: 12px;
+}
+
+.page-student-grade-file .sgf-placeholder-panel h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #555;
+  margin: 0;
+}
+
+.page-student-grade-file .sgf-placeholder-panel p {
+  font-size: 0.85rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.page-student-grade-file .sgf-history-sheet {
+  border: 1px solid #c3d1c8;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.page-student-grade-file .sgf-history-title {
+  background: #1d6b36;
+  color: #fff;
+  text-align: center;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  padding: 7px 12px;
+}
+
+.page-student-grade-file .sgf-history-group {
+  border-top: 1px solid #d8e1dc;
+}
+
+.page-student-grade-file .sgf-history-group-head {
+  background: #1f6f36;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.page-student-grade-file .sgf-history-action-title {
+  background: #ffffff;
+  color: #1f6f36;
+  border-top: 1px solid #dfe7e2;
+  border-bottom: 1px solid #dfe7e2;
+  padding: 5px 14px;
+  font-size: 0.79rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.page-student-grade-file .sgf-history-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  border-bottom: 1px solid #e0e7e3;
+}
+
+.page-student-grade-file .sgf-history-main {
+  padding: 8px 14px;
+}
+
+.page-student-grade-file .sgf-history-code {
+  font-size: 0.77rem;
+  font-weight: 700;
+  color: #173b2b;
+}
+
+.page-student-grade-file .sgf-history-desc {
+  font-size: 0.74rem;
+  color: #2f4f41;
+  margin-top: 2px;
+}
+
+.page-student-grade-file .sgf-history-grade-flow {
+  font-size: 0.72rem;
+  color: #474b1f;
+  margin-top: 3px;
+}
+
+.page-student-grade-file .sgf-history-meta-right {
+  border-left: 1px solid #e0e7e3;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.page-student-grade-file .sgf-history-meta-right > div {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e7ece9;
+}
+
+.page-student-grade-file .sgf-history-meta-right > div:last-child {
+  border-bottom: none;
+}
+
+.page-student-grade-file .sgf-history-meta-right span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #4d665a;
+  font-weight: 700;
+}
+
+.page-student-grade-file .sgf-history-meta-right strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: #1a3428;
+}
+
+.page-student-grade-file .sgf-history-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #5c6f66;
+}
+
+.page-student-grade-file .sgf-perm-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.page-student-grade-file .sgf-perm-sheet-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1020px;
+  margin: 0 auto;
+}
+
+.page-student-grade-file .sgf-perm-page {
+  background: #fff;
+  border: 1px solid #d2ddd7;
+  border-radius: 8px;
+  padding: 10mm 9mm;
+  color: #111;
+}
+
+.page-student-grade-file .sgf-perm-school,
+.page-student-grade-file .sgf-perm-office,
+.page-student-grade-file .sgf-perm-form-title {
+  text-align: center;
+}
+
+.page-student-grade-file .sgf-perm-school {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.page-student-grade-file .sgf-perm-office {
+  font-size: 0.88rem;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.page-student-grade-file .sgf-perm-form-title {
+  margin: 8px auto 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  width: fit-content;
+  border: 1px solid #222;
+  padding: 2px 10px;
+}
+
+.page-student-grade-file .sgf-perm-course-row {
+  margin-top: 8px;
+  position: relative;
+  min-height: 20px;
+  padding-left: 34px;
+}
+
+.page-student-grade-file .sgf-perm-course-label {
+  position: absolute;
+  left: 34px;
+  top: 1px;
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: #111;
+}
+
+.page-student-grade-file .sgf-perm-course {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.page-student-grade-file .sgf-perm-course strong {
+  border-bottom: 1px solid #222;
+  padding-bottom: 2px;
+  display: inline-block;
+}
+
+.page-student-grade-file .sgf-perm-personal {
+  margin-top: 10px;
+}
+
+.page-student-grade-file .sgf-perm-personal-head {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.page-student-grade-file .sgf-perm-personal h4 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.page-student-grade-file .sgf-perm-student-no-field {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.page-student-grade-file .sgf-perm-student-no-field span {
+  font-size: 0.69rem;
+  color: #111;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.page-student-grade-file .sgf-perm-student-no-field strong {
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex: 0 1 60px;
+  min-width: 60px;
+  min-height: 15px;
+  border-bottom: 1px solid #333;
+  padding: 0 3px 1px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-student-grade-file .sgf-perm-personal-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 60px;
+}
+
+.page-student-grade-file .sgf-perm-personal-line {
+  display: grid;
+  gap: 6px;
+}
+
+.page-student-grade-file .sgf-perm-personal-line-2col {
+  grid-template-columns: 1.6fr 1fr;
+}
+
+.page-student-grade-file .sgf-perm-personal-line-3col {
+  grid-template-columns: 48% 22% 30%;
+}
+
+.page-student-grade-file .sgf-perm-personal-line-5col {
+  grid-template-columns: 1.5fr 0.95fr 0.7fr 1fr 1fr;
+}
+
+.page-student-grade-file .sgf-perm-personal-line > div {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-height: 19px;
+}
+
+.page-student-grade-file .sgf-perm-no-gap {
+  gap: 0 !important;
+}
+
+.page-student-grade-file .sgf-perm-span-2 {
+  grid-column: span 2;
+}
+
+.page-student-grade-file .sgf-perm-span-3 {
+  grid-column: span 3;
+}
+
+.page-student-grade-file .sgf-perm-dob-field {
+  gap: 4px !important;
+}
+
+.page-student-grade-file .sgf-perm-dob-field strong {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-student-grade-file .sgf-perm-inline-label {
+  margin-left: 4px;
+}
+
+.page-student-grade-file .sgf-perm-personal-line span {
+  font-size: 0.69rem;
+  color: #111;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.page-student-grade-file .sgf-perm-personal-line strong {
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex: 1 1 auto;
+  min-height: 15px;
+  border-bottom: 1px solid #333;
+  padding: 0 3px 1px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-student-grade-file .sgf-perm-personal-line strong.sgf-perm-empty-cell {
+  color: transparent;
+}
+
+.page-student-grade-file .sgf-perm-personal-line strong:empty::after {
+  content: "\00a0";
+}
+
+.page-student-grade-file .sgf-perm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border-top: 1px solid #222 !important;
+  border-bottom: 1px solid #222 !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.page-student-grade-file .sgf-perm-table th,
+.page-student-grade-file .sgf-perm-table td {
+  border: 1px solid #222 !important;
+  padding: 2px 5px;
+  font-size: 0.7rem;
+  line-height: 1.15;
+}
+
+.page-student-grade-file .sgf-perm-table th:first-child,
+.page-student-grade-file .sgf-perm-table td:first-child {
+  border-left: none !important;
+}
+
+.page-student-grade-file .sgf-perm-table th:last-child,
+.page-student-grade-file .sgf-perm-table td:last-child {
+  border-right: none !important;
+}
+
+.page-student-grade-file .sgf-perm-table th {
+  text-align: center;
+  font-weight: 700;
+  background: #ffffff !important;
+  color: #111 !important;
+}
+
+.page-student-grade-file .sgf-perm-table td:nth-child(1),
+.page-student-grade-file .sgf-perm-table td:nth-child(3),
+.page-student-grade-file .sgf-perm-table td:nth-child(4) {
+  text-align: center;
+}
+
+.page-student-grade-file .sgf-perm-term-row td {
+  text-align: left !important;
+  font-weight: 700;
+  background: #ffffff !important;
+  border-color: #222 !important;
+}
+
+.page-student-grade-file .sgf-perm-term-row td:first-child,
+.page-student-grade-file .sgf-perm-term-row td:nth-child(3),
+.page-student-grade-file .sgf-perm-term-row td:last-child {
+  color: transparent;
+}
+
+.page-student-grade-file .sgf-perm-term-row td:nth-child(2) {
+  text-align: center !important;
+  letter-spacing: 0.01em;
+}
+
+.page-student-grade-file .sgf-perm-empty {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.page-student-grade-file .sgf-perm-page-no {
+  margin-top: 8px;
+  font-size: 0.64rem;
+  color: #333;
+}
+
+.page-student-grade-file .sgf-perm-cont-head {
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 2px;
+}
+
+.page-student-grade-file .sgf-perm-certification {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.page-student-grade-file .sgf-perm-certification h5 {
+  font-size: 0.76rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.page-student-grade-file .sgf-perm-certification p {
+  margin-top: 4px;
+  font-size: 0.7rem;
+}
+
+.page-student-grade-file .sgf-perm-signatures {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.page-student-grade-file .sgf-perm-signatures > div {
+  text-align: center;
+}
+
+.page-student-grade-file .sgf-perm-sign-line {
+  display: block;
+  border-bottom: 1px solid #222;
+  height: 2px;
+  margin-top: 2px;
+  margin-bottom: 3px;
+  max-width: 180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-student-grade-file .sgf-perm-signatures strong {
+  display: block;
+  font-size: 0.72rem;
+}
+
+.page-student-grade-file .sgf-perm-signatures small {
+  display: block;
+  font-size: 0.66rem;
+}
+
+.page-student-grade-file .sgf-tab-content#sgfTabPermanent .app-table-pager,
+.page-student-grade-file .sgf-tab-content#sgfTabPermanent .rtp-pagination,
+.page-student-grade-file .sgf-tab-content#sgfTabPermanent .pf-pagination {
+  display: none !important;
+}
+
+.page-student-grade-file .sgf-tor-embed-wrap {
+  border: 1px solid #d2ddd7;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.page-student-grade-file .sgf-tor-embed-frame {
+  display: block;
+  width: 100%;
+  min-height: 1460px;
+  border: none;
+}
+
+.page-student-grade-file .sgf-tab-content#sgfTabTor .app-table-pager,
+.page-student-grade-file .sgf-tab-content#sgfTabTor .rtp-pagination,
+.page-student-grade-file .sgf-tab-content#sgfTabTor .pf-pagination {
+  display: none !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  body.page-student-grade-file .app-table-pager,
+  body.page-student-grade-file .rtp-pagination,
+  body.page-student-grade-file .pf-pagination {
+    display: none !important;
+  }
+
+  body.page-student-grade-file .sgf-perm-table thead th,
+  body.page-student-grade-file .sgf-tor-table thead th,
+  body.page-student-grade-file .sgf-perm-term-row td {
+    background: #ffffff !important;
+    color: #111 !important;
+    border-color: #111 !important;
+  }
+
+  body.page-student-grade-file .sgf-perm-table,
+  body.page-student-grade-file .sgf-perm-table th,
+  body.page-student-grade-file .sgf-perm-table td {
+    border-color: #111 !important;
+  }
+
+  body.page-student-grade-file .sgf-perm-personal-line-2col {
+    grid-template-columns: 1.5fr 1fr !important;
+  }
+
+  body.page-student-grade-file .sgf-perm-personal-line-3col {
+    grid-template-columns: 2fr 1fr 1fr !important;
+  }
+
+  body.page-student-grade-file .sgf-perm-personal-line-5col {
+    grid-template-columns: 1.4fr 1fr 0.7fr 1fr 1fr !important;
+  }
+
+  body.page-student-grade-file .plp-sidebar,
+  body.page-student-grade-file .registrar-topbar,
+  body.page-student-grade-file .plp-footer,
+  body.page-student-grade-file .sgf-toolbar-row,
+  body.page-student-grade-file .sgf-table-head,
+  body.page-student-grade-file .sgf-detail-header,
+  body.page-student-grade-file .sgf-detail-actions,
+  body.page-student-grade-file #sgfListView,
+  body.page-student-grade-file #sgfTabGrades,
+  body.page-student-grade-file #sgfTabHistory,
+  body.page-student-grade-file #sgfTabEvaluation,
+  body.page-student-grade-file #sgfTabTor,
+  body.page-student-grade-file #sgfTabGradeReport,
+  body.page-student-grade-file .sgf-perm-tools,
+  body.page-student-grade-file .sgf-tor-tools {
+    display: none !important;
+  }
+
+  body.page-student-grade-file #sgfDetailView {
+    display: block !important;
+  }
+
+  body.page-student-grade-file.sgf-print-permanent #sgfTabPermanent,
+  body.page-student-grade-file.sgf-print-permanent #sgfPermanentPrintArea {
+    display: block !important;
+  }
+
+  body.page-student-grade-file.sgf-print-permanent #sgfTabTor {
+    display: none !important;
+  }
+
+  body.page-student-grade-file.sgf-print-tor #sgfTabTor,
+  body.page-student-grade-file.sgf-print-tor #sgfTorPrintArea {
+    display: block !important;
+  }
+
+  body.page-student-grade-file.sgf-print-tor #sgfTabPermanent {
+    display: none !important;
+  }
+
+  body.page-student-grade-file.sgf-print-tor .sgf-tor-sheet {
+    border: none;
+    border-radius: 0;
+    padding: 10mm 8mm;
+  }
+
+  body.page-student-grade-file .sgf-perm-page {
+    border: none;
+    border-radius: 0;
+    padding: 10mm 8mm;
+    min-height: auto;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  body.page-student-grade-file .sgf-perm-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .page-student-grade-file .sgf-history-row {
+    grid-template-columns: 1fr;
+  }
+
+  .page-student-grade-file .sgf-history-meta-right {
+    border-left: none;
+    border-top: 1px solid #e0e7e3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page-student-grade-file .sgf-history-meta-right > div {
+    border-bottom: none;
+    border-right: 1px solid #e7ece9;
+  }
+
+  .page-student-grade-file .sgf-history-meta-right > div:last-child {
+    border-right: none;
+  }
+
+  .page-student-grade-file .sgf-perm-personal-line-2col,
+  .page-student-grade-file .sgf-perm-personal-line-3col,
+  .page-student-grade-file .sgf-perm-personal-line-5col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* SGF Grade Table - Custom Checkboxes (matches global table checkbox pattern) */
+.page-student-grade-file .sgf-grade-table thead input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff !important;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12) !important;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.page-student-grade-file .sgf-grade-table thead input[type=checkbox]:checked {
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath fill='none' stroke='%23006837' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M1 5l3 3 7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px 9px;
+}
+
+.page-student-grade-file .sgf-grade-table thead input[type=checkbox]:hover {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+}
+
+.page-student-grade-file .sgf-grade-table thead input[type=checkbox]:checked::after {
+  content: none;
+}
+
+.page-student-grade-file .sgf-grade-table td > input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #0a813c;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.page-student-grade-file .sgf-grade-table td > input[type=checkbox]:checked {
+  background: #0a813c;
+  border-color: #0a813c;
+}
+
+.page-student-grade-file .sgf-grade-table td > input[type=checkbox]:checked::after {
+  content: "\2713";
+  position: absolute;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.page-student-grade-file .sgf-grade-table td > input[type=checkbox]:hover {
+  border-color: #004d29;
+  box-shadow: 0 0 0 3px rgba(10, 129, 60, 0.12);
+}
+
+@media screen and (max-width: 768px) {
+  .page-student-grade-file .sgf-info-row {
+    grid-template-columns: 1fr;
+  }
+
+  .page-student-grade-file .sgf-detail-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-student-grade-file .sgf-detail-btns {
+    justify-content: stretch;
+  }
+
+  .page-student-grade-file .sgf-detail-btns button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .page-student-grade-file .sgf-term-header {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+}

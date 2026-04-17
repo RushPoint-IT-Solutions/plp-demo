@@ -13,7 +13,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(92px, 108px);
   gap: 8px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-toolbar-actions {
@@ -107,14 +107,14 @@
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.4fr);
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-dept-setup-form-row {
   display: grid;
   grid-template-columns: minmax(150px, 0.9fr) minmax(260px, 1.5fr) auto;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .pf-item-dept-code .pf-modal-label,
@@ -298,6 +298,11 @@
 
 #pfTable .apst-dropdown {
   position: fixed;
+}
+
+#pfPaginationBar {
+  margin-top: 2px;
+  padding-top: 2px;
 }
 
 @media (max-width: 991px) {

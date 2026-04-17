@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var feedInFlight = false;
 
     if (sidebarToggle && sidebar && overlay) {
-        sidebarToggle.addEventListener('click', function () {
+        sidebarToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
             sidebar.classList.toggle('sidebar-open');
             overlay.classList.toggle('active');
         });
@@ -29,6 +30,14 @@ document.addEventListener('DOMContentLoaded', function () {
         overlay.addEventListener('click', function () {
             sidebar.classList.remove('sidebar-open');
             overlay.classList.remove('active');
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                sidebar.classList.remove('sidebar-open');
+                overlay.classList.remove('active');
+            }
         });
     }
 

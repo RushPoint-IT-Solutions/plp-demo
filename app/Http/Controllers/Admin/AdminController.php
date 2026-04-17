@@ -60,6 +60,7 @@ class AdminController extends Controller
 
         $redirectMap = [
             'student'    => 'student.schedule',
+            'parent'     => 'parent.grades',
             'applicant'  => 'applicant.application-form',
             'parent'     => 'parent.dashboard',
             'registrar'  => 'registrar.dashboard',

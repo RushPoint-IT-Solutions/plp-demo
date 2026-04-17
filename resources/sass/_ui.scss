@@ -351,6 +351,208 @@
     box-shadow: 0 4px 16px rgba(26, 110, 26, 0.35);
 }
 
+.login-parent-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.login-submit-btn--block {
+    width: 100%;
+    max-width: 260px;
+    min-width: 0;
+}
+
+.login-parent-caption {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: #666;
+}
+
+.login-parent-create-link {
+    color: #0a7d3f;
+    font-family: $font-primary;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+}
+
+.login-parent-create-link:visited {
+    color: #0a7d3f;
+}
+
+.login-parent-create-link:hover,
+.login-parent-create-link:focus {
+    color: #145a14;
+}
+
+.login-parent-create-link-btn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+}
+
+.login-parent-create-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(12, 22, 16, 0.08);
+}
+
+.login-parent-create-modal.is-open {
+    display: flex;
+}
+
+.login-parent-create-modal-dialog {
+    width: min(900px, 100%);
+    pointer-events: auto;
+}
+
+.login-parent-create-modal-content {
+    border-radius: 28px;
+    border: 0;
+    overflow: hidden;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+
+    .modal-body {
+        padding: 28px 34px 30px;
+        background: #f4f4f4;
+    }
+}
+
+.login-parent-create-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #5f5f5f;
+    font-size: 1.2rem;
+    line-height: 1;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-parent-create-close:hover,
+.login-parent-create-close:focus {
+    background: #ebeff1;
+    color: #1d1d1d;
+}
+
+.login-parent-create-title {
+    text-align: center;
+    margin: 0 0 20px;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #121212;
+    letter-spacing: 0.02em;
+}
+
+.login-parent-create-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.login-parent-create-field {
+    label {
+        display: block;
+        margin-bottom: 7px;
+        color: #0a7d3f;
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+
+        span {
+            color: #ef5b5b;
+            margin-left: 2px;
+        }
+    }
+
+    .form-control {
+        height: 42px;
+        border: 1px solid #d2d2d2;
+        border-radius: 6px;
+        font-size: 0.93rem;
+        box-shadow: none;
+        padding: 0 12px;
+        background: #fff;
+
+        &:disabled,
+        &[readonly] {
+            opacity: 1;
+            background: #fff;
+            color: #2d2d2d;
+            cursor: text;
+            pointer-events: auto;
+        }
+    }
+}
+
+.login-parent-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+
+    .btn {
+        min-width: 106px;
+        height: 42px;
+        border-radius: 10px;
+        border: 0;
+        background: #0a7d3f;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+}
+
+body.login-body .modal-backdrop.show {
+    opacity: 0.24;
+}
+
+@media (max-width: 991px) {
+    .login-parent-create-modal-dialog {
+        width: 100%;
+    }
+
+    .login-parent-create-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 767px) {
+    .login-parent-create-modal-content .modal-body {
+        padding: 20px 16px 22px;
+    }
+
+    .login-parent-create-title {
+        font-size: 1.55rem;
+        margin-bottom: 16px;
+    }
+
+    .login-parent-create-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
 .login-bg-wrapper .plp-footer {
     background-color: transparent;
     border-top: 2px dashed rgba(255, 255, 255, 0.5);

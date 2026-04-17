@@ -1,7 +1,7 @@
 @extends('layouts.registrar')
 
-@section('title', 'PLP - Application Process')
-@section('page-title', 'APPLICATION PROCESS')
+@section('title', 'PLP - Application List')
+@section('page-title', 'APPLICATION LIST')
 
 
 

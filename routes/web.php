@@ -53,6 +53,7 @@ Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('stude
 Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
 Route::post('/login/parent', 'Admin\AdminController@parentLogin')->name('parent.login.submit')->middleware('throttle:20,1');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
+Route::get('/parent/create-account', 'Portal\ParentController@showCreateAccount')->name('parent.create-account');
 
 /*
 |--------------------------------------------------------------------------
@@ -121,6 +122,16 @@ Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'fo
     })->name('access-module');
 
     Route::get('/dashboard', 'ParentModule\ParentController@dashboard')->name('dashboard');
+    Route::get('/help-center', 'Portal\ParentController@helpCenter')->name('help.center');
+    Route::get('/help-center/live-chat', 'Portal\ParentController@helpCenterLiveChat')->name('help.live-chat');
+    Route::get('/help-center/{topic}', 'Portal\ParentController@helpCenterTopic')->name('help.topic');
+    Route::get('/profile', 'Portal\ParentController@profile')->name('profile');
+    Route::get('/grades', 'Portal\ParentController@grades')->name('grades');
+    Route::get('/student-profile', 'Portal\ParentController@studentProfile')->name('student-profile');
+    Route::get('/calendar', 'Portal\ParentController@calendar')->name('calendar');
+    Route::get('/contact-us', 'Portal\ParentController@contactUs')->name('contact-us');
+    Route::get('/change-password', 'Portal\ParentController@changePassword')->name('change-password');
+    Route::get('/messaging', 'Portal\ParentController@messaging')->name('messaging');
 });
 
 /*

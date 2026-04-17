@@ -17,8 +17,8 @@
     </div>
 
     <div class="sched-filter-bar">
-        <div class="sched-filter-row-main d-flex align-items-end justify-content-between w-100 flex-nowrap" style="gap: 20px;">
-            <div class="d-flex align-items-end">
+        <div class="sched-filter-row-main d-flex align-items-end justify-content-between w-100">
+            <div class="sched-filter-controls d-flex align-items-end">
                 <div class="sched-filter-group mr-3">
                     <label class="app-filter-label" for="schedSchoolYear">School Year</label>
                     <select id="schedSchoolYear" class="app-filter-select">
@@ -35,8 +35,8 @@
                 </div>
             </div>
             <div class="sched-filter-actions d-flex align-items-end">
-                <a href="{{ route('student.cor') }}" class="btn btn-view-cor mr-3" style="width: auto; padding: 0 30px; display: flex; align-items: center; justify-content: center; height: 42px;">View COR</a>
-                <button type="button" id="schedDownloadBtn" class="btn btn-view-cor sched-download-btn" style="width: auto; padding: 0 30px; height: 42px;">Download Schedule</button>
+                <a href="{{ route('student.cor') }}" class="btn btn-view-cor mr-3 sched-action-btn">View COR</a>
+                <button type="button" id="schedDownloadBtn" class="btn btn-view-cor sched-download-btn sched-action-btn">Download Schedule</button>
             </div>
         </div>
     </div>

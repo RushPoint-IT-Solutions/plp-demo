@@ -41,6 +41,8 @@ mix.js('resources/js/app.js', 'public/js')
    .sass('resources/sass/registrar-faculty-loads.scss', 'public/css')
    .version();
 
+mix.disableNotifications();
+
    mix.browserSync({
       proxy: '127.0.0.1:8000',
       host: '127.0.0.1',

@@ -76,9 +76,7 @@
                 <div class="req-modal-field-group" style="margin-top:12px;">
                     <label class="req-modal-label">INCLUDE IN PERIODS</label>
                     <div class="ga-choice-group ga-choice-group-periods">
-                        <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Prelim" checked> Prelim</label>
                         <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Midterm" checked> Midterm</label>
-                        <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Pre-Final" checked> Pre-Final</label>
                         <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Finals" checked> Finals</label>
                     </div>
                 </div>

@@ -87,12 +87,101 @@
             </div>
 
             {{-- Sign In Button --}}
-            <div class="text-center mt-4">
-                <button type="submit" class="login-submit-btn">Sign In</button>
+            <div class="text-center mt-4 {{ $module === 'parent' ? 'login-parent-actions' : '' }}">
+                <button type="submit" class="login-submit-btn {{ $module === 'parent' ? 'login-submit-btn--block' : '' }}">Sign In</button>
+
+                @if($module === 'parent')
+                    <p class="login-parent-caption">No account yet?
+                        <button type="button" id="parentCreateAccountTrigger" class="login-parent-create-link login-parent-create-link-btn">Click here to create account</button>
+                    </p>
+                @endif
             </div>
         </form>
     </div>
 </div>
+
+@if($module === 'parent')
+<div class="login-parent-create-modal" id="parentCreateAccountModal" tabindex="-1" aria-labelledby="parentCreateAccountModalLabel" aria-hidden="true">
+    <div class="login-parent-create-modal-dialog" role="dialog" aria-modal="true">
+        <div class="modal-content login-parent-create-modal-content">
+            <div class="modal-body">
+                <button type="button" class="login-parent-create-close" id="parentCreateAccountClose" aria-label="Close">&times;</button>
+                <h3 class="login-parent-create-title" id="parentCreateAccountModalLabel">APPLY NOW!</h3>
+
+                <form
+                    class="login-parent-create-form"
+                    id="parentCreateAccountForm"
+                    data-redirect-url="{{ route('parent.grades') }}"
+                    novalidate
+                >
+                    <div class="login-parent-create-grid">
+                        <div class="login-parent-create-field">
+                            <label>FIRST NAME <span>*</span></label>
+                            <input type="text" class="form-control" name="parent_first_name" autocomplete="given-name" placeholder="First Name" />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>MIDDLE NAME <span>*</span></label>
+                            <input type="text" class="form-control" name="parent_middle_name" autocomplete="additional-name" placeholder="Middle Name" />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>LAST NAME <span>*</span></label>
+                            <input type="text" class="form-control" name="parent_last_name" autocomplete="family-name" placeholder="Last Name" />
+                        </div>
+
+                        <div class="login-parent-create-field">
+                            <label>SOCIAL HONORIFICS <span>*</span></label>
+                            <select class="form-control" name="parent_honorific">
+                                <option value="">Select Honorifics</option>
+                                <option>Ms.</option>
+                                <option>Mrs.</option>
+                                <option>Mr.</option>
+                            </select>
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>EMAIL ADDRESS <span>*</span></label>
+                            <input type="email" class="form-control" name="parent_email" autocomplete="email" placeholder="Email" />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>RELATIONSHIP <span>*</span></label>
+                            <select class="form-control" name="parent_relationship">
+                                <option value="">Select relationship</option>
+                                <option>Father</option>
+                                <option>Mother</option>
+                                <option>Guardian</option>
+                            </select>
+                        </div>
+
+                        <div class="login-parent-create-field">
+                            <label>CHILD'S STUDENT NO. <span>*</span></label>
+                            <input type="text" class="form-control" name="child_student_no" autocomplete="off" placeholder="Student No." />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>CHILD'S BIRTHDATE <span>*</span></label>
+                            <input type="date" class="form-control" name="child_birthdate" placeholder="Child's Birthdate" />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>USERNAME <span>*</span></label>
+                            <input type="text" class="form-control" name="parent_username" autocomplete="username" placeholder="Username" />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>PASSWORD <span>*</span></label>
+                            <input type="password" class="form-control" name="parent_password" autocomplete="new-password" placeholder="Type Password" />
+                        </div>
+                        <div class="login-parent-create-field">
+                            <label>CONFIRM PASSWORD <span>*</span></label>
+                            <input type="password" class="form-control" name="parent_password_confirmation" autocomplete="new-password" placeholder="Confirm password" />
+                        </div>
+                    </div>
+
+                    <div class="login-parent-create-actions">
+                        <button type="submit" class="btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('scripts')

@@ -242,7 +242,6 @@
                             <span>Date Issued:</span>
                             <input type="date" name="date_issued" class="form-control form-control-sm border-0 border-bottom border-dark rounded-0 bg-transparent cog-date-input">
                         </div>
-                        <div class="text-end">Page 1 of 2</div>
                     </div>
                 </div>
             </div>

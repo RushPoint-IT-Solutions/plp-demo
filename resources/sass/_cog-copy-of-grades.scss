@@ -4,6 +4,16 @@
         font-size: 10pt;
         line-height: 1.1;
 
+        /* COG is a print form; hide any generic pager widgets if injected globally. */
+        .pagination,
+        .rtp-pagination,
+        .pf-pagination,
+        .app-table-pager,
+        .page-link,
+        .page-item {
+            display: none !important;
+        }
+
         .cog-sheet-column {
             flex: 0 0 auto;
             width: 210mm;
@@ -174,6 +184,15 @@
         }
 
         @media print {
+            .pagination,
+            .rtp-pagination,
+            .pf-pagination,
+            .app-table-pager,
+            .page-link,
+            .page-item {
+                display: none !important;
+            }
+
             .cog-sheet-column {
                 width: 210mm;
                 max-width: 210mm;

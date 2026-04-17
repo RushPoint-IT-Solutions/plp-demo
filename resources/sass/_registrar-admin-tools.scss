@@ -33,7 +33,7 @@
 .page-student-grade-file .sgf-toolbar {
   display: grid;
   gap: 10px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-user-accounts .ua-filter-grid {
@@ -1445,7 +1445,7 @@
 
 .page-faculty-file-config .ffc-grid-top {
   grid-template-columns: minmax(240px, 2.1fr) minmax(150px, 1fr) minmax(150px, 1fr);
-  align-items: end;
+  align-items: flex-end;
 }
 
 .page-faculty-file-config .ffc-grid-top .app-filter-input,
@@ -1848,6 +1848,62 @@
   font-weight: 800 !important;
 }
 
+/* Registrar: Services / Grading Academic / Transmutation copy modal parity */
+.page-services-grading-academic .ga-trans-modal-overlay--priority {
+  z-index: 12040;
+}
+
+.page-services-grading-academic .ga-trans-modal-box--copy {
+  max-width: 860px;
+  width: min(860px, 94vw);
+}
+
+.page-services-grading-academic .ga-trans-modal-box--copy .ga-trans-modal-panel {
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.page-services-grading-academic .ga-trans-modal-box--copy .tm-modal-grid-2x4 {
+  margin-top: 10px;
+}
+
+.page-services-grading-academic .ga-trans-modal-actions {
+  margin-top: 25px;
+  gap: 12px;
+}
+
+.page-services-grading-academic .ga-trans-modal-actions--center {
+  justify-content: center;
+}
+
+.page-services-grading-academic .tm-modal-grid-2x4 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  margin-top: 15px;
+}
+
+.page-services-grading-academic .ga-trans-btn-cancel {
+  padding: 10px 20px;
+}
+
+.page-services-grading-academic .ga-trans-btn-save {
+  padding: 10px 24px;
+  background: #006837;
+}
+
+.page-services-grading-academic .ga-trans-btn-save:hover {
+  background: #005a2e;
+}
+
+.page-services-grading-academic .ga-trans-btn-save--danger {
+  background: #c0392b;
+}
+
+.page-services-grading-academic .ga-trans-btn-save--danger:hover {
+  background: #a93226;
+}
+
 /* Readonly Overrides */
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-top {
     display: grid !important;
@@ -1890,7 +1946,7 @@
 }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-readonly .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: flex-end; }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
 .page-student-profile-config .spc-card.spc-readonly .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
@@ -1977,7 +2033,7 @@
 }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-birth { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
-.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: end; }
+.page-student-profile-config .spc-card.spc-layout-lock .spc-grid-address { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) max-content minmax(0, 2fr) minmax(0, 0.8fr); align-items: flex-end; }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-acad { grid-template-columns: minmax(0, 2.5fr) minmax(0, 0.8fr) minmax(0, 0.5fr) minmax(0, 0.8fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-status { grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.5fr); }
 .page-student-profile-config .spc-card.spc-layout-lock .spc-grid-transfer { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2.5fr); }
@@ -2215,10 +2271,51 @@
 
 .registrar-body.page-services-class-list .svc-btn-pdf,
 .registrar-body.page-services-class-list .svc-btn-excel {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.registrar-body.page-services-class-list .svc-btn-pdf {
+  background: #ff4b4b;
+}
+
+.registrar-body.page-services-class-list .svc-btn-excel {
+  background: #0f7b43;
+}
+
+.registrar-body.page-services-class-list .svc-table-tfoot td,
+.registrar-body.page-deficiency .svc-table-tfoot td {
+  padding: 0 !important;
+  background: #f8fcf9;
+  border-top: 2px solid #c9d8cf !important;
+}
+
+.registrar-body.page-services-class-list .svc-table-stats,
+.registrar-body.page-deficiency .svc-table-stats {
+  padding: 10px 15px;
+  font-size: 0.82rem;
+  color: #444;
+  text-align: left;
+}
+
+.registrar-body.page-services-class-list .svc-table-stats strong,
+.registrar-body.page-deficiency .svc-table-stats strong {
+  color: #0f7b43;
+}
+
+.registrar-body.page-deficiency .ga-btn-primary,
+.registrar-body.page-deficiency .df-back-btn {
+  min-height: 34px;
+  border-radius: 8px;
 }
 
 .registrar-body.page-services-class-list .svc-btn-pdf:hover,
@@ -2234,8 +2331,19 @@
   margin-bottom: 0;
 }
 
+.registrar-body.page-services-class-list .cl-print-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .registrar-body.page-services-class-list .cl-back-row {
   margin-top: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .registrar-body.page-services-class-list .cl-pagination {

@@ -11,6 +11,16 @@
   color: #111;
   font-size: 10pt;
   line-height: 1.1;
+  /* COG is a print form; hide any generic pager widgets if injected globally. */
+}
+
+.registrar-body .cog-copy-of-grades .pagination,
+.registrar-body .cog-copy-of-grades .rtp-pagination,
+.registrar-body .cog-copy-of-grades .pf-pagination,
+.registrar-body .cog-copy-of-grades .app-table-pager,
+.registrar-body .cog-copy-of-grades .page-link,
+.registrar-body .cog-copy-of-grades .page-item {
+  display: none !important;
 }
 
 .registrar-body .cog-copy-of-grades .cog-sheet-column {
@@ -181,6 +191,15 @@
 }
 
 @media print {
+  .registrar-body .cog-copy-of-grades .pagination,
+  .registrar-body .cog-copy-of-grades .rtp-pagination,
+  .registrar-body .cog-copy-of-grades .pf-pagination,
+  .registrar-body .cog-copy-of-grades .app-table-pager,
+  .registrar-body .cog-copy-of-grades .page-link,
+  .registrar-body .cog-copy-of-grades .page-item {
+    display: none !important;
+  }
+
   .registrar-body .cog-copy-of-grades .cog-sheet-column {
     width: 210mm;
     max-width: 210mm;
