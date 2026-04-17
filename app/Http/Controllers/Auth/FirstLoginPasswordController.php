@@ -44,7 +44,7 @@ class FirstLoginPasswordController extends Controller
             case 'applicant':
                 return redirect()->route('applicant.application-form')->with('status', 'Password changed successfully!');
             case 'parent':
-                return redirect()->route('parent.dashboard')->with('status', 'Password changed successfully!');
+                return redirect()->route('parent.grades')->with('status', 'Password changed successfully!');
             case 'student':
             default:
                 return redirect()->route('student.grades')->with('status', 'Password changed successfully!');

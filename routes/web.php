@@ -123,7 +123,7 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
 */
 Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'force_password_reset'])->group(function () {
     Route::get('/', function () {
-        return redirect()->route('parent.dashboard');
+        return redirect()->route('parent.grades');
     })->name('access-module');
 
     Route::get('/dashboard', 'ParentModule\ParentController@dashboard')->name('dashboard');

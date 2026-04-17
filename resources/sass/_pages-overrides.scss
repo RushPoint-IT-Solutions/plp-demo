@@ -891,9 +891,40 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     max-width: 100%;
     padding-right: 2px;
 
-    .parent-grades-student-row {
-        max-width: 420px;
+    .parent-grades-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        max-width: 860px;
         margin-bottom: 16px;
+    }
+
+    .parent-grades-filter-field {
+        min-width: 0;
+
+        .parent-grades-select-wrap .applicant-select-trigger {
+            min-height: 44px;
+        }
+
+        .parent-grades-select-wrap .applicant-select-menu {
+            max-height: 260px;
+            z-index: 45;
+        }
+    }
+
+    .parent-grades-student-row {
+        max-width: none;
+        margin-bottom: 0;
+    }
+
+    .parent-grades-empty-state {
+        border: 1px solid #d7e2da;
+        border-radius: 12px;
+        background: #f8fbf9;
+        padding: 22px;
+        color: #2f5e43;
+        font-weight: 600;
+        line-height: 1.5;
     }
 
     .parent-grades-term-block {
@@ -1701,6 +1732,11 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     .grades-page,
     .events-page,
     .profile-page {
+        max-width: 100%;
+    }
+
+    .parent-grades-snapshot-page .parent-grades-filter-grid {
+        grid-template-columns: 1fr;
         max-width: 100%;
     }
 

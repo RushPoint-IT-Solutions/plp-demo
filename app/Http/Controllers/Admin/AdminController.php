@@ -61,7 +61,7 @@ class AdminController extends Controller
         $redirectMap = [
             'student'    => 'student.schedule',
             'applicant'  => 'applicant.application-form',
-            'parent'     => 'parent.dashboard',
+            'parent'     => 'parent.grades',
             'registrar'  => 'registrar.dashboard',
             'accounting' => 'admin.access-module',
             'cashier'    => 'admin.access-module',
@@ -322,7 +322,7 @@ class AdminController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->route('parent.dashboard');
+            return redirect()->route('parent.grades');
         }
 
         return back()->withErrors([

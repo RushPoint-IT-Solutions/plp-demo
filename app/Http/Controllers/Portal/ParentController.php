@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Portal;
 use App\AcademicCalendarEvent;
 use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Http\Controllers\Controller;
+use App\ParentStudentLink;
 use App\Student;
 use App\StudentDeficiency;
+use App\StudentGradeRecord;
 use App\StudentSubjectGrade;
 use App\SystemAnnouncement;
 use Illuminate\Http\Request;
@@ -83,12 +85,28 @@ class ParentController extends Controller
     {
         $user = Auth::user();
 
+        if ($user && $user->parent_id && Schema::hasTable('parent_student_links')) {
+            $primaryLink = ParentStudentLink::query()
+                ->where('parent_id', $user->parent_id)
+                ->whereHas('student')
+                ->orderByDesc('is_primary_contact')
+                ->orderBy('id')
+                ->first();
+
+            if ($primaryLink && $primaryLink->student_id) {
+                return Student::with(['subjects', 'canonicalCourse', 'yearBlock'])
+                    ->find($primaryLink->student_id);
+            }
+        }
+
         if ($user && $user->student_id) {
-            return Student::with('subjects')->find($user->student_id);
+            return Student::with(['subjects', 'canonicalCourse', 'yearBlock'])->find($user->student_id);
         }
 
         if ($user && !empty($user->username)) {
-            return Student::with('subjects')->where('student_no', $user->username)->first();
+            return Student::with(['subjects', 'canonicalCourse', 'yearBlock'])
+                ->where('student_no', $user->username)
+                ->first();
         }
 
         return null;
@@ -96,107 +114,57 @@ class ParentController extends Controller
 
     private function linkedChildren($student)
     {
-        if (!$student) {
-            return $this->dummyChildren();
+        $user = Auth::user();
+        $children = collect();
+
+        if ($user && $user->parent_id && Schema::hasTable('parent_student_links')) {
+            $links = ParentStudentLink::query()
+                ->where('parent_id', $user->parent_id)
+                ->with(['student.canonicalCourse:id,code,name', 'student.yearBlock:id,label'])
+                ->whereHas('student')
+                ->orderByDesc('is_primary_contact')
+                ->orderBy('id')
+                ->get();
+
+            $children = $links->map(function ($link) {
+                $linkedStudent = $link->student;
+                if (!$linkedStudent) {
+                    return null;
+                }
+
+                $programCode = trim((string) $linkedStudent->program);
+                $programName = trim((string) optional($linkedStudent->canonicalCourse)->name);
+                $yearLevel = trim((string) $linkedStudent->year_level);
+
+                return [
+                    'id' => $linkedStudent->id,
+                    'student_no' => $linkedStudent->student_no,
+                    'name' => $linkedStudent->name,
+                    'course' => $programCode !== '' ? $programCode : ($programName !== '' ? $programName : 'N/A'),
+                    'year_level' => $yearLevel !== '' ? $yearLevel : 'N/A',
+                    'birthdate' => null,
+                    'status' => $link->is_primary_contact ? 'Primary Contact' : 'Linked',
+                ];
+            })->filter()->values();
         }
 
-        $children = collect([
-            [
+        if ($children->isEmpty() && $student) {
+            $programCode = trim((string) $student->program);
+            $programName = trim((string) optional($student->canonicalCourse)->name);
+            $yearLevel = trim((string) $student->year_level);
+
+            $children = collect([[
                 'id' => $student->id,
                 'student_no' => $student->student_no,
                 'name' => $student->name,
-                'course' => $student->program ?: $student->college,
-                'year_level' => $student->year_level,
+                'course' => $programCode !== '' ? $programCode : ($programName !== '' ? $programName : 'N/A'),
+                'year_level' => $yearLevel !== '' ? $yearLevel : 'N/A',
                 'birthdate' => null,
                 'status' => 'Linked',
-            ],
-        ]);
-
-        // Keep at least two rows for easier UI configuration/visualization.
-        if ($children->count() < 2) {
-            $children = $children->concat($this->dummyChildren()->slice(1));
+            ]]);
         }
 
         return $children->values();
-    }
-
-    private function dummyChildren()
-    {
-        return collect([
-            [
-                'id' => 2,
-                'student_no' => '232418412',
-                'name' => 'Julius T. Garma',
-                'course' => 'BSMT',
-                'year_level' => '3',
-                'birthdate' => 'February 5, 2001',
-                'status' => 'Linked',
-            ],
-            [
-                'id' => 1,
-                'student_no' => '232418456',
-                'name' => 'Aleya Mae T. Garma',
-                'course' => 'BSMT',
-                'year_level' => '3',
-                'birthdate' => 'July 28, 2004',
-                'status' => 'Linked',
-            ],
-        ]);
-    }
-
-    private function dummyTermSections()
-    {
-        $subjectRows = collect([
-            ['code' => 'D-WATCH', 'name' => 'Deck Watchkeeping w/ Bridge Resources Mgmt.', 'units' => 4],
-            ['code' => 'GE11', 'name' => 'Arts and Humanities', 'units' => 3],
-            ['code' => 'GE13', 'name' => 'Social Sciences and Philosophy', 'units' => 3],
-            ['code' => 'GE6', 'name' => 'Arts Appreciation', 'units' => 3],
-            ['code' => 'NAV8-MT', 'name' => 'Operation Use of Electronic Chart Display and Information System (ECDIS)', 'units' => 3],
-            ['code' => 'NAV7', 'name' => 'Voyage Planning', 'units' => 3],
-            ['code' => 'RIZAL221', 'name' => 'Life and Works of Rizal', 'units' => 3],
-            ['code' => 'SEAM6-MT', 'name' => 'Advanced Trims, Stability & Stress', 'units' => 3],
-        ])->map(function ($item, $index) {
-            $row = new \stdClass();
-            $row->midterm = null;
-            $row->final = null;
-            $row->final_average = null;
-            $row->remarks = '';
-
-            $subject = new \stdClass();
-            $subject->code = $item['code'];
-            $subject->name = $item['name'];
-            $subject->faculty_name = 'Abela, Manuel';
-            $subject->units = $item['units'];
-            $subject->section = 'BSMT 3-A';
-            $subject->school_year = '2025-2026';
-            $subject->semester = 'Second';
-            $row->subject = $subject;
-
-            return $row;
-        });
-
-        return collect([
-            [
-                'academic_year' => '2025-2026',
-                'term' => 'Second',
-                'admission_status' => 'Transferee',
-                'academic_status' => 'Regular',
-                'program' => 'BSMT',
-                'program_description' => 'Bachelor Of Science Marine Transportation',
-                'gpa' => 0.00,
-                'rows' => $subjectRows,
-            ],
-            [
-                'academic_year' => '2025-2026',
-                'term' => 'Second',
-                'admission_status' => 'Transferee',
-                'academic_status' => 'Regular',
-                'program' => 'BSMT',
-                'program_description' => 'Bachelor Of Science Marine Transportation',
-                'gpa' => 0.00,
-                'rows' => $subjectRows,
-            ],
-        ]);
     }
 
     private function splitNameParts($fullName)
@@ -238,12 +206,7 @@ class ParentController extends Controller
         }
 
         if ($selectedChildId === null || $selectedChildId === '') {
-            $default = $children->first(function ($child) {
-                $name = strtolower(trim((string) ($child['name'] ?? '')));
-                return strpos($name, 'julius') !== false;
-            });
-
-            return $default ?: $children->first();
+            return $children->first();
         }
 
         $matched = $children->first(function ($child) use ($selectedChildId) {
@@ -253,33 +216,143 @@ class ParentController extends Controller
         return $matched ?: $children->first();
     }
 
-    private function shouldUseSampleDeficiency($selectedChild)
+    private function mapStudentGradeRecords(Student $student)
     {
-        $name = strtolower(trim((string) data_get($selectedChild, 'name')));
-        return $name !== '' && strpos($name, 'aleya') !== false;
+        if (!Schema::hasTable('student_grade_records')) {
+            return collect();
+        }
+
+        $studentNo = trim((string) $student->student_no);
+
+        return StudentGradeRecord::query()
+            ->where(function ($query) use ($student, $studentNo) {
+                $query->where('student_id', $student->id);
+
+                if ($studentNo !== '') {
+                    $query->orWhere('student_no', $studentNo);
+                }
+            })
+            ->orderByDesc('school_year')
+            ->orderByRaw("CASE WHEN LOWER(term) LIKE '%first%' THEN 1 WHEN LOWER(term) LIKE '%second%' THEN 2 WHEN LOWER(term) LIKE '%summer%' THEN 3 ELSE 4 END")
+            ->orderBy('subject_code')
+            ->get()
+            ->map(function ($record) {
+                $row = new \stdClass();
+                $row->midterm = null;
+                $row->final = null;
+                $row->final_average = $record->final_grade;
+                $row->remarks = trim((string) ($record->remarks ?: $record->grade_status ?: $record->status));
+
+                $subject = new \stdClass();
+                $subject->code = $record->subject_code;
+                $subject->name = $record->description;
+                $subject->faculty_name = $record->professor;
+                $subject->units = $record->units;
+                $subject->section = $record->section_code;
+                $subject->school_year = $record->school_year;
+                $subject->semester = $record->term;
+
+                $row->subject = $subject;
+
+                return $row;
+            })
+            ->values();
     }
 
-    public function grades()
+    private function gradeRowSemesterKey($row)
+    {
+        $subject = isset($row->subject) ? $row->subject : null;
+
+        $schoolYear = trim((string) data_get($subject, 'school_year'));
+        $semester = trim((string) data_get($subject, 'semester'));
+
+        if ($semester === '') {
+            $semester = trim((string) data_get($subject, 'term'));
+        }
+
+        if ($schoolYear === '' && isset($row->school_year)) {
+            $schoolYear = trim((string) $row->school_year);
+        }
+
+        if ($semester === '' && isset($row->term)) {
+            $semester = trim((string) $row->term);
+        }
+
+        if ($schoolYear === '' && $semester === '') {
+            return '';
+        }
+
+        return $schoolYear . '|' . $semester;
+    }
+
+    private function schoolYearSortValue($schoolYear)
+    {
+        if (preg_match('/\d{4}/', (string) $schoolYear, $matches)) {
+            return (int) $matches[0];
+        }
+
+        return 0;
+    }
+
+    private function termSortOrder($term)
+    {
+        $normalized = strtolower(trim((string) $term));
+
+        if ($normalized === '') {
+            return 99;
+        }
+
+        if (strpos($normalized, 'first') !== false || preg_match('/(^|[^0-9])1(st)?([^0-9]|$)/', $normalized)) {
+            return 1;
+        }
+
+        if (strpos($normalized, 'second') !== false || preg_match('/(^|[^0-9])2(nd)?([^0-9]|$)/', $normalized)) {
+            return 2;
+        }
+
+        if (strpos($normalized, 'summer') !== false) {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    public function grades(Request $request)
     {
         $currentStudent = $this->currentStudent();
         $children = $this->linkedChildren($currentStudent);
-        $selectedChildId = request('child');
+        $selectedChildId = $request->query('child');
         $selectedChild = $this->resolveSelectedChild($children, $selectedChildId);
+
+        if ($selectedChild && isset($selectedChild['id'])) {
+            $selectedChildId = (string) $selectedChild['id'];
+        } else {
+            $selectedChildId = null;
+        }
 
         $student = null;
         if ($selectedChild && !empty($selectedChild['id'])) {
-            $student = Student::with('subjects')->find($selectedChild['id']);
+            $student = Student::with(['subjects', 'canonicalCourse', 'yearBlock'])->find($selectedChild['id']);
         }
 
         if (!$student && $currentStudent && (!$selectedChild || (string) ($selectedChild['id'] ?? '') === (string) $currentStudent->id)) {
             $student = $currentStudent;
         }
 
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'yearBlock']);
+        }
+
         $gradeRows = collect();
         if ($student) {
-            $gradeRows = StudentSubjectGrade::with('subject')
+            $gradeRows = StudentSubjectGrade::query()
+                ->with(['subject.academicTerm', 'subject.facultyModel:id,name'])
                 ->where('student_id', $student->id)
                 ->get();
+
+            if ($gradeRows->isEmpty()) {
+                $gradeRows = $this->mapStudentGradeRecords($student);
+            }
         }
 
         $deficiencyItems = collect();
@@ -304,58 +377,89 @@ class ParentController extends Controller
                 });
         }
 
-        if ($deficiencyItems->isEmpty() && $this->shouldUseSampleDeficiency($selectedChild)) {
-            $deficiencyItems = collect([
-                'Registrar - Pending Grades in Laboratory Class',
-                'Unreturned library book: Maritime Safety Vol. 2',
-            ]);
-        }
-
         $hasDeficiencies = $deficiencyItems->isNotEmpty();
 
         $semesterOptions = $gradeRows
             ->map(function ($row) {
-                return optional($row->subject)->school_year . '|' . optional($row->subject)->semester;
+                return $this->gradeRowSemesterKey($row);
             })
             ->filter()
             ->unique()
+            ->sort(function ($left, $right) {
+                list($leftSchoolYear, $leftTerm) = array_pad(explode('|', (string) $left), 2, '');
+                list($rightSchoolYear, $rightTerm) = array_pad(explode('|', (string) $right), 2, '');
+
+                $yearCompare = $this->schoolYearSortValue($rightSchoolYear) <=> $this->schoolYearSortValue($leftSchoolYear);
+                if ($yearCompare !== 0) {
+                    return $yearCompare;
+                }
+
+                $termCompare = $this->termSortOrder($leftTerm) <=> $this->termSortOrder($rightTerm);
+                if ($termCompare !== 0) {
+                    return $termCompare;
+                }
+
+                return strcmp((string) $leftTerm, (string) $rightTerm);
+            })
             ->values();
 
-        $selectedSemester = request('semester');
+        $selectedSemester = trim((string) $request->query('semester', ''));
 
-        if ($selectedSemester) {
-            list($selectedSchoolYear, $selectedSem) = array_pad(explode('|', $selectedSemester), 2, null);
-            $gradeRows = $gradeRows->filter(function ($row) use ($selectedSchoolYear, $selectedSem) {
-                return optional($row->subject)->school_year === $selectedSchoolYear
-                    && optional($row->subject)->semester === $selectedSem;
+        if ($selectedSemester !== '' && !$semesterOptions->contains($selectedSemester)) {
+            $selectedSemester = '';
+        }
+
+        if ($selectedSemester !== '') {
+            $gradeRows = $gradeRows->filter(function ($row) use ($selectedSemester) {
+                return $this->gradeRowSemesterKey($row) === $selectedSemester;
             })->values();
         }
 
+        $programCode = $student ? trim((string) $student->program) : '';
+        $programName = $student ? trim((string) optional($student->canonicalCourse)->name) : '';
+        $programLabel = $programCode !== '' ? $programCode : ($programName !== '' ? $programName : 'N/A');
+        $programDescription = $programName !== '' ? $programName : ($programCode !== '' ? $programCode : 'N/A');
+
         $termSections = $gradeRows
             ->groupBy(function ($row) {
-                return optional($row->subject)->school_year . '|' . optional($row->subject)->semester;
+                return $this->gradeRowSemesterKey($row);
             })
-            ->map(function ($rows, $key) {
+            ->map(function ($rows, $key) use ($programLabel, $programDescription) {
                 list($schoolYear, $semester) = array_pad(explode('|', $key), 2, '');
 
-                $avg = $rows->count() ? round((float) $rows->avg('final_average'), 2) : null;
+                $numericFinalAverages = $rows->filter(function ($row) {
+                    return isset($row->final_average) && $row->final_average !== null && is_numeric($row->final_average);
+                });
+
+                $avg = $numericFinalAverages->count()
+                    ? round((float) $numericFinalAverages->avg('final_average'), 2)
+                    : null;
 
                 return [
                     'academic_year' => $schoolYear ?: 'N/A',
                     'term' => $semester ?: 'N/A',
-                    'admission_status' => 'Transferee',
+                    'admission_status' => 'N/A',
                     'academic_status' => 'Regular',
-                    'program' => optional(optional($rows->first())->student)->program ?: 'BSMT',
-                    'program_description' => optional(optional($rows->first())->student)->program ?: 'Bachelor Of Science Marine Transportation',
+                    'program' => $programLabel,
+                    'program_description' => $programDescription,
                     'gpa' => $avg,
                     'rows' => $rows->values(),
                 ];
             })
-            ->values();
+            ->sort(function ($left, $right) {
+                $yearCompare = $this->schoolYearSortValue($right['academic_year']) <=> $this->schoolYearSortValue($left['academic_year']);
+                if ($yearCompare !== 0) {
+                    return $yearCompare;
+                }
 
-        if ($termSections->isEmpty()) {
-            $termSections = $this->dummyTermSections();
-        }
+                $termCompare = $this->termSortOrder($left['term']) <=> $this->termSortOrder($right['term']);
+                if ($termCompare !== 0) {
+                    return $termCompare;
+                }
+
+                return strcmp((string) $left['term'], (string) $right['term']);
+            })
+            ->values();
 
         return view('parent.grades', compact(
             'student',

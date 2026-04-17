@@ -76,12 +76,36 @@ class ParentAuthSeeder extends Seeder
             }
         }
 
-        $studentId = null;
+        $primaryStudentId = null;
+        $secondaryStudentId = null;
+
         if (Schema::hasTable('students')) {
-            $studentId = DB::table('students')->orderBy('id')->value('id');
+            if (Schema::hasTable('student_subject_grades')) {
+                $primaryStudentId = DB::table('student_subject_grades')
+                    ->whereNotNull('student_id')
+                    ->orderByDesc('id')
+                    ->value('student_id');
+            }
+
+            if (!$primaryStudentId) {
+                $primaryStudentId = DB::table('students')
+                    ->where('student_no', '2025-000001')
+                    ->value('id');
+            }
+
+            if (!$primaryStudentId) {
+                $primaryStudentId = DB::table('students')->orderBy('id')->value('id');
+            }
+
+            if ($primaryStudentId) {
+                $secondaryStudentId = DB::table('students')
+                    ->where('id', '<>', $primaryStudentId)
+                    ->orderBy('id')
+                    ->value('id');
+            }
         }
 
-        if ($studentId && Schema::hasTable('parent_student_links')) {
+        if ($primaryStudentId && Schema::hasTable('parent_student_links')) {
             $relationshipTypeId = DB::table('parent_relationship_types')
                 ->where('code', 'GUARDIAN')
                 ->value('id');
@@ -89,7 +113,7 @@ class ParentAuthSeeder extends Seeder
             DB::table('parent_student_links')->updateOrInsert(
                 [
                     'parent_id' => $parent->id,
-                    'student_id' => $studentId,
+                    'student_id' => $primaryStudentId,
                 ],
                 [
                     'relationship_type_id' => $relationshipTypeId,
@@ -99,6 +123,26 @@ class ParentAuthSeeder extends Seeder
                     'created_at' => $now,
                 ]
             );
+
+            $this->seedStudentGradesIfMissing((int) $primaryStudentId, $now);
+
+            if ($secondaryStudentId) {
+                DB::table('parent_student_links')->updateOrInsert(
+                    [
+                        'parent_id' => $parent->id,
+                        'student_id' => $secondaryStudentId,
+                    ],
+                    [
+                        'relationship_type_id' => $relationshipTypeId,
+                        'is_primary_contact' => false,
+                        'receives_notifications' => true,
+                        'updated_at' => $now,
+                        'created_at' => $now,
+                    ]
+                );
+
+                $this->seedStudentGradesIfMissing((int) $secondaryStudentId, $now);
+            }
         }
     }
 
@@ -140,6 +184,70 @@ class ParentAuthSeeder extends Seeder
                 ['code' => 'inactive'],
                 [
                     'name' => 'Inactive',
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ]
+            );
+        }
+    }
+
+    private function seedStudentGradesIfMissing(int $studentId, $now)
+    {
+        if (!Schema::hasTable('student_subject_grades')
+            || !Schema::hasTable('student_subject')
+            || !Schema::hasTable('subjects')) {
+            return;
+        }
+
+        $existingCount = DB::table('student_subject_grades')
+            ->where('student_id', $studentId)
+            ->count();
+
+        if ($existingCount > 0) {
+            return;
+        }
+
+        $subjectIds = DB::table('subjects')
+            ->orderBy('id')
+            ->limit(6)
+            ->pluck('id')
+            ->all();
+
+        if (empty($subjectIds)) {
+            return;
+        }
+
+        $gradeSet = [
+            ['prelim' => 1.75, 'midterm' => 1.50, 'final' => 1.50, 'final_average' => 1.58, 'remarks' => 'Passed'],
+            ['prelim' => 2.00, 'midterm' => 1.75, 'final' => 1.75, 'final_average' => 1.83, 'remarks' => 'Passed'],
+            ['prelim' => 2.25, 'midterm' => 2.00, 'final' => 2.00, 'final_average' => 2.08, 'remarks' => 'Passed'],
+        ];
+
+        foreach ($subjectIds as $index => $subjectId) {
+            DB::table('student_subject')->updateOrInsert(
+                [
+                    'student_id' => $studentId,
+                    'subject_id' => $subjectId,
+                ],
+                [
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ]
+            );
+
+            $grade = $gradeSet[$index % count($gradeSet)];
+
+            DB::table('student_subject_grades')->updateOrInsert(
+                [
+                    'student_id' => $studentId,
+                    'subject_id' => $subjectId,
+                ],
+                [
+                    'prelim' => $grade['prelim'],
+                    'midterm' => $grade['midterm'],
+                    'final' => $grade['final'],
+                    'final_average' => $grade['final_average'],
+                    'remarks' => $grade['remarks'],
                     'updated_at' => $now,
                     'created_at' => $now,
                 ]

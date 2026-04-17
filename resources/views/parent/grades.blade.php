@@ -4,21 +4,66 @@
 @section('page-title', 'GRADES')
 
 @section('content')
+@php
+    $selectedChildValue = (string) ($selectedChildId ?: data_get($selectedChild, 'id', ''));
+
+    $childSelectOptions = collect($children)->map(function ($child) {
+        $childName = trim((string) data_get($child, 'name', ''));
+        $studentNo = trim((string) data_get($child, 'student_no', ''));
+
+        return [
+            'value' => (string) data_get($child, 'id', ''),
+            'label' => ($childName !== '' ? $childName : 'Current Student') . ($studentNo !== '' ? ' (' . $studentNo . ')' : ''),
+        ];
+    })->values()->all();
+
+    $semesterSelectOptions = collect($semesterOptions)->map(function ($option) {
+        [$sy, $sem] = array_pad(explode('|', (string) $option), 2, '');
+        $label = trim(($sy !== '' ? 'SY ' . $sy : '') . ' ' . $sem);
+
+        return [
+            'value' => (string) $option,
+            'label' => $label !== '' ? $label : 'Unspecified Term',
+        ];
+    })->values()->all();
+@endphp
+
 <div class="grades-page parent-grades-snapshot-page">
-    <form method="GET" action="{{ route('parent.grades') }}" class="parent-grades-student-row">
-        <label class="form-label-plp" for="parentGradesChild">STUDENT</label>
-        <select id="parentGradesChild" name="child" class="form-select form-input-long" onchange="this.form.submit()">
-            @forelse($children as $child)
-                <option value="{{ $child['id'] }}" {{ (string) ($child['id'] ?? '') === (string) ($selectedChildId ?: data_get($selectedChild, 'id')) ? 'selected' : '' }}>
-                    {{ $child['name'] ?: 'Current Student' }}{{ !empty($child['student_no']) ? ' (' . $child['student_no'] . ')' : '' }}
-                </option>
-            @empty
-                <option selected>No linked child yet</option>
-            @endforelse
-        </select>
+    <form method="GET" action="{{ route('parent.grades') }}" class="parent-grades-filter-grid" id="parentGradesFilterForm">
+        <div class="parent-grades-filter-field parent-grades-student-row">
+            <label class="form-label-plp" for="parentGradesChild">STUDENT</label>
+            @include('components.applicant-select', [
+                'id' => 'parentGradesChild',
+                'name' => 'child',
+                'placeholder' => $children->isEmpty() ? 'No linked child yet' : 'Select student',
+                'selected' => $selectedChildValue,
+                'options' => $childSelectOptions,
+                'wrapperClass' => 'parent-grades-select-wrap',
+                'inputClass' => 'form-input-long',
+                'disabled' => $children->isEmpty(),
+            ])
+        </div>
+
+        <div class="parent-grades-filter-field">
+            <label class="form-label-plp" for="parentGradesSemester">TERM</label>
+            @include('components.applicant-select', [
+                'id' => 'parentGradesSemester',
+                'name' => 'semester',
+                'placeholder' => 'All Terms',
+                'selected' => (string) $selectedSemester,
+                'options' => $semesterSelectOptions,
+                'wrapperClass' => 'parent-grades-select-wrap',
+                'inputClass' => 'form-input-long',
+                'disabled' => $children->isEmpty() || empty($semesterSelectOptions),
+            ])
+        </div>
     </form>
 
-    @if(!empty($hasDeficiencies))
+    @if($children->isEmpty())
+        <div class="parent-grades-empty-state">
+            No linked child record found for this parent account.
+        </div>
+    @elseif(!empty($hasDeficiencies))
         <div class="parent-grades-deficiency-shell">
             <section class="parent-grades-deficiency-alert" role="alert" aria-live="polite">
                 <h2>
@@ -40,6 +85,10 @@
                     @endforeach
                 </ul>
             </section>
+        </div>
+    @elseif($termSections->isEmpty())
+        <div class="parent-grades-empty-state">
+            No grade records found for the selected child.
         </div>
     @else
 
@@ -82,9 +131,9 @@
                                         <td class="sched-td">{{ $index + 1 }}</td>
                                         <td class="sched-td">{{ optional($subject)->code ?: 'N/A' }}</td>
                                         <td class="sched-td">{{ optional($subject)->name ?: 'N/A' }}</td>
-                                        <td class="sched-td">{{ optional($subject)->faculty_name ?: 'Abela, Manuel' }}</td>
-                                        <td class="sched-td">{{ number_format((float) optional($subject)->units, 0) }}</td>
-                                        <td class="sched-td">{{ optional($subject)->section ?: 'BSMT 3-A' }}</td>
+                                        <td class="sched-td">{{ optional($subject)->faculty_name ?: optional(optional($subject)->facultyModel)->name ?: 'N/A' }}</td>
+                                        <td class="sched-td">{{ optional($subject)->units !== null ? number_format((float) optional($subject)->units, 1) : '0.0' }}</td>
+                                        <td class="sched-td">{{ optional($subject)->section ?: optional($subject)->year_section ?: 'N/A' }}</td>
                                         <td class="sched-td">{{ $row->midterm !== null ? number_format((float) $row->midterm, 2) : '' }}</td>
                                         <td class="sched-td">{{ $row->final !== null ? number_format((float) $row->final, 2) : '' }}</td>
                                         <td class="sched-td">{{ $row->final_average !== null ? number_format((float) $row->final_average, 2) : '' }}</td>
@@ -103,3 +152,8 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ mix('js/applicant-select.js') }}"></script>
+<script src="{{ mix('js/parent-grades.js') }}"></script>
+@endpush
