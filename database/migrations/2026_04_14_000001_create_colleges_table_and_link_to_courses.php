@@ -200,8 +200,19 @@ class CreateCollegesTableAndLinkToCourses extends Migration
             return;
         }
 
-        Schema::table('applicants', function (Blueprint $table) {
-            $table->unsignedBigInteger('college_id')->nullable()->after('application_status');
+        $afterColumn = 'id';
+        if (Schema::hasColumn('applicants', 'application_status_id')) {
+            $afterColumn = 'application_status_id';
+        } elseif (Schema::hasColumn('applicants', 'exam_result_status_id')) {
+            $afterColumn = 'exam_result_status_id';
+        } elseif (Schema::hasColumn('applicants', 'application_status')) {
+            $afterColumn = 'application_status';
+        } elseif (Schema::hasColumn('applicants', 'exam_result_status')) {
+            $afterColumn = 'exam_result_status';
+        }
+
+        Schema::table('applicants', function (Blueprint $table) use ($afterColumn) {
+            $table->unsignedBigInteger('college_id')->nullable()->after($afterColumn);
 
             $table->index('college_id', 'applicants_college_id_idx');
         });
