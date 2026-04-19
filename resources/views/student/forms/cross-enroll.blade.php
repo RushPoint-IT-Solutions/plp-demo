@@ -4,6 +4,10 @@
 @section('page-title', 'FORMS')
 @section('body-class', 'page-student-forms')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/student-cross-enroll-overrides.css') }}">
+@endpush
+
 @section('content')
 @php
     $displayName = trim(($profile->first_name ?? '') . ' ' . ($profile->middle_name ?? '') . ' ' . ($profile->last_name ?? ''));

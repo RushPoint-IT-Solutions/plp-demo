@@ -12,7 +12,6 @@ yarn-error.log
 .playwright-mcp
 .security-audits/
 .ai-memory/
-project_memory.md
 scripts
 QWEN.md
 .qwen
@@ -23,3 +22,9 @@ tests
 test-results
 copilot-instructions.md
 school-portal-architecture-security.instructions.md
+.memories
+.github/
+docs/
+project_memory.md
+memories/
+.githooks

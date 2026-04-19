@@ -200,8 +200,14 @@ class CreateCollegesTableAndLinkToCourses extends Migration
             return;
         }
 
-        Schema::table('applicants', function (Blueprint $table) {
-            $table->unsignedBigInteger('college_id')->nullable()->after('application_status');
+        $afterColumn = $this->resolveApplicantCollegeAfterColumn();
+
+        Schema::table('applicants', function (Blueprint $table) use ($afterColumn) {
+            $column = $table->unsignedBigInteger('college_id')->nullable();
+
+            if ($afterColumn) {
+                $column->after($afterColumn);
+            }
 
             $table->index('college_id', 'applicants_college_id_idx');
         });
@@ -214,6 +220,23 @@ class CreateCollegesTableAndLinkToCourses extends Migration
                     ->onDelete('set null');
             });
         }
+    }
+
+    private function resolveApplicantCollegeAfterColumn()
+    {
+        $candidates = [
+            'application_status_id',
+            'exam_result_status_id',
+            'id',
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (Schema::hasColumn('applicants', $candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     private function dropCollegeIdFromCourses()
