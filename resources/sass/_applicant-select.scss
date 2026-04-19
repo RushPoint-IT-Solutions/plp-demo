@@ -1,0 +1,167 @@
+// Applicant Select Dropdown Component
+// Reusable styled dropdown for applicant forms
+// Follows sass-css-disciplinarian skill standards
+
+.applicant-select-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.applicant-select-native {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.applicant-select-native.is-enhanced {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.applicant-select-trigger {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid $plp-border;
+  border-radius: $radius-md;
+  padding: 8px 12px;
+  background: $plp-white;
+  color: #26463a;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: $font-primary;
+}
+
+.applicant-select-native.is-enhanced + .applicant-select-trigger {
+  display: inline-flex;
+}
+
+.applicant-select-trigger:focus,
+.applicant-select-wrap.is-open .applicant-select-trigger,
+[data-applicant-select].is-open .applicant-select-trigger {
+  outline: none;
+  border-color: $plp-green;
+  box-shadow: 0 0 0 3px rgba($plp-green, 0.14);
+}
+
+.applicant-select-trigger:disabled {
+  background: $plp-gray;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+.applicant-select-trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.applicant-select-trigger-text.is-placeholder {
+  color: #999;
+}
+
+.applicant-select-trigger-caret {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid $plp-green;
+  border-bottom: 2px solid $plp-green;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.applicant-select-wrap.is-open .applicant-select-trigger-caret,
+[data-applicant-select].is-open .applicant-select-trigger-caret {
+  transform: rotate(225deg) translateY(2px);
+}
+
+.applicant-select-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid darken($plp-green, 10%);
+  border-radius: $radius-lg;
+  background: $plp-white;
+  box-shadow: 0 12px 24px rgba(darken($plp-green, 20%), 0.15);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 35;
+}
+
+.applicant-select-wrap.is-open .applicant-select-menu,
+[data-applicant-select].is-open .applicant-select-menu {
+  display: block;
+}
+
+.applicant-select-option-btn {
+  width: 100%;
+  border: 0;
+  border-radius: $radius-md;
+  background: $plp-white;
+  color: #1a3f2e;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: $font-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.applicant-select-option-btn:hover,
+.applicant-select-option-btn.is-active {
+  background: lighten($plp-green, 45%);
+  color: $plp-green;
+}
+
+.applicant-select-option-btn.is-selected {
+  background: $plp-green;
+  color: $plp-white;
+}
+
+.applicant-select-option-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba($plp-green, 0.3);
+}
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .applicant-select-trigger {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .applicant-select-menu {
+    max-height: 300px;
+  }
+
+  .applicant-select-option-btn {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}

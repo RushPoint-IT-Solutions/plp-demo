@@ -9,6 +9,10 @@
     <script src="{{ asset('js/registrar-faculty-loads.js') }}?v={{ file_exists(public_path('js/registrar-faculty-loads.js')) ? filemtime(public_path('js/registrar-faculty-loads.js')) : time() }}"></script>
 @endpush
 
+@push('styles')
+    <link rel="stylesheet" href="{{ mix('css/registrar-faculty-loads.css') }}">
+@endpush
+
 @section('content')
 <div class="rfl-wrap">
 
@@ -20,7 +24,12 @@
 
     @if ($errors->any())
         <div class="alert alert-danger rfl-alert" role="alert">
-            Please check the form and try again.
+            <div class="font-weight-bold mb-1">Please check the form and try again.</div>
+            <ul class="mb-0 pl-3">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -141,22 +150,38 @@
                 <input type="hidden" name="semester" value="{{ $selectedSemester }}">
                 <input type="hidden" name="loading_q" value="{{ $loadingSearch }}">
 
+                @php
+                    $subjectSelectValue = (string) old('subject_id', '');
+                    $subjectSelectOptions = count($availableSubjectOptions)
+                        ? array_merge([
+                            [
+                                'value' => '',
+                                'label' => 'Select available subject',
+                            ],
+                        ], $availableSubjectOptions)
+                        : [];
+                @endphp
+
                 <div class="rfl-assign-top">
                     <div class="rfl-subject-select">
                         @include('registrar.components.listbox-select', [
                             'id' => 'rflSubjectSelect',
                             'name' => 'subject_id',
-                            'options' => $availableSubjectOptions,
-                            'selected' => (string) old('subject_id', ''),
+                            'options' => $subjectSelectOptions,
+                            'selected' => $subjectSelectValue,
                             'placeholder' => count($availableSubjectOptions) ? 'list of available subjects' : 'No available subjects',
                         ])
                     </div>
 
-                    <button type="submit" class="btn btn-secondary rfl-add-btn" {{ count($availableSubjectOptions) ? '' : 'disabled' }}>Add Subject</button>
+                    <button id="rflAddSubjectBtn" type="submit" class="btn btn-secondary rfl-add-btn" {{ (count($availableSubjectOptions) && $subjectSelectValue !== '') ? '' : 'disabled' }}>Add Subject</button>
                 </div>
 
                 @if($availableSubjectsHasMore)
                     <div class="text-muted small mt-1">Showing first 200 matching subjects. Narrow the search to find more options.</div>
+                @endif
+
+                @if(!count($availableSubjectOptions))
+                    <div class="text-muted small mt-1">No unassigned subjects found for the selected School Year and Term. Seed new subjects or unassign existing subjects first.</div>
                 @endif
 
                 <div class="rfl-assign-options">
@@ -178,19 +203,21 @@
                     <div class="rfl-metric-group">
                         <div class="rfl-num-wrap">
                             <label class="rfl-num-label">Credited Tuition Units:</label>
-                            <input type="number" step="0.01" min="0" name="credited_tuition_units" class="form-control rfl-num" placeholder="Units" value="{{ old('credited_tuition_units') }}">
+                            <input type="number" step="0.01" min="0" max="999.99" name="credited_tuition_units" class="form-control rfl-num" placeholder="Units" value="{{ old('credited_tuition_units') }}">
                         </div>
 
                         <div class="rfl-num-wrap">
                             <label class="rfl-num-label">Load Hours:</label>
-                            <input type="number" step="0.01" min="0" name="load_hours" class="form-control rfl-num" placeholder="Units" value="{{ old('load_hours') }}">
+                            <input type="number" step="0.01" min="0" max="999.99" name="load_hours" class="form-control rfl-num" placeholder="Units" value="{{ old('load_hours') }}">
                         </div>
                     </div>
+
+                    <div class="text-muted small mt-1">Allowed range for Credited Tuition Units and Load Hours: 0.00 to 999.99 (up to 2 decimal places).</div>
                 </div>
             </form>
 
             <div class="app-table-wrap rfl-assigned-table">
-                <table class="app-table">
+                <table class="app-table" data-no-auto-pager="1">
                     <thead>
                         <tr>
                             <th>Subject Code</th>
@@ -246,6 +273,84 @@
             <div class="app-table-pager rfl-pagination">
                 {{ $assignedSubjects->links() }}
             </div>
+
+            @php
+                $printGeneratedAt = now();
+                $printClassification = $assignedSubjectsForSchedule->pluck('load_type')
+                    ->filter(function ($value) {
+                        return trim((string) $value) !== '';
+                    })
+                    ->unique()
+                    ->values()
+                    ->implode(', ');
+
+                $printTermLabel = trim(
+                    ($selectedSemester !== '' ? ($selectedSemester . ' Semester') : '') .
+                    ($selectedSchoolYear !== '' ? (', SY ' . $selectedSchoolYear) : '')
+                );
+
+                if ($printTermLabel === '') {
+                    $printTermLabel = 'SY -';
+                }
+
+                $printRows = $assignedSubjectsForSchedule->map(function ($subject) {
+                    return [
+                        'subject' => (string) $subject->name,
+                        'code' => (string) $subject->code,
+                        'section' => strtoupper(trim((string) $subject->year_section)),
+                        'days' => strtoupper(str_replace([',', ' '], ['/', ''], (string) $subject->days)),
+                        'time' => strtoupper((string) $subject->formatted_time),
+                        'room' => strtoupper(trim((string) $subject->room)),
+                        'units' => (float) ($subject->units ?? 0),
+                        'lec' => (int) ($subject->lec ?? 0),
+                        'lab' => (int) ($subject->lab ?? 0),
+                        'total_hours' => is_null($subject->load_hours)
+                            ? ((float) ($subject->lec ?? 0) + (float) ($subject->lab ?? 0))
+                            : (float) $subject->load_hours,
+                        'credited_tuition_units' => is_null($subject->credited_tuition_units)
+                            ? null
+                            : (float) $subject->credited_tuition_units,
+                        'students' => (int) ($subject->students_count ?? 0),
+                        'campus' => 'Pasig',
+                        'type' => (string) ($subject->load_type ?? '—'),
+                        'added_by' => (string) ($subject->added_by ?? '—'),
+                    ];
+                })->values();
+
+                $printTotals = [
+                    'lec' => (int) $printRows->sum('lec'),
+                    'lab' => (int) $printRows->sum('lab'),
+                    'units' => (float) $printRows->sum('units'),
+                    'total_hours' => (float) $printRows->sum('total_hours'),
+                    'credited_tuition_units' => (float) $printRows->reduce(function ($carry, $row) {
+                        $value = $row['credited_tuition_units'];
+                        return $carry + ($value === null ? 0 : (float) $value);
+                    }, 0),
+                    'students' => (int) $printRows->sum('students'),
+                ];
+            @endphp
+
+            <div class="rfl-print-actions d-flex flex-wrap gap-2 mt-2 mb-3">
+                <button type="button" class="btn btn-secondary rfl-add-btn" data-rfl-print-template="strength">
+                    Print Strength of Classes
+                </button>
+                <button type="button" class="btn btn-secondary rfl-add-btn" data-rfl-print-template="assignment">
+                    Print Faculty Assignment Form
+                </button>
+                <button type="button" class="btn btn-secondary rfl-add-btn" data-rfl-print-template="plotted">
+                    Print Faculty Assignment Form - Plotted
+                </button>
+            </div>
+
+            <div
+                id="rflPrintConfig"
+                class="d-none"
+                data-favicon="{{ asset('img/logobg.png') }}"
+                data-bootstrap-css="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+                data-app-css="{{ mix('css/app.css') }}"
+                data-style-css="{{ mix('css/style.css') }}"
+                data-print-css="{{ mix('css/registrar-faculty-loads.css') }}"
+            ></div>
 
             <div class="rfl-loading-header rfl-schedule-table-title">FACULTY SCHEDULE</div>
             @php
@@ -383,6 +488,42 @@
                     @endforeach
                 </div>
             </div>
+
+            <div class="rfl-print-sources d-none" aria-hidden="true">
+                <template id="rflPrintTemplate-strength">
+                    @include('registrar.services.classroom-faculty.faculty-loads.partials.print-strength', [
+                        'faculty' => $faculty,
+                        'printRows' => $printRows,
+                        'printTotals' => $printTotals,
+                        'printGeneratedAt' => $printGeneratedAt,
+                        'printClassification' => $printClassification,
+                        'printTermLabel' => $printTermLabel,
+                    ])
+                </template>
+
+                <template id="rflPrintTemplate-assignment">
+                    @include('registrar.services.classroom-faculty.faculty-loads.partials.print-assignment', [
+                        'faculty' => $faculty,
+                        'printRows' => $printRows,
+                        'printTotals' => $printTotals,
+                        'printGeneratedAt' => $printGeneratedAt,
+                        'printClassification' => $printClassification,
+                        'printTermLabel' => $printTermLabel,
+                    ])
+                </template>
+
+                <template id="rflPrintTemplate-plotted">
+                    @include('registrar.services.classroom-faculty.faculty-loads.partials.print-assignment-plotted', [
+                        'faculty' => $faculty,
+                        'weekDays' => $weekDays,
+                        'scheduleByDay' => $scheduleByDay,
+                        'printGeneratedAt' => $printGeneratedAt,
+                        'printTermLabel' => $printTermLabel,
+                    ])
+                </template>
+            </div>
+
+            <iframe id="rflPrintFrame" class="d-none" title="Faculty Loads Print Frame" aria-hidden="true"></iframe>
 
         </div>
     @endif

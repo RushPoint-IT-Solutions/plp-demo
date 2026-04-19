@@ -5,6 +5,8 @@
 
 @section('page-title', 'SECTION OFFERING')
 
+@section('body-class', 'page-section-offering')
+
 @section('content')
 <div class="form-section-container section-offering-page sched-page-container">
     

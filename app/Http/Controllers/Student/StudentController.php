@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Student;
 
+use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Http\Controllers\Controller;
 use App\Student;
 use App\StudentProfile;
 use App\AcademicCalendarEvent;
+use App\SystemAnnouncement;
 use App\Subject;
 use App\Semester;
 use App\Course;
@@ -19,6 +21,22 @@ use Illuminate\Support\Facades\Schema;
 
 class StudentController extends Controller
 {
+    use PortalNotifications;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = Auth::user();
+
+            $this->syncPortalNotificationsForUser($user);
+
+            view()->share('studentNotifications', $this->portalNotificationPayloads($user));
+            view()->share('studentUnreadNotificationCount', $this->portalUnreadNotificationCount($user));
+
+            return $next($request);
+        });
+    }
+
     private function currentStudent()
     {
         $user = Auth::user();
@@ -32,6 +50,46 @@ class StudentController extends Controller
         }
 
         return null; // Don't return a random student for demo purposes anymore.
+    }
+
+    protected function portalNotificationModule(): string
+    {
+        return 'student';
+    }
+
+    protected function portalNotificationAudience(): string
+    {
+        return SystemAnnouncement::AUDIENCE_STUDENTS;
+    }
+
+    protected function portalNotificationRoutePrefix(): string
+    {
+        return 'student';
+    }
+
+    protected function portalNotificationFallbackTitle(): string
+    {
+        return 'New Student Notification';
+    }
+
+    protected function portalNotificationFallbackMessage(): string
+    {
+        return 'A student announcement is available';
+    }
+
+    public function notificationsFeed(Request $request)
+    {
+        return $this->portalNotificationsFeed($request);
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        return $this->markPortalNotificationsRead($request);
+    }
+
+    public function dismissNotification(Request $request, $notificationDelivery)
+    {
+        return $this->dismissPortalNotification($request, $notificationDelivery);
     }
 
     /**
@@ -141,9 +199,17 @@ class StudentController extends Controller
         $calendarEvents = [];
 
         if (Schema::hasTable('academic_calendar_events')) {
+            $today = now()->toDateString();
+
             $calendarEvents = AcademicCalendarEvent::query()
                 ->where('is_active', true)
+                ->where(function ($query) use ($today) {
+                    $query->whereNull('post_until')
+                        ->orWhereDate('post_until', '>=', $today);
+                })
+                ->visibleToAudience('student')
                 ->orderBy('event_date')
+                ->orderBy('time_from')
                 ->get()
                 ->map(function ($event) {
                     return [

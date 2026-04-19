@@ -23,12 +23,10 @@
 </head>
 <body class="student-body student-portal-body parent-portal-body @yield('body-class')">
     @php
-        $parentNotifications = collect([
-            ['title' => 'Grade updates were posted for this semester.', 'source_url' => '#', 'is_read' => false],
-            ['title' => 'Registrar advisory: deadline reminders this week.', 'source_url' => '#', 'is_read' => false],
-            ['title' => 'Calendar event updated by the administration.', 'source_url' => '#', 'is_read' => true],
-        ]);
+        $parentNotifications = $parentNotifications ?? collect();
+        $parentUnreadNotificationCount = (int) ($parentUnreadNotificationCount ?? 0);
     @endphp
+
     <div class="student-layout">
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -62,6 +60,7 @@
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                         </svg>
+                        <span class="faculty-notif-badge {{ $parentUnreadNotificationCount ? '' : 'd-none' }}">{{ $parentUnreadNotificationCount > 99 ? '99+' : $parentUnreadNotificationCount }}</span>
                     </a>
 
                     <a href="{{ route('parent.messaging') }}" class="topbar-icon-link msg-icon {{ request()->routeIs('parent.messaging') ? 'is-active' : '' }}" title="Messages">
@@ -98,97 +97,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/script.js') }}"></script>
 
-    <div class="modal fade faculty-notif-modal" id="parentNotificationsModal" tabindex="-1" aria-labelledby="parentNotificationsTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="faculty-notif-modal-header">
-                    <h5 class="modal-title" id="parentNotificationsTitle">NOTIFICATIONS</h5>
-                </div>
-                <div class="faculty-notif-body">
-                    <div class="faculty-notif-list">
-                        @foreach($parentNotifications as $notification)
-                            <div class="faculty-notif-item {{ $notification['is_read'] ? 'is-read' : '' }}">
-                                <a href="{{ $notification['source_url'] }}" class="faculty-notif-text">{{ $notification['title'] }}</a>
-                                <button
-                                    type="button"
-                                    class="faculty-notif-dismiss js-parent-notif-dismiss"
-                                    aria-label="Dismiss notification"
-                                    title="Dismiss"
-                                >
-                                    &times;
-                                </button>
-                            </div>
-                        @endforeach
-                    </div>
-                    <p class="faculty-notif-empty {{ $parentNotifications->count() ? 'd-none' : '' }}">No new notifications.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('includes.portal-notifications-modal', [
+        'notificationModalId' => 'parentNotificationsModal',
+        'notificationModalTitleId' => 'parentNotificationsTitle',
+        'notificationModalTitle' => 'NOTIFICATIONS',
+        'notificationDetailModalId' => 'parentNotificationDetailModal',
+        'notificationDetailTitleId' => 'parentNotificationDetailTitle',
+        'notificationDetailMessageId' => 'parentNotificationDetailMessage',
+        'notifications' => $parentNotifications,
+        'feedUrl' => route('parent.notifications.feed'),
+        'markReadUrl' => route('parent.notifications.mark-read'),
+    ])
 
     @stack('scripts')
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var modal = document.getElementById('parentNotificationsModal');
-            if (!modal) {
-                return;
-            }
-
-            var badge = document.querySelector('.faculty-notif-badge');
-            var list = modal.querySelector('.faculty-notif-list');
-            var empty = modal.querySelector('.faculty-notif-empty');
-
-            function updateState() {
-                var total = list ? list.querySelectorAll('.faculty-notif-item').length : 0;
-                var unread = list ? list.querySelectorAll('.faculty-notif-item:not(.is-read)').length : 0;
-                if (empty) {
-                    empty.classList.toggle('d-none', total > 0);
-                }
-                if (badge) {
-                    if (unread > 0) {
-                        badge.classList.remove('d-none');
-                        badge.textContent = unread > 99 ? '99+' : String(unread);
-                    } else {
-                        badge.classList.add('d-none');
-                        badge.textContent = '0';
-                    }
-                }
-            }
-
-            function markAllAsRead() {
-                if (!list) {
-                    return;
-                }
-
-                list.querySelectorAll('.faculty-notif-item').forEach(function (item) {
-                    item.classList.add('is-read');
-                });
-            }
-
-            modal.addEventListener('click', function (event) {
-                var dismissBtn = event.target.closest('.js-parent-notif-dismiss');
-                if (!dismissBtn) {
-                    return;
-                }
-                var notifItem = dismissBtn.closest('.faculty-notif-item');
-                if (notifItem) {
-                    notifItem.remove();
-                    updateState();
-                }
-            });
-
-            modal.addEventListener('shown.bs.modal', function () {
-                markAllAsRead();
-                updateState();
-            });
-
-            updateState();
-        });
-    </script>
-
-    <script src="{{ asset('js/student-layout.js') }}?v={{ file_exists(public_path('js/student-layout.js')) ? filemtime(public_path('js/student-layout.js')) : time() }}"></script>
-    <script src="{{ asset('js/student-sidebar-dropdown.js') }}?v={{ file_exists(public_path('js/student-sidebar-dropdown.js')) ? filemtime(public_path('js/student-sidebar-dropdown.js')) : time() }}"></script>
-
+    <script src="{{ asset('js/portal-notifications.js') }}"></script>
+    <script src="{{ asset('js/student-layout.js') }}"></script>
+    <script src="{{ asset('js/student-sidebar-dropdown.js') }}"></script>
 </body>
 </html>

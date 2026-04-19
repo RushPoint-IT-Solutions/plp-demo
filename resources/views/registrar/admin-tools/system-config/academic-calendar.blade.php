@@ -106,6 +106,17 @@
         </div>
     </div>
 </div>
+
+<div class="req-modal-overlay ac-error-modal" id="acErrorModal" style="display:none;" aria-hidden="true" onclick="if(event.target===this) acCloseErrorModal()">
+    <div class="req-modal-box ac-error-modal-box" role="dialog" aria-modal="true" aria-labelledby="acErrorModalTitle" aria-describedby="acErrorMessage">
+        <div class="ac-error-badge" aria-hidden="true">!</div>
+        <h3 class="ac-error-title" id="acErrorModalTitle">Event Validation Error</h3>
+        <p class="ac-error-message" id="acErrorMessage">Please review the event details and try again.</p>
+        <div class="ac-error-actions">
+            <button type="button" class="ac-error-btn" onclick="acCloseErrorModal()">Got It</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -115,29 +126,8 @@
     var acUpdateTemplate = '{{ route('registrar.admin-tools.system-config.academic-calendar.update', ['academicCalendarEvent' => '__ID__']) }}';
     var acDeleteTemplate = '{{ route('registrar.admin-tools.system-config.academic-calendar.destroy', ['academicCalendarEvent' => '__ID__']) }}';
 
-    if (!Array.isArray(acEvents) || acEvents.length === 0) {
-        acEvents = [
-        {
-            id: null,
-            date: '2026-01-13',
-            timeFrom: '08:00',
-            timeTo: '10:00',
-            event: 'Midterm Examination',
-            venue: 'Main Campus',
-            inCharge: 'PLP College Deans',
-            postUntil: '2026-01-20'
-        },
-        {
-            id: null,
-            date: '2026-01-27',
-            timeFrom: '09:00',
-            timeTo: '11:00',
-            event: 'Signing of Clearance',
-            venue: 'Registrar Office',
-            inCharge: 'PLP Registrar',
-            postUntil: '2026-01-31'
-        }
-    ];
+    if (!Array.isArray(acEvents)) {
+        acEvents = [];
     }
 
     function acUpdateUrl(id) {
@@ -146,6 +136,30 @@
 
     function acDeleteUrl(id) {
         return acDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    function acShowErrorModal(message) {
+        var modal = document.getElementById('acErrorModal');
+        var messageNode = document.getElementById('acErrorMessage');
+
+        if (messageNode) {
+            messageNode.textContent = message || 'Please review the event details and try again.';
+        }
+
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    function acCloseErrorModal() {
+        var modal = document.getElementById('acErrorModal');
+        if (!modal) {
+            return;
+        }
+
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
     }
 
     async function acApiRequest(url, method, payload) {
@@ -310,6 +324,7 @@
 
     function acOpenAddModal() {
         acClearEventForm();
+        acCloseErrorModal();
         document.getElementById('acModalTitle').innerText = 'ADD NEW RECORD';
         document.getElementById('acSaveBtn').innerText = 'Save';
         document.getElementById('acEventModal').style.display = 'flex';
@@ -327,6 +342,7 @@
         document.getElementById('acEvent').value = item.event;
         document.getElementById('acVenue').value = item.venue;
         document.getElementById('acInCharge').value = item.inCharge;
+        acCloseErrorModal();
         document.getElementById('acModalTitle').innerText = 'EDIT RECORD';
         document.getElementById('acSaveBtn').innerText = 'Update';
         document.getElementById('acEventModal').style.display = 'flex';
@@ -348,8 +364,13 @@
             postUntil: datePostUntil
         };
 
-        if (!payload.date || !payload.timeFrom || !payload.timeTo || !payload.event) {
-            alert('Please fill in Date / Post Until, Time From, Time To, and Event.');
+        if (!payload.date || !payload.event) {
+            acShowErrorModal('Please fill in Date / Post Until and Event before saving.');
+            return;
+        }
+
+        if (!payload.timeFrom || !payload.timeTo) {
+            acShowErrorModal('Please add both Time From and Time To time slots for this event.');
             return;
         }
 
@@ -373,7 +394,7 @@
                 }
             }
         } catch (error) {
-            alert(error.message || 'Unable to save event.');
+            acShowErrorModal(error.message || 'Unable to save event.');
             return;
         }
 
@@ -404,7 +425,7 @@
             }
             acEvents.splice(index, 1);
         } catch (error) {
-            alert(error.message || 'Unable to delete event.');
+            acShowErrorModal(error.message || 'Unable to delete event.');
             return;
         }
 
@@ -422,6 +443,12 @@
 
         if (!event.target.closest('.apst-dropdown')) {
             acCloseActionMenus();
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            acCloseErrorModal();
         }
     });
 

@@ -51,8 +51,11 @@ Route::get('/login/{module}', 'Admin\AdminController@moduleLogin')->name('module
 Route::post('/demo-login', 'Admin\AdminController@demoLogin')->name('demo.login');
 Route::post('/login/student', 'Admin\AdminController@studentLogin')->name('student.login.submit');
 Route::post('/login/applicant', 'Admin\AdminController@applicantLogin')->name('applicant.login.submit');
+Route::post('/login/parent', 'Admin\AdminController@parentLogin')->name('parent.login.submit')->middleware('throttle:20,1');
 Route::post('/login/module-auth', 'Admin\AdminController@moduleAuthLogin')->name('module.login.submit');
 Route::get('/parent/create-account', 'Portal\ParentController@showCreateAccount')->name('parent.create-account');
+Route::get('/parent/create-account/students', 'Auth\ParentCreateAccountController@studentLookup')->name('parent.create-account.students')->middleware('throttle:60,1');
+Route::post('/parent/create-account', 'Auth\ParentCreateAccountController@store')->name('parent.create-account.submit')->middleware('throttle:10,1');
 
 /*
 |--------------------------------------------------------------------------
@@ -108,6 +111,9 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
     Route::get('/profile', 'Student\StudentController@profile')->name('profile');
     Route::get('/profile/edit', 'Student\StudentController@editProfile')->name('profile.edit');
     Route::post('/profile', 'Student\StudentController@updateProfile')->name('profile.update');
+    Route::get('/notifications/feed', 'Student\StudentController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Student\StudentController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Student\StudentController@dismissNotification')->name('notifications.dismiss');
 });
 
 /*
@@ -115,10 +121,12 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
 | Parent Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('parent')->name('parent.')->group(function () {
+Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'force_password_reset'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('parent.grades');
     })->name('access-module');
+
+    Route::get('/dashboard', 'ParentModule\ParentController@dashboard')->name('dashboard');
     Route::get('/help-center', 'Portal\ParentController@helpCenter')->name('help.center');
     Route::get('/help-center/live-chat', 'Portal\ParentController@helpCenterLiveChat')->name('help.live-chat');
     Route::get('/help-center/{topic}', 'Portal\ParentController@helpCenterTopic')->name('help.topic');
@@ -127,8 +135,13 @@ Route::prefix('parent')->name('parent.')->group(function () {
     Route::get('/student-profile', 'Portal\ParentController@studentProfile')->name('student-profile');
     Route::get('/calendar', 'Portal\ParentController@calendar')->name('calendar');
     Route::get('/contact-us', 'Portal\ParentController@contactUs')->name('contact-us');
+    Route::post('/contact-us', 'Portal\ParentController@submitContactUs')->name('contact-us.submit')->middleware('throttle:20,1');
     Route::get('/change-password', 'Portal\ParentController@changePassword')->name('change-password');
+    Route::post('/change-password', 'Portal\ParentController@updatePassword')->name('change-password.update')->middleware('throttle:10,1');
     Route::get('/messaging', 'Portal\ParentController@messaging')->name('messaging');
+    Route::get('/notifications/feed', 'Portal\ParentController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Portal\ParentController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Portal\ParentController@dismissNotification')->name('notifications.dismiss');
 });
 
 /*
@@ -139,6 +152,9 @@ Route::prefix('parent')->name('parent.')->group(function () {
 Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
+    Route::get('/notifications/feed', 'Registrar\RegistrarController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Registrar\RegistrarController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Registrar\RegistrarController@dismissNotification')->name('notifications.dismiss');
     Route::get('/help-center', 'Registrar\RegistrarController@helpCenter')->name('help.center');
     Route::get('/help-center/live-chat', 'Registrar\RegistrarController@helpCenterLiveChat')->name('help.live-chat');
     Route::get('/help-center/{topic}', 'Registrar\RegistrarController@helpCenterTopic')->name('help.topic');
@@ -214,8 +230,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
             Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
+            Route::get('/section-offering/data', 'Registrar\RegistrarController@sectionOfferingData')->name('section-offering.data')->middleware('throttle:60,1');
+            Route::get('/section-offering/curriculum-subjects', 'Registrar\RegistrarController@sectionOfferingCurriculumSubjects')->name('section-offering.curriculum-subjects')->middleware('throttle:60,1');
+            Route::post('/section-offering', 'Registrar\RegistrarController@storeSectionOffering')->name('section-offering.store')->middleware('throttle:60,1');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
             Route::get('/slot-monitoring/data', 'Registrar\RegistrarController@slotMonitoringData')->name('slot-monitoring.data')->middleware('throttle:60,1');
+            Route::get('/slot-monitoring/reports/{reportType}', 'Registrar\RegistrarController@slotMonitoringReport')->name('slot-monitoring.report')->middleware('throttle:60,1')->where('reportType', 'actual-size|under-20|dissolved|closed');
             Route::post('/slot-monitoring', 'Registrar\RegistrarController@storeSlotMonitoring')->name('slot-monitoring.store')->middleware('throttle:60,1');
             Route::put('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@updateSlotMonitoring')->name('slot-monitoring.update')->middleware('throttle:60,1');
             Route::delete('/slot-monitoring/{slotMonitoring}', 'Registrar\RegistrarController@destroySlotMonitoring')->name('slot-monitoring.delete')->middleware('throttle:60,1');
@@ -298,6 +318,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
                 Route::get('/', 'Registrar\Services\FacultyLoadsController@index')->name('index');
                 Route::get('/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('show');
                 Route::post('/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('assign');
+                Route::get('/{faculty}/print-strength-of-classes', 'Registrar\Services\FacultyLoadsController@printStrengthOfClasses')->name('print-strength-of-classes');
             });
         });
 
@@ -365,6 +386,18 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/configuration/grade-posting', 'Registrar\Services\AdminToolsController@configurationGradePostingStore')->name('configuration.grade-posting.store');
             Route::put('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingUpdate')->name('configuration.grade-posting.update');
             Route::delete('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingDestroy')->name('configuration.grade-posting.destroy');
+            Route::post('/configuration/signature', 'Registrar\Services\AdminToolsController@configurationSignatureStore')->name('configuration.signature.store');
+            Route::put('/configuration/signature/{systemConfigNameSignature}', 'Registrar\Services\AdminToolsController@configurationSignatureUpdate')->name('configuration.signature.update');
+            Route::delete('/configuration/signature/{systemConfigNameSignature}', 'Registrar\Services\AdminToolsController@configurationSignatureDestroy')->name('configuration.signature.destroy');
+            Route::post('/configuration/cutoff', 'Registrar\Services\AdminToolsController@configurationCutoffStore')->name('configuration.cutoff.store');
+            Route::put('/configuration/cutoff/{systemCutoffEntry}', 'Registrar\Services\AdminToolsController@configurationCutoffUpdate')->name('configuration.cutoff.update');
+            Route::delete('/configuration/cutoff/{systemCutoffEntry}', 'Registrar\Services\AdminToolsController@configurationCutoffDestroy')->name('configuration.cutoff.destroy');
+            Route::post('/configuration/curriculum-display', 'Registrar\Services\AdminToolsController@configurationCurriculumDisplayStore')->name('configuration.curriculum-display.store');
+            Route::put('/configuration/curriculum-display/{systemCurriculumDisplaySetting}', 'Registrar\Services\AdminToolsController@configurationCurriculumDisplayUpdate')->name('configuration.curriculum-display.update');
+            Route::delete('/configuration/curriculum-display/{systemCurriculumDisplaySetting}', 'Registrar\Services\AdminToolsController@configurationCurriculumDisplayDestroy')->name('configuration.curriculum-display.destroy');
+            Route::post('/configuration/report-details', 'Registrar\Services\AdminToolsController@configurationReportDetailsSave')->name('configuration.report-details.save');
+            Route::post('/configuration/email-sender', 'Registrar\Services\AdminToolsController@configurationEmailSenderSave')->name('configuration.email-sender.save');
+            Route::post('/configuration/overdue-inc/process', 'Registrar\Services\AdminToolsController@configurationOverdueIncProcess')->name('configuration.overdue-inc.process');
             Route::get('/admission-config', 'Registrar\Services\AdminToolsController@admissionConfig')->name('admission-config');
             Route::get('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendar')->name('academic-calendar');
             Route::post('/academic-calendar', 'Registrar\Services\AdminToolsController@academicCalendarStore')->name('academic-calendar.store');
@@ -378,6 +411,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('access-management')->name('access-management.')->group(function () {
             Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
+            Route::get('/user-accounts/data', 'Registrar\Services\AdminToolsController@userAccountsData')->name('user-accounts.data');
+            Route::get('/user-accounts/access-control/modules', 'Registrar\Services\AdminToolsController@userAccountAccessControlModules')->name('user-accounts.access-control.modules');
+            Route::get('/user-accounts/{user}/access-control', 'Registrar\Services\AdminToolsController@userAccountAccessControlShow')->name('user-accounts.access-control.show');
+            Route::put('/user-accounts/{user}/access-control', 'Registrar\Services\AdminToolsController@userAccountAccessControlUpdate')->name('user-accounts.access-control.update')->middleware('throttle:60,1');
             Route::put('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsUpdate')->name('user-accounts.update');
             Route::delete('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsDestroy')->name('user-accounts.destroy');
             Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');
@@ -438,6 +475,9 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
     Route::get('/calendar', 'Applicant\ApplicantController@calendar')->name('calendar');
     Route::get('/correspondence', 'Applicant\ApplicantController@correspondence')->name('correspondence');
     Route::get('/exam-result', 'Applicant\ApplicantController@examResult')->name('exam-result');
+    Route::get('/notifications/feed', 'Applicant\ApplicantController@notificationsFeed')->name('notifications.feed');
+    Route::post('/notifications/mark-read', 'Applicant\ApplicantController@markNotificationsRead')->name('notifications.mark-read');
+    Route::post('/notifications/{notificationDelivery}/dismiss', 'Applicant\ApplicantController@dismissNotification')->name('notifications.dismiss');
 });
 
 /*

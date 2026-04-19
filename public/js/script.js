@@ -117,6 +117,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const toast         = document.getElementById('download-toast');    // top-right toast
     const toastClose    = document.querySelector('.toast-close');       // × button on toast
 
+    const COR_PRINT_BLOCK_LABEL = 'STUDENT: SCHEDULE (VIEW COR)';
+    const COR_PRINT_FALLBACK_TITLE = 'Certificate of Registration - PLP';
+    const corPrintSuppressionState = {
+        previousTitle: '',
+        hiddenNodes: []
+    };
+
+    function normalizeCorPrintText(value) {
+        return String(value || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toUpperCase();
+    }
+
+    function suppressCorChromePrintLabel() {
+        if (!corTable || corTable.style.display === 'none') {
+            return;
+        }
+
+        if (!document.body || !document.body.classList.contains('student-portal-body')) {
+            return;
+        }
+
+        if (corPrintSuppressionState.previousTitle === '') {
+            corPrintSuppressionState.previousTitle = document.title;
+        }
+
+        if (normalizeCorPrintText(document.title) === normalizeCorPrintText(COR_PRINT_BLOCK_LABEL)) {
+            document.title = COR_PRINT_FALLBACK_TITLE;
+        }
+
+        document.querySelectorAll('body *').forEach(function (node) {
+            if (!node || node.children.length > 0) {
+                return;
+            }
+
+            if (normalizeCorPrintText(node.textContent) !== COR_PRINT_BLOCK_LABEL) {
+                return;
+            }
+
+            if (node.getAttribute('data-cor-print-hidden') === '1') {
+                return;
+            }
+
+            node.setAttribute('data-cor-print-hidden', '1');
+            node.setAttribute('data-cor-print-prev-display', node.style.display || '');
+            node.style.display = 'none';
+            corPrintSuppressionState.hiddenNodes.push(node);
+        });
+    }
+
+    function restoreCorChromePrintLabel() {
+        while (corPrintSuppressionState.hiddenNodes.length > 0) {
+            var node = corPrintSuppressionState.hiddenNodes.pop();
+            if (!node) {
+                continue;
+            }
+
+            var previousDisplay = node.getAttribute('data-cor-print-prev-display');
+            if (previousDisplay === null || previousDisplay === '') {
+                node.style.removeProperty('display');
+            } else {
+                node.style.display = previousDisplay;
+            }
+
+            node.removeAttribute('data-cor-print-prev-display');
+            node.removeAttribute('data-cor-print-hidden');
+        }
+
+        if (corPrintSuppressionState.previousTitle !== '') {
+            document.title = corPrintSuppressionState.previousTitle;
+            corPrintSuppressionState.previousTitle = '';
+        }
+    }
+
     if (corBtn && corTable && filterSection) {
 
         corBtn.addEventListener('click', function () {
@@ -135,7 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // ── State 1 → 2 ──────────────────────────────────
                 // Hide the filter section, trigger print view, and reset
                 filterSection.style.display = 'none';
+                suppressCorChromePrintLabel();
                 window.print();
+                setTimeout(restoreCorChromePrintLabel, 800);
                 resetToDefault();
             }
         });
@@ -182,8 +259,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== PRINT: reset zoom to 1 before printing, restore after =====
     window.addEventListener('beforeprint', function () {
         if (corTable) corTable.style.zoom = '1';
+        suppressCorChromePrintLabel();
     });
     window.addEventListener('afterprint', function () {
+        restoreCorChromePrintLabel();
         if (corTable && corTable.style.display !== 'none') fitCorToContainer();
     });
 

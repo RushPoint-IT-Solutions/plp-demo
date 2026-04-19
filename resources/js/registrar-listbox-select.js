@@ -3,11 +3,6 @@
         return Array.prototype.slice.call(document.querySelectorAll('[data-listbox-select]'));
     }
 
-    var wrappers = getWrappers();
-    if (!wrappers.length) {
-        return;
-    }
-
     function getEnabledButtons(menu) {
         return Array.prototype.filter.call(
             menu.querySelectorAll('.rg-listbox-option-btn'),
@@ -66,14 +61,16 @@
     function closeSelect(wrapper) {
         wrapper.classList.remove('is-open');
 
-        var trigger = wrapper.querySelector('[data-select-trigger]');
-        if (trigger) {
-            trigger.setAttribute('aria-expanded', 'false');
+        var state = wrapper.__rgListboxState;
+        if (!state) {
+            return;
         }
+
+        state.trigger.setAttribute('aria-expanded', 'false');
     }
 
     function closeAll(exceptWrapper) {
-        wrappers.forEach(function (wrapper) {
+        getWrappers().forEach(function (wrapper) {
             if (exceptWrapper && wrapper === exceptWrapper) {
                 return;
             }
@@ -82,51 +79,70 @@
         });
     }
 
-    function openSelect(wrapper, trigger, menu, select) {
+    function openSelect(wrapper) {
+        var state = wrapper.__rgListboxState;
+        if (!state) {
+            return;
+        }
+
         closeAll(wrapper);
         wrapper.classList.add('is-open');
-        trigger.setAttribute('aria-expanded', 'true');
+        state.trigger.setAttribute('aria-expanded', 'true');
 
-        var buttons = getEnabledButtons(menu);
+        var buttons = getEnabledButtons(state.menu);
         if (!buttons.length) {
             return;
         }
 
         var selectedButton = buttons.find(function (button) {
-            return button.getAttribute('data-option-value') === select.value;
+            return button.getAttribute('data-option-value') === state.select.value;
         }) || buttons[0];
 
-        setActiveOption(menu, selectedButton, true);
+        setActiveOption(state.menu, selectedButton, true);
     }
 
-    function commitOption(optionButton, select, wrapper) {
+    function commitOption(wrapper, optionButton) {
         if (!optionButton || optionButton.disabled) {
             return;
         }
 
-        select.value = optionButton.getAttribute('data-option-value') || '';
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-        closeAll();
-
-        var trigger = wrapper.querySelector('[data-select-trigger]');
-        if (trigger) {
-            trigger.focus();
+        var state = wrapper.__rgListboxState;
+        if (!state) {
+            return;
         }
+
+        state.select.value = optionButton.getAttribute('data-option-value') || '';
+        state.select.dispatchEvent(new Event('change', { bubbles: true }));
+        closeAll();
+        state.trigger.focus();
     }
 
-    function refreshSelection(select, menu, currentText) {
-        var selectedOption = select.options[select.selectedIndex];
-        var fallback = select.getAttribute('data-placeholder') || '';
+    function refreshSelection(wrapper) {
+        var state = wrapper.__rgListboxState;
+        if (!state) {
+            return;
+        }
 
-        currentText.textContent = selectedOption ? selectedOption.textContent : fallback;
+        var selectedOption = state.select.options[state.select.selectedIndex];
+        var fallback = state.select.getAttribute('data-placeholder') || '';
+        state.currentText.textContent = selectedOption ? selectedOption.textContent : fallback;
 
-        menu.querySelectorAll('.rg-listbox-option-btn').forEach(function (button) {
+        state.menu.querySelectorAll('.rg-listbox-option-btn').forEach(function (button) {
             var value = button.getAttribute('data-option-value');
-            button.classList.toggle('is-selected', value === select.value);
+            button.classList.toggle('is-selected', value === state.select.value);
+            button.setAttribute('aria-selected', value === state.select.value ? 'true' : 'false');
         });
+
+        state.trigger.disabled = !!state.select.disabled;
+        state.trigger.setAttribute('aria-disabled', state.select.disabled ? 'true' : 'false');
     }
 
-    function buildOptionButton(option, select, menu, currentText, wrapper, index) {
+    function buildOptionButton(wrapper, option, index) {
+        var state = wrapper.__rgListboxState;
+        if (!state) {
+            return;
+        }
+
         var item = document.createElement('li');
         item.className = 'rg-listbox-option';
 
@@ -134,9 +150,10 @@
         button.type = 'button';
         button.className = 'rg-listbox-option-btn';
         button.textContent = option.textContent || '';
-        button.id = select.id + '-option-' + index;
+        button.id = state.select.id + '-option-' + index;
         button.setAttribute('role', 'option');
         button.setAttribute('data-option-value', option.value);
+        button.setAttribute('aria-selected', option.selected ? 'true' : 'false');
 
         if (option.disabled) {
             button.disabled = true;
@@ -144,26 +161,57 @@
 
         if (option.selected) {
             button.classList.add('is-selected');
-            currentText.textContent = option.textContent || '';
+            state.currentText.textContent = option.textContent || '';
         }
 
         button.addEventListener('mouseenter', function () {
-            setActiveOption(menu, button, false);
+            setActiveOption(state.menu, button, false);
         });
 
         button.addEventListener('focus', function () {
-            setActiveOption(menu, button, false);
+            setActiveOption(state.menu, button, false);
         });
 
         button.addEventListener('click', function () {
-            commitOption(button, select, wrapper);
+            commitOption(wrapper, button);
         });
 
         item.appendChild(button);
-        menu.appendChild(item);
+        state.menu.appendChild(item);
     }
 
-    wrappers.forEach(function (wrapper) {
+    function rebuildOptions(wrapper) {
+        var state = wrapper.__rgListboxState;
+        if (!state) {
+            return;
+        }
+
+        state.menu.innerHTML = '';
+
+        Array.prototype.forEach.call(state.select.options, function (option, index) {
+            buildOptionButton(wrapper, option, index);
+        });
+
+        refreshSelection(wrapper);
+
+        var buttons = getEnabledButtons(state.menu);
+        if (!buttons.length) {
+            return;
+        }
+
+        var selectedButton = buttons.find(function (button) {
+            return button.getAttribute('data-option-value') === state.select.value;
+        }) || buttons[0];
+
+        setActiveOption(state.menu, selectedButton, false);
+    }
+
+    function bindWrapper(wrapper) {
+        if (wrapper.__rgListboxState) {
+            rebuildOptions(wrapper);
+            return;
+        }
+
         var select = wrapper.querySelector('select.js-rg-listbox-native');
         var trigger = wrapper.querySelector('[data-select-trigger]');
         var currentText = wrapper.querySelector('[data-select-current]');
@@ -173,16 +221,16 @@
             return;
         }
 
+        wrapper.__rgListboxState = {
+            select: select,
+            trigger: trigger,
+            currentText: currentText,
+            menu: menu,
+        };
+
         select.classList.add('is-enhanced');
-        menu.innerHTML = '';
         trigger.setAttribute('aria-controls', select.id + '-custom-menu');
         menu.id = select.id + '-custom-menu';
-
-        Array.prototype.forEach.call(select.options, function (option, index) {
-            buildOptionButton(option, select, menu, currentText, wrapper, index);
-        });
-
-        refreshSelection(select, menu, currentText);
 
         trigger.addEventListener('click', function () {
             if (wrapper.classList.contains('is-open')) {
@@ -190,18 +238,23 @@
                 return;
             }
 
-            openSelect(wrapper, trigger, menu, select);
+            openSelect(wrapper);
         });
 
         trigger.addEventListener('keydown', function (event) {
+            var state = wrapper.__rgListboxState;
+            if (!state) {
+                return;
+            }
+
             if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                 event.preventDefault();
 
                 if (!wrapper.classList.contains('is-open')) {
-                    openSelect(wrapper, trigger, menu, select);
+                    openSelect(wrapper);
                 }
 
-                moveActiveOption(menu, event.key === 'ArrowDown' ? 1 : -1);
+                moveActiveOption(state.menu, event.key === 'ArrowDown' ? 1 : -1);
                 return;
             }
 
@@ -209,11 +262,11 @@
                 event.preventDefault();
 
                 if (!wrapper.classList.contains('is-open')) {
-                    openSelect(wrapper, trigger, menu, select);
+                    openSelect(wrapper);
                     return;
                 }
 
-                commitOption(menu.querySelector('.rg-listbox-option-btn.is-active'), select, wrapper);
+                commitOption(wrapper, state.menu.querySelector('.rg-listbox-option-btn.is-active'));
             }
 
             if (event.key === 'Escape') {
@@ -222,28 +275,60 @@
         });
 
         select.addEventListener('change', function () {
-            refreshSelection(select, menu, currentText);
+            refreshSelection(wrapper);
         });
 
         menu.addEventListener('keydown', function (event) {
+            var state = wrapper.__rgListboxState;
+            if (!state) {
+                return;
+            }
+
             if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                 event.preventDefault();
-                moveActiveOption(menu, event.key === 'ArrowDown' ? 1 : -1);
+                moveActiveOption(state.menu, event.key === 'ArrowDown' ? 1 : -1);
                 return;
             }
 
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                commitOption(menu.querySelector('.rg-listbox-option-btn.is-active'), select, wrapper);
+                commitOption(wrapper, state.menu.querySelector('.rg-listbox-option-btn.is-active'));
                 return;
             }
 
             if (event.key === 'Escape') {
                 closeSelect(wrapper);
-                trigger.focus();
+                state.trigger.focus();
             }
         });
-    });
+
+        rebuildOptions(wrapper);
+    }
+
+    function refresh(target) {
+        var wrappers = [];
+
+        if (!target) {
+            wrappers = getWrappers();
+        } else if (target.matches && target.matches('[data-listbox-select]')) {
+            wrappers = [target];
+        } else if (target.closest) {
+            var closest = target.closest('[data-listbox-select]');
+            if (closest) {
+                wrappers = [closest];
+            }
+        }
+
+        wrappers.forEach(function (wrapper) {
+            bindWrapper(wrapper);
+        });
+    }
+
+    if (!getWrappers().length) {
+        return;
+    }
+
+    refresh();
 
     document.addEventListener('click', function (event) {
         if (!event.target.closest('[data-listbox-select]')) {
@@ -256,4 +341,21 @@
             closeAll();
         }
     });
+
+    document.addEventListener('registrar:listbox:refresh', function (event) {
+        var target = event && event.detail ? event.detail.target : null;
+        refresh(target || null);
+    });
+
+    if (!window.registrarListboxSelect || typeof window.registrarListboxSelect !== 'object') {
+        window.registrarListboxSelect = {};
+    }
+
+    window.registrarListboxSelect.refresh = function (target) {
+        refresh(target || null);
+    };
+
+    window.registrarListboxSelect.refreshAll = function () {
+        refresh();
+    };
 })();

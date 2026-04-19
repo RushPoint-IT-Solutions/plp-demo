@@ -538,11 +538,39 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
   var presentFields = ['present_street', 'present_barangay', 'present_zipcode', 'present_municipality', 'present_province', 'present_region'];
   var permanentFields = ['permanent_street', 'permanent_barangay', 'permanent_zipcode', 'permanent_municipality', 'permanent_province', 'permanent_region'];
   function copyAddressValues() {
-    presentFields.forEach(function (presentName, i) {
-      var source = document.querySelector('[name="' + presentName + '"]');
-      var target = document.querySelector('[name="' + permanentFields[i] + '"]');
+    // Copy non-cascading fields first
+    var textFields = [['present_street', 'permanent_street'], ['present_barangay', 'permanent_barangay'], ['present_zipcode', 'permanent_zipcode']];
+    textFields.forEach(function (pair) {
+      var source = document.querySelector('[name="' + pair[0] + '"]');
+      var target = document.querySelector('[name="' + pair[1] + '"]');
       if (source && target) {
         target.value = source.value;
+      }
+    });
+
+    // Copy cascading fields in cascade order: region -> province -> municipality
+    var cascadeOrder = [['present_region', 'permanent_region'], ['present_province', 'permanent_province'], ['present_municipality', 'permanent_municipality']];
+    cascadeOrder.forEach(function (pair) {
+      var source = document.querySelector('[name="' + pair[0] + '"]');
+      var target = document.querySelector('[name="' + pair[1] + '"]');
+      if (!source || !target) {
+        return;
+      }
+      target.value = source.value;
+      if (target.tagName === 'SELECT') {
+        var hasOption = Array.prototype.some.call(target.options, function (opt) {
+          return opt.value === source.value;
+        });
+        if (!hasOption && source.value) {
+          var opt = document.createElement('option');
+          opt.value = source.value;
+          opt.textContent = source.value;
+          target.appendChild(opt);
+          target.value = source.value;
+        }
+        if (source.value) {
+          target.dispatchEvent(new Event('change'));
+        }
       }
     });
   }
@@ -566,7 +594,6 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     syncRequiredIndicators();
   }
   if (sameCheck) {
-    syncPermanent(sameCheck.checked);
     sameCheck.addEventListener('change', function () {
       syncPermanent(this.checked);
     });
@@ -689,11 +716,19 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       selectEl.appendChild(opt);
     });
     selectEl.disabled = false;
+    // Dispatch change event for enhanced dropdowns to rebuild their menus
+    selectEl.dispatchEvent(new Event('change', {
+      bubbles: true
+    }));
   }
   function resetSelect(selectEl, placeholder) {
     selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
     selectEl.disabled = true;
     selectEl.value = '';
+    // Dispatch change event for enhanced dropdowns to rebuild their menus
+    selectEl.dispatchEvent(new Event('change', {
+      bubbles: true
+    }));
   }
   function setupCascade(prefix, addressData) {
     var regionEl = document.querySelector('[name="' + prefix + '_region"]');
@@ -786,7 +821,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     }
     regionEl.value = savedRegion;
     regionEl.dispatchEvent(new Event('change'));
-    setTimeout(function () {
+    requestAnimationFrame(function () {
       if (savedProvince) {
         var hasProvince = Array.prototype.some.call(provinceEl.options, function (opt) {
           return opt.value === savedProvince;
@@ -801,22 +836,22 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
         provinceEl.value = savedProvince;
         provinceEl.dispatchEvent(new Event('change'));
       }
-    }, 50);
-    setTimeout(function () {
-      if (savedCity) {
-        var hasCity = Array.prototype.some.call(cityEl.options, function (opt) {
-          return opt.value === savedCity;
-        });
-        if (!hasCity) {
-          var cityOption = document.createElement('option');
-          cityOption.value = savedCity;
-          cityOption.textContent = savedCity;
-          cityEl.appendChild(cityOption);
+      requestAnimationFrame(function () {
+        if (savedCity) {
+          var hasCity = Array.prototype.some.call(cityEl.options, function (opt) {
+            return opt.value === savedCity;
+          });
+          if (!hasCity) {
+            var cityOption = document.createElement('option');
+            cityOption.value = savedCity;
+            cityOption.textContent = savedCity;
+            cityEl.appendChild(cityOption);
+          }
+          cityEl.disabled = false;
+          cityEl.value = savedCity;
         }
-        cityEl.disabled = false;
-        cityEl.value = savedCity;
-      }
-    }, 120);
+      });
+    });
   }
   fetch('/js/ph-address.json').then(function (res) {
     return res.json();
@@ -828,6 +863,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     restoreCascade('permanent', draft);
     if (sameCheck && sameCheck.checked) {
       copyAddressValues();
+      syncPermanent(true);
     }
   })["catch"](function () {
     showFeedback('Could not load address data. Please refresh and try again.', true);
@@ -844,7 +880,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\applicant-form.js */"./resources/js/applicant-form.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\applicant-form.js */"./resources/js/applicant-form.js");
 
 
 /***/ })

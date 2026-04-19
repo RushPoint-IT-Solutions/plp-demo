@@ -27,10 +27,15 @@
     @if(!\Illuminate\Support\Str::contains($studentBodyClass, 'page-profile-view'))
     <link rel="stylesheet" href="{{ asset('css/students.css') }}?v={{ time() }}">
     @endif
+    <link rel="stylesheet" href="{{ asset('css/faculty-notifications.css') }}">
 
     @stack('styles')
 </head>
 <body class="student-body student-portal-body @yield('body-class')">
+    @php
+        $studentNotifications = $studentNotifications ?? collect();
+        $studentUnreadNotificationCount = (int) ($studentUnreadNotificationCount ?? 0);
+    @endphp
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -53,11 +58,12 @@
 
                 <div class="topbar-icons">
                     {{-- Notification Bell --}}
-                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications">
+                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications" data-bs-toggle="modal" data-bs-target="#studentNotificationsModal">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                         </svg>
+                        <span class="faculty-notif-badge {{ $studentUnreadNotificationCount ? '' : 'd-none' }}">{{ $studentUnreadNotificationCount > 99 ? '99+' : $studentUnreadNotificationCount }}</span>
                     </a>
 
                     {{-- Profile Avatar --}}
@@ -131,6 +137,18 @@
         <button class="toast-close">&times;</button>
     </div>
 
+    @include('includes.portal-notifications-modal', [
+        'notificationModalId' => 'studentNotificationsModal',
+        'notificationModalTitleId' => 'studentNotificationsTitle',
+        'notificationModalTitle' => 'NOTIFICATIONS',
+        'notificationDetailModalId' => 'studentNotificationDetailModal',
+        'notificationDetailTitleId' => 'studentNotificationDetailTitle',
+        'notificationDetailMessageId' => 'studentNotificationDetailMessage',
+        'notifications' => $studentNotifications,
+        'feedUrl' => route('student.notifications.feed'),
+        'markReadUrl' => route('student.notifications.mark-read'),
+    ])
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -138,6 +156,8 @@
     <script src="{{ asset('js/script.js') }}"></script>
 
     @stack('scripts')
+
+    <script src="{{ asset('js/portal-notifications.js') }}"></script>
 
     {{-- Sidebar JS --}}
     <script src="{{ asset('js/student-layout.js') }}"></script>

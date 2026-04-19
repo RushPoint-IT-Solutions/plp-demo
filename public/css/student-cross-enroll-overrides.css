@@ -1,0 +1,34 @@
+.page-student-forms .ce-form .ce-subject-grid {
+  column-gap: 22px;
+  row-gap: 2px;
+  margin: 0 0 2px;
+  align-items: start;
+}
+
+.page-student-forms .ce-form .ce-subject-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-student-forms .ce-form .ce-subject-grid p {
+  display: flex;
+  align-items: flex-end;
+  line-height: 1;
+  margin: 0 !important;
+}
+
+.page-student-forms .ce-form .ce-subject-grid .acd-inline-input {
+  line-height: 1 !important;
+  height: 0.9em;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.page-student-forms .ce-form .ce-total {
+  margin: 0 0 4px !important;
+}
+
+.page-student-forms .ce-form .ce-total .acd-inline-input--sm {
+  width: 100px;
+}

@@ -21,6 +21,7 @@
     <!-- Custom App CSS -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/faculty-notifications.css') }}">
 
     @php($embeddedMode = !empty($applicationFormEmbedded))
     @if($embeddedMode)
@@ -50,6 +51,10 @@
     @stack('styles')
 </head>
 <body class="student-body student-portal-body applicant-body{{ $embeddedMode ? ' applicant-embedded-mode' : '' }}">
+    @php
+        $applicantNotifications = $applicantNotifications ?? collect();
+        $applicantUnreadNotificationCount = (int) ($applicantUnreadNotificationCount ?? 0);
+    @endphp
     <div class="student-layout">
         {{-- Mobile overlay --}}
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -84,11 +89,12 @@
                     </a>
 
                     {{-- Notification Bell --}}
-                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications">
+                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications" data-bs-toggle="modal" data-bs-target="#applicantNotificationsModal">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                         </svg>
+                        <span class="faculty-notif-badge {{ $applicantUnreadNotificationCount ? '' : 'd-none' }}">{{ $applicantUnreadNotificationCount > 99 ? '99+' : $applicantUnreadNotificationCount }}</span>
                     </a>
 
                     {{-- Messages --}}
@@ -139,8 +145,25 @@
     <!-- Custom JS -->
     <script src="{{ asset('js/script.js') }}"></script>
 
+    @include('includes.portal-notifications-modal', [
+        'notificationModalId' => 'applicantNotificationsModal',
+        'notificationModalTitleId' => 'applicantNotificationsTitle',
+        'notificationModalTitle' => 'NOTIFICATIONS',
+        'notificationDetailModalId' => 'applicantNotificationDetailModal',
+        'notificationDetailTitleId' => 'applicantNotificationDetailTitle',
+        'notificationDetailMessageId' => 'applicantNotificationDetailMessage',
+        'notifications' => $applicantNotifications,
+        'feedUrl' => route('applicant.notifications.feed'),
+        'markReadUrl' => route('applicant.notifications.mark-read'),
+    ])
+
+    <script src="{{ asset('js/portal-notifications.js') }}"></script>
+
     <!-- Applicant Sidebar JS -->
     <script src="{{ asset('js/applicant-layout.js') }}"></script>
+
+    <!-- Applicant Select Dropdown JS -->
+    <script src="{{ mix('js/applicant-select.js') }}"></script>
 
     @stack('scripts')
 </body>

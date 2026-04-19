@@ -12,6 +12,7 @@ class Course extends Model
         'code',
         'name',
         'program_type',
+        'college_id',
         'department_id',
         'description',
         'program_file',
@@ -20,6 +21,11 @@ class Course extends Model
         'non_filipino',
         'dean_director_id',
     ];
+
+    public function college()
+    {
+        return $this->belongsTo(College::class);
+    }
 
     public function department()
     {

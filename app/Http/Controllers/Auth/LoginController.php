@@ -86,7 +86,7 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        if ($module === 'student' || $module === 'applicant') {
+        if (in_array($module, ['student', 'applicant', 'parent'], true)) {
             return redirect()->route('access-module');
         }
 

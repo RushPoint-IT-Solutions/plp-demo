@@ -18,6 +18,7 @@
     @php($selectedCalendarDate = $calendarScheduleDate->format('Y-m-d'))
     @php($startYear = now()->year)
     @php($defaultSchoolYear = $startYear . '-' . ($startYear + 1))
+    @php($autoApplicationDate = now()->format('Y-m-d'))
     @php($routeParams = isset($formRouteParams) && is_array($formRouteParams) ? $formRouteParams : [])
     @php($saveRouteName = isset($formRouteNames['save']) ? $formRouteNames['save'] : 'applicant.application-form.save')
     @php($step1RouteName = isset($formRouteNames['step1']) ? $formRouteNames['step1'] : 'applicant.application-form.step-1.save')
@@ -274,21 +275,23 @@
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Nationality</label>
-                        <select name="nationality" class="setup-input setup-select">
-                            <option value="">Select Nationality</option>
-                            @foreach(['Filipino','American','Japanese','Korean','Chinese','Other'] as $nat)
-                            <option value="{{ $nat }}" {{ old('nationality', optional($app)->nationality) === $nat ? 'selected' : '' }}>{{ $nat }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'nationalitySelect',
+                            'name' => 'nationality',
+                            'options' => ['Filipino','American','Japanese','Korean','Chinese','Other'],
+                            'selected' => old('nationality', optional($app)->nationality),
+                            'placeholder' => 'Select Nationality',
+                        ])
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Religion</label>
-                        <select name="religion" class="setup-input setup-select">
-                            <option value="">Select religion</option>
-                            @foreach(['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'] as $rel)
-                            <option value="{{ $rel }}" {{ old('religion', optional($app)->religion) === $rel ? 'selected' : '' }}>{{ $rel }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'religionSelect',
+                            'name' => 'religion',
+                            'options' => ['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'],
+                            'selected' => old('religion', optional($app)->religion),
+                            'placeholder' => 'Select Religion',
+                        ])
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Date of Birth</label>
@@ -307,12 +310,13 @@
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Civil Status</label>
-                        <select name="civil_status" class="setup-input setup-select">
-                            <option value="">Select status</option>
-                            @foreach(['Single','Married','Widowed'] as $c)
-                            <option value="{{ $c }}" {{ old('civil_status', optional($app)->civil_status) === $c ? 'selected' : '' }}>{{ $c }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'civilStatusSelect',
+                            'name' => 'civil_status',
+                            'options' => ['Single','Married','Widowed'],
+                            'selected' => old('civil_status', optional($app)->civil_status),
+                            'placeholder' => 'Select Status',
+                        ])
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Mobile Number</label>
@@ -350,21 +354,42 @@
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Region</label>
-                        <select name="present_region" id="present_region" class="setup-input setup-select" required>
-                            <option value="" disabled selected>Choose Region</option>
-                        </select>
+                        <div class="applicant-select-wrap" data-applicant-select>
+                            <select name="present_region" id="present_region" class="applicant-select-native" required>
+                                <option value="" disabled selected>Choose Region</option>
+                            </select>
+                            <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                <span class="applicant-select-trigger-text" data-select-current>Choose Region</span>
+                                <span class="applicant-select-trigger-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="applicant-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                        </div>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Province</label>
-                        <select name="present_province" id="present_province" class="setup-input setup-select" required>
-                            <option value="" disabled selected>Choose Province</option>
-                        </select>
+                        <div class="applicant-select-wrap" data-applicant-select>
+                            <select name="present_province" id="present_province" class="applicant-select-native" required>
+                                <option value="" disabled selected>Choose Province</option>
+                            </select>
+                            <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                <span class="applicant-select-trigger-text" data-select-current>Choose Province</span>
+                                <span class="applicant-select-trigger-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="applicant-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                        </div>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Municipality/City</label>
-                        <select name="present_municipality" id="present_municipality" class="setup-input setup-select" required>
-                            <option value="" disabled selected>Choose City/Municipality</option>
-                        </select>
+                        <div class="applicant-select-wrap" data-applicant-select>
+                            <select name="present_municipality" id="present_municipality" class="applicant-select-native" required>
+                                <option value="" disabled selected>Choose City/Municipality</option>
+                            </select>
+                            <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                <span class="applicant-select-trigger-text" data-select-current>Choose City/Municipality</span>
+                                <span class="applicant-select-trigger-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="applicant-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                        </div>
                     </div>
                 </div>
 
@@ -395,21 +420,42 @@
                 <div class="setup-row" id="permanentSelectFields">
                     <div class="setup-col">
                         <label class="setup-label">Region</label>
-                        <select name="permanent_region" id="permanent_region" class="setup-input setup-select">
-                            <option value="" disabled selected>Choose Region</option>
-                        </select>
+                        <div class="applicant-select-wrap" data-applicant-select>
+                            <select name="permanent_region" id="permanent_region" class="applicant-select-native">
+                                <option value="" disabled selected>Choose Region</option>
+                            </select>
+                            <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                <span class="applicant-select-trigger-text" data-select-current>Choose Region</span>
+                                <span class="applicant-select-trigger-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="applicant-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                        </div>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Province</label>
-                        <select name="permanent_province" id="permanent_province" class="setup-input setup-select">
-                            <option value="" disabled selected>Choose Province</option>
-                        </select>
+                        <div class="applicant-select-wrap" data-applicant-select>
+                            <select name="permanent_province" id="permanent_province" class="applicant-select-native">
+                                <option value="" disabled selected>Choose Province</option>
+                            </select>
+                            <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                <span class="applicant-select-trigger-text" data-select-current>Choose Province</span>
+                                <span class="applicant-select-trigger-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="applicant-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                        </div>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Municipality/City</label>
-                        <select name="permanent_municipality" id="permanent_municipality" class="setup-input setup-select">
-                            <option value="" disabled selected>Choose City/Municipality</option>
-                        </select>
+                        <div class="applicant-select-wrap" data-applicant-select>
+                            <select name="permanent_municipality" id="permanent_municipality" class="applicant-select-native">
+                                <option value="" disabled selected>Choose City/Municipality</option>
+                            </select>
+                            <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                <span class="applicant-select-trigger-text" data-select-current>Choose City/Municipality</span>
+                                <span class="applicant-select-trigger-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="applicant-select-menu" data-select-menu role="listbox" tabindex="-1"></ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -479,45 +525,45 @@
 
                 <h4 class="setup-subsection-title">Mother/Guardian</h4>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" name="mother_last_name" placeholder="Last Name" value="{{ old('mother_last_name', optional($family)->mother_last_name) }}"></div>
-                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" name="mother_first_name" placeholder="First Name" value="{{ old('mother_first_name', optional($family)->mother_first_name) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" name="mother_middle_name" placeholder="Middle Name" value="{{ old('mother_middle_name', optional($family)->mother_middle_name) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" name="mother_last_name" placeholder="Last Name" value="{{ old('mother_last_name', optional($family)->mother_last_name) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" name="mother_first_name" placeholder="First Name" value="{{ old('mother_first_name', optional($family)->mother_first_name) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" name="mother_middle_name" placeholder="Middle Name" value="{{ old('mother_middle_name', optional($family)->mother_middle_name) }}" required></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Nationality</label><input type="text" class="setup-input" name="mother_nationality" placeholder="Nationality" value="{{ old('mother_nationality', optional($family)->mother_nationality) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Religion</label><input type="text" class="setup-input" name="mother_religion" placeholder="Religion" value="{{ old('mother_religion', optional($family)->mother_religion) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="mother_date_of_birth" value="{{ old('mother_date_of_birth', optional(optional($family)->mother_date_of_birth)->format('Y-m-d')) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="mother_mobile_number" placeholder="Mobile Number" value="{{ old('mother_mobile_number', optional($family)->mother_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits"></div>
+                    <div class="setup-col"><label class="setup-label">Nationality</label>@include('components.applicant-select', ['id' => 'motherNationalitySelect', 'name' => 'mother_nationality', 'options' => ['Filipino','American','Japanese','Korean','Chinese','Other'], 'selected' => old('mother_nationality', optional($family)->mother_nationality), 'placeholder' => 'Select Nationality', 'required' => true])</div>
+                    <div class="setup-col"><label class="setup-label">Religion</label>@include('components.applicant-select', ['id' => 'motherReligionSelect', 'name' => 'mother_religion', 'options' => ['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'], 'selected' => old('mother_religion', optional($family)->mother_religion), 'placeholder' => 'Select Religion', 'required' => true])</div>
+                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="mother_date_of_birth" value="{{ old('mother_date_of_birth', optional(optional($family)->mother_date_of_birth)->format('Y-m-d')) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="mother_mobile_number" placeholder="Mobile Number" value="{{ old('mother_mobile_number', optional($family)->mother_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" name="mother_occupation" placeholder="Occupation" value="{{ old('mother_occupation', optional($family)->mother_occupation) }}"></div>
-                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" name="mother_company_address" placeholder="Company Address" value="{{ old('mother_company_address', optional($family)->mother_company_address) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" name="mother_estimated_monthly_income" placeholder="Estimated Monthly Income" value="{{ old('mother_estimated_monthly_income', optional($family)->mother_estimated_monthly_income) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" name="mother_occupation" placeholder="Occupation" value="{{ old('mother_occupation', optional($family)->mother_occupation) }}" required></div>
+                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" name="mother_company_address" placeholder="Company Address" value="{{ old('mother_company_address', optional($family)->mother_company_address) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label>@include('components.applicant-select', ['id' => 'motherIncomeSelect', 'name' => 'mother_estimated_monthly_income', 'options' => ['Below 10,000','10,000 - 19,999','20,000 - 29,999','30,000 - 49,999','50,000 - 99,999','100,000 and above','N/A'], 'selected' => old('mother_estimated_monthly_income', optional($family)->mother_estimated_monthly_income), 'placeholder' => 'Select Income Range', 'required' => true])</div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" name="mother_residence_address" placeholder="Residence Address" value="{{ old('mother_residence_address', optional($family)->mother_residence_address) }}"></div>
+                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" name="mother_residence_address" placeholder="Residence Address" value="{{ old('mother_residence_address', optional($family)->mother_residence_address) }}" required></div>
                     <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" name="mother_email_address" placeholder="Email Address" value="{{ old('mother_email_address', optional($family)->mother_email_address) }}"></div>
                 </div>
 
                 <h4 class="setup-subsection-title setup-subsection-title--mt18">Father/Guardian</h4>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" name="father_last_name" placeholder="Last Name" value="{{ old('father_last_name', optional($family)->father_last_name) }}"></div>
-                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" name="father_first_name" placeholder="First Name" value="{{ old('father_first_name', optional($family)->father_first_name) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" name="father_middle_name" placeholder="Middle Name" value="{{ old('father_middle_name', optional($family)->father_middle_name) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Lastname</label><input type="text" class="setup-input" name="father_last_name" placeholder="Last Name" value="{{ old('father_last_name', optional($family)->father_last_name) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">First Name</label><input type="text" class="setup-input" name="father_first_name" placeholder="First Name" value="{{ old('father_first_name', optional($family)->father_first_name) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Middle Name</label><input type="text" class="setup-input" name="father_middle_name" placeholder="Middle Name" value="{{ old('father_middle_name', optional($family)->father_middle_name) }}" required></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Nationality</label><input type="text" class="setup-input" name="father_nationality" placeholder="Nationality" value="{{ old('father_nationality', optional($family)->father_nationality) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Religion</label><input type="text" class="setup-input" name="father_religion" placeholder="Religion" value="{{ old('father_religion', optional($family)->father_religion) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="father_date_of_birth" value="{{ old('father_date_of_birth', optional(optional($family)->father_date_of_birth)->format('Y-m-d')) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="father_mobile_number" placeholder="Mobile Number" value="{{ old('father_mobile_number', optional($family)->father_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits"></div>
+                    <div class="setup-col"><label class="setup-label">Nationality</label>@include('components.applicant-select', ['id' => 'fatherNationalitySelect', 'name' => 'father_nationality', 'options' => ['Filipino','American','Japanese','Korean','Chinese','Other'], 'selected' => old('father_nationality', optional($family)->father_nationality), 'placeholder' => 'Select Nationality', 'required' => true])</div>
+                    <div class="setup-col"><label class="setup-label">Religion</label>@include('components.applicant-select', ['id' => 'fatherReligionSelect', 'name' => 'father_religion', 'options' => ['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'], 'selected' => old('father_religion', optional($family)->father_religion), 'placeholder' => 'Select Religion', 'required' => true])</div>
+                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="father_date_of_birth" value="{{ old('father_date_of_birth', optional(optional($family)->father_date_of_birth)->format('Y-m-d')) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="father_mobile_number" placeholder="Mobile Number" value="{{ old('father_mobile_number', optional($family)->father_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required></div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" name="father_occupation" placeholder="Occupation" value="{{ old('father_occupation', optional($family)->father_occupation) }}"></div>
-                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" name="father_company_address" placeholder="Company Address" value="{{ old('father_company_address', optional($family)->father_company_address) }}"></div>
-                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label><input type="text" class="setup-input" name="father_estimated_monthly_income" placeholder="Estimated Monthly Income" value="{{ old('father_estimated_monthly_income', optional($family)->father_estimated_monthly_income) }}"></div>
+                    <div class="setup-col"><label class="setup-label">Occupation</label><input type="text" class="setup-input" name="father_occupation" placeholder="Occupation" value="{{ old('father_occupation', optional($family)->father_occupation) }}" required></div>
+                    <div class="setup-col setup-col--flex-14"><label class="setup-label">Company Address</label><input type="text" class="setup-input" name="father_company_address" placeholder="Company Address" value="{{ old('father_company_address', optional($family)->father_company_address) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Estimated Monthly Income</label>@include('components.applicant-select', ['id' => 'fatherIncomeSelect', 'name' => 'father_estimated_monthly_income', 'options' => ['Below 10,000','10,000 - 19,999','20,000 - 29,999','30,000 - 49,999','50,000 - 99,999','100,000 and above','N/A'], 'selected' => old('father_estimated_monthly_income', optional($family)->father_estimated_monthly_income), 'placeholder' => 'Select Income Range', 'required' => true])</div>
                 </div>
                 <div class="setup-row">
-                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" name="father_residence_address" placeholder="Residence Address" value="{{ old('father_residence_address', optional($family)->father_residence_address) }}"></div>
+                    <div class="setup-col setup-col--flex-16"><label class="setup-label">Residence Address</label><input type="text" class="setup-input" name="father_residence_address" placeholder="Residence Address" value="{{ old('father_residence_address', optional($family)->father_residence_address) }}" required></div>
                     <div class="setup-col"><label class="setup-label">Email Address</label><input type="email" class="setup-input" name="father_email_address" placeholder="Email Address" value="{{ old('father_email_address', optional($family)->father_email_address) }}"></div>
                 </div>
             </div>
@@ -542,53 +588,67 @@
                     </div>
                     <div class="setup-col setup-col--w-220 setup-col--apply-choice">
                         <label class="setup-label">Course</label>
-                        <select name="apply_course_id" id="applyCourseSelect" class="setup-input setup-select">
-                            <option value="">Select Course</option>
-                            @foreach($collegeCourses as $course)
-                            <option value="{{ $course->id }}" {{ (string) old('apply_course_id', optional($pref)->apply_course_id) === (string) $course->id ? 'selected' : '' }}>{{ $course->code }} - {{ $course->name }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'applyCourseSelect',
+                            'name' => 'apply_course_id',
+                            'options' => $collegeCourses->map(function($course) {
+                                return [
+                                    'value' => $course->id,
+                                    'label' => $course->code . ' - ' . $course->name
+                                ];
+                            })->toArray(),
+                            'selected' => old('apply_course_id', optional($pref)->apply_course_id),
+                            'placeholder' => 'Select Course',
+                        ])
                     </div>
                 </div>
 
                 <div class="setup-row">
                     <div class="setup-col">
                         <label class="setup-label">Entry Classification</label>
-                        <select name="entry_classification" class="setup-input setup-select" required>
-                            <option value="">Select Entry Classification</option>
-                            @foreach(['Regular Freshman', 'Transferee', 'Second Courser', 'Returnee'] as $entry)
-                            <option value="{{ $entry }}" {{ old('entry_classification', optional($pref)->entry_classification) === $entry ? 'selected' : '' }}>{{ $entry }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'entryClassificationSelect',
+                            'name' => 'entry_classification',
+                            'options' => ['Regular Freshman', 'Transferee', 'Second Courser', 'Returnee'],
+                            'selected' => old('entry_classification', optional($pref)->entry_classification),
+                            'placeholder' => 'Select Entry Classification',
+                            'required' => true,
+                        ])
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">Year Level</label>
-                        <select name="year_level" class="setup-input setup-select" required>
-                            <option value="">Year Level</option>
-                            @foreach(['1st Year', '2nd Year', '3rd Year', '4th Year'] as $year)
-                            <option value="{{ $year }}" {{ old('year_level', optional($pref)->year_level) === $year ? 'selected' : '' }}>{{ $year }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'yearLevelSelect',
+                            'name' => 'year_level',
+                            'options' => ['1st Year', '2nd Year', '3rd Year', '4th Year'],
+                            'selected' => old('year_level', optional($pref)->year_level),
+                            'placeholder' => 'Year Level',
+                            'required' => true,
+                        ])
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">Semester</label>
-                        <select name="semester" class="setup-input setup-select" required>
-                            <option value="">Select Semester</option>
-                            @foreach(['First Semester', 'Second Semester', 'Summer'] as $sem)
-                            <option value="{{ $sem }}" {{ old('semester', optional($pref)->semester) === $sem ? 'selected' : '' }}>{{ $sem }}</option>
-                            @endforeach
-                        </select>
+                        @include('components.applicant-select', [
+                            'id' => 'semesterSelect',
+                            'name' => 'semester',
+                            'options' => ['First Semester', 'Second Semester', 'Summer'],
+                            'selected' => old('semester', optional($pref)->semester),
+                            'placeholder' => 'Select Semester',
+                            'required' => true,
+                        ])
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-130">
                         <label class="setup-label">School Year</label>
-                        <input type="text" name="school_year" class="setup-input" value="{{ old('school_year', optional($pref)->school_year ?: $defaultSchoolYear) }}" required>
+                        <input type="hidden" name="school_year" value="{{ $defaultSchoolYear }}">
+                        <input type="text" class="setup-input" value="{{ $defaultSchoolYear }}" disabled aria-label="Current School Year">
                     </div>
                 </div>
 
                 <div class="setup-row setup-row--app-meta">
                     <div class="setup-col setup-col-sm setup-col--w-220">
                         <label class="setup-label">Application Date</label>
-                        <input type="date" name="application_date" class="setup-input" value="{{ old('application_date', optional(optional($pref)->application_date)->format('Y-m-d') ?: now()->format('Y-m-d')) }}" required>
+                        <input type="hidden" name="application_date" value="{{ $autoApplicationDate }}">
+                        <input type="date" class="setup-input" value="{{ $autoApplicationDate }}" disabled aria-label="Application Date">
                     </div>
                     <div class="setup-col setup-col-sm setup-col--w-160">
                         <label class="setup-label">Campus</label>

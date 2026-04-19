@@ -257,6 +257,8 @@
                     if ($statusRaw === 'Rejected') {
                         $statusClass = 'app-status-rejected';
                     }
+
+                    $dateApplied = $applicant->application_submitted_at ?: $applicant->created_at;
                 @endphp
                 <tr
                     data-pk="{{ $applicant->id }}"
@@ -274,7 +276,7 @@
                     <td>{{ $applicant->applicant_id }}</td>
                     <td>{{ $displayName ?: 'N/A' }}</td>
                     <td>{{ $programLabel }}</td>
-                    <td>{{ optional($applicant->created_at)->format('M d, Y') ?: 'N/A' }}</td>
+                    <td>{{ optional($dateApplied)->format('M d, Y') ?: 'N/A' }}</td>
                     <td>{{ optional($applicant->updated_at)->format('M d, Y') ?: 'N/A' }}</td>
                     <td class="js-application-status"><span class="{{ $statusClass }}"><span class="app-status-dot"></span>{{ strtoupper($statusRaw) }}</span></td>
                 </tr>

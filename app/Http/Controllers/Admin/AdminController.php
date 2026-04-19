@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Applicant;
+use App\ParentAccount;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,6 +22,8 @@ class AdminController extends Controller
                 return !is_null($user->registrar_id);
             case 'applicant':
                 return !is_null($user->applicant_id);
+            case 'parent':
+                return !is_null($user->parent_id);
             default:
                 return true;
         }
@@ -37,7 +40,7 @@ class AdminController extends Controller
     /**
      * Show the module-specific login page.
      *
-     * @param string $module  e.g. 'registrar', 'accounting', 'cashier', 'faculty', 'student', 'applicant'
+      * @param string $module  e.g. 'registrar', 'accounting', 'cashier', 'faculty', 'student', 'applicant', 'parent'
      */
     public function moduleLogin($module)
     {
@@ -57,8 +60,8 @@ class AdminController extends Controller
 
         $redirectMap = [
             'student'    => 'student.schedule',
-            'parent'     => 'parent.grades',
             'applicant'  => 'applicant.application-form',
+            'parent'     => 'parent.grades',
             'registrar'  => 'registrar.dashboard',
             'accounting' => 'admin.access-module',
             'cashier'    => 'admin.access-module',
@@ -76,8 +79,8 @@ class AdminController extends Controller
     public function studentLogin(Request $request)
     {
         $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'username' => 'required|string|max:191',
+            'password' => 'required|string|max:255',
         ]);
 
         $remember = $request->filled('remember');
@@ -135,8 +138,8 @@ class AdminController extends Controller
     {
         $credentials = $request->validate([
             'module' => 'required|string|in:registrar,faculty',
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'username' => 'required|string|max:191',
+            'password' => 'required|string|max:255',
         ]);
 
         $module = $credentials['module'];
@@ -183,8 +186,8 @@ class AdminController extends Controller
     public function applicantLogin(Request $request)
     {
         $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'username' => 'required|string|max:191',
+            'password' => 'required|string|max:255',
         ]);
 
         $remember = $request->filled('remember');
@@ -253,6 +256,77 @@ class AdminController extends Controller
 
         return back()->withErrors([
             'username' => 'Invalid applicant credentials.',
+        ])->withInput($request->only('username', 'remember'));
+    }
+
+    /**
+     * Real parent login using username OR parent number + password.
+     */
+    public function parentLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'username' => 'required|string|max:191',
+            'password' => 'required|string|max:255',
+        ]);
+
+        $remember = $request->filled('remember');
+        $loginIdentifier = trim($credentials['username']);
+
+        $isAuthenticated = Auth::attempt([
+            'username' => $loginIdentifier,
+            'password' => $credentials['password'],
+        ], $remember);
+
+        if (!$isAuthenticated) {
+            $parentUser = User::where('module', 'parent')
+                ->whereHas('parentProfile', function ($query) use ($loginIdentifier) {
+                    $query->where('parent_no', $loginIdentifier);
+                })
+                ->first();
+
+            if ($parentUser) {
+                $isAuthenticated = Auth::attempt([
+                    'username' => $parentUser->username,
+                    'password' => $credentials['password'],
+                ], $remember);
+            }
+        }
+
+        if ($isAuthenticated) {
+            $user = Auth::user();
+
+            if ($user && $user->module === 'parent' && is_null($user->parent_id)) {
+                $legacyParent = ParentAccount::query()
+                    ->where('parent_no', $loginIdentifier)
+                    ->orWhere('parent_no', $user->username)
+                    ->first();
+
+                if ($legacyParent) {
+                    $user->parent_id = $legacyParent->id;
+                    $user->save();
+                    $user->refresh();
+                }
+            }
+
+            if (!$user || $user->module !== 'parent' || !$this->hasRequiredRoleLink($user, 'parent')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'username' => 'Parent account is not linked yet. Please contact admissions.',
+                ])->withInput($request->only('username', 'remember'));
+            }
+
+            Auth::login($user, $remember);
+
+            $request->session()->regenerate();
+
+            return redirect()->route('parent.grades');
+        }
+
+        return back()->withErrors([
+            'username' => 'Invalid parent credentials.',
         ])->withInput($request->only('username', 'remember'));
     }
 }

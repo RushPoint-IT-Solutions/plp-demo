@@ -34,6 +34,11 @@ class Student extends Model
         return $this->hasOne(User::class, 'student_id');
     }
 
+    public function profile()
+    {
+        return $this->hasOne(StudentProfile::class, 'student_id');
+    }
+
     /**
      * Deficiency records linked to the student.
      */

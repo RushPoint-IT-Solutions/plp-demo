@@ -30,7 +30,24 @@ Use the Playwright MCP server to aggressively test a web page's resilience again
 ## Workflow (Steps 1–10)
 
 ### 1) Get Inputs & Auto‑Discovery
-- Prompt for: Target URL, authentication credentials (if needed), and which modules to test (default: all).
+- Prompt for: Target URL, authentication credentials (if needed), which modules to test (default: all), and **User Role** (one of `student`, `faculty`, `applicant`, `registrar`; default: `student`).
+
+### Credentials (Default mapping)
+
+- student: username `student`, password `student`
+- faculty: username `faculty`, password `faculty`
+- applicant: username `applicant`, password `applicant`
+- registrar: username `admin`, password `password`
+
+If explicit credentials are supplied as inputs, use them instead of the defaults.
+
+### Pre-Navigation & Login Strategy
+
+- Before interacting with forms or fuzzing, attempt to `browser_navigate` to the Target URL exactly as provided. If the navigation is redirected to a login page, detect the login form and perform login using the selected role's credentials.
+- When the site always loads a shared login entry (for example, the student login page), the agent should still attempt to reach the Target URL first; after any redirect to login, sign in with the requested role, then re-navigate to the Target URL to confirm access and continue testing.
+- If the agent detects an existing authenticated session for a different user, prefer to sign out (if sign-out link/button available) and sign in as the requested role to ensure correct test scoping.
+
+These pre-navigation steps reduce false positives caused by unintended default sessions and ensure the chaos tests exercise the intended role's surface area.
 - Auto‑detect interactive elements:
   - Buttons matching: `save`, `submit`, `next`, `approve`, `confirm`, `update`, `send`, `delete`, `publish`
   - Forms with inputs

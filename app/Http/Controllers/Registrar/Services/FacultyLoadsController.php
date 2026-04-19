@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Semester;
 use App\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class FacultyLoadsController extends Controller
 {
@@ -114,6 +115,7 @@ class FacultyLoadsController extends Controller
 
         $assignedSubjectsBaseQuery = Subject::query()
             ->with(['academicTerm', 'canonicalCourse'])
+            ->withCount('students')
             ->where('faculty_id', $faculty->id)
             ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
                 return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
@@ -133,8 +135,8 @@ class FacultyLoadsController extends Controller
         $assignedSubjectsForSchedule = (clone $assignedSubjectsBaseQuery)->get();
 
         $assignedSubjects = (clone $assignedSubjectsBaseQuery)
-            ->paginate(25, ['subjects.*'], 'assigned_page')
-            ->appends($request->except('assigned_page'));
+            ->paginate(10, ['subjects.*'])
+            ->appends($request->except('page'));
 
         $availableSubjectsBaseQuery = Subject::query()
             ->with('canonicalCourse')
@@ -168,11 +170,13 @@ class FacultyLoadsController extends Controller
             ->orderByRaw('COALESCE(subjects.year_section, "")')
             ->orderBy('subjects.code');
 
+        $availableSubjectsTotal = (clone $availableSubjectsBaseQuery)->count();
+
         $availableSubjects = (clone $availableSubjectsBaseQuery)
             ->limit(201)
             ->get();
 
-        $availableSubjectsHasMore = $availableSubjects->count() > 200;
+        $availableSubjectsHasMore = $availableSubjectsTotal > 200;
         if ($availableSubjectsHasMore) {
             $availableSubjects = $availableSubjects->take(200)->values();
         }
@@ -236,6 +240,7 @@ class FacultyLoadsController extends Controller
             'assignedSubjectsForSchedule',
             'availableSubjectOptions',
             'availableSubjectsHasMore',
+            'availableSubjectsTotal',
             'groupedSchedule',
             'totals'
         ));
@@ -248,22 +253,67 @@ class FacultyLoadsController extends Controller
         $validated = $request->validate([
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
             'load_type' => ['required', 'string', 'in:Regular,Part-time,Temporary Substitution'],
-            'credited_tuition_units' => ['nullable', 'numeric', 'min:0'],
-            'load_hours' => ['nullable', 'numeric', 'min:0'],
+            'credited_tuition_units' => ['nullable', 'numeric', 'between:0,999.99', 'regex:/^\d{1,3}(\.\d{1,2})?$/'],
+            'load_hours' => ['nullable', 'numeric', 'between:0,999.99', 'regex:/^\d{1,3}(\.\d{1,2})?$/'],
             'school_year' => ['nullable', 'string'],
             'semester' => ['nullable', 'string'],
             'loading_q' => ['nullable', 'string', 'max:120'],
+        ], [
+            'subject_id.required' => 'Please select a subject from the available list before adding.',
+            'subject_id.exists' => 'The selected subject is no longer available for assignment.',
+            'credited_tuition_units.between' => 'Credited Tuition Units must be between 0.00 and 999.99.',
+            'credited_tuition_units.regex' => 'Credited Tuition Units must have at most 2 decimal places.',
+            'load_hours.between' => 'Load Hours must be between 0.00 and 999.99.',
+            'load_hours.regex' => 'Load Hours must have at most 2 decimal places.',
         ]);
 
-        $subject = Subject::query()
+        $selectedSchoolYear = trim((string) ($validated['school_year'] ?? ''));
+        $selectedSemester = $this->normalizeSemesterLabel((string) ($validated['semester'] ?? ''));
+
+        $subjectQuery = Subject::query()
             ->where('id', $validated['subject_id'])
             ->whereNull('faculty_id')
-            ->firstOrFail();
+            ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
+                    $termQuery->where('school_year', $selectedSchoolYear);
+                });
+            })
+            ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSemester) {
+                    $termQuery->whereIn('term', $this->semesterAliases($selectedSemester));
+                });
+            });
+
+        $subject = $subjectQuery->first();
+        if (!$subject) {
+            return redirect()
+                ->route('registrar.services.classroom-faculty.faculty-loads.show', [
+                    'faculty' => $faculty->id,
+                    'tab' => 'loading',
+                    'school_year' => $selectedSchoolYear !== '' ? $selectedSchoolYear : null,
+                    'semester' => $selectedSemester !== '' ? $selectedSemester : null,
+                    'loading_q' => trim((string) ($validated['loading_q'] ?? '')) ?: null,
+                ])
+                ->withInput()
+                ->withErrors([
+                    'subject_id' => 'Selected subject is not available for the selected School Year and Term. It may already be assigned.',
+                ])
+                ->with('status', 'Unable to assign subject. Please choose an available subject and try again.')
+                ->with('status_type', 'danger');
+        }
+
+        $creditedTuitionUnits = array_key_exists('credited_tuition_units', $validated) && $validated['credited_tuition_units'] !== null
+            ? round((float) $validated['credited_tuition_units'], 2)
+            : null;
+
+        $loadHours = array_key_exists('load_hours', $validated) && $validated['load_hours'] !== null
+            ? round((float) $validated['load_hours'], 2)
+            : null;
 
         $subject->faculty_id = $faculty->id;
         $subject->load_type = $validated['load_type'];
-        $subject->credited_tuition_units = $validated['credited_tuition_units'] ?? null;
-        $subject->load_hours = $validated['load_hours'] ?? null;
+        $subject->credited_tuition_units = $creditedTuitionUnits;
+        $subject->load_hours = $loadHours;
         $subject->added_by = trim((string) (optional(auth()->user())->name ?: optional(auth()->user())->username ?: 'Registrar'));
         $subject->save();
 
@@ -271,12 +321,100 @@ class FacultyLoadsController extends Controller
             ->route('registrar.services.classroom-faculty.faculty-loads.show', [
                 'faculty' => $faculty->id,
                 'tab' => 'loading',
-                'school_year' => $validated['school_year'] ?? null,
-                'semester' => $this->normalizeSemesterLabel((string) ($validated['semester'] ?? '')) ?: null,
+                'school_year' => $selectedSchoolYear !== '' ? $selectedSchoolYear : null,
+                'semester' => $selectedSemester !== '' ? $selectedSemester : null,
                 'loading_q' => trim((string) ($validated['loading_q'] ?? '')) ?: null,
             ])
             ->with('status', 'Subject assigned successfully.')
             ->with('status_type', 'success');
+    }
+
+    public function printStrengthOfClasses(Request $request, $facultyId)
+    {
+        $faculty = Faculty::findOrFail($facultyId);
+
+        $selectedSchoolYear = trim((string) $request->query('school_year', ''));
+        $selectedSemester = $this->normalizeSemesterLabel((string) $request->query('semester', ''));
+
+        $subjects = Subject::query()
+            ->with(['canonicalCourse', 'academicTerm'])
+            ->withCount('students')
+            ->where('faculty_id', $faculty->id)
+            ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSchoolYear) {
+                    $termQuery->where('school_year', $selectedSchoolYear);
+                });
+            })
+            ->when($selectedSemester !== '', function ($q) use ($selectedSemester) {
+                return $q->whereHas('academicTerm', function ($termQuery) use ($selectedSemester) {
+                    $termQuery->whereIn('term', $this->semesterAliases($selectedSemester));
+                });
+            })
+            ->orderByRaw('CASE WHEN subjects.course_id IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('subjects.course_id')
+            ->orderByRaw('COALESCE(subjects.year_section, "")')
+            ->orderBy('subjects.code')
+            ->get();
+
+        $rows = $subjects->map(function (Subject $subject) {
+            $subjectHours = is_null($subject->load_hours)
+                ? ((float) ($subject->lec ?? 0) + (float) ($subject->lab ?? 0))
+                : (float) $subject->load_hours;
+
+            return [
+                'subject' => (string) $subject->name,
+                'code' => (string) $subject->code,
+                'section' => strtoupper(trim((string) $subject->year_section)),
+                'days' => strtoupper(str_replace([',', ' '], ['/', ''], (string) $subject->days)),
+                'time' => strtoupper((string) $subject->formatted_time),
+                'room' => strtoupper(trim((string) $subject->room)),
+                'units' => (float) ($subject->units ?? 0),
+                'lec' => (int) ($subject->lec ?? 0),
+                'lab' => (int) ($subject->lab ?? 0),
+                'total_hours' => $subjectHours,
+                'students' => (int) ($subject->students_count ?? 0),
+                'campus' => 'Pasig',
+            ];
+        })->values();
+
+        $totals = [
+            'lec' => (int) $rows->sum('lec'),
+            'lab' => (int) $rows->sum('lab'),
+            'units' => (float) $rows->sum('units'),
+            'total_hours' => (float) $rows->sum('total_hours'),
+            'students' => (int) $rows->sum('students'),
+        ];
+
+        $classification = $subjects->pluck('load_type')
+            ->filter(function ($value) {
+                return trim((string) $value) !== '';
+            })
+            ->unique()
+            ->values()
+            ->implode(', ');
+
+        $termLabel = trim(
+            ($selectedSemester !== '' ? ($selectedSemester . ' Semester') : '') .
+            ($selectedSchoolYear !== '' ? (', SY ' . $selectedSchoolYear) : '')
+        );
+
+        if ($termLabel === '') {
+            $termLabel = 'SY -';
+        }
+
+        $blankRows = max(0, 20 - $rows->count());
+
+        return view('registrar.services.classroom-faculty.faculty-loads.print-strength-of-classes', [
+            'faculty' => $faculty,
+            'rows' => $rows,
+            'totals' => $totals,
+            'blankRows' => $blankRows,
+            'classification' => $classification !== '' ? $classification : 'N/A',
+            'termLabel' => $termLabel,
+            'selectedSchoolYear' => $selectedSchoolYear,
+            'selectedSemester' => $selectedSemester,
+            'generatedAt' => Carbon::now(),
+        ]);
     }
 
     private function normalizeSemesterLabel(string $value): string

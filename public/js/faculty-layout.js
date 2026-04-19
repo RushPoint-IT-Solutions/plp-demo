@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var notificationList = notificationModal ? notificationModal.querySelector('.faculty-notif-list') : null;
     var emptyState = notificationModal ? notificationModal.querySelector('.faculty-notif-empty') : null;
     var badge = document.querySelector('.faculty-notif-badge');
+    var notificationDetailModal = document.getElementById('facultyNotificationDetailModal');
+    var notificationDetailTitle = document.getElementById('facultyNotificationDetailTitle');
+    var notificationDetailMessage = document.getElementById('facultyNotificationDetailMessage');
+    var notificationDetailInstance = null;
+    var notificationModalInstance = null;
+    var reopenNotificationsAfterDetail = false;
     var feedUrl = notificationModal ? notificationModal.getAttribute('data-feed-url') : '';
     var markReadUrl = notificationModal ? notificationModal.getAttribute('data-mark-read-url') : '';
     var csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
@@ -84,6 +90,23 @@ document.addEventListener('DOMContentLoaded', function () {
             notifications = [];
         }
 
+        var seen = Object.create(null);
+        notifications = notifications.filter(function (item) {
+            var sourceModule = String(item.source_module || 'general');
+            var sourceReference = String(item.source_reference || '');
+            var fallbackKey = String(item.title || '') + '|' + String(item.message || '');
+            var key = sourceReference !== ''
+                ? sourceModule + '|' + sourceReference
+                : sourceModule + '|' + fallbackKey.toLowerCase();
+
+            if (seen[key]) {
+                return false;
+            }
+
+            seen[key] = true;
+            return true;
+        });
+
         if (!notifications.length) {
             notificationList.innerHTML = '';
             updateEmptyState();
@@ -95,8 +118,12 @@ document.addEventListener('DOMContentLoaded', function () {
             var dismissUrl = escapeHtml(item.dismiss_url || '');
             var readClass = item.is_read ? ' is-read' : '';
             var textHtml;
+            var isAnnouncement = String(item.source_module || '') === 'system_announcement';
+            var messageText = escapeHtml(item.message || '');
 
-            if (item.source_url) {
+            if (isAnnouncement) {
+                textHtml = '<button type="button" class="faculty-notif-text faculty-notif-open js-faculty-notif-open" data-title="' + title + '" data-message="' + messageText + '">' + title + '</button>';
+            } else if (item.source_url) {
                 textHtml = '<a href="' + escapeHtml(item.source_url) + '" class="faculty-notif-text">' + title + '</a>';
             } else {
                 textHtml = '<span class="faculty-notif-text">' + title + '</span>';
@@ -220,8 +247,54 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function openNotificationDetail(title, message) {
+        if (!notificationDetailModal || !window.bootstrap || !window.bootstrap.Modal) {
+            return;
+        }
+
+        if (notificationModal && notificationModal.classList.contains('show')) {
+            reopenNotificationsAfterDetail = true;
+
+            if (!notificationModalInstance) {
+                if (typeof window.bootstrap.Modal.getOrCreateInstance === 'function') {
+                    notificationModalInstance = window.bootstrap.Modal.getOrCreateInstance(notificationModal);
+                } else {
+                    notificationModalInstance = new window.bootstrap.Modal(notificationModal);
+                }
+            }
+
+            notificationModalInstance.hide();
+        }
+
+        if (!notificationDetailInstance) {
+            notificationDetailInstance = new window.bootstrap.Modal(notificationDetailModal);
+        }
+
+        if (notificationDetailTitle) {
+            notificationDetailTitle.textContent = title || 'Announcement';
+        }
+
+        if (notificationDetailMessage) {
+            notificationDetailMessage.textContent = message || 'No details available.';
+        }
+
+        window.setTimeout(function () {
+            notificationDetailInstance.show();
+        }, 160);
+    }
+
     if (notificationModal) {
         notificationModal.addEventListener('click', function (event) {
+            var openButton = event.target.closest('.js-faculty-notif-open');
+            if (openButton) {
+                event.preventDefault();
+                openNotificationDetail(
+                    openButton.getAttribute('data-title') || 'Announcement',
+                    openButton.getAttribute('data-message') || ''
+                );
+                return;
+            }
+
             var dismissButton = event.target.closest('.js-faculty-notif-dismiss');
             if (!dismissButton) {
                 return;
@@ -235,6 +308,26 @@ document.addEventListener('DOMContentLoaded', function () {
             markNotificationsRead().then(function () {
                 return fetchNotificationFeed();
             });
+        });
+    }
+
+    if (notificationDetailModal) {
+        notificationDetailModal.addEventListener('hidden.bs.modal', function () {
+            if (!reopenNotificationsAfterDetail || !notificationModal || !window.bootstrap || !window.bootstrap.Modal) {
+                reopenNotificationsAfterDetail = false;
+                return;
+            }
+
+            if (!notificationModalInstance) {
+                if (typeof window.bootstrap.Modal.getOrCreateInstance === 'function') {
+                    notificationModalInstance = window.bootstrap.Modal.getOrCreateInstance(notificationModal);
+                } else {
+                    notificationModalInstance = new window.bootstrap.Modal(notificationModal);
+                }
+            }
+
+            reopenNotificationsAfterDetail = false;
+            notificationModalInstance.show();
         });
     }
 

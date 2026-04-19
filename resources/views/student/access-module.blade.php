@@ -27,6 +27,13 @@
                             <a href="{{ route('module.login', 'student') }}" class="btn am-btn w-100">STUDENT</a>
                         </div>
                     </div>
+
+                    <div class="col-6 col-sm-5 col-md-4 col-lg-3">
+                        <div class="am-card mx-auto">
+                            <div class="am-card-box"></div>
+                            <a href="{{ route('module.login', 'parent') }}" class="btn am-btn w-100">PARENT</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

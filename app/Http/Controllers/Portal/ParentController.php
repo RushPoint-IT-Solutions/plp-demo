@@ -3,30 +3,119 @@
 namespace App\Http\Controllers\Portal;
 
 use App\AcademicCalendarEvent;
+use App\AcademicCalendarAudienceType;
+use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Http\Controllers\Controller;
+use App\ParentContactRequest;
+use App\ParentContactRequestChannel;
+use App\ParentContactRequestStatus;
+use App\ParentContactRequestTopic;
+use App\ParentStudentLink;
 use App\Student;
 use App\StudentDeficiency;
+use App\StudentGradeRecord;
+use App\StudentProfile;
 use App\StudentSubjectGrade;
+use App\SystemAnnouncement;
+use App\SystemReportDetailSetting;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 class ParentController extends Controller
 {
+    use PortalNotifications;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = Auth::user();
+
+            $this->syncPortalNotificationsForUser($user);
+
+            view()->share('parentNotifications', $this->portalNotificationPayloads($user));
+            view()->share('parentUnreadNotificationCount', $this->portalUnreadNotificationCount($user));
+
+            return $next($request);
+        });
+    }
+
     public function showCreateAccount()
     {
-        return view('parent.create-account');
+        return redirect()->route('module.login', [
+            'module' => 'parent',
+            'open_create_account' => 1,
+        ]);
+    }
+
+    protected function portalNotificationModule(): string
+    {
+        return 'parent';
+    }
+
+    protected function portalNotificationAudience(): string
+    {
+        return SystemAnnouncement::AUDIENCE_STUDENTS;
+    }
+
+    protected function portalNotificationRoutePrefix(): string
+    {
+        return 'parent';
+    }
+
+    protected function portalNotificationFallbackTitle(): string
+    {
+        return 'New Parent Notification';
+    }
+
+    protected function portalNotificationFallbackMessage(): string
+    {
+        return 'A student announcement is available';
+    }
+
+    public function notificationsFeed(Request $request)
+    {
+        return $this->portalNotificationsFeed($request);
+    }
+
+    public function markNotificationsRead(Request $request)
+    {
+        return $this->markPortalNotificationsRead($request);
+    }
+
+    public function dismissNotification(Request $request, $notificationDelivery)
+    {
+        return $this->dismissPortalNotification($request, $notificationDelivery);
     }
 
     private function currentStudent()
     {
         $user = Auth::user();
 
+        if ($user && $user->parent_id && Schema::hasTable('parent_student_links')) {
+            $primaryLink = ParentStudentLink::query()
+                ->where('parent_id', $user->parent_id)
+                ->whereHas('student')
+                ->orderByDesc('is_primary_contact')
+                ->orderBy('id')
+                ->first();
+
+            if ($primaryLink && $primaryLink->student_id) {
+                return Student::with(['subjects', 'canonicalCourse', 'yearBlock'])
+                    ->find($primaryLink->student_id);
+            }
+        }
+
         if ($user && $user->student_id) {
-            return Student::with('subjects')->find($user->student_id);
+            return Student::with(['subjects', 'canonicalCourse', 'yearBlock'])->find($user->student_id);
         }
 
         if ($user && !empty($user->username)) {
-            return Student::with('subjects')->where('student_no', $user->username)->first();
+            return Student::with(['subjects', 'canonicalCourse', 'yearBlock'])
+                ->where('student_no', $user->username)
+                ->first();
         }
 
         return null;
@@ -34,107 +123,57 @@ class ParentController extends Controller
 
     private function linkedChildren($student)
     {
-        if (!$student) {
-            return $this->dummyChildren();
+        $user = Auth::user();
+        $children = collect();
+
+        if ($user && $user->parent_id && Schema::hasTable('parent_student_links')) {
+            $links = ParentStudentLink::query()
+                ->where('parent_id', $user->parent_id)
+                ->with(['student.canonicalCourse:id,code,name', 'student.yearBlock:id,label'])
+                ->whereHas('student')
+                ->orderByDesc('is_primary_contact')
+                ->orderBy('id')
+                ->get();
+
+            $children = $links->map(function ($link) {
+                $linkedStudent = $link->student;
+                if (!$linkedStudent) {
+                    return null;
+                }
+
+                $programCode = trim((string) $linkedStudent->program);
+                $programName = trim((string) optional($linkedStudent->canonicalCourse)->name);
+                $yearLevel = trim((string) $linkedStudent->year_level);
+
+                return [
+                    'id' => $linkedStudent->id,
+                    'student_no' => $linkedStudent->student_no,
+                    'name' => $linkedStudent->name,
+                    'course' => $programCode !== '' ? $programCode : ($programName !== '' ? $programName : 'N/A'),
+                    'year_level' => $yearLevel !== '' ? $yearLevel : 'N/A',
+                    'birthdate' => null,
+                    'status' => $link->is_primary_contact ? 'Primary Contact' : 'Linked',
+                ];
+            })->filter()->values();
         }
 
-        $children = collect([
-            [
+        if ($children->isEmpty() && $student) {
+            $programCode = trim((string) $student->program);
+            $programName = trim((string) optional($student->canonicalCourse)->name);
+            $yearLevel = trim((string) $student->year_level);
+
+            $children = collect([[
                 'id' => $student->id,
                 'student_no' => $student->student_no,
                 'name' => $student->name,
-                'course' => $student->program ?: $student->college,
-                'year_level' => $student->year_level,
+                'course' => $programCode !== '' ? $programCode : ($programName !== '' ? $programName : 'N/A'),
+                'year_level' => $yearLevel !== '' ? $yearLevel : 'N/A',
                 'birthdate' => null,
                 'status' => 'Linked',
-            ],
-        ]);
-
-        // Keep at least two rows for easier UI configuration/visualization.
-        if ($children->count() < 2) {
-            $children = $children->concat($this->dummyChildren()->slice(1));
+            ]]);
         }
 
         return $children->values();
-    }
-
-    private function dummyChildren()
-    {
-        return collect([
-            [
-                'id' => 2,
-                'student_no' => '232418412',
-                'name' => 'Julius T. Garma',
-                'course' => 'BSMT',
-                'year_level' => '3',
-                'birthdate' => 'February 5, 2001',
-                'status' => 'Linked',
-            ],
-            [
-                'id' => 1,
-                'student_no' => '232418456',
-                'name' => 'Aleya Mae T. Garma',
-                'course' => 'BSMT',
-                'year_level' => '3',
-                'birthdate' => 'July 28, 2004',
-                'status' => 'Linked',
-            ],
-        ]);
-    }
-
-    private function dummyTermSections()
-    {
-        $subjectRows = collect([
-            ['code' => 'D-WATCH', 'name' => 'Deck Watchkeeping w/ Bridge Resources Mgmt.', 'units' => 4],
-            ['code' => 'GE11', 'name' => 'Arts and Humanities', 'units' => 3],
-            ['code' => 'GE13', 'name' => 'Social Sciences and Philosophy', 'units' => 3],
-            ['code' => 'GE6', 'name' => 'Arts Appreciation', 'units' => 3],
-            ['code' => 'NAV8-MT', 'name' => 'Operation Use of Electronic Chart Display and Information System (ECDIS)', 'units' => 3],
-            ['code' => 'NAV7', 'name' => 'Voyage Planning', 'units' => 3],
-            ['code' => 'RIZAL221', 'name' => 'Life and Works of Rizal', 'units' => 3],
-            ['code' => 'SEAM6-MT', 'name' => 'Advanced Trims, Stability & Stress', 'units' => 3],
-        ])->map(function ($item, $index) {
-            $row = new \stdClass();
-            $row->midterm = null;
-            $row->final = null;
-            $row->final_average = null;
-            $row->remarks = '';
-
-            $subject = new \stdClass();
-            $subject->code = $item['code'];
-            $subject->name = $item['name'];
-            $subject->faculty_name = 'Abela, Manuel';
-            $subject->units = $item['units'];
-            $subject->section = 'BSMT 3-A';
-            $subject->school_year = '2025-2026';
-            $subject->semester = 'Second';
-            $row->subject = $subject;
-
-            return $row;
-        });
-
-        return collect([
-            [
-                'academic_year' => '2025-2026',
-                'term' => 'Second',
-                'admission_status' => 'Transferee',
-                'academic_status' => 'Regular',
-                'program' => 'BSMT',
-                'program_description' => 'Bachelor Of Science Marine Transportation',
-                'gpa' => 0.00,
-                'rows' => $subjectRows,
-            ],
-            [
-                'academic_year' => '2025-2026',
-                'term' => 'Second',
-                'admission_status' => 'Transferee',
-                'academic_status' => 'Regular',
-                'program' => 'BSMT',
-                'program_description' => 'Bachelor Of Science Marine Transportation',
-                'gpa' => 0.00,
-                'rows' => $subjectRows,
-            ],
-        ]);
     }
 
     private function splitNameParts($fullName)
@@ -176,12 +215,7 @@ class ParentController extends Controller
         }
 
         if ($selectedChildId === null || $selectedChildId === '') {
-            $default = $children->first(function ($child) {
-                $name = strtolower(trim((string) ($child['name'] ?? '')));
-                return strpos($name, 'julius') !== false;
-            });
-
-            return $default ?: $children->first();
+            return $children->first();
         }
 
         $matched = $children->first(function ($child) use ($selectedChildId) {
@@ -191,33 +225,143 @@ class ParentController extends Controller
         return $matched ?: $children->first();
     }
 
-    private function shouldUseSampleDeficiency($selectedChild)
+    private function mapStudentGradeRecords(Student $student)
     {
-        $name = strtolower(trim((string) data_get($selectedChild, 'name')));
-        return $name !== '' && strpos($name, 'aleya') !== false;
+        if (!Schema::hasTable('student_grade_records')) {
+            return collect();
+        }
+
+        $studentNo = trim((string) $student->student_no);
+
+        return StudentGradeRecord::query()
+            ->where(function ($query) use ($student, $studentNo) {
+                $query->where('student_id', $student->id);
+
+                if ($studentNo !== '') {
+                    $query->orWhere('student_no', $studentNo);
+                }
+            })
+            ->orderByDesc('school_year')
+            ->orderByRaw("CASE WHEN LOWER(term) LIKE '%first%' THEN 1 WHEN LOWER(term) LIKE '%second%' THEN 2 WHEN LOWER(term) LIKE '%summer%' THEN 3 ELSE 4 END")
+            ->orderBy('subject_code')
+            ->get()
+            ->map(function ($record) {
+                $row = new \stdClass();
+                $row->midterm = null;
+                $row->final = null;
+                $row->final_average = $record->final_grade;
+                $row->remarks = trim((string) ($record->remarks ?: $record->grade_status ?: $record->status));
+
+                $subject = new \stdClass();
+                $subject->code = $record->subject_code;
+                $subject->name = $record->description;
+                $subject->faculty_name = $record->professor;
+                $subject->units = $record->units;
+                $subject->section = $record->section_code;
+                $subject->school_year = $record->school_year;
+                $subject->semester = $record->term;
+
+                $row->subject = $subject;
+
+                return $row;
+            })
+            ->values();
     }
 
-    public function grades()
+    private function gradeRowSemesterKey($row)
+    {
+        $subject = isset($row->subject) ? $row->subject : null;
+
+        $schoolYear = trim((string) data_get($subject, 'school_year'));
+        $semester = trim((string) data_get($subject, 'semester'));
+
+        if ($semester === '') {
+            $semester = trim((string) data_get($subject, 'term'));
+        }
+
+        if ($schoolYear === '' && isset($row->school_year)) {
+            $schoolYear = trim((string) $row->school_year);
+        }
+
+        if ($semester === '' && isset($row->term)) {
+            $semester = trim((string) $row->term);
+        }
+
+        if ($schoolYear === '' && $semester === '') {
+            return '';
+        }
+
+        return $schoolYear . '|' . $semester;
+    }
+
+    private function schoolYearSortValue($schoolYear)
+    {
+        if (preg_match('/\d{4}/', (string) $schoolYear, $matches)) {
+            return (int) $matches[0];
+        }
+
+        return 0;
+    }
+
+    private function termSortOrder($term)
+    {
+        $normalized = strtolower(trim((string) $term));
+
+        if ($normalized === '') {
+            return 99;
+        }
+
+        if (strpos($normalized, 'first') !== false || preg_match('/(^|[^0-9])1(st)?([^0-9]|$)/', $normalized)) {
+            return 1;
+        }
+
+        if (strpos($normalized, 'second') !== false || preg_match('/(^|[^0-9])2(nd)?([^0-9]|$)/', $normalized)) {
+            return 2;
+        }
+
+        if (strpos($normalized, 'summer') !== false) {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    public function grades(Request $request)
     {
         $currentStudent = $this->currentStudent();
         $children = $this->linkedChildren($currentStudent);
-        $selectedChildId = request('child');
+        $selectedChildId = $request->query('child');
         $selectedChild = $this->resolveSelectedChild($children, $selectedChildId);
+
+        if ($selectedChild && isset($selectedChild['id'])) {
+            $selectedChildId = (string) $selectedChild['id'];
+        } else {
+            $selectedChildId = null;
+        }
 
         $student = null;
         if ($selectedChild && !empty($selectedChild['id'])) {
-            $student = Student::with('subjects')->find($selectedChild['id']);
+            $student = Student::with(['subjects', 'canonicalCourse', 'yearBlock'])->find($selectedChild['id']);
         }
 
         if (!$student && $currentStudent && (!$selectedChild || (string) ($selectedChild['id'] ?? '') === (string) $currentStudent->id)) {
             $student = $currentStudent;
         }
 
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'yearBlock']);
+        }
+
         $gradeRows = collect();
         if ($student) {
-            $gradeRows = StudentSubjectGrade::with('subject')
+            $gradeRows = StudentSubjectGrade::query()
+                ->with(['subject.academicTerm', 'subject.facultyModel:id,name'])
                 ->where('student_id', $student->id)
                 ->get();
+
+            if ($gradeRows->isEmpty()) {
+                $gradeRows = $this->mapStudentGradeRecords($student);
+            }
         }
 
         $deficiencyItems = collect();
@@ -242,58 +386,89 @@ class ParentController extends Controller
                 });
         }
 
-        if ($deficiencyItems->isEmpty() && $this->shouldUseSampleDeficiency($selectedChild)) {
-            $deficiencyItems = collect([
-                'Registrar - Pending Grades in Laboratory Class',
-                'Unreturned library book: Maritime Safety Vol. 2',
-            ]);
-        }
-
         $hasDeficiencies = $deficiencyItems->isNotEmpty();
 
         $semesterOptions = $gradeRows
             ->map(function ($row) {
-                return optional($row->subject)->school_year . '|' . optional($row->subject)->semester;
+                return $this->gradeRowSemesterKey($row);
             })
             ->filter()
             ->unique()
+            ->sort(function ($left, $right) {
+                list($leftSchoolYear, $leftTerm) = array_pad(explode('|', (string) $left), 2, '');
+                list($rightSchoolYear, $rightTerm) = array_pad(explode('|', (string) $right), 2, '');
+
+                $yearCompare = $this->schoolYearSortValue($rightSchoolYear) <=> $this->schoolYearSortValue($leftSchoolYear);
+                if ($yearCompare !== 0) {
+                    return $yearCompare;
+                }
+
+                $termCompare = $this->termSortOrder($leftTerm) <=> $this->termSortOrder($rightTerm);
+                if ($termCompare !== 0) {
+                    return $termCompare;
+                }
+
+                return strcmp((string) $leftTerm, (string) $rightTerm);
+            })
             ->values();
 
-        $selectedSemester = request('semester');
+        $selectedSemester = trim((string) $request->query('semester', ''));
 
-        if ($selectedSemester) {
-            list($selectedSchoolYear, $selectedSem) = array_pad(explode('|', $selectedSemester), 2, null);
-            $gradeRows = $gradeRows->filter(function ($row) use ($selectedSchoolYear, $selectedSem) {
-                return optional($row->subject)->school_year === $selectedSchoolYear
-                    && optional($row->subject)->semester === $selectedSem;
+        if ($selectedSemester !== '' && !$semesterOptions->contains($selectedSemester)) {
+            $selectedSemester = '';
+        }
+
+        if ($selectedSemester !== '') {
+            $gradeRows = $gradeRows->filter(function ($row) use ($selectedSemester) {
+                return $this->gradeRowSemesterKey($row) === $selectedSemester;
             })->values();
         }
 
+        $programCode = $student ? trim((string) $student->program) : '';
+        $programName = $student ? trim((string) optional($student->canonicalCourse)->name) : '';
+        $programLabel = $programCode !== '' ? $programCode : ($programName !== '' ? $programName : 'N/A');
+        $programDescription = $programName !== '' ? $programName : ($programCode !== '' ? $programCode : 'N/A');
+
         $termSections = $gradeRows
             ->groupBy(function ($row) {
-                return optional($row->subject)->school_year . '|' . optional($row->subject)->semester;
+                return $this->gradeRowSemesterKey($row);
             })
-            ->map(function ($rows, $key) {
+            ->map(function ($rows, $key) use ($programLabel, $programDescription) {
                 list($schoolYear, $semester) = array_pad(explode('|', $key), 2, '');
 
-                $avg = $rows->count() ? round((float) $rows->avg('final_average'), 2) : null;
+                $numericFinalAverages = $rows->filter(function ($row) {
+                    return isset($row->final_average) && $row->final_average !== null && is_numeric($row->final_average);
+                });
+
+                $avg = $numericFinalAverages->count()
+                    ? round((float) $numericFinalAverages->avg('final_average'), 2)
+                    : null;
 
                 return [
                     'academic_year' => $schoolYear ?: 'N/A',
                     'term' => $semester ?: 'N/A',
-                    'admission_status' => 'Transferee',
+                    'admission_status' => 'N/A',
                     'academic_status' => 'Regular',
-                    'program' => optional(optional($rows->first())->student)->program ?: 'BSMT',
-                    'program_description' => optional(optional($rows->first())->student)->program ?: 'Bachelor Of Science Marine Transportation',
+                    'program' => $programLabel,
+                    'program_description' => $programDescription,
                     'gpa' => $avg,
                     'rows' => $rows->values(),
                 ];
             })
-            ->values();
+            ->sort(function ($left, $right) {
+                $yearCompare = $this->schoolYearSortValue($right['academic_year']) <=> $this->schoolYearSortValue($left['academic_year']);
+                if ($yearCompare !== 0) {
+                    return $yearCompare;
+                }
 
-        if ($termSections->isEmpty()) {
-            $termSections = $this->dummyTermSections();
-        }
+                $termCompare = $this->termSortOrder($left['term']) <=> $this->termSortOrder($right['term']);
+                if ($termCompare !== 0) {
+                    return $termCompare;
+                }
+
+                return strcmp((string) $left['term'], (string) $right['term']);
+            })
+            ->values();
 
         return view('parent.grades', compact(
             'student',
@@ -312,11 +487,20 @@ class ParentController extends Controller
     public function calendar()
     {
         $calendarEvents = [];
+        $audienceCode = $this->parentCalendarAudienceCode();
 
         if (Schema::hasTable('academic_calendar_events')) {
+            $today = now()->toDateString();
+
             $calendarEvents = AcademicCalendarEvent::query()
                 ->where('is_active', true)
+                ->where(function ($query) use ($today) {
+                    $query->whereNull('post_until')
+                        ->orWhereDate('post_until', '>=', $today);
+                })
+                ->visibleToAudience($audienceCode)
                 ->orderBy('event_date')
+                ->orderBy('time_from')
                 ->get()
                 ->map(function ($event) {
                     return [
@@ -333,6 +517,19 @@ class ParentController extends Controller
         }
 
         return view('parent.calendar', compact('calendarEvents'));
+    }
+
+    private function parentCalendarAudienceCode()
+    {
+        if (!Schema::hasTable('academic_calendar_audience_types')) {
+            return 'student';
+        }
+
+        $hasParentAudience = AcademicCalendarAudienceType::query()
+            ->whereRaw('LOWER(code) = ?', ['parent'])
+            ->exists();
+
+        return $hasParentAudience ? 'parent' : 'student';
     }
 
     public function messaging()
@@ -485,50 +682,563 @@ class ParentController extends Controller
         ];
     }
 
-    public function studentProfile()
+    public function studentProfile(Request $request)
     {
         $currentStudent = $this->currentStudent();
         $children = $this->linkedChildren($currentStudent);
-        $selectedChildId = request('child');
+        $selectedChildId = $request->query('child');
         $selectedChild = $this->resolveSelectedChild($children, $selectedChildId);
 
         $student = null;
         if ($selectedChild && !empty($selectedChild['id'])) {
-            $student = Student::with('subjects')->find($selectedChild['id']);
+            $student = Student::with(['canonicalCourse', 'yearBlock', 'user', 'academicTerm'])->find($selectedChild['id']);
         }
 
         if (!$student && $currentStudent && (!$selectedChild || (string) ($selectedChild['id'] ?? '') === (string) $currentStudent->id)) {
             $student = $currentStudent;
         }
 
-        $nameParts = $this->splitNameParts($student ? $student->name : optional(Auth::user())->name);
-
-        if (trim($nameParts['first']) === '' && trim($nameParts['middle']) === '' && trim($nameParts['last']) === '') {
-            $nameParts = [
-                'first' => 'Emelie',
-                'middle' => 'Tamayo',
-                'last' => 'Garma',
-            ];
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'yearBlock', 'user', 'academicTerm']);
         }
+
+        if ($selectedChild && isset($selectedChild['id'])) {
+            $selectedChildId = (string) $selectedChild['id'];
+        } else {
+            $selectedChildId = null;
+        }
+
+        $studentFieldVisibility = [
+            'section' => Schema::hasColumn('students', 'section'),
+            'admission_status' => Schema::hasColumn('students', 'admission_status'),
+            'admission_year' => Schema::hasColumn('students', 'admission_year'),
+            'enrollment_status' => Schema::hasColumn('students', 'enrollment_status'),
+            'academic_status' => Schema::hasColumn('students', 'academic_status'),
+        ];
+
+        $profile = $this->findStudentProfileRecord($student);
+        $profileData = $this->buildStudentProfileData($student, $profile, Auth::user());
 
         return view('parent.student-profile', [
             'user' => Auth::user(),
             'student' => $student,
+            'profile' => $profile,
+            'profileData' => $profileData,
             'children' => $children,
-            'nameParts' => $nameParts,
             'selectedChild' => $selectedChild,
             'selectedChildId' => $selectedChildId,
+            'studentFieldVisibility' => $studentFieldVisibility,
         ]);
     }
 
-    public function contactUs()
+    public function contactUs(Request $request)
     {
-        return view('parent.contact-us');
+        $currentStudent = $this->currentStudent();
+        $children = $this->linkedChildren($currentStudent);
+        $selectedChild = $this->resolveSelectedChild($children, $request->query('child'));
+        $selectedChildId = $selectedChild && isset($selectedChild['id'])
+            ? (string) $selectedChild['id']
+            : '';
+
+        $topics = collect();
+        if (Schema::hasTable('parent_contact_request_topics')) {
+            $topics = ParentContactRequestTopic::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $channels = collect();
+        if (Schema::hasTable('parent_contact_request_channels')) {
+            $channels = ParentContactRequestChannel::query()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $recentRequests = collect();
+        $user = Auth::user();
+        if ($user && $user->parent_id && Schema::hasTable('parent_contact_requests')) {
+            $recentRequests = ParentContactRequest::query()
+                ->with([
+                    'topic:id,name',
+                    'status:id,name',
+                    'channel:id,name',
+                    'student:id,student_no,name',
+                ])
+                ->where('parent_id', $user->parent_id)
+                ->orderByDesc('created_at')
+                ->paginate(8);
+        }
+
+        $supportContacts = $this->supportContacts();
+
+        return view('parent.contact-us', [
+            'children' => $children,
+            'selectedChildId' => $selectedChildId,
+            'topics' => $topics,
+            'channels' => $channels,
+            'recentRequests' => $recentRequests,
+            'supportEmail' => $supportContacts['email'],
+            'supportEmailComposeUrl' => 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=' . rawurlencode((string) $supportContacts['email']),
+            'supportPhone' => $supportContacts['phone'],
+            'supportContactDetails' => $supportContacts['contact_details'],
+        ]);
     }
 
     public function changePassword()
     {
-        return view('parent.change-password');
+        return view('parent.change-password', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string', 'max:255'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:64',
+                'different:current_password',
+                'confirmed',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+            ],
+        ], [
+            'password.regex' => 'New password must include uppercase, lowercase, and numeric characters.',
+        ]);
+
+        if (!Hash::check($validated['current_password'], (string) $user->password)) {
+            return back()
+                ->withErrors(['current_password' => 'Current password is incorrect.'])
+                ->withInput($request->except(['current_password', 'password', 'password_confirmation']));
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->force_password_reset = false;
+        $user->save();
+
+        return redirect()->route('parent.change-password')
+            ->with('status', 'Password updated successfully.');
+    }
+
+    public function submitContactUs(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->parent_id) {
+            abort(403);
+        }
+
+        if (!Schema::hasTable('parent_contact_requests')
+            || !Schema::hasTable('parent_contact_request_topics')
+            || !Schema::hasTable('parent_contact_request_channels')
+            || !Schema::hasTable('parent_contact_request_statuses')) {
+            return redirect()->route('parent.contact-us')
+                ->withErrors(['contact' => 'Contact request setup is not available yet.']);
+        }
+
+        $activeTopicIds = ParentContactRequestTopic::query()
+            ->where('is_active', true)
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
+
+        $activeChannelIds = ParentContactRequestChannel::query()
+            ->where('is_active', true)
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
+
+        $validated = $request->validate([
+            'child' => ['nullable', 'integer'],
+            'topic_id' => ['required', 'integer', Rule::in($activeTopicIds)],
+            'channel_id' => ['required', 'integer', Rule::in($activeChannelIds)],
+            'subject' => ['required', 'string', 'max:190'],
+            'message' => ['required', 'string', 'max:4000'],
+        ]);
+
+        $children = $this->linkedChildren($this->currentStudent());
+        $allowedStudentIds = $children
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->filter(function ($id) {
+                return $id > 0;
+            })
+            ->values()
+            ->all();
+
+        $studentId = null;
+        if (!empty($validated['child'])) {
+            $candidateId = (int) $validated['child'];
+            if (!in_array($candidateId, $allowedStudentIds, true)) {
+                return redirect()->route('parent.contact-us')
+                    ->withErrors(['child' => 'Selected child is not linked to your account.'])
+                    ->withInput();
+            }
+
+            $studentId = $candidateId;
+        }
+
+        $statusId = ParentContactRequestStatus::query()->where('code', 'NEW')->value('id');
+        if (!$statusId) {
+            $statusId = ParentContactRequestStatus::query()->orderBy('sort_order')->value('id');
+        }
+
+        if (!$statusId) {
+            return redirect()->route('parent.contact-us')
+                ->withErrors(['contact' => 'Contact request status setup is missing.'])
+                ->withInput();
+        }
+
+        $referenceNo = $this->generateContactReferenceNo();
+        $parentProfile = $user->parentProfile;
+
+        ParentContactRequest::query()->create([
+            'reference_no' => $referenceNo,
+            'parent_id' => $user->parent_id,
+            'student_id' => $studentId,
+            'topic_id' => (int) $validated['topic_id'],
+            'status_id' => (int) $statusId,
+            'channel_id' => (int) $validated['channel_id'],
+            'submitted_by_user_id' => $user->id,
+            'subject' => trim((string) $validated['subject']),
+            'message' => trim((string) $validated['message']),
+            'contact_email_snapshot' => $this->nullableText($user->email ?: optional($parentProfile)->email),
+            'contact_mobile_snapshot' => $this->nullableText(optional($parentProfile)->mobile_number),
+            'submitted_at' => now(),
+        ]);
+
+        return redirect()->route('parent.contact-us')
+            ->with('status', 'Your inquiry was submitted successfully. Reference No: ' . $referenceNo);
+    }
+
+    private function findStudentProfileRecord($student)
+    {
+        if (!$student || !Schema::hasTable('student_profiles')) {
+            return null;
+        }
+
+        $studentId = (int) data_get($student, 'id');
+        $studentNo = trim((string) data_get($student, 'student_no'));
+
+        if ($studentId <= 0 && $studentNo === '') {
+            return null;
+        }
+
+        $relations = ['profileImage'];
+
+        if (Schema::hasTable('ph_regions')
+            && Schema::hasColumn('student_profiles', 'present_region_id')
+            && Schema::hasColumn('student_profiles', 'permanent_region_id')) {
+            $relations[] = 'presentRegion:id,region_name';
+            $relations[] = 'permanentRegion:id,region_name';
+        }
+
+        if (Schema::hasTable('ph_provinces')
+            && Schema::hasColumn('student_profiles', 'present_province_id')
+            && Schema::hasColumn('student_profiles', 'permanent_province_id')) {
+            $relations[] = 'presentProvince:id,province_name';
+            $relations[] = 'permanentProvince:id,province_name';
+        }
+
+        if (Schema::hasTable('ph_municipalities')
+            && Schema::hasColumn('student_profiles', 'present_municipality_id')
+            && Schema::hasColumn('student_profiles', 'permanent_municipality_id')) {
+            $relations[] = 'presentMunicipality:id,municipality_name';
+            $relations[] = 'permanentMunicipality:id,municipality_name';
+        }
+
+        $hasProfileCompleteColumn = Schema::hasColumn('student_profiles', 'profile_complete');
+
+        if ($studentNo !== '') {
+            $profileByStudentNoQuery = StudentProfile::query()
+                ->with($relations)
+                ->where('student_no', $studentNo);
+
+            if ($hasProfileCompleteColumn) {
+                $profileByStudentNoQuery->orderByDesc('profile_complete');
+            }
+
+            $profileByStudentNo = $profileByStudentNoQuery
+                ->orderByDesc('id')
+                ->first();
+
+            if ($profileByStudentNo) {
+                return $profileByStudentNo;
+            }
+        }
+
+        if ($studentId > 0) {
+            $profileByStudentIdQuery = StudentProfile::query()
+                ->with($relations)
+                ->where('student_id', $studentId);
+
+            if ($hasProfileCompleteColumn) {
+                $profileByStudentIdQuery->orderByDesc('profile_complete');
+            }
+
+            return $profileByStudentIdQuery
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        return null;
+    }
+
+    private function buildStudentProfileData($student, $profile, $user)
+    {
+        $studentNo = trim((string) data_get($student, 'student_no'));
+        $studentName = trim((string) data_get($student, 'name'));
+
+        if ($studentName === '') {
+            $studentName = trim(implode(' ', array_filter([
+                trim((string) data_get($profile, 'first_name')),
+                trim((string) data_get($profile, 'middle_name')),
+                trim((string) data_get($profile, 'last_name')),
+                trim((string) data_get($profile, 'suffix')),
+            ])));
+        }
+
+        $presentRegion = trim((string) optional(data_get($profile, 'presentRegion'))->region_name);
+        if ($presentRegion === '') {
+            $presentRegion = trim((string) data_get($profile, 'present_region'));
+        }
+
+        $presentProvince = trim((string) optional(data_get($profile, 'presentProvince'))->province_name);
+        if ($presentProvince === '') {
+            $presentProvince = trim((string) data_get($profile, 'present_province'));
+        }
+
+        $presentMunicipality = trim((string) optional(data_get($profile, 'presentMunicipality'))->municipality_name);
+        if ($presentMunicipality === '') {
+            $presentMunicipality = trim((string) data_get($profile, 'present_municipality'));
+        }
+
+        $permanentRegion = trim((string) optional(data_get($profile, 'permanentRegion'))->region_name);
+        if ($permanentRegion === '') {
+            $permanentRegion = trim((string) data_get($profile, 'permanent_region'));
+        }
+
+        $permanentProvince = trim((string) optional(data_get($profile, 'permanentProvince'))->province_name);
+        if ($permanentProvince === '') {
+            $permanentProvince = trim((string) data_get($profile, 'permanent_province'));
+        }
+
+        $permanentMunicipality = trim((string) optional(data_get($profile, 'permanentMunicipality'))->municipality_name);
+        if ($permanentMunicipality === '') {
+            $permanentMunicipality = trim((string) data_get($profile, 'permanent_municipality'));
+        }
+
+        $presentAddress = $this->formatAddressLine([
+            trim((string) data_get($profile, 'present_street')),
+            trim((string) data_get($profile, 'present_barangay')),
+            $presentMunicipality,
+            $presentProvince,
+            $presentRegion,
+            trim((string) data_get($profile, 'present_zipcode')),
+        ]);
+
+        $permanentAddress = $this->formatAddressLine([
+            trim((string) data_get($profile, 'permanent_street')),
+            trim((string) data_get($profile, 'permanent_barangay')),
+            $permanentMunicipality,
+            $permanentProvince,
+            $permanentRegion,
+            trim((string) data_get($profile, 'permanent_zipcode')),
+        ]);
+
+        $programCode = trim((string) data_get($student, 'program'));
+        $programName = trim((string) optional(data_get($student, 'canonicalCourse'))->name);
+        $program = $programCode;
+        if ($program === '') {
+            $program = $programName;
+        } elseif ($programName !== '' && strcasecmp($programCode, $programName) !== 0) {
+            $program = $programCode . ' - ' . $programName;
+        }
+
+        $yearLevel = trim((string) data_get($student, 'year_level'));
+        if ($yearLevel === '') {
+            $yearLevel = trim((string) optional(data_get($student, 'yearBlock'))->label);
+        }
+
+        $dateOfBirth = '';
+        if ($profile && $profile->date_of_birth) {
+            $dateOfBirth = $profile->date_of_birth->format('F d, Y');
+        }
+
+        $studentUserEmail = trim((string) data_get($student, 'user.email'));
+
+        return [
+            'student_no' => $this->displayText($studentNo),
+            'student_name' => $this->displayText($studentName),
+            'contact_no' => $this->displayText(
+                trim((string) data_get($profile, 'mobile_number')) !== ''
+                    ? data_get($profile, 'mobile_number')
+                    : data_get($student, 'contact_no')
+            ),
+            'email' => $this->displayText(
+                trim((string) data_get($profile, 'student_email')) !== ''
+                    ? data_get($profile, 'student_email')
+                    : ($studentUserEmail !== ''
+                        ? $studentUserEmail
+                        : (data_get($student, 'email') ?: optional($user)->email))
+            ),
+            'residential_address' => $this->displayText($presentAddress),
+            'present_region' => $this->displayText($presentRegion),
+            'present_province' => $this->displayText($presentProvince),
+            'present_municipality' => $this->displayText($presentMunicipality),
+            'permanent_address' => $this->displayText($permanentAddress),
+            'date_of_birth' => $this->displayText($dateOfBirth),
+            'place_of_birth' => $this->displayText(data_get($profile, 'place_of_birth')),
+            'gender' => $this->displayText(
+                trim((string) data_get($profile, 'gender')) !== ''
+                    ? data_get($profile, 'gender')
+                    : data_get($student, 'sex')
+            ),
+            'religion' => $this->displayText(data_get($profile, 'religion')),
+            'citizenship' => $this->displayText(data_get($profile, 'nationality')),
+            'civil_status' => $this->displayText(data_get($profile, 'civil_status')),
+            'program' => $this->displayText($program),
+            'year_level' => $this->displayText($yearLevel),
+            'section' => $this->displayText(data_get($student, 'section')),
+            'curriculum_year' => $this->displayText(data_get($student, 'curriculum')),
+            'admission_status' => $this->displayText(data_get($student, 'admission_status')),
+            'admission_year' => $this->displayText(data_get($student, 'admission_year')),
+            'enrollment_status' => $this->displayText(data_get($student, 'enrollment_status')),
+            'academic_status' => $this->displayText(data_get($student, 'academic_status')),
+            'photo_url' => $this->resolveProfilePhotoUrl($profile),
+        ];
+    }
+
+    private function resolveProfilePhotoUrl($profile)
+    {
+        if (!$profile) {
+            return null;
+        }
+
+        $profilePhotoPath = trim((string) data_get($profile, 'profile_photo_path'));
+        if ($profilePhotoPath !== '') {
+            return asset('storage/' . ltrim($profilePhotoPath, '/'));
+        }
+
+        $profileImage = data_get($profile, 'profileImage');
+        $storagePath = trim((string) data_get($profileImage, 'storage_path'));
+        if ($storagePath === '') {
+            return null;
+        }
+
+        return asset('storage/' . ltrim($storagePath, '/'));
+    }
+
+    private function formatAddressLine(array $segments)
+    {
+        $values = [];
+        foreach ($segments as $segment) {
+            $text = trim((string) $segment);
+            if ($text === '') {
+                continue;
+            }
+
+            $values[] = $text;
+        }
+
+        if (count($values) === 0) {
+            return null;
+        }
+
+        return implode(', ', $values);
+    }
+
+    private function displayText($value)
+    {
+        $text = trim((string) $value);
+        return $text === '' ? 'N/A' : $text;
+    }
+
+    private function nullableText($value)
+    {
+        $text = trim((string) $value);
+        return $text === '' ? null : $text;
+    }
+
+    private function supportContacts()
+    {
+        $contactDetails = null;
+
+        if (Schema::hasTable('system_report_detail_settings')) {
+            $settingsRow = SystemReportDetailSetting::query()
+                ->where('is_active', true)
+                ->orderByDesc('id')
+                ->first();
+
+            if (!$settingsRow) {
+                $settingsRow = SystemReportDetailSetting::query()
+                    ->orderByDesc('id')
+                    ->first();
+            }
+
+            $contactDetails = $settingsRow ? trim((string) $settingsRow->contact_details) : null;
+        }
+
+        $supportEmail = 'registrar@plpasig.edu.ph';
+        $supportPhone = '+63 2 8628 1014';
+
+        $sourceText = trim((string) $contactDetails);
+        if ($sourceText !== '') {
+            $emailProbe = preg_replace('/(?i)(bcc:|cc:|to:)/', ' ', $sourceText);
+            $emailCandidates = preg_split('/[\s,;]+/', (string) $emailProbe);
+
+            foreach ((array) $emailCandidates as $candidate) {
+                $token = trim((string) $candidate, "\t\n\r\0\x0B<>()[]{}\"'");
+                if ($token === '') {
+                    continue;
+                }
+
+                if (filter_var($token, FILTER_VALIDATE_EMAIL)) {
+                    $supportEmail = strtolower($token);
+                    break;
+                }
+            }
+
+            if (preg_match('/(\+?[0-9][0-9\-\s\(\)]{6,}[0-9])/', $sourceText, $phoneMatches)) {
+                $supportPhone = trim((string) $phoneMatches[1]);
+            }
+        }
+
+        return [
+            'email' => $supportEmail,
+            'phone' => $supportPhone,
+            'contact_details' => $this->nullableText($contactDetails),
+        ];
+    }
+
+    private function generateContactReferenceNo()
+    {
+        do {
+            $token = strtoupper(substr(md5(uniqid((string) mt_rand(1000, 9999), true)), 0, 6));
+            $referenceNo = 'PCR-' . now()->format('YmdHis') . '-' . $token;
+        } while (ParentContactRequest::query()->where('reference_no', $referenceNo)->exists());
+
+        return $referenceNo;
     }
 
     public function profile()
