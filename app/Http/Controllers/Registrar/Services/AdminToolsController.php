@@ -1212,7 +1212,7 @@ class AdminToolsController extends Controller
         ]);
 
         $page = (int) ($validated['page'] ?? 1);
-        $perPage = (int) ($validated['per_page'] ?? 10);
+        $perPage = (int) ($validated['per_page'] ?? 5);
 
         $hasNormalizedTables = $this->hasNormalizedUserAccountTables();
         $hasLegacyStatusTable = Schema::hasTable('user_account_statuses');

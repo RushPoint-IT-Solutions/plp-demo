@@ -61,6 +61,7 @@
                             <th class="ua-col-index">#</th>
                             <th>User ID</th>
                             <th>Name</th>
+                            <th>Email</th>
                             <th>User Type</th>
                             <th>Status</th>
                             <th class="ua-col-action">Action</th>
@@ -70,7 +71,7 @@
                 </table>
             </div>
             <div class="ua-table-meta">
-                <div class="ua-table-caption">Select a row to load credentials. Use the shield icon in Action to open Access Control.</div>
+                <div class="ua-table-caption">Select a row or type a valid User ID to load Account Credentials.</div>
                 <div class="app-table-pager"></div>
             </div>
         </section>
@@ -82,19 +83,19 @@
 
             <div class="ua-selected-user">
                 <div class="ua-selected-item">
-                    <span class="ua-selected-label">Selected User</span>
+                    <span class="ua-selected-label">SELECTED USER</span>
                     <span class="ua-selected-value" id="uaSelectedUserName">-</span>
                 </div>
                 <div class="ua-selected-item">
-                    <span class="ua-selected-label">User ID</span>
+                    <span class="ua-selected-label">USER ID</span>
                     <span class="ua-selected-value" id="uaSelectedUserId">-</span>
                 </div>
                 <div class="ua-selected-item">
-                    <span class="ua-selected-label">User Type</span>
+                    <span class="ua-selected-label">USER TYPE</span>
                     <span class="ua-selected-value" id="uaSelectedUserType">-</span>
                 </div>
                 <div class="ua-selected-item">
-                    <span class="ua-selected-label">Email</span>
+                    <span class="ua-selected-label">EMAIL</span>
                     <span class="ua-selected-value" id="uaSelectedUserEmail">-</span>
                 </div>
             </div>
@@ -112,7 +113,7 @@
                     <input id="uaFormUserId" type="text" class="app-filter-input smrg-search-input" placeholder="Search by User ID" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                     <div class="smrg-search-dropdown ua-credential-dropdown" id="uaFormUserIdDropdown"></div>
                 </div>
-                <div class="ua-form-note">Click to browse matching users, or type to filter best matches.</div>
+                <div class="ua-form-note">Type existing User ID and press Enter to auto-fill.</div>
 
                 <label class="ua-form-label" for="uaFormPassword">Password</label>
                 <div class="ua-password-wrap">
@@ -133,7 +134,7 @@
                     <input id="uaFormName" type="text" class="app-filter-input smrg-search-input" placeholder="Search by Full Name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                     <div class="smrg-search-dropdown ua-credential-dropdown" id="uaFormNameDropdown"></div>
                 </div>
-                <div class="ua-form-note">Click to browse matching users, or type to filter best matches.</div>
+                <div class="ua-form-note">You can also type full name to find matching account.</div>
 
                 <label class="setup-checkbox-label ua-inactive-row" for="uaInactive">
                     <input type="checkbox" id="uaInactive" class="req-checkbox-input">
@@ -165,11 +166,11 @@
 <div class="req-modal-overlay doclist-modal-hidden ua-access-modal" id="uaAccessModal" aria-hidden="true">
     <div class="req-modal-box ua-access-modal-box" role="dialog" aria-modal="true" aria-labelledby="uaAccessModalTitle">
         <div class="ua-access-modal-head">
-            <h3 class="ua-access-modal-title" id="uaAccessModalTitle">Access Control - <span id="uaAccessModalUserLabel">-</span></h3>
+            <h3 class="ua-access-modal-title" id="uaAccessModalTitle">Access Control &mdash; <span id="uaAccessModalUserLabel">-</span></h3>
             <button type="button" class="rep-modal-close-x" id="uaAccessCloseX" aria-label="Close access control">&times;</button>
         </div>
 
-        <p class="ua-access-modal-note">These settings override role defaults for this user. Save to persist the access-control matrix in the database.</p>
+        <p class="ua-access-modal-note">These settings override the role defaults for this user only. Toggles are pre-filled with the role&rsquo;s current permissions.</p>
 
         <div class="ua-access-meta">
             <div class="ua-access-copy-wrap">
@@ -180,26 +181,27 @@
                 <button type="button" class="ua-copy-access-btn" id="uaCopyAccessBtn">Copy Settings</button>
             </div>
 
-            <div class="ua-access-copy-wrap">
-                <label class="app-filter-label" for="uaAccessQuickPreset">Quick Access Options:</label>
-                <select id="uaAccessQuickPreset" class="app-filter-select">
-                    <option value="">- select preset -</option>
-                    <option value="full_access">Full Access</option>
-                    <option value="view_only">View Only</option>
-                    <option value="no_access">No Access</option>
-                </select>
-                <button type="button" class="ua-copy-access-btn" id="uaApplyAccessPresetBtn">Apply</button>
+            <div class="ua-access-quick-wrap">
+                <button type="button" class="ua-access-quick-toggle" id="uaQuickAccessToggle" aria-expanded="false" aria-controls="uaAccessQuickList">
+                    <span>Quick Access Options</span>
+                    <span class="ua-access-quick-caret" aria-hidden="true">
+                        <svg class="ua-access-quick-caret-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 6l6 6-6 6"></path>
+                        </svg>
+                    </span>
+                </button>
+                <div class="ua-access-quick-grid" id="uaAccessQuickList" hidden></div>
             </div>
         </div>
 
-        <div class="app-table-wrap ua-access-table-wrap">
-            <table class="app-table ua-access-table" id="uaAccessTable" data-no-auto-pager="1">
+        <div class="ua-access-table-wrap">
+            <table class="ua-access-table" id="uaAccessTable" data-no-auto-pager="1">
                 <thead id="uaAccessTableHead"></thead>
                 <tbody id="uaAccessTableBody"></tbody>
             </table>
         </div>
 
-        <p class="ua-access-footnote" id="uaAccessFootnote">Changes are saved per user and can be copied from another account before saving.</p>
+        <p class="ua-access-footnote" id="uaAccessFootnote">UI-only preview for now. Access values are kept in-memory until backend mapping is wired.</p>
 
         <div class="ua-bottom-actions">
             <button type="button" class="req-btn-cancel" id="uaAccessCancelBtn">Cancel</button>

@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var FETCH_URL = page.getAttribute('data-fetch-url') || '';
   var STORE_URL = page.getAttribute('data-store-url') || '';
   var CURRICULUM_URL = page.getAttribute('data-curriculum-url') || '';
-  var DEFAULT_PER_PAGE = 25;
+  var DEFAULT_PER_PAGE = 10;
   var soSY = document.getElementById('soSY');
   var soTerm = document.getElementById('soTerm');
   var soYearLevel = document.getElementById('soYearLevel');
@@ -145,6 +145,28 @@ document.addEventListener('DOMContentLoaded', function () {
   var soCurriculumRemoveAll = document.getElementById('soCurriculumRemoveAll');
   var soCurriculumSummary = document.getElementById('soCurriculumSummary');
   var soModalFeedback = document.getElementById('soModalFeedback');
+  var soSectionConfigModal = document.getElementById('soSectionConfigModal');
+  var soSectionConfigClose = document.getElementById('soSectionConfigClose');
+  var soSectionConfigDone = document.getElementById('soSectionConfigDone');
+  var soSectionConfigTitle = document.getElementById('soSectionConfigTitle');
+  var soSectionConfigMeta = document.getElementById('soSectionConfigMeta');
+  var soSectionConfigBody = document.getElementById('soSectionConfigBody');
+  var soSubjectScheduleModal = document.getElementById('soSubjectScheduleModal');
+  var soSubjectScheduleTitle = document.getElementById('soSubjectScheduleTitle');
+  var soSubjectScheduleTag = document.getElementById('soSubjectScheduleTag');
+  var soSubjectScheduleClose = document.getElementById('soSubjectScheduleClose');
+  var soSubjectScheduleCancel = document.getElementById('soSubjectScheduleCancel');
+  var soSubjectScheduleSave = document.getElementById('soSubjectScheduleSave');
+  var soSubjectScheduleRows = document.getElementById('soSubjectScheduleRows');
+  var soSubjectScheduleFeedback = document.getElementById('soSubjectScheduleFeedback');
+  var soSubjectAddScheduleRow = document.getElementById('soSubjectAddScheduleRow');
+  var soSubjectSectionCode = document.getElementById('soSubjectSectionCode');
+  var soSubjectDescription = document.getElementById('soSubjectDescription');
+  var soSubjectProfessor = document.getElementById('soSubjectProfessor');
+  var soSubjectSlots = document.getElementById('soSubjectSlots');
+  var soSubjectFlagOpen = document.getElementById('soSubjectFlagOpen');
+  var soSubjectFlagBlock = document.getElementById('soSubjectFlagBlock');
+  var soSubjectFlagTutorial = document.getElementById('soSubjectFlagTutorial');
   var scheduleDays = [{
     key: 'M',
     label: 'Monday'
@@ -183,7 +205,10 @@ document.addEventListener('DOMContentLoaded', function () {
     curriculumRows: [],
     curriculumIncludedIds: [],
     curriculumRequestToken: 0,
-    saveInProgress: false
+    saveInProgress: false,
+    sectionConfigSectionId: null,
+    subjectEditor: null,
+    subjectRowSeed: 0
   };
   function escapeHtml(value) {
     return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -377,6 +402,64 @@ document.addEventListener('DOMContentLoaded', function () {
       room: matched[3]
     };
   }
+  function parseTimeRangeToken(value) {
+    var token = normalizeText(value);
+    if (token === '') {
+      return {
+        from: '',
+        to: ''
+      };
+    }
+    var separatorIndex = token.indexOf('-');
+    if (separatorIndex === -1) {
+      return {
+        from: token,
+        to: ''
+      };
+    }
+    return {
+      from: normalizeText(token.slice(0, separatorIndex)),
+      to: normalizeText(token.slice(separatorIndex + 1))
+    };
+  }
+  function getDayLabel(dayKey) {
+    var label = dayKey;
+    scheduleDays.some(function (day) {
+      if (day.key === dayKey) {
+        label = day.label;
+        return true;
+      }
+      return false;
+    });
+    return label;
+  }
+  function buildSubjectScheduleLookup(subject) {
+    var lookup = {};
+    (subject.schedules || []).forEach(function (line) {
+      var parsed = parseScheduleLine(line);
+      if (!parsed.day) {
+        return;
+      }
+      var dayKey = normalizeText(parsed.day).toUpperCase();
+      var existing = lookup[dayKey] || {
+        from: '',
+        to: '',
+        room: ''
+      };
+      var range = parseTimeRangeToken(parsed.time);
+      if (existing.from === '' && range.from !== '') {
+        existing.from = range.from;
+      }
+      if (existing.to === '' && range.to !== '') {
+        existing.to = range.to;
+      }
+      if (existing.room === '' && normalizeText(parsed.room) !== '') {
+        existing.room = normalizeText(parsed.room);
+      }
+      lookup[dayKey] = existing;
+    });
+    return lookup;
+  }
   function getSectionLabel(section) {
     var program = normalizeText(section.program);
     var sectionCode = normalizeText(section.section);
@@ -485,17 +568,314 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!rows.length) {
       soBody.innerHTML = '<tr><td colspan="11" class="so-empty-row">No subjects are assigned to this section yet.</td></tr>';
     } else {
-      soBody.innerHTML = rows.map(function (item) {
+      soBody.innerHTML = rows.map(function (item, index) {
         var scheduleLines = (item.schedules || []).map(function (line) {
           return '<div class="so-schedule-line">' + escapeHtml(line) + '</div>';
         }).join('');
-        return '' + '<tr>' + '<td>' + escapeHtml(item.code || '-') + '</td>' + '<td>' + escapeHtml(item.description || '-') + '</td>' + '<td>' + escapeHtml(item.lec || 0) + '</td>' + '<td>' + escapeHtml(item.lab || 0) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits || 0) + '</td>' + '<td>' + escapeHtml(item.creditUnits || 0) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room || 'TBA') + '</td>' + '<td>' + escapeHtml(item.professor || 'TBA') + '</td>' + '<td>' + escapeHtml(item.slots || 0) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
+        return '' + '<tr class="so-subject-row" data-so-subject-index="' + index + '">' + '<td>' + escapeHtml(item.code || '-') + '</td>' + '<td>' + escapeHtml(item.description || '-') + '</td>' + '<td>' + escapeHtml(item.lec || 0) + '</td>' + '<td>' + escapeHtml(item.lab || 0) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits || 0) + '</td>' + '<td>' + escapeHtml(item.creditUnits || 0) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room || 'TBA') + '</td>' + '<td>' + escapeHtml(item.professor || 'TBA') + '</td>' + '<td>' + escapeHtml(item.slots || 0) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
       }).join('');
     }
     if (soPageText) {
       soPageText.textContent = 'Showing ' + rows.length + ' subject' + (rows.length === 1 ? '' : 's');
     }
     renderWeeklyGrid(section);
+  }
+  function getNextSubjectRowId() {
+    state.subjectRowSeed += 1;
+    return String(state.subjectRowSeed);
+  }
+  function buildScheduleRowHtml(entry) {
+    var dayValue = normalizeText(entry && entry.day || 'M').toUpperCase();
+    var dayOptions = scheduleDays.map(function (day) {
+      return '<option value="' + escapeHtml(day.key) + '"' + (day.key === dayValue ? ' selected' : '') + '>' + escapeHtml(day.label) + '</option>';
+    }).join('');
+    return '' + '<tr data-so-row-id="' + escapeHtml(getNextSubjectRowId()) + '">' + '<td><select class="app-filter-input so-subject-day">' + dayOptions + '</select></td>' + '<td class="so-subject-check-col"><input type="checkbox" class="so-subject-enabled" ' + (entry && entry.enabled !== false ? 'checked' : '') + '></td>' + '<td><input type="text" class="app-filter-input so-subject-time-from" value="' + escapeHtml(entry && entry.from || '') + '" placeholder="07:00AM"></td>' + '<td><input type="text" class="app-filter-input so-subject-time-to" value="' + escapeHtml(entry && entry.to || '') + '" placeholder="08:30AM"></td>' + '<td><input type="text" class="app-filter-input so-subject-room" value="' + escapeHtml(entry && entry.room || '') + '" placeholder="-select room-"></td>' + '<td class="so-subject-check-col"><input type="checkbox" class="so-subject-lab" ' + (entry && entry.lab ? 'checked' : '') + '></td>' + '<td class="so-subject-row-actions">' + '<button type="button" class="so-subject-row-btn so-subject-row-add" data-so-subject-row-action="add" aria-label="Add row">+</button>' + '<button type="button" class="so-subject-row-btn so-subject-row-remove" data-so-subject-row-action="remove" aria-label="Remove row">&times;</button>' + '</td>' + '</tr>';
+  }
+  function buildInitialSubjectRows(subject) {
+    var grouped = {
+      M: [],
+      T: [],
+      W: [],
+      TH: [],
+      F: [],
+      S: [],
+      SU: []
+    };
+    (subject.schedules || []).forEach(function (line) {
+      var parsed = parseScheduleLine(line);
+      if (!parsed.day || !grouped[parsed.day]) {
+        return;
+      }
+      var range = parseTimeRangeToken(parsed.time || '');
+      grouped[parsed.day].push({
+        day: parsed.day,
+        enabled: true,
+        from: range.from,
+        to: range.to,
+        room: normalizeText(parsed.room || ''),
+        lab: false
+      });
+    });
+    var rows = [];
+    scheduleDays.forEach(function (day) {
+      var dayRows = grouped[day.key] || [];
+      if (dayRows.length) {
+        rows.push(dayRows.shift());
+      } else {
+        rows.push({
+          day: day.key,
+          enabled: false,
+          from: '',
+          to: '',
+          room: '',
+          lab: false
+        });
+      }
+      dayRows.forEach(function (extraRow) {
+        rows.push(extraRow);
+      });
+    });
+    return rows;
+  }
+  function appendSubjectScheduleRow(entry) {
+    if (!soSubjectScheduleRows) {
+      return;
+    }
+    soSubjectScheduleRows.insertAdjacentHTML('beforeend', buildScheduleRowHtml(entry || {
+      day: 'M',
+      enabled: true,
+      from: '',
+      to: '',
+      room: '',
+      lab: false
+    }));
+  }
+  function insertSubjectScheduleRowAfter(targetRow, entry) {
+    if (!soSubjectScheduleRows) {
+      return;
+    }
+    var html = buildScheduleRowHtml(entry || {
+      day: 'M',
+      enabled: true,
+      from: '',
+      to: '',
+      room: '',
+      lab: false
+    });
+    if (!targetRow) {
+      soSubjectScheduleRows.insertAdjacentHTML('beforeend', html);
+      return;
+    }
+    targetRow.insertAdjacentHTML('afterend', html);
+  }
+  function setSubjectScheduleFeedback(message, isError) {
+    if (!soSubjectScheduleFeedback) {
+      return;
+    }
+    var text = normalizeText(message);
+    soSubjectScheduleFeedback.textContent = text;
+    soSubjectScheduleFeedback.classList.toggle('is-error', !!isError);
+    soSubjectScheduleFeedback.style.display = text !== '' ? 'block' : 'none';
+  }
+  function renderSectionConfigModal(section) {
+    if (!section || !soSectionConfigBody) {
+      return;
+    }
+    if (soSectionConfigTitle) {
+      soSectionConfigTitle.textContent = 'Section Offering Configuration - ' + normalizeText(section.section || 'N/A');
+    }
+    if (soSectionConfigMeta) {
+      var metaRows = [{
+        label: 'Course',
+        value: normalizeText(section.program) || '-'
+      }, {
+        label: 'Section',
+        value: normalizeText(section.section) || '-'
+      }, {
+        label: 'School Year',
+        value: normalizeText(section.schoolYear) || '-'
+      }, {
+        label: 'Semester',
+        value: normalizeText(section.semester) || '-'
+      }, {
+        label: 'Year Level',
+        value: normalizeText(section.yearLevel) || '-'
+      }, {
+        label: 'Adviser',
+        value: normalizeText(section.adviser) || 'TBA'
+      }, {
+        label: 'Slots',
+        value: String(section.slots || 0)
+      }, {
+        label: 'Subjects',
+        value: String((section.subjects || []).length)
+      }];
+      soSectionConfigMeta.innerHTML = metaRows.map(function (metaItem) {
+        return '' + '<div class="so-config-meta-item">' + '<div class="so-config-meta-label">' + escapeHtml(metaItem.label) + '</div>' + '<div class="so-config-meta-value">' + escapeHtml(metaItem.value) + '</div>' + '</div>';
+      }).join('');
+    }
+    var rows = section.subjects || [];
+    if (!rows.length) {
+      soSectionConfigBody.innerHTML = '<tr><td colspan="7" class="so-empty-row">No subjects are assigned to this section yet.</td></tr>';
+      return;
+    }
+    soSectionConfigBody.innerHTML = rows.map(function (item, index) {
+      var scheduleLines = (item.schedules || []).map(function (line) {
+        return '<div class="so-config-schedule-line">' + escapeHtml(line) + '</div>';
+      }).join('');
+      return '' + '<tr>' + '<td>' + escapeHtml(item.code || '-') + '</td>' + '<td>' + escapeHtml(item.description || '-') + '</td>' + '<td>' + escapeHtml(item.room || 'TBA') + '</td>' + '<td>' + escapeHtml(item.professor || 'TBA') + '</td>' + '<td>' + escapeHtml(item.slots || 0) + '</td>' + '<td class="so-config-schedule">' + (scheduleLines || '<div class="so-config-schedule-line">-</div>') + '</td>' + '<td class="so-config-actions">' + '<button type="button" class="so-config-action" data-so-config-action="configure" data-so-section-id="' + escapeHtml(section.id) + '" data-so-subject-index="' + index + '">Configure</button>' + '<button type="button" class="so-config-action so-config-action-edit" data-so-config-action="edit" data-so-section-id="' + escapeHtml(section.id) + '" data-so-subject-index="' + index + '">Edit</button>' + '</td>' + '</tr>';
+    }).join('');
+  }
+  function openSectionConfigModal(section) {
+    if (!section || !soSectionConfigModal) {
+      return;
+    }
+    state.sectionConfigSectionId = section.id;
+    renderSectionConfigModal(section);
+    soSectionConfigModal.classList.add('is-open');
+    soSectionConfigModal.setAttribute('aria-hidden', 'false');
+  }
+  function closeSectionConfigModal() {
+    if (!soSectionConfigModal) {
+      return;
+    }
+    soSectionConfigModal.classList.remove('is-open');
+    soSectionConfigModal.setAttribute('aria-hidden', 'true');
+    state.sectionConfigSectionId = null;
+  }
+  function renderSubjectScheduleRows(subject) {
+    if (!soSubjectScheduleRows) {
+      return;
+    }
+    state.subjectRowSeed = 0;
+    var rows = buildInitialSubjectRows(subject || {});
+    soSubjectScheduleRows.innerHTML = rows.map(function (entry) {
+      return buildScheduleRowHtml(entry);
+    }).join('');
+  }
+  function openSubjectScheduleModal(sectionId, subjectIndex) {
+    if (!soSubjectScheduleModal) {
+      return;
+    }
+    var section = getSectionById(sectionId);
+    var parsedIndex = toInt(subjectIndex, -1);
+    if (!section || !Array.isArray(section.subjects) || parsedIndex < 0 || parsedIndex >= section.subjects.length) {
+      return;
+    }
+    var subject = section.subjects[parsedIndex];
+    state.subjectEditor = {
+      sectionId: section.id,
+      subjectIndex: parsedIndex
+    };
+    if (soSubjectScheduleTitle) {
+      soSubjectScheduleTitle.textContent = (subject.code || '-') + ' - ' + (subject.description || '-');
+    }
+    if (soSubjectScheduleTag) {
+      soSubjectScheduleTag.textContent = (subject.code || '-') + ' - ' + (subject.description || '-') + ' (' + (section.section || 'N/A') + ')';
+    }
+    if (soSubjectSectionCode) {
+      soSubjectSectionCode.value = normalizeText(section.section || '');
+    }
+    if (soSubjectDescription) {
+      soSubjectDescription.value = normalizeText(subject.description || '');
+    }
+    if (soSubjectProfessor) {
+      soSubjectProfessor.value = normalizeText(subject.professor || '');
+    }
+    if (soSubjectSlots) {
+      soSubjectSlots.value = String(subject.slots || 0);
+    }
+    var flags = subject.flags || {};
+    if (soSubjectFlagOpen) {
+      soSubjectFlagOpen.checked = !!flags.open;
+    }
+    if (soSubjectFlagBlock) {
+      soSubjectFlagBlock.checked = !!flags.block;
+    }
+    if (soSubjectFlagTutorial) {
+      soSubjectFlagTutorial.checked = !!flags.tutorial;
+    }
+    renderSubjectScheduleRows(subject);
+    setSubjectScheduleFeedback('', false);
+    soSubjectScheduleModal.classList.add('is-open');
+    soSubjectScheduleModal.setAttribute('aria-hidden', 'false');
+  }
+  function closeSubjectScheduleModal() {
+    if (!soSubjectScheduleModal) {
+      return;
+    }
+    soSubjectScheduleModal.classList.remove('is-open');
+    soSubjectScheduleModal.setAttribute('aria-hidden', 'true');
+    state.subjectEditor = null;
+    setSubjectScheduleFeedback('', false);
+  }
+  function readSubjectScheduleRows() {
+    var response = {
+      lines: [],
+      firstRoom: ''
+    };
+    if (!soSubjectScheduleRows) {
+      return response;
+    }
+    var rows = soSubjectScheduleRows.querySelectorAll('tr[data-so-row-id]');
+    Array.prototype.forEach.call(rows, function (row) {
+      var daySelect = row.querySelector('.so-subject-day');
+      var enabledInput = row.querySelector('.so-subject-enabled');
+      var day = normalizeText(daySelect ? daySelect.value : '').toUpperCase() || 'M';
+      var enabled = !!(enabledInput && enabledInput.checked);
+      var fromInput = row.querySelector('.so-subject-time-from');
+      var toInput = row.querySelector('.so-subject-time-to');
+      var roomInput = row.querySelector('.so-subject-room');
+      var fromValue = normalizeText(fromInput ? fromInput.value : '');
+      var toValue = normalizeText(toInput ? toInput.value : '');
+      var roomValue = normalizeText(roomInput ? roomInput.value : '');
+      if (!enabled) {
+        return;
+      }
+      if (fromValue === '' && toValue === '' && roomValue === '') {
+        return;
+      }
+      var timePart = fromValue !== '' || toValue !== '' ? (fromValue || 'TBA') + '-' + (toValue || 'TBA') : 'TBA';
+      var roomPart = roomValue !== '' ? roomValue : 'TBA';
+      response.lines.push(day + ' ' + timePart + ' ' + roomPart);
+      if (response.firstRoom === '' && roomValue !== '') {
+        response.firstRoom = roomValue;
+      }
+    });
+    return response;
+  }
+  function saveSubjectSchedule() {
+    if (!state.subjectEditor) {
+      return;
+    }
+    var section = getSectionById(state.subjectEditor.sectionId);
+    if (!section || !Array.isArray(section.subjects)) {
+      return;
+    }
+    var targetIndex = toInt(state.subjectEditor.subjectIndex, -1);
+    if (targetIndex < 0 || targetIndex >= section.subjects.length) {
+      return;
+    }
+    var subject = section.subjects[targetIndex];
+    var collected = readSubjectScheduleRows();
+    subject.description = normalizeText(soSubjectDescription ? soSubjectDescription.value : '') || subject.description || '';
+    subject.professor = normalizeText(soSubjectProfessor ? soSubjectProfessor.value : '') || subject.professor || '';
+    subject.slots = toInt(soSubjectSlots ? soSubjectSlots.value : '', toInt(subject.slots, 0));
+    subject.flags = {
+      open: !!(soSubjectFlagOpen && soSubjectFlagOpen.checked),
+      block: !!(soSubjectFlagBlock && soSubjectFlagBlock.checked),
+      tutorial: !!(soSubjectFlagTutorial && soSubjectFlagTutorial.checked)
+    };
+    subject.schedules = collected.lines;
+    if (collected.firstRoom !== '') {
+      subject.room = collected.firstRoom;
+    }
+    renderSectionConfigModal(section);
+    if (String(state.selectedSectionId) === String(section.id)) {
+      renderSectionDetails(section);
+    }
+    closeSubjectScheduleModal();
+    showMessage('Subject schedule updated successfully.', 'success');
   }
   function ensureSelectedSectionVisible() {
     if (!state.selectedSectionId) {
@@ -670,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', function () {
       updateDirectorySummary();
     });
   }
-  function selectSection(sectionId) {
+  function selectSection(sectionId, openConfigModal) {
     state.selectedSectionId = sectionId;
     renderSectionDirectory();
     var selected = getSectionById(sectionId);
@@ -679,6 +1059,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     renderSectionDetails(selected);
+    if (openConfigModal) {
+      openSectionConfigModal(selected);
+    }
   }
   function queueSearchLoad(rawValue) {
     var nextValue = normalizeText(rawValue);
@@ -1058,6 +1441,15 @@ document.addEventListener('DOMContentLoaded', function () {
       selectSection(row.getAttribute('data-section-id'));
     });
   }
+  if (soBody) {
+    soBody.addEventListener('click', function (event) {
+      var row = event.target.closest('tr[data-so-subject-index]');
+      if (!row || !state.selectedSectionId) {
+        return;
+      }
+      openSubjectScheduleModal(state.selectedSectionId, row.getAttribute('data-so-subject-index'));
+    });
+  }
   [soSY, soTerm, soYearLevel, soSection, soProgram].forEach(function (input) {
     if (!input) {
       return;
@@ -1131,6 +1523,87 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+  if (soSectionConfigClose) {
+    soSectionConfigClose.addEventListener('click', closeSectionConfigModal);
+  }
+  if (soSectionConfigDone) {
+    soSectionConfigDone.addEventListener('click', closeSectionConfigModal);
+  }
+  if (soSectionConfigModal) {
+    soSectionConfigModal.addEventListener('click', function (event) {
+      if (event.target === soSectionConfigModal) {
+        closeSectionConfigModal();
+      }
+    });
+  }
+  if (soSectionConfigBody) {
+    soSectionConfigBody.addEventListener('click', function (event) {
+      var actionButton = event.target.closest('button[data-so-config-action]');
+      if (!actionButton) {
+        return;
+      }
+      var sectionId = actionButton.getAttribute('data-so-section-id');
+      var subjectIndex = actionButton.getAttribute('data-so-subject-index');
+      openSubjectScheduleModal(sectionId, subjectIndex);
+    });
+  }
+  if (soSubjectScheduleClose) {
+    soSubjectScheduleClose.addEventListener('click', closeSubjectScheduleModal);
+  }
+  if (soSubjectScheduleCancel) {
+    soSubjectScheduleCancel.addEventListener('click', closeSubjectScheduleModal);
+  }
+  if (soSubjectScheduleSave) {
+    soSubjectScheduleSave.addEventListener('click', saveSubjectSchedule);
+  }
+  if (soSubjectAddScheduleRow) {
+    soSubjectAddScheduleRow.addEventListener('click', function () {
+      appendSubjectScheduleRow({
+        day: 'M',
+        enabled: true,
+        from: '',
+        to: '',
+        room: '',
+        lab: false
+      });
+    });
+  }
+  if (soSubjectScheduleRows) {
+    soSubjectScheduleRows.addEventListener('click', function (event) {
+      var actionButton = event.target.closest('[data-so-subject-row-action]');
+      if (!actionButton) {
+        return;
+      }
+      var action = actionButton.getAttribute('data-so-subject-row-action');
+      var row = actionButton.closest('tr[data-so-row-id]');
+      if (action === 'add') {
+        var rowDay = row ? normalizeText((row.querySelector('.so-subject-day') || {}).value).toUpperCase() : 'M';
+        insertSubjectScheduleRowAfter(row, {
+          day: rowDay || 'M',
+          enabled: true,
+          from: '',
+          to: '',
+          room: '',
+          lab: false
+        });
+        return;
+      }
+      if (action === 'remove' && row) {
+        var totalRows = soSubjectScheduleRows.querySelectorAll('tr[data-so-row-id]').length;
+        if (totalRows <= 1) {
+          return;
+        }
+        row.parentNode.removeChild(row);
+      }
+    });
+  }
+  if (soSubjectScheduleModal) {
+    soSubjectScheduleModal.addEventListener('click', function (event) {
+      if (event.target === soSubjectScheduleModal) {
+        closeSubjectScheduleModal();
+      }
+    });
+  }
   [soModalProgram, soModalTerm, soModalYearLevel].forEach(function (input) {
     if (!input) {
       return;
@@ -1152,7 +1625,18 @@ document.addEventListener('DOMContentLoaded', function () {
     soCurriculumRemoveAll.addEventListener('click', moveCurriculumAllToAvailable);
   }
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && soAddSectionModal && soAddSectionModal.classList.contains('is-open')) {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    if (soSubjectScheduleModal && soSubjectScheduleModal.classList.contains('is-open')) {
+      closeSubjectScheduleModal();
+      return;
+    }
+    if (soSectionConfigModal && soSectionConfigModal.classList.contains('is-open')) {
+      closeSectionConfigModal();
+      return;
+    }
+    if (soAddSectionModal && soAddSectionModal.classList.contains('is-open')) {
       closeAddSectionModal();
     }
   });
@@ -1170,7 +1654,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\section-offering.js */"./resources/js/section-offering.js");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\section-offering.js */"./resources/js/section-offering.js");
 
 
 /***/ })

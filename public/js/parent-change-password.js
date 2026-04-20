@@ -155,7 +155,7 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\parent-change-password.js */"./resources/js/parent-change-password.js");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\parent-change-password.js */"./resources/js/parent-change-password.js");
 
 
 /***/ })
