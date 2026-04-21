@@ -15,53 +15,51 @@
             </div>
         </div>
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
-            <button type="button" class="apst-new-btn" style="background-color: #006837;" onclick="docSaveChanges()">Save Changes</button>
             <button type="button" class="apst-new-btn" style="min-width: 150px;" onclick="docOpenAddModal()">+ New Document</button>
         </div>
     </div>
 
     <div class="app-table-wrap table-responsive">
-        <table class="app-table" id="docsTable">
+        <table class="app-table" id="docsTable" style="table-layout: auto; width: 100%;">
             <thead>
                 <tr>
-                    <th class="apc-col-check apc-col-check--tor">
-                        <input type="checkbox" id="docsSelectAll" aria-label="Select all documents">
-                    </th>
-                    <th>Document Type</th>
-                    <th style="width: 150px; text-align: center;">Attachment</th>
-                    <th>Remarks</th>
-                    <th>Date Submitted</th>
-                    <th>Status</th>
-                    <th style="width: 80px; text-align: center;">Action</th>
+                    <th style="width: 25%;">Document Type</th>
+                    <th style="width: 25%;">Remarks</th>
+                    <th style="width: 120px;">Date Submitted</th>
+                    <th style="width: 100px; text-align: center;">Status</th>
+                    <th style="width: 110px; text-align: center;">Attachment</th>
+                    <th style="width: 60px; text-align: center;">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @php
                     $docs = [
-                        ['type' => '2x2 Picture', 'status' => 'Pending'],
-                        ['type' => 'Birth Certificate (PSA Original)', 'status' => 'Pending'],
-                        ['type' => 'Certificate of Good Moral Character', 'status' => 'Pending'],
-                        ['type' => 'F-137 A (JHS Permanent Record)', 'status' => 'Pending'],
-                        ['type' => 'F138 (SHS Report Card)', 'status' => 'Pending'],
-                        ['type' => 'Honorable Dismissal', 'status' => 'Pending'],
-                        ['type' => 'Request for Permanent Record (FORM 137 A) / Transcript of Records', 'status' => 'Pending'],
-                        ['type' => 'SHS Diploma (Photocopy Only)', 'status' => 'Pending'],
+                        ['type' => '2x2 Picture', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
+                        ['type' => 'Birth Certificate (PSA Original)', 'status' => 'Pending', 'remarks' => 'Original copy needed', 'date' => '', 'file' => 'birth_cert.pdf'],
+                        ['type' => 'Certificate of Good Moral Character', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
+                        ['type' => 'F-137 A (JHS Permanent Record)', 'status' => 'Pending', 'remarks' => 'To follow', 'date' => '', 'file' => null],
+                        ['type' => 'F138 (SHS Report Card)', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
+                        ['type' => 'Honorable Dismissal', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
+                        ['type' => 'Request for Permanent Record (FORM 137 A) / Transcript of Records', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
+                        ['type' => 'SHS Diploma (Photocopy Only)', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
                     ];
                 @endphp
                 @foreach($docs as $index => $doc)
                 <tr data-doc-index="{{ $index }}">
-                    <td class="apc-check-cell"><input type="checkbox" class="docs-row-checkbox"></td>
                     <td class="js-doc-type">{{ $doc['type'] }}</td>
-                    <td style="text-align: center;">
-                        <label class="apc-upload-btn" title="Upload scanned copy">
-                            <input type="file" class="js-doc-file-input d-none" accept="image/*,.pdf">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            <span>Upload</span>
-                        </label>
+                    <td class="js-doc-remarks">{{ $doc['remarks'] ?: '--' }}</td>
+                    <td class="js-doc-date">{{ $doc['date'] ?: '--' }}</td>
+                    <td style="text-align: center;"><span class="apc-pill apc-pill--pending js-doc-status">{{ $doc['status'] }}</span></td>
+                    <td style="text-align: center;" class="js-doc-file-status">
+                        @if($doc['file'])
+                            <button type="button" class="apst-view-link" onclick="docViewAttachment({{ $index }})" style="background: none; border: none; padding: 0; color: #006837; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; margin: 0 auto;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                                Attached
+                            </button>
+                        @else
+                            <span style="color: #999; font-size: 0.85rem;">--</span>
+                        @endif
                     </td>
-                    <td><input type="text" class="apc-input" placeholder="Type..." /></td>
-                    <td><input type="date" class="apc-input apc-input--date" /></td>
-                    <td><span class="apc-pill apc-pill--pending">{{ $doc['status'] }}</span></td>
                     <td style="text-align: center;">
                         <div class="apst-action-btn" onclick="docToggleMenu({{ $index }}, event)" aria-label="Open row actions" title="Actions">
                             <span></span><span></span><span></span>
@@ -85,6 +83,23 @@
 </div>
 
 {{-- Modals --}}
+<div class="req-modal-overlay is-hidden" id="docViewModal" style="display:none;" onclick="if(event.target===this) docCloseModal('docViewModal')">
+    <div class="req-modal-box" style="max-width:800px; width:90%; height:80vh; display:flex; flex-direction:column;">
+        <h3 class="req-modal-title" id="docViewModalTitle">VIEW ATTACHMENT</h3>
+        <div class="doc-preview-container" style="flex:1; background:#f5f5f5; border:1px solid #ddd; border-radius:8px; margin:15px 0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+            <div id="docPreviewPlaceholder" style="text-align:center; color:#666;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                <p id="docPreviewFilename" style="font-weight:500;">document_filename.pdf</p>
+                <p style="font-size:0.9rem;">(Preview not available in demo mode)</p>
+            </div>
+        </div>
+        <div class="req-modal-actions">
+            <button type="button" class="req-btn-cancel" onclick="docCloseModal('docViewModal')">Close</button>
+            <button type="button" class="req-btn-save" style="background-color:#006837;">Download</button>
+        </div>
+    </div>
+</div>
+
 <div class="req-modal-overlay is-hidden" id="docItemModal" style="display:none;" onclick="if(event.target===this) docCloseModal('docItemModal')">
     <div class="req-modal-box" style="max-width:500px;">
         <h3 class="req-modal-title" id="docItemModalTitle">ADD NEW DOCUMENT</h3>
@@ -94,11 +109,26 @@
                 <input type="text" class="req-modal-input" id="docInputType" placeholder="e.g. Good Moral Certificate">
             </div>
             <div class="req-modal-field-group">
+                <label class="req-modal-label">REMARKS</label>
+                <input type="text" class="req-modal-input" id="docInputRemarks" placeholder="Enter remarks...">
+            </div>
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">DATE SUBMITTED</label>
+                <input type="date" class="req-modal-input" id="docInputDate">
+            </div>
+            <div class="req-modal-field-group">
                 <label class="req-modal-label">STATUS</label>
                 <select class="req-modal-input" id="docInputStatus">
                     <option value="Pending">Pending</option>
                     <option value="Completed">Completed</option>
                 </select>
+            </div>
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">ATTACHMENT</label>
+                <label class="apc-upload-btn" style="width: 100%; border-style: dashed; padding: 15px;">
+                    <input type="file" id="docInputFile" class="d-none" accept="image/*,.pdf">
+                    <span id="docInputFileLabel">Click to upload or drag file</span>
+                </label>
             </div>
         </div>
         <div class="req-modal-actions" style="margin-top:20px;">
@@ -166,7 +196,11 @@
     function docOpenAddModal() {
         document.getElementById('docItemModalTitle').textContent = 'ADD NEW DOCUMENT';
         document.getElementById('docInputType').value = '';
+        document.getElementById('docInputRemarks').value = '';
+        document.getElementById('docInputDate').value = '';
         document.getElementById('docInputStatus').value = 'Pending';
+        document.getElementById('docInputFile').value = '';
+        document.getElementById('docInputFileLabel').textContent = 'Click to upload or drag file';
         document.getElementById('docItemModal').style.display = 'flex';
     }
 
@@ -174,11 +208,28 @@
         docCloseOpenMenus();
         const row = document.querySelector(`tr[data-doc-index="${index}"]`);
         const type = row.querySelector('.js-doc-type').textContent.trim();
-        const status = row.querySelector('.apc-pill').textContent.trim();
+        const remarks = row.querySelector('.js-doc-remarks').textContent.trim();
+        const dateRaw = row.querySelector('.js-doc-date').textContent.trim();
+        const status = row.querySelector('.js-doc-status').textContent.trim();
+        const fileStatus = row.querySelector('.js-doc-file-status').textContent.trim();
         
+        const dateVal = (dateRaw === '--' || !dateRaw) ? '' : dateRaw;
+        const remarksVal = (remarks === '--' || !remarks) ? '' : remarks;
+
         document.getElementById('docItemModalTitle').textContent = 'EDIT DOCUMENT';
         document.getElementById('docInputType').value = type;
+        document.getElementById('docInputRemarks').value = remarksVal;
+        document.getElementById('docInputDate').value = dateVal;
         document.getElementById('docInputStatus').value = status;
+        document.getElementById('docInputFile').value = '';
+        
+        const label = document.getElementById('docInputFileLabel');
+        if (fileStatus === 'Attached') {
+            label.textContent = 'Change attachment (existing file found)';
+        } else {
+            label.textContent = 'Click to upload or drag file';
+        }
+
         document.getElementById('docItemModal').style.display = 'flex';
     }
 
@@ -188,6 +239,14 @@
         const type = row.querySelector('.js-doc-type').textContent.trim();
         document.getElementById('docDeleteDetail').textContent = type;
         document.getElementById('docDeleteModal').style.display = 'flex';
+    }
+
+    function docViewAttachment(index) {
+        const row = document.querySelector(`tr[data-doc-index="${index}"]`);
+        const type = row.querySelector('.js-doc-type').textContent.trim();
+        document.getElementById('docViewModalTitle').textContent = `VIEW ATTACHMENT - ${type}`;
+        document.getElementById('docPreviewFilename').textContent = `${type.toLowerCase().replace(/ /g, '_')}_scanned.pdf`;
+        document.getElementById('docViewModal').style.display = 'flex';
     }
 
     function docCloseModal(id) {
@@ -204,15 +263,21 @@
         docCloseModal('docDeleteModal');
     }
 
-    function docSaveChanges() {
-        document.getElementById('docSuccessModal').style.display = 'flex';
-    }
-
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.apst-action-btn') && !e.target.closest('.apst-dropdown')) {
             docCloseOpenMenus();
         }
     });
+
+    const modalFileInp = document.getElementById('docInputFile');
+    if (modalFileInp) {
+        modalFileInp.addEventListener('change', function() {
+            const label = document.getElementById('docInputFileLabel');
+            if (this.files && this.files[0]) {
+                label.textContent = `Selected: ${this.files[0].name}`;
+            }
+        });
+    }
 
     window.addEventListener('scroll', docCloseOpenMenus, true);
 </script>
