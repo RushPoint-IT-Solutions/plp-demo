@@ -70,14 +70,13 @@
 
     {{-- Log Out --}}
     <div class="sidebar-logout">
-        <a href="{{ route('logout') }}" class="sidebar-link logout-link"
-           onclick="event.preventDefault(); document.getElementById('faculty-logout-form').submit();">
+        <a href="{{ route('logout') }}" class="sidebar-link logout-link js-registrar-logout">
             <span>Log Out</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
             </svg>
         </a>
-        <form id="faculty-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        <form id="registrar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
             @csrf
         </form>
     </div>

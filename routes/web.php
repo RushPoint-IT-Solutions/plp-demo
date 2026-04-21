@@ -478,6 +478,7 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
     Route::get('/notifications/feed', 'Applicant\ApplicantController@notificationsFeed')->name('notifications.feed');
     Route::post('/notifications/mark-read', 'Applicant\ApplicantController@markNotificationsRead')->name('notifications.mark-read');
     Route::post('/notifications/{notificationDelivery}/dismiss', 'Applicant\ApplicantController@dismissNotification')->name('notifications.dismiss');
+    Route::get('/messaging', 'Applicant\ApplicantController@messaging')->name('messaging');
 });
 
 /*

@@ -97,6 +97,18 @@ class ApplicantController extends Controller
         return $this->markPortalNotificationsRead($request);
     }
 
+    public function messaging()
+    {
+        $applicant = $this->getApplicant();
+
+        if ($applicant->application_status !== 'submitted') {
+            return redirect()->route('applicant.application-form')
+                ->with('error', 'Messaging is only available after submitting your application.');
+        }
+
+        return view('applicant.messaging', compact('applicant'));
+    }
+
     public function dismissNotification(Request $request, $notificationDelivery)
     {
         return $this->dismissPortalNotification($request, $notificationDelivery);

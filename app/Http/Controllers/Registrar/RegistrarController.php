@@ -265,7 +265,7 @@ class RegistrarController extends Controller
     {
         $user = $user ?: auth()->user();
 
-        if (!$user || $user->module !== 'registrar') {
+        if (!$user || strtolower(trim((string) $user->module)) !== 'registrar') {
             return collect();
         }
 
@@ -286,7 +286,7 @@ class RegistrarController extends Controller
     {
         $user = $user ?: auth()->user();
 
-        if (!$user || $user->module !== 'registrar') {
+        if (!$user || strtolower(trim((string) $user->module)) !== 'registrar') {
             return 0;
         }
 
@@ -308,7 +308,7 @@ class RegistrarController extends Controller
 
     private function syncAnnouncementNotificationsForRegistrar($user)
     {
-        if (!$user || $user->module !== 'registrar') {
+        if (!$user || strtolower(trim((string) $user->module)) !== 'registrar') {
             return;
         }
 

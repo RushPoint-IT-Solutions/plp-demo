@@ -479,6 +479,25 @@ function closePfDeleteProgramModal() {
     if (modal) modal.style.display = 'none';
 }
 
+// ===== GLOBAL LOGOUT HANDLER =====
+document.addEventListener('click', function(event) {
+    const logoutBtn = event.target.closest('.js-registrar-logout');
+    if (logoutBtn) {
+        event.preventDefault();
+        const formId = 'registrar-logout-form';
+        const form = document.getElementById(formId);
+        if (form) {
+            form.submit();
+        } else {
+            // Fallback for older pages
+            const fallbackForm = logoutBtn.nextElementSibling;
+            if (fallbackForm && fallbackForm.tagName === 'FORM') {
+                fallbackForm.submit();
+            }
+        }
+    }
+});
+
 document.addEventListener('click', function (event) {
     const overlays = document.querySelectorAll('.pf-modal-overlay');
     overlays.forEach(function (overlay) {
@@ -486,4 +505,4 @@ document.addEventListener('click', function (event) {
             overlay.style.display = 'none';
         }
     });
-});
+});

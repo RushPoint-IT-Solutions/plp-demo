@@ -14910,14 +14910,16 @@ body.slot-monitoring-report-page {
   width: 100%;
   text-align: left;
   border-radius: 8px;
-  transition: background 0.15s;
+  transition: all 0.2s ease;
   letter-spacing: 0.03em;
   text-decoration: none;
+  margin-bottom: 18px;
 }
 
 .appl-sidebar-back:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background-color: #086b32;
   color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -29742,14 +29744,16 @@ select.req-modal-input {
   width: 100%;
   text-align: left;
   border-radius: 8px;
-  transition: background 0.15s;
+  transition: all 0.2s ease;
   letter-spacing: 0.03em;
   text-decoration: none;
+  margin-bottom: 18px;
 }
 
 .appl-sidebar-back:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background-color: #086b32;
   color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -31968,7 +31972,14 @@ body.page-profile-edit .student-content {
   align-items: center;
   text-decoration: none;
   font-size: 1rem;
+  font-weight: 600;
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.student-portal-body .logout-link:hover {
+  background-color: #0a813c;
+  color: #ffffff;
 }
 
 .student-portal-body .logout-link svg {
@@ -36298,24 +36309,26 @@ body.login-body .modal-backdrop.show {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 11px 12px;
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 600;
-  margin: 0 0 18px;
+  cursor: pointer;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   width: 100%;
   text-align: left;
-  letter-spacing: 0.03em;
-  color: #fff;
-  text-decoration: none;
   border-radius: 8px;
-  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  margin-bottom: 18px;
 }
 
 .appl-sidebar-back:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background-color: #086b32;
   color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -43132,24 +43145,26 @@ body.faculty-body.page-profile-view .pv-row--edu .pv-value {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 11px 12px;
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 600;
-  margin: 0 0 18px;
+  cursor: pointer;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   width: 100%;
   text-align: left;
-  letter-spacing: 0.03em;
-  color: #fff;
-  text-decoration: none;
   border-radius: 8px;
-  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  margin-bottom: 18px;
 }
 
 .appl-sidebar-back:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background-color: #086b32;
   color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -43195,6 +43210,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .cf-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
 }
 
 .cf-grid-two {
@@ -48581,7 +48597,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 [data-applicant-select].is-open .applicant-select-trigger {
   outline: none;
   border-color: #006837;
-  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.14);
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.08);
 }
 
 .applicant-select-trigger:disabled {
@@ -48619,7 +48635,10 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 }
 
 .applicant-select-menu {
-  display: none;
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-8px);
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
@@ -48627,18 +48646,21 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
   margin: 0;
   padding: 6px;
   list-style: none;
-  border: 1px solid rgb(0, 53, 28.0288461538);
+  border: 1px solid #e0e6e3;
   border-radius: 10px;
   background: #ffffff;
-  box-shadow: 0 12px 24px rgba(0, 2, 1.0576923077, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   max-height: 220px;
   overflow-y: auto;
   z-index: 35;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
 }
 
 .applicant-select-wrap.is-open .applicant-select-menu,
 [data-applicant-select].is-open .applicant-select-menu {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .applicant-select-option-btn {
@@ -48661,7 +48683,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 
 .applicant-select-option-btn:hover,
 .applicant-select-option-btn.is-active {
-  background: rgb(78.5, 255, 171.8413461538);
+  background: #f0f7f4;
   color: #006837;
 }
 
