@@ -277,17 +277,16 @@
 </div>
 
 {{-- Delete Student Modal --}}
-<div class="req-modal-overlay" id="sgfDeleteModal" style="display:none;" onclick="if(event.target===this) sgfCloseDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE STUDENT GRADE RECORD</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this record?</p>
-        <input type="hidden" id="sgfDeleteId" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="sgfCloseDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="sgfConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'sgfDeleteModal',
+    'title' => 'DELETE RECORD',
+    'message' => 'Are you sure you want to delete this specific student grade record? All associated grades will be removed.',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'sgfCloseDeleteModal()',
+    'confirmAction' => 'sgfConfirmDelete()',
+    'detailId' => 'sgfDeleteDetail'
+])
+<input type="hidden" id="sgfDeleteId" value="">
 
 {{-- Add Subject Modal --}}
 <div class="req-modal-overlay" id="sgfSubjectModal" style="display:none;" onclick="if(event.target===this) sgfCloseSubjectModal()">
@@ -373,17 +372,16 @@
 </div>
 
 {{-- Delete Subject Modal --}}
-<div class="req-modal-overlay" id="sgfSubjectDeleteModal" style="display:none;" onclick="if(event.target===this) sgfCloseSubjectDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE SUBJECT RECORD</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this subject?</p>
-        <input type="hidden" id="sgfSubjectDeleteId" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="sgfCloseSubjectDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="sgfConfirmSubjectDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'sgfSubjectDeleteModal',
+    'title' => 'DELETE SUBJECT',
+    'message' => 'Are you sure you want to delete this subject?',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'sgfCloseSubjectDeleteModal()',
+    'confirmAction' => 'sgfConfirmSubjectDelete()',
+    'detailId' => 'sgfSubjectDeleteDetail'
+])
+<input type="hidden" id="sgfSubjectDeleteId" value="">
 @endsection
 
 @push('scripts')

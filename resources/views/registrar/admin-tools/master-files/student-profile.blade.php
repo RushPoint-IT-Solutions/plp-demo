@@ -455,17 +455,16 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="spDeleteModal" style="display:none;" onclick="if(event.target===this) spCloseDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE STUDENT PROFILE</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this record?</p>
-        <input type="hidden" id="spDeleteId" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="spCloseDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="spConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'spDeleteModal',
+    'title' => 'DELETE PROFILE',
+    'message' => 'Are you sure you want to delete this student profile? Physical records will remain, but the profile link will be removed.',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'spCloseDeleteModal()',
+    'confirmAction' => 'spConfirmDelete()',
+    'detailId' => 'spDeleteDetail'
+])
+<input type="hidden" id="spDeleteId" value="">
 @endsection
 
 @if(!$isConfigMode && !$isApplicationMode)

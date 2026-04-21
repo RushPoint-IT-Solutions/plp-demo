@@ -565,5 +565,25 @@
         });
 
         syncHeader();
+
+        // File upload feedback
+        document.querySelectorAll('.js-doc-file-input').forEach(function(input) {
+            input.addEventListener('change', function() {
+                var label = this.closest('.apc-upload-btn');
+                var span = label.querySelector('span');
+                if (this.files && this.files.length > 0) {
+                    var fileName = this.files[0].name;
+                    span.textContent = fileName.length > 12 ? fileName.substring(0, 10) + '...' : fileName;
+                    label.style.backgroundColor = '#006837';
+                    label.style.color = '#fff';
+                    label.title = fileName;
+                } else {
+                    span.textContent = 'Upload';
+                    label.style.backgroundColor = '';
+                    label.style.color = '';
+                    label.title = 'Upload scanned copy';
+                }
+            });
+        });
     }
 })();

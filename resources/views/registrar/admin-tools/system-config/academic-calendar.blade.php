@@ -95,17 +95,16 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="acDeleteModal" style="display:none;" onclick="if(event.target===this) acCloseDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE EVENT</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this event?</p>
-        <input type="hidden" id="acDeleteIndex" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="acCloseDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="acConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'acDeleteModal',
+    'title' => 'DELETE EVENT',
+    'message' => 'Are you sure you want to delete this event from the academic calendar?',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'acCloseDeleteModal()',
+    'confirmAction' => 'acConfirmDelete()',
+    'detailId' => 'acDeleteDetail'
+])
+<input type="hidden" id="acDeleteIndex" value="">
 
 <div class="req-modal-overlay ac-error-modal" id="acErrorModal" style="display:none;" aria-hidden="true" onclick="if(event.target===this) acCloseErrorModal()">
     <div class="req-modal-box ac-error-modal-box" role="dialog" aria-modal="true" aria-labelledby="acErrorModalTitle" aria-describedby="acErrorMessage">

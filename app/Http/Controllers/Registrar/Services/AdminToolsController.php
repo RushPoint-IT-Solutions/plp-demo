@@ -146,6 +146,8 @@ class AdminToolsController extends Controller
                 ->all();
         }
 
+        $courses = Course::query()->orderBy('name')->get(['id', 'code', 'name']);
+
         if (Schema::hasTable('system_cutoff_types')) {
             $cutoffTypeRows = SystemCutoffType::query()
                 ->orderBy('name')
@@ -244,6 +246,15 @@ class AdminToolsController extends Controller
             }
         }
 
+        $courses = Course::query()->orderBy('name')->get(['id', 'code', 'name']);
+
+        $signatureDesignationRows = collect($signatureDesignationRows)->map(function($row) {
+            if ($row['name'] === 'Registrar') {
+                $row['name'] = 'University Registrar';
+            }
+            return $row;
+        })->all();
+
         return view(
             'registrar.admin-tools.system-config.configuration',
             compact(
@@ -259,7 +270,8 @@ class AdminToolsController extends Controller
                 'reportDetails',
                 'emailSender',
                 'latestIncRun',
-                'academicTermRows'
+                'academicTermRows',
+                'courses'
             )
         );
     }
@@ -2648,15 +2660,11 @@ class AdminToolsController extends Controller
 
     private function mapSignatureRow(SystemConfigNameSignature $row): array
     {
+        $designation = $row->designation;
+        
         $designationName = '';
-        if ($row->relationLoaded('designation') && $row->designation) {
-            $designationName = (string) $row->designation->name;
-        }
-
-        if ($designationName === '' && $row->designation_id) {
-            $designationName = (string) SystemConfigSignatureDesignation::query()
-                ->where('id', $row->designation_id)
-                ->value('name');
+        if ($designation) {
+            $designationName = (string) $designation->name;
         }
 
         $signatureUrl = '';
@@ -2671,6 +2679,7 @@ class AdminToolsController extends Controller
             'name' => (string) $row->signer_name,
             'signaturePath' => (string) ($row->signature_path ?: ''),
             'signatureUrl' => $signatureUrl,
+            'programs' => [], // Reset to empty as before
         ];
     }
 

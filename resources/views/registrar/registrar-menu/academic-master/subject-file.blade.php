@@ -100,27 +100,22 @@
     </div>
 
     {{-- ══════ DELETE CONFIRM MODAL ══════ --}}
-    <div class="req-modal-overlay" id="sfDeleteModal" style="display:none;" onclick="closeSfDeleteModal(event)">
-        <div class="req-modal-box req-modal-success" style="min-width:300px;">
-            <h3 class="req-modal-title" style="color:#c0392b;">DELETE SUBJECT</h3>
-            <p style="font-size:0.88rem; color:#444; margin-bottom:6px; text-align:center;">Are you sure you want to delete</p>
-            <p style="font-size:0.95rem; font-weight:700; color:#1a1a2e; margin-bottom:20px; text-align:center;" id="sfDeleteName"></p>
-            <p style="font-size:0.78rem; color:#999; margin-bottom:22px; text-align:center;">This action cannot be undone.</p>
-            <div class="req-modal-actions" style="justify-content:center;">
-                <button class="req-btn-cancel" onclick="closeSfDeleteModal()">Cancel</button>
-                <button class="req-btn-save" style="background:#c0392b;" onclick="confirmDeleteSubject()">Delete</button>
-            </div>
-        </div>
-    </div>
+    @include('includes.registrar-delete-modal', [
+        'id' => 'sfDeleteModal',
+        'title' => 'DELETE SUBJECT',
+        'message' => 'Are you sure you want to delete',
+        'confirmBtnText' => 'Delete',
+        'cancelAction' => 'closeSfDeleteModal()',
+        'confirmAction' => 'confirmDeleteSubject()',
+        'detailId' => 'sfDeleteName'
+    ])
 
     {{-- ══════ SUCCESS MODAL ══════ --}}
-    <div class="req-modal-overlay" id="sfSuccessModal" style="display:none;" onclick="closeSfSuccess(event)">
-        <div class="req-modal-box req-modal-success">
-            <h3 class="req-modal-success-title">SUCCESSFUL!</h3>
-            <p class="req-modal-success-msg" id="sfSuccessMsg">Subject saved successfully.</p>
-            <button class="req-btn-ok" onclick="closeSfSuccess()">OK</button>
-        </div>
-    </div>
+    @include('includes.registrar-success-modal', [
+        'id' => 'sfSuccessModal',
+        'msgId' => 'sfSuccessMsg',
+        'onClose' => 'closeSfSuccess()'
+    ])
 
 </div>
 

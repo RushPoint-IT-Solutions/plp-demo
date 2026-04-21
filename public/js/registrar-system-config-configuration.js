@@ -349,6 +349,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     sectionCutoff: parseDataJson(bootstrap, 'sectionCutoff', []),
     cutoffConfig: parseDataJson(bootstrap, 'cutoffConfig', []),
     curriculumDisplay: parseDataJson(bootstrap, 'curriculumDisplay', []),
+    signatureDesignations: parseDataJson(bootstrap, 'signatureDesignations', []),
     latestIncRun: parseDataJson(bootstrap, 'latestIncRun', null),
     pager: {
       schoolSem: {
@@ -406,6 +407,9 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     },
     curriculumDisplay: {
       id: 'cfgCurriculumDisplayPager'
+    },
+    signatureDesignations: {
+      id: 'cfgDesignationPager'
     }
   };
   function listFor(group) {
@@ -515,9 +519,26 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var rows = paged.rows.map(function (row, idx) {
       var index = paged.start + idx;
       var signatureCell = row.signatureUrl ? '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>' : '<span class="cfg-muted">No file</span>';
-      return '' + '<tr>' + '<td>' + escapeHtml(row.designation) + '</td>' + '<td>' + escapeHtml(row.name) + '</td>' + '<td>' + signatureCell + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('signatures', index) + '</td>' + '</tr>';
+      
+      var programsHtml = '';
+      if (row.programs && Array.isArray(row.programs) && row.programs.length > 0) {
+        programsHtml = row.programs.map(function(p) {
+          if (p === 'ALL') return '<span class="sc-general-tag">General</span>';
+          return '<span class="sc-prog-tag">' + escapeHtml(p) + '</span>';
+        }).join('');
+      } else {
+        programsHtml = '<span class="sc-general-tag">General</span>';
+      }
+
+      return '' + '<tr>' + 
+        '<td>' + escapeHtml(row.designation) + '</td>' + 
+        '<td>' + escapeHtml(row.name) + '</td>' + 
+        '<td>' + programsHtml + '</td>' + 
+        '<td>' + signatureCell + '</td>' + 
+        '<td class="cfg-col-action">' + actionMenuHtml('signatures', index) + '</td>' + 
+        '</tr>';
     }).join('');
-    body.innerHTML = rows || '<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>';
+    body.innerHTML = rows || '<tr><td colspan="5" class="sc-empty-row">No records found.</td></tr>';
     renderPager('signatures');
   }
   function renderCutoffDate() {
@@ -601,6 +622,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       renderCurriculumDisplay();
     }
   }
+
   function renderAll() {
     renderSchoolSem();
     renderGradePosting();
@@ -682,14 +704,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     byId('cfgGPDateFrom').value = '';
     syncSelectUI('cfgGPSemester');
     syncSelectUI('cfgGPPeriod');
-  }
-  function resetSignatureForm() {
-    byId('cfgSignatureEditId').value = '';
-    byId('cfgSignatureDesignation').value = '';
-    byId('cfgSignatureName').value = '';
-    byId('cfgSignatureFile').value = '';
-    byId('cfgSignatureSaveBtn').textContent = 'Save';
-    syncSelectUI('cfgSignatureDesignation');
   }
   function resetCutoffDateForm() {
     byId('cfgCutoffDateEditId').value = '';
@@ -908,6 +922,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             state.pager.signatures.page = 1;
             renderSignatures();
             resetSignatureForm();
+            closeModal('cfgSignatureModal');
             showMessage('Signature configuration saved.', 'success');
             _context5.n = 8;
             break;
@@ -1368,7 +1383,17 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       group: group,
       id: row.id
     };
-    byId('cfgDeleteMessage').textContent = 'Are you sure you want to delete this record?';
+
+    var detail = 'Selected Record';
+    if (group === 'schoolSem') detail = (row.sy || '') + ' - ' + (row.semester || '');
+    else if (group === 'gradePosting') detail = (row.sy || '') + ' ' + (row.semester || '') + ' (' + (row.period || '') + ')';
+    else if (group === 'signatures') detail = (row.name || '') + ' / ' + (row.designation || '');
+    else if (group === 'cutoffDate') detail = (row.type || 'Cutoff') + ': ' + (row.cutoffDate || '') + ' (SY ' + (row.sy || '') + ')';
+    else if (group === 'sectionCutoff') detail = 'Section Cutoff: ' + (row.cutoffDate || '') + ' (' + (row.sy || '') + ')';
+    else if (group === 'cutoffConfig') detail = 'Config Date: ' + (row.cutoffDate || '') + ' (' + (row.sy || '') + ')';
+    else if (group === 'curriculumDisplay') detail = 'Curriculum: ' + (row.sy || '') + ' ' + (row.semester || '');
+
+    byId('cfgDeleteDetail').textContent = detail;
     openModal('cfgDeleteModal');
   }
   function confirmDelete() {
@@ -1468,12 +1493,17 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       return;
     }
     if (group === 'signatures') {
-      byId('cfgSignatureEditId').value = row.id || '';
-      byId('cfgSignatureDesignation').value = row.designationId || '';
-      byId('cfgSignatureName').value = row.name || '';
-      byId('cfgSignatureFile').value = '';
-      byId('cfgSignatureSaveBtn').textContent = 'Update';
-      syncSelectUI('cfgSignatureDesignation');
+      var sig = state.signatures[index];
+      if (!sig) return;
+      
+      resetSignatureForm();
+      byId('cfgSignatureEditId').value = sig.id;
+      byId('cfgSignatureName').value = sig.name;
+      byId('cfgSignatureDesignation').value = sig.designationId;
+      refreshListboxes(byId('cfgSignatureDesignation'));
+      byId('cfgSigTitle').textContent = 'EDIT SIGNATORY';
+
+      openModal('cfgSignatureModal');
       return;
     }
     if (group === 'cutoffDate') {
@@ -1644,8 +1674,100 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var message = 'Last run: ' + (state.latestIncRun.schoolYear || '-') + ' ' + (state.latestIncRun.semester || '-') + ' | Processed ' + state.latestIncRun.processedCount + ' record(s) on ' + (state.latestIncRun.createdAt || '-');
     setInlineMessage('cfgIncProcessMessage', message, false);
   }
+
+  function resetSignatureForm() {
+    byId('cfgSignatureEditId').value = '';
+    byId('cfgSignatureName').value = '';
+    byId('cfgSignatureFile').value = '';
+    byId('cfgSignatureDesignation').value = '';
+    refreshListboxes(byId('cfgSignatureDesignation'));
+    byId('cfgSigTitle').textContent = 'ADD SIGNATORY';
+  }
+
+  function initDesignationFeatures() {
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-cfg-action="open-designation-modal"]');
+      if (btn) openModal('cfgDesignationModal');
+      
+      var sigBtn = e.target.closest('[data-cfg-action="open-signature-modal"]');
+      if (sigBtn) {
+        resetSignatureForm();
+        openModal('cfgSignatureModal');
+      }
+    });
+
+    var progSearchInput = byId('progSearchInput');
+    var progItems = document.querySelectorAll('.sc-multi-select-item');
+    if (progSearchInput) {
+      progSearchInput.addEventListener('input', function() {
+        var query = (this.value || '').toLowerCase().trim();
+        progItems.forEach(function(item) {
+          var text = (item.getAttribute('data-search-text') || '').toLowerCase();
+          item.style.display = text.indexOf(query) !== -1 ? 'flex' : 'none';
+        });
+      });
+    }
+
+
+    var designationSaveBtn = byId('cfgDesignationSaveBtn');
+    if (designationSaveBtn) {
+      designationSaveBtn.addEventListener('click', function() {
+        var name = (byId('newDesignationName').value || '').trim();
+        if (!name) {
+          showMessage('Please provide a designation name.', 'error');
+          return;
+        }
+        showMessage('New designation "' + name + '" created successfully.', 'success');
+        
+        // Add to signatory dropdown list (UI Preview)
+        var designationSelect = byId('cfgSignatureDesignation');
+        if (designationSelect) {
+            var opt = document.createElement('option');
+            opt.value = String(Date.now()); // Mock Integer ID
+            opt.textContent = name;
+            designationSelect.appendChild(opt);
+            
+            // Force refresh all custom listboxes
+            if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
+                window.registrarListboxSelect.refreshAll();
+            }
+        }
+
+        closeModal('cfgDesignationModal');
+        byId('newDesignationName').value = '';
+        if (progSearchInput) progSearchInput.value = '';
+        progItems.forEach(function(item) { item.style.display = 'flex'; });
+        document.querySelectorAll('input[name="target_programs[]"]').forEach(function(cb) { cb.checked = false; });
+      });
+    }
+
+    var desAllPrograms = byId('cfgDesignationAll');
+    if (desAllPrograms) {
+      desAllPrograms.addEventListener('change', function() {
+        var progList = byId('designationProgListContainer');
+        if (progList) {
+          progList.style.opacity = this.checked ? '0.5' : '1';
+          progList.style.pointerEvents = this.checked ? 'none' : 'auto';
+        }
+      });
+    }
+  }
+
+  // UI-Only: Mock existing data to show program tags
+  state.signatures = state.signatures.map(function(sig) {
+    if (sig.designation === 'University Registrar') {
+        sig.programs = ['ALL'];
+    } else if (sig.designation === 'Assistant Registrar') {
+        sig.programs = ['BSHM', 'BSN', 'MAN'];
+    } else if (sig.designation === 'Accounting Head') {
+        sig.programs = ['BSA', 'BSENT'];
+    }
+    return sig;
+  });
+
   bindForms();
   bindGlobalEvents();
+  initDesignationFeatures();
   renderAll();
   refreshListboxes();
   applyInitialMessages();

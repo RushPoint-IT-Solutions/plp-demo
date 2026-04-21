@@ -157,17 +157,16 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="anDeleteModal" style="display:none;" onclick="if(event.target===this) anCloseDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE ANNOUNCEMENT</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this announcement?</p>
-        <input type="hidden" id="anDeleteIndex" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="anCloseDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="anConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'anDeleteModal',
+    'title' => 'DELETE ANNOUNCEMENT',
+    'message' => 'Are you sure you want to delete this announcement?',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'anCloseDeleteModal()',
+    'confirmAction' => 'anConfirmDelete()',
+    'detailId' => 'anDeleteDetail'
+])
+<input type="hidden" id="anDeleteIndex" value="">
 @endsection
 
 @push('scripts')

@@ -111,18 +111,14 @@
             </div>
         </div>
 
-        <div class="req-modal-overlay" id="gaDeleteModal" style="display:none;">
-            <div class="req-modal-box req-modal-success" style="min-width:300px;">
-                <h3 class="req-modal-title" style="color:#c0392b;" id="gaDeleteTitle">DELETE GRADE RULE</h3>
-                <p style="font-size:0.88rem; color:#444; margin-bottom:20px; text-align:center;" id="gaDeleteText">
-                    Are you sure you want to delete this grade rule?
-                </p>
-                <div class="req-modal-actions" style="justify-content:center;">
-                    <button class="req-btn-cancel" type="button" data-ga-close-delete>Cancel</button>
-                    <button class="req-btn-save" type="button" style="background:#c0392b;" data-ga-confirm-delete>Delete</button>
-                </div>
-            </div>
-        </div>
+        @include('includes.registrar-delete-modal', [
+            'id' => 'gaDeleteModal',
+            'title' => 'DELETE GRADE RULE',
+            'message' => 'Are you sure you want to delete this grade rule?',
+            'confirmBtnText' => 'Delete',
+            'cancelActionAttr' => 'data-ga-close-delete',
+            'confirmActionAttr' => 'data-ga-confirm-delete'
+        ])
     </div>
 </div>
 @endsection

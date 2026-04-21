@@ -68,27 +68,22 @@
     </div>
 
     {{-- Delete confirm modal --}}
-    <div class="req-modal-overlay" id="apstDeleteModal" style="display:none;" onclick="closeDeleteModal(event)">
-        <div class="req-modal-box req-modal-success" style="min-width:300px;">
-            <h3 class="req-modal-title" style="color:#c0392b;">DELETE STATUS</h3>
-            <p style="font-size:0.88rem; color:#444; margin-bottom:20px; text-align:center;">
-                Are you sure you want to delete this status?
-            </p>
-            <div class="req-modal-actions" style="justify-content:center;">
-                <button class="req-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-                <button class="req-btn-save" style="background:#c0392b;" onclick="confirmDelete()">Delete</button>
-            </div>
-        </div>
-    </div>
+    @include('includes.registrar-delete-modal', [
+        'id' => 'apstDeleteModal',
+        'title' => 'DELETE STATUS',
+        'message' => 'Are you sure you want to delete this status?',
+        'confirmBtnText' => 'Delete',
+        'cancelAction' => 'closeDeleteModal()',
+        'confirmAction' => 'confirmDelete()',
+        'detailId' => 'apstDeleteDetail'
+    ])
 
     {{-- Success modal --}}
-    <div class="req-modal-overlay" id="apstSuccessModal" style="display:none;" onclick="closeApstSuccess(event)">
-        <div class="req-modal-box req-modal-success">
-            <h3 class="req-modal-success-title">SUCCESSFUL!</h3>
-            <p class="req-modal-success-msg" id="apstSuccessMsg">Status saved successfully.</p>
-            <button class="req-btn-ok" onclick="closeApstSuccess()">OK</button>
-        </div>
-    </div>
+    @include('includes.registrar-success-modal', [
+        'id' => 'apstSuccessModal',
+        'msgId' => 'apstSuccessMsg',
+        'onClose' => 'closeApstSuccess()'
+    ])
 
 </div>
 
