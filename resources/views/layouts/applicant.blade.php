@@ -23,7 +23,9 @@
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/faculty-notifications.css') }}">
 
-    @php($embeddedMode = !empty($applicationFormEmbedded))
+    @php
+        $embeddedMode = !empty($applicationFormEmbedded);
+    @endphp
     @if($embeddedMode)
     <style>
         .applicant-body.applicant-embedded-mode .sidebar-overlay,

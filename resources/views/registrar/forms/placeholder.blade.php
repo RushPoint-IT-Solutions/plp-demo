@@ -5,29 +5,41 @@
 @section('body-class', 'page-forms-placeholder')
 
 @section('content')
+@php
+    $placeholderSchoolYears = collect($schoolYears ?? [])->values()->all();
+    $placeholderTerms = collect($termOptions ?? ['First', 'Second', 'Summer'])->values()->all();
+    $placeholderSemesterMap = is_array($semesterMap ?? null) ? $semesterMap : [];
+    $placeholderSelectedSchoolYear = (string) ($selectedSchoolYear ?? ($placeholderSchoolYears[0] ?? ''));
+    $placeholderSelectedTerm = (string) ($selectedTerm ?? ($placeholderTerms[0] ?? 'First'));
+@endphp
 <div class="pf-page">
     <div class="rep-dashboard">
         <div class="rep-top-row">
-            <div class="rep-sys-card rep-sys-card--compact">
+            <div class="rep-sys-card rep-sys-card--compact" id="formsSystemConfigCard" data-semester-map='@json($placeholderSemesterMap)'>
                 <div class="rep-sys-title">System Configuration</div>
                 <div class="rep-sys-grid">
                     <div class="rep-sys-field">
                         <label class="app-filter-label">School Year:</label>
-                        <select class="app-filter-select">
-                            <option>2025-2026</option>
-                            <option>2024-2025</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'formsSchoolYear',
+                            'name' => 'formsSchoolYear',
+                            'options' => $placeholderSchoolYears,
+                            'selected' => $placeholderSelectedSchoolYear,
+                            'placeholder' => '- Select School Year -',
+                        ])
                     </div>
                     <div class="rep-sys-field">
                         <label class="app-filter-label">Term:</label>
-                        <select class="app-filter-select">
-                            <option>First</option>
-                            <option>Second</option>
-                            <option>Summer</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'formsTerm',
+                            'name' => 'formsTerm',
+                            'options' => $placeholderTerms,
+                            'selected' => $placeholderSelectedTerm,
+                            'placeholder' => '- Select Term -',
+                        ])
                     </div>
                     <div class="rep-sys-action">
-                        <button class="req-btn-save" type="button" style="height:36px; min-width: 100px; padding:0 24px; font-weight:700;">Set</button>
+                        <button class="req-btn-save" id="formsSetConfigBtn" type="button" style="height:36px; min-width: 100px; padding:0 24px; font-weight:700;">Set</button>
                     </div>
                 </div>
             </div>
@@ -81,7 +93,111 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script>
+    function formsRefreshListbox(selectElement) {
+        if (!selectElement) {
+            return;
+        }
+
+        if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refresh === 'function') {
+            window.registrarListboxSelect.refresh(selectElement);
+            return;
+        }
+
+        if (typeof window.CustomEvent === 'function') {
+            document.dispatchEvent(new CustomEvent('registrar:listbox:refresh', { detail: { target: selectElement } }));
+        }
+    }
+
+    function formsNormalizeSemesterLabel(value) {
+        var normalized = String(value || '').trim().toLowerCase();
+        var aliases = {
+            'first': 'First',
+            '1st': 'First',
+            '1st semester': 'First',
+            'first semester': 'First',
+            'second': 'Second',
+            '2nd': 'Second',
+            '2nd semester': 'Second',
+            'second semester': 'Second',
+            'summer': 'Summer',
+            'summer semester': 'Summer'
+        };
+
+        return aliases[normalized] || '';
+    }
+
+    function formsParseSemesterMap(raw) {
+        try {
+            var parsed = JSON.parse(raw || '{}');
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function formsTermsForYear(semesterMap, schoolYear) {
+        var key = String(schoolYear || '').trim();
+        var rawTerms = key && Array.isArray(semesterMap[key]) ? semesterMap[key] : [];
+        var normalizedTerms = rawTerms.map(function(item) {
+            return formsNormalizeSemesterLabel(item);
+        }).filter(function(item, index, list) {
+            return item && list.indexOf(item) === index;
+        });
+
+        return normalizedTerms.length ? normalizedTerms : ['First', 'Second', 'Summer'];
+    }
+
+    function formsSyncTerms(semesterMap, preferredTerm) {
+        var schoolYearSelect = document.getElementById('formsSchoolYear');
+        var termSelect = document.getElementById('formsTerm');
+        if (!schoolYearSelect || !termSelect) {
+            return;
+        }
+
+        var terms = formsTermsForYear(semesterMap, schoolYearSelect.value);
+        var selectedTerm = formsNormalizeSemesterLabel(preferredTerm || termSelect.value);
+
+        termSelect.innerHTML = terms.map(function(term) {
+            return '<option value="' + term + '">' + term + '</option>';
+        }).join('');
+
+        if (selectedTerm && terms.indexOf(selectedTerm) !== -1) {
+            termSelect.value = selectedTerm;
+        }
+
+        if (!termSelect.value && terms.length) {
+            termSelect.value = terms[0];
+        }
+
+        formsRefreshListbox(termSelect);
+    }
+
+    function formsBindSystemConfig() {
+        var configCard = document.getElementById('formsSystemConfigCard');
+        var schoolYearSelect = document.getElementById('formsSchoolYear');
+        var termSelect = document.getElementById('formsTerm');
+        var setButton = document.getElementById('formsSetConfigBtn');
+        if (!configCard || !schoolYearSelect || !termSelect || !setButton) {
+            return;
+        }
+
+        var semesterMap = formsParseSemesterMap(configCard.getAttribute('data-semester-map'));
+        formsSyncTerms(semesterMap, termSelect.value);
+
+        schoolYearSelect.addEventListener('change', function() {
+            formsSyncTerms(semesterMap, '');
+        });
+
+        setButton.addEventListener('click', function() {
+            var url = new URL(window.location.href);
+            url.searchParams.set('school_year', schoolYearSelect.value || '');
+            url.searchParams.set('term', termSelect.value || '');
+            window.location.assign(url.toString());
+        });
+    }
+
     function openFormsModal(title) {
         var modal = document.getElementById('formsInfoModal');
         var heading = document.getElementById('formsModalTitle');
@@ -101,5 +217,7 @@
             closeFormsModal();
         }
     });
+
+    formsBindSystemConfig();
 </script>
 @endpush

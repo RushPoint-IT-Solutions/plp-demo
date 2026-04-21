@@ -4,6 +4,12 @@
 @section('page-title', 'CONFIGURATION')
 @section('body-class', 'page-system-config-configuration')
 
+@push('styles')
+    @if (file_exists(public_path('vendor/flatpickr/flatpickr.min.css')))
+        <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}?v={{ filemtime(public_path('vendor/flatpickr/flatpickr.min.css')) }}">
+    @endif
+@endpush
+
 @php
     $defaultTerm = collect($academicTermRows ?? [])->first();
     $defaultSchoolYear = $defaultTerm['schoolYear'] ?? (date('Y') . '-' . (date('Y') + 1));
@@ -118,31 +124,8 @@
         <section class="cfg-card cfg-card-full">
             <div class="cfg-card-head">
                 <h3>Names and Designation Signature</h3>
+                <button type="button" class="pf-btn-new" data-cfg-action="open-signature-modal">Add</button>
             </div>
-            <form id="cfgSignatureForm" class="cfg-filter-row cfg-filter-row-tight" enctype="multipart/form-data">
-                <input type="hidden" id="cfgSignatureEditId" value="">
-                <div class="cfg-filter-group">
-                    <label class="req-modal-label" for="cfgSignatureDesignation">Designation</label>
-                    @include('registrar.components.listbox-select', [
-                        'id' => 'cfgSignatureDesignation',
-                        'name' => 'cfgSignatureDesignation',
-                        'options' => $signatureDesignationOptions,
-                        'selected' => '',
-                        'placeholder' => '-Select Designation-'
-                    ])
-                </div>
-                <div class="cfg-filter-group">
-                    <label class="req-modal-label" for="cfgSignatureName">Name</label>
-                    <input type="text" id="cfgSignatureName" class="req-modal-input" placeholder="Enter signer name">
-                </div>
-                <div class="cfg-filter-group">
-                    <label class="req-modal-label" for="cfgSignatureFile">Signature</label>
-                    <input type="file" id="cfgSignatureFile" class="req-modal-input" accept=".jpg,.jpeg,.png,image/png,image/jpeg">
-                </div>
-                <div class="cfg-filter-action">
-                    <button type="submit" id="cfgSignatureSaveBtn" class="pf-btn-new">Save</button>
-                </div>
-            </form>
             <div class="app-table-wrap">
                 <table id="cfgSignatureTable" class="app-table cfg-table" data-no-auto-pager="1">
                     <thead>
@@ -191,7 +174,7 @@
                 </div>
                 <div class="cfg-filter-group">
                     <label class="req-modal-label" for="cfgCutoffDate">Cut Off Date</label>
-                    <input type="date" id="cfgCutoffDate" class="req-modal-input">
+                    <input type="text" id="cfgCutoffDate" class="req-modal-input" autocomplete="off" placeholder="YYYY-MM-DD">
                 </div>
                 <div class="cfg-filter-action">
                     <button type="submit" id="cfgCutoffSaveBtn" class="pf-btn-new">Save</button>
@@ -236,7 +219,7 @@
                 </div>
                 <div class="cfg-filter-group">
                     <label class="req-modal-label" for="cfgSectionCutoffDate">Cut-off Date</label>
-                    <input type="date" id="cfgSectionCutoffDate" class="req-modal-input">
+                    <input type="text" id="cfgSectionCutoffDate" class="req-modal-input" autocomplete="off" placeholder="YYYY-MM-DD">
                 </div>
                 <div class="cfg-filter-action">
                     <button type="submit" id="cfgSectionCutoffSaveBtn" class="pf-btn-new">Save</button>
@@ -278,11 +261,11 @@
                     </div>
                     <div class="cfg-filter-group">
                         <label class="req-modal-label" for="cfgCutoffRegDate">Date</label>
-                        <input type="date" id="cfgCutoffRegDate" class="req-modal-input">
+                        <input type="text" id="cfgCutoffRegDate" class="req-modal-input" autocomplete="off" placeholder="YYYY-MM-DD">
                     </div>
                     <div class="cfg-filter-group">
                         <label class="req-modal-label" for="cfgCutoffRegCutoffDate">Cut Off Date</label>
-                        <input type="date" id="cfgCutoffRegCutoffDate" class="req-modal-input">
+                        <input type="text" id="cfgCutoffRegCutoffDate" class="req-modal-input" autocomplete="off" placeholder="YYYY-MM-DD">
                     </div>
                     <div class="cfg-filter-group">
                         <label class="req-modal-label" for="cfgCutoffRegStudentNo">Student No.</label>
@@ -315,7 +298,7 @@
                     </div>
                     <div class="cfg-filter-group">
                         <label class="req-modal-label" for="cfgCutoffConfigDate">Cut-off Date</label>
-                        <input type="date" id="cfgCutoffConfigDate" class="req-modal-input">
+                        <input type="text" id="cfgCutoffConfigDate" class="req-modal-input" autocomplete="off" placeholder="YYYY-MM-DD">
                     </div>
                     <div class="cfg-filter-action">
                         <button type="submit" id="cfgCutoffConfigSaveBtn" class="pf-btn-new">Update</button>
@@ -522,13 +505,49 @@
         <div class="sc-modal-grid cfg-modal-grid-gap">
             <div class="req-modal-field-group">
                 <label class="req-modal-label" for="cfgGPDateFrom">Date From</label>
-                <input type="date" id="cfgGPDateFrom" class="req-modal-input">
+                <input type="text" id="cfgGPDateFrom" class="req-modal-input" autocomplete="off" placeholder="YYYY-MM-DD">
             </div>
         </div>
         <div class="req-modal-actions cfg-modal-actions">
             <button type="button" class="req-btn-cancel" data-cfg-action="close-modal" data-cfg-modal-target="cfgGradePostingModal">Cancel</button>
             <button type="button" id="cfgGPSaveBtn" class="req-btn-save" data-cfg-action="save-grade-posting">Save</button>
         </div>
+    </div>
+</div>
+
+<div class="req-modal-overlay cfg-modal-overlay is-hidden" id="cfgSignatureModal" data-cfg-modal="signature">
+    <div class="req-modal-box cfg-modal-box">
+        <h3 class="req-modal-title" id="cfgSignatureTitle">ADD SIGNATURE</h3>
+        <form id="cfgSignatureForm" enctype="multipart/form-data">
+            <input type="hidden" id="cfgSignatureEditId" value="">
+            <div class="sc-modal-grid">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="cfgSignatureDesignation">Designation</label>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'cfgSignatureDesignation',
+                        'name' => 'cfgSignatureDesignation',
+                        'options' => $signatureDesignationOptions,
+                        'selected' => '',
+                        'placeholder' => '-Select Designation-'
+                    ])
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="cfgSignatureName">Name</label>
+                    <input type="text" id="cfgSignatureName" class="req-modal-input" placeholder="Enter signer name">
+                </div>
+            </div>
+            <div class="sc-modal-grid cfg-modal-grid-gap">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="cfgSignatureFile">Signature</label>
+                    <input type="file" id="cfgSignatureFile" class="req-modal-input" accept=".jpg,.jpeg,.png,image/png,image/jpeg">
+                </div>
+            </div>
+            <p class="cfg-inline-message" id="cfgSignatureModalMessage"></p>
+            <div class="req-modal-actions cfg-modal-actions">
+                <button type="button" class="req-btn-cancel" data-cfg-action="close-modal" data-cfg-modal-target="cfgSignatureModal">Cancel</button>
+                <button type="submit" id="cfgSignatureSaveBtn" class="req-btn-save">Save</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -567,6 +586,7 @@
 @php
     $cfgScriptAssets = [
         'js/registrar-listbox-select.js',
+        'vendor/flatpickr/flatpickr.min.js',
         'js/registrar-system-config-configuration.js',
     ];
 @endphp

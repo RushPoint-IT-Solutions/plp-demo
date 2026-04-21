@@ -33,6 +33,10 @@
             ['value' => 'Summer', 'label' => 'Summer'],
         ];
 
+    $sdSemesterMap = isset($semesterMap) && is_array($semesterMap)
+        ? $semesterMap
+        : [];
+
     $sdCaseTypeOptions = isset($caseTypeOptions) && is_array($caseTypeOptions) && count($caseTypeOptions)
         ? $caseTypeOptions
         : [
@@ -66,6 +70,7 @@
         data-record-destroy-url-template="{{ route('registrar.services.student-account.student-discipline.records.destroy', ['studentDisciplineRecord' => '__RECORD__']) }}"
         data-case-type-options='@json($sdCaseTypeOptions)'
         data-action-type-options='@json($sdActionTypeOptions)'
+        data-semester-map='@json($sdSemesterMap)'
     >
         <div id="sdListView">
             <div class="ga-card ga-filter-card sched-filter-bar sd-filter-card">

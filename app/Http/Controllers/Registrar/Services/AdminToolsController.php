@@ -36,6 +36,7 @@ use App\AcademicCalendarAudienceType;
 use App\AcademicCalendarEvent;
 use App\Course;
 use App\StudentProfile;
+use App\Support\SystemConfigSchoolTermOptions;
 use App\User;
 use App\UserAccountStatus;
 use App\YearBlock;
@@ -2531,7 +2532,32 @@ class AdminToolsController extends Controller
             ->values()
             ->all();
 
-        return view('registrar.admin-tools.student-maintenance.student-update', compact('courseOptions', 'operatorOptions'));
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+        $schoolYearOptions = array_values($configOptions['school_years'] ?? []);
+        $semesterMap = is_array($configOptions['semester_map'] ?? null)
+            ? $configOptions['semester_map']
+            : [];
+        $termOptions = SystemConfigSchoolTermOptions::semesterOptionsForYear(
+            $semesterMap,
+            (string) ($configOptions['default_school_year'] ?? '')
+        );
+
+        $defaultSchoolYear = count($schoolYearOptions)
+            ? (string) $schoolYearOptions[0]
+            : (string) ($configOptions['default_school_year'] ?? '');
+        $defaultTerm = count($termOptions)
+            ? (string) $termOptions[0]
+            : (string) ($configOptions['default_semester'] ?? 'First');
+
+        return view('registrar.admin-tools.student-maintenance.student-update', compact(
+            'courseOptions',
+            'operatorOptions',
+            'schoolYearOptions',
+            'semesterMap',
+            'termOptions',
+            'defaultSchoolYear',
+            'defaultTerm'
+        ));
     }
 
     public function studentUpdateRun(Request $request): JsonResponse

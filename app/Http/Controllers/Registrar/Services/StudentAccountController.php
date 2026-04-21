@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Registrar\Services;
 
-use App\AcademicTerm;
 use App\Course;
 use App\StudentProfile;
 use App\StudentDisciplineActionType;
@@ -10,6 +9,7 @@ use App\StudentDisciplineCaseType;
 use App\StudentDisciplineRecord;
 use App\StudentDisciplineStudent;
 use App\StudentDisciplineStudentType;
+use App\Support\SystemConfigSchoolTermOptions;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -21,32 +21,29 @@ class StudentAccountController extends Controller
 {
     public function studentDiscipline(Request $request)
     {
-        $schoolYears = AcademicTerm::query()
-            ->select('school_year')
-            ->distinct()
-            ->orderBy('school_year', 'desc')
-            ->pluck('school_year')
-            ->values()
-            ->all();
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
 
-        if (!count($schoolYears)) {
-            $schoolYears = ['2025-2026'];
-        }
+        $schoolYears = array_values($configOptions['school_years'] ?? []);
+        $semesterMap = is_array($configOptions['semester_map'] ?? null)
+            ? $configOptions['semester_map']
+            : [];
 
-        $defaultSchoolYear = trim((string) $request->query('school_year', ''));
+        $defaultSchoolYear = trim((string) $request->query('school_year', (string) ($configOptions['default_school_year'] ?? '')));
         if ($defaultSchoolYear === '' || !in_array($defaultSchoolYear, $schoolYears, true)) {
-            $defaultSchoolYear = $schoolYears[0];
+            $defaultSchoolYear = count($schoolYears) ? (string) $schoolYears[0] : '';
         }
 
-        $termOptions = [
-            ['value' => 'First', 'label' => 'First'],
-            ['value' => 'Second', 'label' => 'Second'],
-            ['value' => 'Summer', 'label' => 'Summer'],
-        ];
+        $configuredTerms = SystemConfigSchoolTermOptions::semesterOptionsForYear($semesterMap, $defaultSchoolYear);
+        $termOptions = array_map(function ($termValue) {
+            return [
+                'value' => (string) $termValue,
+                'label' => (string) $termValue,
+            ];
+        }, $configuredTerms);
 
-        $defaultTerm = trim((string) $request->query('term', 'First'));
-        if (!in_array($defaultTerm, ['First', 'Second', 'Summer'], true)) {
-            $defaultTerm = 'First';
+        $defaultTerm = SystemConfigSchoolTermOptions::normalizeSemester((string) $request->query('term', (string) ($configOptions['default_semester'] ?? '')));
+        if ($defaultTerm === '' || !in_array($defaultTerm, $configuredTerms, true)) {
+            $defaultTerm = count($configuredTerms) ? (string) $configuredTerms[0] : 'First';
         }
 
         $studentTypeOptions = $this->disciplineStudentTypeOptions();
@@ -55,6 +52,7 @@ class StudentAccountController extends Controller
 
         return view('registrar.services.student-account.student-discipline', compact(
             'schoolYears',
+            'semesterMap',
             'defaultSchoolYear',
             'termOptions',
             'defaultTerm',

@@ -8,14 +8,48 @@
     $preference = optional($applicant->applicationPreference);
     $preferredCourse = optional($preference->course)->name;
     $courseLabel = $preferredCourse ?: ($preference->apply_strand ?: 'Chosen Course');
-    $resultStatus = strtolower((string) ($applicant->exam_result_status ?: 'pending'));
+    $applicationStatusValue = strtolower((string) ($applicant->application_status ?: 'in_process'));
+    $applicationStatusLabelMap = [
+        'submitted' => 'Document Submitted',
+        'on_probation' => 'On Probation',
+        'in_process' => 'In Process',
+        'draft' => 'Incomplete',
+        'accepted' => 'Accepted',
+        'rejected' => 'Rejected',
+    ];
+    $applicationStatusLabel = $applicationStatusLabelMap[$applicationStatusValue] ?? ucwords(str_replace('_', ' ', $applicationStatusValue));
 
-    $decisionWord = 'UNDER REVIEW';
-    if ($resultStatus === 'passed') {
-        $decisionWord = 'ACCEPTED';
-    } elseif ($resultStatus === 'failed') {
-        $decisionWord = 'NOT ACCEPTED';
-    }
+    $correspondenceCopyMap = [
+        'accepted' => [
+            'lead' => 'Congratulations! We are pleased to inform you that your application to Pamantasan ng Lungsod ng Pasig has been accepted for the ' . $courseLabel . ' program.',
+            'nextSteps' => [
+                'Wait for the official enrollment instructions email.',
+                'Prepare your original physical documents.',
+            ],
+        ],
+        'rejected' => [
+            'lead' => 'We regret to inform you that your application to Pamantasan ng Lungsod ng Pasig has not been accepted for the ' . $courseLabel . ' program.',
+            'nextSteps' => [
+                'You may contact admissions for guidance.',
+                'Review the requirements before the next application cycle.',
+            ],
+        ],
+        'on_probation' => [
+            'lead' => 'Your application to Pamantasan ng Lungsod ng Pasig is currently on probation for the ' . $courseLabel . ' program.',
+            'nextSteps' => [
+                'Wait for the registrar\'s next update.',
+                'Keep your contact information active.',
+            ],
+        ],
+    ];
+
+    $correspondenceCopy = $correspondenceCopyMap[$applicationStatusValue] ?? [
+        'lead' => 'Your application to Pamantasan ng Lungsod ng Pasig is currently under review for the ' . $courseLabel . ' program.',
+        'nextSteps' => [
+            'Wait for the admissions office update.',
+            'Check your portal regularly for status changes.',
+        ],
+    ];
 
     $referenceCode = 'PLP-APP-' . strtoupper((string) ($applicant->applicant_id ?: '0000'));
 @endphp
@@ -33,9 +67,13 @@
         <div class="applicant-correspondence-divider"></div>
 
         <div class="applicant-correspondence-body">
+            <div class="applicant-ref-chip" style="margin-bottom:12px;">
+                <span class="dot"></span>
+                <span>APPLICATION STATUS: {{ $applicationStatusLabel }}</span>
+            </div>
+
             <p>
-                Congratulations! We are pleased to inform you that your application to Pamantasan ng Lungsod ng Pasig
-                has been <strong>{{ $decisionWord }}</strong> to the <strong>{{ $courseLabel }}</strong> program.
+                {{ $correspondenceCopy['lead'] }}
             </p>
 
             <p>Welcome to our community!</p>
@@ -50,8 +88,9 @@
             <div class="applicant-next-steps">
                 <p>Next Steps:</p>
                 <ol>
-                    <li>Wait for an official appointment email.</li>
-                    <li>Prepare your original physical documents.</li>
+                    @foreach($correspondenceCopy['nextSteps'] as $nextStep)
+                    <li>{{ $nextStep }}</li>
+                    @endforeach
                 </ol>
             </div>
         </div>

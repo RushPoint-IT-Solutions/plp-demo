@@ -5,8 +5,9 @@
 
 @section('content')
 @php
-    $examDateValue = optional($applicant->exam_date)->format('Y-m-d');
-    $examTimeValue = optional($applicant->exam_date)->format('H:i');
+    $hasExamSchedule = !empty($applicant->exam_date);
+    $examDateValue = $hasExamSchedule ? optional($applicant->exam_date)->format('F d, Y') : 'To be announced';
+    $examTimeValue = $hasExamSchedule ? optional($applicant->exam_date)->format('h:i A') : 'To be announced';
     $examRoomValue = $applicant->exam_room ?: '';
 @endphp
 <div class="app-process-page applicant-consistent-page">
@@ -27,11 +28,11 @@
         <div class="sched-fields-row">
             <div class="sched-field-group">
                 <label>Date</label>
-                <input type="date" class="app-filter-input" style="width:100%;" value="{{ $examDateValue }}" readonly>
+                <input type="text" class="app-filter-input" style="width:100%;" value="{{ $examDateValue }}" readonly>
             </div>
             <div class="sched-field-group">
                 <label>Time</label>
-                <input type="time" class="app-filter-input" style="width:100%;" value="{{ $examTimeValue }}" readonly>
+                <input type="text" class="app-filter-input" style="width:100%;" value="{{ $examTimeValue }}" readonly>
             </div>
             <div class="sched-field-group sched-field-group--venue">
                 <label>Venue</label>
