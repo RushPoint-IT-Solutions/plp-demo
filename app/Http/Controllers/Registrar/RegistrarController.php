@@ -7,6 +7,9 @@ use App\Applicant;
 use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
 use App\ApplicantFamilyBackground;
+use App\ApplicantPhotoUpload;
+use App\ApplicantRequirementSubmission;
+use App\ApplicantRequirementSubmissionFile;
 use App\AlumniTrackerSetting;
 use App\CancellationWaiver;
 use App\Course;
@@ -690,10 +693,35 @@ class RegistrarController extends Controller
                 Storage::disk('public')->delete($applicant->photo);
             }
 
-            $validated['photo'] = $request->file('photo')->store('applicants/photos', 'public');
+            $photo = $request->file('photo');
+            $storedPath = $photo->store('applicants/photos', 'public');
+
+            $validated['photo'] = $storedPath;
+            $this->syncApplicantPhotoUploadRecord($applicant, $photo, $storedPath, $request->user());
         }
 
         $applicant->fill($validated);
+    }
+
+    private function syncApplicantPhotoUploadRecord(Applicant $applicant, $photo, $storedPath, User $actor = null)
+    {
+        if (!Schema::hasTable('applicant_photo_uploads')) {
+            return;
+        }
+
+        ApplicantPhotoUpload::query()->updateOrCreate(
+            [
+                'applicant_id' => (int) $applicant->id,
+            ],
+            [
+                'uploaded_by_user_id' => optional($actor)->id,
+                'original_filename' => (string) $photo->getClientOriginalName(),
+                'storage_disk' => 'public',
+                'storage_path' => (string) $storedPath,
+                'mime_type' => (string) ($photo->getClientMimeType() ?: ''),
+                'size_bytes' => (int) $photo->getSize(),
+            ]
+        );
     }
 
     private function upsertEducationalBackground(Applicant $applicant, array $payload)
@@ -1546,6 +1574,689 @@ class RegistrarController extends Controller
                 'application_status' => $this->mapApprovalStatusDbValueToLabel($applicant->application_status),
             ],
         ]);
+    }
+
+    public function applicantDocumentsData(Request $request, Applicant $applicant): JsonResponse
+    {
+        $filters = $this->normalizeApplicantDocumentFilters($request);
+        $rows = $this->applicantDocumentRows($applicant);
+
+        if ($filters['search'] !== '') {
+            $search = $filters['search'];
+            $rows = $rows->filter(function ($row) use ($search) {
+                return stripos((string) ($row['document_type'] ?? ''), $search) !== false;
+            })->values();
+        }
+
+        if ($filters['status'] !== '') {
+            $rows = $rows->filter(function ($row) use ($filters) {
+                return strtolower((string) ($row['status'] ?? '')) === $filters['status'];
+            })->values();
+        }
+
+        $total = (int) $rows->count();
+        $lastPage = max(1, (int) ceil(max($total, 1) / $filters['per_page']));
+        $page = min($filters['page'], $lastPage);
+        $start = ($page - 1) * $filters['per_page'];
+
+        $pagedRows = $rows
+            ->slice($start, $filters['per_page'])
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $pagedRows,
+            'meta' => [
+                'page' => $page,
+                'last_page' => $lastPage,
+                'per_page' => $filters['per_page'],
+                'total' => $total,
+            ],
+        ]);
+    }
+
+    public function upsertApplicantDocument(Request $request, Applicant $applicant, RegistrarRequirement $registrarRequirement): JsonResponse
+    {
+        if (!$this->applicantDocumentTablesReady()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Applicant document tables are not ready. Please run migrations first.',
+            ], 409);
+        }
+
+        $validated = $request->validate([
+            'is_submitted' => 'nullable',
+            'remarks' => 'nullable|string|max:500',
+            'date_submitted' => 'nullable|date',
+            'document_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+        ]);
+
+        if (trim((string) $registrarRequirement->requirement_type) !== 'Document') {
+            throw ValidationException::withMessages([
+                'document' => ['Only document-type requirements are supported in this panel.'],
+            ]);
+        }
+
+        if (empty($registrarRequirement->registrar_requirement_policy_id)) {
+            $this->syncRequirementPolicyForLegacyRow($registrarRequirement);
+            $registrarRequirement->refresh();
+        }
+
+        $policyId = (int) $registrarRequirement->registrar_requirement_policy_id;
+        if ($policyId < 1) {
+            throw ValidationException::withMessages([
+                'document' => ['This requirement is missing a policy mapping. Please update the requirement setup first.'],
+            ]);
+        }
+
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+        $policySemesterId = (int) RegistrarRequirementPolicy::query()
+            ->where('id', $policyId)
+            ->value('system_school_semester_id');
+
+        if ($policySemesterId > 0 && $policySemesterId !== $activeSemesterId) {
+            throw ValidationException::withMessages([
+                'document' => ['This requirement is not active for the current configured semester.'],
+            ]);
+        }
+
+        $submission = ApplicantRequirementSubmission::query()->firstOrNew([
+            'applicant_id' => (int) $applicant->id,
+            'registrar_requirement_policy_id' => $policyId,
+        ]);
+
+        $submission->is_submitted = $this->requestBoolean($request, 'is_submitted');
+
+        $remarks = trim((string) ($validated['remarks'] ?? ''));
+        $submission->remarks = $remarks !== '' ? $remarks : null;
+
+        if ($submission->is_submitted) {
+            $submission->date_submitted = !empty($validated['date_submitted'])
+                ? $validated['date_submitted']
+                : now()->toDateString();
+        } else {
+            $submission->date_submitted = null;
+        }
+
+        $submission->verified_by_user_id = optional(auth()->user())->id;
+        $submission->save();
+
+        if ($request->hasFile('document_file')) {
+            $uploadedFile = $request->file('document_file');
+            $storedPath = $uploadedFile->store('applicants/documents/' . $applicant->id, 'public');
+
+            $existingFile = ApplicantRequirementSubmissionFile::query()
+                ->where('applicant_requirement_submission_id', $submission->id)
+                ->first();
+
+            if ($existingFile && !empty($existingFile->storage_path)) {
+                Storage::disk((string) ($existingFile->storage_disk ?: 'public'))->delete((string) $existingFile->storage_path);
+            }
+
+            ApplicantRequirementSubmissionFile::query()->updateOrCreate(
+                [
+                    'applicant_requirement_submission_id' => (int) $submission->id,
+                ],
+                [
+                    'uploaded_by_user_id' => optional(auth()->user())->id,
+                    'original_filename' => (string) $uploadedFile->getClientOriginalName(),
+                    'storage_disk' => 'public',
+                    'storage_path' => (string) $storedPath,
+                    'mime_type' => (string) ($uploadedFile->getClientMimeType() ?: ''),
+                    'size_bytes' => (int) $uploadedFile->getSize(),
+                ]
+            );
+
+            if (!$submission->is_submitted) {
+                $submission->is_submitted = true;
+                $submission->date_submitted = $submission->date_submitted ?: now()->toDateString();
+                $submission->save();
+            }
+        }
+
+        $rows = $this->applicantDocumentRows($applicant);
+        $row = $rows->firstWhere('requirement_id', (int) $registrarRequirement->id);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Applicant document record saved successfully.',
+            'row' => $row,
+        ]);
+    }
+
+    public function applicantDocumentFile(Applicant $applicant, ApplicantRequirementSubmissionFile $submissionFile)
+    {
+        $submission = $submissionFile->submission;
+        if (!$submission || (int) $submission->applicant_id !== (int) $applicant->id) {
+            abort(404);
+        }
+
+        $disk = (string) ($submissionFile->storage_disk ?: 'public');
+        $path = (string) $submissionFile->storage_path;
+
+        if ($path === '' || !Storage::disk($disk)->exists($path)) {
+            abort(404);
+        }
+
+        $mimeType = (string) ($submissionFile->mime_type ?: 'application/octet-stream');
+        $filename = trim((string) $submissionFile->original_filename);
+        if ($filename === '') {
+            $filename = basename($path);
+        }
+
+        return response(
+            Storage::disk($disk)->get($path),
+            200,
+            [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            ]
+        );
+    }
+
+    private function normalizeApplicantDocumentFilters(Request $request): array
+    {
+        $allowedPerPage = [10, 25, 50];
+        $allowedStatus = ['', 'pending', 'completed'];
+
+        $search = trim((string) $request->query('search', ''));
+        $status = strtolower(trim((string) $request->query('status', '')));
+        if (!in_array($status, $allowedStatus, true)) {
+            $status = '';
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 10;
+        }
+
+        $page = (int) $request->query('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        return [
+            'search' => $search,
+            'status' => $status,
+            'per_page' => $perPage,
+            'page' => $page,
+        ];
+    }
+
+    private function applicantDocumentRows(Applicant $applicant)
+    {
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $requirements = RegistrarRequirement::query()
+            ->with('yearBlock:id,label')
+            ->where('requirement_type', 'Document')
+            ->where(function ($query) use ($activeSemesterId) {
+                $query->whereNull('registrar_requirement_policy_id')
+                    ->orWhereHas('policy', function ($policyQuery) use ($activeSemesterId) {
+                        $policyQuery->where('system_school_semester_id', $activeSemesterId);
+                    });
+            })
+            ->orderBy('applies_to_all_year_levels', 'desc')
+            ->orderBy('year_block_id')
+            ->orderBy('requirement_name')
+            ->orderBy('id')
+            ->get();
+
+        $requirementsByPolicyId = $requirements
+            ->filter(function (RegistrarRequirement $requirement) {
+                return (int) $requirement->registrar_requirement_policy_id > 0;
+            })
+            ->groupBy('registrar_requirement_policy_id')
+            ->map(function ($groupedRequirements) {
+                return $groupedRequirements->first();
+            });
+
+        if (!$this->applicantDocumentTablesReady()) {
+            return $requirements->map(function (RegistrarRequirement $requirement) {
+                return [
+                    'requirement_id' => (int) $requirement->id,
+                    'policy_id' => (int) $requirement->registrar_requirement_policy_id,
+                    'submission_id' => null,
+                    'document_type' => (string) $requirement->requirement_name,
+                    'grade_level' => $requirement->applies_to_all_year_levels
+                        ? 'All Year Level'
+                        : (string) optional($requirement->yearBlock)->label,
+                    'remarks' => '',
+                    'date_submitted' => '',
+                    'is_submitted' => false,
+                    'status' => 'pending',
+                    'status_label' => 'Pending',
+                    'status_class' => 'app-status-pending',
+                    'file_name' => '',
+                    'file_url' => '',
+                ];
+            })->values();
+        }
+
+        $this->ensureApplicantDocumentBaselineSubmissions(
+            $applicant,
+            $activeSemesterId,
+            $requirementsByPolicyId->keys()->all()
+        );
+
+        $submissionRows = ApplicantRequirementSubmission::query()
+            ->with('file')
+            ->where('applicant_id', (int) $applicant->id)
+            ->whereIn('registrar_requirement_policy_id', $requirementsByPolicyId->keys()->all())
+            ->orderBy('id')
+            ->get();
+
+        if (!$submissionRows->count()) {
+            return $requirements->map(function (RegistrarRequirement $requirement) {
+                return [
+                    'requirement_id' => (int) $requirement->id,
+                    'policy_id' => (int) $requirement->registrar_requirement_policy_id,
+                    'submission_id' => null,
+                    'document_type' => (string) $requirement->requirement_name,
+                    'grade_level' => $requirement->applies_to_all_year_levels
+                        ? 'All Year Level'
+                        : (string) optional($requirement->yearBlock)->label,
+                    'remarks' => '',
+                    'date_submitted' => '',
+                    'is_submitted' => false,
+                    'status' => 'pending',
+                    'status_label' => 'Pending',
+                    'status_class' => 'app-status-pending',
+                    'file_name' => '',
+                    'file_url' => '',
+                ];
+            })->values();
+        }
+
+        return $submissionRows->map(function (ApplicantRequirementSubmission $submission) use ($requirementsByPolicyId, $applicant) {
+            $policyId = (int) $submission->registrar_requirement_policy_id;
+            $requirement = $requirementsByPolicyId->get($policyId);
+
+            if (!$requirement) {
+                return null;
+            }
+
+            $file = $submission->file;
+            $isSubmitted = (bool) $submission->is_submitted;
+
+            $statusLabel = $isSubmitted ? 'Completed' : 'Pending';
+            $statusClass = $isSubmitted ? 'app-status-accepted' : 'app-status-pending';
+
+            return [
+                'requirement_id' => (int) $requirement->id,
+                'policy_id' => $policyId,
+                'submission_id' => (int) $submission->id,
+                'document_type' => (string) $requirement->requirement_name,
+                'grade_level' => $requirement->applies_to_all_year_levels
+                    ? 'All Year Level'
+                    : (string) optional($requirement->yearBlock)->label,
+                'remarks' => (string) ($submission->remarks ?: ''),
+                'date_submitted' => $submission->date_submitted
+                    ? $submission->date_submitted->format('Y-m-d')
+                    : '',
+                'is_submitted' => $isSubmitted,
+                'status' => strtolower($statusLabel),
+                'status_label' => $statusLabel,
+                'status_class' => $statusClass,
+                'file_name' => $file ? (string) ($file->original_filename ?: '') : '',
+                'file_url' => $file
+                    ? route('registrar.process.application.documents.file', [
+                        'applicant' => $applicant->id,
+                        'submissionFile' => $file->id,
+                    ])
+                    : '',
+            ];
+        })->filter()->values();
+    }
+
+    private function ensureApplicantDocumentBaselineSubmissions(Applicant $applicant, $activeSemesterId, array $activePolicyIds): void
+    {
+        if (!count($activePolicyIds)) {
+            return;
+        }
+
+        $existingCount = ApplicantRequirementSubmission::query()
+            ->where('applicant_id', (int) $applicant->id)
+            ->count();
+
+        if ($existingCount > 0) {
+            return;
+        }
+
+        $baselinePolicyIds = RegistrarRequirement::query()
+            ->where('requirement_type', 'Document')
+            ->where('applies_to_all_year_levels', true)
+            ->whereIn('registrar_requirement_policy_id', $activePolicyIds)
+            ->whereHas('policy', function ($policyQuery) use ($activeSemesterId) {
+                $policyQuery->where('system_school_semester_id', $activeSemesterId);
+            })
+            ->pluck('registrar_requirement_policy_id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->filter(function ($value) {
+                return $value > 0;
+            })
+            ->unique()
+            ->values();
+
+        if (!$baselinePolicyIds->count()) {
+            $baselinePolicyIds = collect($activePolicyIds)
+                ->map(function ($value) {
+                    return (int) $value;
+                })
+                ->filter(function ($value) {
+                    return $value > 0;
+                })
+                ->values();
+        }
+
+        foreach ($baselinePolicyIds as $policyId) {
+            ApplicantRequirementSubmission::query()->firstOrCreate([
+                'applicant_id' => (int) $applicant->id,
+                'registrar_requirement_policy_id' => (int) $policyId,
+            ], [
+                'is_submitted' => false,
+            ]);
+        }
+    }
+
+    public function availableApplicantDocuments(Applicant $applicant): JsonResponse
+    {
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $assignedPolicyIds = ApplicantRequirementSubmission::query()
+            ->where('applicant_id', (int) $applicant->id)
+            ->pluck('registrar_requirement_policy_id')
+            ->toArray();
+
+        $available = RegistrarRequirement::query()
+            ->with('yearBlock:id,label')
+            ->where('requirement_type', 'Document')
+            ->whereNotNull('registrar_requirement_policy_id')
+            ->whereHas('policy', function ($query) use ($activeSemesterId) {
+                $query->where('system_school_semester_id', $activeSemesterId);
+            })
+            ->when(count($assignedPolicyIds) > 0, function ($query) use ($assignedPolicyIds) {
+                $query->whereNotIn('registrar_requirement_policy_id', $assignedPolicyIds);
+            })
+            ->orderBy('applies_to_all_year_levels', 'desc')
+            ->orderBy('year_block_id')
+            ->orderBy('requirement_name')
+            ->orderBy('id')
+            ->get()
+            ->map(function (RegistrarRequirement $requirement) {
+                return [
+                    'policy_id' => (int) $requirement->registrar_requirement_policy_id,
+                    'requirement_id' => (int) $requirement->id,
+                    'document_type' => (string) $requirement->requirement_name,
+                    'level' => $requirement->applies_to_all_year_levels
+                        ? 'All Year Level'
+                        : (string) optional($requirement->yearBlock)->label,
+                ];
+            })
+            ->filter(function ($item) {
+                return (int) ($item['policy_id'] ?? 0) > 0;
+            })
+            ->unique('policy_id')
+            ->values();
+
+        return response()->json(['ok' => true, 'data' => $available]);
+    }
+
+    public function assignApplicantDocuments(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'policy_ids' => 'required|array',
+            'policy_ids.*' => 'integer|exists:registrar_requirement_policies,id',
+        ]);
+
+        $requestedPolicyIds = collect($validated['policy_ids'])
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->filter(function ($value) {
+                return $value > 0;
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        if (!count($requestedPolicyIds)) {
+            throw ValidationException::withMessages([
+                'policy_ids' => ['Select at least one requirement to assign.'],
+            ]);
+        }
+
+        $activeSemesterId = $this->resolveActiveRequirementSystemSemesterId();
+
+        $allowedPolicyIds = RegistrarRequirement::query()
+            ->where('requirement_type', 'Document')
+            ->whereIn('registrar_requirement_policy_id', $requestedPolicyIds)
+            ->whereHas('policy', function ($query) use ($activeSemesterId) {
+                $query->where('system_school_semester_id', $activeSemesterId);
+            })
+            ->pluck('registrar_requirement_policy_id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->filter(function ($value) {
+                return $value > 0;
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        if (!count($allowedPolicyIds)) {
+            throw ValidationException::withMessages([
+                'policy_ids' => ['Selected requirements are not active for the current semester.'],
+            ]);
+        }
+
+        $assignedCount = 0;
+        foreach ($allowedPolicyIds as $policyId) {
+            ApplicantRequirementSubmission::firstOrCreate([
+                'applicant_id' => (int) $applicant->id,
+                'registrar_requirement_policy_id' => (int) $policyId,
+            ], [
+                'is_submitted' => false,
+            ]);
+            $assignedCount += 1;
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirements assigned successfully.',
+            'assigned_count' => $assignedCount,
+        ]);
+    }
+
+    public function storeApplicantDocumentRequirement(Request $request, Applicant $applicant): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade_level' => 'required|string|max:50',
+            'document' => 'required|string|max:180',
+            'doc_type' => 'nullable|in:Medical,Document',
+            'non_filipino' => 'nullable',
+        ]);
+
+        $resolvedYearLevel = $this->resolveDocumentRequirementYearLevel($validated['grade_level']);
+        $documentName = trim((string) $validated['document']);
+        $documentType = trim((string) ($validated['doc_type'] ?? 'Document'));
+        $nonFilipino = $this->requestBoolean($request, 'non_filipino');
+
+        if ($documentType === '') {
+            $documentType = 'Document';
+        }
+
+        $requirement = $this->findDuplicateDocumentRequirement(
+            $resolvedYearLevel,
+            $documentName,
+            $documentType,
+            $nonFilipino
+        );
+
+        $wasCreated = false;
+        if (!$requirement) {
+            $requirement = RegistrarRequirement::query()->create([
+                'year_block_id' => $resolvedYearLevel['year_block_id'],
+                'applies_to_all_year_levels' => $resolvedYearLevel['applies_to_all_year_levels'],
+                'requirement_name' => $documentName,
+                'requirement_type' => $documentType,
+                'non_filipino' => $nonFilipino,
+                'created_by_user_id' => optional(auth()->user())->id,
+            ]);
+
+            $this->syncRequirementPolicyForLegacyRow($requirement);
+            $requirement->refresh();
+            $wasCreated = true;
+        }
+
+        if ((int) $requirement->registrar_requirement_policy_id <= 0) {
+            $this->syncRequirementPolicyForLegacyRow($requirement);
+            $requirement->refresh();
+        }
+
+        $policyId = (int) $requirement->registrar_requirement_policy_id;
+        if ($policyId <= 0) {
+            throw ValidationException::withMessages([
+                'document' => ['Unable to map the requirement to an active policy. Please try again.'],
+            ]);
+        }
+
+        ApplicantRequirementSubmission::query()->firstOrCreate([
+            'applicant_id' => (int) $applicant->id,
+            'registrar_requirement_policy_id' => $policyId,
+        ], [
+            'is_submitted' => false,
+        ]);
+
+        $row = $this->applicantDocumentRows($applicant)
+            ->first(function ($item) use ($requirement) {
+                return (int) ($item['requirement_id'] ?? 0) === (int) $requirement->id;
+            });
+
+        return response()->json([
+            'ok' => true,
+            'message' => $wasCreated
+                ? 'New requirement added and assigned to the applicant.'
+                : 'Existing requirement assigned to the applicant.',
+            'row' => $row,
+        ], $wasCreated ? 201 : 200);
+    }
+
+    public function destroyApplicantDocumentFile(Applicant $applicant, RegistrarRequirement $registrarRequirement): JsonResponse
+    {
+        if (!$this->applicantDocumentTablesReady()) {
+            throw ValidationException::withMessages([
+                'document_file' => ['Applicant document tables are not ready.'],
+            ]);
+        }
+
+        $policyId = (int) $registrarRequirement->registrar_requirement_policy_id;
+        if ($policyId <= 0) {
+            throw ValidationException::withMessages([
+                'document_file' => ['Selected requirement is not linked to an active policy.'],
+            ]);
+        }
+
+        $submission = ApplicantRequirementSubmission::query()
+            ->with('file')
+            ->where('applicant_id', (int) $applicant->id)
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->first();
+
+        if (!$submission) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'No uploaded file found for this requirement.',
+                'row' => null,
+            ]);
+        }
+
+        $this->removeApplicantRequirementSubmissionFile($submission);
+
+        $submission->is_submitted = false;
+        $submission->date_submitted = null;
+        $submission->save();
+
+        $row = $this->applicantDocumentRows($applicant)
+            ->first(function ($item) use ($registrarRequirement) {
+                return (int) ($item['requirement_id'] ?? 0) === (int) $registrarRequirement->id;
+            });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Uploaded file deleted successfully.',
+            'row' => $row,
+        ]);
+    }
+
+    public function destroyApplicantDocumentAssignment(Applicant $applicant, RegistrarRequirement $registrarRequirement): JsonResponse
+    {
+        if (!$this->applicantDocumentTablesReady()) {
+            throw ValidationException::withMessages([
+                'policy_ids' => ['Applicant document tables are not ready.'],
+            ]);
+        }
+
+        $policyId = (int) $registrarRequirement->registrar_requirement_policy_id;
+        if ($policyId <= 0) {
+            throw ValidationException::withMessages([
+                'policy_ids' => ['Selected requirement is not linked to an active policy.'],
+            ]);
+        }
+
+        $submission = ApplicantRequirementSubmission::query()
+            ->with('file')
+            ->where('applicant_id', (int) $applicant->id)
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->first();
+
+        if ($submission) {
+            $this->removeApplicantRequirementSubmissionFile($submission);
+            $submission->delete();
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Requirement removed from the applicant.',
+            'requirement_id' => (int) $registrarRequirement->id,
+        ]);
+    }
+
+    private function removeApplicantRequirementSubmissionFile(ApplicantRequirementSubmission $submission): void
+    {
+        $submission->loadMissing('file');
+        $file = $submission->file;
+
+        if (!$file) {
+            if (!empty($submission->submission_file_id)) {
+                $submission->submission_file_id = null;
+                $submission->save();
+            }
+            return;
+        }
+
+        $disk = !empty($file->storage_disk) ? (string) $file->storage_disk : 'public';
+        $path = !empty($file->storage_path) ? (string) $file->storage_path : '';
+
+        if ($path !== '') {
+            Storage::disk($disk)->delete($path);
+        }
+
+        if ((int) $submission->submission_file_id === (int) $file->id) {
+            $submission->submission_file_id = null;
+            $submission->save();
+        }
+
+        $file->delete();
+    }
+
+    private function applicantDocumentTablesReady(): bool
+    {
+        return Schema::hasTable('applicant_requirement_submissions')
+            && Schema::hasTable('applicant_requirement_submission_files');
     }
 
     /**
@@ -5562,17 +6273,131 @@ class RegistrarController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    private function configuredSchedulingSchoolSemesters(): array
+    {
+        $schoolYears = [];
+        $semesterMap = [];
+
+        if (!Schema::hasTable('system_school_semesters')) {
+            return [
+                'school_years' => $schoolYears,
+                'semester_map' => $semesterMap,
+            ];
+        }
+
+        $appendConfiguredSemester = function ($schoolYear, $semester) use (&$schoolYears, &$semesterMap) {
+            $normalizedYear = trim((string) $schoolYear);
+            $normalizedSemester = $this->normalizeSlotMonitoringSemester((string) $semester);
+
+            if ($normalizedYear === '' || $normalizedSemester === '') {
+                return;
+            }
+
+            if (!array_key_exists($normalizedYear, $semesterMap)) {
+                $semesterMap[$normalizedYear] = [];
+                $schoolYears[] = $normalizedYear;
+            }
+
+            if (!in_array($normalizedSemester, $semesterMap[$normalizedYear], true)) {
+                $semesterMap[$normalizedYear][] = $normalizedSemester;
+            }
+        };
+
+        $hasSchoolYearColumn = Schema::hasColumn('system_school_semesters', 'school_year');
+        $hasSemesterColumn = Schema::hasColumn('system_school_semesters', 'semester');
+        $hasAcademicTermColumn = Schema::hasColumn('system_school_semesters', 'academic_term_id');
+
+        $selectColumns = ['id'];
+        if ($hasSchoolYearColumn) {
+            $selectColumns[] = 'school_year';
+        }
+        if ($hasSemesterColumn) {
+            $selectColumns[] = 'semester';
+        }
+        if ($hasAcademicTermColumn) {
+            $selectColumns[] = 'academic_term_id';
+        }
+
+        $rowsQuery = SystemSchoolSemester::query()
+            ->select($selectColumns)
+            ->orderByDesc('id');
+
+        if ($hasAcademicTermColumn) {
+            $rowsQuery->with('academicTerm:id,school_year,term');
+        }
+
+        $rows = $rowsQuery->get();
+
+        foreach ($rows as $row) {
+            $schoolYear = $hasSchoolYearColumn
+                ? trim((string) $row->getAttribute('school_year'))
+                : '';
+            $semester = $hasSemesterColumn
+                ? (string) $row->getAttribute('semester')
+                : '';
+
+            if (($schoolYear === '' || trim($semester) === '') && $row->academicTerm) {
+                if ($schoolYear === '') {
+                    $schoolYear = trim((string) $row->academicTerm->school_year);
+                }
+
+                if (trim($semester) === '') {
+                    $semester = (string) $row->academicTerm->term;
+                }
+            }
+
+            $appendConfiguredSemester($schoolYear, $semester);
+        }
+
+        if (!count($schoolYears)
+            && $hasAcademicTermColumn
+            && Schema::hasTable('academic_terms')) {
+            $linkedTerms = DB::table('system_school_semesters as sss')
+                ->join('academic_terms as at', 'at.id', '=', 'sss.academic_term_id')
+                ->select(['at.school_year', 'at.term'])
+                ->orderBy('sss.id', 'desc')
+                ->get();
+
+            foreach ($linkedTerms as $termRow) {
+                $appendConfiguredSemester(
+                    (string) ($termRow->school_year ?? ''),
+                    (string) ($termRow->term ?? '')
+                );
+            }
+        }
+
+        foreach ($semesterMap as $year => $yearSemesters) {
+            $semesterMap[$year] = collect($yearSemesters)
+                ->map(function ($value) {
+                    return $this->normalizeSlotMonitoringSemester((string) $value);
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->unique()
+                ->sortBy(function ($value) {
+                    return $this->slotMonitoringSemesterWeight((string) $value);
+                })
+                ->values()
+                ->all();
+        }
+
+        return [
+            'school_years' => array_values($schoolYears),
+            'semester_map' => $semesterMap,
+        ];
+    }
+
     private function slotMonitoringOptionsPayload($schoolYear = '', $semester = '', $courseId = 0, $optionsMode = '')
     {
         $baseQuery = $this->slotMonitoringSubjectBaseQuery();
 
-        $schoolYears = (clone $baseQuery)
-            ->select('sm_terms.school_year')
-            ->whereNotNull('sm_terms.school_year')
-            ->whereRaw("TRIM(sm_terms.school_year) <> ''")
-            ->distinct()
-            ->orderBy('sm_terms.school_year', 'desc')
-            ->pluck('sm_terms.school_year')
+        $configuredOptions = $this->configuredSchedulingSchoolSemesters();
+        $configuredSemesterMap = is_array($configuredOptions['semester_map'] ?? null)
+            ? $configuredOptions['semester_map']
+            : [];
+
+        $schoolYears = collect($configuredOptions['school_years'] ?? [])
             ->map(function ($value) {
                 return trim((string) $value);
             })
@@ -5582,6 +6407,23 @@ class RegistrarController extends Controller
             ->values();
 
         if ($schoolYears->isEmpty()) {
+            $schoolYears = (clone $baseQuery)
+                ->select('sm_terms.school_year')
+                ->whereNotNull('sm_terms.school_year')
+                ->whereRaw("TRIM(sm_terms.school_year) <> ''")
+                ->distinct()
+                ->orderBy('sm_terms.school_year', 'desc')
+                ->pluck('sm_terms.school_year')
+                ->map(function ($value) {
+                    return trim((string) $value);
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->values();
+        }
+
+        if ($schoolYears->isEmpty()) {
             $year = (int) date('Y');
             $schoolYears = collect([
                 ($year - 1) . '-' . $year,
@@ -5589,23 +6431,28 @@ class RegistrarController extends Controller
             ]);
         }
 
-        $semesterQuery = clone $baseQuery;
-        if ($schoolYear !== '') {
-            $semesterQuery->where('sm_terms.school_year', $schoolYear);
+        $semesters = collect();
+        if (count($configuredSemesterMap)) {
+            if ($schoolYear !== '' && array_key_exists($schoolYear, $configuredSemesterMap)) {
+                $semesters = collect($configuredSemesterMap[$schoolYear] ?? []);
+            } else {
+                $flattenedSemesters = [];
+                foreach ($configuredSemesterMap as $yearSemesters) {
+                    if (!is_array($yearSemesters)) {
+                        continue;
+                    }
+
+                    $flattenedSemesters = array_merge($flattenedSemesters, $yearSemesters);
+                }
+
+                $semesters = collect($flattenedSemesters);
+            }
         }
 
-        $semesters = collect(self::SLOT_MONITORING_ALLOWED_SEMESTERS)
-            ->merge(
-                $semesterQuery
-                    ->select('sm_terms.term')
-                    ->whereNotNull('sm_terms.term')
-                    ->whereRaw("TRIM(sm_terms.term) <> ''")
-                    ->distinct()
-                    ->pluck('sm_terms.term')
-                    ->map(function ($value) {
-                        return $this->normalizeSlotMonitoringSemester((string) $value);
-                    })
-            )
+        $semesters = $semesters
+            ->map(function ($value) {
+                return $this->normalizeSlotMonitoringSemester((string) $value);
+            })
             ->filter(function ($value) {
                 return $value !== '';
             })
@@ -5614,6 +6461,34 @@ class RegistrarController extends Controller
                 return $this->slotMonitoringSemesterWeight((string) $value);
             })
             ->values();
+
+        if ($semesters->isEmpty()) {
+            $semesterQuery = clone $baseQuery;
+            if ($schoolYear !== '') {
+                $semesterQuery->where('sm_terms.school_year', $schoolYear);
+            }
+
+            $semesters = collect(self::SLOT_MONITORING_ALLOWED_SEMESTERS)
+                ->merge(
+                    $semesterQuery
+                        ->select('sm_terms.term')
+                        ->whereNotNull('sm_terms.term')
+                        ->whereRaw("TRIM(sm_terms.term) <> ''")
+                        ->distinct()
+                        ->pluck('sm_terms.term')
+                        ->map(function ($value) {
+                            return $this->normalizeSlotMonitoringSemester((string) $value);
+                        })
+                )
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->unique()
+                ->sortBy(function ($value) {
+                    return $this->slotMonitoringSemesterWeight((string) $value);
+                })
+                ->values();
+        }
 
         $normalizedMode = strtolower(trim((string) $optionsMode));
         if ($normalizedMode === 'filters') {
@@ -6101,43 +6976,63 @@ class RegistrarController extends Controller
     public function sectionMergingData(Request $request): JsonResponse
     {
         $requestedSchoolYear = trim((string) $request->query('school_year', ''));
-        $requestedSemester = trim((string) $request->query('semester', ''));
+        $requestedSemester = $this->normalizeSlotMonitoringSemester((string) $request->query('semester', ''));
 
-        $semesterOrderSql = "FIELD(semester, 'First', 'Second', 'Summer')";
+        $configuredOptions = $this->configuredSchedulingSchoolSemesters();
+        $schoolYears = array_values($configuredOptions['school_years'] ?? []);
+        $semesterMap = is_array($configuredOptions['semester_map'] ?? null)
+            ? $configuredOptions['semester_map']
+            : [];
 
-        $configRows = SlotMonitoring::query()
-            ->select([
-                'school_year',
-                'semester',
-                DB::raw('COUNT(*) as row_count'),
-            ])
-            ->whereIn('semester', self::SLOT_MONITORING_ALLOWED_SEMESTERS)
-            ->whereNotNull('school_year')
-            ->where('school_year', '<>', '')
-            ->groupBy('school_year', 'semester')
-            ->orderBy('school_year', 'desc')
-            ->orderByRaw($semesterOrderSql)
-            ->get();
+        if (!count($schoolYears)) {
+            $configRows = SlotMonitoring::query()
+                ->select([
+                    'school_year',
+                    'semester',
+                    DB::raw('COUNT(*) as row_count'),
+                ])
+                ->whereNotNull('school_year')
+                ->where('school_year', '<>', '')
+                ->whereNotNull('semester')
+                ->where('semester', '<>', '')
+                ->groupBy('school_year', 'semester')
+                ->orderBy('school_year', 'desc')
+                ->orderByDesc('row_count')
+                ->get();
 
-        $schoolYears = [];
-        $semesterMap = [];
+            foreach ($configRows as $configRow) {
+                $year = trim((string) $configRow->school_year);
+                $semester = $this->normalizeSlotMonitoringSemester((string) $configRow->semester);
 
-        foreach ($configRows as $configRow) {
-            $year = trim((string) $configRow->school_year);
-            $semester = trim((string) $configRow->semester);
+                if ($year === '' || $semester === '') {
+                    continue;
+                }
 
-            if ($year === '' || $semester === '') {
-                continue;
+                if (!array_key_exists($year, $semesterMap)) {
+                    $semesterMap[$year] = [];
+                    $schoolYears[] = $year;
+                }
+
+                if (!in_array($semester, $semesterMap[$year], true)) {
+                    $semesterMap[$year][] = $semester;
+                }
             }
+        }
 
-            if (!array_key_exists($year, $semesterMap)) {
-                $semesterMap[$year] = [];
-                $schoolYears[] = $year;
-            }
-
-            if (!in_array($semester, $semesterMap[$year], true)) {
-                $semesterMap[$year][] = $semester;
-            }
+        foreach ($semesterMap as $year => $yearSemesters) {
+            $semesterMap[$year] = collect($yearSemesters)
+                ->map(function ($value) {
+                    return $this->normalizeSlotMonitoringSemester((string) $value);
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->unique()
+                ->sortBy(function ($value) {
+                    return $this->slotMonitoringSemesterWeight((string) $value);
+                })
+                ->values()
+                ->all();
         }
 
         $schoolYear = $requestedSchoolYear;
@@ -6148,39 +7043,50 @@ class RegistrarController extends Controller
         $semestersForYear = array_key_exists($schoolYear, $semesterMap)
             ? $semesterMap[$schoolYear]
             : self::SLOT_MONITORING_ALLOWED_SEMESTERS;
+        $semestersForYear = collect($semestersForYear)
+            ->map(function ($value) {
+                return $this->normalizeSlotMonitoringSemester((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->sortBy(function ($value) {
+                return $this->slotMonitoringSemesterWeight((string) $value);
+            })
+            ->values()
+            ->all();
 
         $semester = $requestedSemester;
         if ($semester === '' || !in_array($semester, $semestersForYear, true)) {
             $semester = !empty($semestersForYear) ? (string) $semestersForYear[0] : '';
         }
 
-        $rowsQuery = SlotMonitoring::query()
-            ->select([
-                'id',
-                'school_year',
-                'semester',
-                'course_id',
-                'section',
-                'subject',
-                'schedule',
-                'total_slots',
-                'enrolled_slots',
-            ])
-            ->with(['course:id,code,name']);
+        $rows = $this->sectionMergingRowsQuery((string) $schoolYear, (string) $semester)->get();
 
-        if ($schoolYear !== '') {
-            $rowsQuery->where('school_year', $schoolYear);
+        if ($rows->isEmpty() && $requestedSchoolYear === '' && $requestedSemester === '') {
+            foreach ($schoolYears as $candidateYear) {
+                $candidateSemesters = array_key_exists($candidateYear, $semesterMap)
+                    ? (array) $semesterMap[$candidateYear]
+                    : [];
+
+                foreach ($candidateSemesters as $candidateSemester) {
+                    $candidateRows = $this->sectionMergingRowsQuery(
+                        (string) $candidateYear,
+                        (string) $candidateSemester
+                    )->get();
+
+                    if ($candidateRows->isEmpty()) {
+                        continue;
+                    }
+
+                    $schoolYear = (string) $candidateYear;
+                    $semester = (string) $candidateSemester;
+                    $rows = $candidateRows;
+                    break 2;
+                }
+            }
         }
-
-        if ($semester !== '') {
-            $rowsQuery->where('semester', $semester);
-        }
-
-        $rows = $rowsQuery
-            ->orderBy('section')
-            ->orderBy('subject')
-            ->orderBy('id')
-            ->get();
 
         $mappedRows = $rows
             ->map(function (SlotMonitoring $slotMonitoring) {
@@ -6244,6 +7150,51 @@ class RegistrarController extends Controller
                 'total' => (int) $mappedRows->count(),
             ],
         ]);
+    }
+
+    private function sectionMergingRowsQuery(string $schoolYear, string $semester)
+    {
+        $rowsQuery = SlotMonitoring::query()
+            ->select([
+                'id',
+                'school_year',
+                'semester',
+                'course_id',
+                'section',
+                'subject',
+                'schedule',
+                'total_slots',
+                'enrolled_slots',
+            ])
+            ->with(['course:id,code,name']);
+
+        if ($schoolYear !== '') {
+            $rowsQuery->where('school_year', $schoolYear);
+        }
+
+        if ($semester !== '') {
+            $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                ->map(function ($value) {
+                    return strtolower(trim((string) $value));
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->values()
+                ->all();
+
+            if (count($semesterAliases)) {
+                $rowsQuery->whereIn(
+                    DB::raw("LOWER(TRIM(COALESCE(semester, '')))"),
+                    $semesterAliases
+                );
+            }
+        }
+
+        return $rowsQuery
+            ->orderBy('section')
+            ->orderBy('subject')
+            ->orderBy('id');
     }
 
     public function storeSectionMerging(StoreSectionMergingRequest $request): JsonResponse
@@ -6392,13 +7343,21 @@ class RegistrarController extends Controller
 
     private function resolveSectionMergingConsistencyError(SlotMonitoring $source, SlotMonitoring $target, $schoolYear, $semester)
     {
-        if ((string) $source->school_year !== $schoolYear || (string) $target->school_year !== $schoolYear) {
+        $normalizedSchoolYear = $this->normalizeSectionOfferingSchoolYear((string) $schoolYear);
+        $sourceSchoolYear = $this->normalizeSectionOfferingSchoolYear((string) $source->school_year);
+        $targetSchoolYear = $this->normalizeSectionOfferingSchoolYear((string) $target->school_year);
+
+        if ($sourceSchoolYear !== $normalizedSchoolYear || $targetSchoolYear !== $normalizedSchoolYear) {
             return [
                 'school_year' => ['Selected sections do not match the chosen school year.'],
             ];
         }
 
-        if ((string) $source->semester !== $semester || (string) $target->semester !== $semester) {
+        $normalizedSemester = $this->normalizeSlotMonitoringSemester((string) $semester);
+        $sourceSemester = $this->normalizeSlotMonitoringSemester((string) $source->semester);
+        $targetSemester = $this->normalizeSlotMonitoringSemester((string) $target->semester);
+
+        if ($sourceSemester !== $normalizedSemester || $targetSemester !== $normalizedSemester) {
             return [
                 'semester' => ['Selected sections do not match the chosen semester.'],
             ];
@@ -6459,7 +7418,21 @@ class RegistrarController extends Controller
      */
     public function studentEnrollment()
     {
-        return view('registrar.registrar-menu.student-management.student-enrollment');
+        $students = Student::query()
+            ->with('canonicalCourse')
+            ->orderBy('student_no')
+            ->get();
+
+        $courses = Course::query()
+            ->orderBy('code')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name']);
+
+        $applicants = Applicant::query()
+            ->orderBy('applicant_id')
+            ->get(['id', 'applicant_id', 'first_name', 'middle_name', 'last_name']);
+
+        return view('registrar.registrar-menu.student-management.student-enrollment', compact('students', 'courses', 'applicants'));
     }
 
     public function storeStudent(Request $request)
@@ -6510,6 +7483,68 @@ class RegistrarController extends Controller
         return redirect()->route('registrar.registrar-menu.student-mgmt.student-enrollment')
             ->with('success', 'Student profile created!')
             ->with('success_password', $defaultPass);
+    }
+
+    public function updateStudent(Request $request, Student $student): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => [
+                'required',
+                Rule::unique('students', 'student_no')->ignore($student->id),
+            ],
+            'name' => 'required|string',
+            'program' => 'nullable|string',
+            'year_level' => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($student, $validated) {
+            $student->student_no = $validated['student_no'];
+            $student->name = $validated['name'];
+            $student->program = $validated['program'] ?? $student->program;
+            $student->year_level = $validated['year_level'] ?? $student->year_level;
+            $student->save();
+
+            $student->loadMissing(['user', 'canonicalCourse']);
+            if ($student->user) {
+                $student->user->name = $student->name;
+                $student->user->username = $student->student_no;
+                $student->user->save();
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student profile updated successfully.',
+            'student' => [
+                'id' => (int) $student->id,
+                'student_no' => (string) $student->student_no,
+                'name' => (string) $student->name,
+                'program' => trim((string) ($student->program ?: optional($student->canonicalCourse)->name ?: 'N/A')),
+                'program_value' => (string) ($student->program ?: ''),
+                'program_label' => trim((string) ($student->program ?: optional($student->canonicalCourse)->name ?: 'N/A')),
+                'year_level' => trim((string) ($student->year_level ?: 'N/A')),
+                'year_level_value' => (string) ($student->year_level ?: ''),
+            ],
+        ]);
+    }
+
+    public function destroyStudent(Request $request, Student $student): JsonResponse
+    {
+        DB::transaction(function () use ($student) {
+            $student->loadMissing('user');
+
+            if ($student->user) {
+                $student->user->delete();
+            }
+
+            $student->delete();
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student profile deleted successfully.',
+            'student_id' => (int) $student->id,
+        ]);
     }
 
     /**
@@ -6801,40 +7836,101 @@ class RegistrarController extends Controller
             $setting = AlumniTrackerSetting::query()->latest('id')->first();
         }
 
-        $alumniSchoolYears = collect($alumniRows)
-            ->pluck('schoolYear')
-            ->filter()
-            ->unique()
+        $configuredOptions = $this->configuredSchedulingSchoolSemesters();
+        $configuredSchoolYears = collect($configuredOptions['school_years'] ?? [])
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
             ->values()
             ->all();
 
-        $alumniTerms = collect($alumniRows)
-            ->pluck('term')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+        $configuredSemesterMap = is_array($configuredOptions['semester_map'] ?? null)
+            ? $configuredOptions['semester_map']
+            : [];
 
-        $alumniConfig = [
-            'schoolYear' => $setting ? (string) $setting->school_year : (string) ($students->first()->school_year ?? '2025-2026'),
-            'term' => $setting ? (string) $setting->term : (string) ($students->first()->semester ?? 'Second'),
-        ];
+        $alumniSemesterMap = [];
+        foreach ($configuredSemesterMap as $schoolYear => $semesters) {
+            $normalizedSchoolYear = trim((string) $schoolYear);
+            if ($normalizedSchoolYear === '') {
+                continue;
+            }
 
-        if (!in_array($alumniConfig['schoolYear'], $alumniSchoolYears, true)) {
-            $alumniSchoolYears[] = $alumniConfig['schoolYear'];
+            $normalizedSemesters = collect((array) $semesters)
+                ->map(function ($value) {
+                    return $this->normalizeSlotMonitoringSemester((string) $value);
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->unique()
+                ->sortBy(function ($value) {
+                    return $this->slotMonitoringSemesterWeight((string) $value);
+                })
+                ->values()
+                ->all();
+
+            if (!count($normalizedSemesters)) {
+                continue;
+            }
+
+            $alumniSemesterMap[$normalizedSchoolYear] = $normalizedSemesters;
         }
-        if (!in_array($alumniConfig['term'], $alumniTerms, true)) {
-            $alumniTerms[] = $alumniConfig['term'];
-        }
+
+        $alumniSchoolYears = count($configuredSchoolYears)
+            ? $configuredSchoolYears
+            : collect($alumniRows)
+                ->pluck('schoolYear')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
 
         if (!count($alumniSchoolYears)) {
-            $alumniSchoolYears = ['2025-2026'];
+            $yearStart = (int) date('Y');
+            $alumniSchoolYears = [$yearStart . '-' . ($yearStart + 1)];
         }
+
+        $defaultSchoolYear = $setting
+            ? trim((string) $setting->school_year)
+            : (string) ($alumniSchoolYears[0] ?? '');
+        if ($defaultSchoolYear === '' || !in_array($defaultSchoolYear, $alumniSchoolYears, true)) {
+            $defaultSchoolYear = (string) $alumniSchoolYears[0];
+        }
+
+        $alumniTerms = array_key_exists($defaultSchoolYear, $alumniSemesterMap)
+            ? $alumniSemesterMap[$defaultSchoolYear]
+            : collect($alumniSemesterMap)
+                ->flatten(1)
+                ->unique()
+                ->values()
+                ->all();
+
         if (!count($alumniTerms)) {
             $alumniTerms = ['First', 'Second', 'Summer'];
         }
 
-        return view('registrar.registrar-menu.alumni-tracker', compact('alumniRows', 'alumniPrograms', 'alumniYearLevels', 'alumniConfig', 'alumniSchoolYears', 'alumniTerms'));
+        $defaultTerm = $this->normalizeSlotMonitoringSemester((string) ($setting ? $setting->term : ''));
+        if ($defaultTerm === '' || !in_array($defaultTerm, $alumniTerms, true)) {
+            $defaultTerm = (string) $alumniTerms[0];
+        }
+
+        $alumniConfig = [
+            'schoolYear' => $defaultSchoolYear,
+            'term' => $defaultTerm,
+        ];
+
+        return view('registrar.registrar-menu.alumni-tracker', compact(
+            'alumniRows',
+            'alumniPrograms',
+            'alumniYearLevels',
+            'alumniConfig',
+            'alumniSchoolYears',
+            'alumniTerms',
+            'alumniSemesterMap'
+        ));
     }
 
     public function alumniTrackerSaveConfig(Request $request): JsonResponse
@@ -6844,17 +7940,58 @@ class RegistrarController extends Controller
             'term' => 'required|string|max:30',
         ]);
 
+        $schoolYear = trim((string) $validated['school_year']);
+        $term = $this->normalizeSlotMonitoringSemester((string) $validated['term']);
+
+        $configuredOptions = $this->configuredSchedulingSchoolSemesters();
+        $schoolYearOptions = collect($configuredOptions['school_years'] ?? [])
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->values()
+            ->all();
+
+        if (count($schoolYearOptions) && !in_array($schoolYear, $schoolYearOptions, true)) {
+            throw ValidationException::withMessages([
+                'school_year' => ['Selected school year is not part of the current system configuration.'],
+            ]);
+        }
+
+        $semesterMap = is_array($configuredOptions['semester_map'] ?? null)
+            ? $configuredOptions['semester_map']
+            : [];
+        $allowedTerms = array_key_exists($schoolYear, $semesterMap)
+            ? collect((array) $semesterMap[$schoolYear])
+                ->map(function ($value) {
+                    return $this->normalizeSlotMonitoringSemester((string) $value);
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->values()
+                ->all()
+            : ['First', 'Second', 'Summer'];
+
+        if ($term === '' || (count($allowedTerms) && !in_array($term, $allowedTerms, true))) {
+            throw ValidationException::withMessages([
+                'term' => ['Selected term is not part of the current system configuration.'],
+            ]);
+        }
+
         if (Schema::hasTable('alumni_tracker_settings')) {
             $setting = AlumniTrackerSetting::query()->latest('id')->first();
             if ($setting) {
                 $setting->update([
-                    'school_year' => $validated['school_year'],
-                    'term' => $validated['term'],
+                    'school_year' => $schoolYear,
+                    'term' => $term,
                 ]);
             } else {
                 AlumniTrackerSetting::create([
-                    'school_year' => $validated['school_year'],
-                    'term' => $validated['term'],
+                    'school_year' => $schoolYear,
+                    'term' => $term,
                 ]);
             }
         }
@@ -6865,9 +8002,65 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Placeholder
      */
-    public function formsPlaceholder()
+    public function formsPlaceholder(Request $request)
     {
-        return view('registrar.forms.placeholder');
+        $configuredOptions = $this->configuredSchedulingSchoolSemesters();
+        $schoolYears = collect($configuredOptions['school_years'] ?? [])
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->values()
+            ->all();
+
+        if (!count($schoolYears)) {
+            $yearStart = (int) date('Y');
+            $schoolYears = [$yearStart . '-' . ($yearStart + 1)];
+        }
+
+        $semesterMap = is_array($configuredOptions['semester_map'] ?? null)
+            ? $configuredOptions['semester_map']
+            : [];
+
+        $selectedSchoolYear = trim((string) $request->query('school_year', (string) ($schoolYears[0] ?? '')));
+        if ($selectedSchoolYear === '' || !in_array($selectedSchoolYear, $schoolYears, true)) {
+            $selectedSchoolYear = (string) ($schoolYears[0] ?? '');
+        }
+
+        $termOptions = array_key_exists($selectedSchoolYear, $semesterMap)
+            ? collect((array) $semesterMap[$selectedSchoolYear])
+                ->map(function ($value) {
+                    return $this->normalizeSlotMonitoringSemester((string) $value);
+                })
+                ->filter(function ($value) {
+                    return $value !== '';
+                })
+                ->unique()
+                ->sortBy(function ($value) {
+                    return $this->slotMonitoringSemesterWeight((string) $value);
+                })
+                ->values()
+                ->all()
+            : [];
+
+        if (!count($termOptions)) {
+            $termOptions = ['First', 'Second', 'Summer'];
+        }
+
+        $selectedTerm = $this->normalizeSlotMonitoringSemester((string) $request->query('term', (string) $termOptions[0]));
+        if ($selectedTerm === '' || !in_array($selectedTerm, $termOptions, true)) {
+            $selectedTerm = (string) $termOptions[0];
+        }
+
+        return view('registrar.forms.placeholder', compact(
+            'schoolYears',
+            'semesterMap',
+            'termOptions',
+            'selectedSchoolYear',
+            'selectedTerm'
+        ));
     }
 
     /**

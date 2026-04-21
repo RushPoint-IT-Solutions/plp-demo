@@ -5,6 +5,40 @@
 @section('body-class', 'page-student-enrollment')
 
 @section('content')
+@php
+    $studentRows = collect($students ?? [])->values();
+    $applicantRows = collect($applicants ?? [])->map(function ($applicant) {
+        $fullName = trim(preg_replace('/\s+/', ' ', trim((string) $applicant->full_name)));
+
+        return [
+            'id' => (int) $applicant->id,
+            'applicant_id' => (string) $applicant->applicant_id,
+            'name' => $fullName,
+            'label' => trim(((string) $applicant->applicant_id) . ' - ' . $fullName),
+        ];
+    })->values();
+    $studentSortOptions = [
+        ['value' => 'asc', 'label' => 'Ascending'],
+        ['value' => 'desc', 'label' => 'Descending'],
+    ];
+    $studentProgramOptions = collect($courses ?? [])->map(function ($course) {
+        $label = trim(((string) ($course->code ?: '')) . ' - ' . ((string) ($course->name ?: '')));
+
+        return [
+            'value' => (string) $course->code,
+            'label' => $label !== '-' ? $label : ((string) $course->name ?: ('Course #' . $course->id)),
+        ];
+    })->prepend([
+        'value' => '',
+        'label' => 'Select Program',
+    ])->values()->all();
+    $studentYearOptions = [
+        ['value' => 'First', 'label' => 'First'],
+        ['value' => 'Second', 'label' => 'Second'],
+        ['value' => 'Third', 'label' => 'Third'],
+        ['value' => 'Fourth', 'label' => 'Fourth'],
+    ];
+@endphp
 
 @if(session('success'))
     <div class="alert alert-success" style="padding: 15px; margin: 15px 0; background: #d4edda; color: #155724; border-radius: 4px;">
@@ -44,10 +78,13 @@
                 </div>
                 <div class="se-sort-wrap">
                     <span class="app-filter-label">Sort</span>
-                    <select id="seSort" class="app-filter-select" onchange="sortEnrollmentRows()" style="width:100%;">
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'seSort',
+                        'name' => 'seSort',
+                        'options' => $studentSortOptions,
+                        'selected' => 'asc',
+                        'placeholder' => 'Ascending',
+                    ])
                 </div>
             </div>
             <div class="se-toolbar-right">
@@ -69,64 +106,31 @@
                     </tr>
                 </thead>
                 <tbody id="seTableBody">
-                    <tr data-student-id="2223A8137">
-                        <td>1</td>
-                        <td>2223A8137</td>
-                        <td><a href="#" class="se-name-link" onclick="openEnrollmentDetail('2223A8137', 'BARES, MARK JAY'); return false;">Bares, Mark Jay</a></td>
-                        <td>Bachelor Of Science In Computer Science</td>
-                        <td>Fourth</td>
-                        <td>
-                            <div class="se-row-actions">
-                                <button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal('2223A8137')" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-student-id="2223A8139">
-                        <td>2</td>
-                        <td>2223A8139</td>
-                        <td><a href="#" class="se-name-link" onclick="openEnrollmentDetail('2223A8139', 'DELA CRUZ, JUAN'); return false;">Dela Cruz, Juan</a></td>
-                        <td>Bachelor Of Science In Computer Science</td>
-                        <td>Fourth</td>
-                        <td>
-                            <div class="se-row-actions">
-                                <button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal('2223A8139')" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-student-id="2223A8140">
-                        <td>3</td>
-                        <td>2223A8140</td>
-                        <td><a href="#" class="se-name-link" onclick="openEnrollmentDetail('2223A8140', 'AUSTERO, ANDREA JANE'); return false;">Austero, Andrea Jane</a></td>
-                        <td>Bachelor Of Science In Computer Science</td>
-                        <td>Fourth</td>
-                        <td>
-                            <div class="se-row-actions">
-                                <button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal('2223A8140')" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-student-id="2223A8141">
-                        <td>4</td>
-                        <td>2223A8141</td>
-                        <td><a href="#" class="se-name-link" onclick="openEnrollmentDetail('2223A8141', 'SANTOS, MARIA'); return false;">Santos, Maria</a></td>
-                        <td>Bachelor Of Science In Computer Science</td>
-                        <td>Fourth</td>
-                        <td>
-                            <div class="se-row-actions">
-                                <button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal('2223A8141')" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @forelse($studentRows as $index => $student)
+                        <tr data-student-id="{{ $student->student_no }}" data-student-row-id="{{ $student->id }}" data-student-program-value="{{ $student->program }}" data-student-year-level-value="{{ $student->year_level }}">
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $student->student_no }}</td>
+                            <td><a href="#" class="se-name-link" onclick='openEnrollmentDetail(@json($student->student_no), @json($student->name)); return false;'>{{ $student->name }}</a></td>
+                            <td>{{ trim((string) (optional($student->canonicalCourse)->name ?: $student->program ?: 'N/A')) }}</td>
+                            <td>{{ $student->year_level ?: 'N/A' }}</td>
+                            <td>
+                                <div class="se-row-actions">
+                                    <button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal('{{ $student->id }}')" title="Edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                    </button>
+                                    <button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal('{{ $student->id }}')" title="Delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr class="se-empty-row">
+                            <td colspan="6">No students found.</td>
+                        </tr>
+                    @endforelse
                     <tr class="se-total-row">
-                        <td colspan="6" class="se-total-cell">Total Students: <strong id="seTotalCount">4</strong></td>
+                        <td colspan="6" class="se-total-cell">Total Students: <strong id="seTotalCount">{{ $studentRows->count() }}</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -142,8 +146,8 @@
             <div class="se-student-grid">
                 <div><span class="se-meta-label">Student Name:</span> <span id="seMetaName">BARES, MARK JAY</span></div>
                 <div><span class="se-meta-label">Student No.:</span> <span id="seMetaId">2223A8137</span></div>
-                <div><span class="se-meta-label">Program:</span> Bachelor Of Science In Computer Science</div>
-                <div><span class="se-meta-label">Year Level:</span> Fourth Year</div>
+                <div><span class="se-meta-label">Program:</span> <span id="seMetaProgram">Bachelor Of Science In Computer Science</span></div>
+                <div><span class="se-meta-label">Year Level:</span> <span id="seMetaYearLevel">Fourth Year</span></div>
                 <div><span class="se-meta-label">Status:</span> OLD (Regular) 3 Unit(s) Allowed (CY2223)</div>
                 <div><span class="se-meta-label">Section:</span> A</div>
                 <div><span class="se-meta-label">School Year:</span> 2025-2026</div>
@@ -244,22 +248,34 @@
             <div class="se-catalog-filters-row">
                 <div class="se-mini-field">
                     <span class="app-filter-label">Program</span>
-                    <select id="seCatalogProgramFilter" class="app-filter-select" onchange="filterCatalogRows()">
-                        <option value="">All Programs</option>
-                        <option value="BSIT" selected>BSIT</option>
-                        <option value="BSCS">BSCS</option>
-                        <option value="BSBA">BSBA</option>
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'seCatalogProgramFilter',
+                        'name' => 'seCatalogProgramFilter',
+                        'options' => [
+                            ['value' => '', 'label' => 'All Programs'],
+                            ['value' => 'BSIT', 'label' => 'BSIT'],
+                            ['value' => 'BSCS', 'label' => 'BSCS'],
+                            ['value' => 'BSBA', 'label' => 'BSBA'],
+                        ],
+                        'selected' => 'BSIT',
+                        'placeholder' => 'All Programs',
+                    ])
                 </div>
                 <div class="se-mini-field">
                     <span class="app-filter-label">Year Level</span>
-                    <select id="seCatalogYearFilter" class="app-filter-select" onchange="filterCatalogRows()">
-                        <option value="">All Years</option>
-                        <option value="1">1st</option>
-                        <option value="2">2nd</option>
-                        <option value="3">3rd</option>
-                        <option value="4" selected>4th</option>
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'seCatalogYearFilter',
+                        'name' => 'seCatalogYearFilter',
+                        'options' => [
+                            ['value' => '', 'label' => 'All Years'],
+                            ['value' => '1', 'label' => '1st'],
+                            ['value' => '2', 'label' => '2nd'],
+                            ['value' => '3', 'label' => '3rd'],
+                            ['value' => '4', 'label' => '4th'],
+                        ],
+                        'selected' => '4',
+                        'placeholder' => 'All Years',
+                    ])
                 </div>
             </div>
             <div class="se-subject-tools">
@@ -352,41 +368,59 @@
     <div class="pf-modal-overlay" id="seAddStudentModal" style="display:none;">
         <div class="pf-modal-box" style="max-width:520px;">
             <div class="pf-modal-title">Add Student</div>
+            <p class="se-modal-note">Search an applicant to auto-fill the student ID and name, or type them manually.</p>
             <form action="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment.store') }}" method="POST">
                 @csrf
                 <div class="se-modal-grid">
                     <div class="se-modal-field">
                         <label class="pf-modal-label">Student ID</label>
-                        <input type="text" name="student_no" id="seAddStudentId" class="pf-modal-input" placeholder="e.g. 2223A9001" required>
+                        @include('registrar.components.search-dropdown-input', [
+                            'id' => 'seAddStudentId',
+                            'name' => 'student_no',
+                            'placeholder' => 'Search applicant ID',
+                            'wrapperClass' => 'se-student-search-wrap',
+                            'dropdownId' => 'seAddStudentIdDropdown',
+                            'inputAttributes' => [
+                                'required' => true,
+                            ],
+                        ])
                     </div>
                     <div class="se-modal-field">
                         <label class="pf-modal-label">Student Name</label>
-                        <input type="text" name="name" id="seAddStudentName" class="pf-modal-input" placeholder="e.g. Juan Dela Cruz" required>
+                        @include('registrar.components.search-dropdown-input', [
+                            'id' => 'seAddStudentName',
+                            'name' => 'name',
+                            'placeholder' => 'Search applicant name',
+                            'wrapperClass' => 'se-student-search-wrap',
+                            'dropdownId' => 'seAddStudentNameDropdown',
+                            'inputAttributes' => [
+                                'required' => true,
+                            ],
+                        ])
                     </div>
                     <div class="se-modal-field">
                         <label class="pf-modal-label">Program</label>
-                        <select name="program" id="seAddStudentProgram" class="pf-modal-select" required>
-                            <option value="">Select Program</option>
-                            <option value="BSIT">BSIT</option>
-                            <option value="BSCS">BSCS</option>
-                            <option value="BSED">BSED</option>
-                            <option value="BSBA">BSBA</option>
-                            <option value="BSN">BSN</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'seAddStudentProgram',
+                            'name' => 'program',
+                            'options' => $studentProgramOptions,
+                            'selected' => '',
+                            'placeholder' => 'Select Program',
+                        ])
                     </div>
                     <div class="se-modal-field">
                         <label class="pf-modal-label">Year Level</label>
-                        <select name="year_level" id="seAddStudentYear" class="pf-modal-select" required>
-                            <option value="">Select Year Level</option>
-                            <option value="First">First</option>
-                            <option value="Second">Second</option>
-                            <option value="Third">Third</option>
-                            <option value="Fourth">Fourth</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'seAddStudentYear',
+                            'name' => 'year_level',
+                            'options' => $studentYearOptions,
+                            'selected' => '',
+                            'placeholder' => 'Select Year Level',
+                        ])
                     </div>
                     <!-- Hidden requirements based on typical registrar input defaults -->
                     <input type="hidden" name="school_year" value="{{ date('Y') }}-{{ date('Y')+1 }}">
-                    <input type="hidden" name="semester" value="1st Semester">
+                    <input type="hidden" name="semester" value="First">
                 </div>
                 <div class="pf-modal-actions" style="margin-top:14px;">
                     <button type="button" class="pf-modal-btn-cancel" onclick="closeAddStudentModal()">Cancel</button>
@@ -428,11 +462,23 @@
                 </div>
                 <div class="se-modal-field">
                     <label class="pf-modal-label">Program</label>
-                    <input type="text" id="seEditStudentProgram" class="pf-modal-input">
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'seEditStudentProgram',
+                        'name' => 'program',
+                        'options' => $studentProgramOptions,
+                        'selected' => '',
+                        'placeholder' => 'Select Program',
+                    ])
                 </div>
                 <div class="se-modal-field">
                     <label class="pf-modal-label">Year Level</label>
-                    <input type="text" id="seEditStudentYear" class="pf-modal-input">
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'seEditStudentYear',
+                        'name' => 'year_level',
+                        'options' => $studentYearOptions,
+                        'selected' => '',
+                        'placeholder' => 'Select Year Level',
+                    ])
                 </div>
             </div>
             <div class="pf-modal-actions" style="margin-top:14px;">
@@ -468,6 +514,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script>
 var seEditingStudentId = null;
 var seDeletingStudentId = null;
@@ -478,16 +525,267 @@ var seSubjectRowState = {
     columns: []
 };
 
+var seStudentUpdateUrlTemplate = @json(route('registrar.registrar-menu.student-mgmt.student-enrollment.update', ['student' => '__STUDENT__']));
+var seStudentDestroyUrlTemplate = @json(route('registrar.registrar-menu.student-mgmt.student-enrollment.destroy', ['student' => '__STUDENT__']));
+
+function getRegistrarCsrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? String(meta.getAttribute('content') || '') : '';
+}
+
+function buildStudentEndpoint(template, studentRef) {
+    return String(template || '').replace('__STUDENT__', encodeURIComponent(String(studentRef || '').trim()));
+}
+
+function refreshListboxSelect(selectEl) {
+    if (!selectEl) return;
+    if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refresh === 'function') {
+        window.registrarListboxSelect.refresh(selectEl);
+    }
+}
+
+function setListboxValue(selectId, value) {
+    var selectEl = document.getElementById(selectId);
+    if (!selectEl) return;
+    selectEl.value = value == null ? '' : String(value);
+    selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+    refreshListboxSelect(selectEl);
+}
+
+var seApplicantRows = @json($applicantRows);
+var seApplicantSearchState = {
+    selectedApplicantId: ''
+};
+
+function normalizeSearchText(value) {
+    return String(value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function getApplicantSearchRefs(sourceType) {
+    return sourceType === 'name'
+        ? {
+            input: document.getElementById('seAddStudentName'),
+            dropdown: document.getElementById('seAddStudentNameDropdown')
+        }
+        : {
+            input: document.getElementById('seAddStudentId'),
+            dropdown: document.getElementById('seAddStudentIdDropdown')
+        };
+}
+
+function closeApplicantSearchDropdown(dropdown) {
+    if (!dropdown) return;
+    dropdown.classList.remove('is-open');
+    dropdown.innerHTML = '';
+}
+
+function closeApplicantSearchDropdowns() {
+    closeApplicantSearchDropdown(document.getElementById('seAddStudentIdDropdown'));
+    closeApplicantSearchDropdown(document.getElementById('seAddStudentNameDropdown'));
+}
+
+function getApplicantCandidates(term) {
+    var query = normalizeSearchText(term);
+
+    if (!query) {
+        return seApplicantRows.slice(0, 12);
+    }
+
+    return seApplicantRows.filter(function (candidate) {
+        var applicantId = normalizeSearchText(candidate.applicant_id);
+        var applicantName = normalizeSearchText(candidate.name);
+        var applicantLabel = normalizeSearchText(candidate.label);
+
+        return applicantId.indexOf(query) !== -1 || applicantName.indexOf(query) !== -1 || applicantLabel.indexOf(query) !== -1;
+    }).slice(0, 12);
+}
+
+function renderApplicantSearchDropdown(dropdown, candidates) {
+    if (!dropdown) return;
+
+    if (!candidates.length) {
+        dropdown.innerHTML = '<div class="smrg-search-empty">No matching applicant found.</div>';
+        dropdown.classList.add('is-open');
+        return;
+    }
+
+    var html = '';
+    candidates.forEach(function (candidate) {
+        html += '<button type="button" class="smrg-search-option" data-se-applicant-id="' + escapeHtml(candidate.applicant_id) + '" data-se-applicant-name="' + escapeHtml(candidate.name) + '">' +
+            '<strong>' + escapeHtml(candidate.applicant_id) + '</strong> - ' + escapeHtml(candidate.name) +
+            '</button>';
+    });
+
+    dropdown.innerHTML = html;
+    dropdown.classList.add('is-open');
+}
+
+function openApplicantSearchDropdown(sourceType) {
+    var refs = getApplicantSearchRefs(sourceType);
+    if (!refs.input || !refs.dropdown) return;
+
+    renderApplicantSearchDropdown(refs.dropdown, getApplicantCandidates(refs.input.value));
+}
+
+function selectApplicantCandidate(candidate) {
+    if (!candidate) return;
+
+    var studentIdInput = document.getElementById('seAddStudentId');
+    var studentNameInput = document.getElementById('seAddStudentName');
+
+    if (studentIdInput) {
+        studentIdInput.value = candidate.applicant_id || '';
+    }
+    if (studentNameInput) {
+        studentNameInput.value = candidate.name || '';
+    }
+
+    seApplicantSearchState.selectedApplicantId = candidate.applicant_id || '';
+    closeApplicantSearchDropdowns();
+}
+
+function bindApplicantSearchInput(input, dropdown, sourceType) {
+    if (!input || !dropdown) return;
+
+    input.addEventListener('focus', function () {
+        openApplicantSearchDropdown(sourceType);
+    });
+
+    input.addEventListener('input', function () {
+        seApplicantSearchState.selectedApplicantId = '';
+        openApplicantSearchDropdown(sourceType);
+    });
+
+    input.addEventListener('blur', function () {
+        setTimeout(function () {
+            if (!dropdown.matches(':hover')) {
+                closeApplicantSearchDropdown(dropdown);
+            }
+        }, 120);
+    });
+
+    dropdown.addEventListener('mousedown', function (event) {
+        var option = event.target.closest('.smrg-search-option');
+        if (!option) return;
+
+        event.preventDefault();
+        selectApplicantCandidate({
+            applicant_id: option.getAttribute('data-se-applicant-id') || '',
+            name: option.getAttribute('data-se-applicant-name') || ''
+        });
+    });
+}
+
+function sendStudentJsonRequest(url, method, payload) {
+    var headers = {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+
+    var csrfToken = getRegistrarCsrfToken();
+    if (csrfToken) {
+        headers['X-CSRF-TOKEN'] = csrfToken;
+    }
+
+    var options = {
+        method: method,
+        credentials: 'same-origin',
+        headers: headers
+    };
+
+    if (payload !== undefined && payload !== null) {
+        headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(payload);
+    }
+
+    return fetch(url, options).then(function (response) {
+        return response.text().then(function (text) {
+            var data = null;
+            if (text) {
+                try {
+                    data = JSON.parse(text);
+                } catch (error) {
+                    data = null;
+                }
+            }
+
+            return {
+                response: response,
+                data: data
+            };
+        });
+    });
+}
+
+function getResponseMessage(payload, fallbackMessage) {
+    if (payload && payload.message) {
+        return String(payload.message);
+    }
+
+    if (payload && payload.errors) {
+        var errorKeys = Object.keys(payload.errors);
+        if (errorKeys.length) {
+            var firstError = payload.errors[errorKeys[0]];
+            if (firstError && firstError.length) {
+                return String(firstError[0]);
+            }
+        }
+    }
+
+    return fallbackMessage;
+}
+
+function isPersistedStudentRow(row) {
+    return !!(row && /^\d+$/.test(String(row.getAttribute('data-student-row-id') || '').trim()));
+}
+
+function replaceStudentRow(row, studentData, fallbackRowRef) {
+    if (!row || !studentData || !row.parentNode) return;
+
+    var studentNo = String(studentData.student_no || '').trim();
+    var studentName = String(studentData.name || '').trim();
+    var programLabel = String(studentData.program_label || studentData.program || 'N/A').trim() || 'N/A';
+    var programValue = String(studentData.program_value || studentData.program_code || '').trim();
+    var yearLevel = String(studentData.year_level_label || studentData.year_level || 'N/A').trim() || 'N/A';
+    var rowRef = String(studentData.id || fallbackRowRef || row.getAttribute('data-student-row-id') || '').trim();
+    var replacementRow = createEnrollmentRow(studentNo, studentName, programLabel, yearLevel, rowRef, programValue);
+
+    row.parentNode.replaceChild(replacementRow, row);
+}
+
 function openEnrollmentDetail(studentId, studentName) {
+    var row = getStudentRowById(studentId);
+
     document.getElementById('seMetaId').textContent = studentId;
     document.getElementById('seMetaName').textContent = studentName;
+
+    if (row) {
+        document.getElementById('seMetaId').textContent = String(row.getAttribute('data-student-id') || studentId || '');
+        document.getElementById('seMetaName').textContent = row.children[2] ? String(row.children[2].innerText || '').trim().toUpperCase() : studentName;
+        document.getElementById('seMetaProgram').textContent = row.children[3] ? String(row.children[3].innerText || '').trim() : 'N/A';
+        document.getElementById('seMetaYearLevel').textContent = row.children[4] ? String(row.children[4].innerText || '').trim() : 'N/A';
+    }
+
     document.getElementById('seListView').style.display = 'none';
     document.getElementById('seDetailView').style.display = 'block';
     updateCurrentUnitsTotal();
 }
 
 function getStudentRowById(studentId) {
-    return document.querySelector('#seTableBody tr[data-student-id="' + studentId + '"]');
+    var lookup = String(studentId || '').trim();
+    if (!lookup) return null;
+
+    var rows = document.querySelectorAll('#seTableBody tr');
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (row.classList.contains('se-total-row')) continue;
+
+        if (String(row.getAttribute('data-student-row-id') || '').trim() === lookup || String(row.getAttribute('data-student-id') || '').trim() === lookup) {
+            return row;
+        }
+    }
+
+    return null;
 }
 
 function openEditStudentModal(studentId) {
@@ -495,10 +793,10 @@ function openEditStudentModal(studentId) {
     if (!row) return;
 
     seEditingStudentId = studentId;
-    document.getElementById('seEditStudentId').value = row.children[1].innerText.trim();
-    document.getElementById('seEditStudentName').value = row.children[2].innerText.trim();
-    document.getElementById('seEditStudentProgram').value = row.children[3].innerText.trim();
-    document.getElementById('seEditStudentYear').value = row.children[4].innerText.trim();
+    document.getElementById('seEditStudentId').value = String(row.getAttribute('data-student-id') || '').trim();
+    document.getElementById('seEditStudentName').value = row.children[2] ? String(row.children[2].innerText || '').trim() : '';
+    setListboxValue('seEditStudentProgram', row.getAttribute('data-student-program-value') || '');
+    setListboxValue('seEditStudentYear', row.getAttribute('data-student-year-level-value') || (row.children[4] ? String(row.children[4].innerText || '').trim() : ''));
     document.getElementById('seEditStudentModal').style.display = 'flex';
 }
 
@@ -516,6 +814,8 @@ function saveEditedStudent() {
     var studentName = (document.getElementById('seEditStudentName').value || '').trim();
     var program = (document.getElementById('seEditStudentProgram').value || '').trim() || 'N/A';
     var yearLevel = (document.getElementById('seEditStudentYear').value || '').trim() || 'N/A';
+    var studentRowId = String(row.getAttribute('data-student-row-id') || '').trim();
+    var previousStudentNo = String(row.getAttribute('data-student-id') || '').trim();
 
     if (!studentId || !studentName) {
         if (typeof showRegistrarToast === 'function') {
@@ -524,27 +824,59 @@ function saveEditedStudent() {
         return;
     }
 
-    row.setAttribute('data-student-id', studentId);
-    row.children[1].textContent = studentId;
-    var editedLink = document.createElement('a');
-    editedLink.href = '#';
-    editedLink.className = 'se-name-link';
-    editedLink.textContent = studentName;
-    editedLink.addEventListener('click', function (evt) {
-        evt.preventDefault();
-        openEnrollmentDetail(studentId, studentName.toUpperCase());
-    });
-    row.children[2].innerHTML = '';
-    row.children[2].appendChild(editedLink);
-    row.children[3].textContent = program;
-    row.children[4].textContent = yearLevel;
-    row.children[5].innerHTML = '';
-    row.children[5].appendChild(buildRowActionCell(studentId).firstChild);
+    var payload = {
+        student_no: studentId,
+        name: studentName,
+        program: program === 'N/A' ? null : program,
+        year_level: yearLevel === 'N/A' ? null : yearLevel
+    };
 
-    closeEditStudentModal();
-    if (typeof showRegistrarToast === 'function') {
-        showRegistrarToast('Student updated successfully.', 'success');
+    var applyUpdate = function (studentData, successMessage) {
+        replaceStudentRow(row, studentData, studentId);
+        closeEditStudentModal();
+
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast(successMessage || 'Student updated successfully.', 'success');
+        }
+
+        if (document.getElementById('seDetailView').style.display === 'block' && document.getElementById('seMetaId').textContent === previousStudentNo) {
+            openEnrollmentDetail(studentData.student_no || studentId, studentData.name || studentName);
+        }
+    };
+
+    if (isPersistedStudentRow(row)) {
+        sendStudentJsonRequest(buildStudentEndpoint(seStudentUpdateUrlTemplate, studentRowId), 'PUT', payload).then(function (result) {
+            if (!result.response.ok) {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast(getResponseMessage(result.data, 'Unable to update student profile.'), 'error');
+                }
+                return;
+            }
+
+            applyUpdate(result.data && result.data.student ? result.data.student : {
+                id: studentRowId,
+                student_no: studentId,
+                name: studentName,
+                program_label: program,
+                program_value: program === 'N/A' ? '' : program,
+                year_level: yearLevel
+            }, result.data && result.data.message ? result.data.message : 'Student updated successfully.');
+        }).catch(function () {
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast('Unable to update student profile.', 'error');
+            }
+        });
+        return;
     }
+
+    applyUpdate({
+        id: '',
+        student_no: studentId,
+        name: studentName,
+        program_label: program,
+        program_value: program === 'N/A' ? '' : program,
+        year_level: yearLevel
+    }, 'Student updated successfully.');
 }
 
 function openDeleteStudentModal(studentId) {
@@ -563,18 +895,55 @@ function closeDeleteStudentModal() {
 function confirmDeleteStudent() {
     if (!seDeletingStudentId) return;
     var row = getStudentRowById(seDeletingStudentId);
-    if (row) row.remove();
-    closeDeleteStudentModal();
-    renumberEnrollmentRows();
-    updateEnrollmentTotal();
-    if (typeof showRegistrarToast === 'function') {
-        showRegistrarToast('Student deleted successfully.', 'success');
+    if (!row) return;
+
+    var studentRowId = String(row.getAttribute('data-student-row-id') || '').trim();
+    var previousStudentNo = String(row.getAttribute('data-student-id') || '').trim();
+
+    var finalizeDelete = function (successMessage) {
+        if (row.parentNode) {
+            row.parentNode.removeChild(row);
+        }
+
+        closeDeleteStudentModal();
+        renumberEnrollmentRows();
+        updateEnrollmentTotal();
+
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast(successMessage || 'Student deleted successfully.', 'success');
+        }
+
+        if (document.getElementById('seDetailView').style.display === 'block' && document.getElementById('seMetaId').textContent === previousStudentNo) {
+            document.getElementById('seDetailView').style.display = 'none';
+            document.getElementById('seListView').style.display = 'block';
+        }
+    };
+
+    if (isPersistedStudentRow(row)) {
+        sendStudentJsonRequest(buildStudentEndpoint(seStudentDestroyUrlTemplate, studentRowId), 'DELETE').then(function (result) {
+            if (!result.response.ok) {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast(getResponseMessage(result.data, 'Unable to delete student profile.'), 'error');
+                }
+                return;
+            }
+
+            finalizeDelete(result.data && result.data.message ? result.data.message : 'Student deleted successfully.');
+        }).catch(function () {
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast('Unable to delete student profile.', 'error');
+            }
+        });
+        return;
     }
+
+    finalizeDelete('Student deleted successfully.');
 }
 
 function buildRowActionCell(studentId) {
     var tdAction = document.createElement('td');
-    tdAction.innerHTML = '<div class="se-row-actions"><button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal(\'' + studentId + '\')" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>';
+    var actionRef = String(studentId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    tdAction.innerHTML = '<div class="se-row-actions"><button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal(\'' + actionRef + '\')" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal(\'' + actionRef + '\')" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>';
     return tdAction;
 }
 
@@ -587,10 +956,31 @@ function withdrawEnrollment() {
 }
 
 function openAddStudentModal() {
-    document.getElementById('seAddStudentModal').style.display = 'flex';
+    var modal = document.getElementById('seAddStudentModal');
+    var studentIdInput = document.getElementById('seAddStudentId');
+    var studentNameInput = document.getElementById('seAddStudentName');
+
+    if (studentIdInput) studentIdInput.value = '';
+    if (studentNameInput) studentNameInput.value = '';
+    setListboxValue('seAddStudentProgram', '');
+    setListboxValue('seAddStudentYear', '');
+    seApplicantSearchState.selectedApplicantId = '';
+    closeApplicantSearchDropdowns();
+
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+
+    setTimeout(function () {
+        if (studentIdInput) {
+            studentIdInput.focus();
+        }
+    }, 0);
 }
 
 function closeAddStudentModal() {
+    seApplicantSearchState.selectedApplicantId = '';
+    closeApplicantSearchDropdowns();
     document.getElementById('seAddStudentModal').style.display = 'none';
 }
 
@@ -695,9 +1085,14 @@ function normalizeHeaderKey(key) {
     return String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-function createEnrollmentRow(studentId, studentName, program, yearLevel) {
+function createEnrollmentRow(studentId, studentName, program, yearLevel, studentRowId, programValue) {
     var tr = document.createElement('tr');
     tr.setAttribute('data-student-id', studentId);
+    if (studentRowId) {
+        tr.setAttribute('data-student-row-id', studentRowId);
+    }
+    tr.setAttribute('data-student-program-value', programValue || '');
+    tr.setAttribute('data-student-year-level-value', yearLevel || '');
 
     var tdNo = document.createElement('td');
     tdNo.textContent = '0';
@@ -727,7 +1122,7 @@ function createEnrollmentRow(studentId, studentName, program, yearLevel) {
     tdYear.textContent = yearLevel;
     tr.appendChild(tdYear);
 
-    tr.appendChild(buildRowActionCell(studentId));
+    tr.appendChild(buildRowActionCell(studentRowId || studentId));
 
     return tr;
 }
@@ -1401,6 +1796,8 @@ updateEnrollmentTotal();
 filterCatalogRows();
 updateSubjectActionStates();
 updateEnrolledSectionBanner();
+bindApplicantSearchInput(document.getElementById('seAddStudentId'), document.getElementById('seAddStudentIdDropdown'), 'id');
+bindApplicantSearchInput(document.getElementById('seAddStudentName'), document.getElementById('seAddStudentNameDropdown'), 'name');
 
 (function formatInitialCurrentSchedules() {
     var rows = document.querySelectorAll('#seChangeFromTable tbody tr:not(.se-total-units-row)');
