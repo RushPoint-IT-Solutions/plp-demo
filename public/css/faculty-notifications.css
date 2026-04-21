@@ -1,1 +1,547 @@
-:root{--plp-green:#006837;--plp-green-dark:#005028;--plp-yellow:#ffd100;--plp-white:#fff;--plp-gray:#f5f5f5;--plp-border:#ccc}.faculty-body .topbar-user.topbar-profile-trigger,.parent-portal-body .topbar-user.topbar-profile-trigger,.registrar-body .topbar-user.topbar-profile-trigger{background-color:#f0f0f0;color:#444;box-shadow:none;transform:none}.faculty-body .topbar-user.topbar-profile-trigger:focus-visible,.faculty-body .topbar-user.topbar-profile-trigger:hover,.parent-portal-body .topbar-user.topbar-profile-trigger:focus-visible,.parent-portal-body .topbar-user.topbar-profile-trigger:hover,.registrar-body .topbar-user.topbar-profile-trigger:focus-visible,.registrar-body .topbar-user.topbar-profile-trigger:hover{background-color:#e8f4ed;color:#0a813c;box-shadow:0 2px 8px rgba(0,104,55,.2);transform:translateY(-1px)}.faculty-body .topbar-user.topbar-profile-trigger.is-active,.parent-portal-body .topbar-user.topbar-profile-trigger.is-active,.registrar-body .topbar-user.topbar-profile-trigger.is-active{background-color:#0a813c;color:#fff;box-shadow:0 4px 10px rgba(0,104,55,.25);transform:none}.faculty-body .topbar-avatar-placeholder,.faculty-body .topbar-avatar-placeholder--neutral,.faculty-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,.faculty-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,.faculty-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,.parent-portal-body .topbar-avatar-placeholder,.parent-portal-body .topbar-avatar-placeholder--neutral,.parent-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,.parent-portal-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,.parent-portal-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,.registrar-body .topbar-avatar-placeholder,.registrar-body .topbar-avatar-placeholder--neutral,.registrar-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,.registrar-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,.registrar-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder{background-color:transparent;color:inherit}.faculty-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,.faculty-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral,.parent-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,.parent-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral,.registrar-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,.registrar-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral{color:#fff}.faculty-body .topbar-icon-link,.parent-portal-body .topbar-icon-link,.registrar-body .topbar-icon-link{position:relative}.faculty-body .faculty-notif-badge,.parent-portal-body .faculty-notif-badge,.registrar-body .faculty-notif-badge{position:absolute;top:4px;right:5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#e0352d;color:#fff;font-size:.64rem;font-weight:700;line-height:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.26)}.faculty-body .modal-backdrop.show,.parent-portal-body .modal-backdrop.show,.registrar-body .modal-backdrop.show{background-color:#081b12;opacity:.72}.faculty-body .faculty-notif-modal .modal-dialog,.parent-portal-body .faculty-notif-modal .modal-dialog,.registrar-body .faculty-notif-modal .modal-dialog{max-width:640px;margin:1.5rem auto}.faculty-body .faculty-notif-detail-modal .modal-content,.faculty-body .faculty-notif-modal .modal-content,.parent-portal-body .faculty-notif-detail-modal .modal-content,.parent-portal-body .faculty-notif-modal .modal-content,.registrar-body .faculty-notif-detail-modal .modal-content,.registrar-body .faculty-notif-modal .modal-content{border:1px solid #cee1d6;border-radius:16px;overflow:hidden;box-shadow:0 22px 54px rgba(5,34,22,.3)}.faculty-body .faculty-notif-modal-header,.parent-portal-body .faculty-notif-modal-header,.registrar-body .faculty-notif-modal-header{background:linear-gradient(180deg,#0f7a4e,#0b6a43);border-bottom:1px solid hsla(0,0%,100%,.18);padding:14px 18px;text-align:center}.faculty-body .faculty-notif-modal-header .modal-title,.parent-portal-body .faculty-notif-modal-header .modal-title,.registrar-body .faculty-notif-modal-header .modal-title{margin:0;font-size:1.38rem;font-weight:800;letter-spacing:.08em;color:#fff}.faculty-body .faculty-notif-body,.parent-portal-body .faculty-notif-body,.registrar-body .faculty-notif-body{background:linear-gradient(180deg,#f5fbf8,#edf5f1);padding:14px;min-height:96px}.faculty-body .faculty-notif-list,.parent-portal-body .faculty-notif-list,.registrar-body .faculty-notif-list{display:flex;flex-direction:column;gap:10px}.faculty-body .faculty-notif-item,.parent-portal-body .faculty-notif-item,.registrar-body .faculty-notif-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #dce9e2;border-left:4px solid #1ea55d;border-radius:12px;padding:10px 12px;box-shadow:0 4px 12px rgba(10,54,34,.08)}.faculty-body .faculty-notif-item.is-read,.parent-portal-body .faculty-notif-item.is-read,.registrar-body .faculty-notif-item.is-read{border-left-color:#93b6a3;opacity:.92}.faculty-body .faculty-notif-text,.parent-portal-body .faculty-notif-text,.registrar-body .faculty-notif-text{flex:1;color:#2d3c34;font-size:1.03rem;font-weight:600;text-decoration:none;line-height:1.35;background:transparent;border:0;text-align:left;padding:0}.faculty-body .faculty-notif-text:focus,.faculty-body .faculty-notif-text:hover,.parent-portal-body .faculty-notif-text:focus,.parent-portal-body .faculty-notif-text:hover,.registrar-body .faculty-notif-text:focus,.registrar-body .faculty-notif-text:hover{color:#0a603d;text-decoration:none;outline:none}.faculty-body .faculty-notif-open,.parent-portal-body .faculty-notif-open,.registrar-body .faculty-notif-open{cursor:pointer}.faculty-body .faculty-notif-dismiss,.parent-portal-body .faculty-notif-dismiss,.registrar-body .faculty-notif-dismiss{width:28px;height:28px;border:0;border-radius:999px;background:#e9f7ef;color:#2fa85d;font-size:1.4rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:background-color .16s ease,color .16s ease}.faculty-body .faculty-notif-dismiss:hover,.parent-portal-body .faculty-notif-dismiss:hover,.registrar-body .faculty-notif-dismiss:hover{background:#e1f2e8;color:#188145}.faculty-body .faculty-notif-dismiss:disabled,.parent-portal-body .faculty-notif-dismiss:disabled,.registrar-body .faculty-notif-dismiss:disabled{opacity:.45;cursor:default}.faculty-body .faculty-notif-empty,.parent-portal-body .faculty-notif-empty,.registrar-body .faculty-notif-empty{margin:8px 0 2px;text-align:center;color:#54655d;font-size:.95rem;font-weight:600}.faculty-body .faculty-notif-detail-modal .modal-dialog,.parent-portal-body .faculty-notif-detail-modal .modal-dialog,.registrar-body .faculty-notif-detail-modal .modal-dialog{max-width:560px}.faculty-body .faculty-notif-detail-modal .faculty-notif-body,.parent-portal-body .faculty-notif-detail-modal .faculty-notif-body,.registrar-body .faculty-notif-detail-modal .faculty-notif-body{background:#fff;padding:18px 18px 12px}.faculty-body .faculty-notif-detail-message,.parent-portal-body .faculty-notif-detail-message,.registrar-body .faculty-notif-detail-message{margin:0;color:#33453c;font-size:1rem;font-weight:500;line-height:1.58;white-space:pre-line;overflow-wrap:anywhere}.faculty-body .faculty-notif-detail-footer,.parent-portal-body .faculty-notif-detail-footer,.registrar-body .faculty-notif-detail-footer{display:flex;justify-content:flex-end;padding:0 18px 16px;background:#fff}.faculty-body .faculty-notif-detail-close,.parent-portal-body .faculty-notif-detail-close,.registrar-body .faculty-notif-detail-close{border:0;border-radius:999px;background:#0f7a4e;color:#fff;font-size:.86rem;font-weight:700;min-width:92px;padding:8px 16px;cursor:pointer;transition:background-color .18s ease}.faculty-body .faculty-notif-detail-close:hover,.parent-portal-body .faculty-notif-detail-close:hover,.registrar-body .faculty-notif-detail-close:hover{background:#0a603d}@media (max-width:576px){.faculty-body .faculty-notif-modal-header .modal-title,.parent-portal-body .faculty-notif-modal-header .modal-title,.registrar-body .faculty-notif-modal-header .modal-title{font-size:1.18rem;letter-spacing:.06em}.faculty-body .faculty-notif-text,.parent-portal-body .faculty-notif-text,.registrar-body .faculty-notif-text{font-size:.93rem}}.applicant-body .topbar-icon-link,.student-portal-body .topbar-icon-link{position:relative}.applicant-body .faculty-notif-badge,.student-portal-body .faculty-notif-badge{position:absolute;top:4px;right:5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#e0352d;color:#fff;font-size:.64rem;font-weight:700;line-height:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.26)}.applicant-body .modal-backdrop.show,.student-portal-body .modal-backdrop.show{background-color:#081b12;opacity:.72}.applicant-body .faculty-notif-modal .modal-dialog,.student-portal-body .faculty-notif-modal .modal-dialog{max-width:640px;margin:1.5rem auto}.applicant-body .faculty-notif-detail-modal .modal-content,.applicant-body .faculty-notif-modal .modal-content,.student-portal-body .faculty-notif-detail-modal .modal-content,.student-portal-body .faculty-notif-modal .modal-content{border:1px solid #cee1d6;border-radius:16px;overflow:hidden;box-shadow:0 22px 54px rgba(5,34,22,.3)}.applicant-body .faculty-notif-modal-header,.student-portal-body .faculty-notif-modal-header{background:linear-gradient(180deg,#0f7a4e,#0b6a43);border-bottom:1px solid hsla(0,0%,100%,.18);padding:14px 18px;text-align:center}.applicant-body .faculty-notif-modal-header .modal-title,.student-portal-body .faculty-notif-modal-header .modal-title{margin:0;font-size:1.38rem;font-weight:800;letter-spacing:.08em;color:#fff}.applicant-body .faculty-notif-body,.student-portal-body .faculty-notif-body{background:linear-gradient(180deg,#f5fbf8,#edf5f1);padding:14px;min-height:96px}.applicant-body .faculty-notif-list,.student-portal-body .faculty-notif-list{display:flex;flex-direction:column;gap:10px}.applicant-body .faculty-notif-item,.student-portal-body .faculty-notif-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #dce9e2;border-left:4px solid #1ea55d;border-radius:12px;padding:10px 12px;box-shadow:0 4px 12px rgba(10,54,34,.08)}.applicant-body .faculty-notif-item.is-read,.student-portal-body .faculty-notif-item.is-read{border-left-color:#93b6a3;opacity:.92}.applicant-body .faculty-notif-text,.student-portal-body .faculty-notif-text{flex:1;color:#2d3c34;font-size:1.03rem;font-weight:600;text-decoration:none;line-height:1.35;background:transparent;border:0;text-align:left;padding:0}.applicant-body .faculty-notif-text:focus,.applicant-body .faculty-notif-text:hover,.student-portal-body .faculty-notif-text:focus,.student-portal-body .faculty-notif-text:hover{color:#0a603d;text-decoration:none;outline:none}.applicant-body .faculty-notif-open,.student-portal-body .faculty-notif-open{cursor:pointer}.applicant-body .faculty-notif-dismiss,.student-portal-body .faculty-notif-dismiss{width:28px;height:28px;border:0;border-radius:999px;background:#e9f7ef;color:#2fa85d;font-size:1.4rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:background-color .16s ease,color .16s ease}.applicant-body .faculty-notif-dismiss:hover,.student-portal-body .faculty-notif-dismiss:hover{background:#e1f2e8;color:#188145}.applicant-body .faculty-notif-dismiss:disabled,.student-portal-body .faculty-notif-dismiss:disabled{opacity:.45;cursor:default}.applicant-body .faculty-notif-empty,.student-portal-body .faculty-notif-empty{margin:8px 0 2px;text-align:center;color:#54655d;font-size:.95rem;font-weight:600}.applicant-body .faculty-notif-detail-modal .modal-dialog,.student-portal-body .faculty-notif-detail-modal .modal-dialog{max-width:560px}.applicant-body .faculty-notif-detail-modal .faculty-notif-body,.student-portal-body .faculty-notif-detail-modal .faculty-notif-body{background:#fff;padding:18px 18px 12px}.applicant-body .faculty-notif-detail-message,.student-portal-body .faculty-notif-detail-message{margin:0;color:#33453c;font-size:1rem;font-weight:500;line-height:1.58;white-space:pre-line;overflow-wrap:anywhere}.applicant-body .faculty-notif-detail-footer,.student-portal-body .faculty-notif-detail-footer{display:flex;justify-content:flex-end;padding:0 18px 16px;background:#fff}.applicant-body .faculty-notif-detail-close,.student-portal-body .faculty-notif-detail-close{border:0;border-radius:999px;background:#0f7a4e;color:#fff;font-size:.86rem;font-weight:700;min-width:92px;padding:8px 16px;cursor:pointer;transition:background-color .18s ease}.applicant-body .faculty-notif-detail-close:hover,.student-portal-body .faculty-notif-detail-close:hover{background:#0a603d}@media (max-width:576px){.applicant-body .faculty-notif-modal-header .modal-title,.student-portal-body .faculty-notif-modal-header .modal-title{font-size:1.18rem;letter-spacing:.06em}.applicant-body .faculty-notif-text,.student-portal-body .faculty-notif-text{font-size:.93rem}}
+:root {
+  --plp-green: #006837;
+  --plp-green-dark: #005028;
+  --plp-yellow: #ffd100;
+  --plp-white: #ffffff;
+  --plp-gray: #f5f5f5;
+  --plp-border: #cccccc;
+}
+
+.faculty-body .topbar-user.topbar-profile-trigger,
+.registrar-body .topbar-user.topbar-profile-trigger,
+.parent-portal-body .topbar-user.topbar-profile-trigger {
+  background-color: #f0f0f0;
+  color: #444;
+  box-shadow: none;
+  transform: none;
+}
+
+.faculty-body .topbar-user.topbar-profile-trigger:hover,
+.faculty-body .topbar-user.topbar-profile-trigger:focus-visible,
+.registrar-body .topbar-user.topbar-profile-trigger:hover,
+.registrar-body .topbar-user.topbar-profile-trigger:focus-visible,
+.parent-portal-body .topbar-user.topbar-profile-trigger:hover,
+.parent-portal-body .topbar-user.topbar-profile-trigger:focus-visible {
+  background-color: #e8f4ed;
+  color: #0a813c;
+  box-shadow: 0 2px 8px rgba(0, 104, 55, 0.2);
+  transform: translateY(-1px);
+}
+
+.faculty-body .topbar-user.topbar-profile-trigger.is-active,
+.registrar-body .topbar-user.topbar-profile-trigger.is-active,
+.parent-portal-body .topbar-user.topbar-profile-trigger.is-active {
+  background-color: #0a813c;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 104, 55, 0.25);
+  transform: none;
+}
+
+.faculty-body .topbar-avatar-placeholder,
+.faculty-body .topbar-avatar-placeholder--neutral,
+.registrar-body .topbar-avatar-placeholder,
+.registrar-body .topbar-avatar-placeholder--neutral,
+.parent-portal-body .topbar-avatar-placeholder,
+.parent-portal-body .topbar-avatar-placeholder--neutral {
+  background-color: transparent;
+  color: inherit;
+}
+
+.faculty-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,
+.faculty-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,
+.faculty-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
+.registrar-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,
+.registrar-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,
+.registrar-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
+.parent-portal-body .topbar-user.topbar-profile-trigger:hover .topbar-avatar-placeholder,
+.parent-portal-body .topbar-user.topbar-profile-trigger:focus-visible .topbar-avatar-placeholder,
+.parent-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder {
+  background-color: transparent;
+  color: inherit;
+}
+
+.faculty-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
+.faculty-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral,
+.registrar-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
+.registrar-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral,
+.parent-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder,
+.parent-portal-body .topbar-user.topbar-profile-trigger.is-active .topbar-avatar-placeholder--neutral {
+  color: #fff;
+}
+
+.faculty-body .topbar-icon-link,
+.registrar-body .topbar-icon-link,
+.parent-portal-body .topbar-icon-link {
+  position: relative;
+}
+
+.faculty-body .faculty-notif-badge,
+.registrar-body .faculty-notif-badge,
+.parent-portal-body .faculty-notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #e0352d;
+  color: #ffffff;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+}
+
+.faculty-body .modal-backdrop.show,
+.registrar-body .modal-backdrop.show,
+.parent-portal-body .modal-backdrop.show {
+  background-color: #081b12;
+  opacity: 0.72;
+}
+
+.faculty-body .faculty-notif-modal .modal-dialog,
+.registrar-body .faculty-notif-modal .modal-dialog,
+.parent-portal-body .faculty-notif-modal .modal-dialog {
+  max-width: 640px;
+  margin: 1.5rem auto;
+}
+
+.faculty-body .faculty-notif-modal .modal-content,
+.faculty-body .faculty-notif-detail-modal .modal-content,
+.registrar-body .faculty-notif-modal .modal-content,
+.registrar-body .faculty-notif-detail-modal .modal-content,
+.parent-portal-body .faculty-notif-modal .modal-content,
+.parent-portal-body .faculty-notif-detail-modal .modal-content {
+  border: 1px solid #cee1d6;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 22px 54px rgba(5, 34, 22, 0.3);
+}
+
+.faculty-body .faculty-notif-modal-header,
+.registrar-body .faculty-notif-modal-header,
+.parent-portal-body .faculty-notif-modal-header {
+  background: linear-gradient(180deg, #0f7a4e 0%, #0b6a43 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 14px 18px;
+  text-align: center;
+}
+
+.faculty-body .faculty-notif-modal-header .modal-title,
+.registrar-body .faculty-notif-modal-header .modal-title,
+.parent-portal-body .faculty-notif-modal-header .modal-title {
+  margin: 0;
+  font-size: 1.38rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+.faculty-body .faculty-notif-body,
+.registrar-body .faculty-notif-body,
+.parent-portal-body .faculty-notif-body {
+  background: linear-gradient(180deg, #f5fbf8 0%, #edf5f1 100%);
+  padding: 14px;
+  min-height: 96px;
+}
+
+.faculty-body .faculty-notif-list,
+.registrar-body .faculty-notif-list,
+.parent-portal-body .faculty-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faculty-body .faculty-notif-item,
+.registrar-body .faculty-notif-item,
+.parent-portal-body .faculty-notif-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #dce9e2;
+  border-left: 4px solid #1ea55d;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(10, 54, 34, 0.08);
+}
+
+.faculty-body .faculty-notif-item.is-read,
+.registrar-body .faculty-notif-item.is-read,
+.parent-portal-body .faculty-notif-item.is-read {
+  border-left-color: #93b6a3;
+  opacity: 0.92;
+}
+
+.faculty-body .faculty-notif-text,
+.registrar-body .faculty-notif-text,
+.parent-portal-body .faculty-notif-text {
+  flex: 1;
+  color: #2d3c34;
+  font-size: 1.03rem;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.35;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  padding: 0;
+}
+
+.faculty-body .faculty-notif-text:hover,
+.faculty-body .faculty-notif-text:focus,
+.registrar-body .faculty-notif-text:hover,
+.registrar-body .faculty-notif-text:focus,
+.parent-portal-body .faculty-notif-text:hover,
+.parent-portal-body .faculty-notif-text:focus {
+  color: #0a603d;
+  text-decoration: none;
+  outline: none;
+}
+
+.faculty-body .faculty-notif-open,
+.registrar-body .faculty-notif-open,
+.parent-portal-body .faculty-notif-open {
+  cursor: pointer;
+}
+
+.faculty-body .faculty-notif-dismiss,
+.registrar-body .faculty-notif-dismiss,
+.parent-portal-body .faculty-notif-dismiss {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #e9f7ef;
+  color: #2fa85d;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.faculty-body .faculty-notif-dismiss:hover,
+.registrar-body .faculty-notif-dismiss:hover,
+.parent-portal-body .faculty-notif-dismiss:hover {
+  background: #e1f2e8;
+  color: #188145;
+}
+
+.faculty-body .faculty-notif-dismiss:disabled,
+.registrar-body .faculty-notif-dismiss:disabled,
+.parent-portal-body .faculty-notif-dismiss:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.faculty-body .faculty-notif-empty,
+.registrar-body .faculty-notif-empty,
+.parent-portal-body .faculty-notif-empty {
+  margin: 8px 0 2px;
+  text-align: center;
+  color: #54655d;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.faculty-body .faculty-notif-detail-modal .modal-dialog,
+.registrar-body .faculty-notif-detail-modal .modal-dialog,
+.parent-portal-body .faculty-notif-detail-modal .modal-dialog {
+  max-width: 560px;
+}
+
+.faculty-body .faculty-notif-detail-modal .faculty-notif-body,
+.registrar-body .faculty-notif-detail-modal .faculty-notif-body,
+.parent-portal-body .faculty-notif-detail-modal .faculty-notif-body {
+  background: #ffffff;
+  padding: 18px 18px 12px;
+}
+
+.faculty-body .faculty-notif-detail-message,
+.registrar-body .faculty-notif-detail-message,
+.parent-portal-body .faculty-notif-detail-message {
+  margin: 0;
+  color: #33453c;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.58;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.faculty-body .faculty-notif-detail-footer,
+.registrar-body .faculty-notif-detail-footer,
+.parent-portal-body .faculty-notif-detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 18px 16px;
+  background: #ffffff;
+}
+
+.faculty-body .faculty-notif-detail-close,
+.registrar-body .faculty-notif-detail-close,
+.parent-portal-body .faculty-notif-detail-close {
+  border: 0;
+  border-radius: 999px;
+  background: #0f7a4e;
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  min-width: 92px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.faculty-body .faculty-notif-detail-close:hover,
+.registrar-body .faculty-notif-detail-close:hover,
+.parent-portal-body .faculty-notif-detail-close:hover {
+  background: #0a603d;
+}
+
+@media (max-width: 576px) {
+  .faculty-body .faculty-notif-modal-header .modal-title,
+  .registrar-body .faculty-notif-modal-header .modal-title,
+  .parent-portal-body .faculty-notif-modal-header .modal-title {
+    font-size: 1.18rem;
+    letter-spacing: 0.06em;
+  }
+
+  .faculty-body .faculty-notif-text,
+  .registrar-body .faculty-notif-text,
+  .parent-portal-body .faculty-notif-text {
+    font-size: 0.93rem;
+  }
+}
+
+.student-portal-body .topbar-icon-link,
+.applicant-body .topbar-icon-link {
+  position: relative;
+}
+
+.student-portal-body .faculty-notif-badge,
+.applicant-body .faculty-notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #e0352d;
+  color: #ffffff;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+}
+
+.student-portal-body .modal-backdrop.show,
+.applicant-body .modal-backdrop.show {
+  background-color: #081b12;
+  opacity: 0.72;
+}
+
+.student-portal-body .faculty-notif-modal .modal-dialog,
+.applicant-body .faculty-notif-modal .modal-dialog {
+  max-width: 640px;
+  margin: 1.5rem auto;
+}
+
+.student-portal-body .faculty-notif-modal .modal-content,
+.student-portal-body .faculty-notif-detail-modal .modal-content,
+.applicant-body .faculty-notif-modal .modal-content,
+.applicant-body .faculty-notif-detail-modal .modal-content {
+  border: 1px solid #cee1d6;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 22px 54px rgba(5, 34, 22, 0.3);
+}
+
+.student-portal-body .faculty-notif-modal-header,
+.applicant-body .faculty-notif-modal-header {
+  background: linear-gradient(180deg, #0f7a4e 0%, #0b6a43 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 14px 18px;
+  text-align: center;
+}
+
+.student-portal-body .faculty-notif-modal-header .modal-title,
+.applicant-body .faculty-notif-modal-header .modal-title {
+  margin: 0;
+  font-size: 1.38rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+.student-portal-body .faculty-notif-body,
+.applicant-body .faculty-notif-body {
+  background: linear-gradient(180deg, #f5fbf8 0%, #edf5f1 100%);
+  padding: 14px;
+  min-height: 96px;
+}
+
+.student-portal-body .faculty-notif-list,
+.applicant-body .faculty-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.student-portal-body .faculty-notif-item,
+.applicant-body .faculty-notif-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #dce9e2;
+  border-left: 4px solid #1ea55d;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(10, 54, 34, 0.08);
+}
+
+.student-portal-body .faculty-notif-item.is-read,
+.applicant-body .faculty-notif-item.is-read {
+  border-left-color: #93b6a3;
+  opacity: 0.92;
+}
+
+.student-portal-body .faculty-notif-text,
+.applicant-body .faculty-notif-text {
+  flex: 1;
+  color: #2d3c34;
+  font-size: 1.03rem;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.35;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  padding: 0;
+}
+
+.student-portal-body .faculty-notif-text:hover,
+.student-portal-body .faculty-notif-text:focus,
+.applicant-body .faculty-notif-text:hover,
+.applicant-body .faculty-notif-text:focus {
+  color: #0a603d;
+  text-decoration: none;
+  outline: none;
+}
+
+.student-portal-body .faculty-notif-open,
+.applicant-body .faculty-notif-open {
+  cursor: pointer;
+}
+
+.student-portal-body .faculty-notif-dismiss,
+.applicant-body .faculty-notif-dismiss {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #e9f7ef;
+  color: #2fa85d;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.student-portal-body .faculty-notif-dismiss:hover,
+.applicant-body .faculty-notif-dismiss:hover {
+  background: #e1f2e8;
+  color: #188145;
+}
+
+.student-portal-body .faculty-notif-dismiss:disabled,
+.applicant-body .faculty-notif-dismiss:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.student-portal-body .faculty-notif-empty,
+.applicant-body .faculty-notif-empty {
+  margin: 8px 0 2px;
+  text-align: center;
+  color: #54655d;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.student-portal-body .faculty-notif-detail-modal .modal-dialog,
+.applicant-body .faculty-notif-detail-modal .modal-dialog {
+  max-width: 560px;
+}
+
+.student-portal-body .faculty-notif-detail-modal .faculty-notif-body,
+.applicant-body .faculty-notif-detail-modal .faculty-notif-body {
+  background: #ffffff;
+  padding: 18px 18px 12px;
+}
+
+.student-portal-body .faculty-notif-detail-message,
+.applicant-body .faculty-notif-detail-message {
+  margin: 0;
+  color: #33453c;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.58;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.student-portal-body .faculty-notif-detail-footer,
+.applicant-body .faculty-notif-detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 18px 16px;
+  background: #ffffff;
+}
+
+.student-portal-body .faculty-notif-detail-close,
+.applicant-body .faculty-notif-detail-close {
+  border: 0;
+  border-radius: 999px;
+  background: #0f7a4e;
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  min-width: 92px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.student-portal-body .faculty-notif-detail-close:hover,
+.applicant-body .faculty-notif-detail-close:hover {
+  background: #0a603d;
+}
+
+@media (max-width: 576px) {
+  .student-portal-body .faculty-notif-modal-header .modal-title,
+  .applicant-body .faculty-notif-modal-header .modal-title {
+    font-size: 1.18rem;
+    letter-spacing: 0.06em;
+  }
+
+  .student-portal-body .faculty-notif-text,
+  .applicant-body .faculty-notif-text {
+    font-size: 0.93rem;
+  }
+}
+
