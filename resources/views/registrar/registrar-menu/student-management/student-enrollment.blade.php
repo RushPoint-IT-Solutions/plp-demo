@@ -6,7 +6,10 @@
 
 @section('content')
 @php
-    $studentRows = collect($students ?? [])->values();
+    $studentRows = $students;
+    $studentTotal = method_exists($students, 'total') ? $students->total() : collect($students ?? [])->count();
+    $studentSearch = (string) ($search ?? request('q', ''));
+    $studentSortDirection = (string) ($sortDirection ?? request('sort', 'asc'));
     $applicantRows = collect($applicants ?? [])->map(function ($applicant) {
         $fullName = trim(preg_replace('/\s+/', ' ', trim((string) $applicant->full_name)));
 
@@ -63,7 +66,7 @@
 <div class="pf-page">
     <div id="seListView">
         <div class="se-toolbar">
-            <div class="se-toolbar-left">
+            <form class="se-toolbar-left" id="seFilterForm" method="GET" action="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment') }}">
                 <div class="se-search-wrap">
                     <span class="app-filter-label">Search</span>
                     <div class="pf-search-wrap" style="max-width:100%;">
@@ -73,20 +76,20 @@
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
                         </span>
-                        <input type="text" id="seSearch" class="pf-search-input" placeholder="Search Student ID / Name" oninput="filterEnrollmentRows()">
+                        <input type="text" id="seSearch" name="q" class="pf-search-input" placeholder="Search Student ID / Name" value="{{ $studentSearch }}" oninput="filterEnrollmentRows()" autocomplete="off">
                     </div>
                 </div>
                 <div class="se-sort-wrap">
                     <span class="app-filter-label">Sort</span>
                     @include('registrar.components.listbox-select', [
                         'id' => 'seSort',
-                        'name' => 'seSort',
+                            'name' => 'sort',
                         'options' => $studentSortOptions,
-                        'selected' => 'asc',
+                            'selected' => $studentSortDirection,
                         'placeholder' => 'Ascending',
                     ])
                 </div>
-            </div>
+                </form>
             <div class="se-toolbar-right">
                 <button type="button" class="pf-btn-new" onclick="openImportCsvModal()">Import CSV</button>
                 <button type="button" class="pf-btn-new" onclick="openAddStudentModal()">+Add Student</button>
@@ -94,7 +97,7 @@
         </div>
 
         <div class="student-table-wrapper table-responsive">
-            <table class="student-table registrar-table" id="seTable">
+            <table class="student-table registrar-table" id="seTable" data-no-auto-pager="1" data-total-students="{{ $studentTotal }}">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -108,7 +111,7 @@
                 <tbody id="seTableBody">
                     @forelse($studentRows as $index => $student)
                         <tr data-student-id="{{ $student->student_no }}" data-student-row-id="{{ $student->id }}" data-student-program-value="{{ $student->program }}" data-student-year-level-value="{{ $student->year_level }}">
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ ($studentRows->firstItem() ?? 0) + $index }}</td>
                             <td>{{ $student->student_no }}</td>
                             <td><a href="#" class="se-name-link" onclick='openEnrollmentDetail(@json($student->student_no), @json($student->name)); return false;'>{{ $student->name }}</a></td>
                             <td>{{ trim((string) (optional($student->canonicalCourse)->name ?: $student->program ?: 'N/A')) }}</td>
@@ -130,10 +133,14 @@
                         </tr>
                     @endforelse
                     <tr class="se-total-row">
-                        <td colspan="6" class="se-total-cell">Total Students: <strong id="seTotalCount">{{ $studentRows->count() }}</strong></td>
+                        <td colspan="6" class="se-total-cell">Total Students: <strong id="seTotalCount">{{ $studentTotal }}</strong></td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="app-table-pager se-pagination">
+            {{ $studentRows->links() }}
         </div>
     </div>
 
@@ -907,7 +914,7 @@ function confirmDeleteStudent() {
 
         closeDeleteStudentModal();
         renumberEnrollmentRows();
-        updateEnrollmentTotal();
+        adjustEnrollmentTotal(-1);
 
         if (typeof showRegistrarToast === 'function') {
             showRegistrarToast(successMessage || 'Student deleted successfully.', 'success');
@@ -1005,7 +1012,7 @@ function saveAddedStudent() {
     var row = createEnrollmentRow(studentId, studentName, program, yearLevel);
     tbody.insertBefore(row, totalRow);
     renumberEnrollmentRows();
-    updateEnrollmentTotal();
+    adjustEnrollmentTotal(1);
 
     document.getElementById('seAddStudentId').value = '';
     document.getElementById('seAddStudentName').value = '';
@@ -1183,7 +1190,7 @@ function importEnrollmentCsv(csvText) {
 
     if (imported > 0) {
         renumberEnrollmentRows();
-        updateEnrollmentTotal();
+        adjustEnrollmentTotal(imported);
     }
 
     return imported;
@@ -1201,12 +1208,13 @@ function renumberEnrollmentRows() {
 }
 
 function updateEnrollmentTotal() {
-    var tbody = document.getElementById('seTableBody');
+    var table = document.getElementById('seTable');
     var totalEl = document.getElementById('seTotalCount');
-    if (!tbody || !totalEl) return;
-    var total = Array.from(tbody.querySelectorAll('tr')).filter(function (row) {
-        return !row.classList.contains('se-total-row');
-    }).length;
+    if (!table || !totalEl) return;
+    var total = parseInt(table.getAttribute('data-total-students') || totalEl.textContent || '0', 10);
+    if (isNaN(total)) {
+        total = 0;
+    }
     totalEl.textContent = String(total);
 }
 
@@ -1765,31 +1773,45 @@ function saveSubjectRowModal() {
 }
 
 function filterEnrollmentRows() {
-    var term = (document.getElementById('seSearch').value || '').toLowerCase().trim();
-    var rows = Array.from(document.querySelectorAll('#seTableBody tr'));
-    rows.forEach(function (row) {
-        if (row.classList.contains('se-total-row')) return;
-        var text = row.innerText.toLowerCase();
-        row.style.display = text.indexOf(term) > -1 ? '' : 'none';
-    });
+    if (seFilterSubmitTimer) {
+        clearTimeout(seFilterSubmitTimer);
+    }
+
+    seFilterSubmitTimer = setTimeout(function () {
+        seFilterSubmitTimer = null;
+        submitEnrollmentFilterForm();
+    }, 280);
 }
 
 function sortEnrollmentRows() {
-    var tbody = document.getElementById('seTableBody');
-    var totalRow = tbody.querySelector('.se-total-row');
-    var rows = Array.from(tbody.querySelectorAll('tr')).filter(function (row) {
-        return !row.classList.contains('se-total-row');
-    });
-    var mode = document.getElementById('seSort').value;
-    rows.sort(function (a, b) {
-        var nameA = a.children[2].innerText.toLowerCase();
-        var nameB = b.children[2].innerText.toLowerCase();
-        return mode === 'desc' ? nameB.localeCompare(nameA) : nameA.localeCompare(nameB);
-    });
-    rows.forEach(function (row, idx) {
-        tbody.insertBefore(row, totalRow);
-    });
-    renumberEnrollmentRows();
+    submitEnrollmentFilterForm();
+}
+
+var seFilterSubmitTimer = null;
+
+function submitEnrollmentFilterForm() {
+    var form = document.getElementById('seFilterForm');
+    if (!form) return;
+    if (seFilterSubmitTimer) {
+        clearTimeout(seFilterSubmitTimer);
+        seFilterSubmitTimer = null;
+    }
+    form.submit();
+}
+
+function adjustEnrollmentTotal(delta) {
+    var table = document.getElementById('seTable');
+    var totalEl = document.getElementById('seTotalCount');
+    if (!table || !totalEl) return;
+
+    var currentTotal = parseInt(table.getAttribute('data-total-students') || totalEl.textContent || '0', 10);
+    if (isNaN(currentTotal)) {
+        currentTotal = 0;
+    }
+
+    currentTotal = Math.max(0, currentTotal + (parseInt(delta, 10) || 0));
+    table.setAttribute('data-total-students', String(currentTotal));
+    totalEl.textContent = String(currentTotal);
 }
 
 updateEnrollmentTotal();
@@ -1798,6 +1820,21 @@ updateSubjectActionStates();
 updateEnrolledSectionBanner();
 bindApplicantSearchInput(document.getElementById('seAddStudentId'), document.getElementById('seAddStudentIdDropdown'), 'id');
 bindApplicantSearchInput(document.getElementById('seAddStudentName'), document.getElementById('seAddStudentNameDropdown'), 'name');
+
+var seFilterForm = document.getElementById('seFilterForm');
+if (seFilterForm) {
+    seFilterForm.addEventListener('submit', function () {
+        if (seFilterSubmitTimer) {
+            clearTimeout(seFilterSubmitTimer);
+            seFilterSubmitTimer = null;
+        }
+    });
+}
+
+var seSortSelect = document.getElementById('seSort');
+if (seSortSelect) {
+    seSortSelect.addEventListener('change', sortEnrollmentRows);
+}
 
 (function formatInitialCurrentSchedules() {
     var rows = document.querySelectorAll('#seChangeFromTable tbody tr:not(.se-total-units-row)');

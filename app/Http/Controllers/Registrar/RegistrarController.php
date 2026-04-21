@@ -1284,6 +1284,16 @@ class RegistrarController extends Controller
             ->paginate($filters['per_page'])
             ->appends($request->query());
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'rows_html' => view('registrar.process.partials.application-process-table-rows', [
+                    'applicants' => $applicants,
+                ])->render(),
+                'pager_html' => $applicants->links()->render(),
+            ]);
+        }
+
         $courses = Course::query()
             ->orderBy('name')
             ->get(['id', 'code', 'name']);
@@ -1338,7 +1348,10 @@ class RegistrarController extends Controller
             $courseId = 0;
         }
 
-        $search = trim((string) $request->query('search', ''));
+        $search = preg_replace('/\s+/', ' ', trim((string) $request->query('search', '')));
+        if ($search !== '' && strlen($search) < 2) {
+            $search = '';
+        }
 
         $sortBy = strtolower(trim((string) $request->query('sort_by', 'date_updated')));
         if (!in_array($sortBy, $allowedSortBy, true)) {
@@ -1391,21 +1404,30 @@ class RegistrarController extends Controller
 
         if (!empty($filters['search'])) {
             $escapedSearch = addcslashes($filters['search'], '\\%_');
-            $likeValue = '%' . $escapedSearch . '%';
+            $searchPrefix = $escapedSearch . '%';
+            $searchTokens = preg_split('/[\s,]+/', $escapedSearch, -1, PREG_SPLIT_NO_EMPTY);
 
-            $query->where(function ($searchQuery) use ($likeValue) {
-                $searchQuery->where('applicants.applicant_id', 'like', $likeValue)
-                    ->orWhere('applicants.first_name', 'like', $likeValue)
-                    ->orWhere('applicants.middle_name', 'like', $likeValue)
-                    ->orWhere('applicants.last_name', 'like', $likeValue)
-                    ->orWhereRaw(
-                        "CONCAT(COALESCE(applicants.first_name, ''), ' ', COALESCE(applicants.last_name, '')) LIKE ?",
-                        [$likeValue]
-                    )
-                    ->orWhereRaw(
-                        "CONCAT(COALESCE(applicants.last_name, ''), ', ', COALESCE(applicants.first_name, '')) LIKE ?",
-                        [$likeValue]
-                    );
+            $query->where(function ($searchQuery) use ($searchPrefix, $searchTokens) {
+                $searchQuery->where('applicants.applicant_id', 'like', $searchPrefix);
+
+                if (count($searchTokens) >= 2) {
+                    $firstToken = $searchTokens[0] . '%';
+                    $lastToken = $searchTokens[count($searchTokens) - 1] . '%';
+
+                    $searchQuery->orWhere(function ($nameQuery) use ($firstToken, $lastToken) {
+                        $nameQuery->where('applicants.first_name', 'like', $firstToken)
+                            ->where('applicants.last_name', 'like', $lastToken);
+                    })->orWhere(function ($nameQuery) use ($firstToken, $lastToken) {
+                        $nameQuery->where('applicants.last_name', 'like', $firstToken)
+                            ->where('applicants.first_name', 'like', $lastToken);
+                    });
+
+                    return;
+                }
+
+                $searchQuery->orWhere('applicants.first_name', 'like', $searchPrefix)
+                    ->orWhere('applicants.middle_name', 'like', $searchPrefix)
+                    ->orWhere('applicants.last_name', 'like', $searchPrefix);
             });
         }
 
@@ -1759,7 +1781,10 @@ class RegistrarController extends Controller
         $allowedPerPage = [10, 25, 50];
         $allowedStatus = ['', 'pending', 'completed'];
 
-        $search = trim((string) $request->query('search', ''));
+        $search = preg_replace('/\s+/', ' ', trim((string) $request->query('search', '')));
+        if ($search !== '' && strlen($search) < 2) {
+            $search = '';
+        }
         $status = strtolower(trim((string) $request->query('status', '')));
         if (!in_array($status, $allowedStatus, true)) {
             $status = '';
@@ -7416,12 +7441,29 @@ class RegistrarController extends Controller
     /**
      * Registrar > Student Management > Student Enrollment
      */
-    public function studentEnrollment()
+    public function studentEnrollment(Request $request)
     {
-        $students = Student::query()
+        $search = trim((string) $request->input('q', ''));
+        $sortDirection = strtolower((string) $request->input('sort', 'asc'));
+        if (!in_array($sortDirection, ['asc', 'desc'], true)) {
+            $sortDirection = 'asc';
+        }
+
+        $studentsQuery = Student::query()
             ->with('canonicalCourse')
-            ->orderBy('student_no')
-            ->get();
+            ->orderBy('name', $sortDirection)
+            ->orderBy('student_no', $sortDirection);
+
+        if ($search !== '') {
+            $studentsQuery->where(function ($query) use ($search) {
+                $query->where('student_no', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        $students = $studentsQuery
+            ->paginate(25)
+            ->appends($request->query());
 
         $courses = Course::query()
             ->orderBy('code')
@@ -7432,7 +7474,7 @@ class RegistrarController extends Controller
             ->orderBy('applicant_id')
             ->get(['id', 'applicant_id', 'first_name', 'middle_name', 'last_name']);
 
-        return view('registrar.registrar-menu.student-management.student-enrollment', compact('students', 'courses', 'applicants'));
+        return view('registrar.registrar-menu.student-management.student-enrollment', compact('students', 'courses', 'applicants', 'search', 'sortDirection'));
     }
 
     public function storeStudent(Request $request)
