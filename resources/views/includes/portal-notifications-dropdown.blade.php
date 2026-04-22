@@ -9,48 +9,31 @@
 @endphp
 
 <style>
-    /* Extremely strict removal of any borders, outlines, or rings from notification icon trigger */
+    /* Ensure notification trigger button is clean and consistent with portal style */
     .student-portal-body .topbar-icon-link.topbar-notif-icon,
     .applicant-body .topbar-icon-link.topbar-notif-icon,
     .registrar-body .topbar-icon-link.topbar-notif-icon,
     .faculty-body .topbar-icon-link.topbar-notif-icon {
-      background-color: transparent !important;
-      color: #006837 !important;
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
       -webkit-appearance: none !important;
       appearance: none !important;
+      text-decoration: none !important;
     }
 
     .student-portal-body .topbar-icon-link.topbar-notif-icon:hover,
     .student-portal-body .topbar-icon-link.topbar-notif-icon.show,
-    .student-portal-body .topbar-icon-link.topbar-notif-icon:focus,
-    .student-portal-body .topbar-icon-link.topbar-notif-icon:active,
     .applicant-body .topbar-icon-link.topbar-notif-icon:hover,
     .applicant-body .topbar-icon-link.topbar-notif-icon.show,
-    .applicant-body .topbar-icon-link.topbar-notif-icon:focus,
-    .applicant-body .topbar-icon-link.topbar-notif-icon:active,
     .registrar-body .topbar-icon-link.topbar-notif-icon:hover,
     .registrar-body .topbar-icon-link.topbar-notif-icon.show,
-    .registrar-body .topbar-icon-link.topbar-notif-icon:focus,
-    .registrar-body .topbar-icon-link.topbar-notif-icon:active,
     .faculty-body .topbar-icon-link.topbar-notif-icon:hover,
-    .faculty-body .topbar-icon-link.topbar-notif-icon.show,
-    .faculty-body .topbar-icon-link.topbar-notif-icon:focus,
-    .faculty-body .topbar-icon-link.topbar-notif-icon:active {
-      background-color: #f0f7f3 !important;
-      color: #006837 !important;
+    .faculty-body .topbar-icon-link.topbar-notif-icon.show {
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
       transform: none !important;
-    }
-
-    /* Ensure no browser-specific focus rings */
-    .topbar-icon-link:focus-visible {
-      outline: none !important;
-      box-shadow: none !important;
     }
 </style>
 

@@ -48718,7 +48718,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 [data-applicant-select].is-open .applicant-select-trigger {
   outline: none;
   border-color: #006837;
-  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.08);
+  box-shadow: none;
 }
 
 .applicant-select-trigger:disabled {
@@ -48745,57 +48745,57 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
   height: 10px;
   border-right: 2px solid #006837;
   border-bottom: 2px solid #006837;
-  transform: rotate(45deg) translateY(-1px);
-  transition: transform 0.2s ease;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
   flex-shrink: 0;
+  margin-top: -4px;
 }
 
 .applicant-select-wrap.is-open .applicant-select-trigger-caret,
 [data-applicant-select].is-open .applicant-select-trigger-caret {
-  transform: rotate(225deg) translateY(2px);
+  transform: rotate(-135deg);
+  margin-top: 2px;
 }
 
 .applicant-select-menu {
   display: block;
   visibility: hidden;
   opacity: 0;
-  transform: translateY(-8px);
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   margin: 0;
-  padding: 6px;
+  padding: 5px;
   list-style: none;
-  border: 1px solid #e0e6e3;
+  border: 1px solid #d1d9d5;
   border-radius: 10px;
   background: #ffffff;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  max-height: 220px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  max-height: 250px;
   overflow-y: auto;
-  z-index: 35;
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  z-index: 99;
+  transition: opacity 0.15s ease, visibility 0.15s;
 }
 
 .applicant-select-wrap.is-open .applicant-select-menu,
 [data-applicant-select].is-open .applicant-select-menu {
   visibility: visible;
   opacity: 1;
-  transform: translateY(0);
 }
 
 .applicant-select-option-btn {
   width: 100%;
   border: 0;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #ffffff;
   color: #1a3f2e;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  padding: 8px 10px;
+  padding: 10px 12px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.1s ease;
   font-family: "Poppins", sans-serif;
   white-space: nowrap;
   overflow: hidden;
@@ -48804,7 +48804,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 
 .applicant-select-option-btn:hover,
 .applicant-select-option-btn.is-active {
-  background: #f0f7f4;
+  background: #f4f7f6;
   color: #006837;
 }
 
@@ -48815,7 +48815,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 
 .applicant-select-option-btn:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 104, 55, 0.3);
+  background: #f4f7f6;
 }
 
 @media (max-width: 768px) {
