@@ -247,22 +247,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     alert(message);
-
-  function isAllowedSchoolYear(value) {
-    var normalized = normalizeText(value);
-    if (normalized === '') {
-      return false;
-    }
-    var selectElement = soModalSY || soSY;
-    if (selectElement && selectElement.options && selectElement.options.length) {
-      for (var i = 0; i < selectElement.options.length; i += 1) {
-        if (normalizeText(selectElement.options[i].value) === normalized) {
-          return true;
-        }
-      }
-    }
-    return /^\d{4}-\d{4}$/.test(normalized);
-  }
   }
   function fetchJson(url, options) {
     var requestOptions = {
@@ -293,6 +277,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function emitListboxRefresh(selectElement) {
     if (!selectElement) {
+      return;
+    }
+    if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refresh === 'function') {
+      window.registrarListboxSelect.refresh(selectElement);
       return;
     }
     var detail = {
@@ -1682,7 +1670,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\section-offering.js */"./resources/js/section-offering.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\section-offering.js */"./resources/js/section-offering.js");
 
 
 /***/ })
