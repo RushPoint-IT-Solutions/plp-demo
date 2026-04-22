@@ -2678,6 +2678,73 @@ class RegistrarController extends Controller
      */
     public function saveDepartmentSetup(Request $request)
     {
+        $savedCount = 0;
+
+        // 1. Process staged bulk list if any
+        if ($request->has('new_dept_codes') && is_array($request->new_dept_codes)) {
+            $codes = $request->new_dept_codes;
+            $descriptions = $request->new_dept_descriptions;
+
+            foreach ($codes as $index => $code) {
+                $description = $descriptions[$index] ?? '';
+                if ($this->tryCreateDepartment($code, $description)) {
+                    $savedCount++;
+                }
+            }
+        }
+
+        // 2. Process main inputs (handles both single add and the "last" entry in a bulk add)
+        $mainCode = $request->input('dept_code');
+        $mainDesc = $request->input('dept_description');
+        
+        if (!empty($mainCode) && !empty($mainDesc)) {
+            if ($this->tryCreateDepartment($mainCode, $mainDesc)) {
+                $savedCount++;
+            } else if ($savedCount === 0) {
+                // If only a single one was tried and it's a duplicate, let standard validation handle the error message
+                return $this->processSingleDepartment($request);
+            }
+        }
+
+        if ($savedCount > 0) {
+            return redirect()
+                ->route('registrar.registrar-menu.academic-master.program-file')
+                ->with('program_file_success', $savedCount . ' department(s) added successfully.');
+        }
+
+        return redirect()
+            ->route('registrar.registrar-menu.academic-master.program-file');
+    }
+
+    /**
+     * Helper to check for duplicates and create a department
+     */
+    private function tryCreateDepartment($code, $description)
+    {
+        $cleanCode = trim((string) $code);
+        $cleanDescription = trim((string) $description);
+
+        if ($cleanCode === '' || $cleanDescription === '') {
+            return false;
+        }
+
+        $exists = Department::where('code', $cleanCode)
+            ->orWhere('description', $cleanDescription)
+            ->exists();
+
+        if (!$exists) {
+            Department::create([
+                'code' => $cleanCode,
+                'description' => $cleanDescription,
+            ]);
+            return true;
+        }
+
+        return false;
+    }
+
+    private function processSingleDepartment(Request $request)
+    {
         $validated = $request->validate([
             'dept_code' => 'required|string|max:30|unique:departments,code',
             'dept_description' => 'required|string|max:255|unique:departments,description',
@@ -2690,7 +2757,25 @@ class RegistrarController extends Controller
 
         return redirect()
             ->route('registrar.registrar-menu.academic-master.program-file')
-            ->with('program_file_success', 'Department setup saved successfully.');
+            ->with('program_file_success', 'Department added successfully.');
+    }
+
+    public function destroyDepartment(Department $department)
+    {
+        // Check if department is used in programs
+        if ($department->courses()->exists()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Cannot delete department. It is currently linked to one or more programs.'
+            ], 422);
+        }
+
+        $department->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Department deleted successfully.'
+        ]);
     }
 
     /**

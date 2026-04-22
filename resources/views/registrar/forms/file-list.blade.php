@@ -72,7 +72,7 @@
                 style="width:100%; height:100%; border:0;"
             ></iframe>
         </div>
-        <div class="req-modal-actions" style="margin-top:14px; justify-content:flex-end;">
+        <div class="req-modal-actions" style="margin-top:14px; justify-content:center;">
             <button type="button" class="req-btn-cancel" onclick="closeRegistrarFormPreview()">Close</button>
         </div>
     </div>

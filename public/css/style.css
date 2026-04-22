@@ -7313,7 +7313,7 @@ select:hover {
 
 .pf-modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 10px;
   margin-top: 6px;
 }
@@ -9334,7 +9334,7 @@ select:hover {
 
 .req-modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 12px;
   margin-top: 22px;
 }
@@ -43897,32 +43897,55 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 }
 
 .pf-dept-plus-btn {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
   background: #e7f5ec;
   color: #0a6f3d;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  line-height: 34px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
-  -moz-appearance: none;
-       appearance: none;
-  -webkit-appearance: none;
   box-shadow: 0 0 0 1px #cfe6d8 inset;
   cursor: pointer;
-  transition: transform 0.12s ease, background-color 0.14s ease;
+  transition: all 0.2s;
 }
 
 .pf-dept-plus-btn:hover {
-  background: #dff0e6;
+  background: #0a6f3d;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(10, 111, 61, 0.2);
 }
 
-.pf-dept-plus-btn:active {
-  transform: translateY(1px);
+.pf-dept-delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #fef3f2;
+  color: #b42318;
+  font-size: 1.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 0 0 1px #fee4e2 inset;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+
+.pf-dept-delete-btn:hover {
+  background: #b42318;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(180, 35, 24, 0.2);
+}
+
 
 .pf-dept-list-wrap {
   margin-top: 18px;

@@ -142,7 +142,7 @@
                 <div class="req-modal-field-group" style="margin-top:12px;">
                     <label class="ga-check"><input type="checkbox" id="gaAddUseGradesLib"> Use Grades Library</label>
                 </div>
-                <div class="req-modal-actions" style="justify-content:flex-end;">
+                <div class="req-modal-actions" style="justify-content:center;">
                     <button type="button" class="req-btn-cancel" data-ga-close>Cancel</button>
                     <button type="button" class="req-btn-save" data-ga-add-save>Add</button>
                 </div>
@@ -195,7 +195,7 @@
                 <div class="req-modal-field-group" style="margin-top:12px;">
                     <label class="ga-check"><input type="checkbox" id="gaEditUseGradesLib"> Use Grades Library</label>
                 </div>
-                <div class="req-modal-actions" style="justify-content:flex-end;">
+                <div class="req-modal-actions" style="justify-content:center;">
                     <button type="button" class="req-btn-cancel" data-ga-close>Cancel</button>
                     <button type="button" class="req-btn-save" data-ga-confirm-action>Save</button>
                 </div>

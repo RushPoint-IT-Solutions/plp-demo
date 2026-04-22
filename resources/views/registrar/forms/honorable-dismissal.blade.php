@@ -198,7 +198,7 @@
         <div class="hd-preview-wrap">
             <div class="hd-sheet" id="hdPreviewSheet"></div>
         </div>
-        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:flex-end;">
+        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:center;">
             <button type="button" class="req-btn-cancel" onclick="hdClosePreview()">Close</button>
             <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="hdPrintPreview()">Print Form</button>
         </div>

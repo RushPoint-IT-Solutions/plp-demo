@@ -29,12 +29,10 @@
         <div class="pf-top-filter-grid">
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterDepartment">Department</label>
-                <select name="department_id" id="filterDepartment" class="pf-modal-select plp-select" data-plp-select>
+                <select class="pf-modal-select plp-select" id="filterDepartment" name="department_id" data-plp-select>
                     <option value="">-All Group-</option>
                     @foreach($departments as $department)
-                        <option value="{{ $department->id }}" {{ (string)$filters['department_id'] === (string)$department->id ? 'selected' : '' }}>
-                            {{ $department->description }}
-                        </option>
+                        <option value="{{ $department->id }}" {{ (string)($filters['department_id'] ?? '') === (string)$department->id ? 'selected' : '' }}>{{ $department->description }}</option>
                     @endforeach
                 </select>
             </div>
@@ -51,13 +49,13 @@
 
             <div class="pf-top-field">
                 <label class="pf-top-label" for="filterProgramType">Accreditation</label>
-                <select name="program_type" id="filterProgramType" class="pf-modal-select plp-select" data-plp-select>
+                <select class="pf-modal-select plp-select" id="filterProgramType" name="program_type" data-plp-select>
                     <option value="">-All Levels-</option>
-                    <option value="Level I Accredited" {{ $filters['program_type'] === 'Level I Accredited' ? 'selected' : '' }}>Level I Accredited</option>
-                    <option value="Level II Accredited" {{ $filters['program_type'] === 'Level II Accredited' ? 'selected' : '' }}>Level II Accredited</option>
-                    <option value="Level III Accredited" {{ $filters['program_type'] === 'Level III Accredited' ? 'selected' : '' }}>Level III Accredited</option>
-                    <option value="Level IV Accredited" {{ $filters['program_type'] === 'Level IV Accredited' ? 'selected' : '' }}>Level IV Accredited</option>
-                    <option value="Pending Review" {{ $filters['program_type'] === 'Pending Review' ? 'selected' : '' }}>Pending Review</option>
+                    <option value="Level I Accredited" {{ (string)($filters['program_type'] ?? '') === 'Level I Accredited' ? 'selected' : '' }}>Level I Accredited</option>
+                    <option value="Level II Accredited" {{ (string)($filters['program_type'] ?? '') === 'Level II Accredited' ? 'selected' : '' }}>Level II Accredited</option>
+                    <option value="Level III Accredited" {{ (string)($filters['program_type'] ?? '') === 'Level III Accredited' ? 'selected' : '' }}>Level III Accredited</option>
+                    <option value="Level IV Accredited" {{ (string)($filters['program_type'] ?? '') === 'Level IV Accredited' ? 'selected' : '' }}>Level IV Accredited</option>
+                    <option value="Pending Review" {{ (string)($filters['program_type'] ?? '') === 'Pending Review' ? 'selected' : '' }}>Pending Review</option>
                 </select>
             </div>
 
@@ -184,17 +182,25 @@
             <div class="pf-dept-setup-form-row">
                 <div class="pf-modal-field pf-item-dept-code">
                     <label class="pf-modal-label" for="setupDepartmentCode">Dept. Code</label>
-                    <input type="text" class="pf-modal-input" id="setupDepartmentCode" name="dept_code" value="{{ old('dept_code') }}" placeholder="Code" required>
+                    <input type="text" class="pf-modal-input" id="setupDepartmentCode" name="dept_code" placeholder="Code">
                 </div>
 
                 <div class="pf-modal-field pf-item-dept-description">
                     <label class="pf-modal-label" for="setupDepartmentDescription">Dept. Description</label>
-                    <input type="text" class="pf-modal-input" id="setupDepartmentDescription" name="dept_description" value="{{ old('dept_description') }}" placeholder="Description" required>
+                    <input type="text" class="pf-modal-input" id="setupDepartmentDescription" name="dept_description" placeholder="Description">
                 </div>
 
                 <div class="pf-dept-plus-wrap">
-                    <button type="submit" class="pf-dept-plus-btn" aria-label="Add department" title="Add department">+</button>
+                    <button type="button" class="pf-dept-plus-btn" id="pfAddDeptBtn" aria-label="Add to list" title="Add to list">+</button>
                 </div>
+            </div>
+
+            <div class="pf-dept-staged-wrap" id="pfStagedDeptsSection" style="display: none; margin: 25px 0; padding: 15px 0; border-top: 1px dashed #006837; border-bottom: 1px dashed #006837;">
+                <div class="pf-dept-list-title" style="color: #006837; margin-bottom: 15px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="display: inline-block; width: 8px; height: 8px; background: #006837; border-radius: 50%;"></span>
+                    PENDING DEPARTMENTS TO BE ADDED:
+                </div>
+                <div id="pfNewDeptsContainer"></div>
             </div>
 
             <div class="pf-dept-list-wrap">
@@ -202,14 +208,23 @@
                 <div class="pf-dept-list-head">
                     <span>Dept. Code</span>
                     <span>Dept. Description</span>
+                    <span style="width: 30px;"></span>
                 </div>
 
-                @foreach($departments as $department)
-                    <div class="pf-dept-list-row">
-                        <input type="text" class="pf-modal-input pf-dept-list-input" value="{{ $department->code }}" readonly>
-                        <input type="text" class="pf-modal-input pf-dept-list-input" value="{{ $department->description }}" readonly>
-                    </div>
-                @endforeach
+                <div class="pf-dept-list-body">
+                    @foreach($departments as $department)
+                        <div class="pf-dept-list-row" style="display: grid; grid-template-columns: minmax(150px, 0.9fr) minmax(260px, 1.5fr) auto; gap: 10px; align-items: center; margin-bottom: 8px;">
+                            <input type="text" class="pf-modal-input pf-dept-list-input" value="{{ $department->code }}" readonly>
+                            <input type="text" class="pf-modal-input pf-dept-list-input" value="{{ $department->description }}" readonly>
+                            <div style="display:flex; justify-content:center; width: 34px;">
+                                <button type="button" class="pf-dept-delete-btn pf-existing-dept-del-btn" 
+                                    data-delete-url="{{ route('registrar.registrar-menu.academic-master.program-file.department.destroy', $department) }}"
+                                    data-code="{{ $department->code }}"
+                                    title="Delete Department">&times;</button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
             <div class="pf-modal-actions pf-dept-modal-actions">
@@ -341,4 +356,16 @@
         </form>
     </div>
 </div>
+
+<!-- Standard Registrar Delete Modal for Department Deletion -->
+@include('includes.registrar-delete-modal', [
+    'id' => 'pfDeleteDeptConfirmModal',
+    'title' => 'Confirm Delete',
+    'message' => 'Are you sure you want to permanently delete this department?',
+    'confirmBtnId' => 'pfConfirmDeptDeleteBtn',
+    'confirmBtnText' => 'Yes, Delete',
+    'detailId' => 'pfDeleteDeptCodeDisplay',
+    'cancelAction' => 'closeDeptConfirmModal()',
+    'cancelActionAttr' => 'onclick="closeDeptConfirmModal()"'
+])
 @endsection

@@ -202,6 +202,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('academic-master')->name('academic-master.')->group(function () {
             Route::get('/program-file', 'Registrar\RegistrarController@programFile')->name('program-file');
             Route::post('/program-file/department', 'Registrar\RegistrarController@saveDepartmentSetup')->name('program-file.department.store');
+            Route::delete('/program-file/department/{department}', 'Registrar\RegistrarController@destroyDepartment')->name('program-file.department.destroy');
             Route::post('/program-file/setup', 'Registrar\RegistrarController@saveProgramSetup')->name('program-file.setup');
             Route::put('/program-file/setup/{course}', 'Registrar\RegistrarController@updateProgramSetup')->name('program-file.setup.update');
             Route::delete('/program-file/setup/{course}', 'Registrar\RegistrarController@destroyProgramSetup')->name('program-file.setup.delete');

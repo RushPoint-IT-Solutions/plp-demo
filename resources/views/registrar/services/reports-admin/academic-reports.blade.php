@@ -126,7 +126,7 @@
         <div class="rep-preview-doc-wrap">
             <div class="rep-doc-sheet" id="repPreviewSheet"></div>
         </div>
-        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:flex-end;">
+        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:center;">
             <button type="button" class="req-btn-save" onclick="printPreviewDocument()" style="min-width: 150px;">Print Now</button>
         </div>
     </div>
