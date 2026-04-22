@@ -1,1 +1,308 @@
-!function(e){var t={};function n(a){if(t[a])return t[a].exports;var r=t[a]={i:a,l:!1,exports:{}};return e[a].call(r.exports,r,r.exports,n),r.l=!0,r.exports}n.m=e,n.c=t,n.d=function(e,t,a){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:a})},n.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var a=Object.create(null);if(n.r(a),Object.defineProperty(a,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var r in e)n.d(a,r,function(t){return e[t]}.bind(null,r));return a},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="/",n(n.s=18)}({18:function(e,t,n){e.exports=n("f+ae")},"f+ae":function(e,t){document.addEventListener("DOMContentLoaded",(function(){var e=document.getElementById("parentCalendarPage"),t=document.getElementById("calendarMonthYear"),n=document.getElementById("calendarBody"),a=document.getElementById("prevMonthBtn"),r=document.getElementById("nextMonthBtn"),i=document.getElementById("todayBtn");if(e&&t&&n&&a&&r&&i){var l=new Date,o=["January","February","March","April","May","June","July","August","September","October","November","December"],d=function(){var t=e.getAttribute("data-calendar-events");if(!t)return[];try{var n=JSON.parse(t);return Array.isArray(n)?n:[]}catch(e){return[]}}(),c={};d.forEach((function(e){if(e&&e.date&&e.label){var t=String(e.date);Array.isArray(c[t])||(c[t]=[]),c[t].push({type:"holiday"===e.type?"holiday":"event",label:String(e.label)})}})),a.addEventListener("click",(function(){l.setMonth(l.getMonth()-1),v(l)})),r.addEventListener("click",(function(){l.setMonth(l.getMonth()+1),v(l)})),i.addEventListener("click",(function(){v(l=new Date)})),v(l);var s=null;n.addEventListener("click",(function(e){if(window.innerWidth<=991){var t=e.target.closest(".cal-td");if(t&&t.dataset.eventItems)if(s&&s._cell===t)f();else{f();var n=[];try{n=JSON.parse(t.dataset.eventItems||"[]")}catch(e){n=[]}if(Array.isArray(n)&&0!==n.length){var a=n.map((function(e){var t=e&&"holiday"===e.type?"holiday":"event";return'<div class="cal-popup-item"><div class="cal-popup-type popup-'+t+'"><span class="popup-dot"></span>'+("holiday"===t?"Holiday":"University Event")+'</div><div class="cal-popup-label">'+u(e&&e.label?e.label:"")+"</div></div>"})).join(""),r=document.createElement("div");r.className="cal-event-popup",r._cell=t,r.innerHTML='<div class="cal-popup-list">'+a+"</div>",document.body.appendChild(r);var i=t.getBoundingClientRect(),l=r.getBoundingClientRect(),o=i.left+i.width/2-l.width/2,d=i.bottom+8;o<8&&(o=8),o+l.width>window.innerWidth-8&&(o=window.innerWidth-l.width-8),d+l.height>window.innerHeight-8&&(d=i.top-l.height-8,r.style.transformOrigin="bottom center"),r.style.left=o+"px",r.style.top=d+"px",s=r}}}})),document.addEventListener("click",(function(e){s&&(s.contains(e.target)||e.target.closest(".cal-td[data-event-items]")||f())})),window.addEventListener("scroll",f,!0),window.addEventListener("resize",f)}function u(e){return String(e||"").replace(/[&<>"']/g,(function(e){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e]||e}))}function p(e,t,n){return e+"-"+String(t+1).padStart(2,"0")+"-"+String(n).padStart(2,"0")}function v(e){var a=e.getFullYear(),r=e.getMonth();t.textContent=o[r]+" "+a;var i=new Date(a,r,1).getDay(),l=new Date(a,r+1,0).getDate();n.innerHTML="";for(var d=1,s=0;s<6;s++){for(var v=document.createElement("tr"),f=!1,y=0;y<7;y++){var m=document.createElement("td");if(m.classList.add("cal-td"),0===s&&y<i||d>l)m.classList.add("empty-cell");else{var g='<div class="day-number">'+d+"</div>",h=p(a,r,d),b=Array.isArray(c[h])?c[h]:[];if(b.length>0){var w=b.some((function(e){return"holiday"===e.type})),E=b.some((function(e){return"event"===e.type}));w&&E?m.classList.add("mixed-event-cell"):w?m.classList.add("holiday-cell"):m.classList.add("event-cell"),g+='<span class="cal-event-label">'+u(b[0].label)+"</span>",b.length>1&&(g+='<span class="cal-event-more">+'+(b.length-1)+" more</span>"),m.dataset.eventItems=JSON.stringify(b)}m.innerHTML=g;var M=new Date;d===M.getDate()&&a===M.getFullYear()&&r===M.getMonth()&&m.classList.add("today-cell"),d++,f=!0}v.appendChild(m)}f&&n.appendChild(v)}}function f(){s&&(s.remove(),s=null)}}))}});
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "/";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./resources/js/parent-calendar-events.js":
+/*!************************************************!*\
+  !*** ./resources/js/parent-calendar-events.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+document.addEventListener('DOMContentLoaded', function () {
+  var calendarRoot = document.getElementById('parentCalendarPage');
+  var calendarMonthYear = document.getElementById('calendarMonthYear');
+  var calendarBody = document.getElementById('calendarBody');
+  var prevMonthBtn = document.getElementById('prevMonthBtn');
+  var nextMonthBtn = document.getElementById('nextMonthBtn');
+  var todayBtn = document.getElementById('todayBtn');
+  if (!calendarRoot || !calendarMonthYear || !calendarBody || !prevMonthBtn || !nextMonthBtn || !todayBtn) {
+    return;
+  }
+  var currentDate = new Date();
+  var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function parseEventsPayload() {
+    var payload = calendarRoot.getAttribute('data-calendar-events');
+    if (!payload) {
+      return [];
+    }
+    try {
+      var parsed = JSON.parse(payload);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return map[ch] || ch;
+    });
+  }
+  var dbEvents = parseEventsPayload();
+  var calendarEvents = {};
+  dbEvents.forEach(function (item) {
+    if (!item || !item.date || !item.label) {
+      return;
+    }
+    var key = String(item.date);
+    if (!Array.isArray(calendarEvents[key])) {
+      calendarEvents[key] = [];
+    }
+    calendarEvents[key].push({
+      type: item.type === 'holiday' ? 'holiday' : 'event',
+      label: String(item.label)
+    });
+  });
+  function dateKey(year, month, day) {
+    return year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+  function renderCalendar(date) {
+    var year = date.getFullYear();
+    var month = date.getMonth();
+    calendarMonthYear.textContent = monthNames[month] + ' ' + year;
+    var firstDay = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    calendarBody.innerHTML = '';
+    var dateCount = 1;
+    for (var i = 0; i < 6; i++) {
+      var row = document.createElement('tr');
+      var hasCells = false;
+      for (var j = 0; j < 7; j++) {
+        var cell = document.createElement('td');
+        cell.classList.add('cal-td');
+        if (i === 0 && j < firstDay || dateCount > daysInMonth) {
+          cell.classList.add('empty-cell');
+        } else {
+          var html = '<div class="day-number">' + dateCount + '</div>';
+          var key = dateKey(year, month, dateCount);
+          var eventsForDate = Array.isArray(calendarEvents[key]) ? calendarEvents[key] : [];
+          if (eventsForDate.length > 0) {
+            var hasHoliday = eventsForDate.some(function (eventItem) {
+              return eventItem.type === 'holiday';
+            });
+            var hasRegularEvent = eventsForDate.some(function (eventItem) {
+              return eventItem.type === 'event';
+            });
+            if (hasHoliday && hasRegularEvent) {
+              cell.classList.add('mixed-event-cell');
+            } else if (hasHoliday) {
+              cell.classList.add('holiday-cell');
+            } else {
+              cell.classList.add('event-cell');
+            }
+            html += '<span class="cal-event-label">' + escapeHtml(eventsForDate[0].label) + '</span>';
+            if (eventsForDate.length > 1) {
+              html += '<span class="cal-event-more">+' + (eventsForDate.length - 1) + ' more</span>';
+            }
+            cell.dataset.eventItems = JSON.stringify(eventsForDate);
+          }
+          cell.innerHTML = html;
+          var today = new Date();
+          if (dateCount === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
+            cell.classList.add('today-cell');
+          }
+          dateCount++;
+          hasCells = true;
+        }
+        row.appendChild(cell);
+      }
+      if (hasCells) {
+        calendarBody.appendChild(row);
+      }
+    }
+  }
+  prevMonthBtn.addEventListener('click', function () {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar(currentDate);
+  });
+  nextMonthBtn.addEventListener('click', function () {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar(currentDate);
+  });
+  todayBtn.addEventListener('click', function () {
+    currentDate = new Date();
+    renderCalendar(currentDate);
+  });
+  renderCalendar(currentDate);
+  var activePopup = null;
+  function closeEventPopup() {
+    if (activePopup) {
+      activePopup.remove();
+      activePopup = null;
+    }
+  }
+  function isMobileView() {
+    return window.innerWidth <= 991;
+  }
+  calendarBody.addEventListener('click', function (event) {
+    if (!isMobileView()) {
+      return;
+    }
+    var cell = event.target.closest('.cal-td');
+    if (!cell || !cell.dataset.eventItems) {
+      return;
+    }
+    if (activePopup && activePopup._cell === cell) {
+      closeEventPopup();
+      return;
+    }
+    closeEventPopup();
+    var items = [];
+    try {
+      items = JSON.parse(cell.dataset.eventItems || '[]');
+    } catch (error) {
+      items = [];
+    }
+    if (!Array.isArray(items) || items.length === 0) {
+      return;
+    }
+    var eventRows = items.map(function (item) {
+      var eventType = item && item.type === 'holiday' ? 'holiday' : 'event';
+      var eventTypeLabel = eventType === 'holiday' ? 'Holiday' : 'University Event';
+      return '<div class="cal-popup-item">' + '<div class="cal-popup-type popup-' + eventType + '">' + '<span class="popup-dot"></span>' + eventTypeLabel + '</div>' + '<div class="cal-popup-label">' + escapeHtml(item && item.label ? item.label : '') + '</div>' + '</div>';
+    }).join('');
+    var popup = document.createElement('div');
+    popup.className = 'cal-event-popup';
+    popup._cell = cell;
+    popup.innerHTML = '<div class="cal-popup-list">' + eventRows + '</div>';
+    document.body.appendChild(popup);
+    var rect = cell.getBoundingClientRect();
+    var popupRect = popup.getBoundingClientRect();
+    var left = rect.left + rect.width / 2 - popupRect.width / 2;
+    var top = rect.bottom + 8;
+    if (left < 8) {
+      left = 8;
+    }
+    if (left + popupRect.width > window.innerWidth - 8) {
+      left = window.innerWidth - popupRect.width - 8;
+    }
+    if (top + popupRect.height > window.innerHeight - 8) {
+      top = rect.top - popupRect.height - 8;
+      popup.style.transformOrigin = 'bottom center';
+    }
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    activePopup = popup;
+  });
+  document.addEventListener('click', function (event) {
+    if (!activePopup) {
+      return;
+    }
+    if (activePopup.contains(event.target)) {
+      return;
+    }
+    if (event.target.closest('.cal-td[data-event-items]')) {
+      return;
+    }
+    closeEventPopup();
+  });
+  window.addEventListener('scroll', closeEventPopup, true);
+  window.addEventListener('resize', closeEventPopup);
+});
+
+/***/ }),
+
+/***/ 18:
+/*!******************************************************!*\
+  !*** multi ./resources/js/parent-calendar-events.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\parent-calendar-events.js */"./resources/js/parent-calendar-events.js");
+
+
+/***/ })
+
+/******/ });

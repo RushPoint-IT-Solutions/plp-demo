@@ -22,23 +22,22 @@ Checklist entry template
 - Notes and rollback considerations:
 
 ## Latest Entry
-- Date: 2026-04-21
+- Date: 2026-04-22
 - Branch: uwis-michael-merge
 - Migration files changed:
-  - `database/migrations/2026_04_21_000001_add_applicant_search_indexes.php`
-- php artisan migrate:status result: PASS (command executed before and after the local targeted migration run)
+  - `database/migrations/2026_04_22_000100_create_audit_trail_tables.php`
+- php artisan migrate:status result: PASS (new migration is pending but the status command completed successfully)
 - Compatibility checks performed:
-  - Verified the new migration is additive only and references only existing applicant lookup columns
-  - Verified the search query remains compatible with existing applicant rows and now uses index-merge access paths
-  - Verified the migration drops only its own indexes in `down()` and does not touch live data columns
+  - Verified the audit trail migration is additive only and does not alter existing production tables
+  - Verified the audit tables use separate subject and change tables so event data stays normalized
+  - Verified the controller writes still pass syntax checks after the audit hooks were added
 - Destructive operations present: NO
 - If YES, explicit approval reference: N/A
 - Verification evidence (tests or smoke checks):
   - `php artisan migrate:status`
-  - `php artisan migrate --path=database/migrations/2026_04_21_000001_add_applicant_search_indexes.php --force`
-  - `EXPLAIN` on the application-process applicant search query now returns `index_merge`
   - `php -l app/Http/Controllers/Registrar/RegistrarController.php`
-  - `php -l database/migrations/2026_04_21_000001_add_applicant_search_indexes.php`
+  - `php -l app/Support/AuditTrailRecorder.php`
+  - `php -l database/migrations/2026_04_22_000100_create_audit_trail_tables.php`
 - Notes and rollback considerations:
-  - The rollback path removes only the new applicant search lookup indexes and leaves applicant data intact.
-  - Keep the new search-index migration aligned with any future applicant name lookup changes so the query planner stays on indexed paths.
+  - The rollback path drops only the new audit tables and leaves existing operational data untouched.
+  - Keep the audit recorder in sync with any future document-management or Admin Tools write paths that should be captured.

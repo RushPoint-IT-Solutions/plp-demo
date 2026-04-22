@@ -13,7 +13,7 @@
       "args": [
         "-y",
         "@benborla29/mcp-server-mysql",
-        "mysql://root:@localhost:3306/plp_demo"
+        "mysql://root:@127.0.0.1:3306/plp_demo"
       ]
     },
     "mysql_3nf_graph": {
@@ -21,7 +21,7 @@
       "args": [
         "-y",
         "@berthojoris/mcp-mysql-server",
-        "mysql://root:@localhost:3306/plp_demo",
+        "mysql://root:@127.0.0.1:3306/plp_demo",
         "list,read,utility,database_discovery,analysis"
       ]
     },

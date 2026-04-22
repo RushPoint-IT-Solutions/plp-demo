@@ -6,18 +6,18 @@
     ];
 @endphp
 
-<div class="apc-card">
+<div class="apc-card" id="medicalClearancePanel" data-empty-text="No medical clearance requirements found.">
     <div class="app-filter-bar apc-panel-filter">
         <div class="app-filter-row">
             <div class="app-filter-group" style="flex:2;">
                 <span class="app-filter-label">Search</span>
-                <input type="text" class="app-filter-input" placeholder="Search medical document">
+                <input type="text" id="medicalSearchInput" class="app-filter-input" placeholder="Search medical requirement">
             </div>
             <div class="app-filter-group" style="flex:1;">
                 <span class="app-filter-label">Show Entries</span>
                 @include('registrar.components.listbox-select', [
-                    'id' => 'medicalShowEntries',
-                    'name' => 'medicalShowEntries',
+                    'id' => 'medicalPerPage',
+                    'name' => 'medicalPerPage',
                     'options' => $medicalPerPageOptions,
                     'selected' => '10',
                     'placeholder' => '10'
@@ -26,34 +26,29 @@
         </div>
     </div>
 
+    <div id="medicalPanelFeedback" class="schedule-exam-feedback"></div>
+
     <div class="app-table-wrap table-responsive">
-        <table class="app-table">
+        <table class="app-table" id="medicalTable">
             <thead>
                 <tr>
                     <th class="apc-col-check"></th>
-                    <th>Documents</th>
+                    <th>Medical Requirement</th>
                     <th>Remarks</th>
                     <th>Date Submitted</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="medicalTableBody">
                 <tr>
-                    <td><input type="checkbox" class="app-row-checkbox"></td>
-                    <td>Dental</td>
-                    <td><input type="text" class="apc-input" placeholder="Type..." /></td>
-                    <td><input type="date" class="apc-input apc-input--date" /></td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" class="app-row-checkbox"></td>
-                    <td>Medical</td>
-                    <td><input type="text" class="apc-input" placeholder="Type..." /></td>
-                    <td><input type="date" class="apc-input apc-input--date" /></td>
+                    <td colspan="4" class="sc-empty-row">Select an applicant to load medical clearance requirements.</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
+    <div class="cfg-pagination" id="medicalTablePager"></div>
+
     <div class="apc-actions">
-        <button type="button" class="apc-btn apc-btn--save">Save</button>
+        <button type="button" class="apc-btn apc-btn--save" id="medicalSaveBtn">Save</button>
     </div>
 </div>

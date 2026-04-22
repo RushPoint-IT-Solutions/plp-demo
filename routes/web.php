@@ -219,6 +219,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/subject-file/{subjectId}', 'Registrar\RegistrarController@updateSubjectFile')->name('subject-file.update');
             Route::delete('/subject-file/{subjectId}', 'Registrar\RegistrarController@destroySubjectFile')->name('subject-file.delete');
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
+            Route::post('/curriculum-file/copy', 'Registrar\RegistrarController@copyCurriculum')->name('curriculum-file.copy')->middleware('throttle:60,1');
+            Route::post('/curriculum-file/setup', 'Registrar\RegistrarController@saveCurriculumSetup')->name('curriculum-file.setup')->middleware('throttle:60,1');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data')->middleware('throttle:60,1');
             Route::get('/pre-requisites/download/pdf', 'Registrar\RegistrarController@downloadPreRequisitesPdf')->name('pre-requisites.download')->middleware('throttle:60,1');

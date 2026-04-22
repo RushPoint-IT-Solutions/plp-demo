@@ -1,1 +1,1763 @@
-!function(e){var t={};function r(a){if(t[a])return t[a].exports;var n=t[a]={i:a,l:!1,exports:{}};return e[a].call(n.exports,n,n.exports,r),n.l=!0,n.exports}r.m=e,r.c=t,r.d=function(e,t,a){r.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:a})},r.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},r.t=function(e,t){if(1&t&&(e=r(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var a=Object.create(null);if(r.r(a),Object.defineProperty(a,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var n in e)r.d(a,n,function(t){return e[t]}.bind(null,n));return a},r.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return r.d(t,"a",t),t},r.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},r.p="/",r(r.s=14)}({"08+7":function(e,t){function r(){var e,t,n="function"==typeof Symbol?Symbol:{},o=n.iterator||"@@iterator",c=n.toStringTag||"@@toStringTag";function i(r,n,o,c){var i=n&&n.prototype instanceof u?n:u,s=Object.create(i.prototype);return a(s,"_invoke",function(r,a,n){var o,c,i,u=0,s=n||[],l=!1,g={p:0,n:0,v:e,a:d,f:d.bind(e,4),d:function(t,r){return o=t,c=0,i=e,g.n=r,f}};function d(r,a){for(c=r,i=a,t=0;!l&&u&&!n&&t<s.length;t++){var n,o=s[t],d=g.p,p=o[2];r>3?(n=p===a)&&(i=o[(c=o[4])?5:(c=3,3)],o[4]=o[5]=e):o[0]<=d&&((n=r<2&&d<o[1])?(c=0,g.v=a,g.n=o[1]):d<p&&(n=r<3||o[0]>a||a>p)&&(o[4]=r,o[5]=a,g.n=p,c=0))}if(n||r>1)return f;throw l=!0,a}return function(n,s,p){if(u>1)throw TypeError("Generator is already running");for(l&&1===s&&d(s,p),c=s,i=p;(t=c<2?e:i)||!l;){o||(c?c<3?(c>1&&(g.n=-1),d(c,i)):g.n=i:g.v=i);try{if(u=2,o){if(c||(n="next"),t=o[n]){if(!(t=t.call(o,i)))throw TypeError("iterator result is not an object");if(!t.done)return t;i=t.value,c<2&&(c=0)}else 1===c&&(t=o.return)&&t.call(o),c<2&&(i=TypeError("The iterator does not provide a '"+n+"' method"),c=1);o=e}else if((t=(l=g.n<0)?i:r.call(a,g))!==f)break}catch(t){o=e,c=1,i=t}finally{u=1}}return{value:t,done:l}}}(r,o,c),!0),s}var f={};function u(){}function s(){}function l(){}t=Object.getPrototypeOf;var g=[][o]?t(t([][o]())):(a(t={},o,(function(){return this})),t),d=l.prototype=u.prototype=Object.create(g);function p(e){return Object.setPrototypeOf?Object.setPrototypeOf(e,l):(e.__proto__=l,a(e,c,"GeneratorFunction")),e.prototype=Object.create(d),e}return s.prototype=l,a(d,"constructor",l),a(l,"constructor",s),s.displayName="GeneratorFunction",a(l,c,"GeneratorFunction"),a(d),a(d,c,"Generator"),a(d,o,(function(){return this})),a(d,"toString",(function(){return"[object Generator]"})),(r=function(){return{w:i,m:p}})()}function a(e,t,r,n){var o=Object.defineProperty;try{o({},"",{})}catch(e){o=0}(a=function(e,t,r,n){function c(t,r){a(e,t,(function(e){return this._invoke(t,r,e)}))}t?o?o(e,t,{value:r,enumerable:!n,configurable:!n,writable:!n}):e[t]=r:(c("next",0),c("throw",1),c("return",2))})(e,t,r,n)}function n(e){return(n="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function o(e,t,r,a,n,o,c){try{var i=e[o](c),f=i.value}catch(e){return void r(e)}i.done?t(f):Promise.resolve(f).then(a,n)}function c(e){return function(){var t=this,r=arguments;return new Promise((function(a,n){var c=e.apply(t,r);function i(e){o(c,a,n,i,f,"next",e)}function f(e){o(c,a,n,i,f,"throw",e)}i(void 0)}))}}!function(){"use strict";function e(e){return document.getElementById(e)}function t(e,t,r){if(!e)return r;var a="data-"+t.replace(/([A-Z])/g,"-$1").toLowerCase(),n=e.getAttribute(a);if(!n)return r;var o=function(e){if("string"!=typeof e||-1===e.indexOf("&"))return e;var t=document.createElement("textarea");return t.innerHTML=e,t.value}(n);try{return JSON.parse(o)}catch(e){return r}}function a(e){return String(e||"").replace(/[&<>"']/g,(function(e){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e]||e}))}function o(e){if(!e)return"";var t=new Date(e+"T00:00:00");return isNaN(t.getTime())?"":t.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"})}function i(t,r){var a=e(t);if(a){var n=function(e){if(!e)return"";if(/^\d{4}-\d{2}-\d{2}$/.test(e))return e;var t=new Date(e);if(isNaN(t.getTime()))return"";var r=String(t.getMonth()+1).padStart(2,"0"),a=String(t.getDate()).padStart(2,"0");return t.getFullYear()+"-"+r+"-"+a}(r);a._flatpickr?n?a._flatpickr.setDate(n,!0,"Y-m-d"):a._flatpickr.clear():a.value=n}}function f(e,t){return String(e||"").replace("__ID__",String(t))}function u(){var e=document.querySelector('meta[name="csrf-token"]');return e&&e.getAttribute("content")||""}function s(e,t){if(!e)return t;if(e.errors){var r=Object.keys(e.errors);if(r.length&&e.errors[r[0]]&&e.errors[r[0]][0])return e.errors[r[0]][0]}return e.message?e.message:t}function l(e,t){var r=String(e||"").trim();if(r){if("function"==typeof window.showRegistrarToast)try{return void window.showRegistrarToast(r,t||"success")}catch(e){console.error("Registrar toast render failed:",e)}window.alert(r)}}function g(e,t,r){return d.apply(this,arguments)}function d(){return(d=c(r().m((function e(t,a,n){var o,c;return r().w((function(e){for(;;)switch(e.p=e.n){case 0:return e.n=1,fetch(t,{method:a,headers:{Accept:"application/json","Content-Type":"application/json","X-CSRF-TOKEN":u()},body:n?JSON.stringify(n):null});case 1:return o=e.v,c={},e.p=2,e.n=3,o.json();case 3:c=e.v,e.n=5;break;case 4:e.p=4,e.v,c={};case 5:if(o.ok&&!1!==c.ok){e.n=6;break}throw new Error(s(c,"Unable to process request."));case 6:return e.a(2,c)}}),e,null,[[2,4]])})))).apply(this,arguments)}function p(e,t,r){return v.apply(this,arguments)}function v(){return(v=c(r().m((function e(t,a,n){var o,c,i,f;return r().w((function(e){for(;;)switch(e.p=e.n){case 0:return o=a,c=n,"POST"!==a&&(o="POST",c.append("_method",a)),e.n=1,fetch(t,{method:o,headers:{Accept:"application/json","X-CSRF-TOKEN":u()},body:c});case 1:return i=e.v,f={},e.p=2,e.n=3,i.json();case 3:f=e.v,e.n=5;break;case 4:e.p=4,e.v,f={};case 5:if(i.ok&&!1!==f.ok){e.n=6;break}throw new Error(s(f,"Unable to process request."));case 6:return e.a(2,f)}}),e,null,[[2,4]])})))).apply(this,arguments)}function m(e){window.registrarListboxSelect&&"object"===n(window.registrarListboxSelect)&&(e&&"function"==typeof window.registrarListboxSelect.refresh?window.registrarListboxSelect.refresh(e):"function"!=typeof window.registrarListboxSelect.refreshAll?"function"==typeof window.registrarListboxSelect.refresh&&window.registrarListboxSelect.refresh():window.registrarListboxSelect.refreshAll())}function S(t){var r=e(t);r&&r.dispatchEvent(new Event("change",{bubbles:!0}))}function y(t,r,a){var n=e(t);n&&(n.textContent=r||"",n.classList.toggle("is-error",!!a))}var C=e("cfgBootstrap");if(C){var b=t(C,"routes",{}),h={schoolSem:t(C,"schoolSem",[]),gradePosting:t(C,"gradePosting",[]),signatures:t(C,"signatures",[]),cutoffDate:t(C,"cutoffDate",[]),sectionCutoff:t(C,"sectionCutoff",[]),cutoffConfig:t(C,"cutoffConfig",[]),curriculumDisplay:t(C,"curriculumDisplay",[]),latestIncRun:t(C,"latestIncRun",null),pager:{schoolSem:{page:1,size:5},gradePosting:{page:1,size:5},signatures:{page:1,size:5},cutoffDate:{page:1,size:5},sectionCutoff:{page:1,size:5},cutoffConfig:{page:1,size:5},curriculumDisplay:{page:1,size:5}},deleteTarget:null},w={schoolSem:!1},D={schoolSem:{id:"cfgSchoolSemPager"},gradePosting:{id:"cfgGradePostingPager"},signatures:{id:"cfgSignaturePager"},cutoffDate:{id:"cfgCutoffDatePager"},sectionCutoff:{id:"cfgSectionCutoffPager"},cutoffConfig:{id:"cfgCutoffConfigPager"},curriculumDisplay:{id:"cfgCurriculumDisplayPager"}};!function(){var t=e("cfgSSSaveBtn");t&&t.addEventListener("click",$);var r=e("cfgGPSaveBtn");r&&r.addEventListener("click",Z);var a=e("cfgSignatureForm");a&&a.addEventListener("submit",ee);var n=e("cfgCutoffDateForm");n&&n.addEventListener("submit",re);var o=e("cfgSectionCutoffForm");o&&o.addEventListener("submit",ne);var c=e("cfgCutoffConfigForm");c&&c.addEventListener("submit",ce);var i=e("cfgCutoffRegistrationForm");i&&i.addEventListener("submit",fe);var f=e("cfgCurriculumDisplayForm");f&&f.addEventListener("submit",se);var u=e("cfgReportDetailsForm");u&&u.addEventListener("submit",ge);var s=e("cfgEmailSenderForm");s&&s.addEventListener("submit",pe);var l=e("cfgOverdueIncForm");l&&l.addEventListener("submit",me)}(),document.addEventListener("click",(function(t){if(t.target.closest('[data-cfg-action="open-school-sem-modal"]'))return H(),void F("cfgSchoolSemModal");if(t.target.closest('[data-cfg-action="open-grade-posting-modal"]'))return Y(),void F("cfgGradePostingModal");if(t.target.closest('[data-cfg-action="open-signature-modal"]'))return q(),void F("cfgSignatureModal");var r=t.target.closest('[data-cfg-action="close-modal"]');if(r){var a=r.getAttribute("data-cfg-modal-target");a&&(B(a),"cfgSignatureModal"===a&&q())}else{var n=t.target.closest("[data-cfg-menu-toggle]");if(n)return t.stopPropagation(),void function(t,r){var a=e(t);if(a&&r){var n=a.classList.contains("open");if(j(),!n){var o=r.getBoundingClientRect(),c=o.right+8,i=o.top;c+130>window.innerWidth-8&&(c=Math.max(8,window.innerWidth-130-8)),window.innerHeight-o.bottom<104&&(a.classList.add("drop-up"),i=Math.max(8,o.bottom-96)),a.style.left=c+"px",a.style.top=i+"px",a.style.right="auto",a.style.bottom="auto",a.classList.add("open")}}}(n.getAttribute("data-cfg-menu-toggle"),n);var o=t.target.closest('[data-cfg-action="set-page"]');if(o){var c=o.getAttribute("data-cfg-group"),f=parseInt(o.getAttribute("data-cfg-page"),10)||1;c&&h.pager[c]&&(s=f,l=k(u=c),h.pager[u].page=Math.max(1,Math.min(l,s)),A(u))}else{var u,s,l,g=t.target.closest('[data-cfg-action="edit-row"]');if(g){var d=g.getAttribute("data-cfg-group"),p=parseInt(g.getAttribute("data-cfg-index"),10)||0;return j(),void function(t,r){var a=P(t)[r];a&&("schoolSem"===t?(e("cfgSSEditId").value=a.id||"",e("cfgSSTitle").textContent="EDIT SCHOOL YEAR AND SEMESTER",e("cfgSSSaveBtn").textContent="Update",e("cfgSSYear").value=a.sy||"",e("cfgSSSemester").value=a.semester||"",S("cfgSSSemester"),F("cfgSchoolSemModal")):"gradePosting"===t?(e("cfgGPEditId").value=a.id||"",e("cfgGPTitle").textContent="EDIT GRADE POSTING",e("cfgGPSaveBtn").textContent="Update",e("cfgGPYear").value=a.sy||"",e("cfgGPSemester").value=a.semester||"",e("cfgGPPeriod").value=a.period||"",i("cfgGPDateFrom",a.dateFrom),S("cfgGPSemester"),S("cfgGPPeriod"),F("cfgGradePostingModal")):"signatures"===t?(e("cfgSignatureEditId").value=a.id||"",e("cfgSignatureDesignation").value=a.designationId||"",e("cfgSignatureName").value=a.name||"",e("cfgSignatureFile").value="",e("cfgSignatureTitle").textContent="EDIT SIGNATURE",y("cfgSignatureModalMessage","",!1),z(!1),S("cfgSignatureDesignation"),F("cfgSignatureModal")):"cutoffDate"===t?(e("cfgCutoffDateEditId").value=a.id||"",e("cfgCutoffType").value=a.typeCode||"",e("cfgCutoffSy").value=a.sy||"",e("cfgCutoffSemester").value=a.semester||"",i("cfgCutoffDate",a.cutoffDate),e("cfgCutoffSaveBtn").textContent="Update",S("cfgCutoffType"),S("cfgCutoffSemester")):"sectionCutoff"===t?(e("cfgSectionCutoffEditId").value=a.id||"",e("cfgSectionCutoffSy").value=a.sy||"",e("cfgSectionCutoffSemester").value=a.semester||"",i("cfgSectionCutoffDate",a.cutoffDate),e("cfgSectionCutoffSaveBtn").textContent="Update",S("cfgSectionCutoffSemester")):"cutoffConfig"===t?(e("cfgCutoffConfigEditId").value=a.id||"",e("cfgCutoffConfigSy").value=a.sy||"",e("cfgCutoffConfigSemester").value=a.semester||"",i("cfgCutoffConfigDate",a.cutoffDate),e("cfgCutoffConfigSaveBtn").textContent="Update",S("cfgCutoffConfigSemester")):"curriculumDisplay"===t&&(e("cfgCurriculumEditId").value=a.id||"",e("cfgCurriculumSy").value=a.sy||"",e("cfgCurriculumSemester").value=a.semester||"",e("cfgCurriculumStatus").value=a.status||"",e("cfgCurriculumSaveBtn").textContent="Update",S("cfgCurriculumSemester"),S("cfgCurriculumStatus")))}(d,p)}var v=t.target.closest('[data-cfg-action="delete-row"]');if(v){var m=v.getAttribute("data-cfg-group"),C=parseInt(v.getAttribute("data-cfg-index"),10)||0;return j(),void function(t,r){var a=P(t)[r];a&&(h.deleteTarget={group:t,id:a.id},e("cfgDeleteMessage").textContent="Are you sure you want to delete this record?",F("cfgDeleteModal"))}(m,C)}t.target.closest('[data-cfg-action="confirm-delete"]')?function(){ye.apply(this,arguments)}():t.target.closest(".apst-dropdown")||j()}}})),document.querySelectorAll("[data-cfg-modal]").forEach((function(e){e.addEventListener("click",(function(t){t.target===e&&(e.classList.add("is-hidden"),"cfgSignatureModal"===e.id&&q())}))})),window.addEventListener("scroll",j,!0),document.addEventListener("keydown",(function(e){"Escape"===e.key&&j()})),x(),R(),O(),G(),L(),U(),N(),"function"==typeof window.flatpickr&&["cfgCutoffDate","cfgSectionCutoffDate","cfgCutoffRegDate","cfgCutoffRegCutoffDate","cfgCutoffConfigDate","cfgGPDateFrom"].forEach((function(t){var r=e(t);r&&(r._flatpickr&&r._flatpickr.destroy(),window.flatpickr(r,{dateFormat:"Y-m-d",allowInput:!0,disableMobile:!0,onReady:function(e,t,r){r&&r.calendarContainer&&(r.calendarContainer.classList.add("an-flatpickr-calendar"),r.calendarContainer.classList.add("app-form-flatpickr-theme"))}}),i(t,r.value))})),m(),h.latestIncRun&&void 0!==h.latestIncRun.processedCount&&y("cfgIncProcessMessage","Last run: "+(h.latestIncRun.schoolYear||"-")+" "+(h.latestIncRun.semester||"-")+" | Processed "+h.latestIncRun.processedCount+" record(s) on "+(h.latestIncRun.createdAt||"-"),!1)}function P(e){return h[e]||[]}function T(e,t){var r=e.findIndex((function(e){return String(e.id)===String(t.id)}));r>=0?e[r]=t:e.unshift(t)}function E(e,t){var r=e.findIndex((function(e){return String(e.id)===String(t)}));r>=0&&e.splice(r,1)}function k(e){var t=P(e),r=h.pager[e].size;return Math.max(1,Math.ceil(t.length/r))}function I(e){var t=P(e),r=h.pager[e].page,a=h.pager[e].size,n=(r-1)*a;return{start:n,rows:t.slice(n,n+a)}}function M(t){var r=e((D[t]||{}).id||"");if(r){var a=P(t),n=h.pager[t].size;if(a.length<=n)r.innerHTML="";else{var o=h.pager[t].page,c=k(t),i=Math.max(1,o-2),f=Math.min(c,o+2);o<=3?f=Math.min(c,5):o>=c-2&&(i=Math.max(1,c-4));for(var u='<nav class="cfg-page-nav-wrap" aria-label="Configuration pagination"><div class="cfg-page-list" role="group" aria-label="Page controls"><button type="button" class="btn cfg-page-btn" data-cfg-action="set-page" data-cfg-group="'+t+'" data-cfg-page="'+(o-1)+'" '+(o<=1?"disabled":"")+' aria-label="Previous page">&lt;</button>',s=i;s<=f;s+=1)u+='<button type="button" class="btn cfg-page-num '+(s===o?"active":"")+'" data-cfg-action="set-page" data-cfg-group="'+t+'" data-cfg-page="'+s+'" '+(s===o?'aria-current="page"':"")+">"+s+"</button>";u+='<button type="button" class="btn cfg-page-btn" data-cfg-action="set-page" data-cfg-group="'+t+'" data-cfg-page="'+(o+1)+'" '+(o>=c?"disabled":"")+' aria-label="Next page">&gt;</button></div></nav>',r.innerHTML=u}}}function _(e,t){var r="cfgMenu-"+e+"-"+t;return'<div class="apst-action-btn" data-cfg-menu-toggle="'+r+'" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div><div class="apst-dropdown" id="'+r+'"><button type="button" data-cfg-action="edit-row" data-cfg-group="'+e+'" data-cfg-index="'+t+'">Edit</button><button type="button" class="apst-del-btn" data-cfg-action="delete-row" data-cfg-group="'+e+'" data-cfg-index="'+t+'">Delete</button></div>'}function x(){var t=e("cfgSchoolSemBody");if(t){var r=I("schoolSem"),n=r.rows.map((function(e,t){var n=r.start+t;return"<tr><td>"+a(e.sy)+"</td><td>"+a(e.semester)+'</td><td class="cfg-col-action">'+_("schoolSem",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="3" class="sc-empty-row">No records found.</td></tr>',M("schoolSem")}}function R(){var t=e("cfgGradePostingBody");if(t){var r=I("gradePosting"),n=r.rows.map((function(e,t){var n=r.start+t;return"<tr><td>"+a(e.sy)+"</td><td>"+a(e.semester)+"</td><td>"+a(e.period)+"</td><td>"+a(o(e.dateFrom))+'</td><td class="cfg-col-action">'+_("gradePosting",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="5" class="sc-empty-row">No records found.</td></tr>',M("gradePosting")}}function O(){var t=e("cfgSignatureBody");if(t){var r=I("signatures"),n=r.rows.map((function(e,t){var n=r.start+t,o=e.signatureUrl?'<a href="'+a(e.signatureUrl)+'" target="_blank" rel="noopener">View</a>':'<span class="cfg-muted">No file</span>';return"<tr><td>"+a(e.designation)+"</td><td>"+a(e.name)+"</td><td>"+o+'</td><td class="cfg-col-action">'+_("signatures",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>',M("signatures")}}function G(){var t=e("cfgCutoffDateBody");if(t){var r=I("cutoffDate"),n=r.rows.map((function(e,t){var n=r.start+t;return"<tr><td>"+a(e.type)+"</td><td>"+a(e.sy)+"</td><td>"+a(e.semester)+"</td><td>"+a(o(e.cutoffDate))+'</td><td class="cfg-col-action">'+_("cutoffDate",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="5" class="sc-empty-row">No records found.</td></tr>',M("cutoffDate")}}function L(){var t=e("cfgSectionCutoffBody");if(t){var r=I("sectionCutoff"),n=r.rows.map((function(e,t){var n=r.start+t;return"<tr><td>"+a(e.sy)+"</td><td>"+a(e.semester)+"</td><td>"+a(o(e.cutoffDate))+'</td><td class="cfg-col-action">'+_("sectionCutoff",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>',M("sectionCutoff")}}function U(){var t=e("cfgCutoffConfigBody");if(t){var r=I("cutoffConfig"),n=r.rows.map((function(e,t){var n=r.start+t;return"<tr><td>"+a(e.sy)+"</td><td>"+a(e.semester)+"</td><td>"+a(o(e.cutoffDate))+'</td><td class="cfg-col-action">'+_("cutoffConfig",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>',M("cutoffConfig")}}function N(){var t=e("cfgCurriculumDisplayBody");if(t){var r=I("curriculumDisplay"),n=r.rows.map((function(e,t){var n=r.start+t;return"<tr><td>"+a(e.sy)+"</td><td>"+a(e.semester)+"</td><td>"+a(e.status)+'</td><td class="cfg-col-action">'+_("curriculumDisplay",n)+"</td></tr>"})).join("");t.innerHTML=n||'<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>',M("curriculumDisplay")}}function A(e){"schoolSem"!==e?"gradePosting"!==e?"signatures"!==e?"cutoffDate"!==e?"sectionCutoff"!==e?"cutoffConfig"!==e?"curriculumDisplay"===e&&N():U():L():G():O():R():x()}function j(){document.querySelectorAll(".apst-dropdown.open").forEach((function(e){e.classList.remove("open","drop-up"),e.style.top="",e.style.left="",e.style.right="",e.style.bottom=""}))}function F(t){var r=e(t);r&&(j(),r.classList.remove("is-hidden"),m(r))}function B(t){var r=e(t);r&&r.classList.add("is-hidden")}function H(){e("cfgSSEditId").value="",e("cfgSSTitle").textContent="ADD SCHOOL YEAR AND SEMESTER",e("cfgSSSaveBtn").textContent="Save",e("cfgSSSaveBtn").disabled=!1,e("cfgSSYear").value="",e("cfgSSSemester").value="",S("cfgSSSemester")}function Y(){e("cfgGPEditId").value="",e("cfgGPTitle").textContent="ADD GRADE POSTING",e("cfgGPSaveBtn").textContent="Save",e("cfgGPYear").value="",e("cfgGPSemester").value="",e("cfgGPPeriod").value="",i("cfgGPDateFrom",""),S("cfgGPSemester"),S("cfgGPPeriod")}function z(t){var r=e("cfgSignatureSaveBtn");if(r){var a=e("cfgSignatureEditId"),n=!(!a||""===String(a.value||"").trim());r.disabled=!!t,r.textContent=t?"Saving...":n?"Update":"Save"}}function q(){var t=e("cfgSignatureEditId"),r=e("cfgSignatureDesignation"),a=e("cfgSignatureName"),n=e("cfgSignatureFile"),o=e("cfgSignatureTitle");t&&(t.value=""),r&&(r.value=""),a&&(a.value=""),n&&(n.value=""),o&&(o.textContent="ADD SIGNATURE"),y("cfgSignatureModalMessage","",!1),z(!1),S("cfgSignatureDesignation")}function J(){e("cfgCutoffDateEditId").value="",e("cfgCutoffType").value="",i("cfgCutoffDate",""),e("cfgCutoffSaveBtn").textContent="Save",S("cfgCutoffType")}function K(){e("cfgSectionCutoffEditId").value="",i("cfgSectionCutoffDate",""),e("cfgSectionCutoffSaveBtn").textContent="Save"}function W(){e("cfgCutoffConfigEditId").value="",i("cfgCutoffConfigDate",""),e("cfgCutoffConfigSaveBtn").textContent="Update"}function X(){e("cfgCurriculumEditId").value="",e("cfgCurriculumStatus").value="",e("cfgCurriculumSaveBtn").textContent="Submit",S("cfgCurriculumStatus")}function $(){return V.apply(this,arguments)}function V(){return(V=c(r().m((function t(){var a,n,o,c,i,u;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(!w.schoolSem){t.n=1;break}return t.a(2);case 1:if(a=(e("cfgSSYear").value||"").trim(),n=e("cfgSSSemester").value,o=e("cfgSSEditId").value,c=e("cfgSSSaveBtn"),a&&n){t.n=2;break}return l("Please complete School Year and Semester.","error"),t.a(2);case 2:if(i={school_year:a,semester:n},w.schoolSem=!0,c&&(c.disabled=!0),t.p=3,!o){t.n=5;break}return t.n=4,g(f(b.schoolSemUpdateTemplate,o),"PUT",i);case 4:u=t.v,t.n=7;break;case 5:return t.n=6,g(b.schoolSemStore,"POST",i);case 6:u=t.v;case 7:u.row&&T(h.schoolSem,u.row),h.pager.schoolSem.page=1,x(),B("cfgSchoolSemModal"),H(),l("School year and semester saved.","success"),t.n=9;break;case 8:t.p=8,l(t.v.message||"Unable to save school year and semester.","error");case 9:return t.p=9,w.schoolSem=!1,c&&(c.disabled=!1),t.f(9);case 10:return t.a(2)}}),t,null,[[3,8,9,10]])})))).apply(this,arguments)}function Z(){return Q.apply(this,arguments)}function Q(){return(Q=c(r().m((function t(){var a,n,o,c,i,u,s;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a=(e("cfgGPYear").value||"").trim(),n=e("cfgGPSemester").value,o=e("cfgGPPeriod").value,c=e("cfgGPDateFrom").value,i=e("cfgGPEditId").value,a&&n&&o&&c){t.n=1;break}return l("Please complete all Grade Posting fields.","error"),t.a(2);case 1:if(u={school_year:a,semester:n,period:o,date_from:c},t.p=2,!i){t.n=4;break}return t.n=3,g(f(b.gradePostingUpdateTemplate,i),"PUT",u);case 3:s=t.v,t.n=6;break;case 4:return t.n=5,g(b.gradePostingStore,"POST",u);case 5:s=t.v;case 6:s.row&&T(h.gradePosting,s.row),h.pager.gradePosting.page=1,R(),B("cfgGradePostingModal"),Y(),l("Grade posting saved.","success"),t.n=8;break;case 7:t.p=7,l(t.v.message||"Unable to save grade posting.","error");case 8:return t.a(2)}}),t,null,[[2,7]])})))).apply(this,arguments)}function ee(e){return te.apply(this,arguments)}function te(){return(te=c(r().m((function t(a){var n,o,c,i,u,s,g;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),n=e("cfgSignatureDesignation").value,o=(e("cfgSignatureName").value||"").trim(),c=e("cfgSignatureFile"),i=e("cfgSignatureEditId").value,n&&o){t.n=1;break}return y("cfgSignatureModalMessage","Please complete designation and name for signature.",!0),l("Please complete designation and name for signature.","error"),t.a(2);case 1:if((u=new FormData).append("designation_id",n),u.append("signer_name",o),c.files&&c.files[0]&&u.append("signature_file",c.files[0]),y("cfgSignatureModalMessage","Saving signature configuration...",!1),z(!0),t.p=2,!i){t.n=4;break}return t.n=3,p(f(b.signatureUpdateTemplate,i),"PUT",u);case 3:s=t.v,t.n=6;break;case 4:return t.n=5,p(b.signatureStore,"POST",u);case 5:s=t.v;case 6:s.row&&T(h.signatures,s.row),h.pager.signatures.page=1,O(),B("cfgSignatureModal"),q(),l("Signature configuration saved.","success"),t.n=8;break;case 7:t.p=7,y("cfgSignatureModalMessage",(g=t.v).message||"Unable to save signature configuration.",!0),l(g.message||"Unable to save signature configuration.","error");case 8:return t.p=8,z(!1),t.f(8);case 9:return t.a(2)}}),t,null,[[2,7,8,9]])})))).apply(this,arguments)}function re(e){return ae.apply(this,arguments)}function ae(){return(ae=c(r().m((function t(a){var n,o,c,i,u,s,d;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),n=e("cfgCutoffType").value,o=(e("cfgCutoffSy").value||"").trim(),c=e("cfgCutoffSemester").value,i=e("cfgCutoffDate").value,u=e("cfgCutoffDateEditId").value,n&&o&&c&&i){t.n=1;break}return l("Please complete all Cut Off Date fields.","error"),t.a(2);case 1:if(s={type_code:n,school_year:o,semester:c,cutoff_date:i},t.p=2,!u){t.n=4;break}return t.n=3,g(f(b.cutoffUpdateTemplate,u),"PUT",s);case 3:d=t.v,t.n=6;break;case 4:return t.n=5,g(b.cutoffStore,"POST",s);case 5:d=t.v;case 6:d.row&&T(h.cutoffDate,d.row),h.pager.cutoffDate.page=1,G(),J(),l("Cut-off date saved.","success"),t.n=8;break;case 7:t.p=7,l(t.v.message||"Unable to save cut-off date.","error");case 8:return t.a(2)}}),t,null,[[2,7]])})))).apply(this,arguments)}function ne(e){return oe.apply(this,arguments)}function oe(){return(oe=c(r().m((function t(a){var n,o,c,i,u,s;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),n=(e("cfgSectionCutoffSy").value||"").trim(),o=e("cfgSectionCutoffSemester").value,c=e("cfgSectionCutoffDate").value,i=e("cfgSectionCutoffEditId").value,n&&o&&c){t.n=1;break}return l("Please complete all Section Offering Cut Off fields.","error"),t.a(2);case 1:if(u={type_code:"SECTION_OFFERING",school_year:n,semester:o,cutoff_date:c},t.p=2,!i){t.n=4;break}return t.n=3,g(f(b.cutoffUpdateTemplate,i),"PUT",u);case 3:s=t.v,t.n=6;break;case 4:return t.n=5,g(b.cutoffStore,"POST",u);case 5:s=t.v;case 6:s.row&&T(h.sectionCutoff,s.row),h.pager.sectionCutoff.page=1,L(),K(),l("Section offering cut-off saved.","success"),t.n=8;break;case 7:t.p=7,l(t.v.message||"Unable to save section offering cut-off.","error");case 8:return t.a(2)}}),t,null,[[2,7]])})))).apply(this,arguments)}function ce(e){return ie.apply(this,arguments)}function ie(){return(ie=c(r().m((function t(a){var n,o,c,i,u,s;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),n=(e("cfgCutoffConfigSy").value||"").trim(),o=e("cfgCutoffConfigSemester").value,c=e("cfgCutoffConfigDate").value,i=e("cfgCutoffConfigEditId").value,n&&o&&c){t.n=1;break}return l("Please complete all Changing/Deleting/Adding Cut-off fields.","error"),t.a(2);case 1:if(u={type_code:"CHANGING_DELETING_ADDING",school_year:n,semester:o,cutoff_date:c},t.p=2,!i){t.n=4;break}return t.n=3,g(f(b.cutoffUpdateTemplate,i),"PUT",u);case 3:s=t.v,t.n=6;break;case 4:return t.n=5,g(b.cutoffStore,"POST",u);case 5:s=t.v;case 6:s.row&&T(h.cutoffConfig,s.row),h.pager.cutoffConfig.page=1,U(),W(),l("Cut-off configuration saved.","success"),t.n=8;break;case 7:t.p=7,l(t.v.message||"Unable to save cut-off configuration.","error");case 8:return t.a(2)}}),t,null,[[2,7]])})))).apply(this,arguments)}function fe(e){return ue.apply(this,arguments)}function ue(){return(ue=c(r().m((function t(a){var n,o,c,f,u,s;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),n=(e("cfgCutoffRegSy").value||"").trim(),o=e("cfgCutoffRegSemester").value,c=e("cfgCutoffRegDate").value,f=e("cfgCutoffRegCutoffDate").value,u=(e("cfgCutoffRegStudentNo").value||"").trim(),n&&o&&c&&f&&u){t.n=1;break}return y("cfgCutoffRegMessage","Please complete all Cut-off Registration fields.",!0),t.a(2);case 1:return s={type_code:"CUT_OFF_REGISTRATION",school_year:n,semester:o,event_date:c,cutoff_date:f,student_no:u},t.p=2,t.n=3,g(b.cutoffStore,"POST",s);case 3:y("cfgCutoffRegMessage","Cut-off registration saved for student "+u+".",!1),i("cfgCutoffRegDate",""),i("cfgCutoffRegCutoffDate",""),e("cfgCutoffRegStudentNo").value="",t.n=5;break;case 4:t.p=4,y("cfgCutoffRegMessage",t.v.message||"Unable to save cut-off registration.",!0);case 5:return t.a(2)}}),t,null,[[2,4]])})))).apply(this,arguments)}function se(e){return le.apply(this,arguments)}function le(){return(le=c(r().m((function t(a){var n,o,c,i,u,s;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),n=(e("cfgCurriculumSy").value||"").trim(),o=e("cfgCurriculumSemester").value,c=e("cfgCurriculumStatus").value,i=e("cfgCurriculumEditId").value,n&&o&&c){t.n=1;break}return l("Please complete all Curriculum Evaluation Display fields.","error"),t.a(2);case 1:if(u={school_year:n,semester:o,display_status:c},t.p=2,!i){t.n=4;break}return t.n=3,g(f(b.curriculumDisplayUpdateTemplate,i),"PUT",u);case 3:s=t.v,t.n=6;break;case 4:return t.n=5,g(b.curriculumDisplayStore,"POST",u);case 5:s=t.v;case 6:s.row&&T(h.curriculumDisplay,s.row),h.pager.curriculumDisplay.page=1,N(),X(),l("Curriculum display saved.","success"),t.n=8;break;case 7:t.p=7,l(t.v.message||"Unable to save curriculum display.","error");case 8:return t.a(2)}}),t,null,[[2,7]])})))).apply(this,arguments)}function ge(e){return de.apply(this,arguments)}function de(){return(de=c(r().m((function t(a){var n;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),(n={region:(e("cfgReportRegion").value||"").trim(),division:(e("cfgReportDivision").value||"").trim(),school_id:(e("cfgReportSchoolId").value||"").trim(),school_name:(e("cfgReportSchoolName").value||"").trim(),contact_details:(e("cfgReportContactDetails").value||"").trim()}).region&&n.division&&n.school_id&&n.school_name&&n.contact_details){t.n=1;break}return l("Please complete all Report Details fields.","error"),t.a(2);case 1:return t.p=1,t.n=2,g(b.reportDetailsSave,"POST",n);case 2:l("Report details saved.","success"),t.n=4;break;case 3:t.p=3,l(t.v.message||"Unable to save report details.","error");case 4:return t.a(2)}}),t,null,[[1,3]])})))).apply(this,arguments)}function pe(e){return ve.apply(this,arguments)}function ve(){return(ve=c(r().m((function t(a){var n,o;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),(n={email:(e("cfgEmailSenderAddress").value||"").trim(),password:(e("cfgEmailSenderPassword").value||"").trim()}).email){t.n=1;break}return l("Please provide an email sender address.","error"),t.a(2);case 1:return t.p=1,t.n=2,g(b.emailSenderSave,"POST",n);case 2:(o=t.v).row&&o.row.email&&(e("cfgEmailSenderAddress").value=o.row.email),e("cfgEmailSenderPassword").value="",l("Email sender saved.","success"),t.n=4;break;case 3:t.p=3,l(t.v.message||"Unable to save email sender.","error");case 4:return t.a(2)}}),t,null,[[1,3]])})))).apply(this,arguments)}function me(e){return Se.apply(this,arguments)}function Se(){return(Se=c(r().m((function t(a){var n,o;return r().w((function(t){for(;;)switch(t.p=t.n){case 0:if(a.preventDefault(),(n={school_year:(e("cfgIncSy").value||"").trim(),semester:e("cfgIncSemester").value}).school_year&&n.semester){t.n=1;break}return y("cfgIncProcessMessage","Please provide School Year and Semester to process.",!0),t.a(2);case 1:return t.p=1,t.n=2,g(b.overdueIncProcess,"POST",n);case 2:o=t.v,y("cfgIncProcessMessage",o&&o.message?o.message:"Processed "+(o.processedCount||0)+" INC record(s).",!1),o&&o.run&&(h.latestIncRun=o.run),t.n=4;break;case 3:t.p=3,y("cfgIncProcessMessage",t.v.message||"Unable to process overdue INC records.",!0);case 4:return t.a(2)}}),t,null,[[1,3]])})))).apply(this,arguments)}function ye(){return(ye=c(r().m((function e(){var t,a,n;return r().w((function(e){for(;;)switch(e.p=e.n){case 0:if(h.deleteTarget&&h.deleteTarget.id){e.n=1;break}return B("cfgDeleteModal"),e.a(2);case 1:if(t=h.deleteTarget.group,a=h.deleteTarget.id,n="","schoolSem"===t?n=f(b.schoolSemDeleteTemplate,a):"gradePosting"===t?n=f(b.gradePostingDeleteTemplate,a):"signatures"===t?n=f(b.signatureDeleteTemplate,a):"cutoffDate"===t||"sectionCutoff"===t||"cutoffConfig"===t?n=f(b.cutoffDeleteTemplate,a):"curriculumDisplay"===t&&(n=f(b.curriculumDisplayDeleteTemplate,a)),n){e.n=2;break}return B("cfgDeleteModal"),e.a(2);case 2:return e.p=2,e.n=3,g(n,"DELETE");case 3:"cutoffDate"===t||"sectionCutoff"===t||"cutoffConfig"===t?(E(h.cutoffDate,a),E(h.sectionCutoff,a),E(h.cutoffConfig,a),G(),L(),U()):(E(P(t),a),A(t)),h.deleteTarget=null,B("cfgDeleteModal"),l("Record deleted.","success"),e.n=5;break;case 4:e.p=4,l(e.v.message||"Unable to delete record.","error");case 5:return e.a(2)}}),e,null,[[2,4]])})))).apply(this,arguments)}}()},14:function(e,t,r){e.exports=r("08+7")}});
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "/";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./resources/js/registrar-system-config-configuration.js":
+/*!***************************************************************!*\
+  !*** ./resources/js/registrar-system-config-configuration.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+(function () {
+  'use strict';
+
+  function byId(id) {
+    return document.getElementById(id);
+  }
+  function decodeHtmlEntities(value) {
+    if (typeof value !== 'string' || value.indexOf('&') === -1) {
+      return value;
+    }
+    var parser = document.createElement('textarea');
+    parser.innerHTML = value;
+    return parser.value;
+  }
+  function parseDataJson(element, key, fallback) {
+    if (!element) {
+      return fallback;
+    }
+    var attrName = 'data-' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
+    var raw = element.getAttribute(attrName);
+    if (!raw) {
+      return fallback;
+    }
+    var normalized = decodeHtmlEntities(raw);
+    try {
+      return JSON.parse(normalized);
+    } catch (error) {
+      return fallback;
+    }
+  }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return map[ch] || ch;
+    });
+  }
+  function formatDate(value) {
+    if (!value) {
+      return '';
+    }
+    var date = new Date(value + 'T00:00:00');
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    return date.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: '2-digit'
+    });
+  }
+  function normalizeDateInputValue(value) {
+    if (!value) {
+      return '';
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    var parsed = new Date(value);
+    if (isNaN(parsed.getTime())) {
+      return '';
+    }
+    var month = String(parsed.getMonth() + 1).padStart(2, '0');
+    var day = String(parsed.getDate()).padStart(2, '0');
+    return parsed.getFullYear() + '-' + month + '-' + day;
+  }
+  function setDateInputValue(inputId, value) {
+    var input = byId(inputId);
+    if (!input) {
+      return;
+    }
+    var normalized = normalizeDateInputValue(value);
+    if (input._flatpickr) {
+      if (normalized) {
+        input._flatpickr.setDate(normalized, true, 'Y-m-d');
+      } else {
+        input._flatpickr.clear();
+      }
+      return;
+    }
+    input.value = normalized;
+  }
+  function initFlatpickrDateInputs() {
+    if (typeof window.flatpickr !== 'function') {
+      return;
+    }
+    ['cfgCutoffDate', 'cfgSectionCutoffDate', 'cfgCutoffRegDate', 'cfgCutoffRegCutoffDate', 'cfgCutoffConfigDate', 'cfgGPDateFrom'].forEach(function (inputId) {
+      var input = byId(inputId);
+      if (!input) {
+        return;
+      }
+      if (input._flatpickr) {
+        input._flatpickr.destroy();
+      }
+      window.flatpickr(input, {
+        dateFormat: 'Y-m-d',
+        allowInput: true,
+        disableMobile: true,
+        onReady: function onReady(_selectedDates, _dateStr, instance) {
+          if (!instance || !instance.calendarContainer) {
+            return;
+          }
+          instance.calendarContainer.classList.add('an-flatpickr-calendar');
+          instance.calendarContainer.classList.add('app-form-flatpickr-theme');
+        }
+      });
+      setDateInputValue(inputId, input.value);
+    });
+  }
+  function routeFromTemplate(template, id) {
+    return String(template || '').replace('__ID__', String(id));
+  }
+  function csrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') || '' : '';
+  }
+  function resolveErrorMessage(payload, fallback) {
+    if (!payload) {
+      return fallback;
+    }
+    if (payload.errors) {
+      var fields = Object.keys(payload.errors);
+      if (fields.length && payload.errors[fields[0]] && payload.errors[fields[0]][0]) {
+        return payload.errors[fields[0]][0];
+      }
+    }
+    if (payload.message) {
+      return payload.message;
+    }
+    return fallback;
+  }
+  function showMessage(message, type) {
+    var text = String(message || '').trim();
+    if (!text) {
+      return;
+    }
+    if (typeof window.showRegistrarToast === 'function') {
+      try {
+        window.showRegistrarToast(text, type || 'success');
+        return;
+      } catch (error) {
+        console.error('Registrar toast render failed:', error);
+      }
+    }
+    window.alert(text);
+  }
+  function requestJson(_x, _x2, _x3) {
+    return _requestJson.apply(this, arguments);
+  }
+  function _requestJson() {
+    _requestJson = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(url, method, payload) {
+      var response, data, _t;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.p = _context.n) {
+          case 0:
+            _context.n = 1;
+            return fetch(url, {
+              method: method,
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken()
+              },
+              body: payload ? JSON.stringify(payload) : null
+            });
+          case 1:
+            response = _context.v;
+            data = {};
+            _context.p = 2;
+            _context.n = 3;
+            return response.json();
+          case 3:
+            data = _context.v;
+            _context.n = 5;
+            break;
+          case 4:
+            _context.p = 4;
+            _t = _context.v;
+            data = {};
+          case 5:
+            if (!(!response.ok || data.ok === false)) {
+              _context.n = 6;
+              break;
+            }
+            throw new Error(resolveErrorMessage(data, 'Unable to process request.'));
+          case 6:
+            return _context.a(2, data);
+        }
+      }, _callee, null, [[2, 4]]);
+    }));
+    return _requestJson.apply(this, arguments);
+  }
+  function requestForm(_x4, _x5, _x6) {
+    return _requestForm.apply(this, arguments);
+  }
+  function _requestForm() {
+    _requestForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(url, method, formData) {
+      var transportMethod, body, response, data, _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
+          case 0:
+            transportMethod = method;
+            body = formData;
+            if (method !== 'POST') {
+              transportMethod = 'POST';
+              body.append('_method', method);
+            }
+            _context2.n = 1;
+            return fetch(url, {
+              method: transportMethod,
+              headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken()
+              },
+              body: body
+            });
+          case 1:
+            response = _context2.v;
+            data = {};
+            _context2.p = 2;
+            _context2.n = 3;
+            return response.json();
+          case 3:
+            data = _context2.v;
+            _context2.n = 5;
+            break;
+          case 4:
+            _context2.p = 4;
+            _t2 = _context2.v;
+            data = {};
+          case 5:
+            if (!(!response.ok || data.ok === false)) {
+              _context2.n = 6;
+              break;
+            }
+            throw new Error(resolveErrorMessage(data, 'Unable to process request.'));
+          case 6:
+            return _context2.a(2, data);
+        }
+      }, _callee2, null, [[2, 4]]);
+    }));
+    return _requestForm.apply(this, arguments);
+  }
+  function refreshListboxes(target) {
+    if (!window.registrarListboxSelect || _typeof(window.registrarListboxSelect) !== 'object') {
+      return;
+    }
+    if (target && typeof window.registrarListboxSelect.refresh === 'function') {
+      window.registrarListboxSelect.refresh(target);
+      return;
+    }
+    if (typeof window.registrarListboxSelect.refreshAll === 'function') {
+      window.registrarListboxSelect.refreshAll();
+      return;
+    }
+    if (typeof window.registrarListboxSelect.refresh === 'function') {
+      window.registrarListboxSelect.refresh();
+    }
+  }
+  function syncSelectUI(id) {
+    var node = byId(id);
+    if (!node) {
+      return;
+    }
+    node.dispatchEvent(new Event('change', {
+      bubbles: true
+    }));
+  }
+  function setInlineMessage(id, text, isError) {
+    var node = byId(id);
+    if (!node) {
+      return;
+    }
+    node.textContent = text || '';
+    node.classList.toggle('is-error', !!isError);
+  }
+  var bootstrap = byId('cfgBootstrap');
+  if (!bootstrap) {
+    return;
+  }
+  var routes = parseDataJson(bootstrap, 'routes', {});
+  var state = {
+    schoolSem: parseDataJson(bootstrap, 'schoolSem', []),
+    gradePosting: parseDataJson(bootstrap, 'gradePosting', []),
+    signatures: parseDataJson(bootstrap, 'signatures', []),
+    cutoffDate: parseDataJson(bootstrap, 'cutoffDate', []),
+    sectionCutoff: parseDataJson(bootstrap, 'sectionCutoff', []),
+    cutoffConfig: parseDataJson(bootstrap, 'cutoffConfig', []),
+    curriculumDisplay: parseDataJson(bootstrap, 'curriculumDisplay', []),
+    latestIncRun: parseDataJson(bootstrap, 'latestIncRun', null),
+    pager: {
+      schoolSem: {
+        page: 1,
+        size: 5
+      },
+      gradePosting: {
+        page: 1,
+        size: 5
+      },
+      signatures: {
+        page: 1,
+        size: 5
+      },
+      cutoffDate: {
+        page: 1,
+        size: 5
+      },
+      sectionCutoff: {
+        page: 1,
+        size: 5
+      },
+      cutoffConfig: {
+        page: 1,
+        size: 5
+      },
+      curriculumDisplay: {
+        page: 1,
+        size: 5
+      }
+    },
+    deleteTarget: null
+  };
+  var requestLocks = {
+    schoolSem: false
+  };
+  var pagerMeta = {
+    schoolSem: {
+      id: 'cfgSchoolSemPager'
+    },
+    gradePosting: {
+      id: 'cfgGradePostingPager'
+    },
+    signatures: {
+      id: 'cfgSignaturePager'
+    },
+    cutoffDate: {
+      id: 'cfgCutoffDatePager'
+    },
+    sectionCutoff: {
+      id: 'cfgSectionCutoffPager'
+    },
+    cutoffConfig: {
+      id: 'cfgCutoffConfigPager'
+    },
+    curriculumDisplay: {
+      id: 'cfgCurriculumDisplayPager'
+    }
+  };
+  function listFor(group) {
+    return state[group] || [];
+  }
+  function upsertRow(list, row) {
+    var index = list.findIndex(function (item) {
+      return String(item.id) === String(row.id);
+    });
+    if (index >= 0) {
+      list[index] = row;
+      return;
+    }
+    list.unshift(row);
+  }
+  function removeRow(list, id) {
+    var index = list.findIndex(function (item) {
+      return String(item.id) === String(id);
+    });
+    if (index >= 0) {
+      list.splice(index, 1);
+    }
+  }
+  function maxPage(group) {
+    var data = listFor(group);
+    var size = state.pager[group].size;
+    return Math.max(1, Math.ceil(data.length / size));
+  }
+  function pagedSlice(group) {
+    var data = listFor(group);
+    var page = state.pager[group].page;
+    var size = state.pager[group].size;
+    var start = (page - 1) * size;
+    return {
+      start: start,
+      rows: data.slice(start, start + size)
+    };
+  }
+  function setPage(group, page) {
+    var max = maxPage(group);
+    state.pager[group].page = Math.max(1, Math.min(max, page));
+    renderGroup(group);
+  }
+  function renderPager(group) {
+    var mount = byId((pagerMeta[group] || {}).id || '');
+    if (!mount) {
+      return;
+    }
+    var list = listFor(group);
+    var size = state.pager[group].size;
+    if (list.length <= size) {
+      mount.innerHTML = '';
+      return;
+    }
+    var current = state.pager[group].page;
+    var max = maxPage(group);
+    var start = Math.max(1, current - 2);
+    var end = Math.min(max, current + 2);
+    if (current <= 3) {
+      end = Math.min(max, 5);
+    } else if (current >= max - 2) {
+      start = Math.max(1, max - 4);
+    }
+    var html = '' + '<nav class="cfg-page-nav-wrap" aria-label="Configuration pagination">' + '<div class="cfg-page-list" role="group" aria-label="Page controls">' + '<button type="button" class="btn cfg-page-btn" data-cfg-action="set-page" data-cfg-group="' + group + '" data-cfg-page="' + (current - 1) + '" ' + (current <= 1 ? 'disabled' : '') + ' aria-label="Previous page">&lt;</button>';
+    for (var p = start; p <= end; p += 1) {
+      html += '<button type="button" class="btn cfg-page-num ' + (p === current ? 'active' : '') + '" data-cfg-action="set-page" data-cfg-group="' + group + '" data-cfg-page="' + p + '" ' + (p === current ? 'aria-current="page"' : '') + '>' + p + '</button>';
+    }
+    html += '' + '<button type="button" class="btn cfg-page-btn" data-cfg-action="set-page" data-cfg-group="' + group + '" data-cfg-page="' + (current + 1) + '" ' + (current >= max ? 'disabled' : '') + ' aria-label="Next page">&gt;</button>' + '</div>' + '</nav>';
+    mount.innerHTML = html;
+  }
+  function actionMenuHtml(group, index) {
+    var menuId = 'cfgMenu-' + group + '-' + index;
+    return '' + '<div class="apst-action-btn" data-cfg-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' + '<div class="apst-dropdown" id="' + menuId + '">' + '<button type="button" data-cfg-action="edit-row" data-cfg-group="' + group + '" data-cfg-index="' + index + '">Edit</button>' + '<button type="button" class="apst-del-btn" data-cfg-action="delete-row" data-cfg-group="' + group + '" data-cfg-index="' + index + '">Delete</button>' + '</div>';
+  }
+  function renderSchoolSem() {
+    var body = byId('cfgSchoolSemBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('schoolSem');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      return '' + '<tr>' + '<td>' + escapeHtml(row.sy) + '</td>' + '<td>' + escapeHtml(row.semester) + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('schoolSem', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="3" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('schoolSem');
+  }
+  function renderGradePosting() {
+    var body = byId('cfgGradePostingBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('gradePosting');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      return '' + '<tr>' + '<td>' + escapeHtml(row.sy) + '</td>' + '<td>' + escapeHtml(row.semester) + '</td>' + '<td>' + escapeHtml(row.period) + '</td>' + '<td>' + escapeHtml(formatDate(row.dateFrom)) + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('gradePosting', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="5" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('gradePosting');
+  }
+  function renderSignatures() {
+    var body = byId('cfgSignatureBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('signatures');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      var signatureCell = row.signatureUrl ? '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>' : '<span class="cfg-muted">No file</span>';
+      return '' + '<tr>' + '<td>' + escapeHtml(row.designation) + '</td>' + '<td>' + escapeHtml(row.name) + '</td>' + '<td>' + signatureCell + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('signatures', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('signatures');
+  }
+  function renderCutoffDate() {
+    var body = byId('cfgCutoffDateBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('cutoffDate');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      return '' + '<tr>' + '<td>' + escapeHtml(row.type) + '</td>' + '<td>' + escapeHtml(row.sy) + '</td>' + '<td>' + escapeHtml(row.semester) + '</td>' + '<td>' + escapeHtml(formatDate(row.cutoffDate)) + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('cutoffDate', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="5" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('cutoffDate');
+  }
+  function renderSectionCutoff() {
+    var body = byId('cfgSectionCutoffBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('sectionCutoff');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      return '' + '<tr>' + '<td>' + escapeHtml(row.sy) + '</td>' + '<td>' + escapeHtml(row.semester) + '</td>' + '<td>' + escapeHtml(formatDate(row.cutoffDate)) + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('sectionCutoff', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('sectionCutoff');
+  }
+  function renderCutoffConfig() {
+    var body = byId('cfgCutoffConfigBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('cutoffConfig');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      return '' + '<tr>' + '<td>' + escapeHtml(row.sy) + '</td>' + '<td>' + escapeHtml(row.semester) + '</td>' + '<td>' + escapeHtml(formatDate(row.cutoffDate)) + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('cutoffConfig', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('cutoffConfig');
+  }
+  function renderCurriculumDisplay() {
+    var body = byId('cfgCurriculumDisplayBody');
+    if (!body) {
+      return;
+    }
+    var paged = pagedSlice('curriculumDisplay');
+    var rows = paged.rows.map(function (row, idx) {
+      var index = paged.start + idx;
+      return '' + '<tr>' + '<td>' + escapeHtml(row.sy) + '</td>' + '<td>' + escapeHtml(row.semester) + '</td>' + '<td>' + escapeHtml(row.status) + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('curriculumDisplay', index) + '</td>' + '</tr>';
+    }).join('');
+    body.innerHTML = rows || '<tr><td colspan="4" class="sc-empty-row">No records found.</td></tr>';
+    renderPager('curriculumDisplay');
+  }
+  function renderGroup(group) {
+    if (group === 'schoolSem') {
+      renderSchoolSem();
+      return;
+    }
+    if (group === 'gradePosting') {
+      renderGradePosting();
+      return;
+    }
+    if (group === 'signatures') {
+      renderSignatures();
+      return;
+    }
+    if (group === 'cutoffDate') {
+      renderCutoffDate();
+      return;
+    }
+    if (group === 'sectionCutoff') {
+      renderSectionCutoff();
+      return;
+    }
+    if (group === 'cutoffConfig') {
+      renderCutoffConfig();
+      return;
+    }
+    if (group === 'curriculumDisplay') {
+      renderCurriculumDisplay();
+    }
+  }
+  function renderAll() {
+    renderSchoolSem();
+    renderGradePosting();
+    renderSignatures();
+    renderCutoffDate();
+    renderSectionCutoff();
+    renderCutoffConfig();
+    renderCurriculumDisplay();
+  }
+  function closeActionMenus() {
+    document.querySelectorAll('.apst-dropdown.open').forEach(function (menu) {
+      menu.classList.remove('open', 'drop-up');
+      menu.style.top = '';
+      menu.style.left = '';
+      menu.style.right = '';
+      menu.style.bottom = '';
+    });
+  }
+  function toggleActionMenu(menuId, trigger) {
+    var menu = byId(menuId);
+    if (!menu || !trigger) {
+      return;
+    }
+    var wasOpen = menu.classList.contains('open');
+    closeActionMenus();
+    if (wasOpen) {
+      return;
+    }
+    var rect = trigger.getBoundingClientRect();
+    var width = 130;
+    var height = 96;
+    var left = rect.right + 8;
+    var top = rect.top;
+    if (left + width > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - width - 8);
+    }
+    if (window.innerHeight - rect.bottom < height + 8) {
+      menu.classList.add('drop-up');
+      top = Math.max(8, rect.bottom - height);
+    }
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+    menu.style.right = 'auto';
+    menu.style.bottom = 'auto';
+    menu.classList.add('open');
+  }
+  function openModal(id) {
+    var modal = byId(id);
+    if (!modal) {
+      return;
+    }
+    closeActionMenus();
+    modal.classList.remove('is-hidden');
+    refreshListboxes(modal);
+  }
+  function closeModal(id) {
+    var modal = byId(id);
+    if (!modal) {
+      return;
+    }
+    modal.classList.add('is-hidden');
+  }
+  function resetSchoolSemModal() {
+    byId('cfgSSEditId').value = '';
+    byId('cfgSSTitle').textContent = 'ADD SCHOOL YEAR AND SEMESTER';
+    byId('cfgSSSaveBtn').textContent = 'Save';
+    byId('cfgSSSaveBtn').disabled = false;
+    byId('cfgSSYear').value = '';
+    byId('cfgSSSemester').value = '';
+    syncSelectUI('cfgSSSemester');
+  }
+  function resetGradePostingModal() {
+    byId('cfgGPEditId').value = '';
+    byId('cfgGPTitle').textContent = 'ADD GRADE POSTING';
+    byId('cfgGPSaveBtn').textContent = 'Save';
+    byId('cfgGPYear').value = '';
+    byId('cfgGPSemester').value = '';
+    byId('cfgGPPeriod').value = '';
+    setDateInputValue('cfgGPDateFrom', '');
+    syncSelectUI('cfgGPSemester');
+    syncSelectUI('cfgGPPeriod');
+  }
+  function setSignatureSaveButtonState(isSaving) {
+    var saveButton = byId('cfgSignatureSaveBtn');
+    if (!saveButton) {
+      return;
+    }
+    var editNode = byId('cfgSignatureEditId');
+    var hasEditId = !!(editNode && String(editNode.value || '').trim() !== '');
+    saveButton.disabled = !!isSaving;
+    saveButton.textContent = isSaving ? 'Saving...' : hasEditId ? 'Update' : 'Save';
+  }
+  function resetSignatureForm() {
+    var editNode = byId('cfgSignatureEditId');
+    var designationNode = byId('cfgSignatureDesignation');
+    var nameNode = byId('cfgSignatureName');
+    var fileNode = byId('cfgSignatureFile');
+    var titleNode = byId('cfgSignatureTitle');
+    if (editNode) {
+      editNode.value = '';
+    }
+    if (designationNode) {
+      designationNode.value = '';
+    }
+    if (nameNode) {
+      nameNode.value = '';
+    }
+    if (fileNode) {
+      fileNode.value = '';
+    }
+    if (titleNode) {
+      titleNode.textContent = 'ADD SIGNATURE';
+    }
+    setInlineMessage('cfgSignatureModalMessage', '', false);
+    setSignatureSaveButtonState(false);
+    syncSelectUI('cfgSignatureDesignation');
+  }
+  function resetCutoffDateForm() {
+    byId('cfgCutoffDateEditId').value = '';
+    byId('cfgCutoffType').value = '';
+    setDateInputValue('cfgCutoffDate', '');
+    byId('cfgCutoffSaveBtn').textContent = 'Save';
+    syncSelectUI('cfgCutoffType');
+  }
+  function resetSectionCutoffForm() {
+    byId('cfgSectionCutoffEditId').value = '';
+    setDateInputValue('cfgSectionCutoffDate', '');
+    byId('cfgSectionCutoffSaveBtn').textContent = 'Save';
+  }
+  function resetCutoffConfigForm() {
+    byId('cfgCutoffConfigEditId').value = '';
+    setDateInputValue('cfgCutoffConfigDate', '');
+    byId('cfgCutoffConfigSaveBtn').textContent = 'Update';
+  }
+  function resetCurriculumForm() {
+    byId('cfgCurriculumEditId').value = '';
+    byId('cfgCurriculumStatus').value = '';
+    byId('cfgCurriculumSaveBtn').textContent = 'Submit';
+    syncSelectUI('cfgCurriculumStatus');
+  }
+  function saveSchoolSem() {
+    return _saveSchoolSem.apply(this, arguments);
+  }
+  function _saveSchoolSem() {
+    _saveSchoolSem = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var schoolYear, semester, editId, saveButton, payload, response, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            if (!requestLocks.schoolSem) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            schoolYear = (byId('cfgSSYear').value || '').trim();
+            semester = byId('cfgSSSemester').value;
+            editId = byId('cfgSSEditId').value;
+            saveButton = byId('cfgSSSaveBtn');
+            if (!(!schoolYear || !semester)) {
+              _context3.n = 2;
+              break;
+            }
+            showMessage('Please complete School Year and Semester.', 'error');
+            return _context3.a(2);
+          case 2:
+            payload = {
+              school_year: schoolYear,
+              semester: semester
+            };
+            requestLocks.schoolSem = true;
+            if (saveButton) {
+              saveButton.disabled = true;
+            }
+            _context3.p = 3;
+            if (!editId) {
+              _context3.n = 5;
+              break;
+            }
+            _context3.n = 4;
+            return requestJson(routeFromTemplate(routes.schoolSemUpdateTemplate, editId), 'PUT', payload);
+          case 4:
+            response = _context3.v;
+            _context3.n = 7;
+            break;
+          case 5:
+            _context3.n = 6;
+            return requestJson(routes.schoolSemStore, 'POST', payload);
+          case 6:
+            response = _context3.v;
+          case 7:
+            if (response.row) {
+              upsertRow(state.schoolSem, response.row);
+            }
+            state.pager.schoolSem.page = 1;
+            renderSchoolSem();
+            closeModal('cfgSchoolSemModal');
+            resetSchoolSemModal();
+            showMessage('School year and semester saved.', 'success');
+            _context3.n = 9;
+            break;
+          case 8:
+            _context3.p = 8;
+            _t3 = _context3.v;
+            showMessage(_t3.message || 'Unable to save school year and semester.', 'error');
+          case 9:
+            _context3.p = 9;
+            requestLocks.schoolSem = false;
+            if (saveButton) {
+              saveButton.disabled = false;
+            }
+            return _context3.f(9);
+          case 10:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[3, 8, 9, 10]]);
+    }));
+    return _saveSchoolSem.apply(this, arguments);
+  }
+  function saveGradePosting() {
+    return _saveGradePosting.apply(this, arguments);
+  }
+  function _saveGradePosting() {
+    _saveGradePosting = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var schoolYear, semester, period, dateFrom, editId, payload, response, _t4;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.p = _context4.n) {
+          case 0:
+            schoolYear = (byId('cfgGPYear').value || '').trim();
+            semester = byId('cfgGPSemester').value;
+            period = byId('cfgGPPeriod').value;
+            dateFrom = byId('cfgGPDateFrom').value;
+            editId = byId('cfgGPEditId').value;
+            if (!(!schoolYear || !semester || !period || !dateFrom)) {
+              _context4.n = 1;
+              break;
+            }
+            showMessage('Please complete all Grade Posting fields.', 'error');
+            return _context4.a(2);
+          case 1:
+            payload = {
+              school_year: schoolYear,
+              semester: semester,
+              period: period,
+              date_from: dateFrom
+            };
+            _context4.p = 2;
+            if (!editId) {
+              _context4.n = 4;
+              break;
+            }
+            _context4.n = 3;
+            return requestJson(routeFromTemplate(routes.gradePostingUpdateTemplate, editId), 'PUT', payload);
+          case 3:
+            response = _context4.v;
+            _context4.n = 6;
+            break;
+          case 4:
+            _context4.n = 5;
+            return requestJson(routes.gradePostingStore, 'POST', payload);
+          case 5:
+            response = _context4.v;
+          case 6:
+            if (response.row) {
+              upsertRow(state.gradePosting, response.row);
+            }
+            state.pager.gradePosting.page = 1;
+            renderGradePosting();
+            closeModal('cfgGradePostingModal');
+            resetGradePostingModal();
+            showMessage('Grade posting saved.', 'success');
+            _context4.n = 8;
+            break;
+          case 7:
+            _context4.p = 7;
+            _t4 = _context4.v;
+            showMessage(_t4.message || 'Unable to save grade posting.', 'error');
+          case 8:
+            return _context4.a(2);
+        }
+      }, _callee4, null, [[2, 7]]);
+    }));
+    return _saveGradePosting.apply(this, arguments);
+  }
+  function submitSignatureForm(_x7) {
+    return _submitSignatureForm.apply(this, arguments);
+  }
+  function _submitSignatureForm() {
+    _submitSignatureForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(event) {
+      var designationId, signerName, fileInput, editId, formData, response, _t5;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
+          case 0:
+            event.preventDefault();
+            designationId = byId('cfgSignatureDesignation').value;
+            signerName = (byId('cfgSignatureName').value || '').trim();
+            fileInput = byId('cfgSignatureFile');
+            editId = byId('cfgSignatureEditId').value;
+            if (!(!designationId || !signerName)) {
+              _context5.n = 1;
+              break;
+            }
+            setInlineMessage('cfgSignatureModalMessage', 'Please complete designation and name for signature.', true);
+            showMessage('Please complete designation and name for signature.', 'error');
+            return _context5.a(2);
+          case 1:
+            formData = new FormData();
+            formData.append('designation_id', designationId);
+            formData.append('signer_name', signerName);
+            if (fileInput.files && fileInput.files[0]) {
+              formData.append('signature_file', fileInput.files[0]);
+            }
+            setInlineMessage('cfgSignatureModalMessage', 'Saving signature configuration...', false);
+            setSignatureSaveButtonState(true);
+            _context5.p = 2;
+            if (!editId) {
+              _context5.n = 4;
+              break;
+            }
+            _context5.n = 3;
+            return requestForm(routeFromTemplate(routes.signatureUpdateTemplate, editId), 'PUT', formData);
+          case 3:
+            response = _context5.v;
+            _context5.n = 6;
+            break;
+          case 4:
+            _context5.n = 5;
+            return requestForm(routes.signatureStore, 'POST', formData);
+          case 5:
+            response = _context5.v;
+          case 6:
+            if (response.row) {
+              upsertRow(state.signatures, response.row);
+            }
+            state.pager.signatures.page = 1;
+            renderSignatures();
+            closeModal('cfgSignatureModal');
+            resetSignatureForm();
+            showMessage('Signature configuration saved.', 'success');
+            _context5.n = 8;
+            break;
+          case 7:
+            _context5.p = 7;
+            _t5 = _context5.v;
+            setInlineMessage('cfgSignatureModalMessage', _t5.message || 'Unable to save signature configuration.', true);
+            showMessage(_t5.message || 'Unable to save signature configuration.', 'error');
+          case 8:
+            _context5.p = 8;
+            setSignatureSaveButtonState(false);
+            return _context5.f(8);
+          case 9:
+            return _context5.a(2);
+        }
+      }, _callee5, null, [[2, 7, 8, 9]]);
+    }));
+    return _submitSignatureForm.apply(this, arguments);
+  }
+  function submitCutoffDateForm(_x8) {
+    return _submitCutoffDateForm.apply(this, arguments);
+  }
+  function _submitCutoffDateForm() {
+    _submitCutoffDateForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(event) {
+      var typeCode, schoolYear, semester, cutoffDate, editId, payload, response, _t6;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.p = _context6.n) {
+          case 0:
+            event.preventDefault();
+            typeCode = byId('cfgCutoffType').value;
+            schoolYear = (byId('cfgCutoffSy').value || '').trim();
+            semester = byId('cfgCutoffSemester').value;
+            cutoffDate = byId('cfgCutoffDate').value;
+            editId = byId('cfgCutoffDateEditId').value;
+            if (!(!typeCode || !schoolYear || !semester || !cutoffDate)) {
+              _context6.n = 1;
+              break;
+            }
+            showMessage('Please complete all Cut Off Date fields.', 'error');
+            return _context6.a(2);
+          case 1:
+            payload = {
+              type_code: typeCode,
+              school_year: schoolYear,
+              semester: semester,
+              cutoff_date: cutoffDate
+            };
+            _context6.p = 2;
+            if (!editId) {
+              _context6.n = 4;
+              break;
+            }
+            _context6.n = 3;
+            return requestJson(routeFromTemplate(routes.cutoffUpdateTemplate, editId), 'PUT', payload);
+          case 3:
+            response = _context6.v;
+            _context6.n = 6;
+            break;
+          case 4:
+            _context6.n = 5;
+            return requestJson(routes.cutoffStore, 'POST', payload);
+          case 5:
+            response = _context6.v;
+          case 6:
+            if (response.row) {
+              upsertRow(state.cutoffDate, response.row);
+            }
+            state.pager.cutoffDate.page = 1;
+            renderCutoffDate();
+            resetCutoffDateForm();
+            showMessage('Cut-off date saved.', 'success');
+            _context6.n = 8;
+            break;
+          case 7:
+            _context6.p = 7;
+            _t6 = _context6.v;
+            showMessage(_t6.message || 'Unable to save cut-off date.', 'error');
+          case 8:
+            return _context6.a(2);
+        }
+      }, _callee6, null, [[2, 7]]);
+    }));
+    return _submitCutoffDateForm.apply(this, arguments);
+  }
+  function submitSectionCutoffForm(_x9) {
+    return _submitSectionCutoffForm.apply(this, arguments);
+  }
+  function _submitSectionCutoffForm() {
+    _submitSectionCutoffForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(event) {
+      var schoolYear, semester, cutoffDate, editId, payload, response, _t7;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.p = _context7.n) {
+          case 0:
+            event.preventDefault();
+            schoolYear = (byId('cfgSectionCutoffSy').value || '').trim();
+            semester = byId('cfgSectionCutoffSemester').value;
+            cutoffDate = byId('cfgSectionCutoffDate').value;
+            editId = byId('cfgSectionCutoffEditId').value;
+            if (!(!schoolYear || !semester || !cutoffDate)) {
+              _context7.n = 1;
+              break;
+            }
+            showMessage('Please complete all Section Offering Cut Off fields.', 'error');
+            return _context7.a(2);
+          case 1:
+            payload = {
+              type_code: 'SECTION_OFFERING',
+              school_year: schoolYear,
+              semester: semester,
+              cutoff_date: cutoffDate
+            };
+            _context7.p = 2;
+            if (!editId) {
+              _context7.n = 4;
+              break;
+            }
+            _context7.n = 3;
+            return requestJson(routeFromTemplate(routes.cutoffUpdateTemplate, editId), 'PUT', payload);
+          case 3:
+            response = _context7.v;
+            _context7.n = 6;
+            break;
+          case 4:
+            _context7.n = 5;
+            return requestJson(routes.cutoffStore, 'POST', payload);
+          case 5:
+            response = _context7.v;
+          case 6:
+            if (response.row) {
+              upsertRow(state.sectionCutoff, response.row);
+            }
+            state.pager.sectionCutoff.page = 1;
+            renderSectionCutoff();
+            resetSectionCutoffForm();
+            showMessage('Section offering cut-off saved.', 'success');
+            _context7.n = 8;
+            break;
+          case 7:
+            _context7.p = 7;
+            _t7 = _context7.v;
+            showMessage(_t7.message || 'Unable to save section offering cut-off.', 'error');
+          case 8:
+            return _context7.a(2);
+        }
+      }, _callee7, null, [[2, 7]]);
+    }));
+    return _submitSectionCutoffForm.apply(this, arguments);
+  }
+  function submitCutoffConfigForm(_x0) {
+    return _submitCutoffConfigForm.apply(this, arguments);
+  }
+  function _submitCutoffConfigForm() {
+    _submitCutoffConfigForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(event) {
+      var schoolYear, semester, cutoffDate, editId, payload, response, _t8;
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.p = _context8.n) {
+          case 0:
+            event.preventDefault();
+            schoolYear = (byId('cfgCutoffConfigSy').value || '').trim();
+            semester = byId('cfgCutoffConfigSemester').value;
+            cutoffDate = byId('cfgCutoffConfigDate').value;
+            editId = byId('cfgCutoffConfigEditId').value;
+            if (!(!schoolYear || !semester || !cutoffDate)) {
+              _context8.n = 1;
+              break;
+            }
+            showMessage('Please complete all Changing/Deleting/Adding Cut-off fields.', 'error');
+            return _context8.a(2);
+          case 1:
+            payload = {
+              type_code: 'CHANGING_DELETING_ADDING',
+              school_year: schoolYear,
+              semester: semester,
+              cutoff_date: cutoffDate
+            };
+            _context8.p = 2;
+            if (!editId) {
+              _context8.n = 4;
+              break;
+            }
+            _context8.n = 3;
+            return requestJson(routeFromTemplate(routes.cutoffUpdateTemplate, editId), 'PUT', payload);
+          case 3:
+            response = _context8.v;
+            _context8.n = 6;
+            break;
+          case 4:
+            _context8.n = 5;
+            return requestJson(routes.cutoffStore, 'POST', payload);
+          case 5:
+            response = _context8.v;
+          case 6:
+            if (response.row) {
+              upsertRow(state.cutoffConfig, response.row);
+            }
+            state.pager.cutoffConfig.page = 1;
+            renderCutoffConfig();
+            resetCutoffConfigForm();
+            showMessage('Cut-off configuration saved.', 'success');
+            _context8.n = 8;
+            break;
+          case 7:
+            _context8.p = 7;
+            _t8 = _context8.v;
+            showMessage(_t8.message || 'Unable to save cut-off configuration.', 'error');
+          case 8:
+            return _context8.a(2);
+        }
+      }, _callee8, null, [[2, 7]]);
+    }));
+    return _submitCutoffConfigForm.apply(this, arguments);
+  }
+  function submitCutoffRegistrationForm(_x1) {
+    return _submitCutoffRegistrationForm.apply(this, arguments);
+  }
+  function _submitCutoffRegistrationForm() {
+    _submitCutoffRegistrationForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(event) {
+      var schoolYear, semester, eventDate, cutoffDate, studentNo, payload, _t9;
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.p = _context9.n) {
+          case 0:
+            event.preventDefault();
+            schoolYear = (byId('cfgCutoffRegSy').value || '').trim();
+            semester = byId('cfgCutoffRegSemester').value;
+            eventDate = byId('cfgCutoffRegDate').value;
+            cutoffDate = byId('cfgCutoffRegCutoffDate').value;
+            studentNo = (byId('cfgCutoffRegStudentNo').value || '').trim();
+            if (!(!schoolYear || !semester || !eventDate || !cutoffDate || !studentNo)) {
+              _context9.n = 1;
+              break;
+            }
+            setInlineMessage('cfgCutoffRegMessage', 'Please complete all Cut-off Registration fields.', true);
+            return _context9.a(2);
+          case 1:
+            payload = {
+              type_code: 'CUT_OFF_REGISTRATION',
+              school_year: schoolYear,
+              semester: semester,
+              event_date: eventDate,
+              cutoff_date: cutoffDate,
+              student_no: studentNo
+            };
+            _context9.p = 2;
+            _context9.n = 3;
+            return requestJson(routes.cutoffStore, 'POST', payload);
+          case 3:
+            setInlineMessage('cfgCutoffRegMessage', 'Cut-off registration saved for student ' + studentNo + '.', false);
+            setDateInputValue('cfgCutoffRegDate', '');
+            setDateInputValue('cfgCutoffRegCutoffDate', '');
+            byId('cfgCutoffRegStudentNo').value = '';
+            _context9.n = 5;
+            break;
+          case 4:
+            _context9.p = 4;
+            _t9 = _context9.v;
+            setInlineMessage('cfgCutoffRegMessage', _t9.message || 'Unable to save cut-off registration.', true);
+          case 5:
+            return _context9.a(2);
+        }
+      }, _callee9, null, [[2, 4]]);
+    }));
+    return _submitCutoffRegistrationForm.apply(this, arguments);
+  }
+  function submitCurriculumForm(_x10) {
+    return _submitCurriculumForm.apply(this, arguments);
+  }
+  function _submitCurriculumForm() {
+    _submitCurriculumForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(event) {
+      var schoolYear, semester, status, editId, payload, response, _t0;
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.p = _context0.n) {
+          case 0:
+            event.preventDefault();
+            schoolYear = (byId('cfgCurriculumSy').value || '').trim();
+            semester = byId('cfgCurriculumSemester').value;
+            status = byId('cfgCurriculumStatus').value;
+            editId = byId('cfgCurriculumEditId').value;
+            if (!(!schoolYear || !semester || !status)) {
+              _context0.n = 1;
+              break;
+            }
+            showMessage('Please complete all Curriculum Evaluation Display fields.', 'error');
+            return _context0.a(2);
+          case 1:
+            payload = {
+              school_year: schoolYear,
+              semester: semester,
+              display_status: status
+            };
+            _context0.p = 2;
+            if (!editId) {
+              _context0.n = 4;
+              break;
+            }
+            _context0.n = 3;
+            return requestJson(routeFromTemplate(routes.curriculumDisplayUpdateTemplate, editId), 'PUT', payload);
+          case 3:
+            response = _context0.v;
+            _context0.n = 6;
+            break;
+          case 4:
+            _context0.n = 5;
+            return requestJson(routes.curriculumDisplayStore, 'POST', payload);
+          case 5:
+            response = _context0.v;
+          case 6:
+            if (response.row) {
+              upsertRow(state.curriculumDisplay, response.row);
+            }
+            state.pager.curriculumDisplay.page = 1;
+            renderCurriculumDisplay();
+            resetCurriculumForm();
+            showMessage('Curriculum display saved.', 'success');
+            _context0.n = 8;
+            break;
+          case 7:
+            _context0.p = 7;
+            _t0 = _context0.v;
+            showMessage(_t0.message || 'Unable to save curriculum display.', 'error');
+          case 8:
+            return _context0.a(2);
+        }
+      }, _callee0, null, [[2, 7]]);
+    }));
+    return _submitCurriculumForm.apply(this, arguments);
+  }
+  function submitReportDetailsForm(_x11) {
+    return _submitReportDetailsForm.apply(this, arguments);
+  }
+  function _submitReportDetailsForm() {
+    _submitReportDetailsForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(event) {
+      var payload, _t1;
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.p = _context1.n) {
+          case 0:
+            event.preventDefault();
+            payload = {
+              region: (byId('cfgReportRegion').value || '').trim(),
+              division: (byId('cfgReportDivision').value || '').trim(),
+              school_id: (byId('cfgReportSchoolId').value || '').trim(),
+              school_name: (byId('cfgReportSchoolName').value || '').trim(),
+              contact_details: (byId('cfgReportContactDetails').value || '').trim()
+            };
+            if (!(!payload.region || !payload.division || !payload.school_id || !payload.school_name || !payload.contact_details)) {
+              _context1.n = 1;
+              break;
+            }
+            showMessage('Please complete all Report Details fields.', 'error');
+            return _context1.a(2);
+          case 1:
+            _context1.p = 1;
+            _context1.n = 2;
+            return requestJson(routes.reportDetailsSave, 'POST', payload);
+          case 2:
+            showMessage('Report details saved.', 'success');
+            _context1.n = 4;
+            break;
+          case 3:
+            _context1.p = 3;
+            _t1 = _context1.v;
+            showMessage(_t1.message || 'Unable to save report details.', 'error');
+          case 4:
+            return _context1.a(2);
+        }
+      }, _callee1, null, [[1, 3]]);
+    }));
+    return _submitReportDetailsForm.apply(this, arguments);
+  }
+  function submitEmailSenderForm(_x12) {
+    return _submitEmailSenderForm.apply(this, arguments);
+  }
+  function _submitEmailSenderForm() {
+    _submitEmailSenderForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(event) {
+      var payload, response, _t10;
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.p = _context10.n) {
+          case 0:
+            event.preventDefault();
+            payload = {
+              email: (byId('cfgEmailSenderAddress').value || '').trim(),
+              password: (byId('cfgEmailSenderPassword').value || '').trim()
+            };
+            if (payload.email) {
+              _context10.n = 1;
+              break;
+            }
+            showMessage('Please provide an email sender address.', 'error');
+            return _context10.a(2);
+          case 1:
+            _context10.p = 1;
+            _context10.n = 2;
+            return requestJson(routes.emailSenderSave, 'POST', payload);
+          case 2:
+            response = _context10.v;
+            if (response.row && response.row.email) {
+              byId('cfgEmailSenderAddress').value = response.row.email;
+            }
+            byId('cfgEmailSenderPassword').value = '';
+            showMessage('Email sender saved.', 'success');
+            _context10.n = 4;
+            break;
+          case 3:
+            _context10.p = 3;
+            _t10 = _context10.v;
+            showMessage(_t10.message || 'Unable to save email sender.', 'error');
+          case 4:
+            return _context10.a(2);
+        }
+      }, _callee10, null, [[1, 3]]);
+    }));
+    return _submitEmailSenderForm.apply(this, arguments);
+  }
+  function submitOverdueIncForm(_x13) {
+    return _submitOverdueIncForm.apply(this, arguments);
+  }
+  function _submitOverdueIncForm() {
+    _submitOverdueIncForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(event) {
+      var payload, response, message, _t11;
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.p = _context11.n) {
+          case 0:
+            event.preventDefault();
+            payload = {
+              school_year: (byId('cfgIncSy').value || '').trim(),
+              semester: byId('cfgIncSemester').value
+            };
+            if (!(!payload.school_year || !payload.semester)) {
+              _context11.n = 1;
+              break;
+            }
+            setInlineMessage('cfgIncProcessMessage', 'Please provide School Year and Semester to process.', true);
+            return _context11.a(2);
+          case 1:
+            _context11.p = 1;
+            _context11.n = 2;
+            return requestJson(routes.overdueIncProcess, 'POST', payload);
+          case 2:
+            response = _context11.v;
+            message = response && response.message ? response.message : 'Processed ' + (response.processedCount || 0) + ' INC record(s).';
+            setInlineMessage('cfgIncProcessMessage', message, false);
+            if (response && response.run) {
+              state.latestIncRun = response.run;
+            }
+            _context11.n = 4;
+            break;
+          case 3:
+            _context11.p = 3;
+            _t11 = _context11.v;
+            setInlineMessage('cfgIncProcessMessage', _t11.message || 'Unable to process overdue INC records.', true);
+          case 4:
+            return _context11.a(2);
+        }
+      }, _callee11, null, [[1, 3]]);
+    }));
+    return _submitOverdueIncForm.apply(this, arguments);
+  }
+  function openDeleteModal(group, index) {
+    var row = listFor(group)[index];
+    if (!row) {
+      return;
+    }
+    state.deleteTarget = {
+      group: group,
+      id: row.id
+    };
+    byId('cfgDeleteMessage').textContent = 'Are you sure you want to delete this record?';
+    openModal('cfgDeleteModal');
+  }
+  function confirmDelete() {
+    return _confirmDelete.apply(this, arguments);
+  }
+  function _confirmDelete() {
+    _confirmDelete = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+      var group, id, endpoint, _t12;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.p = _context12.n) {
+          case 0:
+            if (!(!state.deleteTarget || !state.deleteTarget.id)) {
+              _context12.n = 1;
+              break;
+            }
+            closeModal('cfgDeleteModal');
+            return _context12.a(2);
+          case 1:
+            group = state.deleteTarget.group;
+            id = state.deleteTarget.id;
+            endpoint = '';
+            if (group === 'schoolSem') {
+              endpoint = routeFromTemplate(routes.schoolSemDeleteTemplate, id);
+            } else if (group === 'gradePosting') {
+              endpoint = routeFromTemplate(routes.gradePostingDeleteTemplate, id);
+            } else if (group === 'signatures') {
+              endpoint = routeFromTemplate(routes.signatureDeleteTemplate, id);
+            } else if (group === 'cutoffDate' || group === 'sectionCutoff' || group === 'cutoffConfig') {
+              endpoint = routeFromTemplate(routes.cutoffDeleteTemplate, id);
+            } else if (group === 'curriculumDisplay') {
+              endpoint = routeFromTemplate(routes.curriculumDisplayDeleteTemplate, id);
+            }
+            if (endpoint) {
+              _context12.n = 2;
+              break;
+            }
+            closeModal('cfgDeleteModal');
+            return _context12.a(2);
+          case 2:
+            _context12.p = 2;
+            _context12.n = 3;
+            return requestJson(endpoint, 'DELETE');
+          case 3:
+            if (group === 'cutoffDate' || group === 'sectionCutoff' || group === 'cutoffConfig') {
+              removeRow(state.cutoffDate, id);
+              removeRow(state.sectionCutoff, id);
+              removeRow(state.cutoffConfig, id);
+              renderCutoffDate();
+              renderSectionCutoff();
+              renderCutoffConfig();
+            } else {
+              removeRow(listFor(group), id);
+              renderGroup(group);
+            }
+            state.deleteTarget = null;
+            closeModal('cfgDeleteModal');
+            showMessage('Record deleted.', 'success');
+            _context12.n = 5;
+            break;
+          case 4:
+            _context12.p = 4;
+            _t12 = _context12.v;
+            showMessage(_t12.message || 'Unable to delete record.', 'error');
+          case 5:
+            return _context12.a(2);
+        }
+      }, _callee12, null, [[2, 4]]);
+    }));
+    return _confirmDelete.apply(this, arguments);
+  }
+  function editRow(group, index) {
+    var row = listFor(group)[index];
+    if (!row) {
+      return;
+    }
+    if (group === 'schoolSem') {
+      byId('cfgSSEditId').value = row.id || '';
+      byId('cfgSSTitle').textContent = 'EDIT SCHOOL YEAR AND SEMESTER';
+      byId('cfgSSSaveBtn').textContent = 'Update';
+      byId('cfgSSYear').value = row.sy || '';
+      byId('cfgSSSemester').value = row.semester || '';
+      syncSelectUI('cfgSSSemester');
+      openModal('cfgSchoolSemModal');
+      return;
+    }
+    if (group === 'gradePosting') {
+      byId('cfgGPEditId').value = row.id || '';
+      byId('cfgGPTitle').textContent = 'EDIT GRADE POSTING';
+      byId('cfgGPSaveBtn').textContent = 'Update';
+      byId('cfgGPYear').value = row.sy || '';
+      byId('cfgGPSemester').value = row.semester || '';
+      byId('cfgGPPeriod').value = row.period || '';
+      setDateInputValue('cfgGPDateFrom', row.dateFrom);
+      syncSelectUI('cfgGPSemester');
+      syncSelectUI('cfgGPPeriod');
+      openModal('cfgGradePostingModal');
+      return;
+    }
+    if (group === 'signatures') {
+      byId('cfgSignatureEditId').value = row.id || '';
+      byId('cfgSignatureDesignation').value = row.designationId || '';
+      byId('cfgSignatureName').value = row.name || '';
+      byId('cfgSignatureFile').value = '';
+      byId('cfgSignatureTitle').textContent = 'EDIT SIGNATURE';
+      setInlineMessage('cfgSignatureModalMessage', '', false);
+      setSignatureSaveButtonState(false);
+      syncSelectUI('cfgSignatureDesignation');
+      openModal('cfgSignatureModal');
+      return;
+    }
+    if (group === 'cutoffDate') {
+      byId('cfgCutoffDateEditId').value = row.id || '';
+      byId('cfgCutoffType').value = row.typeCode || '';
+      byId('cfgCutoffSy').value = row.sy || '';
+      byId('cfgCutoffSemester').value = row.semester || '';
+      setDateInputValue('cfgCutoffDate', row.cutoffDate);
+      byId('cfgCutoffSaveBtn').textContent = 'Update';
+      syncSelectUI('cfgCutoffType');
+      syncSelectUI('cfgCutoffSemester');
+      return;
+    }
+    if (group === 'sectionCutoff') {
+      byId('cfgSectionCutoffEditId').value = row.id || '';
+      byId('cfgSectionCutoffSy').value = row.sy || '';
+      byId('cfgSectionCutoffSemester').value = row.semester || '';
+      setDateInputValue('cfgSectionCutoffDate', row.cutoffDate);
+      byId('cfgSectionCutoffSaveBtn').textContent = 'Update';
+      syncSelectUI('cfgSectionCutoffSemester');
+      return;
+    }
+    if (group === 'cutoffConfig') {
+      byId('cfgCutoffConfigEditId').value = row.id || '';
+      byId('cfgCutoffConfigSy').value = row.sy || '';
+      byId('cfgCutoffConfigSemester').value = row.semester || '';
+      setDateInputValue('cfgCutoffConfigDate', row.cutoffDate);
+      byId('cfgCutoffConfigSaveBtn').textContent = 'Update';
+      syncSelectUI('cfgCutoffConfigSemester');
+      return;
+    }
+    if (group === 'curriculumDisplay') {
+      byId('cfgCurriculumEditId').value = row.id || '';
+      byId('cfgCurriculumSy').value = row.sy || '';
+      byId('cfgCurriculumSemester').value = row.semester || '';
+      byId('cfgCurriculumStatus').value = row.status || '';
+      byId('cfgCurriculumSaveBtn').textContent = 'Update';
+      syncSelectUI('cfgCurriculumSemester');
+      syncSelectUI('cfgCurriculumStatus');
+    }
+  }
+  function bindForms() {
+    var schoolSemButton = byId('cfgSSSaveBtn');
+    if (schoolSemButton) {
+      schoolSemButton.addEventListener('click', saveSchoolSem);
+    }
+    var gradePostingButton = byId('cfgGPSaveBtn');
+    if (gradePostingButton) {
+      gradePostingButton.addEventListener('click', saveGradePosting);
+    }
+    var signatureForm = byId('cfgSignatureForm');
+    if (signatureForm) {
+      signatureForm.addEventListener('submit', submitSignatureForm);
+    }
+    var cutoffDateForm = byId('cfgCutoffDateForm');
+    if (cutoffDateForm) {
+      cutoffDateForm.addEventListener('submit', submitCutoffDateForm);
+    }
+    var sectionCutoffForm = byId('cfgSectionCutoffForm');
+    if (sectionCutoffForm) {
+      sectionCutoffForm.addEventListener('submit', submitSectionCutoffForm);
+    }
+    var cutoffConfigForm = byId('cfgCutoffConfigForm');
+    if (cutoffConfigForm) {
+      cutoffConfigForm.addEventListener('submit', submitCutoffConfigForm);
+    }
+    var cutoffRegistrationForm = byId('cfgCutoffRegistrationForm');
+    if (cutoffRegistrationForm) {
+      cutoffRegistrationForm.addEventListener('submit', submitCutoffRegistrationForm);
+    }
+    var curriculumForm = byId('cfgCurriculumDisplayForm');
+    if (curriculumForm) {
+      curriculumForm.addEventListener('submit', submitCurriculumForm);
+    }
+    var reportForm = byId('cfgReportDetailsForm');
+    if (reportForm) {
+      reportForm.addEventListener('submit', submitReportDetailsForm);
+    }
+    var emailForm = byId('cfgEmailSenderForm');
+    if (emailForm) {
+      emailForm.addEventListener('submit', submitEmailSenderForm);
+    }
+    var overdueIncForm = byId('cfgOverdueIncForm');
+    if (overdueIncForm) {
+      overdueIncForm.addEventListener('submit', submitOverdueIncForm);
+    }
+  }
+  function bindGlobalEvents() {
+    document.addEventListener('click', function (event) {
+      var openSchool = event.target.closest('[data-cfg-action="open-school-sem-modal"]');
+      if (openSchool) {
+        resetSchoolSemModal();
+        openModal('cfgSchoolSemModal');
+        return;
+      }
+      var openGrade = event.target.closest('[data-cfg-action="open-grade-posting-modal"]');
+      if (openGrade) {
+        resetGradePostingModal();
+        openModal('cfgGradePostingModal');
+        return;
+      }
+      var openSignature = event.target.closest('[data-cfg-action="open-signature-modal"]');
+      if (openSignature) {
+        resetSignatureForm();
+        openModal('cfgSignatureModal');
+        return;
+      }
+      var closeModalButton = event.target.closest('[data-cfg-action="close-modal"]');
+      if (closeModalButton) {
+        var modalTarget = closeModalButton.getAttribute('data-cfg-modal-target');
+        if (modalTarget) {
+          closeModal(modalTarget);
+          if (modalTarget === 'cfgSignatureModal') {
+            resetSignatureForm();
+          }
+        }
+        return;
+      }
+      var menuToggle = event.target.closest('[data-cfg-menu-toggle]');
+      if (menuToggle) {
+        event.stopPropagation();
+        toggleActionMenu(menuToggle.getAttribute('data-cfg-menu-toggle'), menuToggle);
+        return;
+      }
+      var pageButton = event.target.closest('[data-cfg-action="set-page"]');
+      if (pageButton) {
+        var pageGroup = pageButton.getAttribute('data-cfg-group');
+        var pageValue = parseInt(pageButton.getAttribute('data-cfg-page'), 10) || 1;
+        if (pageGroup && state.pager[pageGroup]) {
+          setPage(pageGroup, pageValue);
+        }
+        return;
+      }
+      var editButton = event.target.closest('[data-cfg-action="edit-row"]');
+      if (editButton) {
+        var editGroup = editButton.getAttribute('data-cfg-group');
+        var editIndex = parseInt(editButton.getAttribute('data-cfg-index'), 10) || 0;
+        closeActionMenus();
+        editRow(editGroup, editIndex);
+        return;
+      }
+      var deleteButton = event.target.closest('[data-cfg-action="delete-row"]');
+      if (deleteButton) {
+        var deleteGroup = deleteButton.getAttribute('data-cfg-group');
+        var deleteIndex = parseInt(deleteButton.getAttribute('data-cfg-index'), 10) || 0;
+        closeActionMenus();
+        openDeleteModal(deleteGroup, deleteIndex);
+        return;
+      }
+      var confirmDeleteButton = event.target.closest('[data-cfg-action="confirm-delete"]');
+      if (confirmDeleteButton) {
+        confirmDelete();
+        return;
+      }
+      if (!event.target.closest('.apst-dropdown')) {
+        closeActionMenus();
+      }
+    });
+    document.querySelectorAll('[data-cfg-modal]').forEach(function (overlay) {
+      overlay.addEventListener('click', function (event) {
+        if (event.target === overlay) {
+          overlay.classList.add('is-hidden');
+          if (overlay.id === 'cfgSignatureModal') {
+            resetSignatureForm();
+          }
+        }
+      });
+    });
+    window.addEventListener('scroll', closeActionMenus, true);
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closeActionMenus();
+      }
+    });
+  }
+  function applyInitialMessages() {
+    if (!state.latestIncRun || state.latestIncRun.processedCount === undefined) {
+      return;
+    }
+    var message = 'Last run: ' + (state.latestIncRun.schoolYear || '-') + ' ' + (state.latestIncRun.semester || '-') + ' | Processed ' + state.latestIncRun.processedCount + ' record(s) on ' + (state.latestIncRun.createdAt || '-');
+    setInlineMessage('cfgIncProcessMessage', message, false);
+  }
+  bindForms();
+  bindGlobalEvents();
+  renderAll();
+  initFlatpickrDateInputs();
+  refreshListboxes();
+  applyInitialMessages();
+})();
+
+/***/ }),
+
+/***/ 14:
+/*!*********************************************************************!*\
+  !*** multi ./resources/js/registrar-system-config-configuration.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\registrar-system-config-configuration.js */"./resources/js/registrar-system-config-configuration.js");
+
+
+/***/ })
+
+/******/ });

@@ -145,6 +145,8 @@
     data-approval-status-url-template="{{ route('registrar.process.application.approval-status.update', ['applicant' => '__APPLICANT_ID__']) }}"
     data-documents-data-url-template="{{ route('registrar.process.application.documents.data', ['applicant' => '__APPLICANT_ID__']) }}"
     data-documents-upsert-url-template="{{ route('registrar.process.application.documents.upsert', ['applicant' => '__APPLICANT_ID__', 'registrarRequirement' => '__REQUIREMENT_ID__']) }}"
+    data-medical-data-url-template="{{ route('registrar.process.application.documents.data', ['applicant' => '__APPLICANT_ID__']) }}"
+    data-medical-upsert-url-template="{{ route('registrar.process.application.documents.upsert', ['applicant' => '__APPLICANT_ID__', 'registrarRequirement' => '__REQUIREMENT_ID__']) }}"
     data-print-url="{{ route('registrar.process.application.print') }}"
     data-csrf-token="{{ csrf_token() }}"
 >

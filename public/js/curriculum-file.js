@@ -11,13 +11,18 @@
     var copyYear = document.getElementById('cfCopyCurriculumYear');
     var setupCourse = document.getElementById('cfSetupProgram');
     var setupYear = document.getElementById('cfSetupCurriculumYear');
-
+    var copySourceCourse = document.getElementById('cfCopySourceCourseId');
+    var copySourceYear = document.getElementById('cfCopySourceCurriculumYear');
+    var copyButton = document.getElementById('cfCopySubmitBtn');
+    var setupButton = document.getElementById('cfSaveSetupBtn');
     var viewListButton = document.getElementById('cfViewListBtn');
     var openPrereqButton = document.getElementById('cfOpenPrerequisitesBtn');
 
     var preRequisitesUrl = page.getAttribute('data-pre-requisites-url') || '';
     var selectedCourseId = String(page.getAttribute('data-selected-course-id') || '');
     var selectedCurriculumYear = String(page.getAttribute('data-selected-curriculum-year') || '');
+    var successMessage = String(page.getAttribute('data-success') || '').trim();
+    var errorMessage = String(page.getAttribute('data-error') || '').trim();
 
     var yearMap = {};
     try {
@@ -39,8 +44,12 @@
             empty.value = '';
             empty.textContent = 'No Curriculum Year';
             selectElement.appendChild(empty);
+            selectElement.value = '';
+            selectElement.disabled = true;
             return;
         }
+
+        selectElement.disabled = false;
 
         years.forEach(function (yearCode) {
             var option = document.createElement('option');
@@ -53,13 +62,43 @@
         selectElement.value = preferred;
     }
 
-    function syncYearSelectors() {
-        var courseId = topCourse ? String(topCourse.value || '') : '';
-        var years = yearMap[courseId] || [];
+    function syncYearSelector(courseSelect, yearSelect, preferredValue) {
+        var courseId = courseSelect ? String(courseSelect.value || '') : '';
+        setYearOptions(yearSelect, yearMap[courseId] || [], preferredValue);
+    }
 
-        setYearOptions(topYear, years, selectedCurriculumYear);
-        setYearOptions(copyYear, years, topYear ? String(topYear.value || '') : '');
-        setYearOptions(setupYear, years, topYear ? String(topYear.value || '') : '');
+    function updateSourceSelection() {
+        if (copySourceCourse && topCourse) {
+            copySourceCourse.value = String(topCourse.value || selectedCourseId || '');
+        }
+
+        if (copySourceYear && topYear) {
+            copySourceYear.value = String(topYear.value || selectedCurriculumYear || '');
+        }
+    }
+
+    function updateActionStates() {
+        var hasTopYear = !!(topYear && topYear.value && !topYear.disabled);
+        var hasCopyCourse = !!(copyCourse && copyCourse.value);
+        var hasCopyYear = !!(copyYear && String(copyYear.value || '').trim());
+        var hasSetupCourse = !!(setupCourse && setupCourse.value);
+        var hasSetupYear = !!(setupYear && setupYear.value && !setupYear.disabled);
+
+        if (copyButton) {
+            copyButton.disabled = !(hasTopYear && hasCopyCourse && hasCopyYear);
+        }
+
+        if (setupButton) {
+            setupButton.disabled = !(hasSetupCourse && hasSetupYear);
+        }
+
+        if (viewListButton) {
+            viewListButton.disabled = !hasTopYear;
+        }
+
+        if (openPrereqButton) {
+            openPrereqButton.disabled = !hasTopYear;
+        }
     }
 
     function buildPrerequisiteUrl() {
@@ -89,47 +128,75 @@
         window.location.href = targetUrl;
     }
 
+    if (successMessage && typeof showRegistrarToast === 'function') {
+        showRegistrarToast(successMessage, 'success');
+    }
+
+    if (errorMessage && typeof showRegistrarToast === 'function') {
+        showRegistrarToast(errorMessage, 'error');
+    }
+
     if (topCourse && selectedCourseId) {
         topCourse.value = selectedCourseId;
     }
 
-    syncYearSelectors();
+    if (copyCourse && !copyCourse.value && selectedCourseId) {
+        copyCourse.value = selectedCourseId;
+    }
+
+    if (setupCourse && !setupCourse.value && selectedCourseId) {
+        setupCourse.value = selectedCourseId;
+    }
+
+    syncYearSelector(topCourse, topYear, selectedCurriculumYear);
+
+    if (setupYear) {
+        syncYearSelector(setupCourse, setupYear, String(setupYear.getAttribute('data-initial-year') || ''));
+    }
+
+    selectedCurriculumYear = topYear ? String(topYear.value || '') : selectedCurriculumYear;
+    updateSourceSelection();
+    updateActionStates();
 
     if (topCourse) {
         topCourse.addEventListener('change', function () {
             selectedCourseId = String(topCourse.value || '');
             selectedCurriculumYear = '';
-            syncYearSelectors();
-
-            if (copyCourse) {
-                copyCourse.value = selectedCourseId;
-            }
-            if (setupCourse) {
-                setupCourse.value = selectedCourseId;
-            }
+            syncYearSelector(topCourse, topYear, '');
+            selectedCurriculumYear = topYear ? String(topYear.value || '') : '';
+            updateSourceSelection();
+            updateActionStates();
         });
     }
 
     if (topYear) {
         topYear.addEventListener('change', function () {
             selectedCurriculumYear = String(topYear.value || '');
-            setYearOptions(copyYear, yearMap[String(topCourse.value || '')] || [], selectedCurriculumYear);
-            setYearOptions(setupYear, yearMap[String(topCourse.value || '')] || [], selectedCurriculumYear);
+            updateSourceSelection();
+            updateActionStates();
         });
     }
 
     if (copyCourse) {
         copyCourse.addEventListener('change', function () {
-            var years = yearMap[String(copyCourse.value || '')] || [];
-            setYearOptions(copyYear, years, years.length ? years[0] : '');
+            updateActionStates();
         });
+    }
+
+    if (copyYear) {
+        copyYear.addEventListener('input', updateActionStates);
+        copyYear.addEventListener('change', updateActionStates);
     }
 
     if (setupCourse) {
         setupCourse.addEventListener('change', function () {
-            var years = yearMap[String(setupCourse.value || '')] || [];
-            setYearOptions(setupYear, years, years.length ? years[0] : '');
+            syncYearSelector(setupCourse, setupYear, setupYear ? String(setupYear.value || setupYear.getAttribute('data-initial-year') || '') : '');
+            updateActionStates();
         });
+    }
+
+    if (setupYear) {
+        setupYear.addEventListener('change', updateActionStates);
     }
 
     if (viewListButton) {

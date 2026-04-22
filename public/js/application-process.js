@@ -20,6 +20,8 @@
     var approvalStatusUrlTemplate = appProcessPage.getAttribute('data-approval-status-url-template') || '';
     var documentsDataUrlTemplate = appProcessPage.getAttribute('data-documents-data-url-template') || '';
     var documentsUpsertUrlTemplate = appProcessPage.getAttribute('data-documents-upsert-url-template') || '';
+    var medicalDataUrlTemplate = appProcessPage.getAttribute('data-medical-data-url-template') || documentsDataUrlTemplate;
+    var medicalUpsertUrlTemplate = appProcessPage.getAttribute('data-medical-upsert-url-template') || documentsUpsertUrlTemplate;
     var formUrlTemplate = appProcessPage.getAttribute('data-form-url-template') || '';
 
     var applicationFilterForm = document.getElementById('applicationFilterForm');
@@ -87,6 +89,14 @@
     var docsConfirmCancelBtn = document.getElementById('docsConfirmCancelBtn');
     var docsConfirmCloseBtn = document.getElementById('docsConfirmCloseBtn');
 
+    var medicalPanel = document.getElementById('medicalClearancePanel');
+    var medicalSearchInput = document.getElementById('medicalSearchInput');
+    var medicalPerPage = document.getElementById('medicalPerPage');
+    var medicalTableBody = document.getElementById('medicalTableBody');
+    var medicalTablePager = document.getElementById('medicalTablePager');
+    var medicalPanelFeedback = document.getElementById('medicalPanelFeedback');
+    var medicalSaveBtn = document.getElementById('medicalSaveBtn');
+
     var docsSearchTimer = null;
     var docsState = {
         rows: [],
@@ -96,6 +106,16 @@
         total: 0,
         search: '',
         status: ''
+    };
+
+    var medicalSearchTimer = null;
+    var medicalState = {
+        rows: [],
+        page: 1,
+        lastPage: 1,
+        perPage: 10,
+        total: 0,
+        search: ''
     };
 
     var selectedApplicantRow = null;
@@ -344,6 +364,21 @@
         return base ? base.replace(/\/$/, '') + '/requirement/new' : '';
     }
 
+    function getMedicalDataUrl(applicantPk) {
+        var base = getUrlFromTemplate(medicalDataUrlTemplate, applicantPk);
+        return base ? base.replace(/\/$/, '') : '';
+    }
+
+    function getMedicalUpsertUrl(applicantPk, requirementId) {
+        if (!medicalUpsertUrlTemplate || !applicantPk || !requirementId) {
+            return '';
+        }
+
+        return medicalUpsertUrlTemplate
+            .replace('__APPLICANT_ID__', String(applicantPk))
+            .replace('__REQUIREMENT_ID__', String(requirementId));
+    }
+
     function getDocumentDeleteFileUrl(applicantPk, requirementId) {
         var base = getDocumentUpsertUrl(applicantPk, requirementId);
         return base ? base.replace(/\/$/, '') + '/file' : '';
@@ -367,6 +402,161 @@
         }
 
         node.classList.add(isError ? 'is-error' : 'is-success');
+    }
+
+    function getMedicalDateDisplayInput(dateInput) {
+        if (!dateInput) {
+            return null;
+        }
+
+        if (dateInput._flatpickr && dateInput._flatpickr.altInput) {
+            return dateInput._flatpickr.altInput;
+        }
+
+        return dateInput;
+    }
+
+    function setMedicalDateInvalidState(dateInput, isInvalid) {
+        var visibleInput = getMedicalDateDisplayInput(dateInput);
+        if (!visibleInput) {
+            return;
+        }
+
+        visibleInput.classList.toggle('is-invalid', !!isInvalid);
+    }
+
+    function initMedicalDatePickers() {
+        if (!medicalTableBody) {
+            return;
+        }
+
+        var dateInputs = medicalTableBody.querySelectorAll('.js-medical-flatpickr-date');
+        if (!dateInputs.length) {
+            return;
+        }
+
+        if (typeof window.flatpickr !== 'function') {
+            dateInputs.forEach(function (input) {
+                if (input.dataset.medicalDateFallbackBound === '1') {
+                    return;
+                }
+
+                input.dataset.medicalDateFallbackBound = '1';
+                input.addEventListener('input', function () {
+                    setMedicalDateInvalidState(input, false);
+                });
+            });
+            return;
+        }
+
+        dateInputs.forEach(function (input) {
+            if (input._flatpickr) {
+                return;
+            }
+
+            window.flatpickr(input, {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'F j, Y',
+                altInputClass: 'apc-input apc-input--date medical-date-input medical-date-display',
+                disableMobile: true,
+                allowInput: false,
+                prevArrow: '&#8249;',
+                nextArrow: '&#8250;',
+                onReady: function onReady(_, __, instance) {
+                    instance.input.setAttribute('autocomplete', 'off');
+                    instance.calendarContainer.classList.add('an-flatpickr-calendar', 'app-form-flatpickr-theme');
+
+                    if (instance.altInput) {
+                        instance.altInput.setAttribute('placeholder', 'Select date');
+                        instance.altInput.setAttribute('autocomplete', 'off');
+                    }
+                },
+                onChange: function onChange(_, __, instance) {
+                    instance.input.dispatchEvent(new Event('input', { bubbles: true }));
+                    instance.input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+    }
+
+    function setMedicalFeedback(message, isError) {
+        setFeedback(medicalPanelFeedback, message, isError);
+    }
+
+    function renderMedicalPager() {
+        if (!medicalTablePager) {
+            return;
+        }
+
+        if (medicalState.lastPage <= 1) {
+            medicalTablePager.innerHTML = '';
+            return;
+        }
+
+        var current = medicalState.page;
+        var lastPage = medicalState.lastPage;
+        var start = Math.max(1, current - 2);
+        var end = Math.min(lastPage, current + 2);
+
+        if (current <= 3) {
+            end = Math.min(lastPage, 5);
+        } else if (current >= lastPage - 2) {
+            start = Math.max(1, lastPage - 4);
+        }
+
+        var html = '' +
+            '<nav class="cfg-page-nav-wrap" aria-label="Medical clearance pagination">' +
+                '<div class="cfg-page-list" role="group" aria-label="Medical clearance page controls">' +
+                    '<button type="button" class="btn cfg-page-btn" data-medical-page="' + (current - 1) + '" ' + (current <= 1 ? 'disabled' : '') + ' aria-label="Previous page">&lt;</button>';
+
+        for (var page = start; page <= end; page += 1) {
+            html += '<button type="button" class="btn cfg-page-num ' + (page === current ? 'active' : '') + '" data-medical-page="' + page + '" ' + (page === current ? 'aria-current="page"' : '') + '>' + page + '</button>';
+        }
+
+        html += '' +
+                    '<button type="button" class="btn cfg-page-btn" data-medical-page="' + (current + 1) + '" ' + (current >= lastPage ? 'disabled' : '') + ' aria-label="Next page">&gt;</button>' +
+                '</div>' +
+            '</nav>';
+
+        medicalTablePager.innerHTML = html;
+    }
+
+    function renderMedicalRows() {
+        if (!medicalTableBody) {
+            return;
+        }
+
+        if (!medicalState.rows.length) {
+            var emptyText = medicalPanel ? medicalPanel.getAttribute('data-empty-text') : 'No medical clearance requirements found.';
+            medicalTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">' + escapeHtml(emptyText || 'No medical clearance requirements found.') + '</td></tr>';
+            if (medicalSaveBtn) {
+                medicalSaveBtn.disabled = true;
+            }
+            renderMedicalPager();
+            return;
+        }
+
+        var rowsHtml = medicalState.rows.map(function (row, index) {
+            var requirementId = Number(row.requirement_id || 0);
+            var fileInputId = 'medicalFileInput_' + requirementId + '_' + index;
+
+            return '' +
+                '<tr data-requirement-id="' + requirementId + '">' +
+                    '<td class="apc-check-cell"><input type="checkbox" class="medical-row-checkbox" ' + (row.is_submitted ? 'checked' : '') + '></td>' +
+                    '<td>' + escapeHtml(row.document_type || '') + '</td>' +
+                    '<td><input type="text" class="apc-input medical-remarks-input" value="' + escapeHtml(row.remarks || '') + '" placeholder="Type remarks"></td>' +
+                    '<td><input type="text" class="apc-input apc-input--date medical-date-input js-medical-flatpickr-date" value="' + escapeHtml(row.date_submitted || '') + '" placeholder="Select date" autocomplete="off"></td>' +
+                '</tr>';
+        }).join('');
+
+        medicalTableBody.innerHTML = rowsHtml;
+        initMedicalDatePickers();
+        renderMedicalPager();
+
+        if (medicalSaveBtn) {
+            medicalSaveBtn.disabled = false;
+        }
     }
 
     function showScheduleExamSuccessModal(message) {
@@ -698,6 +888,161 @@
             };
         }
 
+        function getMedicalDateDisplayInput(dateInput) {
+            if (!dateInput) {
+                return null;
+            }
+
+            if (dateInput._flatpickr && dateInput._flatpickr.altInput) {
+                return dateInput._flatpickr.altInput;
+            }
+
+            return dateInput;
+        }
+
+        function setMedicalDateInvalidState(dateInput, isInvalid) {
+            var visibleInput = getMedicalDateDisplayInput(dateInput);
+            if (!visibleInput) {
+                return;
+            }
+
+            visibleInput.classList.toggle('is-invalid', !!isInvalid);
+        }
+
+        function initMedicalDatePickers() {
+            if (!medicalTableBody) {
+                return;
+            }
+
+            var dateInputs = medicalTableBody.querySelectorAll('.js-medical-flatpickr-date');
+            if (!dateInputs.length) {
+                return;
+            }
+
+            if (typeof window.flatpickr !== 'function') {
+                dateInputs.forEach(function (input) {
+                    if (input.dataset.medicalDateFallbackBound === '1') {
+                        return;
+                    }
+
+                    input.dataset.medicalDateFallbackBound = '1';
+                    input.addEventListener('input', function () {
+                        setMedicalDateInvalidState(input, false);
+                    });
+                });
+                return;
+            }
+
+            dateInputs.forEach(function (input) {
+                if (input._flatpickr) {
+                    return;
+                }
+
+                window.flatpickr(input, {
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'F j, Y',
+                    altInputClass: 'apc-input apc-input--date medical-date-input medical-date-display',
+                    disableMobile: true,
+                    allowInput: false,
+                    prevArrow: '&#8249;',
+                    nextArrow: '&#8250;',
+                    onReady: function onReady(_, __, instance) {
+                        instance.input.setAttribute('autocomplete', 'off');
+                        instance.calendarContainer.classList.add('an-flatpickr-calendar', 'app-form-flatpickr-theme');
+
+                        if (instance.altInput) {
+                            instance.altInput.setAttribute('placeholder', 'Select date');
+                            instance.altInput.setAttribute('autocomplete', 'off');
+                        }
+                    },
+                    onChange: function onChange(_, __, instance) {
+                        instance.input.dispatchEvent(new Event('input', { bubbles: true }));
+                        instance.input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+        }
+
+        function setMedicalFeedback(message, isError) {
+            setFeedback(medicalPanelFeedback, message, isError);
+        }
+
+        function renderMedicalPager() {
+            if (!medicalTablePager) {
+                return;
+            }
+
+            if (medicalState.lastPage <= 1) {
+                medicalTablePager.innerHTML = '';
+                return;
+            }
+
+            var current = medicalState.page;
+            var lastPage = medicalState.lastPage;
+            var start = Math.max(1, current - 2);
+            var end = Math.min(lastPage, current + 2);
+
+            if (current <= 3) {
+                end = Math.min(lastPage, 5);
+            } else if (current >= lastPage - 2) {
+                start = Math.max(1, lastPage - 4);
+            }
+
+            var html = '' +
+                '<nav class="cfg-page-nav-wrap" aria-label="Medical clearance pagination">' +
+                    '<div class="cfg-page-list" role="group" aria-label="Medical clearance page controls">' +
+                        '<button type="button" class="btn cfg-page-btn" data-medical-page="' + (current - 1) + '" ' + (current <= 1 ? 'disabled' : '') + ' aria-label="Previous page">&lt;</button>';
+
+            for (var page = start; page <= end; page += 1) {
+                html += '<button type="button" class="btn cfg-page-num ' + (page === current ? 'active' : '') + '" data-medical-page="' + page + '" ' + (page === current ? 'aria-current="page"' : '') + '>' + page + '</button>';
+            }
+
+            html += '' +
+                        '<button type="button" class="btn cfg-page-btn" data-medical-page="' + (current + 1) + '" ' + (current >= lastPage ? 'disabled' : '') + ' aria-label="Next page">&gt;</button>' +
+                    '</div>' +
+                '</nav>';
+
+            medicalTablePager.innerHTML = html;
+        }
+
+        function renderMedicalRows() {
+            if (!medicalTableBody) {
+                return;
+            }
+
+            if (!medicalState.rows.length) {
+                var emptyText = medicalPanel ? medicalPanel.getAttribute('data-empty-text') : 'No medical clearance requirements found.';
+                medicalTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">' + escapeHtml(emptyText || 'No medical clearance requirements found.') + '</td></tr>';
+                if (medicalSaveBtn) {
+                    medicalSaveBtn.disabled = true;
+                }
+                renderMedicalPager();
+                return;
+            }
+
+            var rowsHtml = medicalState.rows.map(function (row, index) {
+                var requirementId = Number(row.requirement_id || 0);
+                var fileInputId = 'medicalFileInput_' + requirementId + '_' + index;
+
+                return '' +
+                    '<tr data-requirement-id="' + requirementId + '">' +
+                        '<td class="apc-check-cell"><input type="checkbox" class="medical-row-checkbox" ' + (row.is_submitted ? 'checked' : '') + '></td>' +
+                        '<td>' + escapeHtml(row.document_type || '') + '</td>' +
+                        '<td><input type="text" class="apc-input medical-remarks-input" value="' + escapeHtml(row.remarks || '') + '" placeholder="Type remarks"></td>' +
+                        '<td><input type="text" class="apc-input apc-input--date medical-date-input js-medical-flatpickr-date" value="' + escapeHtml(row.date_submitted || '') + '" placeholder="Select date" autocomplete="off"></td>' +
+                    '</tr>';
+            }).join('');
+
+            medicalTableBody.innerHTML = rowsHtml;
+            initMedicalDatePickers();
+            renderMedicalPager();
+
+            if (medicalSaveBtn) {
+                medicalSaveBtn.disabled = false;
+            }
+        }
+
         if (!isJson) {
             return response.text().then(function (rawText) {
                 var normalizedBody = String(rawText || '').trim().toLowerCase();
@@ -842,6 +1187,7 @@
         }
 
         loadApplicantDocuments(true);
+        loadApplicantMedicalClearance(true);
 
         renderExamResultCardFromRow(row);
     }
@@ -869,6 +1215,10 @@
 
         if (panelId === 'documents-submitted' && selectedApplicantRow) {
             loadApplicantDocuments(false);
+        }
+
+        if (panelId === 'medical-clearance' && selectedApplicantRow) {
+            loadApplicantMedicalClearance(false);
         }
     }
 
@@ -952,6 +1302,7 @@
     syncApplicantPrintLink();
 
     initDocumentsSubmittedPanel();
+    initMedicalClearancePanel();
     initAddRequirementPanel();
     initApprovalPanel();
 
@@ -1443,6 +1794,285 @@
             renderDocsRows();
             setDocsFeedback(getPayloadErrorMessage(error.payload || error, error && error.status), true);
         });
+    }
+
+    function loadApplicantMedicalClearance(resetToFirstPage) {
+        if (!medicalPanel || !medicalTableBody) {
+            return;
+        }
+
+        if (resetToFirstPage) {
+            medicalState.page = 1;
+        }
+
+        var applicantPk = detailApplicantPk ? detailApplicantPk.value : '';
+        if (!applicantPk) {
+            medicalState.rows = [];
+            medicalState.lastPage = 1;
+            medicalState.total = 0;
+            if (medicalTableBody) {
+                medicalTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">Select an applicant to load medical clearance requirements.</td></tr>';
+            }
+            if (medicalSaveBtn) {
+                medicalSaveBtn.disabled = true;
+            }
+            renderMedicalPager();
+            return;
+        }
+
+        var endpoint = getMedicalDataUrl(applicantPk);
+        if (!endpoint) {
+            setMedicalFeedback('Medical clearance endpoint is not configured.', true);
+            return;
+        }
+
+        var query = [
+            'search=' + encodeURIComponent(medicalState.search || ''),
+            'requirement_type=Medical',
+            'per_page=' + encodeURIComponent(String(medicalState.perPage || 10)),
+            'page=' + encodeURIComponent(String(medicalState.page || 1))
+        ].join('&');
+
+        setMedicalFeedback('Loading medical clearance requirements...', false);
+
+        docsRequest(endpoint + '?' + query, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        }).then(function (payload) {
+            medicalState.rows = Array.isArray(payload.rows) ? payload.rows : [];
+
+            var meta = payload.meta || {};
+            medicalState.page = Number(meta.page || medicalState.page || 1);
+            medicalState.lastPage = Number(meta.last_page || 1);
+            medicalState.perPage = Number(meta.per_page || medicalState.perPage || 10);
+            medicalState.total = Number(meta.total || medicalState.rows.length || 0);
+
+            renderMedicalRows();
+            setMedicalFeedback('', false);
+        }).catch(function (error) {
+            medicalState.rows = [];
+            medicalState.page = 1;
+            medicalState.lastPage = 1;
+            medicalState.total = 0;
+            renderMedicalRows();
+            setMedicalFeedback(getPayloadErrorMessage(error.payload || error, error && error.status), true);
+        });
+    }
+
+    function saveApplicantMedicalRow(rowNode) {
+        var applicantPk = detailApplicantPk ? detailApplicantPk.value : '';
+        var requirementId = Number(rowNode ? rowNode.getAttribute('data-requirement-id') : 0);
+
+        if (!applicantPk || !requirementId) {
+            throw {
+                status: 422,
+                payload: {
+                    message: 'Select an applicant and a medical clearance row before saving.'
+                }
+            };
+        }
+
+        var endpoint = getMedicalUpsertUrl(applicantPk, requirementId);
+        if (!endpoint) {
+            throw {
+                status: 422,
+                payload: {
+                    message: 'Medical clearance save endpoint is not configured.'
+                }
+            };
+        }
+
+        var checkbox = rowNode.querySelector('.medical-row-checkbox');
+        var remarksInput = rowNode.querySelector('.medical-remarks-input');
+        var dateInput = rowNode.querySelector('.js-medical-flatpickr-date') || rowNode.querySelector('.medical-date-input');
+        var dateSubmitted = dateInput ? String(dateInput.value || '').trim() : '';
+        var isSubmitted = !!(checkbox && checkbox.checked);
+
+        if (isSubmitted && !dateSubmitted) {
+            setMedicalDateInvalidState(dateInput, true);
+            throw {
+                status: 422,
+                payload: {
+                    message: 'Pick a submitted date before saving completed rows.'
+                }
+            };
+        }
+
+        setMedicalDateInvalidState(dateInput, false);
+
+        var formData = new FormData();
+        formData.append('is_submitted', isSubmitted ? '1' : '0');
+        formData.append('remarks', remarksInput ? remarksInput.value : '');
+        formData.append('date_submitted', dateSubmitted);
+
+        return docsRequest(endpoint, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: formData,
+            credentials: 'same-origin'
+        });
+    }
+
+    function saveMedicalClearanceRows() {
+        if (!medicalPanel || !medicalTableBody) {
+            return;
+        }
+
+        var applicantPk = detailApplicantPk ? detailApplicantPk.value : '';
+        if (!selectedApplicantRow || !applicantPk) {
+            setMedicalFeedback('Select an applicant first.', true);
+            return;
+        }
+
+        var rowNodes = Array.prototype.slice.call(medicalTableBody.querySelectorAll('tr[data-requirement-id]'));
+        if (!rowNodes.length) {
+            setMedicalFeedback('No medical clearance requirements to save.', true);
+            return;
+        }
+
+        var invalidRow = null;
+        rowNodes.some(function (rowNode) {
+            var checkbox = rowNode.querySelector('.medical-row-checkbox');
+            var dateInput = rowNode.querySelector('.js-medical-flatpickr-date') || rowNode.querySelector('.medical-date-input');
+            var dateValue = dateInput ? String(dateInput.value || '').trim() : '';
+
+            if (checkbox && checkbox.checked && !dateValue) {
+                invalidRow = rowNode;
+                setMedicalDateInvalidState(dateInput, true);
+                return true;
+            }
+
+            setMedicalDateInvalidState(dateInput, false);
+            return false;
+        });
+
+        if (invalidRow) {
+            setMedicalFeedback('Pick a submitted date before saving completed rows.', true);
+            var invalidDateInput = invalidRow.querySelector('.js-medical-flatpickr-date') || invalidRow.querySelector('.medical-date-input');
+            if (invalidDateInput && invalidDateInput._flatpickr) {
+                invalidDateInput._flatpickr.open();
+                if (invalidDateInput._flatpickr.altInput) {
+                    invalidDateInput._flatpickr.altInput.focus();
+                }
+            } else if (invalidDateInput) {
+                invalidDateInput.focus();
+            }
+            return;
+        }
+
+        if (medicalSaveBtn) {
+            medicalSaveBtn.disabled = true;
+            medicalSaveBtn.textContent = 'Saving...';
+        }
+
+        var saveQueue = Promise.resolve();
+        rowNodes.forEach(function (rowNode) {
+            saveQueue = saveQueue.then(function () {
+                return saveApplicantMedicalRow(rowNode);
+            });
+        });
+
+        saveQueue.then(function () {
+            loadApplicantMedicalClearance(false);
+            setMedicalFeedback('Medical clearance records saved successfully.', false);
+        }).catch(function (error) {
+            setMedicalFeedback(getPayloadErrorMessage(error.payload || error, error && error.status), true);
+        }).finally(function () {
+            if (medicalSaveBtn) {
+                medicalSaveBtn.disabled = false;
+                medicalSaveBtn.textContent = 'Save';
+            }
+        });
+    }
+
+    function initMedicalClearancePanel() {
+        if (!medicalPanel || !medicalTableBody) {
+            return;
+        }
+
+        if (medicalSearchInput) {
+            medicalSearchInput.addEventListener('input', function () {
+                medicalState.search = (medicalSearchInput.value || '').trim();
+                medicalState.page = 1;
+
+                if (medicalSearchTimer) {
+                    clearTimeout(medicalSearchTimer);
+                }
+
+                medicalSearchTimer = setTimeout(function () {
+                    loadApplicantMedicalClearance(false);
+                }, 350);
+            });
+        }
+
+        if (medicalPerPage) {
+            medicalPerPage.addEventListener('change', function () {
+                medicalState.perPage = Number(medicalPerPage.value || 10) || 10;
+                medicalState.page = 1;
+                loadApplicantMedicalClearance(false);
+            });
+        }
+
+        if (medicalSaveBtn) {
+            medicalSaveBtn.addEventListener('click', function () {
+                saveMedicalClearanceRows();
+            });
+        }
+
+        medicalTableBody.addEventListener('change', function (event) {
+            if (event.target && event.target.classList.contains('medical-row-checkbox')) {
+                var rowNode = event.target.closest('tr');
+                if (!rowNode) {
+                    return;
+                }
+
+                var dateInput = rowNode.querySelector('.js-medical-flatpickr-date') || rowNode.querySelector('.medical-date-input');
+                if (!event.target.checked) {
+                    setMedicalDateInvalidState(dateInput, false);
+                }
+            }
+
+            if (event.target && (event.target.classList.contains('medical-date-input') || event.target.classList.contains('medical-remarks-input'))) {
+                if (event.target.classList.contains('medical-date-input')) {
+                    setMedicalDateInvalidState(event.target, false);
+                }
+            }
+        });
+
+        medicalTableBody.addEventListener('input', function (event) {
+            if (!(event.target && event.target.classList.contains('medical-date-input'))) {
+                return;
+            }
+
+            setMedicalDateInvalidState(event.target, false);
+        });
+
+        if (medicalTablePager) {
+            medicalTablePager.addEventListener('click', function (event) {
+                var pageButton = event.target.closest('[data-medical-page]');
+                if (!pageButton) {
+                    return;
+                }
+
+                var requestedPage = Number(pageButton.getAttribute('data-medical-page') || 1);
+                if (requestedPage < 1 || requestedPage > medicalState.lastPage || requestedPage === medicalState.page) {
+                    return;
+                }
+
+                medicalState.page = requestedPage;
+                loadApplicantMedicalClearance(false);
+            });
+        }
+
+        renderMedicalRows();
     }
 
     function saveApplicantDocumentRow(rowNode, saveButton) {
