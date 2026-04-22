@@ -91,7 +91,7 @@ class RegistrarController extends Controller
     private const SLOT_MONITORING_DEFAULT_PER_PAGE = 25;
     private const SLOT_MONITORING_MIN_PER_PAGE = 10;
     private const SLOT_MONITORING_MAX_PER_PAGE = 100;
-    private const SECTION_OFFERING_DEFAULT_PER_PAGE = 25;
+    private const SECTION_OFFERING_DEFAULT_PER_PAGE = 10;
     private const SECTION_OFFERING_MIN_PER_PAGE = 10;
     private const SECTION_OFFERING_MAX_PER_PAGE = 100;
     private const SLOT_MONITORING_ALLOWED_SEMESTERS = ['First', 'Second', 'Summer'];

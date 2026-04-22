@@ -300,6 +300,122 @@
             </div>
         </div>
     </div>
+
+    {{-- Section Schedule Configuration Modal --}}
+    <div class="so-modal so-config-modal" id="soSectionConfigModal" aria-hidden="true">
+        <div class="so-modal-dialog so-config-dialog" role="dialog" aria-modal="true" aria-labelledby="soSectionConfigTitle">
+            <div class="so-modal-header so-config-header">
+                <h3 class="so-modal-title so-config-title" id="soSectionConfigTitle">Section Offering Configuration</h3>
+                <button type="button" class="so-modal-close" id="soSectionConfigClose" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="so-modal-body so-config-body">
+                <div class="so-config-meta" id="soSectionConfigMeta"></div>
+
+                <div class="so-config-table-wrap">
+                    <table class="student-table registrar-table so-config-table" id="soSectionConfigTable" data-no-auto-pager="1">
+                        <thead>
+                            <tr>
+                                <th>Subject Code</th>
+                                <th>Description</th>
+                                <th>Room</th>
+                                <th>Professor</th>
+                                <th>Slots</th>
+                                <th>Schedule</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="soSectionConfigBody"></tbody>
+                    </table>
+                </div>
+
+                <p class="so-config-note">Configure or edit each subject schedule below. Changes update the current page view.</p>
+            </div>
+
+            <div class="so-modal-footer so-config-footer">
+                <button type="button" class="so-modal-btn so-modal-btn-cancel" id="soSectionConfigDone">Done</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Subject Schedule Modal --}}
+    <div class="so-modal so-subject-modal" id="soSubjectScheduleModal" aria-hidden="true">
+        <div class="so-modal-dialog so-subject-dialog" role="dialog" aria-modal="true" aria-labelledby="soSubjectScheduleTitle">
+            <div class="so-modal-header so-subject-header">
+                <h3 class="so-modal-title" id="soSubjectScheduleTitle">Configure Subject Schedule</h3>
+                <button type="button" class="so-modal-close" id="soSubjectScheduleClose" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="so-modal-body so-subject-body">
+                <div class="so-subject-summary" id="soSubjectScheduleTag">-</div>
+
+                <div class="so-subject-meta-grid">
+                    <div class="so-modal-field so-subject-meta-field">
+                        <label for="soSubjectSectionCode">Section Code</label>
+                        <input id="soSubjectSectionCode" type="text" class="app-filter-input" readonly>
+                    </div>
+
+                    <div class="so-modal-field so-subject-meta-field">
+                        <label for="soSubjectDescription">Description</label>
+                        <input id="soSubjectDescription" type="text" class="app-filter-input" placeholder="Subject description">
+                    </div>
+
+                    <div class="so-modal-field so-subject-meta-field">
+                        <label for="soSubjectSlots">Total Slots</label>
+                        <input id="soSubjectSlots" type="number" class="app-filter-input" min="0" max="80" value="0">
+                    </div>
+
+                    <div class="so-modal-field so-subject-meta-field">
+                        <label for="soSubjectProfessor">Professor</label>
+                        <input id="soSubjectProfessor" type="text" class="app-filter-input" placeholder="Professor name">
+                    </div>
+
+                    <div class="so-modal-field so-subject-meta-field so-subject-meta-note-wrap">
+                        <p class="so-subject-meta-note" id="soSubjectScheduleWarning">Some students are already enrolled to this section; changing section code is not allowed.</p>
+                    </div>
+                </div>
+
+                <div class="so-modal-grid">
+                    <div class="so-modal-field so-modal-col-12">
+                        <label>Section Flags</label>
+                        <div class="so-subject-flags">
+                            <label class="setup-checkbox-label" for="soSubjectFlagOpen"><input type="checkbox" id="soSubjectFlagOpen" class="req-checkbox-input"> Open</label>
+                            <label class="setup-checkbox-label" for="soSubjectFlagBlock"><input type="checkbox" id="soSubjectFlagBlock" class="req-checkbox-input"> Block</label>
+                            <label class="setup-checkbox-label" for="soSubjectFlagTutorial"><input type="checkbox" id="soSubjectFlagTutorial" class="req-checkbox-input"> Tutorial</label>
+                        </div>
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-12">
+                        <label>Weekly Schedule</label>
+                        <div class="so-subject-table-wrap">
+                            <table class="student-table registrar-table so-subject-table" data-no-auto-pager="1">
+                                <thead>
+                                    <tr>
+                                        <th>Day Of Week</th>
+                                        <th>Use</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Room No.</th>
+                                        <th>Lab</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="soSubjectScheduleRows"></tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="so-modal-feedback" id="soSubjectScheduleFeedback"></div>
+            </div>
+
+            <div class="so-modal-footer">
+                <button type="button" class="so-modal-btn so-modal-btn-cancel" id="soSubjectScheduleCancel">Cancel</button>
+                <button type="button" class="so-modal-btn so-modal-btn-primary" id="soSubjectScheduleSave">Save Schedule</button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 

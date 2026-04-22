@@ -15,10 +15,11 @@
     var state = {
         selectedUser: null,
         pendingDeleteUser: null,
+        rowActionMenuOpenPk: null,
         rows: [],
         currentPage: 1,
         lastPage: 1,
-        perPage: 10,
+        perPage: 5,
         total: 0,
         from: 0,
         accessControl: {
@@ -27,9 +28,28 @@
             source: 'explicit',
             permissionTypes: [],
             modules: [],
+            persistableModuleCodes: [],
             matrix: {},
+            expandedModules: {},
+            quickOptionFallback: {},
         },
     };
+
+    var quickAccessDefinitions = [
+        { key: 'accept_prereq_overload', label: 'Accept Pre-requisite Subjects and Overload Units', keywords: ['prerequisite', 'pre-requisite', 'overload', 'subject'], permission: 'edit' },
+        { key: 'accept_balance_ams', label: 'Accept Student with balance (AMS Registration)', keywords: ['ams registration', 'registration'], permission: 'edit' },
+        { key: 'add_electives', label: 'Can Add Elective Subjects (AMS Registration / Student Enrollment)', keywords: ['elective', 'subject', 'enrollment'], permission: 'edit' },
+        { key: 'accept_balance_student', label: 'Accept Student with balance (Student Enrollment)', keywords: ['student enrollment', 'enrollment'], permission: 'edit' },
+        { key: 'student_enrollment_config', label: 'Student Enrollment Config', keywords: ['enrollment'], permission: 'edit' },
+        { key: 'faculty_loading_config', label: 'Faculty Loading Config', keywords: ['faculty', 'loading'], permission: 'edit' },
+        { key: 'override_deficiency', label: 'Can Override Deficiency', keywords: ['deficiency'], permission: 'edit' },
+        { key: 'accept_conflict_schedule', label: 'Can Accept Conflict Schedule', keywords: ['schedule'], permission: 'edit' },
+        { key: 'change_professor', label: 'Can Change Professor (Grading Sheet Module)', keywords: ['grading', 'grade'], permission: 'edit' },
+        { key: 'dissolve_section', label: 'Can Dissolved Section', keywords: ['section'], permission: 'edit' },
+        { key: 'approve_gradesheet', label: 'Can approve gradesheet', keywords: ['grading', 'grade'], permission: 'edit' },
+        { key: 'email_sender_delete_edit', label: 'Can Delete/Edit Email Sender', keywords: ['email', 'sender'], permission: 'edit' },
+        { key: 'student_grade_subject_delete_edit', label: 'Can delete/edit subject in student grade file', keywords: ['student grade', 'grade file', 'subject'], permission: 'edit' },
+    ];
 
     var listRequestState = {
         controller: null,
@@ -114,8 +134,8 @@
         accessSaveBtn: document.getElementById('uaAccessSaveBtn'),
         accessCopySelect: document.getElementById('uaCopyAccessFrom'),
         accessCopyBtn: document.getElementById('uaCopyAccessBtn'),
-        accessPresetSelect: document.getElementById('uaAccessQuickPreset'),
-        accessPresetApplyBtn: document.getElementById('uaApplyAccessPresetBtn'),
+        quickAccessToggle: document.getElementById('uaQuickAccessToggle'),
+        quickAccessList: document.getElementById('uaAccessQuickList'),
     };
 
     function uaNormalize(value) {
@@ -140,6 +160,191 @@
             return '<span class="ua-status-badge ua-status-inactive">Inactive</span>';
         }
         return '<span class="ua-status-badge ua-status-active">Active</span>';
+    }
+
+    function uaCanEditAccess(user) {
+        var typeCode = uaNormalize(user && (user.userTypeCode || user.userType) || '');
+        return typeCode === 'registrar' || typeCode.indexOf('registrar') !== -1;
+    }
+
+    function uaSlugify(value) {
+        return uaNormalize(value)
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+    }
+
+    function uaDesiredRootOrder(code) {
+        var normalized = uaNormalize(code).replace(/\s+/g, '_');
+
+        if (normalized === 'admin_tools' || normalized === 'admintools' || normalized.indexOf('admin') !== -1) {
+            return 0;
+        }
+        if (normalized === 'process') {
+            return 1;
+        }
+        if (normalized === 'registrar') {
+            return 2;
+        }
+        if (normalized === 'services' || normalized === 'service') {
+            return 3;
+        }
+
+        return 99;
+    }
+
+    function uaShouldDefaultExpandModule(moduleCode) {
+        return uaDesiredRootOrder(moduleCode) === 0;
+    }
+
+    function uaUniquePush(list, value) {
+        var normalizedValue = uaNormalize(value);
+        if (!normalizedValue) {
+            return;
+        }
+
+        var exists = list.some(function (item) {
+            return uaNormalize(item) === normalizedValue;
+        });
+
+        if (!exists) {
+            list.push(String(value).trim());
+        }
+    }
+
+    function uaBuildSidebarModuleChildrenMap() {
+        var map = {
+            admin_tools: [],
+            process: [],
+            registrar: [],
+            services: [],
+        };
+
+        var nav = document.querySelector('.sidebar-nav');
+        if (!nav) {
+            return map;
+        }
+
+        var toggles = nav.querySelectorAll('.sidebar-dropdown > .sidebar-link.sidebar-dropdown-toggle');
+        toggles.forEach(function (toggle) {
+            var titleNode = toggle.querySelector('span');
+            var title = titleNode ? uaNormalize(titleNode.textContent || '') : '';
+            var key = '';
+
+            if (title === 'admin tools') {
+                key = 'admin_tools';
+            } else if (title === 'process') {
+                key = 'process';
+            } else if (title === 'registrar') {
+                key = 'registrar';
+            } else if (title === 'services') {
+                key = 'services';
+            }
+
+            if (!key) {
+                return;
+            }
+
+            var dropdown = toggle.parentElement;
+            if (!dropdown) {
+                return;
+            }
+
+            var leafLinks = dropdown.querySelectorAll('.sidebar-dropdown-menu .sidebar-sublink:not(.sidebar-nested-toggle)');
+            leafLinks.forEach(function (link) {
+                var text = String(link.textContent || '').trim();
+                uaUniquePush(map[key], text);
+            });
+        });
+
+        return map;
+    }
+
+    function uaBuildDisplayModules(rawModules) {
+        var modules = (rawModules || []).map(function (module) {
+            return {
+                id: module.id,
+                code: module.code,
+                name: module.name,
+                parentId: module.parentId,
+                actions: module.actions || {},
+                persistCode: module.persistCode || module.code,
+                synthetic: !!module.synthetic,
+            };
+        });
+
+        if (!modules.length) {
+            return [];
+        }
+
+        var roots = modules
+            .filter(function (module) {
+                return module.parentId === null || typeof module.parentId === 'undefined';
+            })
+            .sort(function (a, b) {
+                var rankA = uaDesiredRootOrder(a.code || a.name);
+                var rankB = uaDesiredRootOrder(b.code || b.name);
+                if (rankA !== rankB) {
+                    return rankA - rankB;
+                }
+
+                var nameA = uaNormalize(a.name || a.code);
+                var nameB = uaNormalize(b.name || b.code);
+                return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0);
+            });
+
+        var nonRootModules = modules.filter(function (module) {
+            return !(module.parentId === null || typeof module.parentId === 'undefined');
+        });
+
+        if (nonRootModules.length) {
+            var byParent = {};
+            nonRootModules.forEach(function (module) {
+                var parentKey = String(module.parentId);
+                if (!byParent[parentKey]) {
+                    byParent[parentKey] = [];
+                }
+                byParent[parentKey].push(module);
+            });
+
+            var ordered = [];
+            function appendBranch(parentModule) {
+                ordered.push(parentModule);
+                var children = byParent[String(parentModule.id)] || [];
+                children.forEach(function (child) {
+                    appendBranch(child);
+                });
+            }
+
+            roots.forEach(function (rootModule) {
+                appendBranch(rootModule);
+            });
+
+            return ordered;
+        }
+
+        var sidebarChildrenByRoot = uaBuildSidebarModuleChildrenMap();
+        var expanded = [];
+
+        roots.forEach(function (rootModule) {
+            expanded.push(rootModule);
+
+            var rootCode = uaNormalize(rootModule.code || rootModule.name).replace(/\s+/g, '_');
+            var childLabels = sidebarChildrenByRoot[rootCode] || [];
+
+            childLabels.forEach(function (label, index) {
+                expanded.push({
+                    id: 'virtual-' + rootCode + '-' + index,
+                    code: 'virtual:' + rootCode + ':' + uaSlugify(label),
+                    name: label,
+                    parentId: rootModule.id,
+                    actions: {},
+                    persistCode: rootModule.code,
+                    synthetic: true,
+                });
+            });
+        });
+
+        return expanded;
     }
 
     function uaBuildUpdateUrl(id) {
@@ -328,38 +533,91 @@
         });
     }
 
+    function uaCloseRowActionMenus(exceptPk) {
+        if (!els.tableBody) {
+            return;
+        }
+
+        var keepPk = exceptPk ? String(exceptPk) : '';
+        var wraps = els.tableBody.querySelectorAll('.ua-row-action-menu-wrap');
+
+        wraps.forEach(function (wrap) {
+            var rowPk = String(wrap.getAttribute('data-ua-row-pk') || '');
+            var shouldStayOpen = keepPk && rowPk === keepPk;
+            var menu = wrap.querySelector('.ua-row-action-menu');
+            var toggle = wrap.querySelector('.ua-row-menu-btn');
+
+            if (menu) {
+                menu.classList.toggle('open', !!shouldStayOpen);
+                if (!shouldStayOpen) {
+                    menu.classList.remove('drop-up');
+                }
+            }
+
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', shouldStayOpen ? 'true' : 'false');
+            }
+        });
+
+        state.rowActionMenuOpenPk = keepPk || null;
+    }
+
+    function uaToggleRowActionMenu(rowPk) {
+        var targetPk = String(rowPk || '');
+        if (!targetPk) {
+            return;
+        }
+
+        if (state.rowActionMenuOpenPk && String(state.rowActionMenuOpenPk) === targetPk) {
+            uaCloseRowActionMenus();
+            return;
+        }
+
+        uaCloseRowActionMenus(targetPk);
+    }
+
     function uaRenderTable() {
         if (!els.tableBody) {
             return;
         }
 
         if (!state.rows.length) {
-            els.tableBody.innerHTML = '<tr><td colspan="6" class="sc-empty-row">No user accounts found.</td></tr>';
+            els.tableBody.innerHTML = '<tr><td colspan="7" class="sc-empty-row">No user accounts found.</td></tr>';
             return;
         }
 
         var html = state.rows.map(function (user, index) {
             var rowNo = (state.from || 0) + index;
+            var editActionHtml = uaCanEditAccess(user)
+                ? ''
+                    + '<button type="button" data-ua-access-user-pk="' + uaEscapeHtml(user.pk) + '">Edit Access</button>'
+                : '';
+
             return '' +
                 '<tr data-ua-user-pk="' + uaEscapeHtml(user.pk) + '">' +
                     '<td>' + rowNo + '</td>' +
                     '<td>' + uaEscapeHtml(user.userId) + '</td>' +
                     '<td>' + uaEscapeHtml(user.fullName) + '</td>' +
+                    '<td>' + uaEscapeHtml(user.email || '-') + '</td>' +
                     '<td>' + uaEscapeHtml(user.userType) + '</td>' +
                     '<td>' + uaStatusBadge(user.inactive) + '</td>' +
                     '<td class="ua-col-action-cell">' +
-                        '<button type="button" class="doclist-action-btn ua-access-btn" data-ua-access-user-pk="' + uaEscapeHtml(user.pk) + '" title="Access Control">' +
-                            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>' +
-                        '</button>' +
-                        '<button type="button" class="doclist-action-btn doclist-delete-btn" data-ua-delete-user-pk="' + uaEscapeHtml(user.pk) + '" title="Delete">' +
-                            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' +
-                        '</button>' +
+                        '<div class="ua-row-action-menu-wrap" data-ua-row-pk="' + uaEscapeHtml(user.pk) + '">' +
+                            '<button type="button" class="apst-action-btn ua-row-menu-btn" data-ua-menu-toggle="' + uaEscapeHtml(user.pk) + '" title="Actions" aria-haspopup="menu" aria-expanded="false">' +
+                                '<span></span><span></span><span></span>' +
+                            '</button>' +
+                            '<div class="apst-dropdown ua-row-action-menu" data-ua-menu="' + uaEscapeHtml(user.pk) + '" role="menu">' +
+                                editActionHtml +
+                                '<button type="button" class="apst-del-btn" data-ua-delete-user-pk="' + uaEscapeHtml(user.pk) + '">Delete</button>' +
+                            '</div>' +
+                        '</div>' +
                     '</td>' +
                 '</tr>';
         }).join('');
 
         els.tableBody.innerHTML = html;
         uaHighlightSelectedRow();
+        uaCloseRowActionMenus();
     }
 
     function uaRenderPager() {
@@ -420,7 +678,7 @@
             return;
         }
 
-        els.tableBody.innerHTML = '<tr><td colspan="6" class="sc-empty-row">Loading user accounts...</td></tr>';
+        els.tableBody.innerHTML = '<tr><td colspan="7" class="sc-empty-row">Loading user accounts...</td></tr>';
     }
 
     async function uaFetchRows(page) {
@@ -449,7 +707,7 @@
             state.rows = json.rows || [];
             state.currentPage = parseInt(meta.currentPage, 10) || 1;
             state.lastPage = parseInt(meta.lastPage, 10) || 1;
-            state.perPage = parseInt(meta.perPage, 10) || 10;
+            state.perPage = parseInt(meta.perPage, 10) || 5;
             state.total = parseInt(meta.total, 10) || 0;
             state.from = parseInt(meta.from, 10) || 0;
 
@@ -986,6 +1244,7 @@
 
         (modules || []).forEach(function (module) {
             var moduleCode = String(module && module.code ? module.code : '');
+            var persistCode = String(module && module.persistCode ? module.persistCode : moduleCode);
             if (!moduleCode) {
                 return;
             }
@@ -1001,7 +1260,9 @@
                 normalized[moduleCode][permissionCode] = !!(
                     source[moduleCode] && Object.prototype.hasOwnProperty.call(source[moduleCode], permissionCode)
                         ? source[moduleCode][permissionCode]
-                        : false
+                        : (source[persistCode] && Object.prototype.hasOwnProperty.call(source[persistCode], permissionCode)
+                            ? source[persistCode][permissionCode]
+                            : false)
                 );
             });
         });
@@ -1015,11 +1276,215 @@
         }
 
         if (sourceMode === 'role-default') {
-            els.accessFootnote.textContent = 'No explicit rows yet. You are seeing role-default permissions and can save overrides for this user.';
+            els.accessFootnote.textContent = 'Role defaults are currently displayed. Save to persist explicit per-user overrides.';
             return;
         }
 
-        els.accessFootnote.textContent = 'Changes are saved per user and can be copied from another account before saving.';
+        els.accessFootnote.textContent = 'UI-only preview for now. Access values are kept in-memory until backend mapping is wired.';
+    }
+
+    function uaResolvePermissionCode(moduleCode, requestedPermission) {
+        var moduleMatrix = state.accessControl.matrix[moduleCode] || {};
+        if (requestedPermission && Object.prototype.hasOwnProperty.call(moduleMatrix, requestedPermission)) {
+            return requestedPermission;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(moduleMatrix, 'edit')) {
+            return 'edit';
+        }
+
+        if (Object.prototype.hasOwnProperty.call(moduleMatrix, 'view')) {
+            return 'view';
+        }
+
+        var available = Object.keys(moduleMatrix);
+        return available.length ? available[0] : '';
+    }
+
+    function uaModuleMatchesKeywords(module, keywords) {
+        if (!module || !Array.isArray(keywords) || !keywords.length) {
+            return false;
+        }
+
+        var source = uaNormalize((module.name || '') + ' ' + (module.code || ''));
+        return keywords.some(function (keyword) {
+            return source.indexOf(uaNormalize(keyword)) !== -1;
+        });
+    }
+
+    function uaGetQuickOptionChecked(definition) {
+        var matched = (state.accessControl.modules || []).filter(function (module) {
+            return uaModuleMatchesKeywords(module, definition.keywords || []);
+        });
+
+        if (!matched.length) {
+            return !!state.accessControl.quickOptionFallback[definition.key];
+        }
+
+        return matched.some(function (module) {
+            var moduleCode = String(module.code || '');
+            var permissionCode = uaResolvePermissionCode(moduleCode, definition.permission || 'edit');
+            return !!(
+                permissionCode
+                && state.accessControl.matrix[moduleCode]
+                && state.accessControl.matrix[moduleCode][permissionCode]
+            );
+        });
+    }
+
+    function uaApplyQuickOptionChange(optionKey, checked) {
+        var definition = quickAccessDefinitions.find(function (item) {
+            return item.key === optionKey;
+        });
+
+        if (!definition) {
+            return;
+        }
+
+        var matched = (state.accessControl.modules || []).filter(function (module) {
+            return uaModuleMatchesKeywords(module, definition.keywords || []);
+        });
+
+        if (!matched.length) {
+            state.accessControl.quickOptionFallback[definition.key] = !!checked;
+            return;
+        }
+
+        matched.forEach(function (module) {
+            var moduleCode = String(module.code || '');
+            if (!moduleCode || !state.accessControl.matrix[moduleCode]) {
+                return;
+            }
+
+            var permissionCode = uaResolvePermissionCode(moduleCode, definition.permission || 'edit');
+            if (!permissionCode) {
+                return;
+            }
+
+            state.accessControl.matrix[moduleCode][permissionCode] = !!checked;
+
+            if (permissionCode !== 'view'
+                && Object.prototype.hasOwnProperty.call(state.accessControl.matrix[moduleCode], 'view')
+                && checked) {
+                state.accessControl.matrix[moduleCode].view = true;
+            }
+        });
+
+        uaSyncAccessCheckboxes();
+        uaRenderQuickAccessOptions();
+    }
+
+    function uaSyncAccessCheckboxes() {
+        var table = document.querySelector('.ua-access-table');
+        if (!table) return;
+
+        var checkboxes = table.querySelectorAll('.req-checkbox-input');
+        checkboxes.forEach(function(checkbox) {
+            var moduleCode = checkbox.getAttribute('data-ua-ac-module');
+            var permissionCode = checkbox.getAttribute('data-ua-ac-permission');
+            if (moduleCode && permissionCode && state.accessControl.matrix[moduleCode]) {
+                var isChecked = !!state.accessControl.matrix[moduleCode][permissionCode];
+                if (checkbox.checked !== isChecked) {
+                    checkbox.checked = isChecked;
+                }
+            }
+        });
+    }
+
+    function uaShowSuccessToast(message) {
+        var existing = document.querySelector('.ua-success-toast-wrap');
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+        var modalId = 'ua-success-toast-' + Date.now();
+        var html = '<div id="' + modalId + '" class="ua-success-toast-wrap" style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; align-items: center; background: #ffffff; border-radius: 12px; padding: 14px 24px; box-shadow: 0 12px 40px rgba(7, 46, 26, 0.15); border-left: 6px solid #1d8f4f; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; margin-top: -30px;">' +
+                   '<div style="margin-right: 14px; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #eef8f2; border-radius: 50%; color: #1d8f4f;"><i class="fas fa-check" style="font-size: 1.1rem;"></i></div>' +
+                   '<div style="color: #113825; font-weight: 700; font-size: 1rem; letter-spacing: -0.01em;">' + message + '</div>' +
+                   '</div>';
+        
+        document.body.insertAdjacentHTML('beforeend', html);
+        var el = document.getElementById(modalId);
+        
+        requestAnimationFrame(function() {
+            el.style.opacity = '1';
+            el.style.marginTop = '0';
+        });
+        
+        setTimeout(function() {
+            if (!el) return;
+            el.style.opacity = '0';
+            el.style.marginTop = '-30px';
+            setTimeout(function() {
+                if (el.parentNode) el.parentNode.removeChild(el);
+            }, 400);
+        }, 3200);
+    }
+
+    function uaRenderQuickAccessOptions() {
+        if (!els.quickAccessList) {
+            return;
+        }
+
+        var html = quickAccessDefinitions.map(function (definition) {
+            var checked = uaGetQuickOptionChecked(definition);
+
+            return ''
+                + '<label class="ua-quick-access-item">'
+                + '<span class="ua-quick-access-label">' + uaEscapeHtml(definition.label) + '</span>'
+                + '<span class="ua-quick-access-switch">'
+                + '<input type="checkbox" class="req-checkbox-input" data-ua-quick-option="' + uaEscapeHtml(definition.key) + '" ' + (checked ? 'checked' : '') + '>'
+                + '<span class="ua-quick-access-slider" aria-hidden="true"></span>'
+                + '</span>'
+                + '</label>';
+        }).join('');
+
+        els.quickAccessList.innerHTML = html;
+    }
+
+    function uaSetQuickAccessVisibility(isOpen) {
+        if (!els.quickAccessToggle || !els.quickAccessList) {
+            return;
+        }
+
+        var expanded = !!isOpen;
+        els.quickAccessToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        els.quickAccessToggle.classList.toggle('is-open', expanded);
+        els.quickAccessList.hidden = !expanded;
+    }
+
+    function uaBuildAccessTreeIndex(modules) {
+        var byParent = {};
+        var ids = {};
+        var flat = [];
+
+        function flatten(list) {
+            (list || []).forEach(function(m) {
+                flat.push(m);
+                if (m && m.id !== null && typeof m.id !== 'undefined') {
+                    ids[String(m.id)] = true;
+                }
+                if (Array.isArray(m.children)) {
+                    flatten(m.children);
+                }
+            });
+        }
+        flatten(modules);
+
+        flat.forEach(function (module) {
+            var parentKey = '';
+            if (module && module.parentId !== null && typeof module.parentId !== 'undefined') {
+                var candidate = String(module.parentId);
+                if (ids[candidate]) {
+                    parentKey = candidate;
+                }
+            }
+
+            if (!byParent[parentKey]) {
+                byParent[parentKey] = [];
+            }
+            byParent[parentKey].push(module);
+        });
+
+        return byParent;
     }
 
     function uaPopulateAccessCopyOptions() {
@@ -1084,28 +1549,78 @@
 
         els.accessTableHead.innerHTML = '<tr><th>Module / Permission</th>' + headColumns + '</tr>';
 
-        var bodyRows = modules.map(function (module) {
-            var moduleCode = String(module.code || '');
-            var cells = permissionTypes.map(function (permissionType) {
-                var permissionCode = String(permissionType.code || '');
-                var checked = !!(
-                    state.accessControl.matrix[moduleCode]
-                    && Object.prototype.hasOwnProperty.call(state.accessControl.matrix[moduleCode], permissionCode)
-                    && state.accessControl.matrix[moduleCode][permissionCode]
-                );
+        var treeIndex = uaBuildAccessTreeIndex(modules);
 
-                return '' +
-                    '<td class="ua-access-rw-col">' +
-                        '<input type="checkbox" class="req-checkbox-input" data-ua-ac-module="' + uaEscapeHtml(moduleCode) + '" data-ua-ac-permission="' + uaEscapeHtml(permissionCode) + '" ' + (checked ? 'checked' : '') + '>' +
-                    '</td>';
+        function renderRows(parentKey, depth) {
+            var rows = treeIndex[parentKey] || [];
+
+            if (parentKey === '') {
+                rows = rows.slice().sort(function (a, b) {
+                    var rankA = uaDesiredRootOrder(a && (a.code || a.name) || '');
+                    var rankB = uaDesiredRootOrder(b && (b.code || b.name) || '');
+                    if (rankA !== rankB) {
+                        return rankA - rankB;
+                    }
+
+                    var nameA = uaNormalize(a && (a.name || a.code) || '');
+                    var nameB = uaNormalize(b && (b.name || b.code) || '');
+                    return nameA < nameB ? -1 : (nameA > nameB ? 1 : 0);
+                });
+            }
+
+            return rows.map(function (module) {
+                var moduleCode = String(module && module.code ? module.code : '');
+                var moduleId = module && module.id !== null && typeof module.id !== 'undefined'
+                    ? String(module.id)
+                    : '__' + moduleCode;
+                var childRows = treeIndex[moduleId] || [];
+                var hasChildren = childRows.length > 0;
+                var expanded = hasChildren && !!state.accessControl.expandedModules[moduleCode];
+
+                var cells = permissionTypes.map(function (permissionType) {
+                    var permissionCode = String(permissionType && permissionType.code ? permissionType.code : '');
+                    var checked = !!(
+                        state.accessControl.matrix[moduleCode]
+                        && Object.prototype.hasOwnProperty.call(state.accessControl.matrix[moduleCode], permissionCode)
+                        && state.accessControl.matrix[moduleCode][permissionCode]
+                    );
+
+                    return ''
+                        + '<td class="ua-access-rw-col">'
+                        + '<label class="ua-access-switch">'
+                        + '<input type="checkbox" class="req-checkbox-input" data-ua-ac-module="' + uaEscapeHtml(moduleCode) + '" data-ua-ac-permission="' + uaEscapeHtml(permissionCode) + '" ' + (checked ? 'checked' : '') + '>'
+                        + '<span class="ua-access-switch-track" aria-hidden="true"></span>'
+                        + '</label>'
+                        + '</td>';
+                }).join('');
+
+                var labelHtml = ''
+                    + '<div class="ua-access-module-label ua-access-depth-' + Math.min(depth, 5) + '">'
+                    + (hasChildren
+                        ? ''
+                            + '<button type="button" class="ua-module-toggle" data-ua-module-toggle="' + uaEscapeHtml(moduleCode) + '" aria-expanded="' + (expanded ? 'true' : 'false') + '">'
+                            + '<svg class="ua-module-caret-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>'
+                            + '</button>'
+                            + '<svg class="ua-module-folder-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#879b93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>'
+                        : '')
+                    + '<span class="ua-module-name">' + uaEscapeHtml(module.name || moduleCode) + '</span>'
+                    + '</div>';
+
+                var rowHtml = ''
+                    + '<tr class="ua-access-module-row' + (hasChildren ? ' ua-access-parent-row' : ' ua-access-child-row') + '">'
+                    + '<td>' + labelHtml + '</td>'
+                    + cells
+                    + '</tr>';
+
+                if (hasChildren && expanded) {
+                    rowHtml += renderRows(moduleId, depth + 1);
+                }
+
+                return rowHtml;
             }).join('');
+        }
 
-            return '' +
-                '<tr>' +
-                    '<td>' + uaEscapeHtml(module.name || moduleCode) + '</td>' +
-                    cells +
-                '</tr>';
-        }).join('');
+        var bodyRows = renderRows('', 0);
 
         els.accessTableBody.innerHTML = bodyRows;
     }
@@ -1126,6 +1641,7 @@
 
         state.accessControl.targetUserId = null;
         state.accessControl.targetUserLabel = '';
+        uaSetQuickAccessVisibility(false);
 
         els.accessModal.classList.add('doclist-modal-hidden');
         els.accessModal.setAttribute('aria-hidden', 'true');
@@ -1157,7 +1673,7 @@
             }
 
             if (Array.isArray(json.modules) && !state.accessControl.modules.length) {
-                state.accessControl.modules = json.modules.map(function (module) {
+                var baseModules = json.modules.map(function (module) {
                     return {
                         id: module.id,
                         code: module.code,
@@ -1166,6 +1682,14 @@
                         actions: {},
                     };
                 });
+
+                state.accessControl.persistableModuleCodes = baseModules.map(function (module) {
+                    return String(module.code || '');
+                }).filter(function (code) {
+                    return !!code;
+                });
+
+                state.accessControl.modules = uaBuildDisplayModules(baseModules);
 
                 state.accessControl.matrix = uaEnsureAccessMatrix(
                     state.accessControl.modules,
@@ -1206,9 +1730,11 @@
 
         state.accessControl.targetUserId = user.pk;
         state.accessControl.targetUserLabel = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+        state.accessControl.quickOptionFallback = {};
 
         els.accessModalUserLabel.textContent = state.accessControl.targetUserLabel;
         uaSetAccessFootnote('explicit');
+        uaSetQuickAccessVisibility(false);
         uaOpenAccessModalShell();
         els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Loading access control...</td></tr>';
 
@@ -1229,20 +1755,37 @@
 
             state.accessControl.source = String(payload.source || 'explicit');
             state.accessControl.permissionTypes = Array.isArray(payload.permissionTypes) ? payload.permissionTypes : [];
-            state.accessControl.modules = Array.isArray(payload.modules) ? payload.modules : [];
+            var payloadModules = Array.isArray(payload.modules) ? payload.modules : [];
+            state.accessControl.persistableModuleCodes = payloadModules.map(function (module) {
+                return String(module && module.code ? module.code : '');
+            }).filter(function (code) {
+                return !!code;
+            });
+            state.accessControl.modules = uaBuildDisplayModules(payloadModules);
 
-            var matrix = uaBuildAccessMatrixFromModules(state.accessControl.modules);
+            var matrix = uaBuildAccessMatrixFromModules(payloadModules);
             state.accessControl.matrix = uaEnsureAccessMatrix(
                 state.accessControl.modules,
                 state.accessControl.permissionTypes,
                 matrix
             );
 
+            state.accessControl.expandedModules = {};
+            (state.accessControl.modules || []).forEach(function (module) {
+                var moduleCode = String(module && module.code ? module.code : '');
+                if (!moduleCode) {
+                    return;
+                }
+
+                state.accessControl.expandedModules[moduleCode] = uaShouldDefaultExpandModule(moduleCode);
+            });
+
             if (!state.accessControl.permissionTypes.length || !state.accessControl.modules.length) {
                 throw new Error('Access-control schema is unavailable. Please run the access-control migration first.');
             }
 
             uaRenderAccessControlTable();
+            uaRenderQuickAccessOptions();
             uaPopulateAccessCopyOptions();
             uaSetAccessFootnote(state.accessControl.source);
         } catch (error) {
@@ -1257,51 +1800,6 @@
                 accessControlRequestState.controller = null;
             }
         }
-    }
-
-    function uaApplyAccessPreset() {
-        if (!els.accessPresetSelect) {
-            return;
-        }
-
-        var preset = String(els.accessPresetSelect.value || '');
-        if (!preset) {
-            alert('Please choose a quick-access option first.');
-            return;
-        }
-
-        var permissionTypes = state.accessControl.permissionTypes || [];
-        var modules = state.accessControl.modules || [];
-
-        state.accessControl.matrix = uaEnsureAccessMatrix(modules, permissionTypes, state.accessControl.matrix);
-
-        modules.forEach(function (module) {
-            var moduleCode = String(module.code || '');
-            if (!moduleCode || !state.accessControl.matrix[moduleCode]) {
-                return;
-            }
-
-            permissionTypes.forEach(function (permissionType) {
-                var permissionCode = String(permissionType.code || '');
-                if (!permissionCode) {
-                    return;
-                }
-
-                if (preset === 'full_access') {
-                    state.accessControl.matrix[moduleCode][permissionCode] = true;
-                    return;
-                }
-
-                if (preset === 'view_only') {
-                    state.accessControl.matrix[moduleCode][permissionCode] = permissionCode === 'view';
-                    return;
-                }
-
-                state.accessControl.matrix[moduleCode][permissionCode] = false;
-            });
-        });
-
-        uaRenderAccessControlTable();
     }
 
     async function uaCopyAccessFromUser() {
@@ -1331,6 +1829,7 @@
             );
 
             uaRenderAccessControlTable();
+            uaRenderQuickAccessOptions();
             if (els.accessFootnote) {
                 els.accessFootnote.textContent = 'Copied access settings from the selected user. Click Save Access to persist changes.';
             }
@@ -1347,17 +1846,32 @@
         }
 
         var matrix = uaCloneAccessMatrix(state.accessControl.matrix);
+        var filteredMatrix = {};
+        if (Array.isArray(state.accessControl.persistableModuleCodes) && state.accessControl.persistableModuleCodes.length) {
+            state.accessControl.persistableModuleCodes.forEach(function (moduleCode) {
+                if (matrix[moduleCode]) {
+                    filteredMatrix[moduleCode] = matrix[moduleCode];
+                }
+            });
+        } else {
+            filteredMatrix = matrix;
+        }
 
         try {
             var json = await uaApiRequest(uaBuildAccessUpdateUrl(targetUserId), 'PUT', {
-                permissions: matrix,
+                permissions: filteredMatrix,
             });
 
             var payload = json && json.data ? json.data : null;
             if (payload && Array.isArray(payload.modules) && Array.isArray(payload.permissionTypes)) {
                 state.accessControl.source = String(payload.source || 'explicit');
                 state.accessControl.permissionTypes = payload.permissionTypes;
-                state.accessControl.modules = payload.modules;
+                state.accessControl.persistableModuleCodes = payload.modules.map(function (module) {
+                    return String(module && module.code ? module.code : '');
+                }).filter(function (code) {
+                    return !!code;
+                });
+                state.accessControl.modules = uaBuildDisplayModules(payload.modules);
                 state.accessControl.matrix = uaEnsureAccessMatrix(
                     state.accessControl.modules,
                     state.accessControl.permissionTypes,
@@ -1366,7 +1880,7 @@
             }
 
             uaCloseAccessModal();
-            alert('Access control saved.');
+            uaShowSuccessToast('Access control updated successfully.');
         } catch (error) {
             alert(error.message || 'Unable to save access control.');
         }
@@ -1487,10 +2001,19 @@
 
         if (els.tableBody) {
             els.tableBody.addEventListener('click', function (event) {
+                var menuToggleBtn = event.target.closest('[data-ua-menu-toggle]');
+                if (menuToggleBtn) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    uaToggleRowActionMenu(menuToggleBtn.getAttribute('data-ua-menu-toggle'));
+                    return;
+                }
+
                 var accessBtn = event.target.closest('[data-ua-access-user-pk]');
                 if (accessBtn) {
                     event.preventDefault();
                     event.stopPropagation();
+                    uaCloseRowActionMenus();
                     uaOpenAccessModal(accessBtn.getAttribute('data-ua-access-user-pk'));
                     return;
                 }
@@ -1499,6 +2022,7 @@
                 if (deleteBtn) {
                     event.preventDefault();
                     event.stopPropagation();
+                    uaCloseRowActionMenus();
                     uaOpenDeleteModal(deleteBtn.getAttribute('data-ua-delete-user-pk'));
                     return;
                 }
@@ -1514,10 +2038,17 @@
                 }) || null;
 
                 if (user) {
+                    uaCloseRowActionMenus();
                     uaFillForm(user);
                 }
             });
         }
+
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.ua-row-action-menu-wrap')) {
+                uaCloseRowActionMenus();
+            }
+        });
 
         if (els.saveBtn) {
             els.saveBtn.addEventListener('click', function () {
@@ -1571,6 +2102,22 @@
         }
 
         if (els.accessTableBody) {
+            els.accessTableBody.addEventListener('click', function (event) {
+                var toggleBtn = event.target.closest('[data-ua-module-toggle]');
+                if (!toggleBtn) {
+                    return;
+                }
+
+                event.preventDefault();
+                var moduleCode = String(toggleBtn.getAttribute('data-ua-module-toggle') || '');
+                if (!moduleCode) {
+                    return;
+                }
+
+                state.accessControl.expandedModules[moduleCode] = !state.accessControl.expandedModules[moduleCode];
+                uaRenderAccessControlTable();
+            });
+
             els.accessTableBody.addEventListener('change', function (event) {
                 var checkbox = event.target.closest('[data-ua-ac-module][data-ua-ac-permission]');
                 if (!checkbox) {
@@ -1587,19 +2134,93 @@
                     state.accessControl.matrix[moduleCode] = {};
                 }
 
-                state.accessControl.matrix[moduleCode][permissionCode] = !!checkbox.checked;
+                var isChecked = !!checkbox.checked;
+                state.accessControl.matrix[moduleCode][permissionCode] = isChecked;
+
+                // Sync self Edit/View dependency
+                if (isChecked && permissionCode === 'edit') {
+                    state.accessControl.matrix[moduleCode]['view'] = true;
+                }
+                if (!isChecked && permissionCode === 'view') {
+                    state.accessControl.matrix[moduleCode]['edit'] = false;
+                }
+
+                // Cascade logic to auto-toggle all descendants
+                var treeIndex = uaBuildAccessTreeIndex(state.accessControl.modules);
+                
+                // Cascade logic to auto-toggle all descendants
+                var allModulesFlat = [];
+                function findInHierarchy(list) {
+                    for (var i = 0; i < list.length; i++) {
+                        allModulesFlat.push(list[i]);
+                        if (Array.isArray(list[i].children)) findInHierarchy(list[i].children);
+                    }
+                }
+                findInHierarchy(state.accessControl.modules);
+
+                var treeIndex = uaBuildAccessTreeIndex(state.accessControl.modules);
+                var currentModule = allModulesFlat.find(function(m) { return m.code === moduleCode; });
+                
+                if (currentModule) {
+                    var currentModuleId = currentModule.id !== null && typeof currentModule.id !== 'undefined'
+                        ? String(currentModule.id)
+                        : '__' + moduleCode;
+
+                    function cascadeToDescendants(parentId) {
+                        var children = treeIndex[parentId] || [];
+                        children.forEach(function(child) {
+                            var childCode = String(child.code || '');
+                            if (childCode) {
+                                if (!state.accessControl.matrix[childCode]) {
+                                    state.accessControl.matrix[childCode] = {};
+                                }
+                                state.accessControl.matrix[childCode][permissionCode] = isChecked;
+                                
+                                // If we enable Edit, we MUST enable View
+                                if (isChecked && permissionCode === 'edit') {
+                                    state.accessControl.matrix[childCode]['view'] = true;
+                                }
+                                // If we disable View, we MUST disable Edit
+                                if (!isChecked && permissionCode === 'view') {
+                                    state.accessControl.matrix[childCode]['edit'] = false;
+                                }
+                            }
+                            var childId = child.id !== null && typeof child.id !== 'undefined' ? String(child.id) : '__' + childCode;
+                            cascadeToDescendants(childId);
+                        });
+                    }
+                    
+                    cascadeToDescendants(currentModuleId);
+                    
+                    // Sync checkboxes directly in DOM to keep transitions smooth
+                    uaSyncAccessCheckboxes();
+                }
+
+                uaRenderQuickAccessOptions();
+            });
+        }
+
+        if (els.quickAccessToggle) {
+            els.quickAccessToggle.addEventListener('click', function () {
+                var isOpen = els.quickAccessToggle.getAttribute('aria-expanded') === 'true';
+                uaSetQuickAccessVisibility(!isOpen);
+            });
+        }
+
+        if (els.quickAccessList) {
+            els.quickAccessList.addEventListener('change', function (event) {
+                var input = event.target.closest('[data-ua-quick-option]');
+                if (!input) {
+                    return;
+                }
+
+                uaApplyQuickOptionChange(input.getAttribute('data-ua-quick-option'), !!input.checked);
             });
         }
 
         if (els.accessCopyBtn) {
             els.accessCopyBtn.addEventListener('click', function () {
                 uaCopyAccessFromUser();
-            });
-        }
-
-        if (els.accessPresetApplyBtn) {
-            els.accessPresetApplyBtn.addEventListener('click', function () {
-                uaApplyAccessPreset();
             });
         }
 
@@ -1631,6 +2252,7 @@
 
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
+                uaCloseRowActionMenus();
                 uaCloseCredentialSearchDropdowns();
                 uaCloseDeleteModal();
                 uaCloseAccessModal();
