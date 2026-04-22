@@ -806,6 +806,15 @@ class ApplicantController extends Controller
     }
 
     /**
+     * Medical Clearance – shows medical records.
+     */
+    public function medicalClearance()
+    {
+        $applicant = $this->getApplicant();
+        return view('applicant.medical-clearance', compact('applicant'));
+    }
+
+    /**
      * Schedule of Exam – shows exam permit + reminders.
      */
     public function scheduleOfExam()

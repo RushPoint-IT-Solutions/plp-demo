@@ -586,4 +586,6 @@
             });
         });
     }
+
+    // Removed outdated medical clearance functions. Logic is now unified in the blade template.
 })();

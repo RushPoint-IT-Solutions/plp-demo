@@ -5708,7 +5708,7 @@ class RegistrarController extends Controller
             ];
         }
 
-        $courseQueryBuilder = $this->slotMonitoringSubjectBaseQuery()
+        $courseQueryBuilder = DB::table('courses as sm_courses')
             ->select([
                 'sm_courses.id',
                 'sm_courses.code',
@@ -5716,22 +5716,31 @@ class RegistrarController extends Controller
             ])
             ->whereNotNull('sm_courses.id');
 
-        if ($schoolYear !== '') {
-            $courseQueryBuilder->where('sm_terms.school_year', $schoolYear);
-        }
+        if ($schoolYear !== '' || ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true))) {
+            $courseQueryBuilder->whereExists(function ($existsQuery) use ($schoolYear, $semester) {
+                $existsQuery->select(DB::raw(1))
+                    ->from('subjects as sub_sm_subjects')
+                    ->join('academic_terms as sub_sm_terms', 'sub_sm_terms.id', '=', 'sub_sm_subjects.academic_term_id')
+                    ->whereColumn('sub_sm_subjects.course_id', 'sm_courses.id');
 
-        if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
-            $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
-                ->map(function ($value) {
-                    return strtolower(trim((string) $value));
-                })
-                ->values()
-                ->all();
+                if ($schoolYear !== '') {
+                    $existsQuery->where('sub_sm_terms.school_year', $schoolYear);
+                }
 
-            $courseQueryBuilder->whereIn(
-                DB::raw('LOWER(TRIM(COALESCE(sm_terms.term, "")))'),
-                $semesterAliases
-            );
+                if ($semester !== '' && in_array($semester, self::SLOT_MONITORING_ALLOWED_SEMESTERS, true)) {
+                    $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                        ->map(function ($value) {
+                            return strtolower(trim((string) $value));
+                        })
+                        ->values()
+                        ->all();
+
+                    $existsQuery->whereIn(
+                        DB::raw('LOWER(TRIM(COALESCE(sub_sm_terms.term, "")))'),
+                        $semesterAliases
+                    );
+                }
+            });
         }
 
         $courses = $courseQueryBuilder
