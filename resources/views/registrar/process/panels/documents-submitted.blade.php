@@ -1,21 +1,23 @@
 <div class="apc-card">
-    <div class="app-filter-bar apc-panel-filter" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;">
-        <div class="app-filter-row" style="flex: 1; margin: 0;">
-            <div class="app-filter-group" style="flex:2;">
-                <span class="app-filter-label">Search</span>
-                <input type="text" class="app-filter-input" placeholder="Search document" style="width:100%;">
+    <div class="app-filter-bar apc-panel-filter">
+        <div class="app-filter-grid">
+            <div class="app-filter-item app-filter-item--search">
+                <span class="app-filter-label">SEARCH DOCUMENT</span>
+                <input type="text" class="app-filter-input" id="docSearch" placeholder="Search by type or remarks...">
             </div>
-            <div class="app-filter-group" style="flex:1;">
-                <span class="app-filter-label">Status</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option value="">All</option>
-                    <option>Pending</option>
-                    <option>Completed</option>
+            <div class="app-filter-item app-filter-item--status">
+                <span class="app-filter-label">STATUS FILTER</span>
+                <select class="app-filter-select" id="docStatusFilter">
+                    <option value="">All Documents</option>
+                    <option value="Pending">Pending Review</option>
+                    <option value="Submitted">Submitted</option>
+                    <option value="Verified">Verified / Approved</option>
+                    <option value="Missing">Missing / Rejected</option>
                 </select>
             </div>
-        </div>
-        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
-            <button type="button" class="apst-new-btn" style="min-width: 150px;" onclick="docOpenAddModal()">+ New Document</button>
+            <div class="app-filter-item app-filter-item--action">
+                <button type="button" class="apst-new-btn" style="width: 100%;" onclick="docOpenAddModal()">+ New Document</button>
+            </div>
         </div>
     </div>
 
@@ -23,25 +25,32 @@
         <table class="app-table" id="docsTable" style="table-layout: auto; width: 100%;">
             <thead>
                 <tr>
-                    <th style="width: 25%;">Document Type</th>
-                    <th style="width: 25%;">Remarks</th>
-                    <th style="width: 120px;">Date Submitted</th>
-                    <th style="width: 100px; text-align: center;">Status</th>
-                    <th style="width: 110px; text-align: center;">Attachment</th>
-                    <th style="width: 60px; text-align: center;">Action</th>
+                    <th style="width: 28%; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">Document Type</th>
+                    <th style="width: 22%; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">Remarks</th>
+                    <th style="width: 140px; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">Date Submitted</th>
+                    <th style="width: 120px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">Status</th>
+                    <th style="width: 110px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">Attachment</th>
+                    <th style="width: 60px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @php
                     $docs = [
-                        ['type' => '2x2 Picture', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
-                        ['type' => 'Birth Certificate (PSA Original)', 'status' => 'Pending', 'remarks' => 'Original copy needed', 'date' => '', 'file' => 'birth_cert.pdf'],
-                        ['type' => 'Certificate of Good Moral Character', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
-                        ['type' => 'F-137 A (JHS Permanent Record)', 'status' => 'Pending', 'remarks' => 'To follow', 'date' => '', 'file' => null],
-                        ['type' => 'F138 (SHS Report Card)', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
-                        ['type' => 'Honorable Dismissal', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
-                        ['type' => 'Request for Permanent Record (FORM 137 A) / Transcript of Records', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
-                        ['type' => 'SHS Diploma (Photocopy Only)', 'status' => 'Pending', 'remarks' => '', 'date' => '', 'file' => null],
+                        ['type' => '2x2 Picture', 'status' => 'Verified', 'remarks' => 'Clear background', 'date' => '2024-03-15', 'file' => '2x2_photo.jpg'],
+                        ['type' => 'Birth Certificate (PSA Original)', 'status' => 'Submitted', 'remarks' => 'Original copy needed for verification', 'date' => '2024-04-10', 'file' => 'birth_cert.pdf'],
+                        ['type' => 'Certificate of Good Moral Character', 'status' => 'Pending', 'remarks' => 'Verification in progress', 'date' => '2024-04-12', 'file' => 'good_moral.pdf'],
+                        ['type' => 'F-137 A (JHS Permanent Record)', 'status' => 'Missing', 'remarks' => 'To follow (Request in progress)', 'date' => '', 'file' => null],
+                        ['type' => 'F138 (SHS Report Card)', 'status' => 'Verified', 'remarks' => 'GWA: 92.50', 'date' => '2024-03-15', 'file' => 'shs_report_card.pdf'],
+                        ['type' => 'Honorable Dismissal', 'status' => 'Pending', 'remarks' => 'Scanned copy only', 'date' => '2024-04-11', 'file' => 'honorable_dismissal.pdf'],
+                        ['type' => 'Request for Permanent Record (FORM 137 A)', 'status' => 'Missing', 'remarks' => 'Waiting for official release', 'date' => '', 'file' => null],
+                        ['type' => 'SHS Diploma (Photocopy Only)', 'status' => 'Submitted', 'remarks' => 'Pending physical copy', 'date' => '2024-04-10', 'file' => 'diploma_copy.pdf'],
+                    ];
+
+                    $statusClasses = [
+                        'Verified' => 'status-approved',
+                        'Pending' => 'status-review',
+                        'Submitted' => 'status-submitted',
+                        'Missing' => 'status-not-submitted'
                     ];
                 @endphp
                 @foreach($docs as $index => $doc)
@@ -49,15 +58,17 @@
                     <td class="js-doc-type">{{ $doc['type'] }}</td>
                     <td class="js-doc-remarks">{{ $doc['remarks'] ?: '--' }}</td>
                     <td class="js-doc-date">{{ $doc['date'] ?: '--' }}</td>
-                    <td style="text-align: center;"><span class="apc-pill apc-pill--pending js-doc-status">{{ $doc['status'] }}</span></td>
+                    <td style="text-align: center;">
+                        <span class="mc-item-status {{ $statusClasses[$doc['status']] ?? 'status-review' }} js-doc-status" style="padding: 4px 10px; font-size: 0.75rem;">{{ $doc['status'] }}</span>
+                    </td>
                     <td style="text-align: center;" class="js-doc-file-status">
                         @if($doc['file'])
-                            <button type="button" class="apst-view-link" onclick="docViewAttachment({{ $index }})" style="background: none; border: none; padding: 0; color: #006837; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; margin: 0 auto;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                            <button type="button" class="apst-view-link" onclick="docViewAttachment({{ $index }})" style="background: none; border: none; padding: 0; color: var(--plp-green); font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; margin: 0 auto; text-decoration: none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
                                 Attached
                             </button>
                         @else
-                            <span style="color: #999; font-size: 0.85rem;">--</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">--</span>
                         @endif
                     </td>
                     <td style="text-align: center;">
@@ -103,7 +114,7 @@
 <div class="req-modal-overlay is-hidden" id="docItemModal" style="display:none;" onclick="if(event.target===this) docCloseModal('docItemModal')">
     <div class="req-modal-box" style="max-width:500px;">
         <h3 class="req-modal-title" id="docItemModalTitle">ADD NEW DOCUMENT</h3>
-        <div class="req-modal-fields" style="flex-direction:column; gap:15px;">
+        <div class="req-modal-fields" style="display: flex; flex-direction: column; gap: 15px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">DOCUMENT TYPE</label>
                 <input type="text" class="req-modal-input" id="docInputType" placeholder="e.g. Good Moral Certificate">
@@ -112,22 +123,27 @@
                 <label class="req-modal-label">REMARKS</label>
                 <input type="text" class="req-modal-input" id="docInputRemarks" placeholder="Enter remarks...">
             </div>
-            <div class="req-modal-field-group">
-                <label class="req-modal-label">DATE SUBMITTED</label>
-                <input type="date" class="req-modal-input" id="docInputDate">
-            </div>
-            <div class="req-modal-field-group">
-                <label class="req-modal-label">STATUS</label>
-                <select class="req-modal-input" id="docInputStatus">
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">DATE SUBMITTED</label>
+                    <input type="date" class="req-modal-input" id="docInputDate">
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">STATUS</label>
+                    <select class="req-modal-input" id="docInputStatus">
+                        <option value="Pending">Pending</option>
+                        <option value="Submitted">Submitted</option>
+                        <option value="Verified">Verified</option>
+                        <option value="Missing">Missing</option>
+                    </select>
+                </div>
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">ATTACHMENT</label>
-                <label class="apc-upload-btn" style="width: 100%; border-style: dashed; padding: 15px;">
+                <label class="apc-upload-btn" style="width: 100%; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: transparent;">
                     <input type="file" id="docInputFile" class="d-none" accept="image/*,.pdf">
-                    <span id="docInputFileLabel">Click to upload or drag file</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="docInputFileLabel" style="font-size: 0.85rem; color: #334155; font-weight: 600;">Click to upload or drag file</span>
                 </label>
             </div>
         </div>
@@ -280,5 +296,32 @@
     }
 
     window.addEventListener('scroll', docCloseOpenMenus, true);
+
+    // Filter Logic
+    function docApplyFilters() {
+        const searchQuery = document.getElementById('docSearch').value.toLowerCase();
+        const statusFilter = document.getElementById('docStatusFilter').value;
+        const rows = document.querySelectorAll('#docsTable tbody tr');
+
+        rows.forEach(row => {
+            if (row.classList.contains('doclist-empty-row')) return;
+
+            const type = row.querySelector('.js-doc-type').textContent.toLowerCase();
+            const remarks = row.querySelector('.js-doc-remarks').textContent.toLowerCase();
+            const status = row.querySelector('.js-doc-status').textContent.trim();
+
+            const matchesSearch = type.includes(searchQuery) || remarks.includes(searchQuery);
+            const matchesStatus = statusFilter === "" || status === statusFilter;
+
+            if (matchesSearch && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('docSearch').addEventListener('input', docApplyFilters);
+    document.getElementById('docStatusFilter').addEventListener('change', docApplyFilters);
 </script>
 @endpush

@@ -662,6 +662,84 @@ class AdminToolsController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function auditTrail()
+    {
+        $auditLogs = collect([
+            [
+                'user' => 'Admin User',
+                'timestamp' => now()->format('M d, Y h:i A'),
+                'action' => 'Updated Medical Certificate for Applicant #2024-0001',
+                'module' => 'Medical Clearance',
+                'details' => 'Status changed from Pending to Approved'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subMinutes(15)->format('M d, Y h:i A'),
+                'action' => 'Uploaded Chest X-ray for Applicant #2024-0005',
+                'module' => 'Medical Clearance',
+                'details' => 'File: chest_xray_v1.pdf'
+            ],
+            [
+                'user' => 'System',
+                'timestamp' => now()->subHour()->format('M d, Y h:i A'),
+                'action' => 'Auto-archived application #2023-9999',
+                'module' => 'Application List',
+                'details' => 'Reason: Inactivity for 30 days'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subHours(2)->format('M d, Y h:i A'),
+                'action' => 'Modified Program File: BSIT',
+                'module' => 'Academic Master',
+                'details' => 'Updated curriculum year from 2022 to 2024'
+            ],
+            [
+                'user' => 'Admin User',
+                'timestamp' => now()->subDays(1)->format('M d, Y h:i A'),
+                'action' => 'Created New User Account: faculty_user_1',
+                'module' => 'Access Management',
+                'details' => 'Assigned role: Faculty'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subDays(1)->subHours(2)->format('M d, Y h:i A'),
+                'action' => 'Generated Official Grade Report',
+                'module' => 'Forms',
+                'details' => 'Student: Juan Dela Cruz (#2021-1234)'
+            ],
+            [
+                'user' => 'System',
+                'timestamp' => now()->subDays(2)->format('M d, Y h:i A'),
+                'action' => 'Updated Academic Calendar',
+                'module' => 'System Config',
+                'details' => 'Added Final Examination schedule'
+            ],
+            [
+                'user' => 'Admin User',
+                'timestamp' => now()->subDays(2)->subHours(5)->format('M d, Y h:i A'),
+                'action' => 'Modified Room Capacity',
+                'module' => 'Scheduling',
+                'details' => 'Room 402: 40 to 50 slots'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subDays(3)->format('M d, Y h:i A'),
+                'action' => 'Approved Application #2024-0012',
+                'module' => 'Process',
+                'details' => 'Moved to Accepted status'
+            ],
+            [
+                'user' => 'System',
+                'timestamp' => now()->subDays(3)->subHours(12)->format('M d, Y h:i A'),
+                'action' => 'Sent Notification Blast',
+                'module' => 'Announcements',
+                'details' => 'Target: All Enrolled Students'
+            ]
+        ]);
+
+        return view('registrar.admin-tools.audit-trail', compact('auditLogs'));
+    }
+
     public function configurationSchoolSemStore(Request $request): JsonResponse
     {
         $validated = $request->validate([

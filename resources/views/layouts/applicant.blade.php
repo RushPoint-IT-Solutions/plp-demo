@@ -73,6 +73,13 @@ $applicantUnreadNotificationCount = (int) ($applicantUnreadNotificationCount ?? 
                     </svg>
                 </button>
 
+@php
+$isPreviewPortal = !empty($previewPortalMode);
+$previewPortalUnlocked = !empty($previewPortalUnlocked);
+$currentApplicant = $applicant ?? (auth()->check() ? auth()->user()->applicant : null);
+$isRealPortalUnlocked = $currentApplicant && optional($currentApplicant)->application_status === 'submitted';
+$portalUnlocked = $isPreviewPortal ? $previewPortalUnlocked : $isRealPortalUnlocked;
+@endphp
                 <div class="topbar-icons">
                     {{-- Help Center --}}
                     <a href="{{ route('applicant.help.center') }}" class="topbar-icon-link topbar-help-icon {{ request()->routeIs('applicant.help.*') ? 'is-active' : '' }}" title="Help Center">
@@ -87,6 +94,7 @@ $applicantUnreadNotificationCount = (int) ($applicantUnreadNotificationCount ?? 
                         </svg>
                     </a>
 
+                    @if($portalUnlocked)
                     {{-- Notification Bell --}}
                     @include('includes.portal-notifications-dropdown', [
                         'notificationContainerId' => 'applicantNotificationsDropdown',
@@ -106,6 +114,7 @@ $applicantUnreadNotificationCount = (int) ($applicantUnreadNotificationCount ?? 
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                     </a>
+                    @endif
 
                     {{-- Profile Avatar --}}
                     <a href="#" class="topbar-user topbar-profile-trigger">

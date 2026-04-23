@@ -72,32 +72,54 @@
 
     function bindSidebarDrawer() {
         var sidebarToggle = document.getElementById('sidebarToggle');
-        var sidebar = document.querySelector('.plp-sidebar');
         var overlay = document.getElementById('sidebarOverlay');
 
-        if (sidebarToggle && sidebar && overlay) {
+        if (sidebarToggle && overlay) {
             sidebarToggle.addEventListener('click', function (e) {
                 e.stopPropagation();
-                sidebar.classList.toggle('sidebar-open');
+                // Re-query sidebars to ensure we get any dynamically added or toggled sidebars
+                var sidebars = document.querySelectorAll('.plp-sidebar');
+                sidebars.forEach(function(sb) {
+                    // Only toggle if the sidebar is currently "active" (not display:none)
+                    // or if it's the only sidebar
+                    if (window.getComputedStyle(sb).display !== 'none' || sidebars.length === 1) {
+                        sb.classList.toggle('sidebar-open');
+                    }
+                });
                 overlay.classList.toggle('active');
             });
 
             overlay.addEventListener('click', function () {
-                sidebar.classList.remove('sidebar-open');
+                var sidebars = document.querySelectorAll('.plp-sidebar');
+                sidebars.forEach(function(sb) {
+                    sb.classList.remove('sidebar-open');
+                });
                 overlay.classList.remove('active');
             });
         }
 
         document.addEventListener('click', function (e) {
-            if (!sidebar || !overlay) {
+            var sidebars = document.querySelectorAll('.plp-sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (!sidebars.length || !overlay) {
                 return;
             }
 
-            var clickedInsideSidebar = e.target.closest('.plp-sidebar');
+            var clickedInsideSidebar = Array.prototype.some.call(sidebars, function(sb) {
+                return sb.contains(e.target);
+            });
             var clickedToggle = sidebarToggle && (e.target === sidebarToggle || e.target.closest('#sidebarToggle'));
-            if (!clickedInsideSidebar && !clickedToggle && sidebar.classList.contains('sidebar-open')) {
-                sidebar.classList.remove('sidebar-open');
-                overlay.classList.remove('active');
+            
+            if (!clickedInsideSidebar && !clickedToggle) {
+                var anyOpen = Array.prototype.some.call(sidebars, function(sb) {
+                    return sb.classList.contains('sidebar-open');
+                });
+                if (anyOpen) {
+                    sidebars.forEach(function(sb) {
+                        sb.classList.remove('sidebar-open');
+                    });
+                    overlay.classList.remove('active');
+                }
             }
         });
     }

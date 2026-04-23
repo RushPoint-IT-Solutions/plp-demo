@@ -296,7 +296,7 @@
 </div>
 
 {{-- ========== APPLICANT DETAIL VIEW ========== --}}
-<div id="applicantDetailView">
+<div id="applicantDetailView" style="display: none; overflow: hidden;">
 
     {{-- Applicant ID + Name --}}
     <div class="appl-detail-header">
@@ -324,23 +324,23 @@
     {{-- Schedule of Exam --}}
     <div class="applicant-panel" id="panel-schedule-exam">
         <div class="sched-exam-card">
-            <div class="sched-fields-row">
-                <div class="sched-field-group">
-                    <label>Date</label>
-                    <input type="date" id="scheduleExamDate" class="app-filter-input w-100">
+            <div style="display: flex; align-items: flex-end; gap: 15px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.75rem; font-weight: 800; color: #006837; text-transform: uppercase; margin-bottom: 6px; display: block;">EXAM DATE</label>
+                    <input type="date" id="scheduleExamDate" class="app-filter-input w-100" style="height: 40px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px;">
                 </div>
-                <div class="sched-field-group">
-                    <label>Time</label>
-                    <input type="time" id="scheduleExamTime" class="app-filter-input w-100">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.75rem; font-weight: 800; color: #006837; text-transform: uppercase; margin-bottom: 6px; display: block;">TIME</label>
+                    <input type="time" id="scheduleExamTime" class="app-filter-input w-100" style="height: 40px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px;">
                 </div>
-                <div class="sched-field-group sched-field-group--venue">
-                    <label>Venue</label>
-                    <input type="text" id="scheduleExamVenue" placeholder="Room #123">
+                <div style="flex: 1.5;">
+                    <label style="font-size: 0.75rem; font-weight: 800; color: #006837; text-transform: uppercase; margin-bottom: 6px; display: block;">VENUE</label>
+                    <input type="text" id="scheduleExamVenue" placeholder="Enter venue location..." style="height: 40px; width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px; font-size: 0.9rem;">
                 </div>
-            </div>
-            <div class="sched-actions">
-                <button type="button" class="sched-btn-save" id="saveExamScheduleBtn">Save</button>
-                <button type="button" class="sched-btn-print" id="printExamScheduleBtn">Print</button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="sched-btn-save" id="saveExamScheduleBtn" style="height: 40px; padding: 0 25px; border-radius: 6px; background: #006837; color: #fff; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s;">Save</button>
+                    <button type="button" class="sched-btn-print" id="printExamScheduleBtn" style="height: 40px; padding: 0 25px; border-radius: 6px; background: #fff; color: #006837; border: 1.5px solid #006837; font-weight: 600; cursor: pointer; transition: all 0.2s;">Print</button>
+                </div>
             </div>
             <div id="scheduleExamFeedback" class="schedule-exam-feedback"></div>
             <div class="sched-reminders">
@@ -399,4 +399,50 @@
 
 @push('scripts')
 <script src="{{ asset('js/application-process.js') }}?v={{ time() }}"></script>
+@endpush
+@push('scripts')
+<script>
+    // Auto-resize the application form iframe to fit its content
+    (function() {
+        let lastHeight = 0;
+        function resizeAppFormIframe() {
+            const iframe = document.getElementById('registrarAppFormEditorFrame');
+            if (!iframe || iframe.style.display === 'none') return;
+
+            try {
+                const doc = iframe.contentWindow.document;
+                // Use the most stable height property
+                const newHeight = Math.max(
+                    doc.body.scrollHeight, 
+                    doc.documentElement.scrollHeight,
+                    doc.body.offsetHeight,
+                    doc.documentElement.offsetHeight
+                );
+
+                // Only update if height changed by a significant amount (10px)
+                // and NEVER grow infinitely - check if the new height is actually different from current style
+                const currentStyleHeight = parseInt(iframe.style.height) || 0;
+                
+                if (Math.abs(newHeight - lastHeight) > 10) {
+                    // Set height exactly to content height to avoid "buffer growth" loops
+                    iframe.style.height = newHeight + 'px';
+                    lastHeight = newHeight;
+                }
+            } catch(e) {}
+        }
+
+        // Check less frequently to avoid layout thrashing
+        const resizeInterval = setInterval(resizeAppFormIframe, 2000);
+
+        const appFormFrame = document.getElementById('registrarAppFormEditorFrame');
+        if (appFormFrame) {
+            appFormFrame.onload = function() {
+                lastHeight = 0;
+                setTimeout(resizeAppFormIframe, 500);
+            };
+        }
+        
+        window.addEventListener('unload', () => clearInterval(resizeInterval));
+    })();
+</script>
 @endpush

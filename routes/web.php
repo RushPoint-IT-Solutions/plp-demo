@@ -452,6 +452,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/student-update', 'Registrar\Services\AdminToolsController@studentUpdate')->name('student-update');
             Route::post('/student-update/run', 'Registrar\Services\AdminToolsController@studentUpdateRun')->name('student-update.run');
         });
+
+        Route::get('/audit-trail', 'Registrar\Services\AdminToolsController@auditTrail')->name('audit-trail');
     });
 });
 

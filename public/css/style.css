@@ -789,10 +789,16 @@ select:hover {
 
 /* Keep registrar shell stable: long pages scroll inside content area, not the full document. */
 
+.registrar-body {
+  overflow: hidden !important;
+}
+
 .registrar-body .content-footer-wrap {
   min-height: calc(100vh - 72px);
   max-height: calc(100vh - 72px);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .registrar-body .student-content {
@@ -801,6 +807,21 @@ select:hover {
   overflow-y: auto !important;
   overflow-x: hidden;
   scrollbar-gutter: stable;
+}
+
+/* Custom Registrar Scrollbar */
+.registrar-body .student-content::-webkit-scrollbar {
+  width: 8px;
+}
+.registrar-body .student-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.registrar-body .student-content::-webkit-scrollbar-thumb {
+  background: #006837;
+  border-radius: 10px;
+}
+.registrar-body .student-content::-webkit-scrollbar-thumb:hover {
+  background: #004d29;
 }
 
 .registrar-body .student-main-wrapper .plp-footer {
@@ -1297,12 +1318,39 @@ select:hover {
   box-shadow: none;
 }
 
-/* Filter grid guarantees cross-row alignment */
+/* Common Responsive Filter Bar */
+.app-filter-grid {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 0 0 10px 0;
+}
 
-.filter-grid {
-  display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 14px 20px;
+.app-filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.app-filter-item--search { flex: 2; min-width: 200px; }
+.app-filter-item--status { flex: 1.2; min-width: 140px; }
+.app-filter-item--entries { flex: 1; min-width: 120px; }
+.app-filter-item--action { flex: 0 0 160px; }
+
+@media (max-width: 768px) {
+    .app-filter-grid {
+        gap: 12px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .app-filter-item {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .app-filter-item--action {
+        margin-top: 5px;
+    }
 }
 
 .filter-cell--action {
@@ -9506,7 +9554,11 @@ select.req-modal-input {
   cursor: pointer;
   white-space: nowrap;
   letter-spacing: 0.02em;
-  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-height: 38px;
 }
 
 .apst-new-btn:hover {
@@ -42316,7 +42368,7 @@ body.page-registrar-help .reg-help-chat-input-wrap button:hover {
 }
 
 .applicant-panel .apc-panel-filter {
-  margin-bottom: 12px;
+  margin-bottom: 5px;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -43140,6 +43192,14 @@ body.faculty-body.page-profile-view .pv-row--edu .pv-value {
 
 #applicantSidebar {
   display: none;
+}
+
+/* Ensure any open sidebar is visible and on top on mobile */
+@media (max-width: 991px) {
+  .plp-sidebar.sidebar-open {
+    display: flex !important;
+    z-index: 99999 !important;
+  }
 }
 
 .appl-sidebar-back {

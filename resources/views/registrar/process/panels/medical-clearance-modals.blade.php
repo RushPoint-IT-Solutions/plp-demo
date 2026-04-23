@@ -11,17 +11,31 @@
                 <label class="req-modal-label">REMARKS</label>
                 <input type="text" id="mcAddRemarks" class="req-modal-input" placeholder="Enter remarks...">
             </div>
-            <div class="req-modal-field-group">
+            <div class="req-modal-field-group" style="{{ !($mcIsApplicant ?? false) ? 'display:none;' : '' }}">
                 <label class="req-modal-label">DATE SUBMITTED</label>
-                <input type="date" id="mcAddDate" class="req-modal-input">
+                <input type="date" id="mcAddDate" class="req-modal-input" {{ !($mcIsApplicant ?? false) ? 'readonly' : '' }}>
             </div>
+            @if(!($hideStatus ?? false))
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">STATUS</label>
+                <select id="mcAddStatus" class="req-modal-input">
+                    <option value="Missing">Missing</option>
+                    <option value="Submitted">Submitted</option>
+                    <option value="For Review">For Review</option>
+                    <option value="Approved">Approved</option>
+                </select>
+            </div>
+            @endif
+            @if($mcIsApplicant ?? false)
             <div class="req-modal-field-group">
                 <label class="req-modal-label">ATTACHMENT</label>
-                <label class="apc-upload-btn" style="width: 100%; border-style: dashed; padding: 15px;">
+                <label class="apc-upload-btn" style="width: 100%; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: transparent;">
                     <input type="file" id="mcAddFile" class="d-none" accept="image/*,.pdf" onchange="mcUpdateFileLabel('mcAddFile', 'mcAddFileLabel')">
-                    <span id="mcAddFileLabel">Click to upload or drag file</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="mcAddFileLabel" style="font-size: 0.85rem; color: #334155; font-weight: 600;">Click to upload or drag file</span>
                 </label>
             </div>
+            @endif
         </div>
         <div class="req-modal-actions">
             <button type="button" class="req-btn-cancel" onclick="mcCloseModal('mcAddModal')">Cancel</button>
@@ -38,23 +52,37 @@
             <input type="hidden" id="mcEditId">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">DOCUMENT NAME</label>
-                <input type="text" id="mcEditDocName" class="req-modal-input" placeholder="Enter document name...">
+                <input type="text" id="mcEditDocName" class="req-modal-input" placeholder="Enter document name..." {{ ($mcIsApplicant ?? false) ? 'readonly' : '' }} style="{{ ($mcIsApplicant ?? false) ? 'background-color: #f8fafc; color: #64748b; cursor: not-allowed;' : '' }}">
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">REMARKS</label>
-                <input type="text" id="mcEditRemarks" class="req-modal-input" placeholder="Enter remarks...">
+                <input type="text" id="mcEditRemarks" class="req-modal-input" placeholder="Enter remarks..." {{ ($mcIsApplicant ?? false) ? 'readonly' : '' }} style="{{ ($mcIsApplicant ?? false) ? 'background-color: #f8fafc; color: #64748b; cursor: not-allowed;' : '' }}">
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">DATE SUBMITTED</label>
-                <input type="date" id="mcEditDate" class="req-modal-input">
+                <input type="date" id="mcEditDate" class="req-modal-input" readonly style="background-color: #f8fafc; color: #64748b; cursor: not-allowed;">
             </div>
+            @if(!($hideStatus ?? false))
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">STATUS</label>
+                <select id="mcEditStatus" class="req-modal-input">
+                    <option value="Missing">Missing</option>
+                    <option value="Submitted">Submitted</option>
+                    <option value="For Review">For Review</option>
+                    <option value="Approved">Approved</option>
+                </select>
+            </div>
+            @endif
+            @if($mcIsApplicant ?? false)
             <div class="req-modal-field-group">
                 <label class="req-modal-label">ATTACHMENT</label>
-                <label class="apc-upload-btn" style="width: 100%; border-style: dashed; padding: 15px;">
+                <label class="apc-upload-btn" style="width: 100%; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: transparent;">
                     <input type="file" id="mcEditFile" class="d-none" accept="image/*,.pdf" onchange="mcUpdateFileLabel('mcEditFile', 'mcEditFileLabel')">
-                    <span id="mcEditFileLabel">Click to upload or drag file</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="mcEditFileLabel" style="font-size: 0.85rem; color: #334155; font-weight: 600;">Click to upload or drag file</span>
                 </label>
             </div>
+            @endif
         </div>
         <div class="req-modal-actions">
             <button type="button" class="req-btn-cancel" onclick="mcCloseModal('mcEditModal')">Cancel</button>
@@ -83,6 +111,19 @@
         <p id="mcAlertMessage" style="color: #555; font-size: 0.95rem; margin-bottom: 20px; margin-top: 10px;">Please fill in the document name and date.</p>
         <div class="req-modal-actions" style="justify-content: center;">
             <button type="button" class="req-btn-save" style="background: #006837;" onclick="mcCloseModal('mcAlertModal')">OK</button>
+        </div>
+    </div>
+</div>
+
+{{-- Confirm Upload Modal --}}
+<div class="req-modal-overlay is-hidden" id="mcConfirmUploadModal" style="display:none; z-index: 10001;" onclick="if(event.target===this) mcCancelUpload()">
+    <div class="req-modal-box" style="max-width: 400px; text-align: center;">
+        <h3 class="req-modal-title" style="color: #006837;">CONFIRM ATTACHMENT</h3>
+        <p style="color: #555; font-size: 0.95rem; margin-top: 10px;">Are you sure you want to attach this file?</p>
+        <p id="mcConfirmFileName" style="font-weight: 700; color: #333; font-size: 0.9rem; margin: 10px 0 20px; word-break: break-all; padding: 0 10px;"></p>
+        <div class="req-modal-actions" style="justify-content: center; gap: 12px;">
+            <button type="button" class="req-btn-cancel" onclick="mcCancelUpload()">Cancel</button>
+            <button type="button" class="req-btn-save" style="background: #006837;" onclick="mcProceedUpload()">Confirm</button>
         </div>
     </div>
 </div>

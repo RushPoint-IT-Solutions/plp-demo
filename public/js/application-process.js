@@ -587,5 +587,111 @@
         });
     }
 
+    // Application Status Management Interactivity
+    function initStatusManagement() {
+        var updateStatusSelect = document.getElementById('updateStatusSelect');
+        var currentStatusBadge = document.getElementById('currentStatusBadge');
+        var saveStatusBtn = document.querySelector('.status-management-card .apc-btn--save');
+
+        if (!updateStatusSelect || !currentStatusBadge) return;
+
+        updateStatusSelect.addEventListener('change', function() {
+            var status = this.value;
+            var statusClass = 'status-submitted';
+            
+            if (status === 'ACCEPTED') statusClass = 'status-approved';
+            else if (status === 'REJECTED') statusClass = 'status-not-submitted';
+            else if (status === 'ON PROCESS') statusClass = 'status-review';
+
+            // Optional: Update badge preview in real-time for demo
+            currentStatusBadge.textContent = status;
+            currentStatusBadge.className = 'mc-item-status ' + statusClass;
+        });
+
+        if (saveStatusBtn) {
+            saveStatusBtn.addEventListener('click', function() {
+                var status = updateStatusSelect.value;
+                var remarks = document.getElementById('statusRemarksInput').value;
+                
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Application status updated to ' + status + ' successfully.', 'success');
+                } else {
+                    alert('Status updated to ' + status + (remarks ? ' with remarks: ' + remarks : ''));
+                }
+            });
+        }
+    }
+
+    initStatusManagement();
+
+    function initPanelFilters() {
+        // Medical Clearance Filters
+        var mcSearch = document.getElementById('mcSearch');
+        var mcStatus = document.getElementById('mcStatusFilter');
+        var mcTable = document.getElementById('mcTable');
+
+        if (mcTable) {
+            var mcRows = mcTable.querySelectorAll('tbody tr');
+            var filterMc = function() {
+                var query = mcSearch.value.toLowerCase();
+                var status = mcStatus.value.toLowerCase();
+                
+                mcRows.forEach(function(row) {
+                    var text = row.textContent.toLowerCase();
+                    var rowStatus = row.getAttribute('data-status') || '';
+                    if (!rowStatus) {
+                        var statusCell = row.querySelector('.js-mc-status');
+                        rowStatus = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+                    } else {
+                        rowStatus = rowStatus.toLowerCase();
+                    }
+
+                    var matchesSearch = text.indexOf(query) > -1;
+                    var matchesStatus = status === '' || rowStatus === status || (status === 'verified' && rowStatus === 'approved');
+
+                    row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+                });
+            };
+
+            if (mcSearch) mcSearch.addEventListener('input', filterMc);
+            if (mcStatus) mcStatus.addEventListener('change', filterMc);
+        }
+
+        // Documents Submitted Filters
+        var docSearch = document.getElementById('docSearch');
+        var docStatus = document.getElementById('docStatusFilter');
+        
+        // Let's re-query based on panel
+        var docPanel = document.getElementById('panel-documents-submitted');
+        if (docPanel) {
+            var docRows = docPanel.querySelectorAll('.app-table tbody tr');
+            var filterDoc = function() {
+                var query = docSearch.value.toLowerCase();
+                var status = docStatus.value.toLowerCase();
+
+                docRows.forEach(function(row) {
+                    var text = row.textContent.toLowerCase();
+                    var rowStatus = row.getAttribute('data-status') || '';
+                    if (!rowStatus) {
+                        var statusCell = row.querySelector('.app-status-pill, span[class*="status-"]');
+                        rowStatus = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+                    } else {
+                        rowStatus = rowStatus.toLowerCase();
+                    }
+
+                    var matchesSearch = text.indexOf(query) > -1;
+                    var matchesStatus = status === '' || rowStatus.indexOf(status) > -1;
+
+                    row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+                });
+            };
+
+            if (docSearch) docSearch.addEventListener('input', filterDoc);
+            if (docStatus) docStatus.addEventListener('change', filterDoc);
+        }
+    }
+
+    initPanelFilters();
+
     // Removed outdated medical clearance functions. Logic is now unified in the blade template.
 })();
