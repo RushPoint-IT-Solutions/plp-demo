@@ -1561,6 +1561,24 @@ document.addEventListener('DOMContentLoaded', function () {
         return '';
     }
 
+    function isAllowedSchoolYear(value) {
+        var normalized = normalizeText(value);
+        if (normalized === '') {
+            return false;
+        }
+
+        var selectElement = soModalSY || soSY;
+        if (selectElement && selectElement.options && selectElement.options.length) {
+            for (var i = 0; i < selectElement.options.length; i += 1) {
+                if (normalizeText(selectElement.options[i].value) === normalized) {
+                    return true;
+                }
+            }
+        }
+
+        return /^\d{4}-\d{4}$/.test(normalized);
+    }
+
     function syncModalDefaultsFromFilters() {
         if (soModalProgram && soProgram && normalizeText(soProgram.value) !== '') {
             soModalProgram.value = normalizeText(soProgram.value);
@@ -1569,6 +1587,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (soModalSY) {
             soModalSY.value = inferModalSchoolYear();
+            emitListboxRefresh(soModalSY);
         }
 
         if (soModalTerm) {
@@ -1649,8 +1668,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'Please select a course.';
         }
 
-        if (!/^\d{4}-\d{4}$/.test(payload.school_year)) {
-            return 'School Year must follow the YYYY-YYYY format.';
+        if (!isAllowedSchoolYear(payload.school_year)) {
+            return 'Please select a valid School Year.';
         }
 
         if (payload.semester === '') {

@@ -14,6 +14,7 @@
         editSelectedProgram: null,
         caseTypeOptions: [],
         actionTypeOptions: [],
+        semesterMap: {},
         studentLookupToken: 0,
         programLookupToken: 0
     };
@@ -55,7 +56,8 @@
             recordUpdateUrlTemplate: page.getAttribute('data-record-update-url-template') || '',
             recordDestroyUrlTemplate: page.getAttribute('data-record-destroy-url-template') || '',
             caseTypeOptions: page.getAttribute('data-case-type-options') || '[]',
-            actionTypeOptions: page.getAttribute('data-action-type-options') || '[]'
+            actionTypeOptions: page.getAttribute('data-action-type-options') || '[]',
+            semesterMap: page.getAttribute('data-semester-map') || '{}'
         };
     }
 
@@ -69,6 +71,19 @@
             return Array.isArray(parsed) ? parsed : [];
         } catch (error) {
             return [];
+        }
+    }
+
+    function parseJsonObject(raw) {
+        if (!raw) {
+            return {};
+        }
+
+        try {
+            var parsed = JSON.parse(raw);
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (error) {
+            return {};
         }
     }
 
@@ -279,6 +294,97 @@
 
         selectEl.value = value || '';
         selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function refreshListboxSelect(selectEl) {
+        if (!selectEl || !selectEl.closest) {
+            return;
+        }
+
+        var wrapper = selectEl.closest('[data-listbox-select]');
+        if (!wrapper || typeof document === 'undefined' || typeof document.dispatchEvent !== 'function') {
+            return;
+        }
+
+        if (typeof window.CustomEvent === 'function') {
+            document.dispatchEvent(new CustomEvent('registrar:listbox:refresh', {
+                detail: { target: wrapper }
+            }));
+            return;
+        }
+
+        if (typeof document.createEvent === 'function') {
+            var fallbackEvent = document.createEvent('CustomEvent');
+            fallbackEvent.initCustomEvent('registrar:listbox:refresh', false, false, { target: wrapper });
+            document.dispatchEvent(fallbackEvent);
+        }
+    }
+
+    function normalizeSemesterTerm(value) {
+        var normalized = normalizeCompare(value);
+        var aliases = {
+            'first': 'First',
+            '1st': 'First',
+            '1st semester': 'First',
+            'first semester': 'First',
+            'second': 'Second',
+            '2nd': 'Second',
+            '2nd semester': 'Second',
+            'second semester': 'Second',
+            'summer': 'Summer',
+            'summer semester': 'Summer'
+        };
+
+        return aliases[normalized] || '';
+    }
+
+    function configuredTermsForYear(schoolYear) {
+        var yearKey = normalizeText(schoolYear);
+        var map = SD_STATE.semesterMap || {};
+        var rawTerms = yearKey && Array.isArray(map[yearKey])
+            ? map[yearKey]
+            : [];
+
+        var terms = rawTerms.map(function (item) {
+            return normalizeSemesterTerm(item);
+        }).filter(function (item, index, list) {
+            return item !== '' && list.indexOf(item) === index;
+        });
+
+        if (!terms.length) {
+            terms = ['First', 'Second', 'Summer'];
+        }
+
+        return terms;
+    }
+
+    function syncTermOptionsForSchoolYear(preferredTerm) {
+        var schoolYearSelect = byId('sdSchoolYear');
+        var termSelect = byId('sdTerm');
+
+        if (!schoolYearSelect || !termSelect) {
+            return;
+        }
+
+        var terms = configuredTermsForYear(schoolYearSelect.value);
+        var selectedTerm = normalizeSemesterTerm(preferredTerm || termSelect.value);
+
+        var optionsHtml = '';
+        terms.forEach(function (term) {
+            optionsHtml += '<option value="' + escapeHtml(term) + '">' + escapeHtml(term) + '</option>';
+        });
+
+        termSelect.innerHTML = optionsHtml;
+
+        if (selectedTerm && terms.indexOf(selectedTerm) !== -1) {
+            termSelect.value = selectedTerm;
+        }
+
+        if (!termSelect.value && terms.length) {
+            termSelect.value = terms[0];
+        }
+
+        refreshListboxSelect(termSelect);
     }
 
     function getFilters() {
@@ -1908,6 +2014,18 @@
     document.addEventListener('DOMContentLoaded', function () {
         if (!getPage()) {
             return;
+        }
+
+        var config = getApiConfig();
+        SD_STATE.semesterMap = config ? parseJsonObject(config.semesterMap) : {};
+
+        syncTermOptionsForSchoolYear(byId('sdTerm') ? byId('sdTerm').value : '');
+
+        var schoolYearSelect = byId('sdSchoolYear');
+        if (schoolYearSelect) {
+            schoolYearSelect.addEventListener('change', function () {
+                syncTermOptionsForSchoolYear('');
+            });
         }
 
         initializeRecordLookupOptions();

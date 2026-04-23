@@ -50607,6 +50607,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     return '';
   }
+  function isAllowedSchoolYear(value) {
+    var normalized = normalizeText(value);
+    if (normalized === '') {
+      return false;
+    }
+    var selectElement = soModalSY || soSY;
+    if (selectElement && selectElement.options && selectElement.options.length) {
+      for (var i = 0; i < selectElement.options.length; i += 1) {
+        if (normalizeText(selectElement.options[i].value) === normalized) {
+          return true;
+        }
+      }
+    }
+    return /^\d{4}-\d{4}$/.test(normalized);
+  }
   function syncModalDefaultsFromFilters() {
     if (soModalProgram && soProgram && normalizeText(soProgram.value) !== '') {
       soModalProgram.value = normalizeText(soProgram.value);
@@ -50614,6 +50629,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (soModalSY) {
       soModalSY.value = inferModalSchoolYear();
+      emitListboxRefresh(soModalSY);
     }
     if (soModalTerm) {
       var termValue = soTerm && normalizeText(soTerm.value) !== '' ? normalizeText(soTerm.value) : 'First';
@@ -50677,8 +50693,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!payload.course_id || payload.course_id < 1) {
       return 'Please select a course.';
     }
-    if (!/^\d{4}-\d{4}$/.test(payload.school_year)) {
-      return 'School Year must follow the YYYY-YYYY format.';
+    if (!isAllowedSchoolYear(payload.school_year)) {
+      return 'Please select a valid School Year.';
     }
     if (payload.semester === '') {
       return 'Please select a semester.';
@@ -51103,19 +51119,19 @@ document.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\app.js */"./resources/js/app.js");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\faculty-notifications.scss */"./resources/sass/faculty-notifications.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\certificate-gwa.scss */"./resources/sass/certificate-gwa.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\cog-copy-of-grades.scss */"./resources/sass/cog-copy-of-grades.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\loa-enrolled.scss */"./resources/sass/loa-enrolled.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\citizens-charter.scss */"./resources/sass/citizens-charter.scss");
-__webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\request-form-f-137a.scss */"./resources/sass/request-form-f-137a.scss");
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\app.js */"./resources/js/app.js");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\style.scss */"./resources/sass/style.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\faculty-notifications.scss */"./resources/sass/faculty-notifications.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-gwa.scss */"./resources/sass/certificate-gwa.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cog-copy-of-grades.scss */"./resources/sass/cog-copy-of-grades.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\loa-enrolled.scss */"./resources/sass/loa-enrolled.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\citizens-charter.scss */"./resources/sass/citizens-charter.scss");
+__webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\request-form-f-137a.scss */"./resources/sass/request-form-f-137a.scss");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\sass\registrar-faculty-loads.scss */"./resources/sass/registrar-faculty-loads.scss");
 
 
 /***/ })

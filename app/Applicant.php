@@ -66,6 +66,16 @@ class Applicant extends Model
         return $this->hasOne(ApplicantOnboardingAcknowledgement::class);
     }
 
+    public function photoUpload()
+    {
+        return $this->hasOne(ApplicantPhotoUpload::class);
+    }
+
+    public function requirementSubmissions()
+    {
+        return $this->hasMany(ApplicantRequirementSubmission::class);
+    }
+
     public function applicationStatusLookup()
     {
         return $this->belongsTo(ApplicantApplicationStatus::class, 'application_status_id');

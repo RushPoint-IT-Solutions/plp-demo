@@ -8311,8 +8311,32 @@ select:hover {
 .sidebar-logout-form .sidebar-link.logout-link {
   width: 100%;
   border: 0;
-  background: transparent;
+  background: #f3f4f4;
+  color: #111111;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   text-align: left;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(7, 44, 25, 0.2);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.sidebar-logout-form .sidebar-link.logout-link:hover,
+.sidebar-logout-form .sidebar-link.logout-link:focus {
+  background: #ffffff;
+  color: #111111;
+  transform: translateY(-1px);
+}
+
+.sidebar-logout-form .sidebar-link.logout-link svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 .app-filter-input-search {
@@ -15409,7 +15433,7 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .smrg-card-header {
@@ -15462,6 +15486,52 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   letter-spacing: 0.6px;
 }
 
+.page-section-merging .rg-listbox-trigger {
+  border: 1px solid #c5ddce;
+  border-radius: 8px;
+  min-height: 38px;
+  padding: 8px 11px;
+  background: #ffffff;
+  color: #1f4733;
+}
+
+.page-section-merging .rg-listbox-trigger:focus,
+.page-section-merging .rg-listbox.is-open .rg-listbox-trigger {
+  border-color: #0f7b43;
+  box-shadow: 0 0 0 3px rgba(15, 123, 67, 0.14);
+}
+
+.page-section-merging .rg-listbox-menu {
+  border: 1px solid #a7ccb7;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcfa 100%);
+  box-shadow: 0 14px 28px rgba(0, 104, 55, 0.16);
+}
+
+.page-section-merging .rg-listbox-option-btn {
+  border-left: 3px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #14532d;
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 9px 10px;
+}
+
+.page-section-merging .rg-listbox-option-btn:hover,
+.page-section-merging .rg-listbox-option-btn:focus,
+.page-section-merging .rg-listbox-option-btn.is-active {
+  border-left-color: #0f7b43;
+  background: linear-gradient(90deg, #edf8f1 0%, #f7fcf9 100%);
+  color: #14532d;
+}
+
+.page-section-merging .rg-listbox-option-btn.is-selected {
+  border-left-color: #0f7b43;
+  background: linear-gradient(90deg, #deefe5 0%, #eff8f3 100%);
+  color: #14532d;
+}
+
 .smrg-search-input {
   width: 100%;
   border: 1px solid #c5ddce;
@@ -15486,13 +15556,27 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   top: calc(100% + 6px);
   z-index: 40;
   display: none;
-  max-height: 230px;
+  max-height: 240px;
   overflow-y: auto;
-  padding: 4px;
-  border: 1px solid #b8d8c5;
-  border-radius: 10px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(0, 104, 55, 0.14);
+  padding: 6px;
+  border: 1px solid #a7ccb7;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcfa 100%);
+  box-shadow: 0 14px 28px rgba(0, 104, 55, 0.16);
+}
+
+.smrg-search-dropdown::-webkit-scrollbar {
+  width: 9px;
+}
+
+.smrg-search-dropdown::-webkit-scrollbar-track {
+  background: #ecf5f0;
+  border-radius: 999px;
+}
+
+.smrg-search-dropdown::-webkit-scrollbar-thumb {
+  background: #8ebda2;
+  border-radius: 999px;
 }
 
 .smrg-search-dropdown.is-open {
@@ -15504,26 +15588,43 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   width: 100%;
   border: none;
   border-left: 3px solid transparent;
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: 9px;
+  background: transparent;
   color: #14532d;
   text-align: left;
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 9px 10px;
+  padding: 10px 30px 10px 11px;
   cursor: pointer;
+  position: relative;
+}
+
+.smrg-search-option + .smrg-search-option {
+  margin-top: 2px;
 }
 
 .smrg-search-option:hover,
-.smrg-search-option:focus {
+.smrg-search-option:focus,
+.smrg-search-option.is-active {
   outline: none;
   border-left-color: #0f7b43;
-  background: linear-gradient(90deg, #eef8f2 0%, #f7fcf9 100%);
+  background: linear-gradient(90deg, #edf8f1 0%, #f7fcf9 100%);
 }
 
 .smrg-search-option.is-selected {
   border-left-color: #0f7b43;
-  background: #e8f6ee;
+  background: linear-gradient(90deg, #deefe5 0%, #eff8f3 100%);
+}
+
+.smrg-search-option.is-selected::after {
+  content: "✓";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #0f7b43;
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
 .smrg-search-empty {
@@ -16356,6 +16457,25 @@ body.page-profile-view .student-main-wrapper .plp-footer .obanana-text {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+}
+
+.page-student-enrollment .se-modal-note {
+  margin: -6px 0 12px;
+  font-size: 0.82rem;
+  color: #5c6470;
+  line-height: 1.45;
+}
+
+.page-student-enrollment .se-modal-field .smrg-search-wrap,
+.page-student-enrollment .se-modal-field .rg-listbox {
+  width: 100%;
+  min-width: 0;
+}
+
+.page-student-enrollment .se-modal-field .smrg-search-dropdown {
+  top: calc(100% + 4px);
+  z-index: 50;
 }
 
 .page-student-enrollment .se-import-help {
@@ -34623,6 +34743,46 @@ body.login-body .modal-backdrop.show {
   flex-shrink: 0;
 }
 
+.registrar-body #applicantSidebar .sidebar-logout {
+  margin-top: auto;
+  padding: 8px;
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form {
+  margin: 0;
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link {
+  width: 100%;
+  border: 0;
+  background: #f3f4f4;
+  color: #111111;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(7, 44, 25, 0.2);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link:hover,
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link:focus {
+  background: #ffffff;
+  color: #111111;
+  transform: translateY(-1px);
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
 body.page-profile-edit .pf-table-controls .pf-entries-control span,
 body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   margin: 0;
@@ -34834,6 +34994,15 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   max-width: 430px;
   margin-bottom: 14px;
 }
+.parent-student-profile-page .parent-student-profile-child-wrap {
+  max-width: 100%;
+}
+.parent-student-profile-page .parent-student-profile-child-wrap .applicant-select-trigger {
+  min-height: 38px;
+}
+.parent-student-profile-page .parent-student-profile-child-wrap .applicant-select-menu {
+  max-height: 240px;
+}
 .parent-student-profile-page .parent-student-top-wrap {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 148px;
@@ -34952,6 +35121,14 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .parent-student-profile-page .parent-student-profile-icon {
   line-height: 0;
   color: #a1a8a4;
+}
+.parent-student-profile-page .parent-student-profile-photo {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #c8d3cc;
+  background: #ffffff;
 }
 .parent-student-profile-page .parent-student-field--sm {
   max-width: none;
@@ -35175,6 +35352,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   font-weight: 800;
   color: #111417;
   line-height: 1.1;
+  word-break: break-word;
 }
 .parent-contact-value a {
   color: #2675dc;
@@ -35222,6 +35400,194 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .parent-contact-guidelines li {
   font-size: 1rem;
   line-height: 1.42;
+}
+
+.parent-contact-alert {
+  margin-bottom: 12px;
+  border-radius: 10px;
+}
+
+.parent-contact-form-shell,
+.parent-contact-history-shell {
+  border-radius: 14px;
+  border: 1px solid #d3dfd8;
+  background: #ffffff;
+  box-shadow: 0 10px 20px rgba(18, 39, 28, 0.07);
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.parent-contact-section-title {
+  margin: 0 0 12px;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a6b43;
+}
+
+.parent-contact-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.parent-contact-field .app-filter-label {
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.parent-contact-field--full {
+  grid-column: span 3;
+}
+
+.parent-contact-select-wrap .applicant-select-trigger {
+  min-height: 38px;
+}
+.parent-contact-select-wrap .applicant-select-menu {
+  max-height: 240px;
+}
+
+.parent-contact-textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #cfd8d1;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.86rem;
+  color: #29322d;
+  background: #ffffff;
+}
+.parent-contact-textarea:focus {
+  outline: none;
+  border-color: #9bc9b0;
+  box-shadow: 0 0 0 3px rgba(16, 110, 68, 0.12);
+}
+
+.parent-contact-error {
+  margin: 6px 0 0;
+  color: #c52f2f;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.parent-contact-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.parent-contact-history-table {
+  min-width: 900px;
+}
+.parent-contact-history-table .sched-th,
+.parent-contact-history-table .sched-td {
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+.parent-contact-history-table .sched-th {
+  background: #006837;
+  color: #ffffff;
+}
+
+.parent-contact-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #e9f4ee;
+  color: #1f6f49;
+}
+
+.parent-contact-status-new,
+.parent-contact-status-in-review {
+  background: #fff4e2;
+  color: #8a5a00;
+}
+
+.parent-contact-status-resolved,
+.parent-contact-status-closed {
+  background: #e8f4ec;
+  color: #1f6f49;
+}
+
+.parent-contact-pagination {
+  margin-top: 12px;
+}
+
+.parent-password-page {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 24px;
+}
+
+.parent-password-card {
+  width: min(520px, 100%);
+  border: 1px solid #d5ddd8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 28px rgba(14, 41, 28, 0.09);
+  padding: 18px;
+}
+
+.parent-password-head {
+  margin-bottom: 12px;
+}
+.parent-password-head h2 {
+  margin: 0;
+  font-size: 1.24rem;
+  font-weight: 800;
+  color: #173524;
+}
+.parent-password-head p {
+  margin: 6px 0 0;
+  color: #3b6a50;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.parent-password-form {
+  display: grid;
+  gap: 12px;
+}
+
+.parent-password-field label {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1c6f47;
+}
+
+.parent-password-hint {
+  margin: 6px 0 0;
+  font-size: 0.76rem;
+  color: #51655a;
+}
+
+.parent-password-error {
+  margin: 6px 0 0;
+  color: #c52f2f;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.parent-password-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+.parent-password-actions .req-btn-cancel {
+  text-decoration: none;
 }
 
 .parent-account-profile-page {
@@ -35430,6 +35796,18 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     width: 96px;
     height: 96px;
   }
+  .parent-contact-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .parent-contact-field--full {
+    grid-column: span 2;
+  }
+  .parent-contact-history-table {
+    min-width: 760px;
+  }
+  .parent-password-card {
+    max-width: 100%;
+  }
   .parent-portal-body .plp-sidebar {
     position: fixed;
     top: 0;
@@ -35549,6 +35927,26 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   .parent-contact-guidelines p,
   .parent-contact-guidelines li {
     font-size: 0.88rem;
+  }
+  .parent-contact-form-shell,
+  .parent-contact-history-shell {
+    padding: 12px;
+  }
+  .parent-contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .parent-contact-field--full {
+    grid-column: auto;
+  }
+  .parent-password-page {
+    padding-top: 8px;
+  }
+  .parent-password-card {
+    padding: 12px;
+  }
+  .parent-password-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
 }
 @media (max-width: 560px) {
@@ -38467,6 +38865,146 @@ body.page-profile-view .pv-layout {
   white-space: nowrap;
 }
 
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__dialog {
+  max-width: 560px;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__content {
+  overflow: hidden;
+  border: 0;
+  border-radius: 20px;
+  box-shadow: 0 28px 60px rgba(0, 104, 55, 0.28);
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__header {
+  position: relative;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 0;
+  padding: 20px 24px 18px;
+  background: linear-gradient(135deg, #0a813c 0%, #006837 66%, #005028 100%);
+  color: #ffffff;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__header::after {
+  content: "";
+  position: absolute;
+  inset: auto -30px -76px auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 209, 0, 0.25) 0%, rgba(255, 209, 0, 0) 70%);
+  pointer-events: none;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__header-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__eyebrow {
+  margin: 0;
+  color: #ffd100;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.app-process-page #scheduleExamSuccessModal .modal-title {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__close {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  opacity: 0.95;
+  text-shadow: none;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__close:hover, .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__close:focus {
+  color: #ffffff;
+  opacity: 1;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__body {
+  padding: 22px 24px 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #12a05f 0%, #006837 100%);
+  color: #ffffff;
+  font-size: 1.45rem;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(0, 104, 55, 0.22);
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__copy {
+  min-width: 0;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__message {
+  color: #204236;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__subtext {
+  margin-top: 8px;
+  color: #5e6e66;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__footer {
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 24px 22px;
+  border-top: 0;
+  background: linear-gradient(180deg, #f7fbf8 0%, #eef8f2 100%);
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__confirm {
+  min-width: 132px;
+  border-radius: 999px;
+  padding: 10px 20px;
+  box-shadow: 0 10px 20px rgba(0, 104, 55, 0.18);
+}
+.app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__confirm:hover {
+  box-shadow: 0 12px 24px rgba(0, 104, 55, 0.22);
+}
+@media (max-width: 576px) {
+  .app-process-page #scheduleExamSuccessModal .modal-dialog {
+    margin: 0.75rem;
+  }
+  .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__header,
+  .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__body,
+  .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__hero {
+    gap: 12px;
+  }
+  .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__icon {
+    width: 50px;
+    height: 50px;
+    flex-basis: 50px;
+    border-radius: 16px;
+    font-size: 1.25rem;
+  }
+  .app-process-page #scheduleExamSuccessModal .schedule-exam-success-modal__confirm {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 .app-status-accepted {
   color: #006837;
   font-weight: 600;
@@ -40034,6 +40572,223 @@ body.page-registrar-help .reg-help-chat-input-wrap button:hover {
 .applicant-panel .apc-btn--ghost:hover {
   background: #edf8f1;
 }
+.applicant-panel .docs-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 0 0 12px;
+}
+.applicant-panel .docs-requirement-entry {
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid #d8e6df;
+  border-radius: 8px;
+  background: #f7fbf9;
+}
+.applicant-panel .docs-requirement-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.7fr) minmax(180px, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+.applicant-panel .docs-requirement-entry .app-filter-group {
+  margin: 0;
+}
+.applicant-panel .docs-requirement-entry .app-filter-input,
+.applicant-panel .docs-requirement-entry .app-select,
+.applicant-panel .docs-requirement-entry .app-listbox-wrap {
+  min-height: 40px;
+}
+.applicant-panel .docs-requirement-help {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #50606d;
+}
+.applicant-panel #docsTable th,
+.applicant-panel #docsTable td,
+.applicant-panel #availableDocsTable th,
+.applicant-panel #availableDocsTable td {
+  text-align: center;
+  vertical-align: middle;
+}
+.applicant-panel #docsTable th,
+.applicant-panel #docsTable td {
+  padding: 12px 10px;
+}
+.applicant-panel #docsTable .docs-col-type,
+.applicant-panel #docsTable td:nth-child(2) {
+  min-width: 170px;
+}
+.applicant-panel #docsTable .docs-col-remarks,
+.applicant-panel #docsTable td:nth-child(3) {
+  min-width: 210px;
+}
+.applicant-panel #docsTable .docs-col-date,
+.applicant-panel #docsTable td:nth-child(4) {
+  min-width: 150px;
+}
+.applicant-panel #docsTable .docs-col-file,
+.applicant-panel #docsTable td:nth-child(5) {
+  min-width: 250px;
+}
+.applicant-panel #docsTable .docs-col-status,
+.applicant-panel #docsTable td:nth-child(6) {
+  min-width: 120px;
+}
+.applicant-panel #docsTable .docs-col-action,
+.applicant-panel #docsTable td:nth-child(7) {
+  min-width: 120px;
+}
+.applicant-panel #docsTable .docs-remarks-input,
+.applicant-panel #docsTable .docs-date-input {
+  margin: 0 auto;
+  text-align: center;
+}
+.applicant-panel #docsTable .docs-remarks-input {
+  max-width: 220px;
+}
+.applicant-panel #docsTable .docs-date-input {
+  max-width: 155px;
+}
+.applicant-panel #docsTable .docs-date-display {
+  cursor: pointer;
+  background: #ffffff;
+}
+.applicant-panel #docsTable .docs-date-display::placeholder {
+  color: #7b8b87;
+  opacity: 1;
+}
+.applicant-panel #docsTable .docs-date-display.is-invalid {
+  border-color: #ca4844;
+  box-shadow: 0 0 0 2px rgba(202, 72, 68, 0.16);
+}
+.applicant-panel .docs-file-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 230px;
+}
+.applicant-panel .docs-file-upload .doc-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.applicant-panel .docs-file-upload--readonly {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 180px;
+  max-width: 240px;
+}
+.applicant-panel .docs-file-upload--readonly .docs-file-link {
+  min-height: auto;
+  max-width: 180px;
+}
+.applicant-panel .docs-action-btn {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.16s ease;
+}
+.applicant-panel .docs-action-btn.apc-btn:hover,
+.applicant-panel .docs-action-btn.apc-btn:focus {
+  background: transparent;
+  box-shadow: none;
+}
+.applicant-panel .docs-delete-file-btn {
+  color: #bd3f3a;
+}
+.applicant-panel .docs-delete-file-btn.apc-btn:hover,
+.applicant-panel .docs-delete-file-btn.apc-btn:focus {
+  color: #a83733;
+}
+.applicant-panel .docs-row-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.applicant-panel .docs-row-actions .apc-btn {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+}
+.applicant-panel .docs-btn-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+.applicant-panel .docs-btn-busy {
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.applicant-panel .docs-remove-requirement-btn {
+  color: #bd3f3a;
+}
+.applicant-panel .docs-remove-requirement-btn.apc-btn:hover,
+.applicant-panel .docs-remove-requirement-btn.apc-btn:focus {
+  color: #a83733;
+}
+.applicant-panel .docs-save-btn {
+  color: #1c8a4a;
+}
+.applicant-panel .docs-save-btn[disabled] {
+  color: #9eb6a8;
+}
+.applicant-panel .docs-save-btn.apc-btn:hover,
+.applicant-panel .docs-save-btn.apc-btn:focus {
+  color: #14713b;
+}
+.applicant-panel #docsConfirmActionBtn.is-danger {
+  background: #ca4844;
+  border-color: #ca4844;
+  color: #fff;
+}
+.applicant-panel #docsConfirmActionBtn.is-danger:hover {
+  background: #b63f3b;
+  border-color: #b63f3b;
+}
+.applicant-panel .docs-upload-btn {
+  min-width: 136px;
+  padding: 7px 14px;
+  border-width: 1px;
+}
+.applicant-panel .docs-upload-filename {
+  display: block;
+  max-width: 210px;
+  font-size: 12px;
+  color: #4b5b68;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.applicant-panel .docs-file-link {
+  min-height: 18px;
+}
+.applicant-panel .docs-file-link a {
+  font-size: 12px;
+  font-weight: 700;
+}
 
 @media (max-width: 991px) {
   .applicant-panel .apc-grid--three {
@@ -40051,6 +40806,19 @@ body.page-registrar-help .reg-help-chat-input-wrap button:hover {
   .applicant-panel .apc-actions--between {
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+  .applicant-panel .docs-toolbar {
+    justify-content: flex-start;
+  }
+  .applicant-panel .docs-requirement-grid {
+    grid-template-columns: 1fr;
+  }
+  .applicant-panel #docsTable th,
+  .applicant-panel #docsTable td {
+    padding: 10px 8px;
+  }
+  .applicant-panel .docs-file-upload {
+    min-width: 200px;
   }
 }
 .sched-exam-card {
@@ -40977,6 +41745,214 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   border-top: 1px solid #e8edf4;
   margin-top: 8px;
   padding-top: 8px;
+}
+
+.page-user-accounts .ua-col-action-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.page-user-accounts .ua-col-action-cell .doclist-action-btn {
+  min-width: 34px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-user-accounts .ua-access-btn {
+  border-color: #0f7b43;
+  color: #0f7b43;
+}
+.page-user-accounts .ua-access-btn:hover {
+  background: #eef9f2;
+  border-color: #0f7b43;
+}
+.page-user-accounts .ua-access-modal-box {
+  width: min(980px, 96vw);
+  max-width: min(980px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+}
+.page-user-accounts .ua-access-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.page-user-accounts .ua-access-modal-title {
+  margin: 0;
+  color: #114f33;
+  font-size: 1.18rem;
+  font-weight: 800;
+}
+.page-user-accounts .ua-access-modal-note {
+  margin: 8px 0 12px;
+  font-size: 0.82rem;
+  color: #4c645a;
+}
+.page-user-accounts .ua-access-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.page-user-accounts .ua-access-copy-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label label" "select action";
+  align-items: center;
+  gap: 6px 10px;
+}
+.page-user-accounts .ua-access-copy-wrap .app-filter-label {
+  grid-area: label;
+  margin: 0;
+  white-space: normal;
+}
+.page-user-accounts .ua-access-copy-wrap .app-filter-select {
+  grid-area: select;
+  width: 100%;
+  min-width: 0;
+}
+.page-user-accounts .ua-access-copy-wrap .ua-copy-access-btn {
+  grid-area: action;
+  min-width: 118px;
+}
+.page-user-accounts .ua-access-table-wrap {
+  max-height: 52vh;
+  overflow: auto;
+  border: 1px solid #d4e3da;
+  border-radius: 10px;
+}
+.page-user-accounts .ua-access-table {
+  min-width: 100%;
+  margin-bottom: 0;
+}
+.page-user-accounts .ua-access-table th:first-child,
+.page-user-accounts .ua-access-table td:first-child {
+  width: 58%;
+}
+.page-user-accounts .ua-access-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.page-user-accounts .ua-access-table tbody td:first-child {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.page-user-accounts .ua-access-rw-col {
+  text-align: center;
+}
+.page-user-accounts .ua-access-rw-col .req-checkbox-input {
+  margin: 0 auto;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .page-user-accounts .ua-access-meta {
+    grid-template-columns: 1fr;
+  }
+  .page-user-accounts .ua-col-action-cell .doclist-action-btn,
+  .page-user-accounts .rtp-page-btn,
+  .page-user-accounts .rtp-page-num,
+  .page-user-accounts .ua-clear-btn,
+  .page-user-accounts .ua-search-btn,
+  .page-user-accounts .ua-copy-access-btn,
+  .page-user-accounts .req-btn-cancel,
+  .page-user-accounts .req-btn-save {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .page-user-accounts .ua-col-action-cell .doclist-action-btn,
+  .page-user-accounts .rtp-page-btn,
+  .page-user-accounts .rtp-page-num {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .page-user-accounts .ua-access-copy-wrap {
+    grid-template-columns: 1fr;
+    grid-template-areas: "label" "select" "action";
+    align-items: stretch;
+  }
+  .page-user-accounts .ua-access-copy-wrap .ua-copy-access-btn {
+    width: 100%;
+  }
+}
+.application-form-page .setup-input.js-app-flatpickr-date {
+  border: 1px solid #cccccc;
+}
+
+.application-form-page .setup-input.js-app-flatpickr-date:focus,
+.application-form-page .setup-input.js-app-flatpickr-date:focus-visible {
+  border-color: #9c9c9c;
+  box-shadow: none;
+}
+
+.application-form-page .js-app-flatpickr-date::placeholder {
+  color: #8b8b8b;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.app-form-flatpickr-theme {
+  border: 1px solid #a8cfba;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 16px 34px rgba(12, 58, 35, 0.2);
+  overflow: hidden;
+}
+
+.app-form-flatpickr-theme .flatpickr-months {
+  background: linear-gradient(180deg, #f5fcf8 0%, #eaf6ef 100%);
+  border-bottom: 1px solid #d8e9df;
+}
+
+.app-form-flatpickr-theme .flatpickr-current-month,
+.app-form-flatpickr-theme .flatpickr-current-month .flatpickr-monthDropdown-months,
+.app-form-flatpickr-theme .flatpickr-current-month input.cur-year,
+.app-form-flatpickr-theme .flatpickr-weekday {
+  color: #1f4735;
+  font-weight: 700;
+}
+
+.app-form-flatpickr-theme .flatpickr-day {
+  border-radius: 10px;
+  color: #2a4b3f;
+  font-weight: 600;
+}
+
+.app-form-flatpickr-theme .flatpickr-day:hover,
+.app-form-flatpickr-theme .flatpickr-day:focus {
+  background: #e6f4ec;
+  border-color: #c9e3d5;
+  color: #0f7a4e;
+}
+
+.app-form-flatpickr-theme .flatpickr-day.today {
+  border-color: #0f7a4e;
+  color: #0f7a4e;
+  background: #ffffff;
+}
+
+.app-form-flatpickr-theme .flatpickr-day.selected,
+.app-form-flatpickr-theme .flatpickr-day.startRange,
+.app-form-flatpickr-theme .flatpickr-day.endRange,
+.app-form-flatpickr-theme .flatpickr-day.selected:hover,
+.app-form-flatpickr-theme .flatpickr-day.startRange:hover,
+.app-form-flatpickr-theme .flatpickr-day.endRange:hover {
+  background: #0f7a4e;
+  border-color: #0f7a4e;
+  color: #ffffff;
+}
+
+.app-form-flatpickr-theme .flatpickr-prev-month,
+.app-form-flatpickr-theme .flatpickr-next-month,
+.app-form-flatpickr-theme .flatpickr-prev-month svg,
+.app-form-flatpickr-theme .flatpickr-next-month svg {
+  color: #0f7a4e;
+  fill: #0f7a4e;
 }
 
 /* Graduation Clearance checklist adjustments (UI parity with forms.css) */

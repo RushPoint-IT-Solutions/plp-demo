@@ -3,6 +3,10 @@
 @section('title', 'PLP - Application Form')
 @section('page-title', 'APPLICATION FORM')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
+@endpush
+
 @section('content')
 <div class="profile-page application-form-page">
     @php($app = $applicant ?? null)
@@ -13,9 +17,9 @@
     @php($defaultActiveStep = !empty($applicationFormEmbedded) ? 1 : $defaultDraftStep)
     @php($activeStep = (int) old('active_step', $defaultActiveStep))
     @php($portalStage = (int) old('portal_stage', optional($app)->application_portal_stage))
-    @php($fallbackScheduleDate = now()->copy()->addWeek()->setTime(9, 0))
-    @php($calendarScheduleDate = optional($app)->exam_date ?: $fallbackScheduleDate)
-    @php($selectedCalendarDate = $calendarScheduleDate->format('Y-m-d'))
+    @php($calendarScheduleDate = optional($app)->exam_date)
+    @php($hasExamSchedule = !empty($calendarScheduleDate))
+    @php($selectedCalendarDate = $hasExamSchedule ? $calendarScheduleDate->format('Y-m-d') : '')
     @php($startYear = now()->year)
     @php($defaultSchoolYear = $startYear . '-' . ($startYear + 1))
     @php($autoApplicationDate = now()->format('Y-m-d'))
@@ -101,7 +105,7 @@
             </form>
         </div>
         @else
-        <div class="submitted-status-shell" id="applicationStatusCalendar" data-selected-date="{{ $selectedCalendarDate }}">
+        <div class="submitted-status-shell" id="applicationStatusCalendar" data-selected-date="{{ $selectedCalendarDate }}" data-has-schedule="{{ $hasExamSchedule ? '1' : '0' }}">
             <div class="submitted-header-row">
                 <div class="submitted-header-field">
                     <label class="setup-label">Applicant ID</label>
@@ -137,7 +141,7 @@
 
                         <div id="statusCalendarDays" class="submitted-calendar-days"></div>
 
-                        <p class="submitted-calendar-current">Highlighted Schedule: {{ $calendarScheduleDate->format('F j, Y') }}</p>
+                        <p class="submitted-calendar-current">Highlighted Schedule: {{ $hasExamSchedule ? $calendarScheduleDate->format('F j, Y') : 'To be announced' }}</p>
                     </div>
 
                     <div class="submitted-assessment-panel">
@@ -145,11 +149,11 @@
                         <div class="submitted-assessment-box">
                             <div class="submitted-assessment-item">
                                 <span>Date:</span>
-                                <strong>{{ $calendarScheduleDate->format('F d, Y') }}</strong>
+                                <strong>{{ $hasExamSchedule ? $calendarScheduleDate->format('F d, Y') : 'To be announced' }}</strong>
                             </div>
                             <div class="submitted-assessment-item">
                                 <span>Time:</span>
-                                <strong>{{ $calendarScheduleDate->format('h:i A') }}</strong>
+                                <strong>{{ $hasExamSchedule ? $calendarScheduleDate->format('h:i A') : 'To be announced' }}</strong>
                             </div>
                             <div class="submitted-assessment-item">
                                 <span>Venue:</span>
@@ -295,7 +299,7 @@
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Date of Birth</label>
-                        <input type="date" name="date_of_birth" class="setup-input" id="dobField" value="{{ old('date_of_birth', optional(optional($app)->date_of_birth)->format('Y-m-d')) }}" required>
+                        <input type="text" name="date_of_birth" class="setup-input js-app-flatpickr-date" id="dobField" value="{{ old('date_of_birth', optional(optional($app)->date_of_birth)->format('Y-m-d')) }}" placeholder="Select birth date" autocomplete="off" required>
                     </div>
                 </div>
 
@@ -405,15 +409,15 @@
                 <div class="setup-row" id="permanentAddressFields">
                     <div class="setup-col setup-col--flex-3">
                         <label class="setup-label">Street</label>
-                        <input type="text" name="permanent_street" id="permanent_street" class="setup-input" placeholder="Street" value="{{ old('permanent_street', optional($app)->permanent_street) }}">
+                        <input type="text" name="permanent_street" id="permanent_street" class="setup-input" placeholder="Street" value="{{ old('permanent_street', optional($app)->permanent_street) }}" required>
                     </div>
                     <div class="setup-col setup-col--flex-2">
                         <label class="setup-label">Barangay</label>
-                        <input type="text" name="permanent_barangay" id="permanent_barangay" class="setup-input" placeholder="Barangay" value="{{ old('permanent_barangay', optional($app)->permanent_barangay) }}">
+                        <input type="text" name="permanent_barangay" id="permanent_barangay" class="setup-input" placeholder="Barangay" value="{{ old('permanent_barangay', optional($app)->permanent_barangay) }}" required>
                     </div>
                     <div class="setup-col setup-col--flex-1">
                         <label class="setup-label">Zipcode</label>
-                        <input type="text" name="permanent_zipcode" id="permanent_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('permanent_zipcode', optional($app)->permanent_zipcode) }}">
+                        <input type="text" name="permanent_zipcode" id="permanent_zipcode" class="setup-input" placeholder="Zipcode" value="{{ old('permanent_zipcode', optional($app)->permanent_zipcode) }}" required>
                     </div>
                 </div>
 
@@ -421,7 +425,7 @@
                     <div class="setup-col">
                         <label class="setup-label">Region</label>
                         <div class="applicant-select-wrap" data-applicant-select>
-                            <select name="permanent_region" id="permanent_region" class="applicant-select-native">
+                            <select name="permanent_region" id="permanent_region" class="applicant-select-native" required>
                                 <option value="" disabled selected>Choose Region</option>
                             </select>
                             <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
@@ -434,7 +438,7 @@
                     <div class="setup-col">
                         <label class="setup-label">Province</label>
                         <div class="applicant-select-wrap" data-applicant-select>
-                            <select name="permanent_province" id="permanent_province" class="applicant-select-native">
+                            <select name="permanent_province" id="permanent_province" class="applicant-select-native" required>
                                 <option value="" disabled selected>Choose Province</option>
                             </select>
                             <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
@@ -447,7 +451,7 @@
                     <div class="setup-col">
                         <label class="setup-label">Municipality/City</label>
                         <div class="applicant-select-wrap" data-applicant-select>
-                            <select name="permanent_municipality" id="permanent_municipality" class="applicant-select-native">
+                            <select name="permanent_municipality" id="permanent_municipality" class="applicant-select-native" required>
                                 <option value="" disabled selected>Choose City/Municipality</option>
                             </select>
                             <button type="button" class="applicant-select-trigger" data-select-trigger aria-haspopup="listbox" aria-expanded="false">
@@ -532,7 +536,7 @@
                 <div class="setup-row">
                     <div class="setup-col"><label class="setup-label">Nationality</label>@include('components.applicant-select', ['id' => 'motherNationalitySelect', 'name' => 'mother_nationality', 'options' => ['Filipino','American','Japanese','Korean','Chinese','Other'], 'selected' => old('mother_nationality', optional($family)->mother_nationality), 'placeholder' => 'Select Nationality', 'required' => true])</div>
                     <div class="setup-col"><label class="setup-label">Religion</label>@include('components.applicant-select', ['id' => 'motherReligionSelect', 'name' => 'mother_religion', 'options' => ['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'], 'selected' => old('mother_religion', optional($family)->mother_religion), 'placeholder' => 'Select Religion', 'required' => true])</div>
-                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="mother_date_of_birth" value="{{ old('mother_date_of_birth', optional(optional($family)->mother_date_of_birth)->format('Y-m-d')) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="text" class="setup-input js-app-flatpickr-date" name="mother_date_of_birth" value="{{ old('mother_date_of_birth', optional(optional($family)->mother_date_of_birth)->format('Y-m-d')) }}" placeholder="Select birth date" autocomplete="off" required></div>
                     <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="mother_mobile_number" placeholder="Mobile Number" value="{{ old('mother_mobile_number', optional($family)->mother_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required></div>
                 </div>
                 <div class="setup-row">
@@ -554,7 +558,7 @@
                 <div class="setup-row">
                     <div class="setup-col"><label class="setup-label">Nationality</label>@include('components.applicant-select', ['id' => 'fatherNationalitySelect', 'name' => 'father_nationality', 'options' => ['Filipino','American','Japanese','Korean','Chinese','Other'], 'selected' => old('father_nationality', optional($family)->father_nationality), 'placeholder' => 'Select Nationality', 'required' => true])</div>
                     <div class="setup-col"><label class="setup-label">Religion</label>@include('components.applicant-select', ['id' => 'fatherReligionSelect', 'name' => 'father_religion', 'options' => ['Roman Catholic','Born Again Christian','Islam','Iglesia ni Cristo','Baptist','Seventh Day Adventist','Other'], 'selected' => old('father_religion', optional($family)->father_religion), 'placeholder' => 'Select Religion', 'required' => true])</div>
-                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="date" class="setup-input" name="father_date_of_birth" value="{{ old('father_date_of_birth', optional(optional($family)->father_date_of_birth)->format('Y-m-d')) }}" required></div>
+                    <div class="setup-col"><label class="setup-label">Date of Birth</label><input type="text" class="setup-input js-app-flatpickr-date" name="father_date_of_birth" value="{{ old('father_date_of_birth', optional(optional($family)->father_date_of_birth)->format('Y-m-d')) }}" placeholder="Select birth date" autocomplete="off" required></div>
                     <div class="setup-col"><label class="setup-label">Mobile Number</label><input type="tel" class="setup-input" name="father_mobile_number" placeholder="Mobile Number" value="{{ old('father_mobile_number', optional($family)->father_mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required></div>
                 </div>
                 <div class="setup-row">
@@ -668,6 +672,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
 <script src="{{ asset('js/applicant-form.js') }}?v={{ time() }}"></script>
 @endpush
 @endsection

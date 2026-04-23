@@ -4,6 +4,23 @@
 @section('page-title', 'SECTION OFFERING')
 @section('body-class', 'page-section-offering')
 
+@php
+    $schoolYearFilterOptions = array_merge([
+        ['value' => '', 'label' => 'All School Years'],
+    ], array_values($schoolYearOptions ?? []));
+
+    $semesterFilterOptions = array_merge([
+        ['value' => '', 'label' => 'All Semesters'],
+    ], array_values($semesterOptions ?? []));
+
+    $modalSchoolYearOptions = array_values($schoolYearOptions ?? []);
+    $modalSemesterOptions = array_values($semesterOptions ?? [
+        ['value' => 'First', 'label' => 'First'],
+        ['value' => 'Second', 'label' => 'Second'],
+        ['value' => 'Summer', 'label' => 'Summer'],
+    ]);
+@endphp
+
 @section('content')
 <div
     class="pf-page"
@@ -18,14 +35,14 @@
         <div class="sched-filter-row sched-filter-row-main so-filter-row">
             <div class="sched-filter-group so-filter-search">
                 <span class="app-filter-label">Search Section</span>
-                <input type="text" class="app-filter-input" id="soSectionSearch" placeholder="Type section, adviser, or course">
+                <input type="text" class="app-filter-input" id="soSectionSearch" placeholder="Type section, professor, or course">
             </div>
             <div class="sched-filter-group so-filter-sy">
                 <span class="app-filter-label">School Year</span>
                 @include('registrar.components.listbox-select', [
                     'id' => 'soSY',
                     'name' => 'school_year',
-                    'options' => [['value' => '', 'label' => 'All School Years']],
+                    'options' => $schoolYearFilterOptions,
                     'selected' => '',
                     'placeholder' => 'All School Years',
                 ])
@@ -35,7 +52,7 @@
                 @include('registrar.components.listbox-select', [
                     'id' => 'soTerm',
                     'name' => 'semester',
-                    'options' => [['value' => '', 'label' => 'All Semesters']],
+                    'options' => $semesterFilterOptions,
                     'selected' => '',
                     'placeholder' => 'All Semesters',
                 ])
@@ -99,7 +116,7 @@
                         <th>Semester</th>
                         <th>Year Level</th>
                         <th>Slots</th>
-                        <th>Adviser</th>
+                        <th>Professor</th>
                         <th>Subjects</th>
                     </tr>
                 </thead>
@@ -194,7 +211,13 @@
 
                     <div class="so-modal-field so-modal-col-3">
                         <label for="soModalSY">School Year</label>
-                        <input id="soModalSY" type="text" class="app-filter-input" placeholder="2026-2027">
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'soModalSY',
+                            'name' => 'modal_school_year',
+                            'options' => $modalSchoolYearOptions,
+                            'selected' => (string) ($defaultSchoolYear ?? ''),
+                            'placeholder' => 'Select School Year',
+                        ])
                     </div>
 
                     <div class="so-modal-field so-modal-col-3">
@@ -202,12 +225,8 @@
                         @include('registrar.components.listbox-select', [
                             'id' => 'soModalTerm',
                             'name' => 'modal_semester',
-                            'options' => [
-                                ['value' => 'First', 'label' => 'First'],
-                                ['value' => 'Second', 'label' => 'Second'],
-                                ['value' => 'Summer', 'label' => 'Summer'],
-                            ],
-                            'selected' => 'Second',
+                            'options' => $modalSemesterOptions,
+                            'selected' => (string) ($defaultSemester ?? 'First'),
                             'placeholder' => 'Select Term',
                         ])
                     </div>
@@ -239,8 +258,8 @@
                     </div>
 
                     <div class="so-modal-field so-modal-col-6">
-                        <label for="soModalAdviser">Adviser</label>
-                        <input id="soModalAdviser" type="text" class="app-filter-input" placeholder="Adviser name">
+                        <label for="soModalAdviser">Professor</label>
+                        <input id="soModalAdviser" type="text" class="app-filter-input" placeholder="Professor name">
                     </div>
 
                     <div class="so-modal-field so-modal-col-6">

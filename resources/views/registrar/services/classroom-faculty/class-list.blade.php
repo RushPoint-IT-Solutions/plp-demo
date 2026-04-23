@@ -67,7 +67,7 @@
         }
     @endphp
 
-    <form method="GET" action="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sched-filter-bar at-top-row" id="clFilterForm">
+    <form method="GET" action="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sched-filter-bar at-top-row" id="clFilterForm" data-semester-map='@json($semesterMap)'>
         @if($selectedSubject)
             <input type="hidden" name="subject_id" value="{{ $selectedSubject->id }}">
         @endif

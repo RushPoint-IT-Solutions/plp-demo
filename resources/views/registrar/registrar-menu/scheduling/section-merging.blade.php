@@ -21,15 +21,27 @@
                 <div class="smrg-config-form">
                     <div class="smrg-form-group smrg-config-field">
                         <label>SCHOOL YEAR</label>
-                        <select class="app-filter-select" id="smrgSchoolYear">
-                            <option value="">- Select School Year -</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'smrgSchoolYear',
+                            'name' => 'smrg_school_year',
+                            'options' => [
+                                ['value' => '', 'label' => '- Select School Year -'],
+                            ],
+                            'selected' => '',
+                            'placeholder' => '- Select School Year -',
+                        ])
                     </div>
                     <div class="smrg-form-group smrg-config-field">
                         <label>TERM</label>
-                        <select class="app-filter-select" id="smrgSemester">
-                            <option value="">- Select Semester -</option>
-                        </select>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'smrgSemester',
+                            'name' => 'smrg_semester',
+                            'options' => [
+                                ['value' => '', 'label' => '- Select Semester -'],
+                            ],
+                            'selected' => '',
+                            'placeholder' => '- Select Semester -',
+                        ])
                     </div>
                     <div class="smrg-form-group smrg-config-save">
                         <button type="button" class="pf-btn pf-btn-primary" id="smrgConfigSaveBtn">Save</button>
@@ -62,15 +74,27 @@
                         <div class="smrg-form-row">
                             <div class="smrg-form-group flex-1">
                                 <label>YEAR LEVEL</label>
-                                <select class="app-filter-select" id="smrgSourceYearLevel">
-                                    <option value="">-select Level-</option>
-                                </select>
+                                @include('registrar.components.listbox-select', [
+                                    'id' => 'smrgSourceYearLevel',
+                                    'name' => 'smrg_source_year_level',
+                                    'options' => [
+                                        ['value' => '', 'label' => '-select Level-'],
+                                    ],
+                                    'selected' => '',
+                                    'placeholder' => '-select Level-',
+                                ])
                             </div>
                             <div class="smrg-form-group flex-1">
                                 <label>SECTION</label>
-                                <select class="app-filter-select" id="smrgSourceSection">
-                                    <option value="">-select Sec-</option>
-                                </select>
+                                @include('registrar.components.listbox-select', [
+                                    'id' => 'smrgSourceSection',
+                                    'name' => 'smrg_source_section',
+                                    'options' => [
+                                        ['value' => '', 'label' => '-select Sec-'],
+                                    ],
+                                    'selected' => '',
+                                    'placeholder' => '-select Sec-',
+                                ])
                             </div>
                         </div>
 
@@ -109,15 +133,27 @@
                         <div class="smrg-form-row">
                             <div class="smrg-form-group flex-1">
                                 <label>YEAR LEVEL</label>
-                                <select class="app-filter-select" id="smrgTargetYearLevel">
-                                    <option value="">-select Level-</option>
-                                </select>
+                                @include('registrar.components.listbox-select', [
+                                    'id' => 'smrgTargetYearLevel',
+                                    'name' => 'smrg_target_year_level',
+                                    'options' => [
+                                        ['value' => '', 'label' => '-select Level-'],
+                                    ],
+                                    'selected' => '',
+                                    'placeholder' => '-select Level-',
+                                ])
                             </div>
                             <div class="smrg-form-group flex-1">
                                 <label>SECTION</label>
-                                <select class="app-filter-select" id="smrgTargetSection">
-                                    <option value="">-select Sec-</option>
-                                </select>
+                                @include('registrar.components.listbox-select', [
+                                    'id' => 'smrgTargetSection',
+                                    'name' => 'smrg_target_section',
+                                    'options' => [
+                                        ['value' => '', 'label' => '-select Sec-'],
+                                    ],
+                                    'selected' => '',
+                                    'placeholder' => '-select Sec-',
+                                ])
                             </div>
                         </div>
 
@@ -172,5 +208,6 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script src="{{ asset('js/section-merging.js') }}?v={{ filemtime(public_path('js/section-merging.js')) }}"></script>
 @endpush

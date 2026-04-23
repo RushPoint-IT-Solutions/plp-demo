@@ -36,6 +36,8 @@ use App\AcademicCalendarAudienceType;
 use App\AcademicCalendarEvent;
 use App\Course;
 use App\StudentProfile;
+use App\Support\AuditTrailRecorder;
+use App\Support\SystemConfigSchoolTermOptions;
 use App\User;
 use App\UserAccountStatus;
 use App\YearBlock;
@@ -900,6 +902,10 @@ class AdminToolsController extends Controller
             'designation_id' => (int) $validated['designation_id'],
         ]);
 
+        $originalDesignationId = $row->exists ? (int) $row->getOriginal('designation_id') : null;
+        $originalSignerName = $row->exists ? (string) $row->getOriginal('signer_name') : null;
+        $originalSignaturePath = $row->exists ? (string) $row->getOriginal('signature_path') : null;
+
         if ($request->hasFile('signature_file') && !empty($row->signature_path)) {
             Storage::disk('public')->delete($row->signature_path);
         }
@@ -914,6 +920,21 @@ class AdminToolsController extends Controller
         $row->save();
         $row->load('designation');
 
+        AuditTrailRecorder::record('SYSTEM_SIGNATURE_SAVED', [
+            [
+                'type' => 'SystemConfigNameSignature',
+                'id' => $row->id,
+                'label' => trim((string) optional($row->designation)->name),
+                'changes' => [
+                    ['field' => 'designation_id', 'old' => $originalDesignationId, 'new' => $row->designation_id],
+                    ['field' => 'signer_name', 'old' => $originalSignerName, 'new' => $row->signer_name],
+                    ['field' => 'signature_path', 'old' => $originalSignaturePath, 'new' => $row->signature_path],
+                ],
+            ],
+        ], [
+            'source_action' => 'Signature configuration saved',
+        ]);
+
         return response()->json([
             'ok' => true,
             'row' => $this->mapSignatureRow($row),
@@ -927,6 +948,10 @@ class AdminToolsController extends Controller
             'signer_name' => 'required|string|max:190',
             'signature_file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $originalDesignationId = (int) $systemConfigNameSignature->getOriginal('designation_id');
+        $originalSignerName = (string) $systemConfigNameSignature->getOriginal('signer_name');
+        $originalSignaturePath = (string) $systemConfigNameSignature->getOriginal('signature_path');
 
         $duplicateDesignation = SystemConfigNameSignature::query()
             ->where('designation_id', (int) $validated['designation_id'])
@@ -956,6 +981,21 @@ class AdminToolsController extends Controller
 
         $systemConfigNameSignature->save();
         $systemConfigNameSignature->load('designation');
+
+        AuditTrailRecorder::record('SYSTEM_SIGNATURE_UPDATED', [
+            [
+                'type' => 'SystemConfigNameSignature',
+                'id' => $systemConfigNameSignature->id,
+                'label' => trim((string) optional($systemConfigNameSignature->designation)->name),
+                'changes' => [
+                    ['field' => 'designation_id', 'old' => $originalDesignationId, 'new' => $systemConfigNameSignature->designation_id],
+                    ['field' => 'signer_name', 'old' => $originalSignerName, 'new' => $systemConfigNameSignature->signer_name],
+                    ['field' => 'signature_path', 'old' => $originalSignaturePath, 'new' => $systemConfigNameSignature->signature_path],
+                ],
+            ],
+        ], [
+            'source_action' => 'Signature configuration updated',
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -2621,7 +2661,32 @@ class AdminToolsController extends Controller
             ->values()
             ->all();
 
-        return view('registrar.admin-tools.student-maintenance.student-update', compact('courseOptions', 'operatorOptions'));
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+        $schoolYearOptions = array_values($configOptions['school_years'] ?? []);
+        $semesterMap = is_array($configOptions['semester_map'] ?? null)
+            ? $configOptions['semester_map']
+            : [];
+        $termOptions = SystemConfigSchoolTermOptions::semesterOptionsForYear(
+            $semesterMap,
+            (string) ($configOptions['default_school_year'] ?? '')
+        );
+
+        $defaultSchoolYear = count($schoolYearOptions)
+            ? (string) $schoolYearOptions[0]
+            : (string) ($configOptions['default_school_year'] ?? '');
+        $defaultTerm = count($termOptions)
+            ? (string) $termOptions[0]
+            : (string) ($configOptions['default_semester'] ?? 'First');
+
+        return view('registrar.admin-tools.student-maintenance.student-update', compact(
+            'courseOptions',
+            'operatorOptions',
+            'schoolYearOptions',
+            'semesterMap',
+            'termOptions',
+            'defaultSchoolYear',
+            'defaultTerm'
+        ));
     }
 
     public function studentUpdateRun(Request $request): JsonResponse

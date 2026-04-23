@@ -1290,6 +1290,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     return '';
   }
+  function isAllowedSchoolYear(value) {
+    var normalized = normalizeText(value);
+    if (normalized === '') {
+      return false;
+    }
+    var selectElement = soModalSY || soSY;
+    if (selectElement && selectElement.options && selectElement.options.length) {
+      for (var i = 0; i < selectElement.options.length; i += 1) {
+        if (normalizeText(selectElement.options[i].value) === normalized) {
+          return true;
+        }
+      }
+    }
+    return /^\d{4}-\d{4}$/.test(normalized);
+  }
   function syncModalDefaultsFromFilters() {
     if (soModalProgram && soProgram && normalizeText(soProgram.value) !== '') {
       soModalProgram.value = normalizeText(soProgram.value);
@@ -1297,6 +1312,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (soModalSY) {
       soModalSY.value = inferModalSchoolYear();
+      emitListboxRefresh(soModalSY);
     }
     if (soModalTerm) {
       var termValue = soTerm && normalizeText(soTerm.value) !== '' ? normalizeText(soTerm.value) : 'First';
@@ -1360,8 +1376,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!payload.course_id || payload.course_id < 1) {
       return 'Please select a course.';
     }
-    if (!/^\d{4}-\d{4}$/.test(payload.school_year)) {
-      return 'School Year must follow the YYYY-YYYY format.';
+    if (!isAllowedSchoolYear(payload.school_year)) {
+      return 'Please select a valid School Year.';
     }
     if (payload.semester === '') {
       return 'Please select a semester.';
@@ -1654,7 +1670,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\section-offering.js */"./resources/js/section-offering.js");
+module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\section-offering.js */"./resources/js/section-offering.js");
 
 
 /***/ })

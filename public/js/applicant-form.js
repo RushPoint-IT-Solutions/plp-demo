@@ -125,12 +125,14 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       }
       return new Date(year, month, day);
     }
+    var hasExamSchedule = calendarRoot.getAttribute('data-has-schedule') === '1';
     var selectedDateValue = calendarRoot.getAttribute('data-selected-date');
-    var selectedDate = parseLocalYmd(selectedDateValue) || new Date();
-    if (isNaN(selectedDate.getTime())) {
-      selectedDate = new Date();
+    var selectedDate = hasExamSchedule ? parseLocalYmd(selectedDateValue) : null;
+    var initialDate = selectedDate || new Date();
+    if (isNaN(initialDate.getTime())) {
+      initialDate = new Date();
     }
-    var viewDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    var viewDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), 1);
     function toYmd(date) {
       var m = String(date.getMonth() + 1);
       var d = String(date.getDate());
@@ -187,10 +189,13 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
         dayBtn.className = 'submitted-calendar-day';
         dayBtn.textContent = String(day);
         var ymd = toYmd(date);
-        if (ymd === toYmd(selectedDate)) {
+        if (selectedDate && ymd === toYmd(selectedDate)) {
           dayBtn.classList.add('is-selected');
         }
         dayBtn.addEventListener('click', function (event) {
+          if (!selectedDate) {
+            return;
+          }
           var clickedDay = parseInt(event.currentTarget.textContent || '0', 10);
           if (!clickedDay) {
             return;
@@ -234,6 +239,41 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
   if (!form) {
     return;
   }
+  function initApplicationDatePickers() {
+    if (typeof window.flatpickr !== 'function') {
+      return;
+    }
+    var dateInputs = form.querySelectorAll('.js-app-flatpickr-date');
+    if (!dateInputs.length) {
+      return;
+    }
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dateInputs.forEach(function (input) {
+      window.flatpickr(input, {
+        dateFormat: 'Y-m-d',
+        disableMobile: true,
+        allowInput: false,
+        maxDate: today,
+        prevArrow: '&#8249;',
+        nextArrow: '&#8250;',
+        onReady: function onReady(_, __, instance) {
+          instance.input.classList.add('setup-input');
+          instance.input.setAttribute('autocomplete', 'off');
+          instance.calendarContainer.classList.add('an-flatpickr-calendar', 'app-form-flatpickr-theme');
+        },
+        onChange: function onChange(_, __, instance) {
+          instance.input.dispatchEvent(new Event('input', {
+            bubbles: true
+          }));
+          instance.input.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        }
+      });
+    });
+  }
+  initApplicationDatePickers();
   var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
   var stepSaveInProgress = false;
   var finalSubmitInProgress = false;
@@ -304,11 +344,55 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     });
   }
   function validateStep(step) {
-    if (skipStepValidation) {
-      return true;
-    }
     var panel = document.getElementById('step-' + step);
     if (!panel) {
+      return true;
+    }
+    function hasMeaningfulSelection(field) {
+      if (!field) {
+        return false;
+      }
+      var value = String(field.value || '').trim();
+      if (value === '') {
+        return false;
+      }
+      var normalized = value.toLowerCase().replace(/\s+/g, ' ');
+      if (normalized.indexOf('choose ') === 0) {
+        return false;
+      }
+      return true;
+    }
+    if (step === 1) {
+      var sameAsPresentChecked = !!(sameCheck && sameCheck.checked);
+      var addressFieldNames = ['present_region', 'present_province', 'present_municipality'];
+      if (!sameAsPresentChecked) {
+        addressFieldNames = addressFieldNames.concat(['permanent_region', 'permanent_province', 'permanent_municipality']);
+      }
+      for (var j = 0; j < addressFieldNames.length; j++) {
+        var fieldName = addressFieldNames[j];
+        var addressField = panel.querySelector('[name="' + fieldName + '"]');
+        if (!addressField || addressField.disabled) {
+          continue;
+        }
+        if (hasMeaningfulSelection(addressField)) {
+          continue;
+        }
+        var labelMap = {
+          present_region: 'present region',
+          present_province: 'present province',
+          present_municipality: 'present municipality/city',
+          permanent_region: 'permanent region',
+          permanent_province: 'permanent province',
+          permanent_municipality: 'permanent municipality/city'
+        };
+        var labelText = labelMap[fieldName] || fieldName.replace(/_/g, ' ');
+        addressField.setCustomValidity('Please select ' + labelText + '.');
+        addressField.reportValidity();
+        addressField.setCustomValidity('');
+        return false;
+      }
+    }
+    if (skipStepValidation) {
       return true;
     }
     var fields = panel.querySelectorAll('input, select, textarea');
@@ -418,12 +502,25 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       },
       credentials: 'same-origin'
     }).then(function (response) {
-      return response.json()["catch"](function () {
-        return {};
-      }).then(function (data) {
+      return response.text().then(function (raw) {
+        var data = {};
+        if (raw) {
+          try {
+            data = JSON.parse(raw);
+          } catch (parseError) {
+            data = {};
+          }
+        }
         if (!response.ok) {
           throw {
             payload: data
+          };
+        }
+        if (!data || data.success !== true) {
+          throw {
+            payload: Object.keys(data || {}).length ? data : {
+              message: 'Unable to save step. Please review your fields.'
+            }
           };
         }
         return data;
@@ -581,12 +678,19 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       }
       row.querySelectorAll('input, select').forEach(function (el) {
         el.disabled = enabled;
-        if (!enabled) {
-          return;
-        }
-        el.removeAttribute('required');
       });
       row.style.opacity = enabled ? '0.45' : '1';
+    });
+    permanentFields.forEach(function (name) {
+      var field = document.querySelector('[name="' + name + '"]');
+      if (!field) {
+        return;
+      }
+      if (enabled) {
+        field.removeAttribute('required');
+        return;
+      }
+      field.setAttribute('required', 'required');
     });
     if (enabled) {
       copyAddressValues();
@@ -613,6 +717,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
         }
       });
     });
+    syncPermanent(sameCheck.checked);
   }
 
   // Age auto-fill from Date of Birth

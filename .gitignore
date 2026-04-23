@@ -28,3 +28,8 @@ docs/
 project_memory.md
 memories/
 .githooks
+logs/
+.roo/
+.roomodes
+coding-agent-docs
+agent_skills_spec.md
