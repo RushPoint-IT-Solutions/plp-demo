@@ -36,6 +36,8 @@ use App\AcademicCalendarAudienceType;
 use App\AcademicCalendarEvent;
 use App\Course;
 use App\StudentProfile;
+use App\Support\AuditTrailRecorder;
+use App\Support\SystemConfigSchoolTermOptions;
 use App\User;
 use App\UserAccountStatus;
 use App\YearBlock;
@@ -146,6 +148,8 @@ class AdminToolsController extends Controller
                 ->all();
         }
 
+        $courses = Course::query()->orderBy('name')->get(['id', 'code', 'name']);
+
         if (Schema::hasTable('system_cutoff_types')) {
             $cutoffTypeRows = SystemCutoffType::query()
                 ->orderBy('name')
@@ -244,6 +248,15 @@ class AdminToolsController extends Controller
             }
         }
 
+        $courses = Course::query()->orderBy('name')->get(['id', 'code', 'name']);
+
+        $signatureDesignationRows = collect($signatureDesignationRows)->map(function($row) {
+            if ($row['name'] === 'Registrar') {
+                $row['name'] = 'University Registrar';
+            }
+            return $row;
+        })->all();
+
         return view(
             'registrar.admin-tools.system-config.configuration',
             compact(
@@ -259,7 +272,8 @@ class AdminToolsController extends Controller
                 'reportDetails',
                 'emailSender',
                 'latestIncRun',
-                'academicTermRows'
+                'academicTermRows',
+                'courses'
             )
         );
     }
@@ -650,6 +664,84 @@ class AdminToolsController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function auditTrail()
+    {
+        $auditLogs = collect([
+            [
+                'user' => 'Admin User',
+                'timestamp' => now()->format('M d, Y h:i A'),
+                'action' => 'Updated Medical Certificate for Applicant #2024-0001',
+                'module' => 'Medical Clearance',
+                'details' => 'Status changed from Pending to Approved'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subMinutes(15)->format('M d, Y h:i A'),
+                'action' => 'Uploaded Chest X-ray for Applicant #2024-0005',
+                'module' => 'Medical Clearance',
+                'details' => 'File: chest_xray_v1.pdf'
+            ],
+            [
+                'user' => 'System',
+                'timestamp' => now()->subHour()->format('M d, Y h:i A'),
+                'action' => 'Auto-archived application #2023-9999',
+                'module' => 'Application List',
+                'details' => 'Reason: Inactivity for 30 days'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subHours(2)->format('M d, Y h:i A'),
+                'action' => 'Modified Program File: BSIT',
+                'module' => 'Academic Master',
+                'details' => 'Updated curriculum year from 2022 to 2024'
+            ],
+            [
+                'user' => 'Admin User',
+                'timestamp' => now()->subDays(1)->format('M d, Y h:i A'),
+                'action' => 'Created New User Account: faculty_user_1',
+                'module' => 'Access Management',
+                'details' => 'Assigned role: Faculty'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subDays(1)->subHours(2)->format('M d, Y h:i A'),
+                'action' => 'Generated Official Grade Report',
+                'module' => 'Forms',
+                'details' => 'Student: Juan Dela Cruz (#2021-1234)'
+            ],
+            [
+                'user' => 'System',
+                'timestamp' => now()->subDays(2)->format('M d, Y h:i A'),
+                'action' => 'Updated Academic Calendar',
+                'module' => 'System Config',
+                'details' => 'Added Final Examination schedule'
+            ],
+            [
+                'user' => 'Admin User',
+                'timestamp' => now()->subDays(2)->subHours(5)->format('M d, Y h:i A'),
+                'action' => 'Modified Room Capacity',
+                'module' => 'Scheduling',
+                'details' => 'Room 402: 40 to 50 slots'
+            ],
+            [
+                'user' => 'Registrar Staff',
+                'timestamp' => now()->subDays(3)->format('M d, Y h:i A'),
+                'action' => 'Approved Application #2024-0012',
+                'module' => 'Process',
+                'details' => 'Moved to Accepted status'
+            ],
+            [
+                'user' => 'System',
+                'timestamp' => now()->subDays(3)->subHours(12)->format('M d, Y h:i A'),
+                'action' => 'Sent Notification Blast',
+                'module' => 'Announcements',
+                'details' => 'Target: All Enrolled Students'
+            ]
+        ]);
+
+        return view('registrar.admin-tools.audit-trail', compact('auditLogs'));
+    }
+
     public function configurationSchoolSemStore(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -810,6 +902,10 @@ class AdminToolsController extends Controller
             'designation_id' => (int) $validated['designation_id'],
         ]);
 
+        $originalDesignationId = $row->exists ? (int) $row->getOriginal('designation_id') : null;
+        $originalSignerName = $row->exists ? (string) $row->getOriginal('signer_name') : null;
+        $originalSignaturePath = $row->exists ? (string) $row->getOriginal('signature_path') : null;
+
         if ($request->hasFile('signature_file') && !empty($row->signature_path)) {
             Storage::disk('public')->delete($row->signature_path);
         }
@@ -824,6 +920,21 @@ class AdminToolsController extends Controller
         $row->save();
         $row->load('designation');
 
+        AuditTrailRecorder::record('SYSTEM_SIGNATURE_SAVED', [
+            [
+                'type' => 'SystemConfigNameSignature',
+                'id' => $row->id,
+                'label' => trim((string) optional($row->designation)->name),
+                'changes' => [
+                    ['field' => 'designation_id', 'old' => $originalDesignationId, 'new' => $row->designation_id],
+                    ['field' => 'signer_name', 'old' => $originalSignerName, 'new' => $row->signer_name],
+                    ['field' => 'signature_path', 'old' => $originalSignaturePath, 'new' => $row->signature_path],
+                ],
+            ],
+        ], [
+            'source_action' => 'Signature configuration saved',
+        ]);
+
         return response()->json([
             'ok' => true,
             'row' => $this->mapSignatureRow($row),
@@ -837,6 +948,10 @@ class AdminToolsController extends Controller
             'signer_name' => 'required|string|max:190',
             'signature_file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $originalDesignationId = (int) $systemConfigNameSignature->getOriginal('designation_id');
+        $originalSignerName = (string) $systemConfigNameSignature->getOriginal('signer_name');
+        $originalSignaturePath = (string) $systemConfigNameSignature->getOriginal('signature_path');
 
         $duplicateDesignation = SystemConfigNameSignature::query()
             ->where('designation_id', (int) $validated['designation_id'])
@@ -866,6 +981,21 @@ class AdminToolsController extends Controller
 
         $systemConfigNameSignature->save();
         $systemConfigNameSignature->load('designation');
+
+        AuditTrailRecorder::record('SYSTEM_SIGNATURE_UPDATED', [
+            [
+                'type' => 'SystemConfigNameSignature',
+                'id' => $systemConfigNameSignature->id,
+                'label' => trim((string) optional($systemConfigNameSignature->designation)->name),
+                'changes' => [
+                    ['field' => 'designation_id', 'old' => $originalDesignationId, 'new' => $systemConfigNameSignature->designation_id],
+                    ['field' => 'signer_name', 'old' => $originalSignerName, 'new' => $systemConfigNameSignature->signer_name],
+                    ['field' => 'signature_path', 'old' => $originalSignaturePath, 'new' => $systemConfigNameSignature->signature_path],
+                ],
+            ],
+        ], [
+            'source_action' => 'Signature configuration updated',
+        ]);
 
         return response()->json([
             'ok' => true,
@@ -1212,7 +1342,7 @@ class AdminToolsController extends Controller
         ]);
 
         $page = (int) ($validated['page'] ?? 1);
-        $perPage = (int) ($validated['per_page'] ?? 10);
+        $perPage = (int) ($validated['per_page'] ?? 5);
 
         $hasNormalizedTables = $this->hasNormalizedUserAccountTables();
         $hasLegacyStatusTable = Schema::hasTable('user_account_statuses');
@@ -2531,7 +2661,32 @@ class AdminToolsController extends Controller
             ->values()
             ->all();
 
-        return view('registrar.admin-tools.student-maintenance.student-update', compact('courseOptions', 'operatorOptions'));
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+        $schoolYearOptions = array_values($configOptions['school_years'] ?? []);
+        $semesterMap = is_array($configOptions['semester_map'] ?? null)
+            ? $configOptions['semester_map']
+            : [];
+        $termOptions = SystemConfigSchoolTermOptions::semesterOptionsForYear(
+            $semesterMap,
+            (string) ($configOptions['default_school_year'] ?? '')
+        );
+
+        $defaultSchoolYear = count($schoolYearOptions)
+            ? (string) $schoolYearOptions[0]
+            : (string) ($configOptions['default_school_year'] ?? '');
+        $defaultTerm = count($termOptions)
+            ? (string) $termOptions[0]
+            : (string) ($configOptions['default_semester'] ?? 'First');
+
+        return view('registrar.admin-tools.student-maintenance.student-update', compact(
+            'courseOptions',
+            'operatorOptions',
+            'schoolYearOptions',
+            'semesterMap',
+            'termOptions',
+            'defaultSchoolYear',
+            'defaultTerm'
+        ));
     }
 
     public function studentUpdateRun(Request $request): JsonResponse
@@ -2648,15 +2803,11 @@ class AdminToolsController extends Controller
 
     private function mapSignatureRow(SystemConfigNameSignature $row): array
     {
+        $designation = $row->designation;
+        
         $designationName = '';
-        if ($row->relationLoaded('designation') && $row->designation) {
-            $designationName = (string) $row->designation->name;
-        }
-
-        if ($designationName === '' && $row->designation_id) {
-            $designationName = (string) SystemConfigSignatureDesignation::query()
-                ->where('id', $row->designation_id)
-                ->value('name');
+        if ($designation) {
+            $designationName = (string) $designation->name;
         }
 
         $signatureUrl = '';
@@ -2671,6 +2822,7 @@ class AdminToolsController extends Controller
             'name' => (string) $row->signer_name,
             'signaturePath' => (string) ($row->signature_path ?: ''),
             'signatureUrl' => $signatureUrl,
+            'programs' => [], // Reset to empty as before
         ];
     }
 

@@ -8,7 +8,7 @@
 
 @section('content')
 <div class="pf-page">
-    <div class="su-page">
+    <div class="su-page" id="suPage" data-semester-map='@json($semesterMap ?? [])'>
         <section class="su-card su-left">
             <div class="su-head">
                 <h3 class="su-title">System Configuration</h3>
@@ -19,17 +19,23 @@
             <div class="su-grid-4">
                 <div class="su-field">
                     <label class="app-filter-label" for="suSY">School Year</label>
-                    <select id="suSY" class="app-filter-select">
-                        <option>2025-2026</option>
-                        <option>2026-2027</option>
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'suSY',
+                        'name' => 'suSY',
+                        'options' => ($schoolYearOptions ?? []),
+                        'selected' => ($defaultSchoolYear ?? ''),
+                        'placeholder' => '- Select School Year -',
+                    ])
                 </div>
                 <div class="su-field">
                     <label class="app-filter-label" for="suTerm">Term</label>
-                    <select id="suTerm" class="app-filter-select">
-                        <option>First</option>
-                        <option>Second</option>
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'suTerm',
+                        'name' => 'suTerm',
+                        'options' => ($termOptions ?? ['First', 'Second', 'Summer']),
+                        'selected' => ($defaultTerm ?? ''),
+                        'placeholder' => '- Select Term -',
+                    ])
                 </div>
                 <div class="su-field">
                     <label class="app-filter-label" for="suPeriod">Period</label>
@@ -178,10 +184,108 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script>
     var suActiveCard = null;
     var suLoadingTimers = {};
     var suRunUrl = '{{ route('registrar.admin-tools.student-maintenance.student-update.run') }}';
+
+    function suRefreshListbox(selectElement) {
+        if (!selectElement) {
+            return;
+        }
+
+        if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refresh === 'function') {
+            window.registrarListboxSelect.refresh(selectElement);
+            return;
+        }
+
+        if (typeof window.CustomEvent === 'function') {
+            document.dispatchEvent(new CustomEvent('registrar:listbox:refresh', { detail: { target: selectElement } }));
+        }
+    }
+
+    function suNormalizeSemesterLabel(value) {
+        var normalized = String(value || '').trim().toLowerCase();
+        var aliases = {
+            'first': 'First',
+            '1st': 'First',
+            '1st semester': 'First',
+            'first semester': 'First',
+            'second': 'Second',
+            '2nd': 'Second',
+            '2nd semester': 'Second',
+            'second semester': 'Second',
+            'summer': 'Summer',
+            'summer semester': 'Summer'
+        };
+
+        return aliases[normalized] || '';
+    }
+
+    function suParseSemesterMap(raw) {
+        try {
+            var parsed = JSON.parse(raw || '{}');
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function suConfiguredTermsForYear(semesterMap, schoolYear) {
+        var key = String(schoolYear || '').trim();
+        var rawTerms = key && Array.isArray(semesterMap[key]) ? semesterMap[key] : [];
+        var normalizedTerms = rawTerms.map(function(item) {
+            return suNormalizeSemesterLabel(item);
+        }).filter(function(item, index, list) {
+            return item && list.indexOf(item) === index;
+        });
+
+        return normalizedTerms.length ? normalizedTerms : ['First', 'Second', 'Summer'];
+    }
+
+    function suSyncTermOptions(semesterMap, preferredTerm) {
+        var schoolYearSelect = document.getElementById('suSY');
+        var termSelect = document.getElementById('suTerm');
+
+        if (!schoolYearSelect || !termSelect) {
+            return;
+        }
+
+        var terms = suConfiguredTermsForYear(semesterMap, schoolYearSelect.value);
+        var selectedTerm = suNormalizeSemesterLabel(preferredTerm || termSelect.value);
+
+        termSelect.innerHTML = terms.map(function(term) {
+            return '<option value="' + term + '">' + term + '</option>';
+        }).join('');
+
+        if (selectedTerm && terms.indexOf(selectedTerm) !== -1) {
+            termSelect.value = selectedTerm;
+        }
+
+        if (!termSelect.value && terms.length) {
+            termSelect.value = terms[0];
+        }
+
+        suRefreshListbox(termSelect);
+    }
+
+    function suBindSystemConfigSync() {
+        var suPage = document.getElementById('suPage');
+        var schoolYearSelect = document.getElementById('suSY');
+        var termSelect = document.getElementById('suTerm');
+
+        if (!suPage || !schoolYearSelect || !termSelect) {
+            return;
+        }
+
+        var semesterMap = suParseSemesterMap(suPage.getAttribute('data-semester-map'));
+        suSyncTermOptions(semesterMap, termSelect.value);
+
+        schoolYearSelect.addEventListener('change', function() {
+            suSyncTermOptions(semesterMap, '');
+        });
+    }
 
     function suBuildPayload(actionName) {
         return {
@@ -311,6 +415,8 @@
         suActiveCard = runBtn.closest('.su-card');
         suOpenConfirmModal(runBtn.getAttribute('data-su-run'));
     });
+
+    suBindSystemConfigSync();
 </script>
 @endpush
 

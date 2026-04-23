@@ -6,6 +6,7 @@
     id="registrarAppFormEditorFrame"
     class="app-form-editor-frame"
     title="Registrar Applicant Application Form"
-    style="display:none; width:100%; min-height:900px; border:0; border-radius:0; background:transparent;"
+    style="display:none; width:100%; min-height:900px; border:0; border-radius:0; background:transparent; overflow:hidden !important;"
+    scrolling="no"
     loading="lazy"
 ></iframe>

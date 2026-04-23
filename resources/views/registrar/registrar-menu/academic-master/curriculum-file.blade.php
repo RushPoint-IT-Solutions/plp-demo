@@ -5,12 +5,26 @@
 
 @section('content')
 <div class="pf-page">
+    @if(session('curriculum_file_success'))
+        <div class="alert alert-success mb-3" role="alert">
+            {{ session('curriculum_file_success') }}
+        </div>
+    @endif
+
+    @if(session('curriculum_file_error'))
+        <div class="alert alert-danger mb-3" role="alert">
+            {{ session('curriculum_file_error') }}
+        </div>
+    @endif
+
     <div
         class="cf-page"
         id="curriculumFilePage"
         data-course-years='@json($courseYearMap)'
         data-selected-course-id="{{ $selectedCourseId ?: '' }}"
         data-selected-curriculum-year="{{ $selectedCurriculumYear }}"
+        data-success="{{ session('curriculum_file_success', '') }}"
+        data-error="{{ session('curriculum_file_error', '') }}"
         data-pre-requisites-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}"
     >
         <section class="cfg-card cf-toolbar-card">
@@ -43,17 +57,30 @@
         <div class="cf-grid-two">
             <section class="cfg-card cf-panel-card">
                 <h3 class="cf-panel-title">Copy Curriculum</h3>
-                <div class="cf-panel-form">
+                <form class="cf-panel-form" id="cfCopyForm" method="POST" action="{{ route('registrar.registrar-menu.academic-master.curriculum-file.copy') }}">
+                    @csrf
+
+                    @if($errors->has('copy_source_course_id') || $errors->has('copy_source_curriculum_year') || $errors->has('copy_course_id') || $errors->has('copy_curriculum_year') || $errors->has('copy_to') || $errors->has('copy_semester') || $errors->has('copy_year_level'))
+                        <div class="pf-form-error-box">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
+                    <input type="hidden" name="copy_source_course_id" id="cfCopySourceCourseId" value="{{ old('copy_source_course_id', $selectedCourseId ?: '') }}">
+                    <input type="hidden" name="copy_source_curriculum_year" id="cfCopySourceCurriculumYear" value="{{ old('copy_source_curriculum_year', $selectedCurriculumYear) }}">
+
                     <div class="cf-field-wide">
                         <label class="req-modal-label" for="cfCopyTo">Copy To</label>
-                        <input id="cfCopyTo" type="text" class="req-modal-input" placeholder="Copy destination">
+                        <input id="cfCopyTo" name="copy_to" type="text" class="req-modal-input" placeholder="Copy destination" value="{{ old('copy_to') }}">
                     </div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfCopyCourse">Course</label>
-                        <select id="cfCopyCourse" class="req-modal-input">
+                        <select id="cfCopyCourse" name="copy_course_id" class="req-modal-input">
                             @forelse($courses as $course)
-                                <option value="{{ $course->id }}">{{ $course->name ?: $course->description }}</option>
+                                <option value="{{ $course->id }}" {{ (string) old('copy_course_id', $selectedCourseId ?: '') === (string) $course->id ? 'selected' : '' }}>
+                                    {{ $course->name ?: $course->description }}
+                                </option>
                             @empty
                                 <option value="">No Course Available</option>
                             @endforelse
@@ -61,53 +88,61 @@
                     </div>
 
                     <div class="cf-field-row">
-                        <label class="req-modal-label" for="cfCopyCurriculumYear">Curriculum Year</label>
-                        <select id="cfCopyCurriculumYear" class="req-modal-input">
-                            <option value="">Curriculum Year</option>
-                        </select>
+                        <label class="req-modal-label" for="cfCopyCurriculumYear">Destination Curriculum Year</label>
+                        <input id="cfCopyCurriculumYear" name="copy_curriculum_year" type="text" class="req-modal-input" placeholder="New curriculum year" value="{{ old('copy_curriculum_year') }}">
                     </div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfCopySemester">Semester</label>
-                        <select id="cfCopySemester" class="req-modal-input">
+                        <select id="cfCopySemester" name="copy_semester" class="req-modal-input">
                             <option value="">All Semester</option>
-                            <option>First</option>
-                            <option>Second</option>
+                            <option value="First" {{ old('copy_semester') === 'First' ? 'selected' : '' }}>First</option>
+                            <option value="Second" {{ old('copy_semester') === 'Second' ? 'selected' : '' }}>Second</option>
                         </select>
                     </div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfCopyYearLevel">Year</label>
-                        <select id="cfCopyYearLevel" class="req-modal-input">
+                        <select id="cfCopyYearLevel" name="copy_year_level" class="req-modal-input">
                             <option value="">All Year Levels</option>
-                            <option>First Year</option>
-                            <option>Second Year</option>
-                            <option>Third Year</option>
-                            <option>Fourth Year</option>
+                            <option value="First Year" {{ old('copy_year_level') === 'First Year' ? 'selected' : '' }}>First Year</option>
+                            <option value="Second Year" {{ old('copy_year_level') === 'Second Year' ? 'selected' : '' }}>Second Year</option>
+                            <option value="Third Year" {{ old('copy_year_level') === 'Third Year' ? 'selected' : '' }}>Third Year</option>
+                            <option value="Fourth Year" {{ old('copy_year_level') === 'Fourth Year' ? 'selected' : '' }}>Fourth Year</option>
                         </select>
                     </div>
 
                     <div class="cf-actions">
-                        <button type="button" class="pf-btn-new">Copy Curriculum</button>
+                        <button type="submit" class="pf-btn-new" id="cfCopySubmitBtn">Copy Curriculum</button>
                     </div>
-                </div>
+                </form>
             </section>
 
             <section class="cfg-card cf-panel-card">
                 <h3 class="cf-panel-title">Setup Curriculum</h3>
-                <div class="cf-panel-form">
+                <form class="cf-panel-form" id="cfSetupForm" method="POST" action="{{ route('registrar.registrar-menu.academic-master.curriculum-file.setup') }}">
+                    @csrf
+
+                    @if($errors->has('setup_course_id') || $errors->has('setup_curriculum_year') || $errors->has('setup_term') || $errors->has('setup_year_level'))
+                        <div class="pf-form-error-box">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfSetupCurriculumYear">Curriculum Year</label>
-                        <select id="cfSetupCurriculumYear" class="req-modal-input">
+                        <select id="cfSetupCurriculumYear" name="setup_curriculum_year" class="req-modal-input" data-initial-year="{{ old('setup_curriculum_year', $selectedCurriculumYear) }}">
                             <option value="">Curriculum Year</option>
                         </select>
                     </div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfSetupProgram">Program</label>
-                        <select id="cfSetupProgram" class="req-modal-input">
+                        <select id="cfSetupProgram" name="setup_course_id" class="req-modal-input">
                             @forelse($courses as $course)
-                                <option value="{{ $course->id }}">{{ $course->name ?: $course->description }}</option>
+                                <option value="{{ $course->id }}" {{ (string) old('setup_course_id', $selectedCourseId ?: '') === (string) $course->id ? 'selected' : '' }}>
+                                    {{ $course->name ?: $course->description }}
+                                </option>
                             @empty
                                 <option value="">No Course Available</option>
                             @endforelse
@@ -119,28 +154,28 @@
                     <div class="cf-field-split">
                         <div class="cf-field-row">
                             <label class="req-modal-label" for="cfSetupTerm">Term</label>
-                            <select id="cfSetupTerm" class="req-modal-input">
+                            <select id="cfSetupTerm" name="setup_term" class="req-modal-input">
                                 <option value="">Term</option>
-                                <option>First</option>
-                                <option>Second</option>
+                                <option value="First" {{ old('setup_term') === 'First' ? 'selected' : '' }}>First</option>
+                                <option value="Second" {{ old('setup_term') === 'Second' ? 'selected' : '' }}>Second</option>
                             </select>
                         </div>
                         <div class="cf-field-row">
                             <label class="req-modal-label" for="cfSetupYearLevel">Yr Level</label>
-                            <select id="cfSetupYearLevel" class="req-modal-input">
+                            <select id="cfSetupYearLevel" name="setup_year_level" class="req-modal-input">
                                 <option value="">Year Level</option>
-                                <option>First Year</option>
-                                <option>Second Year</option>
-                                <option>Third Year</option>
-                                <option>Fourth Year</option>
+                                <option value="First Year" {{ old('setup_year_level') === 'First Year' ? 'selected' : '' }}>First Year</option>
+                                <option value="Second Year" {{ old('setup_year_level') === 'Second Year' ? 'selected' : '' }}>Second Year</option>
+                                <option value="Third Year" {{ old('setup_year_level') === 'Third Year' ? 'selected' : '' }}>Third Year</option>
+                                <option value="Fourth Year" {{ old('setup_year_level') === 'Fourth Year' ? 'selected' : '' }}>Fourth Year</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="cf-actions">
-                        <button type="button" class="pf-btn-new">Save Setup</button>
+                        <button type="submit" class="pf-btn-new" id="cfSaveSetupBtn">Save Setup</button>
                     </div>
-                </div>
+                </form>
             </section>
         </div>
     </div>

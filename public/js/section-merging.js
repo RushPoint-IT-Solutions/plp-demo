@@ -14,6 +14,7 @@
         semester: '',
         loaded: false,
         rows: [],
+        courses: [],
         source: { course: '', year: '', section: '', slot: '' },
         target: { course: '', year: '', section: '', slot: '' },
         config: {
@@ -86,6 +87,63 @@
 
     function normalizeCompare(value) {
         return normalizeText(value).replace(/\s+/g, ' ').toLowerCase();
+    }
+
+    function normalizeSemesterValue(value) {
+        var normalized = normalizeCompare(value);
+        if (normalized === '') {
+            return '';
+        }
+
+        if (normalized.indexOf('summer') !== -1) {
+            return 'Summer';
+        }
+
+        if (normalized.indexOf('second') !== -1 || normalized.indexOf('2nd') !== -1 || normalized === '2') {
+            return 'Second';
+        }
+
+        if (normalized.indexOf('first') !== -1 || normalized.indexOf('1st') !== -1 || normalized === '1') {
+            return 'First';
+        }
+
+        return '';
+    }
+
+    function semesterWeight(value) {
+        var normalized = normalizeSemesterValue(value);
+        if (normalized === 'First') {
+            return 1;
+        }
+
+        if (normalized === 'Second') {
+            return 2;
+        }
+
+        if (normalized === 'Summer') {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    function normalizeSemesterList(values) {
+        var normalized = [];
+
+        (Array.isArray(values) ? values : []).forEach(function (value) {
+            var semester = normalizeSemesterValue(value);
+            if (semester === '' || normalized.indexOf(semester) !== -1) {
+                return;
+            }
+
+            normalized.push(semester);
+        });
+
+        normalized.sort(function (left, right) {
+            return semesterWeight(left) - semesterWeight(right);
+        });
+
+        return normalized;
     }
 
     function notify(message, level) {
@@ -195,7 +253,7 @@
 
     function syncConfig() {
         state.schoolYear = el.schoolYear ? normalizeText(el.schoolYear.value) : '';
-        state.semester = el.semester ? normalizeText(el.semester.value) : '';
+        state.semester = el.semester ? normalizeSemesterValue(el.semester.value) : '';
     }
 
     function getSemestersForYear(yearValue) {
@@ -209,13 +267,7 @@
             return [];
         }
 
-        return rawList
-            .map(function (item) {
-                return normalizeText(item);
-            })
-            .filter(function (item) {
-                return item !== '';
-            });
+        return normalizeSemesterList(rawList);
     }
 
     function renderSimpleSelect(selectEl, placeholder, values, selectedValue) {
@@ -235,7 +287,33 @@
             selectEl.value = '';
         }
 
+        refreshListboxSelect(selectEl);
+
         return normalizeText(selectEl.value);
+    }
+
+    function refreshListboxSelect(selectEl) {
+        if (!selectEl || !selectEl.closest) {
+            return;
+        }
+
+        var wrapper = selectEl.closest('[data-listbox-select]');
+        if (!wrapper || typeof document === 'undefined' || typeof document.dispatchEvent !== 'function') {
+            return;
+        }
+
+        if (typeof window.CustomEvent === 'function') {
+            document.dispatchEvent(new CustomEvent('registrar:listbox:refresh', {
+                detail: { target: wrapper },
+            }));
+            return;
+        }
+
+        if (typeof document.createEvent === 'function') {
+            var fallbackEvent = document.createEvent('CustomEvent');
+            fallbackEvent.initCustomEvent('registrar:listbox:refresh', false, false, { target: wrapper });
+            document.dispatchEvent(fallbackEvent);
+        }
     }
 
     function renderConfigOptions(configPayload) {
@@ -262,13 +340,7 @@
                     return;
                 }
 
-                semesterMap[normalizedYear] = list
-                    .map(function (item) {
-                        return normalizeText(item);
-                    })
-                    .filter(function (item) {
-                        return item !== '';
-                    });
+                semesterMap[normalizedYear] = normalizeSemesterList(list);
             });
         }
 
@@ -281,7 +353,7 @@
         }
 
         var yearSemesters = getSemestersForYear(selectedYear);
-        var selectedSemester = normalizeText(config.selected_semester || state.semester);
+        var selectedSemester = normalizeSemesterValue(config.selected_semester || state.semester);
         if (!selectedSemester || yearSemesters.indexOf(selectedSemester) === -1) {
             selectedSemester = yearSemesters.length ? yearSemesters[0] : selectedSemester;
         }
@@ -394,7 +466,45 @@
         });
     }
 
-    function courseOptions(sideKey) {
+    function normalizeCourseOption(item) {
+        if (!item || typeof item !== 'object') {
+            return null;
+        }
+
+        var id = toInt(item.id || item.value, 0);
+        if (id <= 0) {
+            return null;
+        }
+
+        var code = normalizeText(item.code);
+        var name = normalizeText(item.name);
+        var label = normalizeText(item.label);
+
+        if (label === '') {
+            label = code;
+        }
+
+        if (label === '' && name !== '') {
+            label = name;
+        }
+
+        if (label === '' || label === code) {
+            label = code !== '' && name !== '' ? (code + ' - ' + name) : label;
+        }
+
+        if (label === '') {
+            label = 'Program #' + String(id);
+        }
+
+        return {
+            value: String(id),
+            label: label,
+            code: code,
+            name: name,
+        };
+    }
+
+    function courseOptionsFromRows(sideKey) {
         return uniqueMapOptions(candidateRows(sideKey), function (row) {
             var id = toInt(row.course_id, 0);
             return id > 0 ? String(id) : '';
@@ -402,6 +512,37 @@
             var label = String(row.course_label || '').trim();
             return label !== '' ? label : ('Program #' + String(row.course_id || ''));
         });
+    }
+
+    function courseOptions(sideKey) {
+        var fallbackOptions = courseOptionsFromRows(sideKey);
+
+        if (!Array.isArray(state.courses) || state.courses.length === 0) {
+            return fallbackOptions;
+        }
+
+        var allowedCourseIds = {};
+        candidateRows(sideKey).forEach(function (row) {
+            var id = toInt(row.course_id, 0);
+            if (id > 0) {
+                allowedCourseIds[String(id)] = true;
+            }
+        });
+
+        var selectedCourse = normalizeText(sideState(sideKey).course);
+        if (selectedCourse !== '') {
+            allowedCourseIds[selectedCourse] = true;
+        }
+
+        var catalogOptions = state.courses.filter(function (option) {
+            return !!allowedCourseIds[String(option.value || '')];
+        });
+
+        if (catalogOptions.length === 0) {
+            return fallbackOptions;
+        }
+
+        return catalogOptions;
     }
 
     function yearOptions(sideKey) {
@@ -461,6 +602,8 @@
         if (selectEl.value !== (selectedValue || '')) {
             selectEl.value = '';
         }
+
+        refreshListboxSelect(selectEl);
 
         return selectEl.value;
     }
@@ -584,7 +727,9 @@
         var html = '';
 
         if (options.length === 0) {
-            html = '<div class="smrg-search-empty">No matching sections found.</div>';
+            html = '<div class="smrg-search-empty">'
+                + (fieldKey === 'course' ? 'No matching programs found.' : 'No matching sections found.')
+                + '</div>';
         } else {
             options.forEach(function (option) {
                 var selectedClass = option.value === selectedValue ? ' is-selected' : '';
@@ -904,6 +1049,15 @@
                 syncConfig();
 
                 state.rows = Array.isArray(payload.rows) ? payload.rows : [];
+                state.courses = payload && payload.options && Array.isArray(payload.options.courses)
+                    ? payload.options.courses
+                        .map(function (item) {
+                            return normalizeCourseOption(item);
+                        })
+                        .filter(function (item) {
+                            return item !== null;
+                        })
+                    : [];
                 state.loaded = true;
                 resetSide('source');
                 resetSide('target');
@@ -920,6 +1074,7 @@
 
                 state.loaded = false;
                 state.rows = [];
+                state.courses = [];
                 resetSide('source');
                 resetSide('target');
                 renderPage();
@@ -1009,8 +1164,9 @@
                 state.schoolYear = normalizeText(this.value);
 
                 var semesters = getSemestersForYear(state.schoolYear);
-                var selectedSemester = semesters.indexOf(state.semester) !== -1
-                    ? state.semester
+                var activeSemester = normalizeSemesterValue(state.semester);
+                var selectedSemester = semesters.indexOf(activeSemester) !== -1
+                    ? activeSemester
                     : (semesters.length ? semesters[0] : '');
 
                 state.semester = renderSimpleSelect(el.semester, '- Select Semester -', semesters, selectedSemester);
@@ -1019,7 +1175,7 @@
 
         if (el.semester) {
             el.semester.addEventListener('change', function () {
-                state.semester = normalizeText(this.value);
+                state.semester = normalizeSemesterValue(this.value);
             });
         }
 

@@ -216,16 +216,14 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="diplomaDeleteModal" style="display:none;" onclick="if(event.target===this) diplomaCloseModal('diplomaDeleteModal')">
-    <div class="req-modal-box" style="width: 440px;">
-        <h3 class="req-modal-title">DELETE RECORD</h3>
-        <p style="font-size:0.9rem; color:#4b5563; margin: 8px 0 0; text-align:center;">Are you sure you want to delete this Diploma record?</p>
-        <div class="req-modal-actions" style="margin-top:16px; justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="diplomaCloseModal('diplomaDeleteModal')">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#b42318;" onclick="diplomaConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'diplomaDeleteModal',
+    'title' => 'DELETE RECORD',
+    'message' => 'Are you sure you want to delete this Diploma record?',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => "diplomaCloseModal('diplomaDeleteModal')",
+    'confirmAction' => 'diplomaConfirmDelete()'
+])
 
 <div class="req-modal-overlay" id="diplomaPreviewModal" style="display:none;" onclick="if(event.target===this) diplomaClosePreview()">
     <div class="req-modal-box dpl-preview-modal-box">
@@ -235,7 +233,7 @@
         <div class="dpl-preview-wrap">
             <div class="dpl-sheet" id="diplomaPreviewSheet"></div>
         </div>
-        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:flex-end;">
+        <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:center;">
             <button type="button" class="req-btn-cancel" onclick="diplomaClosePreview()">Close</button>
             <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="diplomaPrintPreview()">Print Form</button>
         </div>

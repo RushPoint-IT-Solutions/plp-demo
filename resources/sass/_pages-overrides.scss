@@ -4,6 +4,335 @@
     padding: 6px 0 0;
 }
 
+.page-section-offering {
+    .so-config-modal,
+    .so-subject-modal {
+        z-index: 1260;
+    }
+
+    .so-config-dialog {
+        width: min(1180px, 96vw);
+        max-width: 1180px;
+    }
+
+    .so-config-header {
+        background: linear-gradient(180deg, #f2faf5 0%, #e2f2e9 100%);
+        border-bottom: 1px solid #c7dccf;
+    }
+
+    .so-config-title {
+        color: #0b6f3b;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .so-config-body {
+        background: #f9fcfa;
+        max-height: calc(100vh - 220px);
+    }
+
+    .so-config-meta {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .so-config-meta-item {
+        border: 1px solid #d5e4db;
+        border-radius: 10px;
+        background: #ffffff;
+        padding: 10px 12px;
+        min-height: 68px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .so-config-meta-label {
+        font-size: 0.67rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #5d6f65;
+        margin-bottom: 4px;
+    }
+
+    .so-config-meta-value {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #1f3527;
+        line-height: 1.25;
+    }
+
+    .so-config-table-wrap {
+        border: 1px solid #c9ddcf;
+        border-radius: 10px;
+        overflow: auto;
+        background: #ffffff;
+    }
+
+    .so-config-table thead th {
+        background: #0f6f3b;
+        color: #ffffff;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+    }
+
+    .so-config-schedule {
+        min-width: 190px;
+        white-space: normal;
+    }
+
+    .so-config-schedule-line {
+        display: block;
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+
+    .so-config-schedule-line:last-child {
+        margin-bottom: 0;
+    }
+
+    .so-config-actions {
+        min-width: 168px;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .so-config-action {
+        min-height: 32px;
+        border: 1px solid #177a46;
+        border-radius: 8px;
+        background: #eef8f2;
+        color: #0d6c38;
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 5px 10px;
+        margin: 2px;
+    }
+
+    .so-config-action:hover {
+        background: #dff1e6;
+    }
+
+    .so-config-action-edit {
+        background: #0f6f3b;
+        border-color: #0f6f3b;
+        color: #ffffff;
+    }
+
+    .so-config-action-edit:hover {
+        background: #0c5d31;
+        border-color: #0c5d31;
+    }
+
+    .so-config-note {
+        margin: 10px 2px 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #4f6358;
+    }
+
+    .so-subject-dialog {
+        width: min(980px, 96vw);
+        max-width: 980px;
+    }
+
+    .so-subject-header {
+        background: linear-gradient(180deg, #f2faf5 0%, #e2f2e9 100%);
+        border-bottom: 1px solid #c7dccf;
+    }
+
+    .so-subject-summary {
+        border: 1px solid #d2e2d9;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #1f3728;
+        font-size: 0.83rem;
+        font-weight: 700;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    #soTable tbody .so-subject-row {
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    #soTable tbody .so-subject-row:hover td {
+        background: #eff8f3;
+    }
+
+    .so-subject-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px 10px;
+        margin-bottom: 12px;
+        align-items: start;
+    }
+
+    .so-subject-meta-field {
+        margin: 0;
+    }
+
+    .so-subject-meta-note-wrap {
+        grid-column: 1 / -1;
+        margin-top: -6px;
+        margin-bottom: 2px;
+    }
+
+    .so-subject-meta-note {
+        margin: 0;
+        font-size: 0.79rem;
+        font-style: italic;
+        color: #a05000;
+        line-height: 1.35;
+    }
+
+    .so-subject-flags {
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        border: 1px dashed #c8d9cf;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 7px 10px;
+    }
+
+    .so-subject-flags .setup-checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #355447;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .so-subject-table-wrap {
+        border: 1px solid #cadfd0;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .so-subject-table thead th {
+        background: #0f6f3b;
+        color: #ffffff;
+        font-size: 0.72rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .so-subject-table td {
+        vertical-align: middle;
+    }
+
+    .so-subject-table .so-subject-day {
+        min-width: 126px;
+    }
+
+    .so-subject-check-col {
+        text-align: center;
+        width: 56px;
+    }
+
+    .so-subject-check-col input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+    }
+
+    .so-subject-row-actions {
+        white-space: nowrap;
+        width: 88px;
+        text-align: center;
+    }
+
+    .so-subject-row-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        border: 1px solid #1b7f49;
+        background: #e8f6ee;
+        color: #0e6f3b;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1;
+        padding: 0;
+        margin: 0 2px;
+    }
+
+    .so-subject-row-btn:hover {
+        background: #d8eddf;
+    }
+
+    .so-subject-row-remove {
+        border-color: #d0d8d4;
+        background: #ffffff;
+        color: #63726a;
+    }
+
+    .so-subject-row-remove:hover {
+        background: #f3f5f4;
+    }
+
+
+    .so-subject-table .app-filter-input {
+        min-height: 32px;
+        font-size: 0.78rem;
+        padding: 5px 8px;
+    }
+
+    @media (max-width: 1024px) {
+        .so-config-meta {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .so-subject-meta-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767px) {
+        .so-config-dialog,
+        .so-subject-dialog {
+            width: 96vw;
+        }
+
+        .so-config-meta {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .so-config-actions {
+            min-width: 140px;
+        }
+
+        .so-config-action {
+            width: 100%;
+            margin: 2px 0;
+        }
+
+        .so-subject-meta-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .so-subject-table-wrap {
+            overflow-x: auto;
+        }
+
+        .so-subject-table {
+            min-width: 760px;
+        }
+    }
+}
+
 .faculty-grading-sheet-page {
     .fgs-col-action {
         text-align: center;
@@ -873,6 +1202,46 @@
 
     &:hover { background: rgba(255, 255, 255, 0.25); color: #fff; }
     svg { width: 20px; height: 20px; flex-shrink: 0; }
+}
+
+.registrar-body #applicantSidebar .sidebar-logout {
+    margin-top: auto;
+    padding: 8px;
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form {
+    margin: 0;
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link {
+    width: 100%;
+    border: 0;
+    background: #f3f4f4;
+    color: #111111;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(7, 44, 25, 0.2);
+    transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link:hover,
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link:focus {
+    background: #ffffff;
+    color: #111111;
+    transform: translateY(-1px);
+}
+
+.registrar-body #applicantSidebar .sidebar-logout-form .sidebar-link.logout-link svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
 }
 
 // STUDENT - Profile edit page layout overrides
@@ -4647,16 +5016,18 @@ body.page-profile-view .pv-layout {
 }
 
 .sc-page .apst-action-btn {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     border: 1px solid #c8d8cf;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #ffffff;
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
     transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .sc-page .apst-action-btn span {
+    width: 3px;
+    height: 3px;
     background: #6a8075;
 }
 
@@ -5111,6 +5482,338 @@ body.page-profile-view .pv-layout {
     .app-table thead th,
     .app-table tbody td {
         white-space: nowrap;
+    }
+}
+
+.app-process-page {
+    #scheduleExamSuccessModal {
+        .schedule-exam-success-modal__dialog {
+            max-width: 560px;
+        }
+
+        .schedule-exam-success-modal__content {
+            overflow: hidden;
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0 28px 60px rgba(0, 104, 55, 0.28);
+        }
+
+        .schedule-exam-success-modal__header {
+            position: relative;
+            align-items: flex-start;
+            gap: 16px;
+            border-bottom: 0;
+            padding: 20px 24px 18px;
+            background: linear-gradient(135deg, #0a813c 0%, #006837 66%, #005028 100%);
+            color: #ffffff;
+        }
+
+        .schedule-exam-success-modal__header::after {
+            content: "";
+            position: absolute;
+            inset: auto -30px -76px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 209, 0, 0.25) 0%, rgba(255, 209, 0, 0) 70%);
+            pointer-events: none;
+        }
+
+        .schedule-exam-success-modal__header-copy {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .schedule-exam-success-modal__eyebrow {
+            margin: 0;
+            color: #ffd100;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .schedule-exam-success-modal__close {
+            position: relative;
+            z-index: 1;
+            color: #ffffff;
+            opacity: 0.95;
+            text-shadow: none;
+
+            &:hover,
+            &:focus {
+                color: #ffffff;
+                opacity: 1;
+            }
+        }
+
+        .schedule-exam-success-modal__body {
+            padding: 22px 24px 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+        }
+
+        .schedule-exam-success-modal__hero {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .schedule-exam-success-modal__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 58px;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #12a05f 0%, #006837 100%);
+            color: #ffffff;
+            font-size: 1.45rem;
+            font-weight: 900;
+            box-shadow: 0 12px 24px rgba(0, 104, 55, 0.22);
+        }
+
+        .schedule-exam-success-modal__copy {
+            min-width: 0;
+        }
+
+        .schedule-exam-success-modal__message {
+            color: #204236;
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .schedule-exam-success-modal__subtext {
+            margin-top: 8px;
+            color: #5e6e66;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .schedule-exam-success-modal__footer {
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 0 24px 22px;
+            border-top: 0;
+            background: linear-gradient(180deg, #f7fbf8 0%, #eef8f2 100%);
+        }
+
+        .schedule-exam-success-modal__confirm {
+            min-width: 132px;
+            border-radius: 999px;
+            padding: 10px 20px;
+            box-shadow: 0 10px 20px rgba(0, 104, 55, 0.18);
+
+            &:hover {
+                box-shadow: 0 12px 24px rgba(0, 104, 55, 0.22);
+            }
+        }
+
+        @include down(576px) {
+            .modal-dialog {
+                margin: 0.75rem;
+            }
+
+            .schedule-exam-success-modal__header,
+            .schedule-exam-success-modal__body,
+            .schedule-exam-success-modal__footer {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .schedule-exam-success-modal__hero {
+                gap: 12px;
+            }
+
+            .schedule-exam-success-modal__icon {
+                width: 50px;
+                height: 50px;
+                flex-basis: 50px;
+                border-radius: 16px;
+                font-size: 1.25rem;
+            }
+
+            .schedule-exam-success-modal__confirm {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+    }
+}
+
+#scheduleExamSuccessModal {
+    .schedule-exam-success-modal__dialog {
+        max-width: 560px;
+    }
+
+    .schedule-exam-success-modal__content {
+        overflow: hidden;
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 28px 60px rgba(0, 104, 55, 0.28);
+    }
+
+    .schedule-exam-success-modal__header {
+        position: relative;
+        align-items: flex-start;
+        gap: 16px;
+        border-bottom: 0;
+        padding: 20px 24px 18px;
+        background: linear-gradient(135deg, #0a813c 0%, #006837 66%, #005028 100%);
+        color: #ffffff;
+    }
+
+    .schedule-exam-success-modal__header::after {
+        content: "";
+        position: absolute;
+        inset: auto -30px -76px auto;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 209, 0, 0.25) 0%, rgba(255, 209, 0, 0) 70%);
+        pointer-events: none;
+    }
+
+    .schedule-exam-success-modal__header-copy {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .schedule-exam-success-modal__eyebrow {
+        margin: 0;
+        color: #ffd100;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .modal-title {
+        color: #ffffff;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+    }
+
+    .schedule-exam-success-modal__close {
+        position: relative;
+        z-index: 1;
+        color: #ffffff;
+        opacity: 0.95;
+        text-shadow: none;
+
+        &:hover,
+        &:focus {
+            color: #ffffff;
+            opacity: 1;
+        }
+    }
+
+    .schedule-exam-success-modal__body {
+        padding: 22px 24px 12px;
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+    }
+
+    .schedule-exam-success-modal__hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .schedule-exam-success-modal__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #12a05f 0%, #006837 100%);
+        color: #ffffff;
+        font-size: 1.45rem;
+        font-weight: 900;
+        box-shadow: 0 12px 24px rgba(0, 104, 55, 0.22);
+    }
+
+    .schedule-exam-success-modal__copy {
+        min-width: 0;
+    }
+
+    .schedule-exam-success-modal__message {
+        color: #204236;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .schedule-exam-success-modal__subtext {
+        margin-top: 8px;
+        color: #5e6e66;
+        font-size: 0.88rem;
+        line-height: 1.5;
+    }
+
+    .schedule-exam-success-modal__footer {
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 0 24px 22px;
+        border-top: 0;
+        background: linear-gradient(180deg, #f7fbf8 0%, #eef8f2 100%);
+    }
+
+    .schedule-exam-success-modal__confirm {
+        min-width: 132px;
+        border-radius: 999px;
+        padding: 10px 20px;
+        box-shadow: 0 10px 20px rgba(0, 104, 55, 0.18);
+
+        &:hover {
+            box-shadow: 0 12px 24px rgba(0, 104, 55, 0.22);
+        }
+    }
+
+    @include down(576px) {
+        .modal-dialog {
+            margin: 0.75rem;
+        }
+
+        .schedule-exam-success-modal__header,
+        .schedule-exam-success-modal__body,
+        .schedule-exam-success-modal__footer {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .schedule-exam-success-modal__hero {
+            gap: 12px;
+        }
+
+        .schedule-exam-success-modal__icon {
+            width: 50px;
+            height: 50px;
+            flex-basis: 50px;
+            border-radius: 16px;
+            font-size: 1.25rem;
+        }
+
+        .schedule-exam-success-modal__confirm {
+            width: 100%;
+            min-width: 0;
+        }
     }
 }
 
@@ -6686,6 +7389,266 @@ body.page-registrar-help {
             background: #edf8f1;
         }
     }
+
+    .docs-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin: 0 0 12px;
+    }
+
+    .docs-requirement-entry {
+        margin: 0 0 14px;
+        padding: 12px;
+        border: 1px solid #d8e6df;
+        border-radius: 8px;
+        background: #f7fbf9;
+    }
+
+    .docs-requirement-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.7fr) minmax(180px, 1fr);
+        gap: 10px;
+        align-items: end;
+    }
+
+    .docs-requirement-entry .app-filter-group {
+        margin: 0;
+    }
+
+    .docs-requirement-entry .app-filter-input,
+    .docs-requirement-entry .app-select,
+    .docs-requirement-entry .app-listbox-wrap {
+        min-height: 40px;
+    }
+
+    .docs-requirement-help {
+        margin: 8px 0 0;
+        font-size: 12px;
+        color: #50606d;
+    }
+
+    #docsTable th,
+    #docsTable td,
+    #availableDocsTable th,
+    #availableDocsTable td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    #docsTable th,
+    #docsTable td {
+        padding: 12px 10px;
+    }
+
+    #docsTable .docs-col-type,
+    #docsTable td:nth-child(2) {
+        min-width: 170px;
+    }
+
+    #docsTable .docs-col-remarks,
+    #docsTable td:nth-child(3) {
+        min-width: 210px;
+    }
+
+    #docsTable .docs-col-date,
+    #docsTable td:nth-child(4) {
+        min-width: 150px;
+    }
+
+    #docsTable .docs-col-file,
+    #docsTable td:nth-child(5) {
+        min-width: 250px;
+    }
+
+    #docsTable .docs-col-status,
+    #docsTable td:nth-child(6) {
+        min-width: 120px;
+    }
+
+    #docsTable .docs-col-action,
+    #docsTable td:nth-child(7) {
+        min-width: 120px;
+    }
+
+    #docsTable .docs-remarks-input,
+    #docsTable .docs-date-input {
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    #docsTable .docs-remarks-input {
+        max-width: 220px;
+    }
+
+    #docsTable .docs-date-input {
+        max-width: 155px;
+    }
+
+    #docsTable .docs-date-display {
+        cursor: pointer;
+        background: #ffffff;
+    }
+
+    #docsTable .docs-date-display::placeholder {
+        color: #7b8b87;
+        opacity: 1;
+    }
+
+    #docsTable .docs-date-display.is-invalid {
+        border-color: #ca4844;
+        box-shadow: 0 0 0 2px rgba(202, 72, 68, 0.16);
+    }
+
+    .docs-file-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-width: 230px;
+    }
+
+    .docs-file-upload .doc-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
+    .docs-file-upload--readonly {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 180px;
+        max-width: 240px;
+    }
+
+    .docs-file-upload--readonly .docs-file-link {
+        min-height: auto;
+        max-width: 180px;
+    }
+
+    .docs-action-btn {
+        width: 24px;
+        min-width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.16s ease;
+    }
+
+    .docs-action-btn.apc-btn:hover,
+    .docs-action-btn.apc-btn:focus {
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .docs-delete-file-btn {
+        color: #bd3f3a;
+    }
+
+    .docs-delete-file-btn.apc-btn:hover,
+    .docs-delete-file-btn.apc-btn:focus {
+        color: #a83733;
+    }
+
+    .docs-row-actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .docs-row-actions .apc-btn {
+        width: 24px;
+        min-width: 24px;
+        height: 24px;
+        padding: 0;
+    }
+
+    .docs-btn-icon {
+        width: 16px;
+        height: 16px;
+        display: block;
+    }
+
+    .docs-btn-busy {
+        font-size: 12px;
+        line-height: 1;
+        letter-spacing: 0;
+    }
+
+    .docs-remove-requirement-btn {
+        color: #bd3f3a;
+    }
+
+    .docs-remove-requirement-btn.apc-btn:hover,
+    .docs-remove-requirement-btn.apc-btn:focus {
+        color: #a83733;
+    }
+
+    .docs-save-btn {
+        color: #1c8a4a;
+    }
+
+    .docs-save-btn[disabled] {
+        color: #9eb6a8;
+    }
+
+    .docs-save-btn.apc-btn:hover,
+    .docs-save-btn.apc-btn:focus {
+        color: #14713b;
+    }
+
+    #docsConfirmActionBtn.is-danger {
+        background: #ca4844;
+        border-color: #ca4844;
+        color: #fff;
+    }
+
+    #docsConfirmActionBtn.is-danger:hover {
+        background: #b63f3b;
+        border-color: #b63f3b;
+    }
+
+    .docs-upload-btn {
+        min-width: 136px;
+        padding: 7px 14px;
+        border-width: 1px;
+    }
+
+    .docs-upload-filename {
+        display: block;
+        max-width: 210px;
+        font-size: 12px;
+        color: #4b5b68;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .docs-file-link {
+        min-height: 18px;
+    }
+
+    .docs-file-link a {
+        font-size: 12px;
+        font-weight: 700;
+    }
 }
 
 @media (max-width: 991px) {
@@ -6708,6 +7671,23 @@ body.page-registrar-help {
         .apc-actions--between {
             justify-content: flex-start;
             flex-wrap: wrap;
+        }
+
+        .docs-toolbar {
+            justify-content: flex-start;
+        }
+
+        .docs-requirement-grid {
+            grid-template-columns: 1fr;
+        }
+
+        #docsTable th,
+        #docsTable td {
+            padding: 10px 8px;
+        }
+
+        .docs-file-upload {
+            min-width: 200px;
         }
     }
 }
@@ -7696,7 +8676,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
         gap: 8px;
     }
 
-    .ua-col-action-cell .doclist-action-btn {
+    .ua-col-action-cell .apst-action-btn {
         min-width: 34px;
         min-height: 34px;
         display: inline-flex;
@@ -7775,33 +8755,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
         min-width: 118px;
     }
 
-    .ua-access-table-wrap {
-        max-height: 52vh;
-        overflow: auto;
-        border: 1px solid #d4e3da;
-        border-radius: 10px;
-    }
 
-    .ua-access-table {
-        min-width: 100%;
-        margin-bottom: 0;
-    }
-
-    .ua-access-table th:first-child,
-    .ua-access-table td:first-child {
-        width: 58%;
-    }
-
-    .ua-access-table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .ua-access-table tbody td:first-child {
-        font-weight: 700;
-        letter-spacing: 0.02em;
-    }
 
     .ua-access-rw-col {
         text-align: center;
@@ -7819,7 +8773,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
             grid-template-columns: 1fr;
         }
 
-        .ua-col-action-cell .doclist-action-btn,
+        .ua-col-action-cell .apst-action-btn,
         .rtp-page-btn,
         .rtp-page-num,
         .ua-clear-btn,
@@ -7831,7 +8785,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
             min-height: 44px;
         }
 
-        .ua-col-action-cell .doclist-action-btn,
+        .ua-col-action-cell .apst-action-btn,
         .rtp-page-btn,
         .rtp-page-num {
             width: 44px;
@@ -7852,5 +8806,81 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
             width: 100%;
         }
     }
+}
+
+// Applicant application-form flatpickr theme
+.application-form-page .setup-input.js-app-flatpickr-date {
+    border: 1px solid #cccccc;
+}
+
+.application-form-page .setup-input.js-app-flatpickr-date:focus,
+.application-form-page .setup-input.js-app-flatpickr-date:focus-visible {
+    border-color: #9c9c9c;
+    box-shadow: none;
+}
+
+.application-form-page .js-app-flatpickr-date::placeholder {
+    color: #8b8b8b;
+    font-weight: 400;
+    opacity: 1;
+}
+
+.app-form-flatpickr-theme {
+    border: 1px solid #a8cfba;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 34px rgba(12, 58, 35, 0.2);
+    overflow: hidden;
+}
+
+.app-form-flatpickr-theme .flatpickr-months {
+    background: linear-gradient(180deg, #f5fcf8 0%, #eaf6ef 100%);
+    border-bottom: 1px solid #d8e9df;
+}
+
+.app-form-flatpickr-theme .flatpickr-current-month,
+.app-form-flatpickr-theme .flatpickr-current-month .flatpickr-monthDropdown-months,
+.app-form-flatpickr-theme .flatpickr-current-month input.cur-year,
+.app-form-flatpickr-theme .flatpickr-weekday {
+    color: #1f4735;
+    font-weight: 700;
+}
+
+.app-form-flatpickr-theme .flatpickr-day {
+    border-radius: 10px;
+    color: #2a4b3f;
+    font-weight: 600;
+}
+
+.app-form-flatpickr-theme .flatpickr-day:hover,
+.app-form-flatpickr-theme .flatpickr-day:focus {
+    background: #e6f4ec;
+    border-color: #c9e3d5;
+    color: #0f7a4e;
+}
+
+.app-form-flatpickr-theme .flatpickr-day.today {
+    border-color: #0f7a4e;
+    color: #0f7a4e;
+    background: #ffffff;
+}
+
+.app-form-flatpickr-theme .flatpickr-day.selected,
+.app-form-flatpickr-theme .flatpickr-day.startRange,
+.app-form-flatpickr-theme .flatpickr-day.endRange,
+.app-form-flatpickr-theme .flatpickr-day.selected:hover,
+.app-form-flatpickr-theme .flatpickr-day.startRange:hover,
+.app-form-flatpickr-theme .flatpickr-day.endRange:hover {
+    background: #0f7a4e;
+    border-color: #0f7a4e;
+    color: #ffffff;
+}
+
+.app-form-flatpickr-theme .flatpickr-prev-month,
+.app-form-flatpickr-theme .flatpickr-next-month,
+.app-form-flatpickr-theme .flatpickr-prev-month svg,
+.app-form-flatpickr-theme .flatpickr-next-month svg {
+    color: #0f7a4e;
+    fill: #0f7a4e;
 }
 

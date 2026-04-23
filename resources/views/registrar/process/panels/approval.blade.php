@@ -1,3 +1,14 @@
+@php
+    $approvalStatusOptions = [
+        ['value' => 'Document Submitted', 'label' => 'Document Submitted'],
+        ['value' => 'On Probation', 'label' => 'On Probation'],
+        ['value' => 'In Process', 'label' => 'In Process'],
+        ['value' => 'Rejected', 'label' => 'Rejected'],
+        ['value' => 'Incomplete', 'label' => 'Incomplete'],
+        ['value' => 'Accepted', 'label' => 'Accepted'],
+    ];
+@endphp
+
 <div class="apc-card">
     <div class="apc-grid apc-grid--three">
         <div class="apc-field">
@@ -6,14 +17,13 @@
         </div>
         <div class="apc-field">
             <label class="apc-label">Status</label>
-            <select class="apc-select" id="approvalStatusSelect">
-                <option value="Document Submitted">Document Submitted</option>
-                <option value="On Probation">On Probation</option>
-                <option value="In Process">In Process</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Incomplete">Incomplete</option>
-                <option value="Accepted" selected>Accepted</option>
-            </select>
+            @include('registrar.components.listbox-select', [
+                'id' => 'approvalStatusSelect',
+                'name' => 'approvalStatusSelect',
+                'options' => $approvalStatusOptions,
+                'selected' => 'Accepted',
+                'placeholder' => 'Accepted'
+            ])
         </div>
         <div class="apc-field apc-field--date-save">
             <div>

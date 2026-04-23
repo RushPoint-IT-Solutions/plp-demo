@@ -290,6 +290,10 @@
                         <a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>
                     </div>
                 </div>
+
+                <a href="{{ route('registrar.admin-tools.audit-trail') }}" class="sidebar-sublink {{ request()->routeIs('registrar.admin-tools.audit-trail') ? 'active' : '' }}">
+                    Audit Trail
+                </a>
             </div>
         </div>
 

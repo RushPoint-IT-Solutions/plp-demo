@@ -118,37 +118,18 @@
         <section class="cfg-card cfg-card-full">
             <div class="cfg-card-head">
                 <h3>Names and Designation Signature</h3>
+                <div class="cfg-card-actions">
+                    <button type="button" class="pf-btn-new" data-cfg-action="open-designation-modal">Create Designation</button>
+                    <button type="button" class="pf-btn-new" data-cfg-action="open-signature-modal">Add Signatory</button>
+                </div>
             </div>
-            <form id="cfgSignatureForm" class="cfg-filter-row cfg-filter-row-tight" enctype="multipart/form-data">
-                <input type="hidden" id="cfgSignatureEditId" value="">
-                <div class="cfg-filter-group">
-                    <label class="req-modal-label" for="cfgSignatureDesignation">Designation</label>
-                    @include('registrar.components.listbox-select', [
-                        'id' => 'cfgSignatureDesignation',
-                        'name' => 'cfgSignatureDesignation',
-                        'options' => $signatureDesignationOptions,
-                        'selected' => '',
-                        'placeholder' => '-Select Designation-'
-                    ])
-                </div>
-                <div class="cfg-filter-group">
-                    <label class="req-modal-label" for="cfgSignatureName">Name</label>
-                    <input type="text" id="cfgSignatureName" class="req-modal-input" placeholder="Enter signer name">
-                </div>
-                <div class="cfg-filter-group">
-                    <label class="req-modal-label" for="cfgSignatureFile">Signature</label>
-                    <input type="file" id="cfgSignatureFile" class="req-modal-input" accept=".jpg,.jpeg,.png,image/png,image/jpeg">
-                </div>
-                <div class="cfg-filter-action">
-                    <button type="submit" id="cfgSignatureSaveBtn" class="pf-btn-new">Save</button>
-                </div>
-            </form>
             <div class="app-table-wrap">
                 <table id="cfgSignatureTable" class="app-table cfg-table" data-no-auto-pager="1">
                     <thead>
                         <tr>
                             <th>Designation</th>
                             <th>Name</th>
+                            <th>Programs</th>
                             <th>Signature</th>
                             <th class="cfg-col-action">Action</th>
                         </tr>
@@ -532,16 +513,87 @@
     </div>
 </div>
 
-<div class="req-modal-overlay cfg-modal-overlay is-hidden" id="cfgDeleteModal" data-cfg-modal="confirm-delete">
-    <div class="req-modal-box req-modal-success cfg-delete-modal-box">
-        <h3 class="req-modal-title cfg-delete-modal-title">DELETE RECORD</h3>
-        <p class="cfg-delete-modal-message" id="cfgDeleteMessage">Are you sure you want to delete this record?</p>
-        <div class="req-modal-actions cfg-delete-modal-actions">
-            <button type="button" class="req-btn-cancel" data-cfg-action="close-modal" data-cfg-modal-target="cfgDeleteModal">Cancel</button>
-            <button type="button" class="req-btn-save cfg-delete-btn" data-cfg-action="confirm-delete">Delete</button>
+<div class="req-modal-overlay cfg-modal-overlay is-hidden" id="cfgDesignationModal" data-cfg-modal="create-designation">
+    <div class="req-modal-box cfg-modal-box cfg-modal-box--wide">
+        <h3 class="req-modal-title">CREATE NEW DESIGNATION</h3>
+        <div class="sc-modal-grid" style="grid-template-columns: 1fr;">
+            <div class="req-modal-field-group">
+                <label class="req-modal-label" for="newDesignationName">Designation Name</label>
+                <input type="text" id="newDesignationName" class="req-modal-input" placeholder="e.g. Dean, Academic Head">
+            </div>
+        </div>
+        <div class="req-modal-field-group mt-3">
+            <label class="req-modal-label">Assign to Programs (Optional Multi-select)</label>
+            <div class="sc-multi-select-wrap">
+                <div class="sc-multi-select-search">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label class="sc-all-programs-label" style="display: flex; align-items: center; cursor: pointer; gap: 8px;">
+                            <input type="checkbox" id="cfgDesignationAll" name="all_programs_designation" value="1">
+                            <span style="font-size: 0.82rem; font-weight: 600; color: #006837;">All Programs</span>
+                        </label>
+                    </div>
+                    <input type="text" id="progSearchInput" class="sc-search-input" placeholder="Search programs/courses...">
+                </div>
+                <div class="sc-multi-select-list" id="designationProgListContainer">
+                    @foreach($courses ?? [] as $course)
+                        <label class="sc-multi-select-item" data-search-text="{{ strtolower($course->name) }} {{ strtolower($course->code) }}">
+                            <input type="checkbox" name="target_programs[]" value="{{ $course->id }}">
+                            <div class="sc-item-content">
+                                <span class="sc-item-name">{{ $course->name }}</span>
+                            </div>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        <div class="req-modal-actions cfg-modal-actions mt-4">
+            <button type="button" class="req-btn-cancel" data-cfg-action="close-modal" data-cfg-modal-target="cfgDesignationModal">Cancel</button>
+            <button type="button" id="cfgDesignationSaveBtn" class="req-btn-save">Create Designation</button>
         </div>
     </div>
 </div>
+
+<div class="req-modal-overlay cfg-modal-overlay is-hidden" id="cfgSignatureModal" data-cfg-modal="signature">
+    <div class="req-modal-box cfg-modal-box cfg-modal-box--wide">
+        <h3 class="req-modal-title" id="cfgSigTitle">ADD SIGNATORY</h3>
+        <form id="cfgSignatureForm" enctype="multipart/form-data">
+            <input type="hidden" id="cfgSignatureEditId" value="">
+            <div class="sc-modal-grid">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="cfgSignatureDesignation">Designation</label>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'cfgSignatureDesignation',
+                        'name' => 'cfgSignatureDesignation',
+                        'options' => $signatureDesignationOptions,
+                        'selected' => '',
+                        'placeholder' => '-Select Designation-'
+                    ])
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="cfgSignatureName">Name</label>
+                    <input type="text" id="cfgSignatureName" class="req-modal-input" placeholder="Enter signer name">
+                </div>
+            </div>
+            <div class="req-modal-field-group mt-3">
+                <input type="file" id="cfgSignatureFile" class="req-modal-input" accept=".jpg,.jpeg,.png,image/png,image/jpeg">
+            </div>
+
+            <div class="req-modal-actions cfg-modal-actions mt-4">
+                <button type="button" class="req-btn-cancel" data-cfg-action="close-modal" data-cfg-modal-target="cfgSignatureModal">Cancel</button>
+                <button type="submit" id="cfgSignatureSaveBtn" class="req-btn-save">Save Signatory</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@include('includes.registrar-delete-modal', [
+    'id' => 'cfgDeleteModal',
+    'title' => 'DELETE RECORD',
+    'confirmBtnText' => 'Delete',
+    'confirmActionAttr' => 'data-cfg-action="confirm-delete"',
+    'detailId' => 'cfgDeleteDetail',
+    'dataModal' => 'delete'
+])
 
 <div
     id="cfgBootstrap"

@@ -6,6 +6,7 @@ use App\Applicant;
 use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
 use App\ApplicantFamilyBackground;
+use App\ApplicantPhotoUpload;
 use App\AcademicCalendarEvent;
 use App\Http\Controllers\Concerns\PortalNotifications;
 use App\Course;
@@ -95,6 +96,18 @@ class ApplicantController extends Controller
     public function markNotificationsRead(Request $request)
     {
         return $this->markPortalNotificationsRead($request);
+    }
+
+    public function messaging()
+    {
+        $applicant = $this->getApplicant();
+
+        if ($applicant->application_status !== 'submitted') {
+            return redirect()->route('applicant.application-form')
+                ->with('error', 'Messaging is only available after submitting your application.');
+        }
+
+        return view('applicant.messaging', compact('applicant'));
     }
 
     public function dismissNotification(Request $request, $notificationDelivery)
@@ -402,10 +415,35 @@ class ApplicantController extends Controller
                 Storage::disk('public')->delete($applicant->photo);
             }
 
-            $validated['photo'] = $request->file('photo')->store('applicants/photos', 'public');
+            $photo = $request->file('photo');
+            $storedPath = $photo->store('applicants/photos', 'public');
+
+            $validated['photo'] = $storedPath;
+            $this->syncApplicantPhotoUploadRecord($applicant, $photo, $storedPath, $request->user());
         }
 
         $applicant->fill($validated);
+    }
+
+    private function syncApplicantPhotoUploadRecord(Applicant $applicant, $photo, $storedPath, User $actor = null)
+    {
+        if (!Schema::hasTable('applicant_photo_uploads')) {
+            return;
+        }
+
+        ApplicantPhotoUpload::query()->updateOrCreate(
+            [
+                'applicant_id' => (int) $applicant->id,
+            ],
+            [
+                'uploaded_by_user_id' => optional($actor)->id,
+                'original_filename' => (string) $photo->getClientOriginalName(),
+                'storage_disk' => 'public',
+                'storage_path' => (string) $storedPath,
+                'mime_type' => (string) ($photo->getClientMimeType() ?: ''),
+                'size_bytes' => (int) $photo->getSize(),
+            ]
+        );
     }
 
     private function upsertEducationalBackground(Applicant $applicant, array $payload)
@@ -620,7 +658,7 @@ class ApplicantController extends Controller
             $applicant->application_status = 'submitted';
             $applicant->application_draft_step = 4;
             $applicant->application_submitted_at = Carbon::now();
-            $applicant->application_portal_stage = 1; // Auto-unlock portal after submission
+            $applicant->application_portal_stage = 0;
             $applicant->save();
 
             $step2Payload = [
@@ -791,6 +829,15 @@ class ApplicantController extends Controller
     {
         $applicant = $this->getApplicant()->load('applicationPreference.course');
         return view('applicant.correspondence', compact('applicant'));
+    }
+
+    /**
+     * Medical Clearance – shows medical records.
+     */
+    public function medicalClearance()
+    {
+        $applicant = $this->getApplicant();
+        return view('applicant.medical-clearance', compact('applicant'));
     }
 
     /**

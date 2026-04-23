@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Registrar\Services;
 use App\CertificateIssued;
 use App\GraduateTagging;
 use App\Http\Controllers\Controller;
+use App\Support\SystemConfigSchoolTermOptions;
 use App\Student;
 use App\StudentSubjectGrade;
 use Illuminate\Http\JsonResponse;
@@ -12,7 +13,7 @@ use Illuminate\Http\Request;
 
 class ReportsAdminController extends Controller
 {
-    public function academicReports()
+    public function academicReports(Request $request)
     {
         $totalStudents = Student::query()->count();
         $failingStudents = StudentSubjectGrade::query()
@@ -21,6 +22,7 @@ class ReportsAdminController extends Controller
             ->distinct()
             ->count('student_id');
         $students = Student::query()->orderBy('name')->limit(200)->get(['id', 'student_no', 'name']);
+        $systemConfig = $this->reportSystemConfig($request);
 
         $summary = [
             'total_students' => $totalStudents,
@@ -28,15 +30,17 @@ class ReportsAdminController extends Controller
             'passing_students' => max($totalStudents - $failingStudents, 0),
         ];
 
-        return view('registrar.services.reports-admin.academic-reports', compact('summary', 'students'));
+        return view('registrar.services.reports-admin.academic-reports', compact('summary', 'students', 'systemConfig'));
     }
 
-    public function guidanceReports()
+    public function guidanceReports(Request $request)
     {
-        return view('registrar.services.reports-admin.guidance-reports');
+        $systemConfig = $this->reportSystemConfig($request);
+
+        return view('registrar.services.reports-admin.guidance-reports', compact('systemConfig'));
     }
 
-    public function certifications()
+    public function certifications(Request $request)
     {
         $students = Student::query()->orderBy('name')->limit(200)->get(['id', 'student_no', 'name']);
         $recentCertificates = CertificateIssued::query()
@@ -45,8 +49,9 @@ class ReportsAdminController extends Controller
             ->orderByDesc('id')
             ->limit(20)
             ->get();
+        $systemConfig = $this->reportSystemConfig($request);
 
-        return view('registrar.services.reports-admin.certifications', compact('students', 'recentCertificates'));
+        return view('registrar.services.reports-admin.certifications', compact('students', 'recentCertificates', 'systemConfig'));
     }
 
     public function taggingOfGraduates()
@@ -142,5 +147,38 @@ class ReportsAdminController extends Controller
         );
 
         return response()->json(['ok' => true]);
+    }
+
+    private function reportSystemConfig(Request $request): array
+    {
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+
+        $schoolYearOptions = array_values($configOptions['school_years'] ?? []);
+        $semesterMap = is_array($configOptions['semester_map'] ?? null)
+            ? $configOptions['semester_map']
+            : [];
+
+        $selectedSchoolYear = trim((string) $request->query('school_year', (string) ($configOptions['default_school_year'] ?? '')));
+        if ($selectedSchoolYear === '' || !in_array($selectedSchoolYear, $schoolYearOptions, true)) {
+            $selectedSchoolYear = count($schoolYearOptions)
+                ? (string) $schoolYearOptions[0]
+                : '';
+        }
+
+        $termOptions = SystemConfigSchoolTermOptions::semesterOptionsForYear($semesterMap, $selectedSchoolYear);
+        $selectedTerm = SystemConfigSchoolTermOptions::normalizeSemester((string) $request->query('term', (string) ($configOptions['default_semester'] ?? '')));
+        if ($selectedTerm === '' || !in_array($selectedTerm, $termOptions, true)) {
+            $selectedTerm = count($termOptions)
+                ? (string) $termOptions[0]
+                : (string) ($configOptions['default_semester'] ?? 'First');
+        }
+
+        return [
+            'schoolYearOptions' => $schoolYearOptions,
+            'termOptions' => $termOptions,
+            'semesterMap' => $semesterMap,
+            'selectedSchoolYear' => $selectedSchoolYear,
+            'selectedTerm' => $selectedTerm,
+        ];
     }
 }

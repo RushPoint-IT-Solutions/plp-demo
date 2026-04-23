@@ -187,7 +187,7 @@ class CreateSystemConfiguration3nfTables extends Migration
 
         $now = now();
         $rows = [
-            ['code' => 'REGISTRAR', 'name' => 'Registrar', 'sort_order' => 10, 'created_at' => $now, 'updated_at' => $now],
+            ['code' => 'REGISTRAR', 'name' => 'University Registrar', 'sort_order' => 10, 'created_at' => $now, 'updated_at' => $now],
             ['code' => 'ACCOUNTING_HEAD', 'name' => 'Accounting Head', 'sort_order' => 20, 'created_at' => $now, 'updated_at' => $now],
             ['code' => 'ASSISTANT_REGISTRAR', 'name' => 'Assistant Registrar', 'sort_order' => 30, 'created_at' => $now, 'updated_at' => $now],
         ];

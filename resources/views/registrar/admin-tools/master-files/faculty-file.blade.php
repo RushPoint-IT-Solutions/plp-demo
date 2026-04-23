@@ -278,17 +278,16 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="ffDeleteModal" style="display:none;" onclick="if(event.target===this) ffCloseDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE FACULTY RECORD</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this record?</p>
-        <input type="hidden" id="ffDeleteId" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="ffCloseDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="ffConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'ffDeleteModal',
+    'title' => 'DELETE RECORD',
+    'message' => 'Are you sure you want to delete this faculty record?',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'ffCloseDeleteModal()',
+    'confirmAction' => 'ffConfirmDelete()',
+    'detailId' => 'ffDeleteDetail'
+])
+<input type="hidden" id="ffDeleteId" value="">
 @else
 <div class="req-modal-overlay" id="ffcItemModal" style="display:none;" onclick="if(event.target===this) ffcCloseItemModal()">
     <div class="req-modal-box" style="max-width:700px;">
@@ -305,18 +304,17 @@
     </div>
 </div>
 
-<div class="req-modal-overlay" id="ffcDeleteModal" style="display:none;" onclick="if(event.target===this) ffcCloseDeleteModal()">
-    <div class="req-modal-box req-modal-success" style="max-width:360px; min-width:300px;">
-        <h3 class="req-modal-title" style="color:#c0392b;">DELETE DETAIL ITEM</h3>
-        <p style="text-align:center; color:#444; margin-bottom:14px;">Are you sure you want to delete this item?</p>
-        <input type="hidden" id="ffcDeleteSection" value="">
-        <input type="hidden" id="ffcDeleteIndex" value="">
-        <div class="req-modal-actions" style="justify-content:center;">
-            <button type="button" class="req-btn-cancel" onclick="ffcCloseDeleteModal()">Cancel</button>
-            <button type="button" class="req-btn-save" style="background:#c0392b;" onclick="ffcConfirmDelete()">Delete</button>
-        </div>
-    </div>
-</div>
+@include('includes.registrar-delete-modal', [
+    'id' => 'ffcDeleteModal',
+    'title' => 'DELETE DETAIL ITEM',
+    'message' => 'Are you sure you want to delete this item?',
+    'confirmBtnText' => 'Delete',
+    'cancelAction' => 'ffcCloseDeleteModal()',
+    'confirmAction' => 'ffcConfirmDelete()',
+    'detailId' => 'ffcDeleteDetail'
+])
+<input type="hidden" id="ffcDeleteSection" value="">
+<input type="hidden" id="ffcDeleteIndex" value="">
 @endif
 @endsection
 

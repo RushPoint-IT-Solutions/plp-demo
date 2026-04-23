@@ -123,8 +123,8 @@
 .faculty-body .faculty-notif-modal-header,
 .registrar-body .faculty-notif-modal-header,
 .parent-portal-body .faculty-notif-modal-header {
-  background: linear-gradient(180deg, #0f7a4e 0%, #0b6a43 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: #ffffff;
+  border-bottom: 1px solid #edf2ef;
   padding: 14px 18px;
   text-align: center;
 }
@@ -133,47 +133,114 @@
 .registrar-body .faculty-notif-modal-header .modal-title,
 .parent-portal-body .faculty-notif-modal-header .modal-title {
   margin: 0;
-  font-size: 1.38rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #006837;
 }
 
 .faculty-body .faculty-notif-body,
 .registrar-body .faculty-notif-body,
-.parent-portal-body .faculty-notif-body {
-  background: linear-gradient(180deg, #f5fbf8 0%, #edf5f1 100%);
-  padding: 14px;
-  min-height: 96px;
+.parent-portal-body .faculty-notif-body,
+.student-portal-body .faculty-notif-body,
+.applicant-body .faculty-notif-body {
+  background: #ffffff;
+  padding: 12px;
+  min-height: 80px;
 }
 
-.faculty-body .faculty-notif-list,
-.registrar-body .faculty-notif-list,
-.parent-portal-body .faculty-notif-list {
-  display: flex;
+/* Dropdown specific styles */
+.notif-dropdown-menu {
+  width: 380px;
+  max-width: calc(100vw - 30px);
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.1) !important;
+  background: #ffffff;
+  margin-top: 10px;
+  position: absolute !important;
+  top: 100%;
+  right: 0 !important;
+  left: auto !important;
+  overflow: hidden;
+  display: none;
   flex-direction: column;
-  gap: 10px;
+  max-height: calc(100vh - 120px);
+  z-index: 1050;
 }
 
-.faculty-body .faculty-notif-item,
-.registrar-body .faculty-notif-item,
-.parent-portal-body .faculty-notif-item {
+.notif-dropdown-menu.show {
+  display: flex !important;
+}
+
+/* Invisible bridge to prevent mouseleave during hover transition */
+.notif-dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: transparent;
+}
+
+.notif-dropdown-header {
+  background: #ffffff;
+  padding: 15px 18px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: #ffffff;
-  border: 1px solid #dce9e2;
-  border-left: 4px solid #1ea55d;
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 4px 12px rgba(10, 54, 34, 0.08);
+  justify-content: space-between;
+  border-bottom: 1px solid #edf2ef;
+  border-radius: 12px 12px 0 0;
+}
+
+.notif-dropdown-title {
+  margin: 0;
+  color: #006837;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.notif-dropdown-list {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+.faculty-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 440px; /* Trigger scrollbar after ~6 items */
+  overflow-y: auto;
+  padding-bottom: 12px;
+}
+
+.faculty-notif-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px !important;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f4f2;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.faculty-notif-item:hover {
+  background-color: #f7faf8;
 }
 
 .faculty-body .faculty-notif-item.is-read,
 .registrar-body .faculty-notif-item.is-read,
 .parent-portal-body .faculty-notif-item.is-read {
-  border-left-color: #93b6a3;
-  opacity: 0.92;
+  border-left-color: #cbd5e1;
+  opacity: 1;
 }
 
 .faculty-body .faculty-notif-text,
@@ -208,30 +275,27 @@
   cursor: pointer;
 }
 
-.faculty-body .faculty-notif-dismiss,
-.registrar-body .faculty-notif-dismiss,
-.parent-portal-body .faculty-notif-dismiss {
-  width: 28px;
-  height: 28px;
+.faculty-notif-dismiss {
+  width: 24px;
+  height: 24px;
   border: 0;
-  border-radius: 999px;
-  background: #e9f7ef;
-  color: #2fa85d;
-  font-size: 1.4rem;
+  border-radius: 50%;
+  background: transparent;
+  color: #aebdb5;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: background-color 0.16s ease, color 0.16s ease;
+  transition: all 0.2s ease;
+  margin-left: auto;
 }
 
-.faculty-body .faculty-notif-dismiss:hover,
-.registrar-body .faculty-notif-dismiss:hover,
-.parent-portal-body .faculty-notif-dismiss:hover {
-  background: #e1f2e8;
-  color: #188145;
+.faculty-notif-dismiss:hover {
+  background: #f0f4f2;
+  color: #006837;
 }
 
 .faculty-body .faculty-notif-dismiss:disabled,
@@ -243,12 +307,33 @@
 
 .faculty-body .faculty-notif-empty,
 .registrar-body .faculty-notif-empty,
-.parent-portal-body .faculty-notif-empty {
-  margin: 8px 0 2px;
+.parent-portal-body .faculty-notif-empty,
+.student-portal-body .faculty-notif-empty,
+.applicant-body .faculty-notif-empty {
+  margin: 0;
+  padding: 40px 20px;
   text-align: center;
-  color: #54655d;
+  color: #8c9b93;
   font-size: 0.95rem;
   font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+}
+
+.faculty-notif-empty::before {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 48px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238c9b93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'%3E%3C/path%3E%3Cpath d='M13.73 21a2 2 0 0 1-3.46 0'%3E%3C/path%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.5;
 }
 
 .faculty-body .faculty-notif-detail-modal .modal-dialog,
@@ -368,8 +453,8 @@
 
 .student-portal-body .faculty-notif-modal-header,
 .applicant-body .faculty-notif-modal-header {
-  background: linear-gradient(180deg, #0f7a4e 0%, #0b6a43 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: #ffffff;
+  border-bottom: 1px solid #edf2ef;
   padding: 14px 18px;
   text-align: center;
 }
@@ -377,10 +462,10 @@
 .student-portal-body .faculty-notif-modal-header .modal-title,
 .applicant-body .faculty-notif-modal-header .modal-title {
   margin: 0;
-  font-size: 1.38rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #006837;
 }
 
 .student-portal-body .faculty-notif-body,
@@ -390,95 +475,53 @@
   min-height: 96px;
 }
 
-.student-portal-body .faculty-notif-list,
-.applicant-body .faculty-notif-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
-.student-portal-body .faculty-notif-item,
-.applicant-body .faculty-notif-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #ffffff;
-  border: 1px solid #dce9e2;
-  border-left: 4px solid #1ea55d;
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 4px 12px rgba(10, 54, 34, 0.08);
+.student-portal-body .faculty-notif-item:hover,
+.applicant-body .faculty-notif-item:hover {
+  background: #f7faf8 !important;
 }
 
 .student-portal-body .faculty-notif-item.is-read,
 .applicant-body .faculty-notif-item.is-read {
-  border-left-color: #93b6a3;
-  opacity: 0.92;
-}
-
-.student-portal-body .faculty-notif-text,
-.applicant-body .faculty-notif-text {
-  flex: 1;
-  color: #2d3c34;
-  font-size: 1.03rem;
-  font-weight: 600;
-  text-decoration: none;
-  line-height: 1.35;
-  background: transparent;
-  border: 0;
-  text-align: left;
-  padding: 0;
-}
-
-.student-portal-body .faculty-notif-text:hover,
-.student-portal-body .faculty-notif-text:focus,
-.applicant-body .faculty-notif-text:hover,
-.applicant-body .faculty-notif-text:focus {
-  color: #0a603d;
-  text-decoration: none;
-  outline: none;
-}
-
-.student-portal-body .faculty-notif-open,
-.applicant-body .faculty-notif-open {
-  cursor: pointer;
+  background: #fafcfb !important;
+  opacity: 0.8;
 }
 
 .student-portal-body .faculty-notif-dismiss,
 .applicant-body .faculty-notif-dismiss {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: 0;
-  border-radius: 999px;
-  background: #e9f7ef;
-  color: #2fa85d;
-  font-size: 1.4rem;
+  border-radius: 50%;
+  background: transparent;
+  color: #aebdb5;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: background-color 0.16s ease, color 0.16s ease;
+  transition: all 0.2s ease;
+  margin-left: auto;
 }
 
 .student-portal-body .faculty-notif-dismiss:hover,
 .applicant-body .faculty-notif-dismiss:hover {
-  background: #e1f2e8;
-  color: #188145;
+  background: #f0f4f2;
+  color: #006837;
 }
 
-.student-portal-body .faculty-notif-dismiss:disabled,
-.applicant-body .faculty-notif-dismiss:disabled {
-  opacity: 0.45;
-  cursor: default;
+.student-portal-body .notif-dropdown-list,
+.applicant-body .notif-dropdown-list {
+  background: #ffffff;
 }
 
 .student-portal-body .faculty-notif-empty,
 .applicant-body .faculty-notif-empty {
-  margin: 8px 0 2px;
-  text-align: center;
-  color: #54655d;
+  padding: 30px 20px;
+  background: #ffffff;
+}  color: #54655d;
   font-size: 0.95rem;
   font-weight: 600;
 }
@@ -545,3 +588,164 @@
   }
 }
 
+
+/* Extremely strict removal of any borders, outlines, or rings from notification icon trigger */
+
+.student-portal-body .topbar-icon-link.topbar-notif-icon:hover,
+.student-portal-body .topbar-icon-link.topbar-notif-icon.show,
+.student-portal-body .topbar-icon-link.topbar-notif-icon:focus,
+.student-portal-body .topbar-icon-link.topbar-notif-icon:active,
+.applicant-body .topbar-icon-link.topbar-notif-icon:hover,
+.applicant-body .topbar-icon-link.topbar-notif-icon.show,
+.applicant-body .topbar-icon-link.topbar-notif-icon:focus,
+.applicant-body .topbar-icon-link.topbar-notif-icon:active,
+.registrar-body .topbar-icon-link.topbar-notif-icon:hover,
+.registrar-body .topbar-icon-link.topbar-notif-icon.show,
+.registrar-body .topbar-icon-link.topbar-notif-icon:focus,
+.registrar-body .topbar-icon-link.topbar-notif-icon:active,
+.faculty-body .topbar-icon-link.topbar-notif-icon:hover,
+.faculty-body .topbar-icon-link.topbar-notif-icon.show,
+.faculty-body .topbar-icon-link.topbar-notif-icon:focus,
+.faculty-body .topbar-icon-link.topbar-notif-icon:active {
+  background-color: #f3f8f5 !important;
+  color: #006837 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.topbar-icon-link:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.notif-empty-content span {
+  font-size: 0.88rem;
+  color: #8c9b93 !important;
+  font-weight: 500;
+  display: block;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+
+
+
+
+/* Final attempt to kill dark circles and browser rings */
+.topbar-notif-icon,
+.topbar-notif-icon:hover,
+.topbar-notif-icon:focus,
+.topbar-notif-icon:active,
+.topbar-notif-icon.show {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  background-image: none !important;
+}
+
+.topbar-notif-icon::after,
+.topbar-notif-icon::before {
+  display: none !important;
+  content: none !important;
+}
+
+
+/* Premium Redesign Styles */
+
+.notif-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-icon-box.evaluation { background-color: #e8f4ed; color: #006837; }
+.notif-icon-box.calendar { background-color: #fff4e5; color: #ff8a00; }
+.notif-icon-box.general { background-color: #f0f3ff; color: #3f51b5; }
+
+.notif-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.faculty-notif-text {
+  font-size: 0.94rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100% !important;
+}
+
+.notif-item-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.faculty-notif-item.is-read .notif-icon-box {
+  opacity: 0.85;
+}
+
+.faculty-notif-item.is-read .faculty-notif-text {
+  color: #475569 !important; /* Darker Slate for Read items */
+  font-weight: 500 !important;
+}
+
+
+/* Enhanced Visibility Fix */
+.notif-item-meta {
+  color: #475569 !important; /* Darker Slate */
+  font-weight: 600 !important;
+}
+
+.faculty-notif-text {
+  color: #0f172a !important; /* Near Black */
+}
+
+
+/* Scrollbar and Height Fix */
+.faculty-notif-list {
+  max-height: 440px; 
+  min-height: 100px;
+  overflow-y: auto;
+  padding-right: 4px;
+  padding-bottom: 20px;
+}
+
+.faculty-notif-list::-webkit-scrollbar {
+  width: 6px; /* Slightly wider scrollbar */
+}
+
+.faculty-notif-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.faculty-notif-list::-webkit-scrollbar-thumb {
+  background: #94a3b8; /* Darker thumb for better visibility */
+  border-radius: 10px;
+}
+
+.faculty-notif-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Alignment and Over-flow fix */
+
+@media (max-width: 480px) {
+  .notif-dropdown-menu {
+    width: calc(100vw - 20px);
+    margin-right: -10px !important;
+  }
+}

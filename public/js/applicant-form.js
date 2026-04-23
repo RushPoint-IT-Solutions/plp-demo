@@ -125,12 +125,14 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       }
       return new Date(year, month, day);
     }
+    var hasExamSchedule = calendarRoot.getAttribute('data-has-schedule') === '1';
     var selectedDateValue = calendarRoot.getAttribute('data-selected-date');
-    var selectedDate = parseLocalYmd(selectedDateValue) || new Date();
-    if (isNaN(selectedDate.getTime())) {
-      selectedDate = new Date();
+    var selectedDate = hasExamSchedule ? parseLocalYmd(selectedDateValue) : null;
+    var initialDate = selectedDate || new Date();
+    if (isNaN(initialDate.getTime())) {
+      initialDate = new Date();
     }
-    var viewDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    var viewDate = new Date(initialDate.getFullYear(), initialDate.getMonth(), 1);
     function toYmd(date) {
       var m = String(date.getMonth() + 1);
       var d = String(date.getDate());
@@ -187,10 +189,13 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
         dayBtn.className = 'submitted-calendar-day';
         dayBtn.textContent = String(day);
         var ymd = toYmd(date);
-        if (ymd === toYmd(selectedDate)) {
+        if (selectedDate && ymd === toYmd(selectedDate)) {
           dayBtn.classList.add('is-selected');
         }
         dayBtn.addEventListener('click', function (event) {
+          if (!selectedDate) {
+            return;
+          }
           var clickedDay = parseInt(event.currentTarget.textContent || '0', 10);
           if (!clickedDay) {
             return;
@@ -234,6 +239,41 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
   if (!form) {
     return;
   }
+  function initApplicationDatePickers() {
+    if (typeof window.flatpickr !== 'function') {
+      return;
+    }
+    var dateInputs = form.querySelectorAll('.js-app-flatpickr-date');
+    if (!dateInputs.length) {
+      return;
+    }
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dateInputs.forEach(function (input) {
+      window.flatpickr(input, {
+        dateFormat: 'Y-m-d',
+        disableMobile: true,
+        allowInput: false,
+        maxDate: today,
+        prevArrow: '&#8249;',
+        nextArrow: '&#8250;',
+        onReady: function onReady(_, __, instance) {
+          instance.input.classList.add('setup-input');
+          instance.input.setAttribute('autocomplete', 'off');
+          instance.calendarContainer.classList.add('an-flatpickr-calendar', 'app-form-flatpickr-theme');
+        },
+        onChange: function onChange(_, __, instance) {
+          instance.input.dispatchEvent(new Event('input', {
+            bubbles: true
+          }));
+          instance.input.dispatchEvent(new Event('change', {
+            bubbles: true
+          }));
+        }
+      });
+    });
+  }
+  initApplicationDatePickers();
   var skipStepValidation = form.getAttribute('data-preview-skip-validation') === '1';
   var stepSaveInProgress = false;
   var finalSubmitInProgress = false;
@@ -304,11 +344,55 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     });
   }
   function validateStep(step) {
-    if (skipStepValidation) {
-      return true;
-    }
     var panel = document.getElementById('step-' + step);
     if (!panel) {
+      return true;
+    }
+    function hasMeaningfulSelection(field) {
+      if (!field) {
+        return false;
+      }
+      var value = String(field.value || '').trim();
+      if (value === '') {
+        return false;
+      }
+      var normalized = value.toLowerCase().replace(/\s+/g, ' ');
+      if (normalized.indexOf('choose ') === 0) {
+        return false;
+      }
+      return true;
+    }
+    if (step === 1) {
+      var sameAsPresentChecked = !!(sameCheck && sameCheck.checked);
+      var addressFieldNames = ['present_region', 'present_province', 'present_municipality'];
+      if (!sameAsPresentChecked) {
+        addressFieldNames = addressFieldNames.concat(['permanent_region', 'permanent_province', 'permanent_municipality']);
+      }
+      for (var j = 0; j < addressFieldNames.length; j++) {
+        var fieldName = addressFieldNames[j];
+        var addressField = panel.querySelector('[name="' + fieldName + '"]');
+        if (!addressField || addressField.disabled) {
+          continue;
+        }
+        if (hasMeaningfulSelection(addressField)) {
+          continue;
+        }
+        var labelMap = {
+          present_region: 'present region',
+          present_province: 'present province',
+          present_municipality: 'present municipality/city',
+          permanent_region: 'permanent region',
+          permanent_province: 'permanent province',
+          permanent_municipality: 'permanent municipality/city'
+        };
+        var labelText = labelMap[fieldName] || fieldName.replace(/_/g, ' ');
+        addressField.setCustomValidity('Please select ' + labelText + '.');
+        addressField.reportValidity();
+        addressField.setCustomValidity('');
+        return false;
+      }
+    }
+    if (skipStepValidation) {
       return true;
     }
     var fields = panel.querySelectorAll('input, select, textarea');
@@ -418,12 +502,25 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       },
       credentials: 'same-origin'
     }).then(function (response) {
-      return response.json()["catch"](function () {
-        return {};
-      }).then(function (data) {
+      return response.text().then(function (raw) {
+        var data = {};
+        if (raw) {
+          try {
+            data = JSON.parse(raw);
+          } catch (parseError) {
+            data = {};
+          }
+        }
         if (!response.ok) {
           throw {
             payload: data
+          };
+        }
+        if (!data || data.success !== true) {
+          throw {
+            payload: Object.keys(data || {}).length ? data : {
+              message: 'Unable to save step. Please review your fields.'
+            }
           };
         }
         return data;
@@ -581,12 +678,19 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
       }
       row.querySelectorAll('input, select').forEach(function (el) {
         el.disabled = enabled;
-        if (!enabled) {
-          return;
-        }
-        el.removeAttribute('required');
       });
       row.style.opacity = enabled ? '0.45' : '1';
+    });
+    permanentFields.forEach(function (name) {
+      var field = document.querySelector('[name="' + name + '"]');
+      if (!field) {
+        return;
+      }
+      if (enabled) {
+        field.removeAttribute('required');
+        return;
+      }
+      field.setAttribute('required', 'required');
     });
     if (enabled) {
       copyAddressValues();
@@ -613,6 +717,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
         }
       });
     });
+    syncPermanent(sameCheck.checked);
   }
 
   // Age auto-fill from Date of Birth
@@ -869,6 +974,206 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
     showFeedback('Could not load address data. Please refresh and try again.', true);
   });
   goToStep(getActiveStep());
+  initMedicalClearancePanel();
+
+  function initMedicalClearancePanel() {
+    var mcAddBtn = document.getElementById('mcAddBtn');
+    var mcTableBody = document.getElementById('mcTableBody');
+    
+    if (!mcTableBody) return;
+
+    // Action: Open Add
+    if (mcAddBtn) {
+      mcAddBtn.addEventListener('click', function() {
+        document.getElementById('mcAddDocName').value = '';
+        document.getElementById('mcAddRemarks').value = '';
+        document.getElementById('mcAddDate').value = new Date().toISOString().split('T')[0];
+        mcOpenModal('mcAddModal');
+      });
+    }
+
+    // Action: Confirm Add
+    var confirmAddBtn = document.getElementById('mcConfirmAddBtn');
+    if (confirmAddBtn) {
+      confirmAddBtn.addEventListener('click', function() {
+        var doc = document.getElementById('mcAddDocName').value;
+        var remarks = document.getElementById('mcAddRemarks').value;
+        var date = document.getElementById('mcAddDate').value;
+        
+        if (!doc) {
+          alert('Document name is required.');
+          return;
+        }
+
+        var id = Date.now();
+        var index = mcTableBody.querySelectorAll('tr').length + 1;
+        var newRow = createMcRow(id, doc, remarks, date, index);
+        mcTableBody.insertAdjacentHTML('afterbegin', newRow);
+        
+        mcCloseModal('mcAddModal');
+        showFeedback('Medical document added successfully.', false);
+      });
+    }
+
+    // Action: Confirm Edit
+    var confirmEditBtn = document.getElementById('mcConfirmEditBtn');
+    if (confirmEditBtn) {
+      confirmEditBtn.addEventListener('click', function() {
+        var id = document.getElementById('mcEditId').value;
+        var remarks = document.getElementById('mcEditRemarks').value;
+        var date = document.getElementById('mcEditDate').value;
+        
+        var row = mcTableBody.querySelector('tr[data-id="' + id + '"]');
+        if (row) {
+          row.setAttribute('data-remarks', remarks);
+          row.setAttribute('data-date', date);
+          row.querySelector('.mc-remarks-cell').textContent = remarks;
+          
+          var formattedDate = new Date(date).toLocaleDateString('en-US', {
+            month: '2-digit', day: '2-digit', year: '4-digit'
+          });
+          row.querySelector('.mc-date-cell').textContent = formattedDate;
+        }
+
+        mcCloseModal('mcEditModal');
+        showFeedback('Medical document updated.', false);
+      });
+    }
+  }
+
+  window.mcOpenModal = function(id) {
+    var modal = document.getElementById(id);
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.remove('is-hidden');
+    }
+  };
+
+  window.mcCloseModal = function(id) {
+    var modal = document.getElementById(id);
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.add('is-hidden');
+    }
+  };
+
+  window.mcCloseMenus = function() {
+    document.querySelectorAll('.mc-row-dropdown.open').forEach(function(menu) {
+      menu.classList.remove('open', 'drop-up');
+      menu.style.top = '';
+      menu.style.left = '';
+      menu.style.right = '';
+      menu.style.bottom = '';
+    });
+  };
+
+  window.mcToggleActionMenu = function(index, event) {
+    var trigger = event.currentTarget;
+    var menu = document.getElementById('mcMenu' + index);
+    if (!menu || !trigger) return;
+
+    var isOpen = menu.classList.contains('open');
+    mcCloseMenus();
+    if (isOpen) return;
+
+    event.stopPropagation();
+
+    var rect = trigger.getBoundingClientRect();
+    var spaceBelow = window.innerHeight - rect.bottom;
+    menu.style.left = 'auto';
+    menu.style.right = (window.innerWidth - rect.left + 4) + 'px';
+
+    if (spaceBelow < 120) {
+      menu.classList.add('drop-up');
+      menu.style.top = 'auto';
+      menu.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+    } else {
+      menu.style.top = rect.top + 'px';
+      menu.style.bottom = 'auto';
+    }
+
+    menu.classList.add('open');
+  };
+
+  window.mcOpenEdit = function(index) {
+    var menu = document.getElementById('mcMenu' + index);
+    var row = menu ? menu.closest('tr') : null;
+    if (!row) return;
+
+    mcCloseMenus();
+    var id = row.getAttribute('data-id');
+    var doc = row.getAttribute('data-doc');
+    var remarks = row.getAttribute('data-remarks');
+    var date = row.getAttribute('data-date');
+
+    document.getElementById('mcEditId').value = id;
+    document.getElementById('mcEditDocName').value = doc;
+    document.getElementById('mcEditRemarks').value = remarks;
+    document.getElementById('mcEditDate').value = date;
+    
+    mcOpenModal('mcEditModal');
+  };
+
+  window.mcOpenDelete = function(index) {
+    var menu = document.getElementById('mcMenu' + index);
+    var row = menu ? menu.closest('tr') : null;
+    if (!row) return;
+
+    mcCloseMenus();
+    var id = row.getAttribute('data-id');
+    var doc = row.getAttribute('data-doc');
+
+    var deleteModal = document.getElementById('mcDeleteModal');
+    if (deleteModal) {
+      deleteModal.setAttribute('data-delete-id', id);
+      var detailText = document.getElementById('mcDeleteDocName');
+      if (detailText) detailText.textContent = 'Document: ' + doc;
+      mcOpenModal('mcDeleteModal');
+    }
+  };
+
+  window.mcConfirmDelete = function() {
+    var deleteModal = document.getElementById('mcDeleteModal');
+    var id = deleteModal ? deleteModal.getAttribute('data-delete-id') : null;
+    if (id) {
+      var row = document.querySelector('#mcTableBody tr[data-id="' + id + '"]');
+      if (row) row.remove();
+    }
+    mcCloseModal('mcDeleteModal');
+    showFeedback('Medical document removed.', false);
+  };
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.apst-dropdown') && !e.target.closest('.apst-action-btn')) {
+      mcCloseMenus();
+    }
+  });
+
+  function createMcRow(id, doc, remarks, date, index) {
+    var formattedDate = new Date(date).toLocaleDateString('en-US', {
+      month: '2-digit', day: '2-digit', year: '4-digit'
+    });
+    return '<tr data-id="' + id + '" data-doc="' + doc + '" data-remarks="' + remarks + '" data-date="' + date + '">' +
+        '<td>' + doc + '</td>' +
+        '<td class="mc-remarks-cell">' + remarks + '</td>' +
+        '<td class="mc-date-cell">' + formattedDate + '</td>' +
+        '<td style="text-align: center;">' +
+          '<div class="apst-action-btn" onclick="mcToggleActionMenu(' + index + ', event)" aria-label="Open row actions" title="Actions">' +
+            '<span></span><span></span><span></span>' +
+          '</div>' +
+          '<div class="apst-dropdown mc-row-dropdown" id="mcMenu' + index + '">' +
+            '<button type="button" class="mc-edit-action" onclick="mcOpenEdit(' + index + ')">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>' +
+              'Edit' +
+            '</button>' +
+            '<button type="button" class="apst-del-btn mc-delete-action" onclick="mcOpenDelete(' + index + ')">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+              'Delete' +
+            '</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
+  }
 })();
 
 /***/ }),
@@ -880,7 +1185,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\applicant-form.js */"./resources/js/applicant-form.js");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\applicant-form.js */"./resources/js/applicant-form.js");
 
 
 /***/ })

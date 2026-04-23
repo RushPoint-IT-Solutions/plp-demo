@@ -68,13 +68,17 @@
                     </a>
 
                     {{-- Notification Bell --}}
-                    <a href="#" class="topbar-icon-link topbar-notif-icon" title="Notifications" data-bs-toggle="modal" data-bs-target="#registrarNotificationsModal">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                        </svg>
-                        <span class="faculty-notif-badge {{ $registrarUnreadNotificationCount ? '' : 'd-none' }}">{{ $registrarUnreadNotificationCount > 99 ? '99+' : $registrarUnreadNotificationCount }}</span>
-                    </a>
+                    @include('includes.portal-notifications-dropdown', [
+                        'notificationContainerId' => 'registrarNotificationsDropdown',
+                        'notificationTitle' => 'NOTIFICATIONS',
+                        'notificationDetailModalId' => 'registrarNotificationDetailModal',
+                        'notificationDetailTitleId' => 'registrarNotificationDetailTitle',
+                        'notificationDetailMessageId' => 'registrarNotificationDetailMessage',
+                        'notifications' => $registrarNotifications,
+                        'unreadCount' => $registrarUnreadNotificationCount,
+                        'feedUrl' => route('registrar.notifications.feed'),
+                        'markReadUrl' => route('registrar.notifications.mark-read'),
+                    ])
 
                     {{-- Messages --}}
                     <a href="{{ route('registrar.messaging') }}" class="topbar-icon-link msg-icon {{ request()->routeIs('registrar.messaging') ? 'is-active' : '' }}" title="Messages">
@@ -118,85 +122,8 @@
         <button type="button" class="toast-close" id="registrar-toast-close">&times;</button>
     </div>
 
-    <div
-        class="modal fade faculty-notif-modal"
-        id="registrarNotificationsModal"
-        tabindex="-1"
-        aria-labelledby="registrarNotificationsTitle"
-        aria-hidden="true"
-        data-feed-url="{{ route('registrar.notifications.feed') }}"
-        data-mark-read-url="{{ route('registrar.notifications.mark-read') }}"
-    >
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="faculty-notif-modal-header">
-                    <h5 class="modal-title" id="registrarNotificationsTitle">NOTIFICATIONS</h5>
-                </div>
-                <div class="faculty-notif-body">
-                    <div class="faculty-notif-list">
-                        @forelse($registrarNotifications as $delivery)
-                            @php
-                                $notification = $delivery->notification;
-                                $notificationUrl = $notification ? (string) $notification->local_source_url : '';
-                                $isAnnouncementNotification = $notification && (string) $notification->source_module === 'system_announcement';
-                                $notificationMessage = $notification ? (string) $notification->message : '';
-                            @endphp
-                            <div class="faculty-notif-item {{ !empty($delivery->read_at) ? 'is-read' : '' }}" data-delivery-id="{{ $delivery->id }}">
-                                @if($isAnnouncementNotification)
-                                    <button
-                                        type="button"
-                                        class="faculty-notif-text faculty-notif-open js-faculty-notif-open"
-                                        data-title="{{ $notification ? $notification->title : 'Announcement' }}"
-                                        data-message="{{ $notificationMessage }}"
-                                    >
-                                        {{ $notification ? $notification->title : 'Announcement' }}
-                                    </button>
-                                @elseif($notification && $notificationUrl)
-                                    <a href="{{ $notificationUrl }}" class="faculty-notif-text">{{ $notification->title }}</a>
-                                @else
-                                    <span class="faculty-notif-text">{{ $notification ? $notification->title : 'New notification' }}</span>
-                                @endif
-                                <button
-                                    type="button"
-                                    class="faculty-notif-dismiss js-faculty-notif-dismiss"
-                                    data-dismiss-url="{{ route('registrar.notifications.dismiss', ['notificationDelivery' => $delivery->id]) }}"
-                                    aria-label="Dismiss notification"
-                                    title="Dismiss"
-                                >
-                                    &times;
-                                </button>
-                            </div>
-                        @empty
-                        @endforelse
-                    </div>
-
-                    <p class="faculty-notif-empty {{ $registrarNotifications->count() ? 'd-none' : '' }}">No new notifications.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div
-        class="modal fade faculty-notif-detail-modal"
-        id="facultyNotificationDetailModal"
-        tabindex="-1"
-        aria-labelledby="facultyNotificationDetailTitle"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="faculty-notif-modal-header">
-                    <h5 class="modal-title" id="facultyNotificationDetailTitle">Announcement</h5>
-                </div>
-                <div class="faculty-notif-body">
-                    <p class="faculty-notif-detail-message" id="facultyNotificationDetailMessage">No details available.</p>
-                </div>
-                <div class="faculty-notif-detail-footer">
-                    <button type="button" class="faculty-notif-detail-close" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- Notifications JS --}}
+    <script src="{{ asset('js/portal-notifications.js') }}"></script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

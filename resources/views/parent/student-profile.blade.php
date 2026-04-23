@@ -144,25 +144,48 @@
                     <label>CIVIL STATUS</label>
                     <input type="text" value="{{ $display('civil_status') }}" readonly>
                 </div>
-                @if($showAdmissionStatus)
-                    <div class="parent-student-field">
-                        <label>ADMISSION STATUS</label>
-                        <input type="text" value="{{ $display('admission_status') }}" readonly>
-                    </div>
-                @endif
-                @if($showAdmissionYear)
-                    <div class="parent-student-field">
-                        <label>ADMISSION YEAR</label>
-                        <input type="text" value="{{ $display('admission_year') }}" readonly>
-                    </div>
-                @endif
-                @if($showEnrollmentStatus)
-                    <div class="parent-student-field">
-                        <label>ENROLLMENT STATUS</label>
-                        <input type="text" value="{{ $display('enrollment_status') }}" readonly>
-                    </div>
-                @endif
+                <div class="parent-student-field">
+                    <label>HEIGHT <span style="font-size: 0.6rem; opacity: 0.8; letter-spacing: 0;">(IN FEET & INCHES)</span></label>
+                    <input type="text" value="{{ $display('height') }}" readonly>
+                </div>
+                <div class="parent-student-field">
+                    <label>WEIGHT <span style="font-size: 0.6rem; opacity: 0.8; letter-spacing: 0;">(IN POUNDS)</span></label>
+                    <input type="text" value="{{ $display('weight') }}" readonly>
+                </div>
+                <div class="parent-student-field">
+                    <label>BLOOD TYPE</label>
+                    <input type="text" value="{{ $display('blood_type') }}" readonly>
+                </div>
             </div>
+
+            @if($showAdmissionStatus || $showAdmissionYear || $showEnrollmentStatus || $showAcademicStatus)
+                <div class="parent-student-profile-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    @if($showAdmissionStatus)
+                        <div class="parent-student-field">
+                            <label>ADMISSION STATUS</label>
+                            <input type="text" value="{{ $display('admission_status') }}" readonly>
+                        </div>
+                    @endif
+                    @if($showAdmissionYear)
+                        <div class="parent-student-field">
+                            <label>ADMISSION YEAR</label>
+                            <input type="text" value="{{ $display('admission_year') }}" readonly>
+                        </div>
+                    @endif
+                    @if($showEnrollmentStatus)
+                        <div class="parent-student-field">
+                            <label>ENROLLMENT STATUS</label>
+                            <input type="text" value="{{ $display('enrollment_status') }}" readonly>
+                        </div>
+                    @endif
+                    @if($showAcademicStatus)
+                        <div class="parent-student-field">
+                            <label>ACADEMIC STATUS</label>
+                            <input type="text" value="{{ $display('academic_status') }}" readonly>
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             <div class="parent-student-divider"></div>
 
@@ -185,12 +208,32 @@
                     <label>CURRICULUM YEAR</label>
                     <input type="text" value="{{ $display('curriculum_year') }}" readonly>
                 </div>
-                @if($showAcademicStatus)
-                    <div class="parent-student-field parent-student-field--acad-status">
-                        <label>ACADEMIC STATUS</label>
-                        <input type="text" value="{{ $display('academic_status') }}" readonly>
-                    </div>
-                @endif
+            </div>
+
+            <div class="parent-student-divider"></div>
+
+            <div class="parent-student-transfer-header" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <div style="width: 24px; height: 24px; border: 2px solid #006837; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: {{ !empty($profileData['is_transfer']) ? '#006837' : 'transparent' }};">
+                    @if(!empty($profileData['is_transfer']))
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    @endif
+                </div>
+                <label style="color: #006837; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; margin: 0;">Tag this student as transfer</label>
+            </div>
+
+            <div class="parent-student-profile-grid parent-student-profile-grid--transfer">
+                <div class="parent-student-field">
+                    <label>NAME OF SCHOOL</label>
+                    <input type="text" value="{{ $display('transfer_school') }}" readonly>
+                </div>
+                <div class="parent-student-field">
+                    <label>DATE TRANSFER</label>
+                    <input type="text" value="{{ $display('transfer_date') }}" readonly>
+                </div>
+                <div class="parent-student-field">
+                    <label>REASON</label>
+                    <input type="text" value="{{ $display('transfer_reason') }}" readonly>
+                </div>
             </div>
         </section>
     @endif

@@ -1,24 +1,42 @@
+@php
+    $examSortOptions = [
+        ['value' => 'dimensions', 'label' => 'Dimensions'],
+        ['value' => 'grade', 'label' => 'Grade'],
+    ];
+
+    $examPerPageOptions = [
+        ['value' => '10', 'label' => '10'],
+        ['value' => '25', 'label' => '25'],
+        ['value' => '50', 'label' => '50'],
+    ];
+@endphp
+
 <div class="apc-card">
     <div class="app-filter-bar apc-panel-filter">
         <div class="app-filter-row">
             <div class="app-filter-group" style="flex:2;">
                 <span class="app-filter-label">Search</span>
-                <input type="text" class="app-filter-input" placeholder="Search dimension" style="width:100%;">
+                <input type="text" class="app-filter-input" placeholder="Search dimension">
             </div>
             <div class="app-filter-group" style="flex:1;">
                 <span class="app-filter-label">Sort By</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option>Dimensions</option>
-                    <option>Grade</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'examResultSortBy',
+                    'name' => 'examResultSortBy',
+                    'options' => $examSortOptions,
+                    'selected' => 'dimensions',
+                    'placeholder' => 'Dimensions'
+                ])
             </div>
             <div class="app-filter-group" style="flex:1;">
                 <span class="app-filter-label">Show Entries</span>
-                <select class="app-filter-select" style="width:100%;">
-                    <option>10</option>
-                    <option>25</option>
-                    <option>50</option>
-                </select>
+                @include('registrar.components.listbox-select', [
+                    'id' => 'examResultShowEntries',
+                    'name' => 'examResultShowEntries',
+                    'options' => $examPerPageOptions,
+                    'selected' => '10',
+                    'placeholder' => '10'
+                ])
             </div>
         </div>
     </div>

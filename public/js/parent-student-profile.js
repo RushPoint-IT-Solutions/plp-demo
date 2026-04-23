@@ -120,7 +120,7 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! C:\Users\micha\Desktop\OJT\plp-demo\resources\js\parent-student-profile.js */"./resources/js/parent-student-profile.js");
+module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\parent-student-profile.js */"./resources/js/parent-student-profile.js");
 
 
 /***/ })

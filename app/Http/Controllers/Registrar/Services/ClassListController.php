@@ -6,6 +6,7 @@ use App\AcademicTerm;
 use App\Http\Controllers\Controller;
 use App\Student;
 use App\Subject;
+use App\Support\SystemConfigSchoolTermOptions;
 use App\SystemSchoolSemester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -59,6 +60,7 @@ class ClassListController extends Controller
             'selectedSemester' => $state['selected_semester'],
             'schoolYearOptions' => $state['school_year_options'],
             'semesterOptions' => $state['semester_options'],
+            'semesterMap' => $state['semester_map'],
             'queryBase' => $queryBase,
         ]);
     }
@@ -148,16 +150,15 @@ class ClassListController extends Controller
     private function resolveState(Request $request)
     {
         list($schoolYears, $semesterMap) = $this->configuredSchoolSemesterOptions();
-        list($defaultSchoolYear, $defaultSemester) = $this->defaultSelection($schoolYears, $semesterMap);
 
-        $selectedSchoolYear = trim((string) $request->query('school_year', $defaultSchoolYear));
+        $selectedSchoolYear = trim((string) $request->query('school_year', ''));
         if ($selectedSchoolYear !== '' && !in_array($selectedSchoolYear, $schoolYears, true)) {
             $selectedSchoolYear = '';
         }
 
         $semesterOptions = $this->semesterOptions($semesterMap, $selectedSchoolYear);
 
-        $selectedSemester = $this->normalizeSemesterValue($request->query('semester', $defaultSemester));
+        $selectedSemester = $this->normalizeSemesterValue($request->query('semester', ''));
         if ($selectedSemester !== '' && !$this->optionContainsValue($semesterOptions, $selectedSemester)) {
             $selectedSemester = '';
         }
@@ -174,6 +175,7 @@ class ClassListController extends Controller
             'selected_semester' => $selectedSemester,
             'school_year_options' => $this->schoolYearOptions($schoolYears),
             'semester_options' => $semesterOptions,
+            'semester_map' => $semesterMap,
             'subject_id' => $subjectId,
             'has_term_filter' => $hasTermFilter,
             'academic_term_ids' => $academicTermIds,
@@ -243,103 +245,28 @@ class ClassListController extends Controller
 
     private function configuredSchoolSemesterOptions()
     {
-        $schoolYears = [];
-        $semesterMap = [];
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
 
-        if (Schema::hasTable('system_school_semesters')) {
-            $this->ensureSchoolSemesterRowsExist();
-
-            $hasLegacySchoolYear = Schema::hasColumn('system_school_semesters', 'school_year');
-            $hasLegacySemester = Schema::hasColumn('system_school_semesters', 'semester');
-            $hasAcademicTermId = Schema::hasColumn('system_school_semesters', 'academic_term_id');
-
-            $configRowsQuery = SystemSchoolSemester::query()->orderByDesc('id');
-
-            if ($hasLegacySchoolYear) {
-                $configRowsQuery->orderBy('school_year', 'desc');
-            }
-
-            if ($hasAcademicTermId) {
-                $configRowsQuery->with('academicTerm');
-            }
-
-            $configRows = $configRowsQuery->get();
-
-            foreach ($configRows as $configRow) {
-                $schoolYear = '';
-                if ($hasLegacySchoolYear) {
-                    $schoolYear = trim((string) $configRow->getAttribute('school_year'));
-                }
-
-                if ($schoolYear === '' && $configRow->relationLoaded('academicTerm') && $configRow->academicTerm) {
-                    $schoolYear = trim((string) $configRow->academicTerm->school_year);
-                }
-
-                $rawSemester = '';
-                if ($hasLegacySemester) {
-                    $rawSemester = trim((string) $configRow->getAttribute('semester'));
-                }
-
-                if ($rawSemester === '' && $configRow->relationLoaded('academicTerm') && $configRow->academicTerm) {
-                    $rawSemester = trim((string) $configRow->academicTerm->term);
-                }
-
-                $semester = $this->normalizeSemesterValue($rawSemester);
-
-                if ($schoolYear === '' || $semester === '') {
-                    continue;
-                }
-
-                if (!array_key_exists($schoolYear, $schoolYears)) {
-                    $schoolYears[$schoolYear] = $schoolYear;
-                }
-
-                if (!array_key_exists($schoolYear, $semesterMap)) {
-                    $semesterMap[$schoolYear] = [];
-                }
-
-                if (!in_array($semester, $semesterMap[$schoolYear], true)) {
-                    $semesterMap[$schoolYear][] = $semester;
-                }
-            }
-        }
-
-        $terms = AcademicTerm::query()
-            ->orderBy('school_year', 'desc')
-            ->orderByRaw($this->termSortSql())
-            ->orderBy('term')
-            ->get(['school_year', 'term']);
-
-        foreach ($terms as $term) {
-            $schoolYear = trim((string) $term->school_year);
-            $semester = $this->normalizeSemesterValue($term->term);
-
-            if ($schoolYear === '' || $semester === '') {
-                continue;
-            }
-
-            if (!array_key_exists($schoolYear, $schoolYears)) {
-                $schoolYears[$schoolYear] = $schoolYear;
-            }
-
-            if (!array_key_exists($schoolYear, $semesterMap)) {
-                $semesterMap[$schoolYear] = [];
-            }
-
-            if (!in_array($semester, $semesterMap[$schoolYear], true)) {
-                $semesterMap[$schoolYear][] = $semester;
-            }
-        }
+        $schoolYears = array_values($configOptions['school_years'] ?? []);
+        $semesterMap = is_array($configOptions['semester_map'] ?? null)
+            ? $configOptions['semester_map']
+            : [];
 
         foreach ($semesterMap as $schoolYear => $semesters) {
-            usort($semesters, function ($left, $right) {
+            $normalizedSemesters = array_values(array_filter(array_map(function ($semester) {
+                return $this->normalizeSemesterValue((string) $semester);
+            }, (array) $semesters), function ($semester) {
+                return $semester !== '';
+            }));
+
+            usort($normalizedSemesters, function ($left, $right) {
                 return $this->semesterWeight($left) <=> $this->semesterWeight($right);
             });
 
-            $semesterMap[$schoolYear] = array_values(array_unique($semesters));
+            $semesterMap[$schoolYear] = array_values(array_unique($normalizedSemesters));
         }
 
-        return [array_values($schoolYears), $semesterMap];
+        return [$schoolYears, $semesterMap];
     }
 
     private function ensureSchoolSemesterRowsExist()

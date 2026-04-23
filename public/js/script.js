@@ -434,6 +434,66 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        const addDeptBtn = document.getElementById('pfAddDeptBtn');
+        const newDeptsContainer = document.getElementById('pfNewDeptsContainer');
+        const stagedSection = document.getElementById('pfStagedDeptsSection');
+        const deptCodeInput = document.getElementById('setupDepartmentCode');
+        const deptDescInput = document.getElementById('setupDepartmentDescription');
+
+        if (addDeptBtn && newDeptsContainer && stagedSection && deptCodeInput && deptDescInput) {
+            addDeptBtn.addEventListener('click', function() {
+                const code = deptCodeInput.value.trim();
+                const desc = deptDescInput.value.trim();
+
+                if (!code || !desc) {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast('Please enter both code and description.', 'error');
+                    } else {
+                        alert('Please enter both code and description.');
+                    }
+                    return;
+                }
+
+                stagedSection.style.display = 'block';
+
+                const row = document.createElement('div');
+                row.className = 'pf-dept-staged-row';
+                row.style.display = 'grid';
+                row.style.gridTemplateColumns = 'minmax(150px, 0.9fr) minmax(260px, 1.5fr) auto';
+                row.style.gap = '10px';
+                row.style.alignItems = 'center';
+                row.style.marginBottom = '8px';
+                row.style.paddingBottom = '8px';
+                row.style.borderBottom = '1px solid rgba(0, 104, 55, 0.1)';
+
+                row.innerHTML = `
+                    <div>
+                        <input type="text" class="pf-modal-input" name="new_dept_codes[]" value="${code}" readonly style="background:#fff; border-color:#006837; color:#006837; font-weight:600; width:100%;">
+                    </div>
+                    <div>
+                        <input type="text" class="pf-modal-input" name="new_dept_descriptions[]" value="${desc}" readonly style="background:#fff; border-color:#006837; width:100%;">
+                    </div>
+                    <div style="display:flex; justify-content:center; width: 34px;">
+                        <button type="button" class="pf-dept-delete-btn pf-dept-remove-btn" title="Remove">&times;</button>
+                    </div>
+                `;
+
+                row.querySelector('.pf-dept-remove-btn').addEventListener('click', function() {
+                    row.remove();
+                    if (newDeptsContainer.children.length === 0) {
+                        stagedSection.style.display = 'none';
+                    }
+                });
+
+                newDeptsContainer.appendChild(row);
+
+                // Clear inputs
+                deptCodeInput.value = '';
+                deptDescInput.value = '';
+                deptCodeInput.focus();
+            });
+        }
+
         window.addEventListener('resize', function () {
             const openMenu = programFilePage.querySelector('.apst-dropdown.open');
             if (!openMenu) {
@@ -447,7 +507,85 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Handle existing department deletion (Globally delegated)
+    let pendingDeptDelete = { url: '', code: '', btn: null };
+
+    document.addEventListener('click', function(event) {
+        const delBtn = event.target.closest('.pf-existing-dept-del-btn');
+        if (!delBtn) return;
+
+        event.preventDefault();
+        pendingDeptDelete.code = delBtn.getAttribute('data-code');
+        pendingDeptDelete.url = delBtn.getAttribute('data-delete-url');
+        pendingDeptDelete.btn = delBtn;
+
+        const confirmModal = document.getElementById('pfDeleteDeptConfirmModal');
+        const codeDisplay = document.getElementById('pfDeleteDeptCodeDisplay');
+        if (confirmModal && codeDisplay) {
+            codeDisplay.textContent = 'Department: ' + pendingDeptDelete.code;
+            codeDisplay.style.textAlign = 'center';
+            confirmModal.style.zIndex = '10001';
+            confirmModal.classList.remove('is-hidden');
+        }
+    });
+
+    const confirmDeleteBtn = document.getElementById('pfConfirmDeptDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (!pendingDeptDelete.url) return;
+
+            const originalText = confirmDeleteBtn.textContent;
+            confirmDeleteBtn.textContent = 'Deleting...';
+            confirmDeleteBtn.disabled = true;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            fetch(pendingDeptDelete.url, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeDeptConfirmModal();
+                if (data.ok) {
+                    if (pendingDeptDelete.btn) {
+                        pendingDeptDelete.btn.closest('.pf-dept-list-row').remove();
+                    }
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast(data.message, 'success');
+                    }
+                } else {
+                    if (typeof showRegistrarToast === 'function') {
+                        showRegistrarToast(data.message || 'Failed to delete department.', 'error');
+                    } else {
+                        alert(data.message || 'Failed to delete department.');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting department:', error);
+                closeDeptConfirmModal();
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('An error occurred. Please try again.', 'error');
+                }
+            })
+            .finally(() => {
+                confirmDeleteBtn.textContent = originalText;
+                confirmDeleteBtn.disabled = false;
+            });
+        });
+    }
 });
+
+function closeDeptConfirmModal() {
+    const modal = document.getElementById('pfDeleteDeptConfirmModal');
+    if (modal) modal.classList.add('is-hidden');
+}
 
 function openSetupDepartmentsModal() {
     const modal = document.getElementById('setupDepartmentsModal');
@@ -479,6 +617,25 @@ function closePfDeleteProgramModal() {
     if (modal) modal.style.display = 'none';
 }
 
+// ===== GLOBAL LOGOUT HANDLER =====
+document.addEventListener('click', function(event) {
+    const logoutBtn = event.target.closest('.js-registrar-logout');
+    if (logoutBtn) {
+        event.preventDefault();
+        const formId = 'registrar-logout-form';
+        const form = document.getElementById(formId);
+        if (form) {
+            form.submit();
+        } else {
+            // Fallback for older pages
+            const fallbackForm = logoutBtn.nextElementSibling;
+            if (fallbackForm && fallbackForm.tagName === 'FORM') {
+                fallbackForm.submit();
+            }
+        }
+    }
+});
+
 document.addEventListener('click', function (event) {
     const overlays = document.querySelectorAll('.pf-modal-overlay');
     overlays.forEach(function (overlay) {
@@ -486,4 +643,4 @@ document.addEventListener('click', function (event) {
             overlay.style.display = 'none';
         }
     });
-});
+});

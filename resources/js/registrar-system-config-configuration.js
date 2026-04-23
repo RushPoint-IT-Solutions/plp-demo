@@ -85,6 +85,66 @@
         return parsed.getFullYear() + '-' + month + '-' + day;
     }
 
+    function setDateInputValue(inputId, value) {
+        var input = byId(inputId);
+        if (!input) {
+            return;
+        }
+
+        var normalized = normalizeDateInputValue(value);
+
+        if (input._flatpickr) {
+            if (normalized) {
+                input._flatpickr.setDate(normalized, true, 'Y-m-d');
+            } else {
+                input._flatpickr.clear();
+            }
+            return;
+        }
+
+        input.value = normalized;
+    }
+
+    function initFlatpickrDateInputs() {
+        if (typeof window.flatpickr !== 'function') {
+            return;
+        }
+
+        [
+            'cfgCutoffDate',
+            'cfgSectionCutoffDate',
+            'cfgCutoffRegDate',
+            'cfgCutoffRegCutoffDate',
+            'cfgCutoffConfigDate',
+            'cfgGPDateFrom'
+        ].forEach(function (inputId) {
+            var input = byId(inputId);
+            if (!input) {
+                return;
+            }
+
+            if (input._flatpickr) {
+                input._flatpickr.destroy();
+            }
+
+            window.flatpickr(input, {
+                dateFormat: 'Y-m-d',
+                allowInput: true,
+                disableMobile: true,
+                onReady: function (_selectedDates, _dateStr, instance) {
+                    if (!instance || !instance.calendarContainer) {
+                        return;
+                    }
+
+                    instance.calendarContainer.classList.add('an-flatpickr-calendar');
+                    instance.calendarContainer.classList.add('app-form-flatpickr-theme');
+                }
+            });
+
+            setDateInputValue(inputId, input.value);
+        });
+    }
+
     function routeFromTemplate(template, id) {
         return String(template || '').replace('__ID__', String(id));
     }
@@ -665,37 +725,69 @@
         byId('cfgGPYear').value = '';
         byId('cfgGPSemester').value = '';
         byId('cfgGPPeriod').value = '';
-        byId('cfgGPDateFrom').value = '';
+        setDateInputValue('cfgGPDateFrom', '');
         syncSelectUI('cfgGPSemester');
         syncSelectUI('cfgGPPeriod');
     }
 
+    function setSignatureSaveButtonState(isSaving) {
+        var saveButton = byId('cfgSignatureSaveBtn');
+        if (!saveButton) {
+            return;
+        }
+
+        var editNode = byId('cfgSignatureEditId');
+        var hasEditId = !!(editNode && String(editNode.value || '').trim() !== '');
+
+        saveButton.disabled = !!isSaving;
+        saveButton.textContent = isSaving ? 'Saving...' : (hasEditId ? 'Update' : 'Save');
+    }
+
     function resetSignatureForm() {
-        byId('cfgSignatureEditId').value = '';
-        byId('cfgSignatureDesignation').value = '';
-        byId('cfgSignatureName').value = '';
-        byId('cfgSignatureFile').value = '';
-        byId('cfgSignatureSaveBtn').textContent = 'Save';
+        var editNode = byId('cfgSignatureEditId');
+        var designationNode = byId('cfgSignatureDesignation');
+        var nameNode = byId('cfgSignatureName');
+        var fileNode = byId('cfgSignatureFile');
+        var titleNode = byId('cfgSignatureTitle');
+
+        if (editNode) {
+            editNode.value = '';
+        }
+        if (designationNode) {
+            designationNode.value = '';
+        }
+        if (nameNode) {
+            nameNode.value = '';
+        }
+        if (fileNode) {
+            fileNode.value = '';
+        }
+        if (titleNode) {
+            titleNode.textContent = 'ADD SIGNATURE';
+        }
+
+        setInlineMessage('cfgSignatureModalMessage', '', false);
+        setSignatureSaveButtonState(false);
         syncSelectUI('cfgSignatureDesignation');
     }
 
     function resetCutoffDateForm() {
         byId('cfgCutoffDateEditId').value = '';
         byId('cfgCutoffType').value = '';
-        byId('cfgCutoffDate').value = '';
+        setDateInputValue('cfgCutoffDate', '');
         byId('cfgCutoffSaveBtn').textContent = 'Save';
         syncSelectUI('cfgCutoffType');
     }
 
     function resetSectionCutoffForm() {
         byId('cfgSectionCutoffEditId').value = '';
-        byId('cfgSectionCutoffDate').value = '';
+        setDateInputValue('cfgSectionCutoffDate', '');
         byId('cfgSectionCutoffSaveBtn').textContent = 'Save';
     }
 
     function resetCutoffConfigForm() {
         byId('cfgCutoffConfigEditId').value = '';
-        byId('cfgCutoffConfigDate').value = '';
+        setDateInputValue('cfgCutoffConfigDate', '');
         byId('cfgCutoffConfigSaveBtn').textContent = 'Update';
     }
 
@@ -808,6 +900,7 @@
         var editId = byId('cfgSignatureEditId').value;
 
         if (!designationId || !signerName) {
+            setInlineMessage('cfgSignatureModalMessage', 'Please complete designation and name for signature.', true);
             showMessage('Please complete designation and name for signature.', 'error');
             return;
         }
@@ -819,6 +912,9 @@
         if (fileInput.files && fileInput.files[0]) {
             formData.append('signature_file', fileInput.files[0]);
         }
+
+        setInlineMessage('cfgSignatureModalMessage', 'Saving signature configuration...', false);
+        setSignatureSaveButtonState(true);
 
         try {
             var response;
@@ -834,10 +930,14 @@
 
             state.pager.signatures.page = 1;
             renderSignatures();
+            closeModal('cfgSignatureModal');
             resetSignatureForm();
             showMessage('Signature configuration saved.', 'success');
         } catch (error) {
+            setInlineMessage('cfgSignatureModalMessage', error.message || 'Unable to save signature configuration.', true);
             showMessage(error.message || 'Unable to save signature configuration.', 'error');
+        } finally {
+            setSignatureSaveButtonState(false);
         }
     }
 
@@ -991,8 +1091,8 @@
         try {
             await requestJson(routes.cutoffStore, 'POST', payload);
             setInlineMessage('cfgCutoffRegMessage', 'Cut-off registration saved for student ' + studentNo + '.', false);
-            byId('cfgCutoffRegDate').value = '';
-            byId('cfgCutoffRegCutoffDate').value = '';
+            setDateInputValue('cfgCutoffRegDate', '');
+            setDateInputValue('cfgCutoffRegCutoffDate', '');
             byId('cfgCutoffRegStudentNo').value = '';
         } catch (error) {
             setInlineMessage('cfgCutoffRegMessage', error.message || 'Unable to save cut-off registration.', true);
@@ -1207,7 +1307,7 @@
             byId('cfgGPYear').value = row.sy || '';
             byId('cfgGPSemester').value = row.semester || '';
             byId('cfgGPPeriod').value = row.period || '';
-            byId('cfgGPDateFrom').value = normalizeDateInputValue(row.dateFrom);
+            setDateInputValue('cfgGPDateFrom', row.dateFrom);
             syncSelectUI('cfgGPSemester');
             syncSelectUI('cfgGPPeriod');
             openModal('cfgGradePostingModal');
@@ -1219,8 +1319,11 @@
             byId('cfgSignatureDesignation').value = row.designationId || '';
             byId('cfgSignatureName').value = row.name || '';
             byId('cfgSignatureFile').value = '';
-            byId('cfgSignatureSaveBtn').textContent = 'Update';
+            byId('cfgSignatureTitle').textContent = 'EDIT SIGNATURE';
+            setInlineMessage('cfgSignatureModalMessage', '', false);
+            setSignatureSaveButtonState(false);
             syncSelectUI('cfgSignatureDesignation');
+            openModal('cfgSignatureModal');
             return;
         }
 
@@ -1229,7 +1332,7 @@
             byId('cfgCutoffType').value = row.typeCode || '';
             byId('cfgCutoffSy').value = row.sy || '';
             byId('cfgCutoffSemester').value = row.semester || '';
-            byId('cfgCutoffDate').value = normalizeDateInputValue(row.cutoffDate);
+            setDateInputValue('cfgCutoffDate', row.cutoffDate);
             byId('cfgCutoffSaveBtn').textContent = 'Update';
             syncSelectUI('cfgCutoffType');
             syncSelectUI('cfgCutoffSemester');
@@ -1240,7 +1343,7 @@
             byId('cfgSectionCutoffEditId').value = row.id || '';
             byId('cfgSectionCutoffSy').value = row.sy || '';
             byId('cfgSectionCutoffSemester').value = row.semester || '';
-            byId('cfgSectionCutoffDate').value = normalizeDateInputValue(row.cutoffDate);
+            setDateInputValue('cfgSectionCutoffDate', row.cutoffDate);
             byId('cfgSectionCutoffSaveBtn').textContent = 'Update';
             syncSelectUI('cfgSectionCutoffSemester');
             return;
@@ -1250,7 +1353,7 @@
             byId('cfgCutoffConfigEditId').value = row.id || '';
             byId('cfgCutoffConfigSy').value = row.sy || '';
             byId('cfgCutoffConfigSemester').value = row.semester || '';
-            byId('cfgCutoffConfigDate').value = normalizeDateInputValue(row.cutoffDate);
+            setDateInputValue('cfgCutoffConfigDate', row.cutoffDate);
             byId('cfgCutoffConfigSaveBtn').textContent = 'Update';
             syncSelectUI('cfgCutoffConfigSemester');
             return;
@@ -1340,11 +1443,21 @@
                 return;
             }
 
+            var openSignature = event.target.closest('[data-cfg-action="open-signature-modal"]');
+            if (openSignature) {
+                resetSignatureForm();
+                openModal('cfgSignatureModal');
+                return;
+            }
+
             var closeModalButton = event.target.closest('[data-cfg-action="close-modal"]');
             if (closeModalButton) {
                 var modalTarget = closeModalButton.getAttribute('data-cfg-modal-target');
                 if (modalTarget) {
                     closeModal(modalTarget);
+                    if (modalTarget === 'cfgSignatureModal') {
+                        resetSignatureForm();
+                    }
                 }
                 return;
             }
@@ -1399,6 +1512,9 @@
             overlay.addEventListener('click', function (event) {
                 if (event.target === overlay) {
                     overlay.classList.add('is-hidden');
+                    if (overlay.id === 'cfgSignatureModal') {
+                        resetSignatureForm();
+                    }
                 }
             });
         });
@@ -1429,6 +1545,7 @@
     bindForms();
     bindGlobalEvents();
     renderAll();
+    initFlatpickrDateInputs();
     refreshListboxes();
     applyInitialMessages();
 })();

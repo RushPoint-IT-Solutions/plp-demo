@@ -25,19 +25,23 @@
             <div class="at-config-grid">
                 <div class="at-config-item">
                     <span class="at-config-inline-label">School Year:</span>
-                    <select id="atSchoolYear" class="app-filter-select" style="width:100%;">
-                        @foreach(($alumniSchoolYears ?? []) as $schoolYear)
-                            <option value="{{ $schoolYear }}" @if(($alumniConfig['schoolYear'] ?? '') === $schoolYear) selected @endif>{{ $schoolYear }}</option>
-                        @endforeach
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'atSchoolYear',
+                        'name' => 'atSchoolYear',
+                        'options' => ($alumniSchoolYears ?? []),
+                        'selected' => ($alumniConfig['schoolYear'] ?? ''),
+                        'placeholder' => '- Select School Year -',
+                    ])
                 </div>
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Term:</span>
-                    <select id="atTerm" class="app-filter-select" style="width:100%;">
-                        @foreach(($alumniTerms ?? ['First', 'Second', 'Summer']) as $term)
-                            <option value="{{ $term }}" @if(($alumniConfig['term'] ?? '') === $term) selected @endif>{{ $term }}</option>
-                        @endforeach
-                    </select>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'atTerm',
+                        'name' => 'atTerm',
+                        'options' => ($alumniTerms ?? ['First', 'Second', 'Summer']),
+                        'selected' => ($alumniConfig['term'] ?? ''),
+                        'placeholder' => '- Select Term -',
+                    ])
                 </div>
                 <div class="at-config-action">
                     <button type="button" class="pf-btn-new at-btn-set" onclick="saveAlumniConfig()">Set</button>
@@ -108,10 +112,28 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script>
 var atRows = @json($alumniRows ?? []);
 var atConfig = @json($alumniConfig ?? ['schoolYear' => '2025-2026', 'term' => 'Second']);
+var atSemesterMap = @json($alumniSemesterMap ?? []);
+var atBaseTerms = @json($alumniTerms ?? ['First', 'Second', 'Summer']);
 var atSaveConfigUrl = '{{ route('registrar.registrar-menu.alumni.tracker.config') }}';
+
+function atRefreshListbox(selectElement) {
+    if (!selectElement) {
+        return;
+    }
+
+    if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refresh === 'function') {
+        window.registrarListboxSelect.refresh(selectElement);
+        return;
+    }
+
+    if (typeof window.CustomEvent === 'function') {
+        document.dispatchEvent(new CustomEvent('registrar:listbox:refresh', { detail: { target: selectElement } }));
+    }
+}
 
 function atEscapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function(ch) {
@@ -122,6 +144,42 @@ function atEscapeHtml(value) {
 
 function atNormalize(value) {
     return String(value || '').trim().toLowerCase();
+}
+
+function atResolveTermsForYear(schoolYear) {
+    var yearKey = String(schoolYear || '').trim();
+    if (yearKey && atSemesterMap && Array.isArray(atSemesterMap[yearKey]) && atSemesterMap[yearKey].length) {
+        return atSemesterMap[yearKey];
+    }
+
+    return Array.isArray(atBaseTerms) && atBaseTerms.length
+        ? atBaseTerms.slice()
+        : ['First', 'Second', 'Summer'];
+}
+
+function atSyncTermOptions(preferredTerm) {
+    var schoolYearSelect = document.getElementById('atSchoolYear');
+    var termSelect = document.getElementById('atTerm');
+    if (!schoolYearSelect || !termSelect) {
+        return;
+    }
+
+    var terms = atResolveTermsForYear(schoolYearSelect.value);
+    var selectedTerm = String(preferredTerm || termSelect.value || '').trim();
+
+    termSelect.innerHTML = terms.map(function(term) {
+        return '<option value="' + atEscapeHtml(term) + '">' + atEscapeHtml(term) + '</option>';
+    }).join('');
+
+    if (selectedTerm && terms.indexOf(selectedTerm) !== -1) {
+        termSelect.value = selectedTerm;
+    }
+
+    if (!termSelect.value && terms.length) {
+        termSelect.value = terms[0];
+    }
+
+    atRefreshListbox(termSelect);
 }
 
 function atGetFilteredRows() {
@@ -269,10 +327,21 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', atRenderTable);
     }
 
-    document.getElementById('atSchoolYear').value = atConfig.schoolYear || '2025-2026';
-    document.getElementById('atTerm').value = atConfig.term || 'Second';
+    var schoolYearSelect = document.getElementById('atSchoolYear');
+    if (schoolYearSelect) {
+        schoolYearSelect.value = atConfig.schoolYear || schoolYearSelect.value;
+    }
 
-    ['atSchoolYear', 'atTerm', 'atProgram', 'atYearLevel', 'atSortBy', 'atSortOrder'].forEach(function(id) {
+    atSyncTermOptions(atConfig.term || '');
+
+    if (schoolYearSelect) {
+        schoolYearSelect.addEventListener('change', function() {
+            atSyncTermOptions('');
+            atRenderTable();
+        });
+    }
+
+    ['atTerm', 'atProgram', 'atYearLevel', 'atSortBy', 'atSortOrder'].forEach(function(id) {
         var element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', atRenderTable);
