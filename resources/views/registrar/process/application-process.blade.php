@@ -229,6 +229,7 @@
     data-approval-status-url-template="{{ route('registrar.process.application.approval-status.update', ['applicant' => '__APPLICANT_ID__']) }}"
     data-documents-data-url-template="{{ route('registrar.process.application.documents.data', ['applicant' => '__APPLICANT_ID__']) }}"
     data-documents-upsert-url-template="{{ route('registrar.process.application.documents.upsert', ['applicant' => '__APPLICANT_ID__', 'registrarRequirement' => '__REQUIREMENT_ID__']) }}"
+    data-medical-clearance-url-template="{{ route('registrar.process.application.medical-clearance.view', ['applicant' => '__APPLICANT_ID__']) }}"
     data-medical-data-url-template="{{ route('registrar.process.application.documents.data', ['applicant' => '__APPLICANT_ID__']) }}"
     data-medical-upsert-url-template="{{ route('registrar.process.application.documents.upsert', ['applicant' => '__APPLICANT_ID__', 'registrarRequirement' => '__REQUIREMENT_ID__']) }}"
     data-print-url="{{ route('registrar.process.application.print') }}"
@@ -572,7 +573,17 @@
 
     {{-- Medical Clearance --}}
     <div class="applicant-panel" id="panel-medical-clearance">
-        @include('registrar.process.panels.medical-clearance')
+        <div class="app-form-editor-empty" id="registrarMedicalClearanceEmpty">
+            Select an applicant from the table to load their medical clearance.
+        </div>
+        <iframe
+            id="registrarMedicalClearanceFrame"
+            class="app-form-editor-frame"
+            title="Registrar Applicant Medical Clearance"
+            style="display:none; width:100%; min-height:800px; border:0; border-radius:0; background:transparent; overflow:hidden !important;"
+            scrolling="no"
+            loading="lazy"
+        ></iframe>
     </div>
 
     {{-- Exam Result --}}

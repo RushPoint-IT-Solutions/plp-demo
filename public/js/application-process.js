@@ -374,6 +374,21 @@
             }
         }
 
+        var mcFrame = document.getElementById('registrarMedicalClearanceFrame');
+        var mcEmpty = document.getElementById('registrarMedicalClearanceEmpty');
+        var mcUrlTemplate = appProcessPage.getAttribute('data-medical-clearance-url-template') || '';
+        
+        if (mcFrame && mcUrlTemplate) {
+            var mcUrl = getUrlFromTemplate(mcUrlTemplate, applicantPk);
+            if (mcUrl) {
+                mcFrame.setAttribute('src', mcUrl);
+                mcFrame.style.display = 'block';
+                if (mcEmpty) {
+                    mcEmpty.style.display = 'none';
+                }
+            }
+        }
+
         renderExamResultCardFromRow(row);
     }
 

@@ -41,8 +41,8 @@
             @csrf
 
             <div class="batch-dropzone" id="batchDropzone">
-                <p class="dropzone-text">Drop JPG files here or click to upload</p>
-                <input type="file" id="batchFileInput" name="images[]" accept=".jpg,.jpeg,image/jpeg,image/jpg" multiple hidden>
+                <p class="dropzone-text">Drop JPG/PNG files here or click to upload</p>
+                <input type="file" id="batchFileInput" name="images[]" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" multiple hidden>
             </div>
 
             <div class="batch-upload-actions">
@@ -54,8 +54,9 @@
         {{-- Note --}}
         <div class="batch-upload-note">
             <p><strong>Note:</strong></p>
-            <p>Upload image files (jpg/jpeg), each with a maximum size of 1MB.</p>
+            <p>Upload image files (jpg/jpeg/png), each with a maximum size of 1MB.</p>
             <p>The filename must be the Student Number (example: 2023A0001.jpg).</p>
+            <p>Maximum 50 files per batch upload.</p>
         </div>
 
         <div class="batch-upload-results">

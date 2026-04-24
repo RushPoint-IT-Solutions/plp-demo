@@ -2848,9 +2848,10 @@ class RegistrarController extends Controller
 
     public function storeBatchUpload(Request $request)
     {
+        // Validate file types: JPG, JPEG, PNG - and file size: max 1MB per file, max 50 files per batch
         $validated = $request->validate([
-            'images' => 'required|array|min:1',
-            'images.*' => 'required|file|mimes:jpg,jpeg|max:1024',
+            'images' => 'required|array|min:1|max:50',
+            'images.*' => 'required|file|mimes:jpg,jpeg,png|max:1024',
         ]);
 
         if (!Schema::hasTable('student_profile_images')) {
@@ -2862,11 +2863,15 @@ class RegistrarController extends Controller
         $uploadedRows = [];
         $skippedRows = [];
         $files = $validated['images'];
-
+    
+        // Track seen hashes and student numbers to detect duplicates within this batch
+        $seenHashes = [];
+        $seenStudentNos = [];
+    
         foreach ($files as $file) {
             $originalFilename = (string) $file->getClientOriginalName();
             $studentNo = trim((string) pathinfo($originalFilename, PATHINFO_FILENAME));
-
+    
             if ($studentNo === '') {
                 $skippedRows[] = [
                     'filename' => $originalFilename,
@@ -2874,7 +2879,28 @@ class RegistrarController extends Controller
                 ];
                 continue;
             }
-
+    
+            // Check for duplicate student numbers within this batch
+            if (isset($seenStudentNos[$studentNo])) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Duplicate student number ' . $studentNo . ' in batch upload.',
+                ];
+                continue;
+            }
+            $seenStudentNos[$studentNo] = true;
+    
+            // Compute file hash for duplicate content detection
+            $fileHash = hash_file('sha256', $file->getRealPath());
+            if (isset($seenHashes[$fileHash])) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Duplicate file content detected (same image uploaded twice).',
+                ];
+                continue;
+            }
+            $seenHashes[$fileHash] = $originalFilename;
+    
             $student = Student::where('student_no', $studentNo)->first();
             if (!$student) {
                 $skippedRows[] = [
@@ -2907,7 +2933,16 @@ class RegistrarController extends Controller
             if ($extension === '') {
                 $extension = 'jpg';
             }
-
+    
+            // Security double-check: validate extension matches allowed types
+            if (!in_array($extension, ['jpg', 'jpeg', 'png'])) {
+                $skippedRows[] = [
+                    'filename' => $originalFilename,
+                    'reason' => 'Invalid file extension: ' . $extension . '. Use jpg, jpeg, or png.',
+                ];
+                continue;
+            }
+    
             $storedFilename = $studentNo . '.' . $extension;
             $storedPath = $file->storeAs('students/profile-photos', $storedFilename, 'public');
 
@@ -3211,6 +3246,261 @@ class RegistrarController extends Controller
         ]);
     }
 
+
+    // =========================================================
+    // Medical Clearance (Registrar) Ã¢â‚¬â€œ manage requirements + files
+    // =========================================================
+
+    /**
+     * Show the registrar medical clearance management panel.
+     * Loads all RegistrarRequirements of type 'Medical'.
+     */
+    public function medicalClearanceIndex()
+    {
+        $medicalRequirements = collect();
+        if (Schema::hasTable('registrar_requirements')) {
+            $medicalRequirements = RegistrarRequirement::query()
+                ->where('requirement_type', 'Medical')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('registrar.process.panels.medical-clearance', [
+            'medicalClearances' => $medicalRequirements,
+        ]);
+    }
+
+    /**
+     * Store a new medical clearance requirement (Registrar).
+     */
+    public function storeMedicalClearance(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'document_name' => 'required|string|max:200',
+            'remarks'       => 'nullable|string|max:500',
+            'status'        => 'nullable|string|max:50',
+        ]);
+
+        if (!Schema::hasTable('registrar_requirements')) {
+            return response()->json(['ok' => false, 'message' => 'Table not available.'], 500);
+        }
+
+        $requirement = RegistrarRequirement::create([
+            'requirement_name'           => $validated['document_name'],
+            'requirement_type'           => 'Medical',
+            'applies_to_all_year_levels' => true,
+            'created_by_user_id'         => auth()->id(),
+        ]);
+
+        // Store status and remarks in a flexible way using the meta column if available,
+        // otherwise we embed them in requirement_name (not ideal, but we use a separate json col approach).
+        // For now we store status and remarks as JSON in storage.
+        $metaPath = 'medical-clearance/meta/' . $requirement->id . '.json';
+        $status = $validated['status'] ?? 'Missing';
+        $remarks = $validated['remarks'] ?? '';
+        Storage::disk('public')->put($metaPath, json_encode([
+            'status'  => $status,
+            'remarks' => $remarks,
+        ]));
+
+        AuditTrailRecorder::record('MEDICAL_CLEARANCE_CREATED', [[
+            'type'  => 'RegistrarRequirement',
+            'id'    => (int) $requirement->id,
+            'label' => $validated['document_name'],
+            'changes' => [
+                ['field' => 'requirement_name', 'old' => null, 'new' => $validated['document_name']],
+                ['field' => 'status',           'old' => null, 'new' => $status],
+            ],
+        ]], ['source_action' => __FUNCTION__]);
+
+        return response()->json([
+            'ok'   => true,
+            'id'   => $requirement->id,
+            'message' => 'Medical clearance requirement added.',
+            'data' => [
+                'id'            => $requirement->id,
+                'document_name' => $requirement->requirement_name,
+                'status'        => $status,
+                'remarks'       => $remarks,
+                'date_submitted' => null,
+                'has_file'      => false,
+            ],
+        ]);
+    }
+
+    /**
+     * Update a medical clearance requirement (Registrar).
+     */
+    public function updateMedicalClearance(Request $request, RegistrarRequirement $requirement): JsonResponse
+    {
+        if ($requirement->requirement_type !== 'Medical') {
+            return response()->json(['ok' => false, 'message' => 'Not a medical clearance record.'], 403);
+        }
+
+        $validated = $request->validate([
+            'document_name' => 'required|string|max:200',
+            'remarks'       => 'nullable|string|max:500',
+            'status'        => 'nullable|string|max:50',
+        ]);
+
+        $oldName = $requirement->requirement_name;
+        $requirement->requirement_name = $validated['document_name'];
+        $requirement->save();
+
+        $metaPath = 'medical-clearance/meta/' . $requirement->id . '.json';
+        $existingMeta = [];
+        if (Storage::disk('public')->exists($metaPath)) {
+            $existingMeta = json_decode(Storage::disk('public')->get($metaPath), true) ?? [];
+        }
+        $status  = $validated['status'] ?? ($existingMeta['status'] ?? 'Missing');
+        $remarks = $validated['remarks'] ?? ($existingMeta['remarks'] ?? '');
+        Storage::disk('public')->put($metaPath, json_encode([
+            'status'         => $status,
+            'remarks'        => $remarks,
+            'date_submitted' => $existingMeta['date_submitted'] ?? null,
+        ]));
+
+        AuditTrailRecorder::record('MEDICAL_CLEARANCE_UPDATED', [[
+            'type'  => 'RegistrarRequirement',
+            'id'    => (int) $requirement->id,
+            'label' => $validated['document_name'],
+            'changes' => [
+                ['field' => 'requirement_name', 'old' => $oldName, 'new' => $validated['document_name']],
+                ['field' => 'status',           'old' => $existingMeta['status'] ?? null, 'new' => $status],
+            ],
+        ]], ['source_action' => __FUNCTION__]);
+
+        return response()->json(['ok' => true, 'message' => 'Medical clearance updated.', 'status' => $status, 'remarks' => $remarks]);
+    }
+
+    /**
+     * Delete a medical clearance requirement (Registrar).
+     */
+    public function destroyMedicalClearance(RegistrarRequirement $requirement): JsonResponse
+    {
+        if ($requirement->requirement_type !== 'Medical') {
+            return response()->json(['ok' => false, 'message' => 'Not a medical clearance record.'], 403);
+        }
+
+        // Remove associated files and meta
+        $fileDir = 'medical-clearance/' . $requirement->id;
+        $metaPath = 'medical-clearance/meta/' . $requirement->id . '.json';
+        if (Storage::disk('public')->exists($fileDir)) {
+            Storage::disk('public')->deleteDirectory($fileDir);
+        }
+        if (Storage::disk('public')->exists($metaPath)) {
+            Storage::disk('public')->delete($metaPath);
+        }
+
+        $label = $requirement->requirement_name;
+        $requirement->delete();
+
+        AuditTrailRecorder::record('MEDICAL_CLEARANCE_DELETED', [[
+            'type'  => 'RegistrarRequirement',
+            'id'    => (int) $requirement->id,
+            'label' => $label,
+            'changes' => [['field' => 'requirement_name', 'old' => $label, 'new' => null]],
+        ]], ['source_action' => __FUNCTION__]);
+
+        return response()->json(['ok' => true, 'message' => 'Medical clearance deleted.']);
+    }
+
+    /**
+     * Upload a file attachment for a medical clearance requirement (Registrar).
+     */
+    public function uploadMedicalClearanceFile(Request $request, RegistrarRequirement $requirement): JsonResponse
+    {
+        if ($requirement->requirement_type !== 'Medical') {
+            return response()->json(['ok' => false, 'message' => 'Not a medical clearance record.'], 403);
+        }
+
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        $file       = $request->file('file');
+        $storedPath = $file->store('medical-clearance/' . $requirement->id, 'public');
+        $today      = now()->toDateString();
+
+        $metaPath = 'medical-clearance/meta/' . $requirement->id . '.json';
+        $existingMeta = [];
+        if (Storage::disk('public')->exists($metaPath)) {
+            $existingMeta = json_decode(Storage::disk('public')->get($metaPath), true) ?? [];
+        }
+        $existingMeta['file_path']      = $storedPath;
+        $existingMeta['original_name']  = $file->getClientOriginalName();
+        $existingMeta['date_submitted'] = $today;
+        if (empty($existingMeta['status']) || $existingMeta['status'] === 'Missing') {
+            $existingMeta['status'] = 'Submitted';
+        }
+        Storage::disk('public')->put($metaPath, json_encode($existingMeta));
+
+        AuditTrailRecorder::record('MEDICAL_CLEARANCE_FILE_UPLOADED', [[
+            'type'  => 'RegistrarRequirement',
+            'id'    => (int) $requirement->id,
+            'label' => $requirement->requirement_name,
+            'changes' => [
+                ['field' => 'file', 'old' => null, 'new' => $file->getClientOriginalName()],
+            ],
+        ]], ['source_action' => __FUNCTION__]);
+
+        return response()->json([
+            'ok'             => true,
+            'message'        => 'File uploaded successfully.',
+            'date_submitted' => $today,
+            'status'         => $existingMeta['status'],
+            'original_name'  => $file->getClientOriginalName(),
+        ]);
+    }
+
+    /**
+     * Stream / view a medical clearance file (Registrar).
+     */
+    public function viewMedicalClearanceFile(RegistrarRequirement $requirement)
+    {
+        if ($requirement->requirement_type !== 'Medical') {
+            abort(403);
+        }
+
+        $metaPath = 'medical-clearance/meta/' . $requirement->id . '.json';
+        if (!Storage::disk('public')->exists($metaPath)) {
+            abort(404, 'No file attached.');
+        }
+
+        $meta = json_decode(Storage::disk('public')->get($metaPath), true) ?? [];
+        $filePath = $meta['file_path'] ?? null;
+        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        $fullPath = Storage::disk('public')->path($filePath);
+        $mime     = Storage::disk('public')->mimeType($filePath);
+        return response()->file($fullPath, ['Content-Type' => $mime]);
+    }
+
+    /**
+     * Delete a file attachment for a medical clearance requirement (Registrar).
+     */
+    public function deleteMedicalClearanceFile(RegistrarRequirement $requirement): JsonResponse
+    {
+        if ($requirement->requirement_type !== 'Medical') {
+            return response()->json(['ok' => false, 'message' => 'Not a medical clearance record.'], 403);
+        }
+
+        $metaPath = 'medical-clearance/meta/' . $requirement->id . '.json';
+        if (Storage::disk('public')->exists($metaPath)) {
+            $meta = json_decode(Storage::disk('public')->get($metaPath), true) ?? [];
+            if (!empty($meta['file_path'])) {
+                Storage::disk('public')->delete($meta['file_path']);
+                Storage::disk('public')->deleteDirectory('medical-clearance/' . $requirement->id);
+                unset($meta['file_path'], $meta['original_name'], $meta['date_submitted']);
+                $meta['status'] = 'Missing';
+                Storage::disk('public')->put($metaPath, json_encode($meta));
+            }
+        }
+
+        return response()->json(['ok' => true, 'message' => 'File removed.']);
+    }
     private function resolveDocumentRequirementYearLevel($gradeLevel): array
     {
         $normalized = trim((string) $gradeLevel);
@@ -10038,5 +10328,233 @@ scholastic records but instead shall be replaced with the computed Semestral gra
                 'status' => 'pending',
             ]);
         }
+    }
+    /**
+     * View an applicant's specific medical clearance requirements
+     */
+    public function applicantMedicalClearanceView($applicantId)
+    {
+        $applicant = \App\Applicant::findOrFail($applicantId);
+        $medicalRequirements = [];
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('registrar_requirements')) {
+            $requirements = \App\RegistrarRequirement::query()
+                ->where('requirement_type', 'Medical')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            foreach ($requirements as $req) {
+                // Load applicant-specific meta (their uploaded file info)
+                $metaPath = 'applicants/medical-clearance/' . $applicant->id . '/meta/' . $req->id . '.json';
+                $meta = [];
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($metaPath)) {
+                    $meta = json_decode(\Illuminate\Support\Facades\Storage::disk('public')->get($metaPath), true) ?? [];
+                }
+                // Fallback: also check registrar-level meta for remarks defaults
+                $regMetaPath = 'medical-clearance/meta/' . $req->id . '.json';
+                $regMeta = [];
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($regMetaPath)) {
+                    $regMeta = json_decode(\Illuminate\Support\Facades\Storage::disk('public')->get($regMetaPath), true) ?? [];
+                }
+
+                $medicalRequirements[] = [
+                    'id'            => $req->id,
+                    'document_name' => $req->requirement_name,
+                    'remarks'       => $meta['remarks']        ?? ($regMeta['remarks']  ?? ''),
+                    'status'        => $meta['status']         ?? 'Missing',
+                    'date_submitted'=> $meta['date_submitted'] ?? null,
+                    'has_file'      => !empty($meta['file_path']) && \Illuminate\Support\Facades\Storage::disk('public')->exists($meta['file_path']),
+                ];
+            }
+        }
+
+        // We can just reuse the applicant's view but render it as an embedded layout
+        return view('applicant.medical-clearance', [
+            'applicant' => $applicant,
+            'medicalRequirements' => $medicalRequirements,
+            'applicationFormEmbedded' => true,
+            'mcRegistrarMode' => true
+        ]);
+    }
+
+    /**
+     * Upload an applicant's specific medical clearance file on behalf of them
+     */
+    public function applicantMedicalClearanceUpload(Request $request, $applicantId, $requirementId): \Illuminate\Http\JsonResponse
+    {
+        $applicant = \App\Applicant::findOrFail($applicantId);
+
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        $requirement = \App\RegistrarRequirement::where('id', $requirementId)->where('requirement_type', 'Medical')->first();
+        if (!$requirement) {
+            return response()->json(['ok' => false, 'message' => 'Requirement not found.'], 404);
+        }
+
+        $file = $request->file('file');
+        $storedPath = $file->store('applicants/medical-clearance/' . $applicant->id . '/' . $requirement->id, 'public');
+        $today = now()->toDateString();
+
+        $metaPath = 'applicants/medical-clearance/' . $applicant->id . '/meta/' . $requirement->id . '.json';
+        $existingMeta = [];
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($metaPath)) {
+            $existingMeta = json_decode(\Illuminate\Support\Facades\Storage::disk('public')->get($metaPath), true) ?? [];
+        }
+
+        // Delete old file if one existed
+        if (!empty($existingMeta['file_path']) && \Illuminate\Support\Facades\Storage::disk('public')->exists($existingMeta['file_path'])) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($existingMeta['file_path']);
+        }
+
+        $existingMeta['file_path']      = $storedPath;
+        $existingMeta['original_name']  = $file->getClientOriginalName();
+        $existingMeta['date_submitted'] = $today;
+        $existingMeta['status']         = 'Submitted';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($metaPath, json_encode($existingMeta));
+
+        // Audit Trail
+        try {
+            \App\Support\AuditTrailRecorder::record('MEDICAL_CLEARANCE_FILE_UPLOADED', [[
+                'id' => $requirement->id,
+                'name' => "Requirement: {$requirement->requirement_name}",
+                'type' => 'RegistrarRequirement'
+            ]], [
+                'action' => 'Uploaded applicant medical clearance document',
+                'file_name' => $file->getClientOriginalName(),
+                'applicant_id' => $applicant->id
+            ]);
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'ok'             => true,
+            'message'        => 'File uploaded successfully.',
+            'date_submitted' => $today,
+            'status'         => 'Submitted',
+            'original_name'  => $file->getClientOriginalName(),
+        ]);
+    }
+
+    /**
+     * View an applicant's specific medical clearance file
+     */
+    public function applicantMedicalClearanceFile($applicantId, $requirementId)
+    {
+        $applicant = \App\Applicant::findOrFail($applicantId);
+
+        $metaPath = 'applicants/medical-clearance/' . $applicant->id . '/meta/' . $requirementId . '.json';
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($metaPath)) {
+            abort(404, 'No file attached.');
+        }
+
+        $meta = json_decode(\Illuminate\Support\Facades\Storage::disk('public')->get($metaPath), true) ?? [];
+        $filePath = $meta['file_path'] ?? null;
+        if (!$filePath || !\Illuminate\Support\Facades\Storage::disk('public')->exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($filePath);
+        $mime     = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($filePath);
+        return response()->file($fullPath, ['Content-Type' => $mime]);
+    }
+
+    /**
+     * Update an applicant's specific medical clearance status/remarks
+     */
+    public function applicantMedicalClearanceStatusUpdate(Request $request, $applicantId, $requirementId): \Illuminate\Http\JsonResponse
+    {
+        $applicant = \App\Applicant::findOrFail($applicantId);
+
+        $request->validate([
+            'status' => 'required|string',
+            'remarks' => 'nullable|string'
+        ]);
+
+        $requirement = \App\RegistrarRequirement::where('id', $requirementId)->where('requirement_type', 'Medical')->first();
+        if (!$requirement) {
+            return response()->json(['ok' => false, 'message' => 'Requirement not found.'], 404);
+        }
+
+        $metaPath = 'applicants/medical-clearance/' . $applicant->id . '/meta/' . $requirement->id . '.json';
+        $existingMeta = [];
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($metaPath)) {
+            $existingMeta = json_decode(\Illuminate\Support\Facades\Storage::disk('public')->get($metaPath), true) ?? [];
+        }
+
+        $existingMeta['status'] = $request->input('status');
+        $existingMeta['remarks'] = $request->input('remarks');
+        
+        \Illuminate\Support\Facades\Storage::disk('public')->put($metaPath, json_encode($existingMeta));
+
+        // Audit Trail
+        try {
+            \App\Support\AuditTrailRecorder::record('MEDICAL_CLEARANCE_UPDATED', [[
+                'id' => $requirement->id,
+                'name' => "Requirement: {$requirement->requirement_name}",
+                'type' => 'RegistrarRequirement'
+            ]], [
+                'action' => 'Updated applicant medical clearance status',
+                'status' => $existingMeta['status'],
+                'remarks' => $existingMeta['remarks'],
+                'applicant_id' => $applicant->id
+            ]);
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'ok'             => true,
+            'message'        => 'Status updated successfully.',
+            'status'         => $existingMeta['status'],
+            'remarks'        => $existingMeta['remarks']
+        ]);
+    }
+
+    /**
+     * Delete an applicant's specific medical clearance file
+     */
+    public function applicantMedicalClearanceDeleteFile($applicantId, $requirementId): \Illuminate\Http\JsonResponse
+    {
+        $applicant = \App\Applicant::findOrFail($applicantId);
+
+        $requirement = \App\RegistrarRequirement::where('id', $requirementId)->where('requirement_type', 'Medical')->first();
+        if (!$requirement) {
+            return response()->json(['ok' => false, 'message' => 'Requirement not found.'], 404);
+        }
+
+        $metaPath = 'applicants/medical-clearance/' . $applicant->id . '/meta/' . $requirement->id . '.json';
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($metaPath)) {
+            return response()->json(['ok' => false, 'message' => 'No file attached.'], 404);
+        }
+
+        $meta = json_decode(\Illuminate\Support\Facades\Storage::disk('public')->get($metaPath), true) ?? [];
+        if (!empty($meta['file_path']) && \Illuminate\Support\Facades\Storage::disk('public')->exists($meta['file_path'])) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($meta['file_path']);
+        }
+
+        // Just clear the file but keep remarks if any, or we can just reset status to Missing
+        $meta['file_path'] = null;
+        $meta['original_name'] = null;
+        $meta['date_submitted'] = null;
+        $meta['status'] = 'Missing';
+        
+        \Illuminate\Support\Facades\Storage::disk('public')->put($metaPath, json_encode($meta));
+
+        // Audit Trail
+        try {
+            \App\Support\AuditTrailRecorder::record('MEDICAL_CLEARANCE_FILE_DELETED', [[
+                'id' => $requirement->id,
+                'name' => "Requirement: {$requirement->requirement_name}",
+                'type' => 'RegistrarRequirement'
+            ]], [
+                'action' => 'Deleted applicant medical clearance document',
+                'applicant_id' => $applicant->id
+            ]);
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'ok'             => true,
+            'message'        => 'File deleted successfully.',
+            'status'         => 'Missing'
+        ]);
     }
 }

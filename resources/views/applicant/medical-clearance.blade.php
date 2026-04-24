@@ -22,448 +22,441 @@
         </div>
     </div>
 
+    <div id="mcToastApp" style="display:none;position:fixed;bottom:24px;right:24px;z-index:99999;background:#006837;color:#fff;padding:12px 20px;border-radius:8px;font-size:0.88rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.18);">
+        <span id="mcToastAppMsg"></span>
+    </div>
+
     <div class="student-table-wrapper applicant-content-shell">
-        <div class="applicant-portal-content-header mb-3" style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 class="m-0" style="color: #2d3436; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px;">Medical Records</h3>
-            {{-- mcAddBtn removed as records are created by Registrar --}}
+        <div class="applicant-portal-content-header mb-3" style="display:flex;justify-content:space-between;align-items:center;">
+            <h3 class="m-0" style="color:#2d3436;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.5px;">Medical Records</h3>
+            <small style="color:#64748b;font-size:0.78rem;">Upload your required medical documents below.</small>
         </div>
 
-        <div class="app-table-wrap table-responsive">
-            <table class="app-table" id="mcTable">
+        <div class="app-table-wrap table-responsive" style="overflow: visible;">
+            <table class="app-table" id="mcTable" style="table-layout: auto; width: 100%;">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">Documents</th>
-                        <th style="width: 25%;">Remarks</th>
-                        <th style="width: 15%; text-align: center;">Status</th>
-                        <th style="width: 15%; text-align: center;">Date Submitted</th>
-                        <th style="width: 15%; text-align: center;">Attachment</th>
-                        <th style="width: 60px; text-align: center;">Action</th>
+                        <th style="width:28%; font-weight:800; text-transform:uppercase; font-size:0.75rem;">Documents</th>
+                        <th style="width:22%; font-weight:800; text-transform:uppercase; font-size:0.75rem;">Remarks</th>
+                        <th style="width:15%; text-align:center; font-weight:800; text-transform:uppercase; font-size:0.75rem;">Status</th>
+                        <th style="width:15%; text-align:center; font-weight:800; text-transform:uppercase; font-size:0.75rem;">Date Submitted</th>
+                        <th style="width:20%; text-align:center; font-weight:800; text-transform:uppercase; font-size:0.75rem;">Attachment</th>
+                        @if(!empty($mcRegistrarMode))
+                        <th style="width:60px; text-align:center; font-weight:800; text-transform:uppercase; font-size:0.75rem;">Action</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody id="mcTableBody">
+                    @forelse($medicalRequirements as $index => $item)
                     @php
-                        $mcApplicantSampleData = [
-                            (object)['id' => 1, 'document_name' => 'Chest X-ray', 'remarks' => 'Normal / Cleared', 'date_submitted' => '2026-04-15', 'status' => 'Approved', 'file' => 'chest_xray.pdf'],
-                            (object)['id' => 2, 'document_name' => 'Dental Certificate', 'remarks' => 'Needs cleaning', 'date_submitted' => '2026-04-18', 'status' => 'For Review', 'file' => null],
-                            (object)['id' => 3, 'document_name' => 'Drug Test Result', 'remarks' => 'Negative', 'date_submitted' => '2026-04-20', 'status' => 'Submitted', 'file' => 'drug_test.pdf'],
-                            (object)['id' => 4, 'document_name' => 'Good Moral', 'remarks' => 'Requirement from High School', 'date_submitted' => '2026-04-23', 'status' => 'Missing', 'file' => null],
-                        ];
-                        $mcApplicantDisplayData = (!empty($medicalClearances) && count($medicalClearances) > 0) ? $medicalClearances : $mcApplicantSampleData;
+                        $status      = $item['status']         ?? 'Missing';
+                        $remarks     = $item['remarks']        ?? '';
+                        $dateSub     = $item['date_submitted'] ?? null;
+                        $hasFile     = !empty($item['has_file']);
+                        $reqId       = $item['id'];
+                        $sc = 'status-missing';
+                        if ($status === 'Approved')   $sc = 'status-approved';
+                        elseif ($status === 'For Review') $sc = 'status-review';
+                        elseif ($status === 'Submitted')  $sc = 'status-submitted';
                     @endphp
-                    @foreach($mcApplicantDisplayData as $index => $item)
-                    @php
-                        $hasFile = isset($item->file) && $item->file;
-                        $status = $item->status ?? 'Missing';
-                        $statusClass = 'status-missing';
-                        if ($status === 'Approved') $statusClass = 'status-approved';
-                        if ($status === 'For Review') $statusClass = 'status-review';
-                        if ($status === 'Submitted') $statusClass = 'status-submitted';
-                    @endphp
-                    <tr class="mc-row" data-id="{{ $item->id }}" data-doc="{{ $item->document_name }}" data-remarks="{{ $item->remarks }}" data-date="{{ $item->date_submitted }}" data-status="{{ $status }}" data-file="{{ $hasFile ? 'Attached' : '' }}">
-                        <td>{{ $item->document_name }}</td>
-                        <td class="mc-remarks-cell">{{ $item->remarks }}</td>
-                        <td class="mc-status-cell" style="text-align: center;">
-                            <span class="mc-item-status {{ $statusClass }}">{{ $status }}</span>
+                    <tr class="mc-row"
+                        data-id="{{ $reqId }}"
+                        data-doc="{{ $item['document_name'] }}"
+                        data-remarks="{{ $remarks }}"
+                        data-status="{{ $status }}"
+                        data-date="{{ $dateSub ?? '' }}"
+                        data-file="{{ $hasFile ? 'Attached' : '' }}">
+                        <td class="mc-doc-name-cell">{{ $item['document_name'] }}</td>
+                        <td class="mc-remarks-cell">{{ $remarks }}</td>
+                        <td class="mc-status-cell" style="text-align:center;">
+                            <span class="mc-item-status {{ $sc }}">{{ $status }}</span>
                         </td>
-                        <td class="mc-date-cell" style="text-align: center;">{{ $item->date_submitted ? date('m/d/Y', strtotime($item->date_submitted)) : '--' }}</td>
-                        <td style="text-align: center;" class="mc-file-cell">
-                            <input type="file" class="mc-row-file-input d-none" accept="image/*,.pdf" onchange="mcAutoUpload(this, '{{ $item->id }}')">
+                        <td class="mc-date-cell" style="text-align:center;">
+                            {{ $dateSub ? date('m/d/Y', strtotime($dateSub)) : '--' }}
+                        </td>
+                        <td style="text-align:center;" class="mc-file-cell">
                             @if($hasFile)
-                                <div class="mc-attachment-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                                    <button type="button" class="apst-view-link" onclick="window.mcViewAttachment('{{ $item->id }}')" style="background: none; border: none; padding: 0; color: #006837; font-size: 0.82rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; margin: 0 auto; text-decoration: none;">
+                                @if(!empty($mcRegistrarMode))
+                                    <button type="button" onclick="mcViewFile('{{ $reqId }}')" style="background:none;border:none;padding:0;color:#006837;font-size:0.82rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;margin:0 auto;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
                                         Attached
                                     </button>
-                                </div>
+                                @else
+                                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                                        <button type="button" onclick="mcViewFile('{{ $reqId }}')"
+                                            style="background:none;border:none;padding:0;color:#006837;font-size:0.82rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                                            Attached
+                                        </button>
+                                        <button type="button" onclick="mcTriggerUpload('{{ $reqId }}')"
+                                            style="background:none;border:1px dashed #94a3b8;border-radius:4px;padding:3px 8px;color:#64748b;font-size:0.73rem;cursor:pointer;">
+                                            Replace
+                                        </button>
+                                    </div>
+                                @endif
                             @else
-                                <button type="button" onclick="this.parentElement.querySelector('.mc-row-file-input').click()" style="background: none; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 4px 8px; color: #64748b; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; margin: 0 auto;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                    Upload
-                                </button>
+                                @if(!empty($mcRegistrarMode))
+                                    <span style="color: #cbd5e1; font-weight: 500;">--</span>
+                                @else
+                                    <button type="button" onclick="mcTriggerUpload('{{ $reqId }}')"
+                                        style="background:none;border:1px dashed #cbd5e1;border-radius:4px;padding:5px 10px;color:#64748b;font-size:0.75rem;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                        Upload
+                                    </button>
+                                @endif
                             @endif
+                            <input type="file" class="mc-row-file-input d-none" data-req-id="{{ $reqId }}" accept="image/*,.pdf" onchange="mcHandleFileSelect(this)">
                         </td>
+                        @if(!empty($mcRegistrarMode))
                         <td style="text-align: center;">
-                            <div class="apst-action-btn" data-mc-menu-toggle="mcMenu{{ $index }}" aria-label="Open row actions" title="Actions">
-                                <span></span><span></span><span></span>
+                            <div class="apst-action-btn" onclick="mcToggleMenu('{{ $reqId }}', event)" aria-label="Open row actions" title="Actions" style="display: inline-flex; flex-direction: column; gap: 3px; cursor: pointer; padding: 6px 4px; border: 1px solid #ddd; border-radius: 4px; background: #fff;">
+                                <span style="width: 4px; height: 4px; background: #555; border-radius: 50%;"></span>
+                                <span style="width: 4px; height: 4px; background: #555; border-radius: 50%;"></span>
+                                <span style="width: 4px; height: 4px; background: #555; border-radius: 50%;"></span>
                             </div>
-                            <div class="apst-dropdown" id="mcMenu{{ $index }}">
-                                <button type="button" onclick="mcOpenEdit({{ $index }})">
+                            <div class="apst-dropdown mc-dropdown-menu" id="mcMenu{{ $reqId }}" style="display:none; position: absolute; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; padding: 5px 0; min-width: 120px;">
+                                <button type="button" onclick="mcOpenEditModal('{{ $reqId }}')" style="width: 100%; text-align: left; background: none; border: none; padding: 8px 15px; font-size: 0.85rem; color: #333; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                                    Edit Record
+                                    Edit Status
                                 </button>
-                                {{-- mcOpenDelete removed as records are managed by Registrar --}}
+                                <button type="button" class="apst-del-btn" onclick="mcOpenDeleteModal('{{ $reqId }}')" style="width: 100%; text-align: left; background: none; border: none; padding: 8px 15px; font-size: 0.85rem; color: #dc3545; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                    Delete File
+                                </button>
                             </div>
+                        </td>
+                        @endif
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:30px;color:#999;">
+                            No medical clearance requirements have been set yet. Please check back later.
                         </td>
                     </tr>
-                    @endforeach
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-{{-- Standard Modals --}}
-@php $mcIsApplicant = true; @endphp
-@include('registrar.process.panels.medical-clearance-modals', ['hideStatus' => true])
+{{-- Confirm Upload Modal --}}
+<div class="req-modal-overlay is-hidden" id="mcConfirmUploadModal" style="display:none;z-index:10001; @if(!empty($mcRegistrarMode)) background: transparent; @endif" onclick="if(event.target===this) mcCancelUpload()">
+    <div class="req-modal-box" style="max-width:400px;text-align:center; @if(!empty($mcRegistrarMode)) box-shadow: 0 4px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; @endif">
+        <h3 class="req-modal-title" style="color:#006837;">CONFIRM UPLOAD</h3>
+        <p style="color:#555;font-size:0.95rem;margin-top:10px;">Upload this file for your medical requirement?</p>
+        <p id="mcConfirmFileName" style="font-weight:700;color:#333;font-size:0.9rem;margin:10px 0 4px;word-break:break-all;padding:0 10px;"></p>
+        <p id="mcConfirmDocName" style="color:#64748b;font-size:0.82rem;margin-bottom:20px;"></p>
+        <div class="req-modal-actions" style="justify-content:center;gap:12px;">
+            <button type="button" class="req-btn-cancel" onclick="mcCancelUpload()">Cancel</button>
+            <button type="button" class="req-btn-save" style="background:#006837;" onclick="mcProceedUpload()">Confirm Upload</button>
+        </div>
+    </div>
+</div>
+
+{{-- Alert Modal --}}
+<div class="req-modal-overlay is-hidden" id="mcAlertModal" style="display:none;z-index:10000; @if(!empty($mcRegistrarMode)) background: transparent; @endif">
+    <div class="req-modal-box" style="max-width:360px;text-align:center; @if(!empty($mcRegistrarMode)) box-shadow: 0 4px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; @endif">
+        <h3 class="req-modal-title" style="color:#d35400;">NOTICE</h3>
+        <p id="mcAlertMessage" style="color:#555;font-size:0.95rem;margin-bottom:20px;margin-top:10px;"></p>
+        <div class="req-modal-actions" style="justify-content:center;">
+            <button type="button" class="req-btn-save" style="background:#006837;" onclick="document.getElementById('mcAlertModal').style.display='none'">OK</button>
+        </div>
+    </div>
+</div>
+
+@if(!empty($mcRegistrarMode))
+{{-- Edit Status Modal for Registrar --}}
+<div class="req-modal-overlay is-hidden" id="mcEditStatusModal" style="display:none;z-index:10001; background: transparent;" onclick="if(event.target===this) mcCloseModal('mcEditStatusModal')">
+    <div class="req-modal-box" style="max-width:450px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0;">
+        <h3 class="req-modal-title">UPDATE STATUS</h3>
+        <div class="req-modal-fields" style="display: flex; flex-direction: column; gap: 15px; text-align: left; margin-top: 15px;">
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">STATUS</label>
+                <select class="req-modal-input" id="mcEditInputStatus">
+                    <option value="Approved">Approved</option>
+                    <option value="For Review">For Review</option>
+                    <option value="Submitted">Submitted</option>
+                    <option value="Missing">Missing</option>
+                </select>
+            </div>
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">REMARKS</label>
+                <input type="text" class="req-modal-input" id="mcEditInputRemarks" placeholder="Enter remarks...">
+            </div>
+        </div>
+        <div class="req-modal-actions" style="margin-top:20px;">
+            <button type="button" class="req-btn-cancel" onclick="mcCloseModal('mcEditStatusModal')">Cancel</button>
+            <button type="button" class="req-btn-save" id="mcSaveStatusBtn" onclick="mcProceedSaveStatus()">Save Changes</button>
+        </div>
+        <input type="hidden" id="mcEditReqId">
+    </div>
+</div>
+@endif
 
 @endsection
 
 @push('scripts')
 <script>
-    // Action Menu Positioning and Toggling
-    window.mcCloseAllMenus = function() {
-        document.querySelectorAll('.apst-dropdown.open').forEach(menu => {
-            menu.classList.remove('open');
-            menu.style.display = 'none';
-        });
-    };
+(function() {
+    const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 
-    window.mcPositionMenu = function(menu, trigger) {
-        const rect = trigger.getBoundingClientRect();
-        menu.style.position = 'fixed';
-        menu.style.display = 'block';
-        menu.classList.add('open');
-        
-        let left = rect.right - 150;
-        let top = rect.bottom + 6;
+    // ─── Toast ────────────────────────────────────────────────
+    function showToast(msg, type) {
+        const t = document.getElementById('mcToastApp');
+        const m = document.getElementById('mcToastAppMsg');
+        if (!t || !m) return;
+        t.style.background = type === 'error' ? '#c0392b' : '#006837';
+        m.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
 
-        menu.style.left = left + 'px';
-        menu.style.top = top + 'px';
-        menu.style.zIndex = '9999';
-
-        const menuRect = menu.getBoundingClientRect();
-        if (menuRect.right > window.innerWidth - 8) {
-            menu.style.left = (window.innerWidth - menuRect.width - 8) + 'px';
-        }
-        if (menuRect.bottom > window.innerHeight - 8) {
-            menu.style.top = (rect.top - menuRect.height - 6) + 'px';
-        }
-    };
-
-    // Shared Click Listener for MC Menus
-    document.addEventListener('click', function(event) {
-        const toggle = event.target.closest('[data-mc-menu-toggle]');
-        if (toggle) {
-            event.preventDefault();
-            event.stopPropagation();
-            const menuId = toggle.getAttribute('data-mc-menu-toggle');
-            const menu = document.getElementById(menuId);
-            if (!menu) return;
-
-            const isOpen = menu.classList.contains('open');
-            window.mcCloseAllMenus();
-            
-            if (!isOpen) {
-                window.mcPositionMenu(menu, toggle);
-            }
-            return;
-        }
-
-        if (!event.target.closest('.apst-dropdown')) {
-            window.mcCloseAllMenus();
-        }
-    });
-
-    window.addEventListener('scroll', () => window.mcCloseAllMenus(), true);
-    window.addEventListener('resize', () => window.mcCloseAllMenus());
-
-    // Modal Helpers
+    // ─── Modal helpers ─────────────────────────────────────────
     window.mcCloseModal = function(id) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.style.display = 'none';
-            modal.classList.add('is-hidden');
-        }
+        const m = document.getElementById(id);
+        if (m) { m.style.display = 'none'; m.classList.add('is-hidden'); }
     };
-
     window.mcOpenModal = function(id) {
-        window.mcCloseAllMenus();
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.style.display = 'flex';
-            modal.classList.remove('is-hidden');
-        }
+        const m = document.getElementById(id);
+        if (m) { m.style.display = 'flex'; m.classList.remove('is-hidden'); }
     };
 
-    window.mcUpdateFileLabel = function(inputId, labelId) {
-        const input = document.getElementById(inputId);
-        const label = document.getElementById(labelId);
-        if (input && label) {
-            if (input.files && input.files.length > 0) {
-                label.textContent = `Selected: ${input.files[0].name}`;
-            } else {
-                label.textContent = 'Click to upload or drag file';
-            }
-        }
+    // ─── Trigger file input ────────────────────────────────────
+    window.mcTriggerUpload = function(reqId) {
+        const inp = document.querySelector(`.mc-row-file-input[data-req-id="${reqId}"]`);
+        if (inp) inp.click();
     };
 
-    window.mcViewAttachment = function(id) {
-        const row = document.querySelector(`.mc-row[data-id="${id}"]`);
-        if (row) {
-            const doc = row.getAttribute('data-doc');
-            document.getElementById('mcViewModalTitle').textContent = `VIEW ATTACHMENT - ${doc}`;
-            document.getElementById('mcPreviewFilename').textContent = `${doc.toLowerCase().replace(/ /g, '_')}_scanned.pdf`;
-            window.mcOpenModal('mcViewModal');
-        }
-    };
-
-    // Auto-upload handler for table clicks
-    let pendingUploadInput = null;
-    let pendingUploadId = null;
-
-    window.mcAutoUpload = function(input, id) {
-        if (input.files && input.files[0]) {
-            pendingUploadInput = input;
-            pendingUploadId = id;
-            
-            const fileName = input.files[0].name;
-            const fileNameEl = document.getElementById('mcConfirmFileName');
-            if (fileNameEl) fileNameEl.textContent = fileName;
-            
-            window.mcOpenModal('mcConfirmUploadModal');
-        }
+    // ─── Handle file selected → show confirm modal ─────────────
+    let pendingInput = null;
+    window.mcHandleFileSelect = function(input) {
+        if (!input.files || !input.files[0]) return;
+        pendingInput = input;
+        const reqId   = input.getAttribute('data-req-id');
+        const row     = document.querySelector(`.mc-row[data-id="${reqId}"]`);
+        const docName = row ? row.dataset.doc : '';
+        document.getElementById('mcConfirmFileName').textContent = input.files[0].name;
+        document.getElementById('mcConfirmDocName').textContent  = docName ? `For: ${docName}` : '';
+        window.mcOpenModal('mcConfirmUploadModal');
     };
 
     window.mcCancelUpload = function() {
-        if (pendingUploadInput) {
-            pendingUploadInput.value = ''; // Reset input so change event can fire again if same file selected
-        }
-        pendingUploadInput = null;
-        pendingUploadId = null;
+        if (pendingInput) pendingInput.value = '';
+        pendingInput = null;
         window.mcCloseModal('mcConfirmUploadModal');
     };
 
     window.mcProceedUpload = function() {
-        const input = pendingUploadInput;
-        const id = pendingUploadId;
-        
-        if (input && input.files && input.files[0]) {
-            const fileName = input.files[0].name;
-            const row = document.querySelector(`.mc-row[data-id="${id}"]`);
+        if (!pendingInput || !pendingInput.files || !pendingInput.files[0]) return;
+        const reqId = pendingInput.getAttribute('data-req-id');
+        const btn   = document.querySelector('#mcConfirmUploadModal .req-btn-save');
+        if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
+
+        const fd = new FormData();
+        fd.append('file', pendingInput.files[0]);
+        fd.append('_token', CSRF);
+
+        @if($mcRegistrarMode ?? false)
+            const uploadUrl = `/registrar/process/application/{{ $applicant->id ?? '' }}/medical-clearance/${reqId}/upload`;
+        @else
+            const uploadUrl = `/applicant/medical-clearance/${reqId}/upload`;
+        @endif
+
+        fetch(uploadUrl, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: fd
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (btn) { btn.disabled = false; btn.textContent = 'Confirm Upload'; }
+            if (!data.ok) {
+                window.mcCloseModal('mcConfirmUploadModal');
+                showToast(data.message || 'Upload failed.', 'error');
+                return;
+            }
+            // Update row UI
+            const row = document.querySelector(`.mc-row[data-id="${reqId}"]`);
             if (row) {
-                // Auto-set current date when file is uploaded
-                const today = new Date().toISOString().split('T')[0];
-                row.setAttribute('data-date', today);
-                row.setAttribute('data-status', 'Submitted');
-                
-                const statusCell = row.querySelector('.mc-status-cell');
-                if (statusCell) {
-                    statusCell.innerHTML = `<span class="mc-item-status status-submitted">Submitted</span>`;
-                }
-
-                const dateCell = row.querySelector('.mc-date-cell');
-                if (dateCell) dateCell.textContent = new Date(today).toLocaleDateString('en-US');
-                
-                const fileCell = row.querySelector('.mc-file-cell');
-                if (fileCell) {
-                    fileCell.innerHTML = `
-                        <input type="file" class="mc-row-file-input d-none" accept="image/*,.pdf" onchange="mcAutoUpload(this, '${id}')">
-                        <div class="mc-attachment-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                            <button type="button" class="apst-view-link" onclick="window.mcViewAttachment('${id}')" style="background: none; border: none; padding: 0; color: #006837; font-size: 0.82rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; margin: 0 auto; text-decoration: none;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                                Attached
-                            </button>
-                        </div>`;
-                }
-                
-                // Optional: Trigger a save to server here
-                console.log(`Auto-uploading ${fileName} for record ${id} on ${today}`);
+                row.dataset.file   = 'Attached';
+                row.dataset.status = data.status;
+                row.dataset.date   = data.date_submitted;
+                row.querySelector('.mc-status-cell').innerHTML = `<span class="mc-item-status status-submitted">Submitted</span>`;
+                const d = new Date(data.date_submitted);
+                row.querySelector('.mc-date-cell').textContent = (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getDate().toString().padStart(2,'0') + '/' + d.getFullYear();
+                row.querySelector('.mc-file-cell').innerHTML = `
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                        <button type="button" onclick="mcViewFile('${reqId}')" style="background:none;border:none;padding:0;color:#006837;font-size:0.82rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                            Attached
+                        </button>
+                        <button type="button" onclick="mcTriggerUpload('${reqId}')" style="background:none;border:1px dashed #94a3b8;border-radius:4px;padding:3px 8px;color:#64748b;font-size:0.73rem;cursor:pointer;">Replace</button>
+                    </div>
+                    <input type="file" class="mc-row-file-input d-none" data-req-id="${reqId}" accept="image/*,.pdf" onchange="mcHandleFileSelect(this)">`;
             }
-        }
+            pendingInput = null;
+            window.mcCloseModal('mcConfirmUploadModal');
+            showToast('File uploaded successfully!', 'success');
+        })
+        .catch(() => {
+            if (btn) { btn.disabled = false; btn.textContent = 'Confirm Upload'; }
+            window.mcCloseModal('mcConfirmUploadModal');
+            showToast('Network error. Please try again.', 'error');
+        });
+    };
+
+    // ─── View file (opens in new tab) ─────────────────────────
+    window.mcViewFile = function(reqId) {
+        @if($mcRegistrarMode ?? false)
+            window.open(`/registrar/process/application/{{ $applicant->id ?? '' }}/medical-clearance/${reqId}/file`, '_blank');
+        @else
+            window.open(`/applicant/medical-clearance/${reqId}/file`, '_blank');
+        @endif
+    };
+    // ─── Registrar Action Menu ────────────────────────────────
+    window.mcCloseOpenMenus = function() {
+        document.querySelectorAll('.mc-dropdown-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    };
+
+    window.mcToggleMenu = function(reqId, event) {
+        event.stopPropagation();
+        const menu = document.getElementById(`mcMenu${reqId}`);
+        if (!menu) return;
         
-        pendingUploadInput = null;
-        pendingUploadId = null;
-        window.mcCloseModal('mcConfirmUploadModal');
-
-        // Optional: Show success toast
-        if (typeof window.showRegistrarToast === 'function') {
-            window.showRegistrarToast('File attached successfully.', 'success');
+        const isVisible = menu.style.display === 'block';
+        window.mcCloseOpenMenus();
+        
+        if (!isVisible) {
+            menu.style.display = 'block';
         }
     };
 
-    // ID-based lookup for reliability
-    window.mcOpenEditById = function(id) {
-        const row = document.querySelector(`.mc-row[data-id="${id}"]`);
-        if (row) {
-            document.getElementById('mcEditId').value = id;
-            document.getElementById('mcEditDocName').value = row.dataset.doc || '';
-            document.getElementById('mcEditRemarks').value = row.dataset.remarks || '';
-            document.getElementById('mcEditDate').value = row.dataset.date || '';
-            document.getElementById('mcEditFile').value = '';
-            
-            const fileStatus = row.getAttribute('data-file');
-            const label = document.getElementById('mcEditFileLabel');
-            if (fileStatus === 'Attached') {
-                label.textContent = 'Change attachment (existing file found)';
-            } else {
-                label.textContent = 'Click to upload or drag file';
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.apst-action-btn') && !e.target.closest('.mc-dropdown-menu')) {
+            window.mcCloseOpenMenus();
+        }
+    });
+
+    // ─── Edit Status ──────────────────────────────────────────
+    window.mcOpenEditModal = function(reqId) {
+        window.mcCloseOpenMenus();
+        const row = document.querySelector(`.mc-row[data-id="${reqId}"]`);
+        if (!row) return;
+
+        document.getElementById('mcEditReqId').value = reqId;
+        document.getElementById('mcEditInputStatus').value = row.dataset.status || 'Missing';
+        document.getElementById('mcEditInputRemarks').value = row.dataset.remarks || '';
+        
+        window.mcOpenModal('mcEditStatusModal');
+    };
+
+    window.mcProceedSaveStatus = function() {
+        const reqId = document.getElementById('mcEditReqId').value;
+        const status = document.getElementById('mcEditInputStatus').value;
+        const remarks = document.getElementById('mcEditInputRemarks').value;
+        const btn = document.getElementById('mcSaveStatusBtn');
+
+        if (!reqId) return;
+        if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+        @if(!empty($mcRegistrarMode))
+            const updateUrl = `/registrar/process/application/{{ $applicant->id ?? '' }}/medical-clearance/${reqId}/status`;
+        @else
+            const updateUrl = '';
+        @endif
+
+        if (!updateUrl) return;
+
+        fetch(updateUrl, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF 
+            },
+            body: JSON.stringify({ status: status, remarks: remarks })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+            if (!data.ok) {
+                window.mcCloseModal('mcEditStatusModal');
+                showToast(data.message || 'Update failed.', 'error');
+                return;
             }
-            window.mcOpenModal('mcEditModal');
-        }
-    };
 
-    window.mcOpenDeleteById = function(id) {
-        const row = document.querySelector(`.mc-row[data-id="${id}"]`);
-        if (row) {
-            window.mcDeleteId = id;
-            document.getElementById('mcDeleteDocName').textContent = row.dataset.doc || '';
-            window.mcOpenModal('mcDeleteModal');
-        }
-    };
-
-    // Index-based calls from Blade
-    window.mcOpenEdit = function(index) {
-        const rows = document.querySelectorAll('#mcTableBody .mc-row');
-        if (rows[index]) window.mcOpenEditById(rows[index].dataset.id);
-    };
-
-    window.mcOpenDelete = function(index) {
-        const rows = document.querySelectorAll('#mcTableBody .mc-row');
-        if (rows[index]) window.mcOpenDeleteById(rows[index].dataset.id);
-    };
-
-    window.mcConfirmDelete = function() {
-        if (window.mcDeleteId) {
-            const row = document.querySelector(`.mc-row[data-id="${window.mcDeleteId}"]`);
+            // Update row UI
+            const row = document.querySelector(`.mc-row[data-id="${reqId}"]`);
             if (row) {
-                row.remove();
-                window.mcCloseModal('mcDeleteModal');
-                if (document.querySelectorAll('#mcTableBody .mc-row').length === 0) {
-                    document.getElementById('mcTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color:#999;">No medical records found.</td></tr>';
-                }
-            }
-        }
-    };
-
-    window.mcSaveNew = function() {
-        const doc = document.getElementById('mcAddDocName').value;
-        const remarks = document.getElementById('mcAddRemarks').value;
-        const date = document.getElementById('mcAddDate').value;
-        const status = 'Submitted'; // Default for applicants
-        const fileInput = document.getElementById('mcAddFile');
-
-        if (!doc || !date) {
-            const alertMsg = document.getElementById('mcAlertMessage');
-            if (alertMsg) alertMsg.textContent = 'Please fill in the document name and date.';
-            window.mcOpenModal('mcAlertModal');
-            return;
-        }
-
-        const id = 'temp_' + Date.now();
-        const emptyRow = document.querySelector('#mcTableBody tr td[colspan="6"]');
-        if (emptyRow) emptyRow.closest('tr').remove();
-
-        const newRow = document.createElement('tr');
-        newRow.className = 'mc-row';
-        newRow.setAttribute('data-id', id);
-        newRow.setAttribute('data-doc', doc);
-        newRow.setAttribute('data-remarks', remarks);
-        newRow.setAttribute('data-date', date);
-        newRow.setAttribute('data-status', status);
-
-        const formattedDate = new Date(date).toLocaleDateString('en-US');
-        
-        let fileStatusHtml = '<span style="color: #999; font-size: 0.85rem;">--</span>';
-        let fileAttr = '';
-        if (fileInput.files && fileInput.files.length > 0) {
-            fileStatusHtml = `
-                <button type="button" class="apst-view-link" onclick="window.mcViewAttachment('${id}')" style="background: none; border: none; padding: 0; color: #006837; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; margin: 0 auto;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                    Attached
-                </button>`;
-            fileAttr = 'Attached';
-        }
-        newRow.setAttribute('data-file', fileAttr);
-
-        let statusClass = 'status-submitted';
-        // Note: For applicants, status is always 'Submitted' initially
-        
-        newRow.innerHTML = `
-            <td>${doc}</td>
-            <td class="mc-remarks-cell">${remarks}</td>
-            <td class="mc-status-cell" style="text-align: center;">
-                <span class="mc-item-status ${statusClass}">${status}</span>
-            </td>
-            <td class="mc-date-cell" style="text-align: center;">${formattedDate}</td>
-            <td style="text-align: center;" class="mc-file-cell">${fileStatusHtml}</td>
-            <td style="text-align: center;">
-                <div class="apst-action-btn" data-mc-menu-toggle="mcMenu_${id}" aria-label="Open row actions" title="Actions">
-                    <span></span><span></span><span></span>
-                </div>
-                <div class="apst-dropdown" id="mcMenu_${id}">
-                    <button type="button" onclick="mcOpenEditById('${id}')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                        Edit
-                    </button>
-                    <button type="button" class="apst-del-btn" onclick="mcOpenDeleteById('${id}')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                        Delete
-                    </button>
-                </div>
-            </td>
-        `;
-
-        document.getElementById('mcTableBody').appendChild(newRow);
-        window.mcCloseModal('mcAddModal');
-        document.getElementById('mcAddDocName').value = '';
-        document.getElementById('mcAddRemarks').value = '';
-        document.getElementById('mcAddDate').value = '';
-    };
-
-    window.mcSaveEdit = function() {
-        const id = document.getElementById('mcEditId').value;
-        const doc = document.getElementById('mcEditDocName').value;
-        const remarks = document.getElementById('mcEditRemarks').value;
-        const date = document.getElementById('mcEditDate').value;
-        const fileInput = document.getElementById('mcEditFile');
-
-        if (!doc || !date) {
-            const alertMsg = document.getElementById('mcAlertMessage');
-            if (alertMsg) alertMsg.textContent = 'Please fill in the document name and date.';
-            window.mcOpenModal('mcAlertModal');
-            return;
-        }
-
-        const row = document.querySelector(`.mc-row[data-id="${id}"]`);
-        if (row) {
-            row.setAttribute('data-doc', doc);
-            row.setAttribute('data-remarks', remarks);
-            row.setAttribute('data-date', date);
-            row.children[0].textContent = doc;
-            row.children[1].textContent = remarks;
-            
-            // Note: children[2] is Status badge, children[3] is Date
-            row.children[3].textContent = new Date(date).toLocaleDateString('en-US');
-            
-            // Update Status to Submitted automatically if a file is attached
-            if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                row.setAttribute('data-status', 'Submitted');
-                row.setAttribute('data-file', 'Attached');
+                row.dataset.status = data.status;
+                row.dataset.remarks = data.remarks;
+                row.querySelector('.mc-remarks-cell').textContent = data.remarks;
                 
-                const statusCell = row.querySelector('.mc-status-cell');
-                if (statusCell) {
-                    statusCell.innerHTML = `<span class="mc-item-status status-submitted">Submitted</span>`;
-                }
-
-                const fileCell = row.querySelector('.mc-file-cell');
-                if (fileCell) {
-                    fileCell.innerHTML = `
-                        <input type="file" class="mc-row-file-input d-none" accept="image/*,.pdf" onchange="mcAutoUpload(this, '${id}')">
-                        <div class="mc-attachment-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                            <button type="button" class="apst-view-link" onclick="window.mcViewAttachment('${id}')" style="background: none; border: none; padding: 0; color: #006837; font-size: 0.82rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; margin: 0 auto; text-decoration: none;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                                Attached
-                            </button>
-                        </div>`;
-                }
-
-                // Update date automatically on file submission
-                const today = new Date().toISOString().split('T')[0];
-                row.setAttribute('data-date', today);
-                row.children[3].textContent = new Date(today).toLocaleDateString('en-US');
+                let sc = 'status-missing';
+                if (data.status === 'Approved') sc = 'status-approved';
+                else if (data.status === 'For Review') sc = 'status-review';
+                else if (data.status === 'Submitted') sc = 'status-submitted';
+                
+                row.querySelector('.mc-status-cell').innerHTML = `<span class="mc-item-status ${sc}">${data.status}</span>`;
             }
-            window.mcCloseModal('mcEditModal');
-        }
+
+            window.mcCloseModal('mcEditStatusModal');
+            showToast('Status updated successfully!', 'success');
+        })
+        .catch(() => {
+            if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+            window.mcCloseModal('mcEditStatusModal');
+            showToast('Network error. Please try again.', 'error');
+        });
     };
+
+    // ─── Delete File ──────────────────────────────────────────
+    window.mcOpenDeleteModal = function(reqId) {
+        window.mcCloseOpenMenus();
+        if(!confirm('Are you sure you want to delete this file? This action cannot be undone.')) return;
+
+        @if(!empty($mcRegistrarMode))
+            const deleteUrl = `/registrar/process/application/{{ $applicant->id ?? '' }}/medical-clearance/${reqId}/file`;
+        @else
+            const deleteUrl = '';
+        @endif
+
+        if (!deleteUrl) return;
+
+        fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: { 
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF 
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.ok) {
+                showToast(data.message || 'Delete failed.', 'error');
+                return;
+            }
+
+            // Update row UI
+            const row = document.querySelector(`.mc-row[data-id="${reqId}"]`);
+            if (row) {
+                row.dataset.file = '';
+                row.dataset.status = data.status || 'Missing';
+                row.dataset.date = '';
+                row.querySelector('.mc-status-cell').innerHTML = `<span class="mc-item-status status-missing">Missing</span>`;
+                row.querySelector('.mc-date-cell').textContent = '--';
+                row.querySelector('.mc-file-cell').innerHTML = `<span style="color: #cbd5e1; font-weight: 500;">--</span>`;
+            }
+
+            showToast('File deleted successfully!', 'success');
+        })
+        .catch(() => {
+            showToast('Network error. Please try again.', 'error');
+        });
+    };
+})();
 </script>
 @endpush

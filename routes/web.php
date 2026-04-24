@@ -173,6 +173,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
         Route::put('/application/{applicant}/approval-status', 'Registrar\RegistrarController@updateApplicantApprovalStatus')->name('application.approval-status.update');
         Route::post('/application/bulk-status-update', 'Registrar\RegistrarController@bulkUpdateApplicantStatus')->name('application.bulk-status-update');
+
+        Route::get('/application/{applicant}/medical-clearance', 'Registrar\RegistrarController@applicantMedicalClearanceView')->name('application.medical-clearance.view');
+        Route::post('/application/{applicant}/medical-clearance/{requirement}/upload', 'Registrar\RegistrarController@applicantMedicalClearanceUpload')->name('application.medical-clearance.upload');
+        Route::put('/application/{applicant}/medical-clearance/{requirement}/status', 'Registrar\RegistrarController@applicantMedicalClearanceStatusUpdate')->name('application.medical-clearance.status.update');
+        Route::delete('/application/{applicant}/medical-clearance/{requirement}/file', 'Registrar\RegistrarController@applicantMedicalClearanceDeleteFile')->name('application.medical-clearance.file.delete');
+        Route::get('/application/{applicant}/medical-clearance/{requirement}/file', 'Registrar\RegistrarController@applicantMedicalClearanceFile')->name('application.medical-clearance.file');
         Route::get('/application/{applicant}/documents', 'Registrar\RegistrarController@applicantDocumentsData')->name('application.documents.data')->middleware('throttle:30,1');
         Route::get('/application/{applicant}/documents/available', 'Registrar\RegistrarController@availableApplicantDocuments')->name('application.documents.available')->middleware('throttle:30,1');
         Route::post('/application/{applicant}/documents/assign', 'Registrar\RegistrarController@assignApplicantDocuments')->name('application.documents.assign')->middleware('throttle:30,1');
@@ -192,7 +198,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
         Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
-        Route::post('/batch-upload', 'Registrar\RegistrarController@storeBatchUpload')->name('batch-upload.store');
+        Route::post('/batch-upload', 'Registrar\RegistrarController@storeBatchUpload')
+            ->middleware('throttle:20,1') // Rate limit: 20 uploads per minute per user
+            ->name('batch-upload.store');
         Route::get('/batch-upload/image/{studentProfileImage}', 'Registrar\RegistrarController@batchUploadImage')->name('batch-upload.image');
         Route::get('/document-list', 'Registrar\RegistrarController@documentList')->name('document-list');
         Route::post('/document-list', 'Registrar\RegistrarController@storeDocumentRequirement')->name('document-list.store');
@@ -496,6 +504,8 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
     Route::post('/notifications/{notificationDelivery}/dismiss', 'Applicant\ApplicantController@dismissNotification')->name('notifications.dismiss');
     Route::get('/messaging', 'Applicant\ApplicantController@messaging')->name('messaging');
     Route::get('/medical-clearance', 'Applicant\ApplicantController@medicalClearance')->name('medical-clearance');
+    Route::post('/medical-clearance/{requirement}/upload', 'Applicant\ApplicantController@uploadMedicalClearanceFile')->name('medical-clearance.upload');
+    Route::get('/medical-clearance/{requirement}/file', 'Applicant\ApplicantController@viewMedicalClearanceFile')->name('medical-clearance.file');
 });
 
 /*
