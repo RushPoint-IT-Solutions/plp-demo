@@ -121,7 +121,7 @@
 
     @if(!$selectedSubject)
     <div class="svc-actions-row">
-        <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" class="svc-btn-pdf">Print Class List (PDF)</a>
+        <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" target="_blank" class="svc-btn-pdf">Print Class List (PDF)</a>
         <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'excel'], $exportQuery)) }}" class="svc-btn-excel">Print Class List (Excel)</a>
     </div>
     @endif
@@ -140,7 +140,7 @@
                 Back to Subject List
             </button>
             <div class="cl-print-group">
-                <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" class="svc-btn-pdf">Print Class List (PDF)</a>
+                <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" target="_blank" class="svc-btn-pdf">Print Class List (PDF)</a>
                 <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'excel'], $exportQuery)) }}" class="svc-btn-excel">Print Class List (Excel)</a>
             </div>
         </div>

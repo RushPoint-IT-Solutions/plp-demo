@@ -1319,11 +1319,143 @@ class RegistrarController extends Controller
         return view('registrar.process.application-process', compact('applicants', 'courses', 'filters'));
     }
 
+    public function bulkUpdateApplicantStatus(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $status = $request->input('status', '');
+
+        if (empty($ids) || empty($status)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid data provided.'
+            ], 400);
+        }
+
+        try {
+            // Update the status for all selected applicants
+            // Using the model to ensure any accessors/mutators or events are triggered
+            $applicants = Applicant::whereIn('id', $ids)->get();
+            
+            foreach ($applicants as $applicant) {
+                $applicant->application_status = $status;
+                $applicant->save();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully updated ' . count($ids) . ' applicants to ' . $status . '.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function applicationProcessPrint(Request $request)
     {
         $filters = $this->normalizeApplicationProcessFilters($request);
-
         $applicants = $this->buildApplicationProcessQuery($filters)->get();
+        $format = strtolower((string) $request->query('format', ''));
+
+        $courseName = 'All Courses';
+        if (!empty($filters['course_id'])) {
+            $course = \App\Models\Course::find($filters['course_id']);
+            if ($course) {
+                $courseName = $course->name ?: $course->code;
+            }
+        }
+
+        if ($format === 'pdf') {
+            $html = view('registrar.process.application-process-pdf', compact('applicants', 'filters', 'courseName'))->render();
+            try {
+                // Ensure temp directory exists
+                $tempDir = storage_path('app/temp_mpdf');
+                if (!file_exists($tempDir)) {
+                    mkdir($tempDir, 0777, true);
+                }
+
+                $mpdf = new \Mpdf\Mpdf([
+                    'margin_left' => 10,
+                    'margin_right' => 10,
+                    'margin_top' => 15,
+                    'margin_bottom' => 15,
+                    'format' => 'A4-L',
+                    'tempDir' => $tempDir
+                ]);
+                $mpdf->SetTitle('Applicant List');
+                $mpdf->WriteHTML($html);
+                // Change 'D' to 'I' for Inline display
+                return $mpdf->Output('ApplicantList_' . date('Y-m-d') . '.pdf', 'I');
+            } catch (\Throwable $e) {
+                // Log the error if needed: \Log::error('PDF Export Failed: ' . $e->getMessage());
+                return view('registrar.process.application-process-pdf', compact('applicants', 'filters', 'courseName'));
+            }
+        }
+
+        if ($format === 'excel') {
+            $filename = "ApplicantList_" . date('Y-m-d') . ".csv";
+            
+            return response()->stream(function() use ($applicants) {
+                $file = fopen('php://output', 'w');
+                
+                // Add CSV Header
+                fputcsv($file, [
+                    'Applicant ID', 
+                    'Last Name', 
+                    'First Name', 
+                    'Middle Name', 
+                    'Program', 
+                    'Date Applied', 
+                    'Date Last Update', 
+                    'Status'
+                ]);
+
+                foreach ($applicants as $applicant) {
+                    $preference = optional($applicant->applicationPreference);
+                    $preferredCourse = optional($preference->course);
+                    $programLabel = 'N/A';
+                    if ($preference->apply_program === 'college') {
+                        $programLabel = $preferredCourse->name ?: ($preferredCourse->code ?: 'College');
+                    } elseif ($preference->apply_program === 'senior_high') {
+                        $programLabel = $preference->apply_strand ?: 'Senior High';
+                    }
+
+                    $rawStatus = strtolower(trim((string) ($applicant->application_status ?: 'in process')));
+                    $statusText = 'In Process';
+                    if ($rawStatus === 'submitted' || $rawStatus === 'document submitted') {
+                        $statusText = 'Document Submitted';
+                    } elseif ($rawStatus === 'on probation' || $rawStatus === 'on_probation') {
+                        $statusText = 'On Probation';
+                    } elseif ($rawStatus === 'rejected') {
+                        $statusText = 'Rejected';
+                    } elseif ($rawStatus === 'incomplete' || $rawStatus === 'draft') {
+                        $statusText = 'Incomplete';
+                    } elseif ($rawStatus === 'accepted') {
+                        $statusText = 'Accepted';
+                    }
+
+                    $dateApplied = $applicant->application_submitted_at ?: $applicant->created_at;
+
+                    fputcsv($file, [
+                        $applicant->applicant_id,
+                        strtoupper((string) $applicant->last_name),
+                        strtoupper((string) $applicant->first_name),
+                        strtoupper((string) $applicant->middle_name),
+                        $programLabel,
+                        optional($dateApplied)->format('Y-m-d') ?: 'N/A',
+                        optional($applicant->updated_at)->format('Y-m-d') ?: 'N/A',
+                        strtoupper($statusText)
+                    ]);
+                }
+                
+                fclose($file);
+            }, 200, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+        }
 
         return view('registrar.process.application-process-print', compact('applicants', 'filters'));
     }
@@ -1390,6 +1522,7 @@ class RegistrarController extends Controller
             'from_date' => $normalizedFromDate,
             'to_date' => $normalizedToDate,
             'course_id' => $courseId,
+            'application_status' => trim((string) $request->query('application_status', '')),
             'search' => $search,
             'sort_by' => $sortBy,
             'sort_direction' => $sortDirection,
@@ -1414,6 +1547,53 @@ class RegistrarController extends Controller
 
         if (!empty($filters['to_date'])) {
             $query->whereRaw('DATE(' . $appliedDateExpression . ') <= ?', [$filters['to_date']]);
+        }
+
+        if (!empty($filters['application_status'])) {
+            $query->where(function($mainQ) use ($filters) {
+                $status = strtolower($filters['application_status']);
+                
+                // 1. Check via Relationship (Lookup Table)
+                $mainQ->whereHas('applicationStatusLookup', function($q) use ($status) {
+                    // Map user-friendly labels to potential database codes/labels
+                    $searchValues = [$status];
+                    if ($status === 'document submitted') {
+                        $searchValues[] = 'submitted';
+                        $searchValues[] = 'document_submitted';
+                    } elseif ($status === 'in process') {
+                        $searchValues[] = 'in_process';
+                        $searchValues[] = 'process';
+                    } elseif ($status === 'on probation') {
+                        $searchValues[] = 'on_probation';
+                        $searchValues[] = 'probation';
+                    }
+
+                    $q->where(function($sub) use ($searchValues) {
+                        foreach ($searchValues as $val) {
+                            $sub->orWhereRaw('LOWER(code) = ?', [$val])
+                                ->orWhereRaw('LOWER(label) = ?', [$val]);
+                        }
+                    });
+                });
+
+                // 2. Fallbacks for NULL status_id cases to match UI display defaults
+                if ($status === 'document submitted') {
+                    $mainQ->orWhere(function($q) {
+                        $q->whereNull('application_status_id')
+                          ->whereNotNull('application_submitted_at');
+                    });
+                } elseif ($status === 'in process') {
+                    $mainQ->orWhere(function($q) {
+                        $q->whereNull('application_status_id')
+                          ->whereNull('application_submitted_at');
+                    });
+                } elseif ($status === 'incomplete') {
+                    $mainQ->orWhereHas('applicationStatusLookup', function($q) {
+                        $q->whereRaw('LOWER(code) = ?', ['draft'])
+                          ->orWhereRaw('LOWER(label) = ?', ['draft']);
+                    });
+                }
+            });
         }
 
         if (!empty($filters['course_id'])) {

@@ -1,0 +1,542 @@
+/* Fixed Checkbox Design */
+.app-apply-check-input {
+    width: 18px !important;
+    height: 18px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-color: #fff !important;
+    border: 2px solid #006837 !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Fix duplication: Hide any pseudo-elements from parent styles */
+.app-apply-check-input::before,
+.app-apply-check-input::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Row Checkbox: Green BG, White Check */
+.applicant-row-checkbox:checked {
+    background-color: #006837 !important;
+    border-color: #006837 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3.5' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+    background-size: 80% 80% !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+/* Header Checkbox: White BG, Green Check */
+.app-header-checkbox {
+    border-color: #fff !important;
+}
+
+.app-header-checkbox:checked {
+    background-color: #fff !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23006837' stroke-linecap='round' stroke-linejoin='round' stroke-width='3.5' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+    background-size: 80% 80% !important;
+    background-position: center !important;
+}
+
+/* Cleaner Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid transparent;
+}
+
+.status-badge-pending {
+    background-color: #fffbeb;
+    color: #b45309;
+    border-color: #fde68a;
+}
+
+.status-badge-approved {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border-color: #bbf7d0;
+}
+
+.status-badge-submitted {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.status-badge-rejected {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.status-badge-incomplete {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.status-badge-in-process {
+    background-color: #fffbeb;
+    color: #d97706; /* More vibrant gold */
+    border-color: #fde68a;
+}
+
+/* Quick Filter Chips */
+.quick-filters-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.quick-filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.quick-filter-chip:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.quick-filter-chip.active {
+    background: #006837;
+    border-color: #006837;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 104, 55, 0.2);
+}
+
+.quick-filter-count {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 50px;
+}
+
+.quick-filter-chip.active .quick-filter-count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Bulk Action Bar */
+.bulk-action-bar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-backdrop {
+    background-color: #000 !important;
+}
+
+.modal-backdrop.show {
+    opacity: 0.6 !important;
+}
+
+.bulk-action-bar.visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+.bulk-info {
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    padding-right: 20px;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.bulk-btn {
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bulk-btn-approve { background: #22c55e; color: #fff; }
+.bulk-btn-approve:hover { background: #16a34a; }
+
+.bulk-btn-reject { background: #ef4444; color: #fff; }
+.bulk-btn-reject:hover { background: #dc2626; }
+
+.bulk-btn-cancel { background: transparent; color: #94a3b8; }
+.bulk-btn-cancel:hover { color: #fff; }
+
+/* Table Enhancements */
+.app-table th {
+    background: #f8fafc !important;
+    color: #64748b;
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px 12px !important;
+}
+
+.app-table td {
+    padding: 16px 12px !important;
+    vertical-align: middle;
+}
+
+.applicant-id-stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.applicant-name-main {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.applicant-id-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Skeleton Loading */
+.skeleton-row td {
+    padding: 16px 12px !important;
+}
+
+.skeleton-text, .skeleton-text-short, .skeleton-checkbox, .skeleton-badge {
+    background: #f1f5f9;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.skeleton-text { height: 16px; }
+.skeleton-text-short { height: 12px; }
+.skeleton-checkbox { width: 20px; height: 20px; margin: 0 auto; }
+.skeleton-badge { width: 100px; height: 28px; border-radius: 6px; margin: 0 auto; }
+
+.skeleton-text::after, .skeleton-text-short::after, .skeleton-checkbox::after, .skeleton-badge::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: skeleton-shimmer 1.5s infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Action Toolbar & Components Design System */
+.table-action-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.app-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.app-toolbar-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.app-toolbar-btn-primary {
+    background: #006837 !important;
+    color: #fff !important;
+    border-color: #006837 !important;
+}
+
+.app-toolbar-btn-primary:hover {
+    background: #005a30 !important;
+    border-color: #005a30 !important;
+}
+
+.app-toolbar-btn-link {
+    background: transparent;
+    border: none;
+    color: #64748b;
+}
+
+.app-toolbar-btn-link:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.app-toolbar-select {
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 160px;
+}
+
+.app-toolbar-select:focus {
+    border-color: #006837;
+    box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.1);
+    outline: none;
+}
+
+.app-toolbar-label {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #006837;
+    letter-spacing: -0.01em;
+}
+
+.app-toolbar-count-badge {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-right: 4px;
+}
+
+/* Button Color Themes */
+.export-btn-excel { 
+    background: #166534 !important; 
+    color: #fff !important; 
+    border-color: #166534 !important; 
+}
+.export-btn-excel:hover { background: #14532d !important; }
+
+.export-btn-pdf { 
+    background: #991b1b !important; 
+    color: #fff !important; 
+    border-color: #991b1b !important; 
+}
+.export-btn-pdf:hover { background: #7f1d1d !important; }
+
+.app-toolbar-btn-cancel {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca !important;
+}
+.app-toolbar-btn-cancel:hover {
+    background: #fee2e2 !important;
+    border-color: #f87171 !important;
+}
+
+/* Color-coded Status Options in Custom Listbox */
+.rg-listbox-option-btn[data-option-value="Accepted"] { color: #15803d !important; font-weight: 700; }
+.rg-listbox-option-btn[data-option-value="Document Submitted"] { color: #1d4ed8 !important; font-weight: 700; }
+.rg-listbox-option-btn[data-option-value="In Process"] { color: #d97706 !important; font-weight: 700; }
+.rg-listbox-option-btn[data-option-value="Rejected"] { color: #b91c1c !important; font-weight: 700; }
+.rg-listbox-option-btn[data-option-value="Incomplete"] { color: #b91c1c !important; font-weight: 700; }
+
+/* Native Bulk Select Option Colors */
+#bulkStatusSelect option[value="Accepted"] { color: #15803d; }
+#bulkStatusSelect option[value="Document Submitted"] { color: #1d4ed8; }
+#bulkStatusSelect option[value="In Process"] { color: #d97706; }
+#bulkStatusSelect option[value="Rejected"] { color: #b91c1c; }
+#bulkStatusSelect option[value="Incomplete"] { color: #b91c1c; }
+
+/* Loading Overlay */
+.table-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    backdrop-filter: blur(2px);
+    border-radius: 12px;
+}
+
+.view-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.saved-views-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+    margin-bottom: 25px;
+    padding: 0 5px;
+}
+
+.view-chip:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.view-chip.active {
+    background: #006837;
+    color: #fff;
+    border-color: #006837;
+    box-shadow: 0 4px 10px rgba(0, 104, 55, 0.2);
+}
+
+.view-chip-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
+    color: currentColor;
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+.view-chip-delete:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Enhancements */
+@media (max-width: 991px) {
+    .table-action-toolbar {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+    
+    .table-action-toolbar > div {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #bulkActionBar {
+        flex-wrap: wrap;
+        padding-left: 0 !important;
+        border-left: none !important;
+        margin-left: 0 !important;
+        margin-top: 10px;
+        width: 100%;
+        gap: 10px;
+    }
+
+    #bulkStatusSelect {
+        flex: 1;
+        min-width: 150px;
+    }
+}
+
+@media (max-width: 767px) {
+    .app-filter-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .app-filter-group {
+        width: 100% !important;
+        flex: none !important;
+    }
+
+    .app-toolbar-btn {
+        flex: 1;
+        padding: 8px 10px;
+        font-size: 0.75rem;
+    }
+
+    .app-toolbar-label {
+        font-size: 1rem;
+    }
+}
+
+/* Save View Button Consistency */
+#saveCurrentViewBtn {
+    background: #f2faf5;
+    color: #006837;
+    border: 1px solid #0b7a47;
+}
+
+#saveCurrentViewBtn:hover {
+    background: #e5f4ec;
+    color: #005028;
+}
+
+#saveCurrentViewBtn svg {
+    color: #006837;
+}

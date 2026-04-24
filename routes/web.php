@@ -172,6 +172,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::put('/application/{applicant}/exam-schedule', 'Registrar\RegistrarController@updateApplicantExamSchedule')->name('application.exam-schedule.update');
         Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
         Route::put('/application/{applicant}/approval-status', 'Registrar\RegistrarController@updateApplicantApprovalStatus')->name('application.approval-status.update');
+        Route::post('/application/bulk-status-update', 'Registrar\RegistrarController@bulkUpdateApplicantStatus')->name('application.bulk-status-update');
         Route::get('/application/{applicant}/documents', 'Registrar\RegistrarController@applicantDocumentsData')->name('application.documents.data')->middleware('throttle:30,1');
         Route::get('/application/{applicant}/documents/available', 'Registrar\RegistrarController@availableApplicantDocuments')->name('application.documents.available')->middleware('throttle:30,1');
         Route::post('/application/{applicant}/documents/assign', 'Registrar\RegistrarController@assignApplicantDocuments')->name('application.documents.assign')->middleware('throttle:30,1');

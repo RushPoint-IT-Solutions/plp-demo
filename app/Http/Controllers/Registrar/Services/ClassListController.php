@@ -467,60 +467,20 @@ class ClassListController extends Controller
 
     private function makeCsvDownloadResponse($subjects, $selectedSubject, $sectionStudents, array $state)
     {
-        $handle = fopen('php://temp', 'w+');
-
-        if ($selectedSubject) {
-            fputcsv($handle, ['Class List Report']);
-            fputcsv($handle, ['Section', $this->sectionLabel($selectedSubject)]);
-            fputcsv($handle, ['Subject', $selectedSubject->code . ' - ' . $selectedSubject->name]);
-            fputcsv($handle, ['Schedule', $this->scheduleLabel($selectedSubject)]);
-            fputcsv($handle, ['Professor', (string) optional($selectedSubject->facultyModel)->name ?: 'TBA']);
-            fputcsv($handle, []);
-            fputcsv($handle, ['#', 'Student No.', 'Name', 'Course', 'Year Level']);
-
-            foreach ($sectionStudents->values() as $index => $student) {
-                fputcsv($handle, [
-                    $index + 1,
-                    (string) $student->student_no,
-                    (string) $student->name,
-                    (string) optional($student->canonicalCourse)->name,
-                    (string) optional($student->yearBlock)->label,
-                ]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Total Students', $sectionStudents->count()]);
-        } else {
-            fputcsv($handle, ['Class List Report']);
-            fputcsv($handle, ['School Year', $state['selected_school_year'] !== '' ? $state['selected_school_year'] : 'All']);
-            fputcsv($handle, ['Semester', $state['selected_semester'] !== '' ? $state['selected_semester'] : 'All']);
-            fputcsv($handle, []);
-            fputcsv($handle, ['#', 'Section', 'Subject Code', 'Description', 'Schedule']);
-
-            foreach ($subjects->values() as $index => $subject) {
-                fputcsv($handle, [
-                    $index + 1,
-                    $this->sectionLabel($subject),
-                    (string) $subject->code,
-                    (string) $subject->name,
-                    $this->scheduleLabel($subject),
-                ]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Total Subjects', $subjects->count()]);
-        }
-
-        rewind($handle);
-        $csv = stream_get_contents($handle);
-        fclose($handle);
+        $html = view('registrar.services.classroom-faculty.exports.class-list-excel', [
+            'subjects' => $subjects,
+            'selectedSubject' => $selectedSubject,
+            'sectionStudents' => $sectionStudents,
+            'state' => $state,
+            'controller' => $this,
+        ])->render();
 
         $filename = $selectedSubject
-            ? 'class-list-' . $this->sanitizeFilenameSegment($selectedSubject->code) . '-section.csv'
-            : 'class-list-summary.csv';
+            ? 'class-list-' . $this->sanitizeFilenameSegment($selectedSubject->code) . '-section.xls'
+            : 'class-list-summary.xls';
 
-        return response($csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+        return response($html, 200, [
+            'Content-Type' => 'application/vnd.ms-excel',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
@@ -532,7 +492,7 @@ class ClassListController extends Controller
         $pdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => $format,
-            'tempDir' => $this->resolveWritableMpdfTempDir(),
+            'tempDir' => storage_path('app/temp_mpdf'),
             'margin_top' => 8,
             'margin_right' => 8,
             'margin_bottom' => 8,
@@ -540,33 +500,11 @@ class ClassListController extends Controller
         ]);
 
         $pdf->WriteHTML((string) $html);
-        $binary = $pdf->Output((string) $filename, Destination::STRING_RETURN);
-
-        return response($binary, 200, [
+        
+        // Output to inline browser preview ('I') instead of direct download
+        return response($pdf->Output((string) $filename, 'I'), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
-    }
-
-    private function resolveWritableMpdfTempDir()
-    {
-        $candidates = [
-            storage_path('framework/cache/mpdf-temp'),
-            storage_path('app/mpdf-temp'),
-            rtrim((string) sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'plp-demo-mpdf-temp',
-        ];
-
-        foreach ($candidates as $candidate) {
-            if (!is_dir($candidate)) {
-                @mkdir($candidate, 0775, true);
-            }
-
-            if (is_dir($candidate) && is_writable($candidate)) {
-                return $candidate;
-            }
-        }
-
-        return rtrim((string) sys_get_temp_dir(), DIRECTORY_SEPARATOR);
     }
 
     private function sanitizeFilenameSegment($value)
