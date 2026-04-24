@@ -3,13 +3,12 @@
     $displayName = trim((string) $applicant->first_name . ' ' . (string) $applicant->last_name);
     $preference = optional($applicant->applicationPreference);
     $preferredCourse = optional($preference->course);
-    $programLabel = 'N/A';
-    if ($preference->apply_program === 'college') {
-        $programLabel = $preferredCourse->name ?: ($preferredCourse->code ?: 'College');
-    } elseif ($preference->apply_program === 'senior_high') {
-        $programLabel = $preference->apply_strand ?: 'Senior High';
-    }
-
+                $programLabel = 'N/A';
+                if ($preference->apply_program === 'college') {
+                    $programLabel = $preferredCourse->name ?: ($preferredCourse->code ?: 'College');
+                } elseif ($preference->apply_program === 'senior_high') {
+                    $programLabel = $preference->apply_strand ?: 'Senior High';
+                }
     $rawApplicationStatus = strtolower(trim((string) ($applicant->application_status ?: 'in process')));
     $statusRaw = 'In Process';
     if ($rawApplicationStatus === 'submitted' || $rawApplicationStatus === 'document submitted') {
@@ -26,13 +25,11 @@
         $statusRaw = 'Accepted';
     }
 
-    $statusClass = 'app-status-pending';
-    if ($statusRaw === 'Accepted' || $statusRaw === 'Document Submitted' || $statusRaw === 'In Process') {
-        $statusClass = 'app-status-accepted';
-    }
-    if ($statusRaw === 'Rejected') {
-        $statusClass = 'app-status-rejected';
-    }
+    // New Badge System
+    $statusBadgeClass = 'status-badge-incomplete';
+    if ($statusRaw === 'Accepted') $statusBadgeClass = 'status-badge-approved';
+    elseif ($rawApplicationStatus === 'rejected') $statusBadgeClass = 'status-badge-rejected';
+    elseif ($statusRaw === 'Document Submitted' || $statusRaw === 'In Process' || $statusRaw === 'On Probation') $statusBadgeClass = 'status-badge-pending';
 
     $dateApplied = $applicant->application_submitted_at ?: $applicant->created_at;
 @endphp
@@ -48,16 +45,43 @@
     data-exam-result-status="{{ e((string) ($applicant->exam_result_status ?: 'Pending')) }}"
     data-exam-score="{{ $applicant->exam_score !== null ? $applicant->exam_score : '' }}"
 >
-    <td>{{ ($applicants->firstItem() ?? 1) + $index }}</td>
-    <td>{{ $applicant->applicant_id }}</td>
-    <td>{{ $displayName ?: 'N/A' }}</td>
-    <td>{{ $programLabel }}</td>
-    <td>{{ optional($dateApplied)->format('M d, Y') ?: 'N/A' }}</td>
-    <td>{{ optional($applicant->updated_at)->format('M d, Y') ?: 'N/A' }}</td>
-    <td class="js-application-status"><span class="{{ $statusClass }}"><span class="app-status-dot"></span>{{ strtoupper($statusRaw) }}</span></td>
+    <td style="text-align: center;">
+        <input type="checkbox" class="applicant-row-checkbox app-apply-check-input" value="{{ $applicant->id }}" onclick="event.stopPropagation()">
+    </td>
+    <td>
+        <div class="applicant-id-stack">
+            <span class="applicant-name-main">{{ $displayName ?: 'N/A' }}</span>
+            <span style="font-size: 0.75rem; color: #006837; font-weight: 600;">{{ $applicant->applicant_id }}</span>
+        </div>
+    </td>
+    <td style="padding: 12px 8px !important;">
+        <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b; white-space: normal; word-break: break-word; line-height: 1.3; max-width: 350px;">
+            {{ $programLabel }}
+        </div>
+    </td>
+    <td style="font-size: 0.85rem; font-weight: 600; color: #1e293b; white-space: nowrap;">{{ optional($dateApplied)->format('M d, Y') ?: 'N/A' }}</td>
+    <td style="font-size: 0.85rem; font-weight: 600; color: #1e293b; white-space: nowrap;">{{ optional($applicant->updated_at)->format('M d, Y') ?: 'N/A' }}</td>
+    <td style="text-align: center;">
+        @php
+            $statusBadgeClass = 'status-badge-in-process'; // Yellow/Amber (In Process)
+            if ($statusRaw === 'Accepted') {
+                $statusBadgeClass = 'status-badge-approved'; // Green
+            } elseif ($statusRaw === 'Document Submitted') {
+                $statusBadgeClass = 'status-badge-submitted'; // Blue
+            } elseif ($statusRaw === 'Rejected' || $statusRaw === 'Incomplete') {
+                $statusBadgeClass = 'status-badge-incomplete'; // Red
+            }
+        @endphp
+        <span class="status-badge {{ $statusBadgeClass }}">{{ strtoupper($statusRaw) }}</span>
+    </td>
 </tr>
 @empty
 <tr>
-    <td colspan="7">No applicants found.</td>
+    <td colspan="6" style="text-align: center; padding: 40px !important; color: #94a3b8; font-weight: 500;">
+        <div class="mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        No applicants found matching your filters.
+    </td>
 </tr>
 @endforelse

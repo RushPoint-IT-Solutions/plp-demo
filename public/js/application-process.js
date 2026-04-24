@@ -61,6 +61,12 @@
 
         filterIsSubmitting = true;
 
+        // Show centered loading circle overlay
+        const tableLoadingOverlay = document.getElementById('tableLoadingOverlay');
+        if (tableLoadingOverlay) {
+            tableLoadingOverlay.style.display = 'flex';
+        }
+
         var pageInput = applicationFilterForm.querySelector('input[name="page"]');
         if (pageInput) {
             pageInput.value = '1';
@@ -209,7 +215,17 @@
 
         var status = normalizeApplicationStatus(approvalStatusSelect.value);
         approvalStatusSelect.value = status;
-        approvalBanner.textContent = 'Application, ' + status;
+        
+        // Dispatch change event to notify the custom listbox component to update its trigger text
+        approvalStatusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+        var bannerText = document.getElementById('approvalBannerText');
+        if (bannerText) {
+            bannerText.textContent = 'Application status set to: ' + status;
+        } else {
+            approvalBanner.textContent = 'Application, ' + status;
+        }
+
         if (status === 'Accepted') {
             approvalDateAccepted.value = approvalDateAccepted.value || formatDate(new Date());
         } else {
@@ -490,6 +506,15 @@
         approvalStatusSelect.addEventListener('change', syncApprovalUi);
         syncApprovalUi();
 
+        // Initialize Flatpickr for the decision date
+        if (typeof flatpickr === 'function' && document.querySelector('.js-flatpickr-approval')) {
+            flatpickr('.js-flatpickr-approval', {
+                dateFormat: 'm/d/Y',
+                allowInput: true,
+                monthSelectorType: 'static'
+            });
+        }
+
         if (!approvalSaveBtn) {
             return;
         }
@@ -693,5 +718,308 @@
 
     initPanelFilters();
 
-    // Removed outdated medical clearance functions. Logic is now unified in the blade template.
+    // --- Application List Enhancements (Bulk Selection & Exports) ---
+
+    const selectAllApplicants = document.getElementById('selectAllApplicants');
+    const bulkActionBar = document.getElementById('bulkActionBar');
+    const bulkSelectCount = document.getElementById('bulkSelectCount');
+    const tableLoadingIndicator = document.getElementById('tableLoadingIndicator');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+
+    const bulkUpdateStatusBtn = document.getElementById('bulkUpdateStatusBtn');
+    const bulkStatusSelect = document.getElementById('bulkStatusSelect');
+    const bulkCancelBtn = document.getElementById('bulkCancelBtn');
+
+    function updateBulkBar() {
+        if (!bulkActionBar || !bulkSelectCount) return;
+        const checkedBoxes = document.querySelectorAll('.applicant-row-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        bulkSelectCount.textContent = count;
+        if (count > 0) {
+            bulkActionBar.style.display = 'inline-flex';
+        } else {
+            bulkActionBar.style.display = 'none';
+            if (selectAllApplicants) selectAllApplicants.checked = false;
+            if (bulkStatusSelect) {
+                bulkStatusSelect.value = '';
+                // Sync custom listbox UI if available
+                if (window.registrarListboxSelect) {
+                    window.registrarListboxSelect.refresh(bulkStatusSelect);
+                }
+            }
+        }
+    }
+
+    if (bulkCancelBtn) {
+        bulkCancelBtn.addEventListener('click', function() {
+            if (selectAllApplicants) {
+                selectAllApplicants.checked = false;
+                selectAllApplicants.indeterminate = false;
+            }
+            document.querySelectorAll('.applicant-row-checkbox').forEach(cb => cb.checked = false);
+            updateBulkBar();
+        });
+    }
+
+    if (bulkUpdateStatusBtn) {
+        bulkUpdateStatusBtn.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.applicant-row-checkbox:checked');
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+            const newStatus = bulkStatusSelect ? bulkStatusSelect.value : '';
+
+            if (selectedIds.length === 0) return;
+            if (!newStatus) {
+                alert('Please select a new status to apply to the selected applicants.');
+                return;
+            }
+
+            // Show Confirmation Modal
+            const confirmCount = document.getElementById('confirmCount');
+            const confirmStatus = document.getElementById('confirmStatus');
+            
+            if (confirmCount && confirmStatus) {
+                confirmCount.textContent = selectedIds.length;
+                confirmStatus.textContent = newStatus;
+                
+                // Store pending data for execution on the modal element itself
+                const modalEl = document.getElementById('statusConfirmModal');
+                modalEl._pendingIds = selectedIds;
+                modalEl._pendingStatus = newStatus;
+
+                // Show Bootstrap Modal
+                if (window.jQuery) {
+                    $(modalEl).modal('show');
+                } else if (window.bootstrap) {
+                    new bootstrap.Modal(modalEl).show();
+                }
+            }
+        });
+    }
+
+    if (executeBulkUpdate) {
+        executeBulkUpdate.addEventListener('click', function() {
+            const statusConfirmModal = document.getElementById('statusConfirmModal');
+            const ids = statusConfirmModal._pendingIds;
+            const status = statusConfirmModal._pendingStatus;
+
+            executeBulkUpdate.disabled = true;
+            executeBulkUpdate.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const bulkUpdateUrl = appProcessPage.getAttribute('data-bulk-update-url');
+
+            fetch(bulkUpdateUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ ids, status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hide confirmation modal
+                    if (window.jQuery) {
+                        $(statusConfirmModal).modal('hide');
+                    } else if (window.bootstrap) {
+                        const modalInstance = bootstrap.Modal.getInstance(statusConfirmModal);
+                        if (modalInstance) modalInstance.hide();
+                    }
+
+                    // Show success modal
+                    const successModalEl = document.getElementById('statusSuccessModal');
+                    if (window.jQuery) {
+                        $(successModalEl).modal('show');
+                    } else if (window.bootstrap) {
+                        new bootstrap.Modal(successModalEl).show();
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                    executeBulkUpdate.disabled = false;
+                    executeBulkUpdate.textContent = 'Confirm Update';
+                }
+            })
+            .catch(error => {
+                console.error('Bulk Update Error:', error);
+                alert('An unexpected error occurred. Please try again.');
+                executeBulkUpdate.disabled = false;
+                executeBulkUpdate.textContent = 'Confirm Update';
+            });
+        });
+    }
+
+    if (reloadAfterSuccess) {
+        reloadAfterSuccess.addEventListener('click', () => {
+            window.location.reload();
+        });
+    }
+
+    if (selectAllApplicants) {
+        selectAllApplicants.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isChecked = this.checked;
+            document.querySelectorAll('.applicant-row-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateBulkBar();
+        });
+    }
+
+    // Delegation for checkboxes to handle dynamic content (if any)
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('applicant-row-checkbox')) {
+            updateBulkBar();
+            
+            // Update Select All state based on individual checkboxes
+            if (selectAllApplicants) {
+                const total = document.querySelectorAll('.applicant-row-checkbox').length;
+                const checked = document.querySelectorAll('.applicant-row-checkbox:checked').length;
+                selectAllApplicants.checked = total > 0 && total === checked;
+                selectAllApplicants.indeterminate = checked > 0 && checked < total;
+            }
+        }
+    });
+
+    function handleExport(btn, format) {
+        if (!btn || !applicationFilterForm) return;
+        
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Generating...`;
+        
+        const formData = new FormData(applicationFilterForm);
+        const params = new URLSearchParams(formData);
+        params.set('format', format);
+        params.set('export', '1');
+        
+        // Use the print route as the basis for the export
+        const printUrl = appProcessPage.getAttribute('data-print-url');
+        const exportUrl = `${printUrl}?${params.toString()}`;
+        
+        if (format === 'pdf') {
+            // Open PDF in a new tab for display/preview
+            window.open(exportUrl, '_blank');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            return;
+        }
+
+        // Trigger download using a hidden iframe for Excel/CSV
+        let exportFrame = document.getElementById('export_frame');
+        if (!exportFrame) {
+            exportFrame = document.createElement('iframe');
+            exportFrame.id = 'export_frame';
+            exportFrame.style.display = 'none';
+            document.body.appendChild(exportFrame);
+        }
+        exportFrame.src = exportUrl;
+        
+        // Restore button state after a delay
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }, 2500);
+    }
+
+    if (exportExcelBtn) exportExcelBtn.addEventListener('click', () => handleExport(exportExcelBtn, 'excel'));
+    if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => handleExport(exportPdfBtn, 'pdf'));
+
+    // --- Saved Views System ---
+    const savedViewsContainer = document.getElementById('savedViewsContainer');
+    const saveCurrentViewBtn = document.getElementById('saveCurrentViewBtn');
+    const VIEWS_STORAGE_KEY = 'plp_registrar_app_views';
+
+    function getSavedViews() {
+        const stored = localStorage.getItem(VIEWS_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveView(name, filters) {
+        const views = getSavedViews();
+        views.push({ id: Date.now(), name: name, filters: filters });
+        localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify(views));
+        renderSavedViews();
+    }
+
+    function deleteView(id) {
+        const views = getSavedViews().filter(v => v.id !== id);
+        localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify(views));
+        renderSavedViews();
+    }
+
+    function renderSavedViews() {
+        const views = getSavedViews();
+        if (!savedViewsContainer) return;
+
+        if (views.length === 0) {
+            savedViewsContainer.style.display = 'none';
+            return;
+        }
+
+        savedViewsContainer.style.display = 'flex';
+        savedViewsContainer.innerHTML = '';
+
+        views.forEach(view => {
+            const chip = document.createElement('div');
+            chip.className = 'view-chip';
+            chip.innerHTML = `
+                <span>${view.name}</span>
+                <span class="view-chip-delete" data-id="${view.id}">&times;</span>
+            `;
+
+            chip.addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-chip-delete')) {
+                    e.stopPropagation();
+                    deleteView(view.id);
+                    return;
+                }
+                applyView(view.filters);
+            });
+
+            savedViewsContainer.appendChild(chip);
+        });
+    }
+
+    function applyView(filters) {
+        if (!applicationFilterForm) return;
+        
+        // Reset form first
+        applicationFilterForm.reset();
+
+        // Apply saved values
+        for (const [key, value] of Object.entries(filters)) {
+            const field = applicationFilterForm.querySelector(`[name="${key}"]`);
+            if (field) {
+                field.value = value;
+                // Trigger change for custom listboxes
+                if (window.registrarListboxSelect) {
+                    window.registrarListboxSelect.refresh(field);
+                }
+            }
+        }
+
+        submitFilterForm();
+    }
+
+    if (saveCurrentViewBtn) {
+        saveCurrentViewBtn.addEventListener('click', function() {
+            const viewName = prompt('Enter a name for this view (e.g., "STEM Pending"):');
+            if (!viewName) return;
+
+            const formData = new FormData(applicationFilterForm);
+            const filters = {};
+            formData.forEach((value, key) => {
+                filters[key] = value;
+            });
+
+            saveView(viewName, filters);
+        });
+    }
+
+    // Initialize Views
+    renderSavedViews();
 })();
