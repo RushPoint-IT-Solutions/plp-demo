@@ -22,6 +22,31 @@ Checklist entry template
 - Notes and rollback considerations:
 
 ## Latest Entry
+- Date: 2026-04-25
+- Branch: uwis-michael-merge
+- Migration files changed:
+  - database/migrations/2026_04_24_000001_create_registrar_form_uploads_table.php
+  - database/migrations/2026_04_24_000001b_create_retention_policies_table.php
+  - database/migrations/2026_04_24_000002_create_archives_table.php
+  - database/migrations/2026_04_24_000003_create_archive_retrieval_requests_table.php
+  - database/migrations/2026_04_24_000004_create_archive_disposal_queue_table.php
+  - database/migrations/2026_04_24_000005_create_disposal_certificates_table.php
+  - database/migrations/2026_04_24_000006_create_archive_access_logs_table.php
+  - database/migrations/2026_04_24_000007_create_archive_settings_table.php
+  - database/migrations/2026_04_24_000008_create_archive_categories_table.php
+  - database/migrations/2026_04_25_000001_create_tor_diploma_document_tables.php
+- php artisan migrate:status result: PASS
+- Compatibility checks performed:
+  - Verified all migrations are additive
+  - Verified no existing tables are altered
+- Destructive operations present: NO
+- If YES, explicit approval reference: N/A
+- Verification evidence (tests or smoke checks):
+  - php artisan migrate:status returns successfully
+- Notes and rollback considerations:
+  - Additive only, safe to rollback via dropping the new tables.
+
+
 - Date: 2026-04-22
 - Branch: uwis-michael-merge
 - Migration files changed:

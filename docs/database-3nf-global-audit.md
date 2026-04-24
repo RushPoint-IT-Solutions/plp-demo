@@ -9,6 +9,33 @@ How to use this file
 3. If violations are found, either fix them in scope or log a follow-up item with owner and target date.
 
 ## Latest Audit Block (Update Per DB Task)
+- Audit date: 2026-04-25
+- Auditor: Copilot
+- Branch: uwis-michael-merge
+- Triggering ticket/task: Registrar Forms Archive and Document Management
+- Total tables reviewed: Whole-schema migration inventory reviewed via php artisan migrate:status; targeted relation checks completed for archive and document models
+
+### Whole-Schema Findings
+| Area | Status (Pass/Issue) | Notes |
+|---|---|---|
+| 1NF (atomic values, no repeated groups) | Pass | The new tables are fully 1NF. |
+| 2NF (full dependency on PK) | Pass | New tables for archives and form uploads depend fully on their primary keys. |
+| 3NF (no transitive dependencies) | Pass | No transitive dependencies. Document types, amendment reasons, and retention policies are normalized into separate tables. |
+| Lookup normalization | Pass | Added lookup tables for archive categories and document types. |
+| FK integrity and indexing | Pass | Foreign keys are established properly between archive models, retrieval requests, and logs. |
+
+### Violations or Follow-Ups
+| Table | Violation Type | Action | Owner | Target Date |
+|---|---|---|---|---|
+| None | No new normalization issues introduced | No follow-up required | Team | N/A |
+
+### Verification Evidence
+- Schema inventory command/output reference: php artisan migrate:status run before and after applying new migrations.
+- Applied migration commands: successfully migrated multiple additive tables for the archive and form uploads.
+- Query-plan validation: Indexes are added on standard FKs.
+- Migration compatibility check: All new migrations are additive.
+
+
 - Audit date: 2026-04-21
 - Auditor: Copilot
 - Branch: uwis-michael-merge
