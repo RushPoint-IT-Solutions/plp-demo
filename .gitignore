@@ -33,3 +33,6 @@ logs/
 .roomodes
 coding-agent-docs
 agent_skills_spec.md
+specs
+.claude/
+CLAUDE.md

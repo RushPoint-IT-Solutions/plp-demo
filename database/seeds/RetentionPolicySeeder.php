@@ -1,0 +1,156 @@
+<?php
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class RetentionPolicySeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        $policies = [
+            [
+                'name' => 'Student Grade Records',
+                'description' => 'Academic grades for students - retained for 7 years after graduation',
+                'record_type' => 'StudentGradeRecord',
+                'retention_period_months' => 84,
+                'archive_trigger' => 'end_of_academic_year',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'graduation_plus_years',
+                'disposal_after_graduation_years' => 7,
+                'requires_approval' => true,
+                'approval_role' => 'admin',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Student Deficiencies',
+                'description' => 'Academic deficiency records - retained for 5 years',
+                'record_type' => 'StudentDeficiency',
+                'retention_period_months' => 60,
+                'archive_trigger' => 'end_of_academic_year',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'registrar',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Discipline Records',
+                'description' => 'Student discipline case records - retained for 5 years',
+                'record_type' => 'StudentDisciplineRecord',
+                'retention_period_months' => 60,
+                'archive_trigger' => 'end_of_academic_year',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'admin',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Class Rosters',
+                'description' => 'Class roster and enrollment records - retained for 3 years',
+                'record_type' => 'RoomCourseAssignment',
+                'retention_period_months' => 36,
+                'archive_trigger' => 'end_of_semester',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'registrar',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Faculty Loads',
+                'description' => 'Faculty teaching load assignments - retained for 3 years',
+                'record_type' => 'RoomCourseAssignment',
+                'retention_period_months' => 36,
+                'archive_trigger' => 'end_of_academic_year',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'registrar',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Slot Monitoring',
+                'description' => 'Section slot monitoring records - retained for 2 years',
+                'record_type' => 'SlotMonitoring',
+                'retention_period_months' => 24,
+                'archive_trigger' => 'end_of_semester',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'registrar',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Portal Notifications',
+                'description' => 'System notifications and announcements - retained for 2 years',
+                'record_type' => 'PortalNotification',
+                'retention_period_months' => 24,
+                'archive_trigger' => 'inactivity',
+                'inactivity_months' => 12,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => false,
+                'approval_role' => 'registrar',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Parent Contact Requests',
+                'description' => 'Parent contact and inquiry records - retained for 3 years',
+                'record_type' => 'ParentContactRequest',
+                'retention_period_months' => 36,
+                'archive_trigger' => 'end_of_academic_year',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'registrar',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Faculty Files',
+                'description' => 'Faculty employment and performance records - retained for 7 years after separation',
+                'record_type' => 'MasterFacultyFile',
+                'retention_period_months' => 84,
+                'archive_trigger' => 'separation',
+                'inactivity_months' => null,
+                'disposal_trigger' => 'retention_expired',
+                'disposal_after_graduation_years' => null,
+                'requires_approval' => true,
+                'approval_role' => 'admin',
+                'is_active' => true,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ];
+
+        DB::table('retention_policies')->insert($policies);
+    }
+}
