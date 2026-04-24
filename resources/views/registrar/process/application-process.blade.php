@@ -5,6 +5,84 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
+<style>
+    /* Schedule of Exam Responsive Styles */
+    .sched-exam-form-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .sched-form-group {
+        flex: 1;
+    }
+    .sched-form-group--venue {
+        flex: 1.5;
+    }
+    .sched-form-group label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #006837;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        display: block;
+    }
+    .sched-form-group input {
+        height: 40px;
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 0 12px;
+        font-size: 0.9rem;
+    }
+    .sched-form-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .sched-form-actions button {
+        height: 40px;
+        padding: 0 25px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .sched-btn-save {
+        background: #006837;
+        color: #fff;
+        border: none;
+    }
+    .sched-btn-save:hover {
+        background: #004d29;
+    }
+    .sched-btn-print {
+        background: #fff;
+        color: #006837;
+        border: 1.5px solid #006837;
+    }
+    .sched-btn-print:hover {
+        background: #f0fdf4;
+    }
+
+    @media (max-width: 991px) {
+        .sched-exam-form-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+        .sched-form-group--venue {
+            flex: none;
+        }
+        .sched-form-actions {
+            margin-top: 5px;
+        }
+        .sched-form-actions button {
+            flex: 1;
+        }
+    }
+</style>
 @endpush
 
 
@@ -305,22 +383,22 @@
     {{-- Schedule of Exam --}}
     <div class="applicant-panel" id="panel-schedule-exam">
         <div class="sched-exam-card">
-            <div style="display: flex; align-items: flex-end; gap: 15px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
-                <div style="flex: 1;">
-                    <label style="font-size: 0.75rem; font-weight: 800; color: #006837; text-transform: uppercase; margin-bottom: 6px; display: block;">EXAM DATE</label>
-                    <input type="date" id="scheduleExamDate" class="app-filter-input w-100" style="height: 40px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px;">
+            <div class="sched-exam-form-row">
+                <div class="sched-form-group">
+                    <label>EXAM DATE</label>
+                    <input type="date" id="scheduleExamDate" class="app-filter-input">
                 </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 0.75rem; font-weight: 800; color: #006837; text-transform: uppercase; margin-bottom: 6px; display: block;">TIME</label>
-                    <input type="time" id="scheduleExamTime" class="app-filter-input w-100" style="height: 40px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px;">
+                <div class="sched-form-group">
+                    <label>TIME</label>
+                    <input type="time" id="scheduleExamTime" class="app-filter-input">
                 </div>
-                <div style="flex: 1.5;">
-                    <label style="font-size: 0.75rem; font-weight: 800; color: #006837; text-transform: uppercase; margin-bottom: 6px; display: block;">VENUE</label>
-                    <input type="text" id="scheduleExamVenue" placeholder="Enter venue location..." style="height: 40px; width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px; font-size: 0.9rem;">
+                <div class="sched-form-group sched-form-group--venue">
+                    <label>VENUE</label>
+                    <input type="text" id="scheduleExamVenue" placeholder="Enter venue location...">
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" class="sched-btn-save" id="saveExamScheduleBtn" style="height: 40px; padding: 0 25px; border-radius: 6px; background: #006837; color: #fff; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s;">Save</button>
-                    <button type="button" class="sched-btn-print" id="printExamScheduleBtn" style="height: 40px; padding: 0 25px; border-radius: 6px; background: #fff; color: #006837; border: 1.5px solid #006837; font-weight: 600; cursor: pointer; transition: all 0.2s;">Print</button>
+                <div class="sched-form-actions">
+                    <button type="button" class="sched-btn-save" id="saveExamScheduleBtn">Save</button>
+                    <button type="button" class="sched-btn-print" id="printExamScheduleBtn">Print</button>
                 </div>
             </div>
             <div id="scheduleExamFeedback" class="schedule-exam-feedback"></div>

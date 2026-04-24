@@ -209,7 +209,17 @@
 
         var status = normalizeApplicationStatus(approvalStatusSelect.value);
         approvalStatusSelect.value = status;
-        approvalBanner.textContent = 'Application, ' + status;
+        
+        // Dispatch change event to notify the custom listbox component to update its trigger text
+        approvalStatusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+        var bannerText = document.getElementById('approvalBannerText');
+        if (bannerText) {
+            bannerText.textContent = 'Application status set to: ' + status;
+        } else {
+            approvalBanner.textContent = 'Application, ' + status;
+        }
+
         if (status === 'Accepted') {
             approvalDateAccepted.value = approvalDateAccepted.value || formatDate(new Date());
         } else {
@@ -489,6 +499,15 @@
 
         approvalStatusSelect.addEventListener('change', syncApprovalUi);
         syncApprovalUi();
+
+        // Initialize Flatpickr for the decision date
+        if (typeof flatpickr === 'function' && document.querySelector('.js-flatpickr-approval')) {
+            flatpickr('.js-flatpickr-approval', {
+                dateFormat: 'm/d/Y',
+                allowInput: true,
+                monthSelectorType: 'static'
+            });
+        }
 
         if (!approvalSaveBtn) {
             return;
