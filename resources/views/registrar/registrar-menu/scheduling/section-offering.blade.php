@@ -147,7 +147,10 @@
         <div class="so-card-header">
             <div class="so-card-title" id="soCardTitle">Section Offering: A</div>
             <div class="so-card-header-actions">
-                <button type="button" class="pf-btn-clear so-back-btn" id="soBackToDirectory">Back to Directory</button>
+                <button type="button" class="pf-back-btn so-back-btn" id="soBackToDirectory">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Directory
+                </button>
                 <button type="button" class="pf-btn-new so-print-btn">Print Class Program</button>
             </div>
         </div>

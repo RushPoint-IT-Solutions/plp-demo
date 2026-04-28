@@ -169,6 +169,49 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var day = String(parsed.getDate()).padStart(2, '0');
     return parsed.getFullYear() + '-' + month + '-' + day;
   }
+  function setDateInputValue(inputId, value) {
+    var input = byId(inputId);
+    if (!input) {
+      return;
+    }
+    var normalized = normalizeDateInputValue(value);
+    if (input._flatpickr) {
+      if (normalized) {
+        input._flatpickr.setDate(normalized, true, 'Y-m-d');
+      } else {
+        input._flatpickr.clear();
+      }
+      return;
+    }
+    input.value = normalized;
+  }
+  function initFlatpickrDateInputs() {
+    if (typeof window.flatpickr !== 'function') {
+      return;
+    }
+    ['cfgCutoffDate', 'cfgSectionCutoffDate', 'cfgCutoffRegDate', 'cfgCutoffRegCutoffDate', 'cfgCutoffConfigDate', 'cfgGPDateFrom'].forEach(function (inputId) {
+      var input = byId(inputId);
+      if (!input) {
+        return;
+      }
+      if (input._flatpickr) {
+        input._flatpickr.destroy();
+      }
+      window.flatpickr(input, {
+        dateFormat: 'Y-m-d',
+        allowInput: true,
+        disableMobile: true,
+        onReady: function onReady(_selectedDates, _dateStr, instance) {
+          if (!instance || !instance.calendarContainer) {
+            return;
+          }
+          instance.calendarContainer.classList.add('an-flatpickr-calendar');
+          instance.calendarContainer.classList.add('app-form-flatpickr-theme');
+        }
+      });
+      setDateInputValue(inputId, input.value);
+    });
+  }
   function routeFromTemplate(template, id) {
     return String(template || '').replace('__ID__', String(id));
   }
@@ -349,7 +392,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     sectionCutoff: parseDataJson(bootstrap, 'sectionCutoff', []),
     cutoffConfig: parseDataJson(bootstrap, 'cutoffConfig', []),
     curriculumDisplay: parseDataJson(bootstrap, 'curriculumDisplay', []),
-    signatureDesignations: parseDataJson(bootstrap, 'signatureDesignations', []),
     latestIncRun: parseDataJson(bootstrap, 'latestIncRun', null),
     pager: {
       schoolSem: {
@@ -407,9 +449,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     },
     curriculumDisplay: {
       id: 'cfgCurriculumDisplayPager'
-    },
-    signatureDesignations: {
-      id: 'cfgDesignationPager'
     }
   };
   function listFor(group) {
@@ -519,24 +558,16 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var rows = paged.rows.map(function (row, idx) {
       var index = paged.start + idx;
       var signatureCell = row.signatureUrl ? '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>' : '<span class="cfg-muted">No file</span>';
-      
       var programsHtml = '';
       if (row.programs && Array.isArray(row.programs) && row.programs.length > 0) {
-        programsHtml = row.programs.map(function(p) {
+        programsHtml = row.programs.map(function (p) {
           if (p === 'ALL') return '<span class="sc-general-tag">General</span>';
           return '<span class="sc-prog-tag">' + escapeHtml(p) + '</span>';
         }).join('');
       } else {
         programsHtml = '<span class="sc-general-tag">General</span>';
       }
-
-      return '' + '<tr>' + 
-        '<td>' + escapeHtml(row.designation) + '</td>' + 
-        '<td>' + escapeHtml(row.name) + '</td>' + 
-        '<td>' + programsHtml + '</td>' + 
-        '<td>' + signatureCell + '</td>' + 
-        '<td class="cfg-col-action">' + actionMenuHtml('signatures', index) + '</td>' + 
-        '</tr>';
+      return '' + '<tr>' + '<td>' + escapeHtml(row.designation) + '</td>' + '<td>' + escapeHtml(row.name) + '</td>' + '<td>' + programsHtml + '</td>' + '<td>' + signatureCell + '</td>' + '<td class="cfg-col-action">' + actionMenuHtml('signatures', index) + '</td>' + '</tr>';
     }).join('');
     body.innerHTML = rows || '<tr><td colspan="5" class="sc-empty-row">No records found.</td></tr>';
     renderPager('signatures');
@@ -622,7 +653,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       renderCurriculumDisplay();
     }
   }
-
   function renderAll() {
     renderSchoolSem();
     renderGradePosting();
@@ -701,25 +731,60 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     byId('cfgGPYear').value = '';
     byId('cfgGPSemester').value = '';
     byId('cfgGPPeriod').value = '';
-    byId('cfgGPDateFrom').value = '';
+    setDateInputValue('cfgGPDateFrom', '');
     syncSelectUI('cfgGPSemester');
     syncSelectUI('cfgGPPeriod');
+  }
+  function setSignatureSaveButtonState(isSaving) {
+    var saveButton = byId('cfgSignatureSaveBtn');
+    if (!saveButton) {
+      return;
+    }
+    var editNode = byId('cfgSignatureEditId');
+    var hasEditId = !!(editNode && String(editNode.value || '').trim() !== '');
+    saveButton.disabled = !!isSaving;
+    saveButton.textContent = isSaving ? 'Saving...' : hasEditId ? 'Update' : 'Save';
+  }
+  function resetSignatureForm() {
+    var editNode = byId('cfgSignatureEditId');
+    var designationNode = byId('cfgSignatureDesignation');
+    var nameNode = byId('cfgSignatureName');
+    var fileNode = byId('cfgSignatureFile');
+    var titleNode = byId('cfgSignatureTitle');
+    if (editNode) {
+      editNode.value = '';
+    }
+    if (designationNode) {
+      designationNode.value = '';
+    }
+    if (nameNode) {
+      nameNode.value = '';
+    }
+    if (fileNode) {
+      fileNode.value = '';
+    }
+    if (titleNode) {
+      titleNode.textContent = 'ADD SIGNATURE';
+    }
+    setInlineMessage('cfgSignatureModalMessage', '', false);
+    setSignatureSaveButtonState(false);
+    syncSelectUI('cfgSignatureDesignation');
   }
   function resetCutoffDateForm() {
     byId('cfgCutoffDateEditId').value = '';
     byId('cfgCutoffType').value = '';
-    byId('cfgCutoffDate').value = '';
+    setDateInputValue('cfgCutoffDate', '');
     byId('cfgCutoffSaveBtn').textContent = 'Save';
     syncSelectUI('cfgCutoffType');
   }
   function resetSectionCutoffForm() {
     byId('cfgSectionCutoffEditId').value = '';
-    byId('cfgSectionCutoffDate').value = '';
+    setDateInputValue('cfgSectionCutoffDate', '');
     byId('cfgSectionCutoffSaveBtn').textContent = 'Save';
   }
   function resetCutoffConfigForm() {
     byId('cfgCutoffConfigEditId').value = '';
-    byId('cfgCutoffConfigDate').value = '';
+    setDateInputValue('cfgCutoffConfigDate', '');
     byId('cfgCutoffConfigSaveBtn').textContent = 'Update';
   }
   function resetCurriculumForm() {
@@ -890,6 +955,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               _context5.n = 1;
               break;
             }
+            setInlineMessage('cfgSignatureModalMessage', 'Please complete designation and name for signature.', true);
             showMessage('Please complete designation and name for signature.', 'error');
             return _context5.a(2);
           case 1:
@@ -899,6 +965,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             if (fileInput.files && fileInput.files[0]) {
               formData.append('signature_file', fileInput.files[0]);
             }
+            setInlineMessage('cfgSignatureModalMessage', 'Saving signature configuration...', false);
+            setSignatureSaveButtonState(true);
             _context5.p = 2;
             if (!editId) {
               _context5.n = 4;
@@ -921,19 +989,24 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             }
             state.pager.signatures.page = 1;
             renderSignatures();
-            resetSignatureForm();
             closeModal('cfgSignatureModal');
+            resetSignatureForm();
             showMessage('Signature configuration saved.', 'success');
             _context5.n = 8;
             break;
           case 7:
             _context5.p = 7;
             _t5 = _context5.v;
+            setInlineMessage('cfgSignatureModalMessage', _t5.message || 'Unable to save signature configuration.', true);
             showMessage(_t5.message || 'Unable to save signature configuration.', 'error');
           case 8:
+            _context5.p = 8;
+            setSignatureSaveButtonState(false);
+            return _context5.f(8);
+          case 9:
             return _context5.a(2);
         }
-      }, _callee5, null, [[2, 7]]);
+      }, _callee5, null, [[2, 7, 8, 9]]);
     }));
     return _submitSignatureForm.apply(this, arguments);
   }
@@ -1165,8 +1238,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             return requestJson(routes.cutoffStore, 'POST', payload);
           case 3:
             setInlineMessage('cfgCutoffRegMessage', 'Cut-off registration saved for student ' + studentNo + '.', false);
-            byId('cfgCutoffRegDate').value = '';
-            byId('cfgCutoffRegCutoffDate').value = '';
+            setDateInputValue('cfgCutoffRegDate', '');
+            setDateInputValue('cfgCutoffRegCutoffDate', '');
             byId('cfgCutoffRegStudentNo').value = '';
             _context9.n = 5;
             break;
@@ -1383,17 +1456,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       group: group,
       id: row.id
     };
-
-    var detail = 'Selected Record';
-    if (group === 'schoolSem') detail = (row.sy || '') + ' - ' + (row.semester || '');
-    else if (group === 'gradePosting') detail = (row.sy || '') + ' ' + (row.semester || '') + ' (' + (row.period || '') + ')';
-    else if (group === 'signatures') detail = (row.name || '') + ' / ' + (row.designation || '');
-    else if (group === 'cutoffDate') detail = (row.type || 'Cutoff') + ': ' + (row.cutoffDate || '') + ' (SY ' + (row.sy || '') + ')';
-    else if (group === 'sectionCutoff') detail = 'Section Cutoff: ' + (row.cutoffDate || '') + ' (' + (row.sy || '') + ')';
-    else if (group === 'cutoffConfig') detail = 'Config Date: ' + (row.cutoffDate || '') + ' (' + (row.sy || '') + ')';
-    else if (group === 'curriculumDisplay') detail = 'Curriculum: ' + (row.sy || '') + ' ' + (row.semester || '');
-
-    byId('cfgDeleteDetail').textContent = detail;
+    byId('cfgDeleteMessage').textContent = 'Are you sure you want to delete this record?';
     openModal('cfgDeleteModal');
   }
   function confirmDelete() {
@@ -1486,23 +1549,21 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       byId('cfgGPYear').value = row.sy || '';
       byId('cfgGPSemester').value = row.semester || '';
       byId('cfgGPPeriod').value = row.period || '';
-      byId('cfgGPDateFrom').value = normalizeDateInputValue(row.dateFrom);
+      setDateInputValue('cfgGPDateFrom', row.dateFrom);
       syncSelectUI('cfgGPSemester');
       syncSelectUI('cfgGPPeriod');
       openModal('cfgGradePostingModal');
       return;
     }
     if (group === 'signatures') {
-      var sig = state.signatures[index];
-      if (!sig) return;
-      
-      resetSignatureForm();
-      byId('cfgSignatureEditId').value = sig.id;
-      byId('cfgSignatureName').value = sig.name;
-      byId('cfgSignatureDesignation').value = sig.designationId;
-      refreshListboxes(byId('cfgSignatureDesignation'));
-      byId('cfgSigTitle').textContent = 'EDIT SIGNATORY';
-
+      byId('cfgSignatureEditId').value = row.id || '';
+      byId('cfgSignatureDesignation').value = row.designationId || '';
+      byId('cfgSignatureName').value = row.name || '';
+      byId('cfgSignatureFile').value = '';
+      byId('cfgSigTitle').textContent = 'EDIT SIGNATURE';
+      setInlineMessage('cfgSignatureModalMessage', '', false);
+      setSignatureSaveButtonState(false);
+      syncSelectUI('cfgSignatureDesignation');
       openModal('cfgSignatureModal');
       return;
     }
@@ -1511,7 +1572,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       byId('cfgCutoffType').value = row.typeCode || '';
       byId('cfgCutoffSy').value = row.sy || '';
       byId('cfgCutoffSemester').value = row.semester || '';
-      byId('cfgCutoffDate').value = normalizeDateInputValue(row.cutoffDate);
+      setDateInputValue('cfgCutoffDate', row.cutoffDate);
       byId('cfgCutoffSaveBtn').textContent = 'Update';
       syncSelectUI('cfgCutoffType');
       syncSelectUI('cfgCutoffSemester');
@@ -1521,7 +1582,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       byId('cfgSectionCutoffEditId').value = row.id || '';
       byId('cfgSectionCutoffSy').value = row.sy || '';
       byId('cfgSectionCutoffSemester').value = row.semester || '';
-      byId('cfgSectionCutoffDate').value = normalizeDateInputValue(row.cutoffDate);
+      setDateInputValue('cfgSectionCutoffDate', row.cutoffDate);
       byId('cfgSectionCutoffSaveBtn').textContent = 'Update';
       syncSelectUI('cfgSectionCutoffSemester');
       return;
@@ -1530,7 +1591,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       byId('cfgCutoffConfigEditId').value = row.id || '';
       byId('cfgCutoffConfigSy').value = row.sy || '';
       byId('cfgCutoffConfigSemester').value = row.semester || '';
-      byId('cfgCutoffConfigDate').value = normalizeDateInputValue(row.cutoffDate);
+      setDateInputValue('cfgCutoffConfigDate', row.cutoffDate);
       byId('cfgCutoffConfigSaveBtn').textContent = 'Update';
       syncSelectUI('cfgCutoffConfigSemester');
       return;
@@ -1605,11 +1666,20 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         openModal('cfgGradePostingModal');
         return;
       }
+      var openSignature = event.target.closest('[data-cfg-action="open-signature-modal"]');
+      if (openSignature) {
+        resetSignatureForm();
+        openModal('cfgSignatureModal');
+        return;
+      }
       var closeModalButton = event.target.closest('[data-cfg-action="close-modal"]');
       if (closeModalButton) {
         var modalTarget = closeModalButton.getAttribute('data-cfg-modal-target');
         if (modalTarget) {
           closeModal(modalTarget);
+          if (modalTarget === 'cfgSignatureModal') {
+            resetSignatureForm();
+          }
         }
         return;
       }
@@ -1657,6 +1727,9 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       overlay.addEventListener('click', function (event) {
         if (event.target === overlay) {
           overlay.classList.add('is-hidden');
+          if (overlay.id === 'cfgSignatureModal') {
+            resetSignatureForm();
+          }
         }
       });
     });
@@ -1674,8 +1747,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var message = 'Last run: ' + (state.latestIncRun.schoolYear || '-') + ' ' + (state.latestIncRun.semester || '-') + ' | Processed ' + state.latestIncRun.processedCount + ' record(s) on ' + (state.latestIncRun.createdAt || '-');
     setInlineMessage('cfgIncProcessMessage', message, false);
   }
-
-  function resetSignatureForm() {
+  function resetSignatureFormSimple() {
     byId('cfgSignatureEditId').value = '';
     byId('cfgSignatureName').value = '';
     byId('cfgSignatureFile').value = '';
@@ -1683,67 +1755,64 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     refreshListboxes(byId('cfgSignatureDesignation'));
     byId('cfgSigTitle').textContent = 'ADD SIGNATORY';
   }
-
   function initDesignationFeatures() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-cfg-action="open-designation-modal"]');
       if (btn) openModal('cfgDesignationModal');
-      
       var sigBtn = e.target.closest('[data-cfg-action="open-signature-modal"]');
       if (sigBtn) {
-        resetSignatureForm();
+        resetSignatureFormSimple();
         openModal('cfgSignatureModal');
       }
     });
-
     var progSearchInput = byId('progSearchInput');
     var progItems = document.querySelectorAll('.sc-multi-select-item');
     if (progSearchInput) {
-      progSearchInput.addEventListener('input', function() {
+      progSearchInput.addEventListener('input', function () {
         var query = (this.value || '').toLowerCase().trim();
-        progItems.forEach(function(item) {
+        progItems.forEach(function (item) {
           var text = (item.getAttribute('data-search-text') || '').toLowerCase();
           item.style.display = text.indexOf(query) !== -1 ? 'flex' : 'none';
         });
       });
     }
-
-
     var designationSaveBtn = byId('cfgDesignationSaveBtn');
     if (designationSaveBtn) {
-      designationSaveBtn.addEventListener('click', function() {
+      designationSaveBtn.addEventListener('click', function () {
         var name = (byId('newDesignationName').value || '').trim();
         if (!name) {
           showMessage('Please provide a designation name.', 'error');
           return;
         }
         showMessage('New designation "' + name + '" created successfully.', 'success');
-        
+
         // Add to signatory dropdown list (UI Preview)
         var designationSelect = byId('cfgSignatureDesignation');
         if (designationSelect) {
-            var opt = document.createElement('option');
-            opt.value = String(Date.now()); // Mock Integer ID
-            opt.textContent = name;
-            designationSelect.appendChild(opt);
-            
-            // Force refresh all custom listboxes
-            if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
-                window.registrarListboxSelect.refreshAll();
-            }
-        }
+          var opt = document.createElement('option');
+          opt.value = String(Date.now()); // Mock Integer ID
+          opt.textContent = name;
+          designationSelect.appendChild(opt);
 
+          // Force refresh all custom listboxes
+          if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
+            window.registrarListboxSelect.refreshAll();
+          }
+        }
         closeModal('cfgDesignationModal');
         byId('newDesignationName').value = '';
         if (progSearchInput) progSearchInput.value = '';
-        progItems.forEach(function(item) { item.style.display = 'flex'; });
-        document.querySelectorAll('input[name="target_programs[]"]').forEach(function(cb) { cb.checked = false; });
+        progItems.forEach(function (item) {
+          item.style.display = 'flex';
+        });
+        document.querySelectorAll('input[name="target_programs[]"]').forEach(function (cb) {
+          cb.checked = false;
+        });
       });
     }
-
     var desAllPrograms = byId('cfgDesignationAll');
     if (desAllPrograms) {
-      desAllPrograms.addEventListener('change', function() {
+      desAllPrograms.addEventListener('change', function () {
         var progList = byId('designationProgListContainer');
         if (progList) {
           progList.style.opacity = this.checked ? '0.5' : '1';
@@ -1754,21 +1823,21 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   }
 
   // UI-Only: Mock existing data to show program tags
-  state.signatures = state.signatures.map(function(sig) {
-    if (sig.designation === 'University Registrar') {
-        sig.programs = ['ALL'];
+  state.signatures = state.signatures.map(function (sig) {
+    if (sig.designation === 'University Registrar' || sig.designation === 'Registrar') {
+      sig.programs = ['ALL'];
     } else if (sig.designation === 'Assistant Registrar') {
-        sig.programs = ['BSHM', 'BSN', 'MAN'];
+      sig.programs = ['BSHM', 'BSN', 'MAN'];
     } else if (sig.designation === 'Accounting Head') {
-        sig.programs = ['BSA', 'BSENT'];
+      sig.programs = ['BSA', 'BSENT'];
     }
     return sig;
   });
-
   bindForms();
   bindGlobalEvents();
   initDesignationFeatures();
   renderAll();
+  initFlatpickrDateInputs();
   refreshListboxes();
   applyInitialMessages();
 })();
