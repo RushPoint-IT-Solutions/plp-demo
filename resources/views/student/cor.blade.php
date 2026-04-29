@@ -19,7 +19,6 @@
             <div class="cor-student-info">
                 <div class="cor-info-row cor-info-row--grid">
                     <div class="cor-info-col">
-                        <div class="cor-info-line"><span class="cor-info-label">Enrollment No.:</span><span class="cor-info-value">{{ optional($student)->enrollment_no }}</span></div>
                         <div class="cor-info-line"><span class="cor-info-label">Student No.:</span><span class="cor-info-value">{{ optional($student)->student_no }}</span></div>
                         <div class="cor-info-line"><span class="cor-info-label">Student Name:</span><span class="cor-info-value">{{ optional($student)->name }}</span></div>
                         <div class="cor-info-line"><span class="cor-info-label">Address:</span><span class="cor-info-value">{{ optional($student)->address }}</span></div>
