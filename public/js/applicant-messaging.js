@@ -1,64 +1,66 @@
 document.addEventListener('DOMContentLoaded', function () {
     var composeModal = document.getElementById('composeModal');
+    var viewModal = document.getElementById('viewMessageModal');
     var composeBtn = document.getElementById('msgComposeBtn');
-    var closeBtn = document.getElementById('msgComposeCloseBtn');
-    var discardBtn = document.getElementById('msgComposeDiscardBtn');
-    var sendBtn = document.getElementById('msgComposeSendBtn');
-    var toInput = document.getElementById('msgTo');
-    var subjectInput = document.getElementById('msgSubject');
-    var bodyInput = document.getElementById('msgBody');
+    
+    // Delegation for row clicks (Inbox/Sent)
+    document.addEventListener('click', function(e) {
+        var row = e.target.closest('.msg-row');
+        if (row && viewModal) {
+            var sender = row.getAttribute('data-sender');
+            var type = row.getAttribute('data-type');
+            var subject = row.getAttribute('data-subject');
+            var date = row.getAttribute('data-date');
+            var folder = row.getAttribute('data-folder');
+            
+            document.getElementById('viewMsgSender').textContent = sender;
+            document.getElementById('viewMsgType').textContent = type;
+            document.getElementById('viewMsgSubject').textContent = subject;
+            document.getElementById('viewMsgDate').textContent = date;
 
-    if (!composeModal || !composeBtn || !closeBtn || !discardBtn || !sendBtn || !toInput || !subjectInput || !bodyInput) {
-        return;
-    }
+            // Hide reply button for sent folder
+            var replyBtn = document.getElementById('msgReplyBtn');
+            if (replyBtn) {
+                if (folder === 'sent') {
+                    replyBtn.style.display = 'none';
+                } else {
+                    replyBtn.style.display = 'inline-flex';
+                }
+            }
 
-    function resetComposeForm() {
-        toInput.value = '';
-        subjectInput.value = '';
-        bodyInput.value = '';
-    }
-
-    function openComposeModal() {
-        composeModal.classList.remove('faculty-gs-hidden');
-        composeModal.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeComposeModal() {
-        composeModal.classList.add('faculty-gs-hidden');
-        composeModal.setAttribute('aria-hidden', 'true');
-        resetComposeForm();
-    }
-
-    function sendComposeModal() {
-        var to = toInput.value.trim();
-        var subject = subjectInput.value.trim();
-        var body = bodyInput.value.trim();
-
-        if (!to || !subject || !body) {
-            alert('Please fill in all fields before sending.');
-            return;
+            document.getElementById('viewMsgBody').textContent = "Hello,\n\nThis is a mock message content for \"" + subject + "\". In a real system, this would be fetched from the database via an AJAX call.\n\nRegards,\n" + sender;
+            
+            viewModal.classList.remove('faculty-gs-hidden');
         }
 
-        var originalHtml = sendBtn.innerHTML;
-        sendBtn.disabled = true;
-        sendBtn.textContent = 'Sending...';
+        // Close View Modal
+        if (e.target.closest('.msg-view-close') || e.target.closest('.msg-view-close-btn')) {
+            if (viewModal) viewModal.classList.add('faculty-gs-hidden');
+        }
 
-        setTimeout(function () {
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = originalHtml;
-            closeComposeModal();
-            alert('Message sent successfully.');
-        }, 600);
-    }
+        // Reply Flow
+        if (e.target.closest('#viewMessageModal .clean-btn-primary')) {
+            var sender = document.getElementById('viewMsgSender').textContent;
+            var subject = document.getElementById('viewMsgSubject').textContent;
+            
+            if (viewModal) viewModal.classList.add('faculty-gs-hidden');
+            
+            if (typeof openComposeModal === 'function') {
+                openComposeModal(true, { 
+                    subject: "Re: " + subject,
+                    body: "\n\n--- Original Message ---\nFrom: " + sender + "\nSubject: " + subject + "\n"
+                });
+            }
+        }
+    });
 
-    composeBtn.addEventListener('click', openComposeModal);
-    closeBtn.addEventListener('click', closeComposeModal);
-    discardBtn.addEventListener('click', closeComposeModal);
-    sendBtn.addEventListener('click', sendComposeModal);
-
-    composeModal.addEventListener('click', function (event) {
-        if (event.target === composeModal) {
-            closeComposeModal();
+    // Close modals on backdrop click
+    window.addEventListener('click', function(e) {
+        if (e.target === composeModal) {
+            composeModal.classList.add('faculty-gs-hidden');
+        }
+        if (e.target === viewModal) {
+            viewModal.classList.add('faculty-gs-hidden');
         }
     });
 });

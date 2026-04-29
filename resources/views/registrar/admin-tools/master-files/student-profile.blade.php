@@ -7,6 +7,8 @@
 @php
     $isConfigMode = request('view') === 'config';
     $isApplicationMode = request('view') === 'application';
+    $isProcessRoute = request()->routeIs('registrar.process.*');
+    $isReadOnlyMode = !$isProcessRoute;
     $p = $previewProfile ?? null;
 
     $cfgStudentId = request('student_id', optional($p)->student_no ?? '');
@@ -104,7 +106,9 @@
 <div class="pf-page">
     <div class="spc-page">
         <div class="spc-head-row">
-            <a href="{{ route('registrar.admin-tools.master-files.student-profile') }}" class="pf-btn-new spc-view-form-btn">Back to Student Profile List</a>
+            <a href="{{ $isProcessRoute ? route('registrar.process.batch-update-student') : route('registrar.admin-tools.master-files.student-profile') }}" class="pf-btn-new spc-view-form-btn">
+                {{ $isProcessRoute ? 'Back to Batch Update Student' : 'Back to Student Profile List' }}
+            </a>
         </div>
 
         <div class="profile-page">
@@ -119,7 +123,7 @@
             </div>
 
             <div class="setup-form-container step-panel" id="step-1">
-                <fieldset disabled>
+                <fieldset {{ $isReadOnlyMode ? 'disabled' : '' }}>
                     <div class="setup-section">
                         <div class="setup-personal-top">
                             <div class="setup-personal-left">
@@ -197,7 +201,7 @@
             </div>
 
             <div class="setup-form-container step-panel step-hidden" id="step-2">
-                <fieldset disabled>
+                <fieldset {{ $isReadOnlyMode ? 'disabled' : '' }}>
                     <div class="setup-section">
                         <div class="setup-section-header"><h3 class="setup-section-title">Family/Guardian Information</h3></div>
                         <div class="setup-row">
@@ -247,7 +251,7 @@
             </div>
 
             <div class="setup-form-container step-panel step-hidden" id="step-3">
-                <fieldset disabled>
+                <fieldset {{ $isReadOnlyMode ? 'disabled' : '' }}>
                     <div class="setup-section">
                         <div class="setup-section-header"><h3 class="setup-section-title">Educational Information</h3></div>
                         <div class="setup-row">
@@ -269,7 +273,7 @@
             </div>
 
             <div class="setup-form-container step-panel step-hidden" id="step-4">
-                <fieldset disabled>
+                <fieldset {{ $isReadOnlyMode ? 'disabled' : '' }}>
                     <div class="setup-section">
                         <div class="setup-section-header"><h3 class="setup-section-title">Other Information</h3></div>
                         <div class="setup-row">

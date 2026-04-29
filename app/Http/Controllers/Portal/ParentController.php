@@ -534,7 +534,10 @@ class ParentController extends Controller
 
     public function messaging()
     {
-        return view('parent.messaging');
+        $students = \App\Student::orderBy('name')->get(['id', 'name', 'student_no']);
+        $faculties = \App\Faculty::orderBy('name')->get(['id', 'name', 'code']);
+
+        return view('parent.messaging', compact('students', 'faculties'));
     }
 
     public function helpCenter()

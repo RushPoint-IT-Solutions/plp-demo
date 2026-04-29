@@ -263,7 +263,10 @@ class RegistrarController extends Controller
      */
     public function messaging()
     {
-        return view('registrar.messaging');
+        $students = \App\Student::orderBy('name')->get(['id', 'name', 'student_no']);
+        $faculties = \App\Faculty::orderBy('name')->get(['id', 'name', 'code']);
+
+        return view('registrar.messaging', compact('students', 'faculties'));
     }
 
     private function activeRegistrarNotifications($user = null)
@@ -10039,4 +10042,28 @@ scholastic records but instead shall be replaced with the computed Semestral gra
             ]);
         }
     }
+
+    public function batchUpdateStudent()
+    {
+        return view('registrar.process.batch-update-student');
+    }
+
+    public function batchUpdateStudentForm(Request $request)
+    {
+        $studentNo = trim((string) $request->query('student_id', ''));
+        $previewProfile = null;
+
+        if ($studentNo !== '') {
+            $previewProfile = StudentProfile::where('student_no', $studentNo)->first();
+        }
+
+        if (!$previewProfile) {
+            $previewProfile = StudentProfile::orderBy('id')->first();
+        }
+
+        return view('registrar.admin-tools.master-files.student-profile', [
+            'previewProfile' => $previewProfile,
+        ]);
+    }
+
 }

@@ -5,7 +5,7 @@
 
 @section('content')
 @php
-    $folder = request('folder', 'drafts');
+    $folder = request('folder', 'inbox');
     $messages = [
         'inbox' => [
             ['sender' => 'Registrar Office', 'type' => 'Staff', 'subject' => 'Enrollment status update', 'date' => 'Mar 12, 2026'],
@@ -79,10 +79,12 @@
                         <svg class="msg-search-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         <input type="text" class="msg-search-input" placeholder="Search...">
                     </div>
+                    @if($folder === 'inbox')
                     <button type="button" class="msg-compose-btn" id="msgComposeBtn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                         Compose
                     </button>
+                    @endif
                 </div>
             </div>
 
@@ -98,8 +100,11 @@
                     </thead>
                     <tbody>
                         @forelse($folderMessages as $msg)
-                            <tr>
-                                <td>{{ $msg['sender'] }}</td>
+                            <tr @if($folder === 'drafts') class="draft-row" data-subject="{{ $msg['subject'] }}" @else class="msg-row" data-sender="{{ $msg['sender'] }}" data-type="{{ $msg['type'] }}" data-subject="{{ $msg['subject'] }}" data-date="{{ $msg['date'] }}" data-folder="{{ $folder }}" @endif>
+                                <td>
+                                    <div style="font-weight: 700;">{{ $msg['sender'] }}</div>
+                                    <div class="msg-row-hint">Click to view</div>
+                                </td>
                                 <td>{{ $msg['type'] }}</td>
                                 <td>{{ $msg['subject'] }}</td>
                                 <td>{{ $msg['date'] }}</td>
@@ -116,46 +121,77 @@
     </div>
 </div>
 
-<div class="pf-modal-overlay faculty-gs-hidden" id="composeModal" aria-hidden="true">
-    <div class="pf-modal-box msg-compose-modal-box">
-        <div class="msg-compose-modal-head">
-            <div class="msg-compose-modal-title-wrap">
-                <div class="pf-modal-title msg-compose-modal-title">Compose Message</div>
-            </div>
-            <button type="button" class="msg-compose-close" id="msgComposeCloseBtn" aria-label="Close compose modal">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
-
-        <div class="pf-modal-form">
-            <div class="pf-modal-field">
-                <label class="pf-modal-label" for="msgTo">To</label>
-                <input type="text" class="pf-modal-input" id="msgTo" placeholder="Enter recipient email or group">
-            </div>
-            <div class="pf-modal-field">
-                <label class="pf-modal-label" for="msgSubject">Subject</label>
-                <input type="text" class="pf-modal-input" id="msgSubject" placeholder="Enter subject">
-            </div>
-            <div class="pf-modal-field">
-                <label class="pf-modal-label" for="msgBody">Message</label>
-                <textarea class="pf-modal-input msg-compose-textarea" id="msgBody" rows="7" placeholder="Write your message..."></textarea>
-            </div>
-        </div>
-
-        <div class="pf-modal-actions msg-compose-modal-actions">
-            <button type="button" class="pf-modal-btn-cancel" id="msgComposeDiscardBtn">Discard</button>
-            <button type="button" class="pf-modal-btn-save msg-compose-send-btn" id="msgComposeSendBtn">
-                Send
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-    </div>
-</div>
+@include('includes.messaging-compose-modal')
+@include('includes.messaging-view-modal')
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/faculty-messaging.js') }}?v={{ file_exists(public_path('js/faculty-messaging.js')) ? filemtime(public_path('js/faculty-messaging.js')) : time() }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var viewModal = document.getElementById('viewMessageModal');
+    
+    // Delegation for row clicks (Inbox/Sent)
+    document.addEventListener('click', function(e) {
+        var row = e.target.closest('.msg-row');
+        if (row && viewModal) {
+            var sender = row.getAttribute('data-sender');
+            var type = row.getAttribute('data-type');
+            var subject = row.getAttribute('data-subject');
+            var date = row.getAttribute('data-date');
+            var folder = row.getAttribute('data-folder');
+            
+            document.getElementById('viewMsgSender').textContent = sender;
+            document.getElementById('viewMsgType').textContent = type;
+            document.getElementById('viewMsgSubject').textContent = subject;
+            document.getElementById('viewMsgDate').textContent = date;
+            
+            // Hide reply button for sent folder
+            var replyBtn = document.getElementById('msgReplyBtn');
+            if (replyBtn) {
+                if (folder === 'sent') {
+                    replyBtn.style.display = 'none';
+                } else {
+                    replyBtn.style.display = 'inline-flex';
+                }
+            }
+
+            document.getElementById('viewMsgBody').textContent = "Hello,\n\nThis is a mock message content for \"" + subject + "\". In a real system, this would be fetched from the database via an AJAX call.\n\nRegards,\n" + sender;
+            
+            viewModal.classList.remove('faculty-gs-hidden');
+        }
+
+        // Close View Modal
+        if (e.target.closest('.msg-view-close') || e.target.closest('.msg-view-close-btn')) {
+            if (viewModal) viewModal.classList.add('faculty-gs-hidden');
+        }
+
+        // Reply Flow
+        if (e.target.closest('#viewMessageModal .clean-btn-primary')) {
+            var sender = document.getElementById('viewMsgSender').textContent;
+            var subject = document.getElementById('viewMsgSubject').textContent;
+            
+            if (viewModal) viewModal.classList.add('faculty-gs-hidden');
+            
+            if (typeof openComposeModal === 'function') {
+                openComposeModal(true, { 
+                    subject: "Re: " + subject,
+                    body: "\n\n--- Original Message ---\nFrom: " + sender + "\nSubject: " + subject + "\n"
+                });
+            }
+        }
+    });
+
+    // Close modals on backdrop click
+    window.addEventListener('click', function(e) {
+        var composeModal = document.getElementById('composeModal');
+        if (e.target === composeModal && composeModal) {
+            composeModal.classList.add('faculty-gs-hidden');
+        }
+        if (e.target === viewModal && viewModal) {
+            viewModal.classList.add('faculty-gs-hidden');
+        }
+    });
+});
+</script>
+
 @endpush

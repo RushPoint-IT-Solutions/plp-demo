@@ -198,6 +198,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::post('/document-list', 'Registrar\RegistrarController@storeDocumentRequirement')->name('document-list.store');
         Route::put('/document-list/{documentRequirement}', 'Registrar\RegistrarController@updateDocumentRequirement')->name('document-list.update');
         Route::delete('/document-list/{documentRequirement}', 'Registrar\RegistrarController@destroyDocumentRequirement')->name('document-list.delete');
+        Route::get('/batch-update-student', 'Registrar\RegistrarController@batchUpdateStudent')->name('batch-update-student');
+        Route::get('/batch-update-student/form', 'Registrar\RegistrarController@batchUpdateStudentForm')->name('batch-update-student.form');
         Route::get('/reports', 'Registrar\RegistrarController@reports')->name('reports');
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/unifast', 'Registrar\RegistrarController@reportsUnifast')->name('unifast');

@@ -935,7 +935,10 @@ class FacultyController extends Controller
      */
     public function messaging()
     {
-        return view('faculty.messaging');
+        $students = \App\Student::orderBy('name')->get(['id', 'name', 'student_no']);
+        $faculties = \App\Faculty::orderBy('name')->get(['id', 'name', 'code']);
+        
+        return view('faculty.messaging', compact('students', 'faculties'));
     }
 
     public function dismissNotification(Request $request, $notificationDelivery)

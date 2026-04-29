@@ -107,7 +107,10 @@ class ApplicantController extends Controller
                 ->with('error', 'Messaging is only available after submitting your application.');
         }
 
-        return view('applicant.messaging', compact('applicant'));
+        $students = \App\Student::orderBy('name')->get(['id', 'name', 'student_no']);
+        $faculties = \App\Faculty::orderBy('name')->get(['id', 'name', 'code']);
+
+        return view('applicant.messaging', compact('applicant', 'students', 'faculties'));
     }
 
     public function dismissNotification(Request $request, $notificationDelivery)

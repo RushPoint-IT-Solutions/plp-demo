@@ -6864,7 +6864,7 @@ body.page-registrar-help {
 
     .reg-help-step-desc {
         font-size: 0.86rem;
-        color: #acb9b4; /* Muted color */
+        color: #5a6a64; /* Darker muted color for better legibility */
         margin-top: 4px;
     }
 
@@ -6900,7 +6900,7 @@ body.page-registrar-help {
 
     .reg-help-contact-inline-actions {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         background: #fff;
         border-radius: 8px;
         padding: 10px;
@@ -8883,4 +8883,97 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     color: #0f7a4e;
     fill: #0f7a4e;
 }
+
+/* Messaging & Batch Update Styles */
+.clean-input {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #1e293b;
+    outline: none;
+    transition: all 0.2s;
+    background-color: #ffffff;
+
+    &:focus {
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+    }
+}
+
+.clean-label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #000000 !important;
+    margin-bottom: 6px;
+}
+
+.clean-btn-primary {
+    padding: 10px 24px;
+    background-color: #059669;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+        background-color: #047857;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.clean-btn-secondary {
+    padding: 10px 20px;
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #e2e8f0;
+    }
+}
+
+.clean-btn-ghost {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: #f1f5f9;
+        color: #0f172a !important;
+    }
+}
+
+.msg-compose-modal-box,
+.pf-modal-box {
+    /* Animation removed for cleaner, faster UI */
+}
+
+
 
