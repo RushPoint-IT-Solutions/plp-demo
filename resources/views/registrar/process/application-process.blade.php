@@ -463,6 +463,21 @@
         </div>
     </div>
 
+    {{-- Save View Modal --}}
+    <div class="req-modal-overlay" id="saveViewModal" style="display: none;" onclick="if(event.target===this) { document.getElementById('saveViewModal').style.display='none'; }">
+        <div class="req-modal-box cfg-delete-box" style="text-align: left; padding: 24px; max-width: 420px; border-top: 4px solid #006837;">
+            <h3 style="margin-top: 0; color: #006837; font-size: 1.25rem; text-align: left; font-weight: 700;">Save Filter View</h3>
+            <div style="margin: 20px 0;">
+                <label for="saveViewNameInput" style="font-weight: 700; color: #1e293b; display: block; margin-bottom: 8px; font-size: 0.9rem;">View Name</label>
+                <input type="text" id="saveViewNameInput" class="app-filter-input" placeholder="e.g., STEM Pending" style="width: 100%; box-sizing: border-box; height: 42px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px; font-size: 0.95rem;">
+            </div>
+            <div class="req-modal-actions cfg-modal-actions" style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="cfg-btn-secondary" onclick="document.getElementById('saveViewModal').style.display='none'" style="border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 6px; padding: 8px 20px; font-weight: 600;">Cancel</button>
+                <button type="button" id="confirmSaveViewBtn" style="background: #006837; color: #fff; border: none; border-radius: 6px; padding: 8px 20px; font-weight: 600; cursor: pointer;">Save View</button>
+            </div>
+        </div>
+    </div>
+
     <div class="app-table-pager" id="applicantTablePager">
         {{ $applicants->links() }}
     </div>

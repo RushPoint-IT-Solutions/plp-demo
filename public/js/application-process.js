@@ -1007,8 +1007,25 @@
 
     if (saveCurrentViewBtn) {
         saveCurrentViewBtn.addEventListener('click', function() {
-            const viewName = prompt('Enter a name for this view (e.g., "STEM Pending"):');
-            if (!viewName) return;
+            const modalEl = document.getElementById('saveViewModal');
+            if (!modalEl) return;
+            
+            const inputEl = document.getElementById('saveViewNameInput');
+            if (inputEl) inputEl.value = '';
+
+            modalEl.style.display = 'flex';
+        });
+    }
+
+    const confirmSaveViewBtn = document.getElementById('confirmSaveViewBtn');
+    if (confirmSaveViewBtn) {
+        confirmSaveViewBtn.addEventListener('click', function() {
+            const inputEl = document.getElementById('saveViewNameInput');
+            const viewName = inputEl ? inputEl.value.trim() : '';
+            if (!viewName) {
+                alert('Please enter a view name.');
+                return;
+            }
 
             const formData = new FormData(applicationFilterForm);
             const filters = {};
@@ -1017,6 +1034,11 @@
             });
 
             saveView(viewName, filters);
+
+            const modalEl = document.getElementById('saveViewModal');
+            if (modalEl) {
+                modalEl.style.display = 'none';
+            }
         });
     }
 
