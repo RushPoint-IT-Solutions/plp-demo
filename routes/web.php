@@ -496,6 +496,7 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
     Route::post('/notifications/{notificationDelivery}/dismiss', 'Applicant\ApplicantController@dismissNotification')->name('notifications.dismiss');
     Route::get('/messaging', 'Applicant\ApplicantController@messaging')->name('messaging');
     Route::get('/medical-clearance', 'Applicant\ApplicantController@medicalClearance')->name('medical-clearance');
+    Route::get('/documents-submitted', 'Applicant\ApplicantController@documentsSubmitted')->name('documents-submitted');
 });
 
 /*

@@ -454,3 +454,240 @@ $notif-shadow: 0 22px 54px rgba(5, 34, 22, 0.3);
         }
     }
 }
+
+/* ── Notification Dropdown Menu ──────────────────────────────────────── */
+
+.notif-dropdown-menu {
+  width: 380px;
+  max-width: calc(100vw - 30px);
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.1) !important;
+  background: #ffffff;
+  margin-top: 10px;
+  position: absolute !important;
+  top: 100%;
+  right: 0 !important;
+  left: auto !important;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  max-height: calc(100vh - 120px);
+  z-index: 1050;
+
+  &.show {
+    display: flex !important;
+  }
+
+  /* Invisible bridge to prevent mouseleave during hover transition */
+  &::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: transparent;
+  }
+}
+
+.notif-dropdown-header {
+  background: #ffffff;
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #edf2ef;
+  border-radius: 12px 12px 0 0;
+}
+
+.notif-dropdown-title {
+  margin: 0;
+  color: #006837;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.notif-dropdown-list {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Dropdown Item Overrides (flat list, not cards) ──────────────────── */
+
+.notif-dropdown-list .faculty-notif-item,
+.notif-dropdown-menu .faculty-notif-item {
+  border: 0 !important;
+  border-left: 0 !important;
+  border-bottom: 1px solid #f0f4f2 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 10px 16px !important;
+  background-color: #ffffff !important;
+  transition: all 0.2s ease;
+  position: relative;
+  gap: 12px;
+}
+
+.notif-dropdown-list .faculty-notif-item:hover,
+.notif-dropdown-menu .faculty-notif-item:hover {
+  background-color: #f7faf8 !important;
+}
+
+.notif-dropdown-list .faculty-notif-dismiss,
+.notif-dropdown-menu .faculty-notif-dismiss {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: #aebdb5 !important;
+  font-size: 1.1rem !important;
+  margin-left: auto;
+}
+
+.notif-dropdown-list .faculty-notif-dismiss:hover,
+.notif-dropdown-menu .faculty-notif-dismiss:hover {
+  background: #f0f4f2 !important;
+  color: #006837 !important;
+}
+
+/* ── Notification Icon Trigger — Kill Dark Circles & Rings ───────────── */
+
+.student-portal-body .topbar-icon-link.topbar-notif-icon,
+.applicant-body .topbar-icon-link.topbar-notif-icon,
+.registrar-body .topbar-icon-link.topbar-notif-icon,
+.faculty-body .topbar-icon-link.topbar-notif-icon {
+  &:hover,
+  &.show,
+  &:focus,
+  &:active {
+    background-color: #f3f8f5 !important;
+    color: #006837 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+.topbar-icon-link:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.topbar-notif-icon,
+.topbar-notif-icon:hover,
+.topbar-notif-icon:focus,
+.topbar-notif-icon:active,
+.topbar-notif-icon.show {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  background-image: none !important;
+}
+
+.topbar-notif-icon::after,
+.topbar-notif-icon::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* ── Premium Notification Redesign ───────────────────────────────────── */
+
+.notif-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.evaluation { background-color: #e8f4ed; color: #006837; }
+  &.calendar   { background-color: #fff4e5; color: #ff8a00; }
+  &.general    { background-color: #f0f3ff; color: #3f51b5; }
+}
+
+.notif-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.faculty-notif-text {
+  font-size: 0.94rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100% !important;
+}
+
+.notif-item-meta {
+  font-size: 0.78rem;
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+.faculty-notif-item.is-read .notif-icon-box {
+  opacity: 0.85;
+}
+
+.faculty-notif-item.is-read .faculty-notif-text {
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+.notif-empty-content span {
+  font-size: 0.88rem;
+  color: #8c9b93 !important;
+  font-weight: 500;
+  display: block;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+/* ── Faculty Notification Overrides (shared) ─────────────────────────── */
+
+.faculty-notif-list {
+  max-height: 440px;
+  min-height: 100px;
+  overflow-y: auto;
+  padding-right: 4px;
+  padding-bottom: 20px;
+}
+
+.faculty-notif-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.faculty-notif-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.faculty-notif-list::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 10px;
+}
+
+.faculty-notif-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ── Mobile Fix ──────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .notif-dropdown-menu {
+    width: calc(100vw - 20px);
+    margin-right: -10px !important;
+  }
+}

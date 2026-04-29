@@ -789,16 +789,10 @@ select:hover {
 
 /* Keep registrar shell stable: long pages scroll inside content area, not the full document. */
 
-.registrar-body {
-  overflow: hidden !important;
-}
-
 .registrar-body .content-footer-wrap {
   min-height: calc(100vh - 72px);
   max-height: calc(100vh - 72px);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 .registrar-body .student-content {
@@ -807,21 +801,6 @@ select:hover {
   overflow-y: auto !important;
   overflow-x: hidden;
   scrollbar-gutter: stable;
-}
-
-/* Custom Registrar Scrollbar */
-.registrar-body .student-content::-webkit-scrollbar {
-  width: 8px;
-}
-.registrar-body .student-content::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-.registrar-body .student-content::-webkit-scrollbar-thumb {
-  background: #006837;
-  border-radius: 10px;
-}
-.registrar-body .student-content::-webkit-scrollbar-thumb:hover {
-  background: #004d29;
 }
 
 .registrar-body .student-main-wrapper .plp-footer {
@@ -1318,39 +1297,12 @@ select:hover {
   box-shadow: none;
 }
 
-/* Common Responsive Filter Bar */
-.app-filter-grid {
-    display: flex;
-    align-items: flex-end;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin: 0 0 10px 0;
-}
+/* Filter grid guarantees cross-row alignment */
 
-.app-filter-item {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.app-filter-item--search { flex: 2; min-width: 200px; }
-.app-filter-item--status { flex: 1.2; min-width: 140px; }
-.app-filter-item--entries { flex: 1; min-width: 120px; }
-.app-filter-item--action { flex: 0 0 160px; }
-
-@media (max-width: 768px) {
-    .app-filter-grid {
-        gap: 12px;
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .app-filter-item {
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-    .app-filter-item--action {
-        margin-top: 5px;
-    }
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 14px 20px;
 }
 
 .filter-cell--action {
@@ -7361,7 +7313,7 @@ select:hover {
 
 .pf-modal-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 10px;
   margin-top: 6px;
 }
@@ -9406,7 +9358,7 @@ select:hover {
 
 .req-modal-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 22px;
 }
@@ -9578,11 +9530,7 @@ select.req-modal-input {
   cursor: pointer;
   white-space: nowrap;
   letter-spacing: 0.02em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  min-height: 38px;
+  transition: background 0.15s;
 }
 
 .apst-new-btn:hover {
@@ -9650,7 +9598,6 @@ select.req-modal-input {
 #tmTable .apst-dropdown,
 #gsTable .apst-dropdown,
 #torTable .apst-dropdown,
-#docsTable .apst-dropdown,
 #diplomaTable .apst-dropdown {
   position: fixed;
 }
@@ -14987,16 +14934,14 @@ body.slot-monitoring-report-page {
   width: 100%;
   text-align: left;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: background 0.15s;
   letter-spacing: 0.03em;
   text-decoration: none;
-  margin-bottom: 18px;
 }
 
 .appl-sidebar-back:hover {
-  background-color: #086b32;
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -29898,16 +29843,14 @@ select.req-modal-input {
   width: 100%;
   text-align: left;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: background 0.15s;
   letter-spacing: 0.03em;
   text-decoration: none;
-  margin-bottom: 18px;
 }
 
 .appl-sidebar-back:hover {
-  background-color: #086b32;
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -32126,14 +32069,7 @@ body.page-profile-edit .student-content {
   align-items: center;
   text-decoration: none;
   font-size: 1rem;
-  font-weight: 600;
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
-}
-
-.student-portal-body .logout-link:hover {
-  background-color: #0a813c;
-  color: #ffffff;
 }
 
 .student-portal-body .logout-link svg {
@@ -36463,26 +36399,24 @@ body.login-body .modal-backdrop.show {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 12px;
-  color: #fff;
+  padding: 10px 12px;
   font-size: 0.95rem;
   font-weight: 600;
-  cursor: pointer;
+  margin: 0 0 18px;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   width: 100%;
   text-align: left;
-  border-radius: 8px;
-  transition: all 0.2s ease;
   letter-spacing: 0.03em;
+  color: #fff;
   text-decoration: none;
-  margin-bottom: 18px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .appl-sidebar-back:hover {
-  background-color: #086b32;
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -42835,7 +42769,7 @@ body.page-registrar-help .reg-help-chat-input-wrap button:hover {
 }
 
 .applicant-panel .apc-panel-filter {
-  margin-bottom: 5px;
+  margin-bottom: 12px;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -43943,38 +43877,28 @@ body.faculty-body.page-profile-view .pv-row--edu .pv-value {
   display: none;
 }
 
-/* Ensure any open sidebar is visible and on top on mobile */
-@media (max-width: 991px) {
-  .plp-sidebar.sidebar-open {
-    display: flex !important;
-    z-index: 99999 !important;
-  }
-}
-
 .appl-sidebar-back {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 12px;
-  color: #fff;
+  padding: 10px 12px;
   font-size: 0.95rem;
   font-weight: 600;
-  cursor: pointer;
+  margin: 0 0 18px;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   width: 100%;
   text-align: left;
-  border-radius: 8px;
-  transition: all 0.2s ease;
   letter-spacing: 0.03em;
+  color: #fff;
   text-decoration: none;
-  margin-bottom: 18px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .appl-sidebar-back:hover {
-  background-color: #086b32;
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .appl-sidebar-back svg {
@@ -44020,7 +43944,6 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .cf-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
 }
 
 .cf-grid-two {
@@ -44787,55 +44710,32 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 }
 
 .pf-dept-plus-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border: none;
   border-radius: 50%;
   background: #e7f5ec;
   color: #0a6f3d;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  line-height: 34px;
+  text-align: center;
   padding: 0;
+  -moz-appearance: none;
+       appearance: none;
+  -webkit-appearance: none;
   box-shadow: 0 0 0 1px #cfe6d8 inset;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.12s ease, background-color 0.14s ease;
 }
 
 .pf-dept-plus-btn:hover {
-  background: #0a6f3d;
-  color: #fff;
-  transform: scale(1.1);
-  box-shadow: 0 4px 10px rgba(10, 111, 61, 0.2);
+  background: #dff0e6;
 }
 
-.pf-dept-delete-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: #fef3f2;
-  color: #b42318;
-  font-size: 1.2rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  box-shadow: 0 0 0 1px #fee4e2 inset;
-  cursor: pointer;
-  transition: all 0.2s;
+.pf-dept-plus-btn:active {
+  transform: translateY(1px);
 }
-
-.pf-dept-delete-btn:hover {
-  background: #b42318;
-  color: #fff;
-  transform: scale(1.1);
-  box-shadow: 0 4px 10px rgba(180, 35, 24, 0.2);
-}
-
 
 .pf-dept-list-wrap {
   margin-top: 18px;
@@ -49136,171 +49036,51 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 .registrar-body .rg-listbox-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   margin: 0;
   padding: 6px;
   list-style: none;
-  border: 1px solid #e0e6e3;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 15px 35px rgba(0, 50, 30, 0.12);
-  max-height: 260px;
+  border: 1px solid #2d8b5a;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(12, 58, 35, 0.15);
+  max-height: 220px;
   overflow-y: auto;
-  z-index: 200;
+  z-index: 35;
 }
 
 .registrar-body .rg-listbox.is-open .rg-listbox-menu {
   display: block;
 }
 
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn {
+.registrar-body .rg-listbox-option-btn {
   width: 100%;
   border: 0;
   border-radius: 8px;
-  background: transparent;
-  color: #2c3e50;
-  font-size: 0.88rem;
-  font-weight: 500;
-  line-height: 1.4;
-  padding: 10px 14px;
+  background: #fff;
+  color: #1a3f2e;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 8px 10px;
   text-align: left;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
-  display: block;
 }
 
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn:hover,
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn:focus {
-  outline: none !important;
-  background-color: #f8fbf9 !important;
-  color: #006837 !important;
+.registrar-body .rg-listbox-option-btn:hover,
+.registrar-body .rg-listbox-option-btn:focus,
+.registrar-body .rg-listbox-option-btn.is-active {
+  outline: none;
+  background: #0f7b43;
+  color: #fff;
 }
 
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn.is-active,
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn.is-selected {
-  background-color: #d4ede0 !important;
-  color: #005a2f !important;
-}
-
-/* Specific fix for placeholders in the list */
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn[data-value=""],
-.registrar-body .rg-listbox-menu .rg-listbox-option-btn[value=""] {
-    color: #a0aec0;
-    font-weight: 400;
-}
-
-.sc-multi-select-wrap {
-    border: 1px solid #e0e6e3;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.sc-multi-select-search {
-    padding: 12px;
-    background: #f8fbf9;
-    border-bottom: 1px solid #e0e6e3;
-}
-
-.sc-search-input {
-    width: 100%;
-    padding: 8px 14px;
-    border: 1.5px solid #d1e2d9;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    transition: all 0.2s ease;
-}
-
-.sc-search-input:focus {
-    outline: none;
-    border-color: #006837;
-    box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.08);
-}
-
-.sc-multi-select-list {
-    max-height: 220px;
-    overflow-y: auto;
-    padding: 8px;
-    background: #ffffff;
-}
-
-.sc-multi-select-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    user-select: none;
-    margin-bottom: 2px;
-}
-
-.sc-multi-select-item:hover {
-    background: #f0f7f4;
-}
-
-/* Premium Checkbox Styling */
-.sc-multi-select-item input[type="checkbox"],
-.sc-all-programs-label input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #cbd5e0;
-    border-radius: 6px;
-    margin-right: 14px;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    background: #ffffff;
-    flex-shrink: 0;
-}
-
-.sc-all-programs-label input[type="checkbox"] {
-    margin-right: 10px; /* Specific gap for 'All Programs' label */
-}
-
-.sc-multi-select-item input[type="checkbox"]:checked,
-.sc-all-programs-label input[type="checkbox"]:checked {
-    background-color: #006837;
-    border-color: #006837;
-}
-
-.sc-multi-select-item input[type="checkbox"]:checked::after,
-.sc-all-programs-label input[type="checkbox"]:checked::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 45%;
-    width: 6px;
-    height: 11px;
-    border: solid white;
-    border-width: 0 2.5px 2.5px 0;
-    transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.sc-item-name {
-    font-size: 0.88rem;
-    color: #2d3748;
-    font-weight: 500;
-}
-
-/* Program & General Tags */
-.sc-prog-tag, 
-.sc-general-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #eef8f1;
-    color: #1a4d34;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    margin: 1px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.registrar-body .rg-listbox-option-btn.is-selected {
+  background: rgba(15, 123, 67, 0.12);
+  color: #0f7b43;
 }
 
 /* Registrar: Services / Classroom & Faculty / Class List */
@@ -49631,7 +49411,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 [data-applicant-select].is-open .applicant-select-trigger {
   outline: none;
   border-color: #006837;
-  box-shadow: none;
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.14);
 }
 
 .applicant-select-trigger:disabled {
@@ -49658,57 +49438,51 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
   height: 10px;
   border-right: 2px solid #006837;
   border-bottom: 2px solid #006837;
-  transform: rotate(45deg);
-  transition: transform 0.15s ease;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 0.2s ease;
   flex-shrink: 0;
-  margin-top: -4px;
 }
 
 .applicant-select-wrap.is-open .applicant-select-trigger-caret,
 [data-applicant-select].is-open .applicant-select-trigger-caret {
-  transform: rotate(-135deg);
-  margin-top: 2px;
+  transform: rotate(225deg) translateY(2px);
 }
 
 .applicant-select-menu {
-  display: block;
-  visibility: hidden;
-  opacity: 0;
+  display: none;
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   margin: 0;
-  padding: 5px;
+  padding: 6px;
   list-style: none;
-  border: 1px solid #d1d9d5;
+  border: 1px solid rgb(0, 53, 28.0288461538);
   border-radius: 10px;
   background: #ffffff;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-  max-height: 250px;
+  box-shadow: 0 12px 24px rgba(0, 2, 1.0576923077, 0.15);
+  max-height: 220px;
   overflow-y: auto;
-  z-index: 99;
-  transition: opacity 0.15s ease, visibility 0.15s;
+  z-index: 35;
 }
 
 .applicant-select-wrap.is-open .applicant-select-menu,
 [data-applicant-select].is-open .applicant-select-menu {
-  visibility: visible;
-  opacity: 1;
+  display: block;
 }
 
 .applicant-select-option-btn {
   width: 100%;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #ffffff;
   color: #1a3f2e;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.1s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   font-family: "Poppins", sans-serif;
   white-space: nowrap;
   overflow: hidden;
@@ -49717,7 +49491,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 
 .applicant-select-option-btn:hover,
 .applicant-select-option-btn.is-active {
-  background: #f4f7f6;
+  background: rgb(78.5, 255, 171.8413461538);
   color: #006837;
 }
 
@@ -49728,7 +49502,7 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 
 .applicant-select-option-btn:focus {
   outline: none;
-  background: #f4f7f6;
+  box-shadow: 0 0 0 2px rgba(0, 104, 55, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -50717,172 +50491,638 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
   }
 }
 
-/* Custom Multi-select and Upload UI */
+/*
+ |--------------------------------------------------------------------------
+ | _custom-overrides.scss
+ |--------------------------------------------------------------------------
+ | Hand-crafted styles that were previously applied directly to the compiled
+ | CSS. Backported here so `npm run dev` preserves them.
+ |--------------------------------------------------------------------------
+ */
+
+/* ── Registrar Shell ─────────────────────────────────────────────────── */
+
+.registrar-body {
+  overflow: hidden !important;
+}
+
+.registrar-body .content-footer-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Registrar Scrollbar */
+
+.registrar-body .student-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.registrar-body .student-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.registrar-body .student-content::-webkit-scrollbar-thumb {
+  background: #006837;
+  border-radius: 10px;
+}
+
+.registrar-body .student-content::-webkit-scrollbar-thumb:hover {
+  background: #004d29;
+}
+
+/* ── Common Responsive Filter Bar ────────────────────────────────────── */
+
+.app-filter-grid {
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 0 0 10px 0;
+}
+
+.app-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-filter-item--search {
+  flex: 2;
+  min-width: 200px;
+}
+
+.app-filter-item--status {
+  flex: 1.2;
+  min-width: 140px;
+}
+
+.app-filter-item--entries {
+  flex: 1;
+  min-width: 120px;
+}
+
+.app-filter-item--action {
+  flex: 0 0 160px;
+}
+
+@media (max-width: 768px) {
+  .app-filter-grid {
+    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-filter-item {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .app-filter-item--action {
+    margin-top: 5px;
+  }
+}
+
+/* ── Modal Action Alignment ──────────────────────────────────────────── */
+
+.pf-modal-actions {
+  justify-content: center;
+}
+
+.req-modal-actions {
+  justify-content: center;
+}
+
+/* ── New / Add Button Enhancement ────────────────────────────────────── */
+
+.apst-new-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-height: 38px;
+}
+
+/* ── Documents Table Fixed Dropdown ───────────────────────────────────── */
+
+#docsTable .apst-dropdown {
+  position: fixed;
+}
+
+/* ── Generic / Sidebar Back Button ─────────────────────────────────────── */
+
+.appl-sidebar-back {
+  transition: all 0.2s ease;
+  margin-bottom: 18px;
+}
+
+.appl-sidebar-back:hover {
+  background-color: #086b32;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pf-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: #fff;
+  border: 1.5px solid #006837;
+  color: #006837;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+
+.pf-back-btn:hover {
+  background-color: #006837;
+  color: #fff !important;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 104, 55, 0.15);
+  transform: translateY(-1px);
+}
+
+/* ── Student Portal Logout Link ──────────────────────────────────────── */
+
+.student-portal-body .logout-link {
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.student-portal-body .logout-link:hover {
+  background-color: #0a813c;
+  color: #ffffff;
+}
+
+/* ── Mobile Sidebar Fix ──────────────────────────────────────────────── */
+
+@media (max-width: 991px) {
+  .plp-sidebar.sidebar-open {
+    display: flex !important;
+    z-index: 99999 !important;
+  }
+}
+
+/* ── Applicant Panel Filter Spacing ──────────────────────────────────── */
+
+.applicant-panel .apc-panel-filter {
+  margin-bottom: 5px;
+}
+
+/* ── CF Actions Gap ──────────────────────────────────────────────────── */
+
+.cf-actions {
+  gap: 10px;
+}
+
+/* ── Department Plus / Delete Buttons ────────────────────────────────── */
+
+.pf-dept-plus-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.pf-dept-plus-btn:hover {
+  background: #0a6f3d;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(10, 111, 61, 0.2);
+}
+
+.pf-dept-delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #fef3f2;
+  color: #b42318;
+  font-size: 1.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 0 0 1px #fee4e2 inset;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pf-dept-delete-btn:hover {
+  background: #b42318;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(180, 35, 24, 0.2);
+}
+
+/* ── Listbox Dropdown Overrides ──────────────────────────────────────── */
+
+.registrar-body .rg-listbox-menu {
+  top: calc(100% + 4px);
+  border: 1px solid #e0e6e3;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 15px 35px rgba(0, 50, 30, 0.12);
+  max-height: 260px;
+  z-index: 200;
+}
+
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn {
+  background: transparent;
+  color: #2c3e50;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 10px 14px;
+  display: block;
+}
+
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn:hover,
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn:focus {
+  outline: none !important;
+  background-color: #f8fbf9 !important;
+  color: #006837 !important;
+}
+
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn.is-active,
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn.is-selected {
+  background-color: #d4ede0 !important;
+  color: #005a2f !important;
+}
+
+/* Specific fix for placeholders in the list */
+
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn[data-value=""],
+.registrar-body .rg-listbox-menu .rg-listbox-option-btn[value=""] {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+/* ── Multi-select & Upload UI (System Config) ────────────────────────── */
+
 .sc-multi-select-wrap {
-    border: 1px solid #d8e3dc;
-    border-radius: 8px;
-    background: #fff;
-    overflow: hidden;
-    margin-top: 8px;
+  border: 1px solid #e0e6e3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .sc-multi-select-search {
-    padding: 10px;
-    background: #f8fcf9;
-    border-bottom: 1px solid #d8e3dc;
+  padding: 12px;
+  background: #f8fbf9;
+  border-bottom: 1px solid #e0e6e3;
 }
 
 .sc-search-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #cce3d8;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s;
+  width: 100%;
+  padding: 8px 14px;
+  border: 1.5px solid #d1e2d9;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
 }
 
 .sc-search-input:focus {
-    border-color: #006837;
+  outline: none;
+  border-color: #006837;
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.08);
 }
 
 .sc-multi-select-list {
-    max-height: 240px;
-    overflow-y: auto;
-    padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px;
+  background: #ffffff;
 }
 
 .sc-multi-select-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: background 0.15s;
-    border-bottom: 1px solid #f0f4f1;
-}
-
-.sc-multi-select-item:last-child {
-    border-bottom: none;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  margin-bottom: 2px;
 }
 
 .sc-multi-select-item:hover {
-    background: #f4faf6;
+  background: #f0f7f4;
 }
 
-.sc-multi-select-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #006837;
+/* Premium Checkbox Styling */
+
+.sc-multi-select-item input[type=checkbox],
+.sc-all-programs-label input[type=checkbox] {
+  -moz-appearance: none;
+       appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e0;
+  border-radius: 6px;
+  margin-right: 14px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+  flex-shrink: 0;
 }
 
-.sc-item-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.sc-all-programs-label input[type=checkbox] {
+  margin-right: 10px;
+}
+
+.sc-multi-select-item input[type=checkbox]:checked,
+.sc-all-programs-label input[type=checkbox]:checked {
+  background-color: #006837;
+  border-color: #006837;
+}
+
+.sc-multi-select-item input[type=checkbox]:checked::after,
+.sc-all-programs-label input[type=checkbox]:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 6px;
+  height: 11px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .sc-item-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #1a1a1a;
+  font-size: 0.88rem;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+/* Program & General Tags */
+
+.sc-prog-tag,
+.sc-general-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #eef8f1;
+  color: #1a4d34;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Applicant Select Overrides ──────────────────────────────────────── */
+
+.applicant-select-wrap.is-open .applicant-select-trigger,
+[data-applicant-select].is-open .applicant-select-trigger {
+  box-shadow: none;
+}
+
+.applicant-select-trigger-caret {
+  transform: rotate(45deg);
+  margin-top: -4px;
+}
+
+.applicant-select-wrap.is-open .applicant-select-trigger-caret,
+[data-applicant-select].is-open .applicant-select-trigger-caret {
+  transform: rotate(-135deg);
+  margin-top: 2px;
+}
+
+.applicant-select-menu {
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  top: calc(100% + 4px);
+  padding: 5px;
+  border: 1px solid #d1d9d5;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  max-height: 250px;
+  z-index: 99;
+  transition: opacity 0.15s ease, visibility 0.15s;
+}
+
+.applicant-select-wrap.is-open .applicant-select-menu,
+[data-applicant-select].is-open .applicant-select-menu {
+  visibility: visible;
+  opacity: 1;
+}
+
+.applicant-select-option-btn {
+  border-radius: 6px;
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  transition: background 0.1s ease;
+}
+
+.applicant-select-option-btn:hover,
+.applicant-select-option-btn.is-active {
+  background: #f4f7f6;
+}
+
+.applicant-select-option-btn:focus {
+  background: #f4f7f6;
+}
+
+/* ── Duplicate Multi-select (Bottom of File) ─────────────────────────── */
+
+.sc-multi-select-wrap {
+  border: 1px solid #d8e3dc;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.sc-multi-select-search {
+  padding: 10px;
+  background: #f8fcf9;
+  border-bottom: 1px solid #d8e3dc;
+}
+
+.sc-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cce3d8;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sc-search-input:focus {
+  border-color: #006837;
+}
+
+.sc-multi-select-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.sc-multi-select-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid #f0f4f1;
+}
+
+.sc-multi-select-item:last-child {
+  border-bottom: none;
+}
+
+.sc-multi-select-item:hover {
+  background: #f4faf6;
+}
+
+.sc-multi-select-item input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #006837;
+}
+
+.sc-item-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sc-item-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1a1a1a;
 }
 
 .sc-item-code {
-    font-size: 0.75rem;
-    color: #666;
-    font-weight: 600;
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 600;
 }
 
+/* ── Upload Button ───────────────────────────────────────────────────── */
+
 .apc-upload-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    background-color: #fff;
-    border: 1.5px solid #006837;
-    color: #006837;
-    border-radius: 100px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 104, 55, 0.05);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background-color: #fff;
+  border: 1.5px solid #006837;
+  color: #006837;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 104, 55, 0.05);
 }
 
 .apc-upload-btn:hover {
-    background-color: #006837;
-    color: #fff !important;
-    transform: translateY(-1.5px);
-    box-shadow: 0 4px 8px rgba(0, 104, 55, 0.2);
+  background-color: #006837;
+  color: #fff !important;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 8px rgba(0, 104, 55, 0.2);
 }
 
 .apc-upload-btn svg {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
+
+/* ── Config Modal Wide ───────────────────────────────────────────────── */
 
 .cfg-modal-box--wide {
-    width: min(680px, 94vw) !important;
+  width: min(680px, 94vw) !important;
 }
 
-.mt-3 { margin-top: 1rem !important; }
-.mt-4 { margin-top: 1.5rem !important; }
-.is-hidden { display: none; }
+.mt-3 {
+  margin-top: 1rem !important;
+}
 
+.mt-4 {
+  margin-top: 1.5rem !important;
+}
 
-/* Registrar Small and Clean Delete Modal */
-.cfg-delete-box { 
-    max-width: 360px !important; 
-    text-align: center; 
-    padding: 2.5rem 2rem !important; 
-    border-radius: 12px !important; 
-    background: #fff !important; 
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important; 
+.is-hidden {
+  display: none;
 }
-.cfg-delete-title { 
-    color: #c0392b !important; 
-    font-size: 1.1rem !important; 
-    font-weight: 800 !important; 
-    text-transform: uppercase !important; 
-    margin-bottom: 1.25rem !important;
-    letter-spacing: 0.05em !important;
+
+/* ── Registrar Delete Modal ──────────────────────────────────────────── */
+
+.cfg-delete-box {
+  max-width: 360px !important;
+  text-align: center;
+  padding: 2.5rem 2rem !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
 }
-.cfg-delete-text { 
-    color: #444 !important; 
-    font-size: 0.95rem !important; 
-    line-height: 1.5 !important; 
-    margin-bottom: 2rem !important; 
+
+.cfg-delete-title {
+  color: #c0392b !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 1.25rem !important;
+  letter-spacing: 0.05em !important;
 }
-.cfg-modal-actions { 
-    display: flex !important; 
-    gap: 12px !important; 
-    justify-content: center !important; 
+
+.cfg-delete-text {
+  color: #444 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 2rem !important;
 }
-.cfg-btn-danger { 
-    background: #c0392b !important; 
-    color: #fff !important; 
-    border: none !important; 
-    padding: 10px 24px !important; 
-    border-radius: 8px !important; 
-    font-weight: 600 !important; 
-    cursor: pointer !important; 
-    font-size: 0.9rem !important; 
+
+.cfg-modal-actions {
+  display: flex !important;
+  gap: 12px !important;
+  justify-content: center !important;
 }
-.cfg-btn-danger:hover { 
-    background: #a93226 !important; 
+
+.cfg-btn-danger {
+  background: #c0392b !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-size: 0.9rem !important;
 }
-.cfg-btn-secondary { 
-    background: #e0e0e0 !important; 
-    color: #333 !important; 
-    border: none !important; 
-    padding: 10px 24px !important; 
-    border-radius: 8px !important; 
-    font-weight: 600 !important; 
-    cursor: pointer !important; 
-    font-size: 0.9rem !important; 
+
+.cfg-btn-danger:hover {
+  background: #a93226 !important;
 }
-.cfg-btn-secondary:hover { 
-    background: #d4d4d4 !important; 
+
+.cfg-btn-secondary {
+  background: #e0e0e0 !important;
+  color: #333 !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-size: 0.9rem !important;
+}
+
+.cfg-btn-secondary:hover {
+  background: #d4d4d4 !important;
 }
 

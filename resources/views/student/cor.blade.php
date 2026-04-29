@@ -29,7 +29,7 @@
                     <div class="cor-info-col">
                         <div class="cor-info-line"><span class="cor-info-label">Enrollment Date:</span><span class="cor-info-value">{{ optional($student)->enrollment_date }}</span></div>
                         <div class="cor-info-line"><span class="cor-info-label">Curriculum:</span><span class="cor-info-value">{{ optional($student)->curriculum }}</span></div>
-                        <div class="cor-info-line"><span class="cor-info-label">School Year:</span><span class="cor-info-value">{{ optional($student)->school_year_label }}</span></div>
+                        <div class="cor-info-line"><span class="cor-info-label">Academic Year:</span><span class="cor-info-value">{{ optional($student)->school_year_label }}</span></div>
                     </div>
                     <div class="cor-info-col">
                         <div class="cor-info-line"><span class="cor-info-label">Year Level:</span><span class="cor-info-value">{{ optional($student)->year_level }}</span></div>
@@ -135,13 +135,12 @@
                         </div>
                         <p class="cor-enrolled-title">PAMANTASAN NG LUNGSOD NG PASIG<br>OFFICE OF THE UNIVERSITY REGISTRAR</p>
                         <p class="cor-enrolled-label">OFFICIALLY ENROLLED</p>
+                        <!-- Semester Text moved here -->
+                        <p class='cor-semester-text' style="text-align: center; font-weight: bold; margin-bottom: 10px;">1st Sem 2021 - 2022</p>
                         <p class="cor-enrolled-note">Present this certificate of registration for any claim or transaction that you engage in within the University.</p>
                     </div>
                     <!-- Row 1: Notice Text -->
                     <p class='cor-notice-text'>Notice to all students</p>
-
-                    <!-- Row 2: Semester Text -->
-                    <p class='cor-semester-text'>1st Sem 2021 - 2022</p>
                 </div>
             </div>
 

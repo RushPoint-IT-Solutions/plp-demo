@@ -1,0 +1,121 @@
+﻿
+  +  background: #ffffff;
+  +  padding: 12px;
+  +  min-height: 80px;
+  +}
+  +
+> +/* Dropdown specific styles */
+> +.notif-dropdown-menu {
+  +  width: 380px;
+  +  max-width: calc(100vw - 30px);
+  +  padding: 0;
+  +  border: none;
+  +  border-radius: 16px;
+  +  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.1) !important;
+  +  background: #ffffff;
+  +  margin-top: 10px;
+  +  position: absolute !important;
+  +  top: 100%;
+  +  right: 0 !important;
+  +  left: auto !important;
+  +  overflow: hidden;
+  +  display: none;
+  +  flex-direction: column;
+  +  max-height: calc(100vh - 120px);
+  +  z-index: 1050;
+  +}
+  +
+> +.notif-dropdown-menu.show {
+  +  display: flex !important;
+  +}
+  +
+  +/* Invisible bridge to prevent mouseleave during hover transition */
+> +.notif-dropdown-menu::before {
+  +  content: "";
+  +  position: absolute;
+  +  top: -10px;
+  +  left: 0;
+  +  right: 0;
+  +  height: 10px;
+  +  background: transparent;
+  +}
+  +
+> +.notif-dropdown-header {
+  +  background: #ffffff;
+  +  padding: 15px 18px;
+  +  display: flex;
+  +  align-items: center;
+  +  justify-content: space-between;
+  +  border-bottom: 1px solid #edf2ef;
+  +  border-radius: 12px 12px 0 0;
+  +}
+  +
+> +.notif-dropdown-title {
+  +  margin: 0;
+  +  color: #006837;
+  +  font-size: 0.85rem;
+  +  font-weight: 700;
+  +  letter-spacing: 0.05em;
+  +  text-transform: uppercase;
+  +}
+  +
+> +.notif-dropdown-list {
+  +  padding: 0;
+  +  display: flex;
+  +  flex-direction: column;
+   }
+   
+  -.faculty-body .faculty-notif-list,
+  -.registrar-body .faculty-notif-list,
+  -.parent-portal-body .faculty-notif-list {
+  +
+  +
+  +.faculty-notif-list {
+     display: flex;
+     flex-direction: column;
+  -  gap: 10px;
+  +  gap: 0;
+  +  max-height: 440px; /* Trigger scrollbar after ~6 items */
+  +  overflow-y: auto;
+  +  padding-bottom: 12px;
+   }
+   
+   
+  -.student-portal-body .faculty-notif-dismiss:disabled,
+  -.applicant-body .faculty-notif-dismiss:disabled {
+  -  opacity: 0.45;
+  -  cursor: default;
+> +.student-portal-body .notif-dropdown-list,
+> +.applicant-body .notif-dropdown-list {
+  +  background: #ffffff;
+   }
+   
+   .student-portal-body .faculty-notif-empty,
+   .applicant-body .faculty-notif-empty {
+  -  margin: 8px 0 2px;
+  -  text-align: center;
+  -  color: #54655d;
+  +  padding: 30px 20px;
+  +  background: #ffffff;
+  +}  color: #54655d;
+     font-size: 0.95rem;
+     font-weight: 600;
+   }
+  @@ -545,3 +588,164 @@
+     }
+   }
+   
+  +
+  +/* Extremely strict removal of any borders, outlines, or rings from notification icon trigger */
+  +
+  +
+  /* Alignment and Over-flow fix */
+  +
+  +@media (max-width: 480px) {
+> +  .notif-dropdown-menu {
+  +    width: calc(100vw - 20px);
+  +    margin-right: -10px !important;
+  +  }
+  +}
+
+

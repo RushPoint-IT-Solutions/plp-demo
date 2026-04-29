@@ -42,8 +42,11 @@
         </a>
     </div>
 
-    <div class="rfl-back-row">
-        <a href="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="svc-link">Back to Faculty List</a>
+    <div class="rfl-back-row mb-3">
+        <a href="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="pf-back-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Faculty List
+        </a>
     </div>
 
     <form method="GET" action="{{ route('registrar.services.classroom-faculty.faculty-loads.show', $faculty->id) }}" class="rfl-filters">
@@ -229,6 +232,7 @@
                             <th>Schedule</th>
                             <th style="width:120px">Type</th>
                             <th style="width:120px">Added by</th>
+                            <th class="text-center" style="width:80px">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -243,9 +247,12 @@
                                 <td>{{ strtoupper($s->days) }} {{ $s->formatted_time }} / {{ $s->room }}</td>
                                 <td>{{ $s->load_type ?? '—' }}</td>
                                 <td>{{ $s->added_by ?? '—' }}</td>
+                                <td class="text-center">
+                                    <button type="button" class="pf-dept-delete-btn mx-auto" title="Remove Subject" onclick="alert('Subject removal functionality will be available after backend API update.')">×</button>
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="9" class="text-center text-muted py-4">No subjects assigned.</td></tr>
+                            <tr><td colspan="10" class="text-center text-muted py-4">No subjects assigned.</td></tr>
                         @endforelse
                     </tbody>
                     <tfoot>

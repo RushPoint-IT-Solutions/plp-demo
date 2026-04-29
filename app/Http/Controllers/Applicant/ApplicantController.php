@@ -841,6 +841,15 @@ class ApplicantController extends Controller
     }
 
     /**
+     * Documents Submitted – shows application requirements.
+     */
+    public function documentsSubmitted()
+    {
+        $applicant = $this->getApplicant();
+        return view('applicant.documents-submitted', compact('applicant'));
+    }
+
+    /**
      * Schedule of Exam – shows exam permit + reminders.
      */
     public function scheduleOfExam()
