@@ -1,8 +1,15 @@
 <aside class="plp-sidebar">
-    {{-- Logo + School Name --}}
     <div class="sidebar-brand">
         <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="sidebar-logo">
-        <img src="{{ asset('img/plptextlogo.png') }}" alt="PLP Text" class="sidebar-text-logo">
+        <div class="d-flex flex-column lh-1">
+            <span class="sidebar-title" style="font-size:14px; color:#dfc937; margin-bottom:2px;">
+                PAMANTASAN NG LUNGSOD NG PASIG
+            </span>
+
+            <small class="sidebar-subtitle" style="text-align: center; font-size:12px; color:#e1d5d5; margin-top:0;">
+                UNIVERSITY OF PASIG CITY
+            </small>
+        </div>
     </div>
 
     {{-- Navigation Links --}}
