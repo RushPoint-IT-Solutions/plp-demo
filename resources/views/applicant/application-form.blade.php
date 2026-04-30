@@ -324,11 +324,11 @@
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Mobile Number</label>
-                        <input type="tel" name="mobile_number" class="setup-input" placeholder="Mobile Number" value="{{ old('mobile_number', optional($app)->mobile_number) }}" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required>
+                        <input type="tel" name="mobile_number" class="setup-input" placeholder="Mobile Number" value="" maxlength="11" inputmode="numeric" pattern="\d{11}" title="Must be exactly 11 digits" required>
                     </div>
                     <div class="setup-col">
                         <label class="setup-label">Email Address</label>
-                        <input type="email" name="email_address" class="setup-input" placeholder="Email Address" value="{{ old('email_address', optional($app)->email_address) }}" required>
+                        <input type="email" name="email_address" class="setup-input" placeholder="Email Address" value="" required>
                     </div>
                 </div>
             </div>
