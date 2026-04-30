@@ -35,7 +35,9 @@
             <div class="sidebar-dropdown-menu">
                 <a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application List</a>
                 <a href="{{ route('registrar.process.citizenship') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.citizenship') ? 'active' : '' }}">Citizenship</a>
-                <a href="{{ route('registrar.process.religion') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion') ? 'active' : '' }}">Religion</a>
+                <a href="{{ route('registrar.process.religion.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion*') ? 'active' : '' }}">
+                    Religion
+                </a>
                 <a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>
                 <a href="{{ route('registrar.process.exam-category') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-category') ? 'active' : '' }}">Exam Category</a>
                 <a href="{{ route('registrar.process.exam-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-list') ? 'active' : '' }}">Exam List</a>

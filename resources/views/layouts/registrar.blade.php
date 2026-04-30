@@ -15,15 +15,160 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+    <!-- Remix Icon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Custom App CSS -->
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/faculty-notifications.css') }}">
 
     @stack('styles')
+    
+    <style>
+        .sidebar-logo
+        {
+            width: 70px !important;
+            height: 70px !important;
+            object-fit: contain;
+        }
+
+        #religionsTable thead tr th {
+            background: #2d6a4f !important;
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 0.84rem;
+            white-space: nowrap;
+            border: none !important;
+        }
+        #religionsTable thead .sorting:after,
+        #religionsTable thead .sorting_asc:after,
+        #religionsTable thead .sorting_desc:after,
+        #religionsTable thead .sorting:before,
+        #religionsTable thead .sorting_asc:before,
+        #religionsTable thead .sorting_desc:before {
+            color: rgba(255, 255, 255, 0.6) !important;
+            opacity: 1 !important;
+        }
+        #religionsTable tbody tr td {
+            border-left: none !important;
+            border-right: none !important;
+            vertical-align: middle;
+        }
+        #religionsTable tbody tr:hover td {
+            background: #f8fffe;
+        }
+
+        .card-title-underline {
+            height: 3px;
+            background: #2d6a4f;
+            border-radius: 2px;
+        }
+
+        #table-filter-control .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin: 0;
+        }
+        #table-filter-control .dataTables_filter label span { display: none; }
+        #table-filter-control .dataTables_filter input {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 6px 12px 6px 36px;
+            font-size: 0.85rem;
+            color: #495057;
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 10px center;
+            background-size: 15px;
+            width: 220px;
+        }
+        #table-filter-control .dataTables_filter input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+            box-shadow: none;
+        }
+        #table-filter-control .dataTables_filter input::placeholder { color: #adb5bd; }
+
+        #table-length-control .dataTables_length label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        #table-length-control .dataTables_length select {
+            padding: 5px 28px 5px 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        #table-buttons-control .dt-buttons { display: flex; gap: 6px; margin: 0 !important; }
+        #table-buttons-control .dt-button,
+        #table-buttons-control .dt-button.buttons-copy,
+        #table-buttons-control .dt-button.buttons-csv,
+        #table-buttons-control .dt-button:focus,
+        #table-buttons-control .dt-button:active,
+        #table-buttons-control .dt-button.active {
+            background: #fff !important;
+            background-color: #fff !important;
+            background-image: none !important;
+            border: 1px solid #dee2e6 !important;
+            color: #495057 !important;
+            padding: 6px 14px !important;
+            border-radius: 6px !important;
+            font-size: 0.82rem !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+        #table-buttons-control .dt-button:hover,
+        #table-buttons-control .dt-button.buttons-copy:hover,
+        #table-buttons-control .dt-button.buttons-csv:hover {
+            background: #f8f9fa !important;
+            background-color: #f8f9fa !important;
+            background-image: none !important;
+            border-color: #adb5bd !important;
+            color: #333 !important;
+            box-shadow: none !important;
+        }
+
+        #table-info-control .dataTables_info {
+            font-size: 0.82rem;
+            color: #6c757d;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .dataTables_processing {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            text-align: center;
+            padding: 16px 20px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+    </style>
+
 </head>
 <body class="student-body student-portal-body registrar-body @yield('body-class')">
     @php
@@ -125,8 +270,22 @@
     {{-- Notifications JS --}}
     <script src="{{ asset('js/portal-notifications.js') }}"></script>
 
+    <!-- jQuery (MUST be before everything else) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Custom JS -->
     <script src="{{ asset('js/script.js') }}?v={{ file_exists(public_path('js/script.js')) ? filemtime(public_path('js/script.js')) : time() }}"></script>

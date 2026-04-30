@@ -1,4 +1,4 @@
-@extends('layouts.registrar')
+{{-- @extends('layouts.registrar')
 
 @section('title', 'PLP - Religion')
 @section('page-title', 'RELIGION')
@@ -6,7 +6,6 @@
 @section('content')
 <div class="student-page-container">
 
-    {{-- Code/Description Input Row + Add Button --}}
     <div class="registrar-form-row">
         <div class="registrar-form-group" style="flex: 2;">
             <label class="registrar-form-label">DESCRIPTION</label>
@@ -17,7 +16,6 @@
         </div>
     </div>
 
-    {{-- Data Table --}}
     <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table">
             <thead>
@@ -56,4 +54,4 @@ function saveReligion() {
 }
 </script>
 @endpush
-@endsection
+@endsection --}}
