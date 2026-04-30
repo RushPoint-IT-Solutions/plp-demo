@@ -126,7 +126,7 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\parent-grades.js */"./resources/js/parent-grades.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\js\parent-grades.js */"./resources/js/parent-grades.js");
 
 
 /***/ })

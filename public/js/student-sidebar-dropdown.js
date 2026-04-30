@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\Users\Luis\Downloads\plp-demo\resources\js\student-sidebar-dropdown.js */"./resources/js/student-sidebar-dropdown.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\js\student-sidebar-dropdown.js */"./resources/js/student-sidebar-dropdown.js");
 
 
 /***/ })
