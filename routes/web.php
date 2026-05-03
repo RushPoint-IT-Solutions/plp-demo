@@ -184,7 +184,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/application/{applicant}/documents/file/{submissionFile}', 'Registrar\RegistrarController@applicantDocumentFile')->name('application.documents.file')->middleware('throttle:60,1');
         Route::get('/requirements', 'Registrar\RegistrarController@requirements')->name('requirements');
         Route::get('/citizenship', 'Registrar\RegistrarController@citizenship')->name('citizenship');
-        Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
+        // Route::get('/religion', 'Registrar\RegistrarController@religion')->name('religion');
         Route::get('/approval-status/data', 'Registrar\RegistrarController@approvalStatusData')->name('approval-status.data');
         Route::post('/approval-status', 'Registrar\RegistrarController@storeApprovalStatus')->name('approval-status.store');
         Route::put('/approval-status/{applicationStatus}', 'Registrar\RegistrarController@updateApprovalStatus')->name('approval-status.update');
@@ -520,4 +520,18 @@ Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_
     Route::get('/notifications/feed', 'Faculty\FacultyController@notificationsFeed')->name('notifications.feed');
     Route::post('/notifications/mark-read', 'Faculty\FacultyController@markNotificationsRead')->name('notifications.mark-read');
     Route::post('/notifications/{notificationDelivery}/dismiss', 'Faculty\FacultyController@dismissNotification')->name('notifications.dismiss');
+});
+
+
+
+
+
+
+Route::prefix('registrar/process/religion')->name('registrar.process.religion.')->group(function () {
+    Route::get('/', 'ReligionController@index')->name('index');
+    Route::get('/data', 'ReligionController@getData')->name('data');
+    Route::post('/', 'ReligionController@store')->name('store');
+    Route::get('/{id}/edit', 'ReligionController@edit')->name('edit');
+    Route::put('/{id}', 'ReligionController@update')->name('update');
+    Route::delete('/{id}', 'ReligionController@destroy')->name('destroy');
 });

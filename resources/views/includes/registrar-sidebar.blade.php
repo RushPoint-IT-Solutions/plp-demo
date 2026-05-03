@@ -1,8 +1,15 @@
 <aside class="plp-sidebar">
-    {{-- Logo + School Name --}}
     <div class="sidebar-brand">
         <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="sidebar-logo">
-        <img src="{{ asset('img/plptextlogo.png') }}" alt="PLP Text" class="sidebar-text-logo">
+        <div class="d-flex flex-column lh-1">
+            <span class="sidebar-title" style="font-size:14px; color:#dfc937; margin-bottom:2px;">
+                PAMANTASAN NG LUNGSOD NG PASIG
+            </span>
+
+            <small class="sidebar-subtitle" style="text-align: center; font-size:12px; color:#e1d5d5; margin-top:0;">
+                UNIVERSITY OF PASIG CITY
+            </small>
+        </div>
     </div>
 
     {{-- Navigation Links --}}
@@ -35,7 +42,9 @@
             <div class="sidebar-dropdown-menu">
                 <a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application List</a>
                 <a href="{{ route('registrar.process.citizenship') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.citizenship') ? 'active' : '' }}">Citizenship</a>
-                <a href="{{ route('registrar.process.religion') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion') ? 'active' : '' }}">Religion</a>
+                <a href="{{ route('registrar.process.religion.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion*') ? 'active' : '' }}">
+                    Religion
+                </a>
                 <a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>
                 <a href="{{ route('registrar.process.exam-category') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-category') ? 'active' : '' }}">Exam Category</a>
                 <a href="{{ route('registrar.process.exam-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-list') ? 'active' : '' }}">Exam List</a>

@@ -26227,6 +26227,12 @@ select:hover {
   margin-bottom: 20px;
 }
 
+.setup-form-container {
+    overflow: hidden !important;
+    height: auto !important;
+    max-height: none;
+}
+
 .setup-section {
   margin-bottom: 28px;
 }
