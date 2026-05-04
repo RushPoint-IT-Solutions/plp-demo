@@ -8612,7 +8612,11 @@ class RegistrarController extends Controller
                 },
                 'studentGrades',
                 'facultyModel:id,name',
+                'gradingStatusLookup',
             ])
+            ->whereHas('gradingStatusLookup', function ($query) {
+                $query->whereRaw('UPPER(code) = ?', ['SUBMITTED']);
+            })
             ->orderBy('year_section')
             ->orderBy('code')
             ->get();
@@ -8622,7 +8626,6 @@ class RegistrarController extends Controller
 
             $students = $subject->students->map(function ($student) use ($gradeMap) {
                 $grade = $gradeMap->get($student->id);
-
                 return [
                     'id' => (int) $student->id,
                     'studentNo' => (string) $student->student_no,
@@ -8639,16 +8642,9 @@ class RegistrarController extends Controller
             })->values()->all();
 
             $midtermPostedAt = $subject->studentGrades
-                ->filter(function ($grade) {
-                    return $grade->midterm !== null;
-                })
-                ->max('updated_at');
-
+                ->filter(fn($g) => $g->midterm !== null)->max('updated_at');
             $finalPostedAt = $subject->studentGrades
-                ->filter(function ($grade) {
-                    return $grade->final !== null;
-                })
-                ->max('updated_at');
+                ->filter(fn($g) => $g->final !== null)->max('updated_at');
 
             return [
                 'id' => (int) $subject->id,
@@ -8663,14 +8659,45 @@ class RegistrarController extends Controller
                 'schedule' => 'Room No. : ' . (string) ($subject->room ?: 'TBA'),
                 'schoolYear' => (string) ($subject->school_year ?: ''),
                 'term' => (string) ($subject->semester ?: ''),
-                'status' => (string) ($subject->grading_status ?: ''),
+                'status' => 'Submitted',
                 'students' => $students,
             ];
         })->values()->all();
 
+        $faculties = $subjects
+            ->map(fn($s) => optional($s->facultyModel)->name ?: $s->faculty)
+            ->filter()->unique()->values()->all();
+
         return view('registrar.registrar-menu.faculty-management.grading-sheet', [
             'gradingSections' => $gradingSections,
+            'faculties' => $faculties,
         ]);
+    }
+
+    public function gradingSheetAction(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'action' => 'required|in:approved,rejected',
+            'remarks' => 'nullable|string|max:500',
+        ]);
+
+        $subject = Subject::findOrFail($request->input('subject_id'));
+
+        $statusCode = $request->input('action') === 'approved' ? 'APPROVED' : 'REJECTED';
+
+        $statusId = \DB::table('subject_grading_statuses')
+            ->whereRaw('UPPER(code) = ?', [strtoupper($statusCode)])
+            ->value('id');
+
+        if (!$statusId) {
+            return response()->json(['ok' => false, 'message' => 'Grading status not configured.'], 500);
+        }
+
+        $subject->grading_status_id = $statusId;
+        $subject->save();
+
+        return response()->json(['ok' => true]);
     }
 
     public function gradingSheetUpdatePhase(Request $request): JsonResponse
@@ -8722,7 +8749,9 @@ class RegistrarController extends Controller
             }
         }
 
-        $subject->grading_status = 'Submitted';
+        $subject->grading_status_id = \DB::table('subject_grading_statuses')
+            ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
+            ->value('id');
         $subject->save();
 
         $updatedRows = StudentSubjectGrade::query()

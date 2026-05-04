@@ -12,6 +12,7 @@ use App\PortalNotification;
 use App\SystemAnnouncement;
 use App\Subject;
 use App\StudentSubjectGrade;
+use App\SubjectGradingStatus;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -652,7 +653,7 @@ class FacultyController extends Controller
                 'section' => trim(($subject->course ?: '') . ' ' . ($subject->year_section ?: '')),
                 'semester' => (string) ($subject->semester ?: ''),
                 'school_year' => (string) ($subject->school_year ?: ''),
-                'status' => $subject->grading_status,
+                'status' => optional($subject->gradingStatusLookup)->label ?? 'Open For Encoding',
                 'students' => $students,
             ];
         })->values();
@@ -709,10 +710,111 @@ class FacultyController extends Controller
             );
         }
 
-        $subject->grading_status = 'Submitted';
+        $subject->grading_status_id = SubjectGradingStatus::where('code', 'SUBMITTED')->value('id');
         $subject->save();
 
         return redirect()->route('faculty.grading-sheet')->with('success', 'Grades updated successfully.');
+    }
+
+    public function updateGradeRow(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'student_id' => 'required',
+            'midterm' => 'required|numeric|min:1|max:5',
+            'final' => 'nullable|numeric|min:1|max:5',
+            'remarks' => 'nullable|string|max:500',
+        ]);
+
+        $subject = $this->subjectsForFaculty($this->currentFaculty())
+            ->findOrFail($request->input('subject_id'));
+
+        $studentId = $request->input('student_id');
+        $midterm   = (float) $request->input('midterm');
+        $final     = $request->input('final') !== null ? (float) $request->input('final') : null;
+
+        $existing = StudentSubjectGrade::where('subject_id', $subject->id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        $prelim  = $existing ? (float) $existing->prelim : null;
+        $remarks = trim((string) $request->input('remarks', ''));
+
+        // Only compute average if all three grades exist
+        $average = null;
+        if ($prelim !== null && $final !== null) {
+            $average = round(($prelim + $midterm + $final) / 3, 2);
+            if ($remarks === '') {
+                $remarks = $average <= 3.00 ? 'Passed' : 'Failed';
+            }
+        }
+
+        StudentSubjectGrade::updateOrCreate(
+            ['subject_id' => $subject->id, 'student_id' => $studentId],
+            [
+                'prelim'        => $prelim,
+                'midterm'       => $midterm,
+                'final'         => $final,
+                'final_average' => $average,
+                'remarks'       => $remarks !== '' ? $remarks : null,
+            ]
+        );
+
+        return response()->json([
+            'ok'            => true,
+            'prelim'        => $prelim !== null ? number_format($prelim, 2) : '',
+            'midterm'       => number_format($midterm, 2),
+            'final'         => $final !== null ? number_format($final, 2) : '',
+            'final_average' => $average !== null ? number_format($average, 2) : '',
+            'remarks'       => $remarks,
+        ]);
+    }
+
+
+    public function submitGrades(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+        ]);
+
+        $subject = $this->subjectsForFaculty($this->currentFaculty())
+            ->with(['students', 'studentGrades'])
+            ->findOrFail($request->input('subject_id'));
+
+        $gradeMap = $subject->studentGrades->keyBy('student_id');
+        $missing = [];
+
+        foreach ($subject->students as $student) {
+            $grade = $gradeMap->get($student->id);
+
+            $hasMidterm = $grade && $grade->midterm !== null && $grade->midterm !== '';
+            $hasFinal   = $grade && $grade->final !== null && $grade->final !== '';
+
+            if (!$hasMidterm || !$hasFinal) {
+                $missing[] = $student->name . ' (missing: '
+                    . (!$hasMidterm ? 'Midterm ' : '')
+                    . (!$hasFinal ? 'Final' : '')
+                    . ')';
+            }
+        }
+
+        if (!empty($missing)) {
+            return response()->json([
+                'ok'      => false,
+                'message' => 'Some students have missing grades. Please complete all grades before submitting.',
+                'missing' => $missing,
+            ], 422);
+        }
+
+        $subject->grading_status_id = \DB::table('subject_grading_statuses')
+            ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
+            ->value('id');
+        $subject->save();
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'Grades submitted successfully.',
+        ]);
     }
 
     /**

@@ -271,6 +271,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/faculty-create', 'Registrar\RegistrarController@facultyCreate')->name('faculty-create');
             Route::post('/faculty-create', 'Registrar\RegistrarController@storeFaculty')->name('faculty-create.store');
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
+            Route::post('/grading-sheet/action', 'Registrar\RegistrarController@gradingSheetAction')->name('grading-sheet.action');
             Route::post('/grading-sheet/update-phase', 'Registrar\RegistrarController@gradingSheetUpdatePhase')->name('grading-sheet.update-phase')->middleware('throttle:60,1');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
         });
@@ -520,6 +521,8 @@ Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_
     Route::get('/notifications/feed', 'Faculty\FacultyController@notificationsFeed')->name('notifications.feed');
     Route::post('/notifications/mark-read', 'Faculty\FacultyController@markNotificationsRead')->name('notifications.mark-read');
     Route::post('/notifications/{notificationDelivery}/dismiss', 'Faculty\FacultyController@dismissNotification')->name('notifications.dismiss');
+    Route::post('/grading-sheet/update-row', 'Faculty\FacultyController@updateGradeRow')->name('faculty.grading-sheet.update-row');
+    Route::post('/grading-sheet/submit-grades', 'Faculty\FacultyController@submitGrades')->name('faculty.grading-sheet.submit');
 });
 
 

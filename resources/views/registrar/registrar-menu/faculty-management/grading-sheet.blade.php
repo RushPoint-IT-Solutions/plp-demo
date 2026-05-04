@@ -4,6 +4,41 @@
 @section('page-title', 'GRADING SHEET')
 @section('body-class', 'page-registrar-grading-sheet')
 
+@push('styles')
+    <style>
+        .gs-badge {
+            display: inline-block;
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .gs-badge-submitted { background: #fef9c3; color: #854d0e; }
+
+        .gs-action-btns { display: flex; gap: 0.4rem; }
+
+        .gs-btn-approve, .gs-btn-reject {
+            padding: 0.28rem 0.75rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .gs-btn-approve { background: #15803d; color: #fff; }
+        .gs-btn-reject  { background: #dc2626; color: #fff; }
+        .gs-btn-approve:hover, .gs-btn-reject:hover { opacity: 0.85; }
+        .gs-badge-approved { background: #dcfce7; color: #15803d; }
+        .gs-badge-rejected { background: #fee2e2; color: #dc2626; }
+        .gs-btn-approve:disabled, .gs-btn-reject:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+@endpush
+
 @section('content')
 <div class="pf-page">
 
@@ -86,6 +121,8 @@
                         <th rowspan="2">Faculty</th>
                         <th colspan="2" class="gs-date-group-header">Date Posted</th>
                         <th rowspan="2">Approved By</th>
+                        <th rowspan="2">Status</th>
+                        <th rowspan="2">Action</th>
                     </tr>
                     <tr class="gs-thead-sub">
                         <th>Midterm</th>
@@ -219,6 +256,8 @@
     @else
         window.GS_SERVER_SECTIONS = null;
     @endif
+
+    window.GS_ACTION_URL = "{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet.action') }}";
 </script>
 <script src="{{ asset('js/grading-sheet.js') }}?v={{ file_exists(public_path('js/grading-sheet.js')) ? filemtime(public_path('js/grading-sheet.js')) : time() }}"></script>
 @endpush
