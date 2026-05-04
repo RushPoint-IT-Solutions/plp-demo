@@ -8615,7 +8615,7 @@ class RegistrarController extends Controller
                 'gradingStatusLookup',
             ])
             ->whereHas('gradingStatusLookup', function ($query) {
-                $query->whereRaw('UPPER(code) = ?', ['SUBMITTED']);
+                $query->whereIn(\DB::raw('UPPER(code)'), ['SUBMITTED', 'APPROVED', 'REJECTED']);
             })
             ->orderBy('year_section')
             ->orderBy('code')
