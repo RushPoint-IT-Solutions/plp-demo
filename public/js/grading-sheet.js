@@ -40,6 +40,7 @@ function gsSeedSections(serverSections) {
                 approvedBy: sec.approvedBy || '-',
                 courseFull: sec.courseFull || '-',
                 schedule: sec.schedule || 'Room No. : TBA',
+                status: sec.status || 'Submitted',
                 students: students
             };
         });
@@ -73,18 +74,21 @@ function gsSeedSections(serverSections) {
             id: 1, section: 'BSIM 3-A1 P19', courseCode: 'BMT2', description: 'STRATEGIC MANAGEMENT',
             faculty: 'GORDANCE, AIRA TOLET', midterm: '02/21/2026', final: '-',
             approvedBy: 'Registrar', courseFull: 'STRATEGIC MANAGEMENT', schedule: 'Room No. : BLDG. 3-102',
+            status: 'Submitted',
             students: dummyStudents
         },
         {
             id: 2, section: 'BSIT 4-A', courseCode: 'CAP102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
             faculty: 'DIAZ, JONNEL MARK', midterm: '02/21/2025', final: '02/21/2026',
             approvedBy: 'Admin 1', courseFull: 'CAPSTONE PROJECT AND RESEARCH 2', schedule: 'Room No. : TBA',
+            status: 'Submitted',
             students: dummyStudents.slice(0, 8)
         },
         {
             id: 3, section: 'BSCS 4-A', courseCode: 'CAP102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
             faculty: 'DIAZ, JONNEL MARK', midterm: '02/21/2026', final: '02/21/2026',
             approvedBy: 'Admin 1', courseFull: 'CAPSTONE PROJECT AND RESEARCH 2', schedule: 'Room No. : TBA',
+            status: 'Submitted',
             students: dummyStudents.slice(0, 5)
         }
     ];
@@ -96,6 +100,44 @@ function findSectionById(id) {
     }
     return null;
 }
+
+
+function gsEscapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+        var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return map[ch];
+    });
+}
+
+function gsGetCsrf() {
+    return (document.querySelector('meta[name="csrf-token"]') || {}).content
+        || (document.querySelector('input[name="_token"]') || {}).value
+        || '';
+}
+
+function gsStatusBadge() {
+    return '<span class="gs-badge gs-badge-submitted">Submitted</span>';
+}
+
+function gsActionButtons(sec) {
+    return '<div class="gs-action-btns">'
+        + '<button type="button" class="gs-btn-approve" '
+        +   'data-id="' + sec.id + '" '
+        +   'data-name="' + gsEscapeHtml(sec.description) + '" '
+        +   'data-section="' + gsEscapeHtml(sec.section) + '" '
+        +   'data-faculty="' + gsEscapeHtml(sec.faculty) + '">'
+        +   'Approve'
+        + '</button>'
+        + '<button type="button" class="gs-btn-reject" '
+        +   'data-id="' + sec.id + '" '
+        +   'data-name="' + gsEscapeHtml(sec.description) + '" '
+        +   'data-section="' + gsEscapeHtml(sec.section) + '" '
+        +   'data-faculty="' + gsEscapeHtml(sec.faculty) + '">'
+        +   'Reject'
+        + '</button>'
+        + '</div>';
+}
+
 
 function renderSectionList() {
     var tbody = document.getElementById('gsListBody');
@@ -113,9 +155,12 @@ function renderSectionList() {
             '<td class="gs-date-cell">' + s.midterm + '</td>' +
             '<td class="gs-date-cell">' + s.final + '</td>' +
             '<td>' + s.approvedBy + '</td>' +
+            '<td>' + gsStatusBadge() + '</td>' +
+            '<td>' + gsActionButtons(s) + '</td>' +
         '</tr>';
     }
     tbody.innerHTML = html;
+
     var pageInfo = document.getElementById('gsListPageInfo');
     if (pageInfo) pageInfo.textContent = 'Showing ' + GS_SECTIONS.length + ' sections';
 }
@@ -276,8 +321,7 @@ function renderGradeModalContent() {
     if (subtitle) subtitle.textContent = section.section + ' - ' + section.courseCode + ' — ' + phaseLabel;
     if (tabs) tabs.innerHTML = buildGradeTabHtml(components, componentIndex);
     if (tbody) tbody.innerHTML = buildGradeRowsHtml(section.students, phase, componentIndex);
-    
-    // Match reference: Q1 (20) Q2 (20)
+
     if (q1Head) q1Head.textContent = 'Q1 (20)';
     if (q2Head) q2Head.textContent = 'Q2 (20)';
 
@@ -344,6 +388,161 @@ function bindGradeModalEvents() {
     });
 }
 
+
+function doGradingAction(subjectId, action, name, section, faculty, btn) {
+    if (action === 'approved') {
+        Swal.fire({
+            title: 'Approve Grading Sheet?',
+            html: 'You are about to <strong>approve</strong> the grades submitted by:<br><br>'
+                + '<strong>' + gsEscapeHtml(name) + '</strong><br>'
+                + '<span style="color:#6b7280;font-size:0.9rem;">'
+                + gsEscapeHtml(section) + ' &bull; ' + gsEscapeHtml(faculty)
+                + '</span>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#15803d',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Approve',
+            cancelButtonText: 'Cancel',
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            gsPostAction(subjectId, 'approved', '', name, section, btn);
+        });
+
+    } else {
+        Swal.fire({
+            title: 'Reject Grading Sheet?',
+            html: 'The grades for <strong>' + gsEscapeHtml(name) + '</strong> '
+                + '(<span style="color:#6b7280;">' + gsEscapeHtml(section) + '</span>) '
+                + 'will be <strong>sent back</strong> to <strong>' + gsEscapeHtml(faculty)
+                + '</strong> for revision.<br><br>'
+                + '<label style="font-size:0.85rem;font-weight:600;display:block;text-align:left;margin-bottom:4px;">'
+                + 'Reason (optional)</label>'
+                + '<textarea id="swalRejectReason" class="swal2-textarea" '
+                + 'placeholder="Enter reason for rejection..." style="font-size:0.88rem;"></textarea>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Reject',
+            cancelButtonText: 'Cancel',
+            preConfirm: function () {
+                return document.getElementById('swalRejectReason').value.trim();
+            },
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            gsPostAction(subjectId, 'rejected', result.value || '', name, section, btn);
+        });
+    }
+}
+
+function gsPostAction(subjectId, action, remarks, name, section, btn) {
+    btn.disabled = true;
+
+    fetch(window.GS_ACTION_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': gsGetCsrf(),
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            subject_id: subjectId,
+            action:     action,
+            remarks:    remarks,
+        }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (!data.ok) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Action failed. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#15803d',
+            });
+            btn.disabled = false;
+            return;
+        }
+
+        // Remove from local list — it's no longer Submitted
+        GS_SECTIONS = GS_SECTIONS.filter(function (s) {
+            return String(s.id) !== String(subjectId);
+        });
+
+        // Also sync window.GS_SERVER_SECTIONS if present
+        if (window.GS_SERVER_SECTIONS) {
+            window.GS_SERVER_SECTIONS = window.GS_SERVER_SECTIONS.filter(function (s) {
+                return String(s.id) !== String(subjectId);
+            });
+        }
+
+        // Re-render the list
+        renderSectionList();
+
+        var isApproved = action === 'approved';
+        Swal.fire({
+            title: isApproved ? 'Grades Approved!' : 'Grades Rejected',
+            html: '<strong>' + gsEscapeHtml(name) + '</strong> '
+                + '(<span style="color:#6b7280;">' + gsEscapeHtml(section) + '</span>)<br><br>'
+                + (isApproved
+                    ? 'Grades have been <strong>approved</strong> successfully.'
+                    : 'Grades have been <strong>sent back</strong> to faculty for revision.'),
+            icon: isApproved ? 'success' : 'info',
+            confirmButtonColor: '#15803d',
+            confirmButtonText: 'Done',
+        });
+    })
+    .catch(function () {
+        Swal.fire({
+            title: 'Network Error',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonColor: '#15803d',
+        });
+        btn.disabled = false;
+    });
+}
+
+function bindListBodyActions(listBody) {
+    listBody.addEventListener('click', function (event) {
+
+        var approveBtn = event.target.closest('.gs-btn-approve');
+        if (approveBtn) {
+            event.stopPropagation();
+            doGradingAction(
+                approveBtn.getAttribute('data-id'),
+                'approved',
+                approveBtn.getAttribute('data-name'),
+                approveBtn.getAttribute('data-section'),
+                approveBtn.getAttribute('data-faculty'),
+                approveBtn
+            );
+            return;
+        }
+
+        var rejectBtn = event.target.closest('.gs-btn-reject');
+        if (rejectBtn) {
+            event.stopPropagation();
+            doGradingAction(
+                rejectBtn.getAttribute('data-id'),
+                'rejected',
+                rejectBtn.getAttribute('data-name'),
+                rejectBtn.getAttribute('data-section'),
+                rejectBtn.getAttribute('data-faculty'),
+                rejectBtn
+            );
+            return;
+        }
+
+        var row = event.target.closest('tr[data-section-id]');
+        if (row && !event.target.closest('button')) {
+            showDetailView(row.getAttribute('data-section-id'));
+        }
+    });
+}
+
+
 function initGradingSheetPage() {
     var serverData = window.GS_SERVER_SECTIONS || null;
     gsSeedSections(serverData);
@@ -352,10 +551,7 @@ function initGradingSheetPage() {
 
     var listBody = document.getElementById('gsListBody');
     if (listBody) {
-        listBody.addEventListener('click', function(event) {
-            var row = event.target.closest('tr[data-section-id]');
-            if (row) showDetailView(row.getAttribute('data-section-id'));
-        });
+        bindListBodyActions(listBody);
     }
 }
 

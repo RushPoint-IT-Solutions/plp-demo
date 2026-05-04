@@ -3,6 +3,65 @@
 @section('title', 'PLP - Grading Sheet')
 @section('page-title', 'GRADING SHEET')
 
+@push('styles')
+    <style>
+        .gs-submit-grades-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 1.2rem;
+            background: #15803d;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: auto;
+            transition: background 0.2s;
+        }
+
+        .gs-submit-grades-btn:hover:not(:disabled) {
+            background: #166534;
+        }
+
+        .gs-submit-grades-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .fgs-quick-submit-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.9rem;
+            background: #15803d;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .fgs-quick-submit-btn:hover:not(:disabled) {
+            background: #166534;
+        }
+
+        .fgs-quick-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .fgs-submitted-label {
+            color: #15803d;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+    </style>
+@endpush
+
 @section('content')
 <div class="grading-sheet-wrap faculty-grading-sheet-page">
 
@@ -81,6 +140,7 @@
                         <th>Subject Description</th>
                         <th>Days</th>
                         <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="gradingSubjectBody"></tbody>
@@ -99,6 +159,10 @@
             </button>
             <div class="faculty-detail-title" id="gradingDetailTitle"></div>
             <div class="faculty-detail-section" id="gradingDetailSection"></div>
+
+            <button type="button" class="gs-submit-grades-btn" id="gradingSubmitBtn" style="display:none;">
+                Submit Grades
+            </button>
         </div>
 
         <div class="faculty-table-wrap">
@@ -160,8 +224,24 @@
     <div id="gradingSheetData" data-subjects='@json($gradingSubjects)'></div>
 
 </div>
+
+<div class="req-modal-overlay" id="gradingMissingModal" style="display:none;" aria-hidden="true">
+    <div class="req-modal-box" role="dialog" aria-modal="true">
+        <div class="fgs-row-edit-head">
+            <h3 class="req-modal-title">Cannot Submit Grades</h3>
+            <button type="button" class="rep-modal-close-x" id="gradingMissingClose">&times;</button>
+        </div>
+        <p style="padding: 0 1.2rem; color:#b91c1c; font-weight:600;" id="gradingMissingMessage"></p>
+        <ul id="gradingMissingList" style="padding: 0.5rem 2rem 1rem; max-height:220px; overflow-y:auto; color:#374151; font-size:0.9rem;"></ul>
+        <div class="req-modal-actions">
+            <button type="button" class="req-btn-save" id="gradingMissingOk">OK</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/faculty-grading-sheet.js') }}?v=..."></script>
 <script src="{{ asset('js/faculty-grading-sheet.js') }}?v={{ file_exists(public_path('js/faculty-grading-sheet.js')) ? filemtime(public_path('js/faculty-grading-sheet.js')) : time() }}"></script>
 @endpush
