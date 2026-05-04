@@ -8615,7 +8615,7 @@ class RegistrarController extends Controller
                 'gradingStatusLookup',
             ])
             ->whereHas('gradingStatusLookup', function ($query) {
-                $query->whereRaw('UPPER(code) IN (?, ?, ?)', ['SUBMITTED', 'APPROVED', 'REJECTED']);
+                $query->whereRaw('UPPER(code) = ?', ['SUBMITTED']);
             })
             ->orderBy('year_section')
             ->orderBy('code')
@@ -8642,19 +8642,12 @@ class RegistrarController extends Controller
             })->values()->all();
 
             $midtermPostedAt = $subject->studentGrades
-                ->filter(function ($g) { return $g->midterm !== null; })->max('updated_at');
+                ->filter(fn($g) => $g->midterm !== null)->max('updated_at');
             $finalPostedAt = $subject->studentGrades
-                ->filter(function ($g) { return $g->final !== null; })->max('updated_at');
-
-            $statusCode  = strtoupper(optional($subject->gradingStatusLookup)->code ?? '');
-            $statusMap = [
-                'SUBMITTED' => 'Submitted',
-                'APPROVED' => 'Approved',
-                'REJECTED' => 'Rejected',
-            ];
-            $statusLabel = $statusMap[$statusCode] ?? 'Unknown';
+                ->filter(fn($g) => $g->final !== null)->max('updated_at');
 
             return [
+                'id' => (int) $subject->id,
                 'section' => trim((string) ($subject->year_section ?: '-')),
                 'courseCode' => (string) ($subject->code ?: '-'),
                 'description' => (string) ($subject->name ?: '-'),
@@ -8666,18 +8659,18 @@ class RegistrarController extends Controller
                 'schedule' => 'Room No. : ' . (string) ($subject->room ?: 'TBA'),
                 'schoolYear' => (string) ($subject->school_year ?: ''),
                 'term' => (string) ($subject->semester ?: ''),
-                'status' => $statusLabel,
+                'status' => 'Submitted',
                 'students' => $students,
             ];
         })->values()->all();
 
         $faculties = $subjects
-            ->map(function ($s) { return optional($s->facultyModel)->name ?: $s->faculty; })
+            ->map(fn($s) => optional($s->facultyModel)->name ?: $s->faculty)
             ->filter()->unique()->values()->all();
 
         return view('registrar.registrar-menu.faculty-management.grading-sheet', [
             'gradingSections' => $gradingSections,
-            'faculties'       => $faculties,
+            'faculties' => $faculties,
         ]);
     }
 
