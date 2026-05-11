@@ -172,7 +172,7 @@ function setLoadingState(loading) {
 
     var tbody = document.getElementById('sfTableBody');
     if (isLoading && tbody) {
-        tbody.innerHTML = '<tr><td colspan="9">Loading subjects...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12">Loading courses...</td></tr>';
     }
 
     renderPagination();
@@ -283,7 +283,7 @@ function loadSubjects(search, page) {
         renderPagination();
     }).catch(function (errorPayload) {
         console.error(errorPayload);
-        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to load subjects right now.'));
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to load courses right now.'));
     }).finally(function () {
         setLoadingState(false);
     });
@@ -298,7 +298,7 @@ function renderTable() {
     tbody.innerHTML = '';
 
     if (!SUBJECTS.length) {
-        tbody.innerHTML = '<tr><td colspan="9">No subjects found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12">No courses found.</td></tr>';
         return;
     }
 
@@ -307,6 +307,8 @@ function renderTable() {
     SUBJECTS.forEach(function (subject, idx) {
         var lec = Number(subject.lec || 0);
         var lab = Number(subject.lab || 0);
+        var totalUnits = lec + lab;
+        var hours = Number(subject.hours || 0);
 
         var tr = document.createElement('tr');
         tr.innerHTML =
@@ -330,6 +332,9 @@ function renderTable() {
             '<td style="text-align:left;">' + escapeHtml(subject.title) + '</td>' +
             '<td style="text-align:center;">' + lec.toFixed(1) + '</td>' +
             '<td style="text-align:center;">' + lab.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + totalUnits.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + hours.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + escapeHtml(subject.course_type || 'Major') + '</td>' +
             '<td style="text-align:center;">' + yn(subject.core) + '</td>' +
             '<td style="text-align:center;">' + yn(subject.applied) + '</td>' +
             '<td style="text-align:center;">' + yn(subject.specialized) + '</td>';
@@ -340,7 +345,7 @@ function renderTable() {
     totalRow.className = 'sf-total-row';
     var rangeStart = rowNumberOffset + 1;
     var rangeEnd = rowNumberOffset + SUBJECTS.length;
-    totalRow.innerHTML = '<td colspan="9" class="sf-total-cell">Showing <strong>' + rangeStart + '-' + rangeEnd + '</strong> of <strong>' + totalRows + '</strong> subjects</td>';
+    totalRow.innerHTML = '<td colspan="12" class="sf-total-cell">Showing <strong>' + rangeStart + '-' + rangeEnd + '</strong> of <strong>' + totalRows + '</strong> courses</td>';
     tbody.appendChild(totalRow);
 }
 
@@ -450,11 +455,13 @@ function toggleSubjectMenu(idx, event) {
 
 function openNewSubjectModal() {
     editingId = null;
-    document.getElementById('sfModalTitle').textContent = 'NEW SUBJECT';
+    document.getElementById('sfModalTitle').textContent = 'NEW COURSE';
     document.getElementById('sfInputCode').value = '';
     document.getElementById('sfInputTitle').value = '';
     document.getElementById('sfInputLec').value = '';
     document.getElementById('sfInputLab').value = '';
+    document.getElementById('sfInputHours').value = '';
+    document.getElementById('sfInputCourseType').value = 'Major';
     document.getElementById('sfInputCore').checked = false;
     document.getElementById('sfInputApplied').checked = false;
     document.getElementById('sfInputSpecialized').checked = false;
@@ -469,11 +476,13 @@ function openEditSubjectModal(idx) {
     }
 
     editingId = subject.id;
-    document.getElementById('sfModalTitle').textContent = 'EDIT SUBJECT';
+    document.getElementById('sfModalTitle').textContent = 'EDIT COURSE';
     document.getElementById('sfInputCode').value = subject.code || '';
     document.getElementById('sfInputTitle').value = subject.title || '';
     document.getElementById('sfInputLec').value = Number(subject.lec || 0).toFixed(0);
     document.getElementById('sfInputLab').value = Number(subject.lab || 0).toFixed(0);
+    document.getElementById('sfInputHours').value = Number(subject.hours || 0).toFixed(1);
+    document.getElementById('sfInputCourseType').value = subject.course_type || 'Major';
     document.getElementById('sfInputCore').checked = !!subject.core;
     document.getElementById('sfInputApplied').checked = !!subject.applied;
     document.getElementById('sfInputSpecialized').checked = !!subject.specialized;
@@ -491,12 +500,14 @@ function saveSubject() {
     var title = String(document.getElementById('sfInputTitle').value || '').trim();
     var lec = parseInt(document.getElementById('sfInputLec').value, 10);
     var lab = parseInt(document.getElementById('sfInputLab').value, 10);
+    var hours = parseFloat(document.getElementById('sfInputHours').value);
+    var courseType = String(document.getElementById('sfInputCourseType').value || 'Major');
     var core = !!document.getElementById('sfInputCore').checked;
     var applied = !!document.getElementById('sfInputApplied').checked;
     var specialized = !!document.getElementById('sfInputSpecialized').checked;
 
     if (!code || !title) {
-        showErrorMessage('Subject Code and Title are required.');
+        showErrorMessage('Course Code and Title are required.');
         return;
     }
 
@@ -507,12 +518,15 @@ function saveSubject() {
     if (isNaN(lab) || lab < 0) {
         lab = 0;
     }
+    if (isNaN(hours) || hours < 0) {
+        hours = 0;
+    }
 
     var isEditing = !!editingId;
     var method = editingId ? 'PUT' : 'POST';
     var url = editingId ? getUrlFromTemplate(SF_UPDATE_URL_TEMPLATE, editingId) : SF_STORE_URL;
     if (!url) {
-        showErrorMessage('Unable to save subject right now.');
+        showErrorMessage('Unable to save course right now.');
         return;
     }
 
@@ -521,17 +535,19 @@ function saveSubject() {
         title: title,
         lec: lec,
         lab: lab,
+        hours: hours,
+        course_type: courseType,
         core: core,
         applied: applied,
         specialized: specialized
     }).then(function (payloadData) {
         editingId = null;
         document.getElementById('sfModal').style.display = 'none';
-        document.getElementById('sfSuccessMsg').textContent = payloadData.message || ('Subject "' + code + '" saved successfully.');
+        document.getElementById('sfSuccessMsg').textContent = payloadData.message || ('Course "' + code + '" saved successfully.');
         document.getElementById('sfSuccessModal').style.display = 'flex';
         loadSubjects(activeSearch, isEditing ? currentPage : 1);
     }).catch(function (errorPayload) {
-        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to save subject right now.'));
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to save course right now.'));
     });
 }
 
@@ -556,18 +572,18 @@ function closeSfDeleteModal(event) {
 function confirmDeleteSubject() {
     var deleteUrl = getUrlFromTemplate(SF_DELETE_URL_TEMPLATE, deletingId);
     if (!deleteUrl) {
-        showErrorMessage('Unable to delete subject right now.');
+        showErrorMessage('Unable to delete course right now.');
         return;
     }
 
     sendJsonRequest(deleteUrl, 'DELETE', {}).then(function (payloadData) {
         deletingId = null;
         document.getElementById('sfDeleteModal').style.display = 'none';
-        document.getElementById('sfSuccessMsg').textContent = payloadData.message || 'Subject deleted successfully.';
+        document.getElementById('sfSuccessMsg').textContent = payloadData.message || 'Course deleted successfully.';
         document.getElementById('sfSuccessModal').style.display = 'flex';
         loadSubjects(activeSearch, currentPage);
     }).catch(function (errorPayload) {
-        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to delete subject right now.'));
+        showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to delete course right now.'));
     });
 }
 

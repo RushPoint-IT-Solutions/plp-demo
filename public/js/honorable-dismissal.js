@@ -1,17 +1,13 @@
 /* honorable-dismissal.js — Honorable Dismissal form page logic */
 
 var hdCurrentRowId = null;
+var hdCurrentPreviewName = 'honorable-dismissal';
 
 function hdEsc(v) {
     return String(v || '').replace(/[&<>"']/g, function(c) {
         return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
     });
 }
-
-var hdDemoMeta = {
-    '1': { studentNo:'17-0501', studentName:'LIBO-ON, KAREN MARIE SITCHON', program:'BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY', hdNo:'1st 17 FD-221094', hdDate:'October 7, 2022' },
-    '2': { studentNo:'21-00010', studentName:'CERADO, ROILEEN I.', program:'BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY', hdNo:'', hdDate:'' }
-};
 
 function hdBuildTemplate(data, meta) {
     var now = new Date();
@@ -104,22 +100,36 @@ function hdGetRowData(rowId) {
     var row = hdGetRow(rowId);
     if (!row) return null;
     var cells = row.querySelectorAll('td');
+    var studentName = (cells[2] ? cells[2].textContent : '').trim();
+    var program = (cells[3] ? cells[3].textContent : '').trim();
+
     return {
         studentNo: (cells[1] ? cells[1].textContent : '').trim(),
-        studentName: (cells[2] ? cells[2].textContent : '').trim(),
-        program: (cells[3] ? cells[3].textContent : '').trim(),
+        studentName: studentName,
+        program: program,
         year: (cells[4] ? cells[4].textContent : '').trim(),
-        section: (cells[5] ? cells[5].textContent : '').trim()
+        section: (cells[5] ? cells[5].textContent : '').trim(),
+        hdNo: (row.getAttribute('data-hd-no') || '').trim(),
+        hdDate: (row.getAttribute('data-hd-date') || '').trim(),
+        schoolYear: (row.getAttribute('data-school-year') || '').trim(),
+        semester: (row.getAttribute('data-semester') || '').trim()
     };
 }
 
 function hdOpenPreview(rowId) {
     var data = hdGetRowData(rowId);
     if (!data) return;
-    var meta = hdDemoMeta[String(rowId)] || hdDemoMeta['1'];
+    var meta = {
+        studentNo: data.studentNo,
+        studentName: data.studentName.toUpperCase(),
+        program: data.program.toUpperCase(),
+        hdNo: data.hdNo,
+        hdDate: data.hdDate
+    };
     var sheet = document.getElementById('hdPreviewSheet');
     if (!sheet) return;
     sheet.innerHTML = hdBuildTemplate(data, meta);
+    hdCurrentPreviewName = hdFileName(data);
     document.getElementById('hdPreviewModal').style.display = 'flex';
     document.body.classList.add('hd-preview-open');
 }
@@ -147,6 +157,56 @@ function hdPrintSheets(list) {
     setTimeout(function() { window.print(); }, 120);
 }
 
+function hdFileName(data) {
+    var base = 'honorable-dismissal';
+    if (data && data.studentNo) {
+        base += '-' + data.studentNo;
+    } else if (data && data.studentName) {
+        base += '-' + data.studentName;
+    }
+
+    return base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
+}
+
+function hdDownloadHtml(html, fileName) {
+    if (!html) return;
+
+    var documentHtml = '<!doctype html><html><head><meta charset="utf-8">'
+        + '<title>Honorable Dismissal</title>'
+        + '<link rel="stylesheet" href="' + hdEsc(document.querySelector('link[href*=\"forms.css\"]') ? document.querySelector('link[href*=\"forms.css\"]').href : '') + '">'
+        + '<style>@page{size:portrait;margin:8mm}body{background:#fff;margin:0}.hd-sheet{margin:0 auto}</style>'
+        + '</head><body><div class="hd-sheet">' + html + '</div></body></html>';
+
+    var blob = new Blob([documentHtml], { type: 'text/html;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = fileName || 'honorable-dismissal.html';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function hdDownloadPreview() {
+    var sheet = document.getElementById('hdPreviewSheet');
+    if (!sheet) return;
+    hdDownloadHtml(sheet.innerHTML, hdCurrentPreviewName);
+}
+
+function hdDownloadRow(rowId) {
+    var data = hdGetRowData(rowId);
+    if (!data) return;
+    var meta = {
+        studentNo: data.studentNo,
+        studentName: data.studentName.toUpperCase(),
+        program: data.program.toUpperCase(),
+        hdNo: data.hdNo,
+        hdDate: data.hdDate
+    };
+    hdDownloadHtml(hdBuildTemplate(data, meta), hdFileName(data));
+}
+
 function hdPrintSelected() {
     var sel = Array.from(document.querySelectorAll('#hdTableBody .hd-row-select:checked'));
     if (!sel.length) { alert('Select at least one record to print.'); return; }
@@ -155,7 +215,13 @@ function hdPrintSelected() {
         var rid = row ? row.getAttribute('data-row-id') : null;
         if (!rid) return '';
         var data = hdGetRowData(rid);
-        var meta = hdDemoMeta[rid] || hdDemoMeta['1'];
+        var meta = data ? {
+            studentNo: data.studentNo,
+            studentName: data.studentName.toUpperCase(),
+            program: data.program.toUpperCase(),
+            hdNo: data.hdNo,
+            hdDate: data.hdDate
+        } : {};
         return data ? hdBuildTemplate(data, meta) : '';
     }).filter(Boolean);
     hdPrintSheets(sheets);
@@ -177,6 +243,7 @@ function hdOpenBlankPreview() {
         { studentNo:'', studentName:'', program:'', year:'', section:'' },
         { studentNo:'', studentName:'', program:'', hdNo:'', hdDate:'' }
     );
+    hdCurrentPreviewName = 'honorable-dismissal-blank.html';
 
     document.getElementById('hdPreviewModal').style.display = 'flex';
     document.body.classList.add('hd-preview-open');

@@ -14,6 +14,7 @@ use App\StudentDeficiency;
 use App\TransmutationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class GradingAcademicController extends Controller
@@ -37,7 +38,7 @@ class GradingAcademicController extends Controller
             'grade' => 'nullable|string|max:20',
             'remarks' => 'required|string|max:255',
             'periods' => 'nullable|array',
-            'periods.*' => 'nullable|string|max:50',
+            'periods.*' => 'nullable|string|in:Prelim,Midterm,Final',
         ]);
 
         $rule = GradeRule::create([
@@ -58,7 +59,7 @@ class GradingAcademicController extends Controller
             'grade' => 'nullable|string|max:20',
             'remarks' => 'required|string|max:255',
             'periods' => 'nullable|array',
-            'periods.*' => 'nullable|string|max:50',
+            'periods.*' => 'nullable|string|in:Prelim,Midterm,Final',
         ]);
 
         $gradeRule->update([
@@ -98,7 +99,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'section_subject_faculty' => 'required|string|max:150',
-            'period' => 'required|string|max:30',
+            'period' => 'required|string|in:Prelim,Midterm,Final',
             'description' => 'required|string|max:120',
             'percentage' => 'required|numeric|min:0|max:100',
             'start_date' => 'nullable|date',
@@ -131,7 +132,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'section_subject_faculty' => 'required|string|max:150',
-            'period' => 'required|string|max:30',
+            'period' => 'required|string|in:Prelim,Midterm,Final',
             'description' => 'required|string|max:120',
             'percentage' => 'required|numeric|min:0|max:100',
             'start_date' => 'nullable|date',
@@ -185,8 +186,8 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'school_year' => 'required|string|max:20',
-            'period' => 'required|string|max:30',
-            'semester' => 'required|string|max:20',
+            'period' => 'required|string|in:Prelim,Midterm,Final',
+            'semester' => 'required|string|in:First,Second',
             'section' => 'required|string|max:40',
             'course_code' => 'required|string|max:40',
             'title' => 'required|string|max:120',
@@ -220,8 +221,8 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'school_year' => 'required|string|max:20',
-            'period' => 'required|string|max:30',
-            'semester' => 'required|string|max:20',
+            'period' => 'required|string|in:Prelim,Midterm,Final',
+            'semester' => 'required|string|in:First,Second',
             'section' => 'required|string|max:40',
             'course_code' => 'required|string|max:40',
             'title' => 'required|string|max:120',
@@ -324,7 +325,6 @@ class GradingAcademicController extends Controller
             ['value' => '', 'label' => 'Select term'],
             ['value' => 'First', 'label' => 'First'],
             ['value' => 'Second', 'label' => 'Second'],
-            ['value' => 'Summer', 'label' => 'Summer'],
         ];
 
         $programOptions = Course::query()
@@ -426,11 +426,11 @@ class GradingAcademicController extends Controller
             'from_department_id' => $departmentRule,
             'from_program_id' => 'nullable|integer|exists:courses,id',
             'from_school_year' => 'required|string|max:20|exists:academic_terms,school_year',
-            'from_term' => 'required|string|in:First,Second,Summer',
+            'from_term' => 'required|string|in:First,Second',
             'to_department_id' => $departmentRule,
             'to_program_id' => 'required|integer|exists:courses,id',
             'to_school_year' => 'required|string|max:20|exists:academic_terms,school_year',
-            'to_term' => 'required|string|in:First,Second,Summer',
+            'to_term' => 'required|string|in:First,Second',
         ]);
 
         $sourceAcademicTermId = $this->resolveAcademicTermId($validated['from_school_year'], $validated['from_term']);
@@ -530,7 +530,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'school_year' => 'required|string|max:20|exists:academic_terms,school_year',
-            'term' => 'required|string|in:First,Second,Summer',
+            'term' => 'required|string|in:First,Second',
             'course_id' => 'required|integer|exists:courses,id',
             'initial_from' => 'required|numeric',
             'initial_to' => 'required|numeric|gte:initial_from',
@@ -568,7 +568,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'school_year' => 'required|string|max:20|exists:academic_terms,school_year',
-            'term' => 'required|string|in:First,Second,Summer',
+            'term' => 'required|string|in:First,Second',
             'course_id' => 'required|integer|exists:courses,id',
             'initial_from' => 'required|numeric',
             'initial_to' => 'required|numeric|gte:initial_from',
@@ -844,6 +844,234 @@ class GradingAcademicController extends Controller
         $studentDeficiency->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    public function scholasticComments()
+    {
+        return view('registrar.services.grading-academic.scholastic-comments');
+    }
+
+    public function incompleteFailing(Request $request)
+    {
+        $search = trim((string) $request->query('q', ''));
+        $type = trim((string) $request->query('type', ''));
+
+        $rows = $this->incompleteFailingRows($search, $type);
+        $summaryRows = $this->incompleteFailingRows('', '');
+
+        $summary = [
+            'total' => $summaryRows->count(),
+            'incomplete' => $summaryRows->where('risk_type', 'Incomplete')->count(),
+            'failing' => $summaryRows->where('risk_type', 'Failing')->count(),
+            'students' => $summaryRows->pluck('student_key')->unique()->count(),
+        ];
+
+        return view('registrar.services.grading-academic.incomplete-failing', compact('rows', 'summary', 'search', 'type'));
+    }
+
+    public static function incompleteFailingBadgeCount(): int
+    {
+        try {
+            return (new static())->incompleteFailingRows('', '')->count();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
+    private function incompleteFailingRows(string $search = '', string $type = '')
+    {
+        $rows = collect();
+        $type = strtolower($type);
+
+        if (Schema::hasTable('student_subject_grades') && Schema::hasTable('students')) {
+            $query = DB::table('student_subject_grades as g')
+                ->leftJoin('students as st', 'st.id', '=', 'g.student_id');
+
+            $hasSubjectsTable = Schema::hasTable('subjects');
+            $hasSubjectAcademicTerm = $hasSubjectsTable && Schema::hasColumn('subjects', 'academic_term_id');
+            $hasAcademicTermsTable = Schema::hasTable('academic_terms');
+
+            if (Schema::hasTable('subjects')) {
+                $query->leftJoin('subjects as sub', 'sub.id', '=', 'g.subject_id');
+                if ($hasSubjectAcademicTerm && $hasAcademicTermsTable) {
+                    $query->leftJoin('academic_terms as at', 'at.id', '=', 'sub.academic_term_id');
+                }
+            }
+
+            $query->select([
+                'g.id',
+                'g.student_id',
+                'st.student_no',
+                'st.name as student_name',
+                'g.subject_id',
+                'g.prelim',
+                'g.midterm',
+                'g.final',
+                'g.final_average',
+                'g.remarks',
+            ]);
+
+            if ($hasSubjectsTable) {
+                $query->addSelect([
+                    Schema::hasColumn('subjects', 'code') ? 'sub.code as subject_code' : DB::raw('NULL as subject_code'),
+                    Schema::hasColumn('subjects', 'name') ? 'sub.name as subject_name' : DB::raw('NULL as subject_name'),
+                    Schema::hasColumn('subjects', 'school_year')
+                        ? 'sub.school_year'
+                        : ($hasSubjectAcademicTerm && $hasAcademicTermsTable ? 'at.school_year' : DB::raw('NULL as school_year')),
+                    Schema::hasColumn('subjects', 'semester')
+                        ? 'sub.semester'
+                        : ($hasSubjectAcademicTerm && $hasAcademicTermsTable ? 'at.term as semester' : DB::raw('NULL as semester')),
+                    Schema::hasColumn('subjects', 'year_section') ? 'sub.year_section' : DB::raw('NULL as year_section'),
+                    Schema::hasColumn('subjects', 'faculty') ? 'sub.faculty' : DB::raw('NULL as faculty'),
+                ]);
+            }
+
+            $query->where(function ($inner) {
+                $inner->whereRaw('LOWER(COALESCE(g.remarks, "")) like ?', ['%incomplete%'])
+                    ->orWhereRaw('LOWER(COALESCE(g.remarks, "")) = ?', ['inc'])
+                    ->orWhereRaw('LOWER(COALESCE(g.remarks, "")) like ?', ['%failed%'])
+                    ->orWhere('g.final_average', '>', 3);
+            });
+
+            if ($search !== '') {
+                $like = '%' . $search . '%';
+                $query->where(function ($inner) use ($like, $hasSubjectsTable) {
+                    $inner->where('st.student_no', 'like', $like)
+                        ->orWhere('st.name', 'like', $like);
+                    if ($hasSubjectsTable) {
+                        if (Schema::hasColumn('subjects', 'code')) {
+                            $inner->orWhere('sub.code', 'like', $like);
+                        }
+                        if (Schema::hasColumn('subjects', 'name')) {
+                            $inner->orWhere('sub.name', 'like', $like);
+                        }
+                        if (Schema::hasColumn('subjects', 'year_section')) {
+                            $inner->orWhere('sub.year_section', 'like', $like);
+                        }
+                    }
+                });
+            }
+
+            $query->orderBy('st.name');
+            if ($hasSubjectsTable && Schema::hasColumn('subjects', 'code')) {
+                $query->orderBy('sub.code');
+            }
+
+            $rows = $rows->merge($query->get()->map(function ($row) {
+                $remarks = strtolower((string) $row->remarks);
+                $isIncomplete = strpos($remarks, 'incomplete') !== false || $remarks === 'inc';
+                $riskType = $isIncomplete ? 'Incomplete' : 'Failing';
+
+                return (object) [
+                    'source' => 'Grading Sheet',
+                    'risk_type' => $riskType,
+                    'student_key' => $row->student_id ?: $row->student_no,
+                    'student_id' => $row->student_id,
+                    'student_no' => $row->student_no,
+                    'student_name' => $row->student_name ?: 'Unknown Student',
+                    'subject_code' => $row->subject_code ?? 'Subject',
+                    'subject_name' => $row->subject_name ?? '',
+                    'school_year' => $row->school_year ?? '',
+                    'semester' => $row->semester ?? '',
+                    'section' => $row->year_section ?? '',
+                    'faculty' => $row->faculty ?? '',
+                    'grade' => $row->final_average,
+                    'remarks' => $row->remarks ?: $riskType,
+                    'prelim' => $row->prelim,
+                    'midterm' => $row->midterm,
+                    'final' => $row->final,
+                ];
+            }));
+        }
+
+        if (Schema::hasTable('student_grade_records')) {
+            $query = DB::table('student_grade_records as gr')
+                ->select([
+                    'gr.id',
+                    'gr.student_id',
+                    'gr.student_no',
+                    'gr.school_year',
+                    'gr.term',
+                    'gr.subject_code',
+                    'gr.description',
+                    'gr.section_code',
+                    'gr.professor',
+                    'gr.final_grade',
+                    'gr.inc',
+                    'gr.status',
+                    'gr.grade_status',
+                    'gr.remarks',
+                ]);
+
+            if (Schema::hasTable('students')) {
+                $query->leftJoin('students as st', 'st.id', '=', 'gr.student_id')
+                    ->addSelect('st.name as student_name');
+            }
+
+            $query->where(function ($inner) {
+                $inner->where('gr.inc', true)
+                    ->orWhere('gr.final_grade', '>', 3)
+                    ->orWhereRaw('LOWER(COALESCE(gr.status, "")) like ?', ['%fail%'])
+                    ->orWhereRaw('LOWER(COALESCE(gr.grade_status, "")) like ?', ['%incomplete%'])
+                    ->orWhereRaw('LOWER(COALESCE(gr.grade_status, "")) = ?', ['inc'])
+                    ->orWhereRaw('LOWER(COALESCE(gr.remarks, "")) like ?', ['%fail%'])
+                    ->orWhereRaw('LOWER(COALESCE(gr.remarks, "")) like ?', ['%incomplete%']);
+            });
+
+            if ($search !== '') {
+                $like = '%' . $search . '%';
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('gr.student_no', 'like', $like)
+                        ->orWhere('gr.subject_code', 'like', $like)
+                        ->orWhere('gr.description', 'like', $like)
+                        ->orWhere('gr.section_code', 'like', $like);
+                    if (Schema::hasTable('students')) {
+                        $inner->orWhere('st.name', 'like', $like);
+                    }
+                });
+            }
+
+            $query->orderBy('gr.school_year', 'desc')->orderBy('gr.term')->orderBy('gr.subject_code');
+
+            $rows = $rows->merge($query->get()->map(function ($row) {
+                $isIncomplete = (bool) $row->inc
+                    || stripos((string) $row->grade_status, 'incomplete') !== false
+                    || strcasecmp((string) $row->grade_status, 'inc') === 0
+                    || stripos((string) $row->remarks, 'incomplete') !== false;
+
+                return (object) [
+                    'source' => 'Academic Record',
+                    'risk_type' => $isIncomplete ? 'Incomplete' : 'Failing',
+                    'student_key' => $row->student_id ?: $row->student_no,
+                    'student_id' => $row->student_id,
+                    'student_no' => $row->student_no,
+                    'student_name' => $row->student_name ?? 'Unknown Student',
+                    'subject_code' => $row->subject_code,
+                    'subject_name' => $row->description,
+                    'school_year' => $row->school_year,
+                    'semester' => $row->term,
+                    'section' => $row->section_code,
+                    'faculty' => $row->professor,
+                    'grade' => $row->inc ? 'INC' : $row->final_grade,
+                    'remarks' => $row->remarks ?: ($row->grade_status ?: ($isIncomplete ? 'Incomplete' : 'Failing')),
+                    'prelim' => null,
+                    'midterm' => null,
+                    'final' => null,
+                ];
+            }));
+        }
+
+        if ($type === 'incomplete') {
+            $rows = $rows->where('risk_type', 'Incomplete');
+        } elseif ($type === 'failing') {
+            $rows = $rows->where('risk_type', 'Failing');
+        }
+
+        return $rows->sortBy([
+            ['risk_type', 'asc'],
+            ['student_name', 'asc'],
+            ['subject_code', 'asc'],
+        ])->values();
     }
 
     private function resolveAcademicTermId($schoolYear, $canonicalTerm)

@@ -99,7 +99,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 | Student Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 'force_password_reset'])->group(function () {
+Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('student.schedule');
     })->name('access-module');
@@ -122,13 +122,15 @@ Route::prefix('student')->name('student.')->middleware(['auth', 'student.user', 
 | Parent Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'force_password_reset'])->group(function () {
+Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('parent.grades');
     })->name('access-module');
 
     Route::get('/dashboard', 'ParentModule\ParentController@dashboard')->name('dashboard');
     Route::get('/help-center', 'Portal\ParentController@helpCenter')->name('help.center');
+    Route::get('/help-center/tickets/create', 'Portal\ParentController@createHelpCenterTicket')->name('help.tickets.create');
+    Route::post('/help-center/tickets', 'Portal\ParentController@storeHelpCenterTicket')->name('help.tickets.store')->middleware('throttle:20,1');
     Route::get('/help-center/live-chat', 'Portal\ParentController@helpCenterLiveChat')->name('help.live-chat');
     Route::get('/help-center/{topic}', 'Portal\ParentController@helpCenterTopic')->name('help.topic');
     Route::get('/profile', 'Portal\ParentController@profile')->name('profile');
@@ -150,13 +152,23 @@ Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'fo
 | Registrar Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset'])->group(function () {
+Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
+    Route::post('/messaging', 'Registrar\RegistrarController@storeRegistrarMessage')->name('messaging.store')->middleware('throttle:30,1');
+    Route::get('/communication/tickets', 'Registrar\RegistrarController@communicationTickets')->name('communication.tickets');
+    Route::post('/communication/tickets', 'Registrar\RegistrarController@storeCommunicationTicket')->name('communication.tickets.store')->middleware('throttle:30,1');
+    Route::put('/communication/tickets/{supportTicket}', 'Registrar\RegistrarController@updateCommunicationTicket')->name('communication.tickets.update')->middleware('throttle:60,1');
+    Route::get('/communication/stakeholders', 'Registrar\RegistrarController@stakeholderCommunication')->name('communication.stakeholders');
+    Route::get('/communication/email-templates', 'Registrar\RegistrarController@emailNotificationTemplates')->name('communication.email-templates');
+    Route::post('/communication/email-templates', 'Registrar\RegistrarController@storeEmailNotificationTemplate')->name('communication.email-templates.store')->middleware('throttle:30,1');
+    Route::put('/communication/email-templates/{registrarEmailTemplate}', 'Registrar\RegistrarController@updateEmailNotificationTemplate')->name('communication.email-templates.update')->middleware('throttle:60,1');
     Route::get('/notifications/feed', 'Registrar\RegistrarController@notificationsFeed')->name('notifications.feed');
     Route::post('/notifications/mark-read', 'Registrar\RegistrarController@markNotificationsRead')->name('notifications.mark-read');
     Route::post('/notifications/{notificationDelivery}/dismiss', 'Registrar\RegistrarController@dismissNotification')->name('notifications.dismiss');
     Route::get('/help-center', 'Registrar\RegistrarController@helpCenter')->name('help.center');
+    Route::get('/help-center/tickets/create', 'Registrar\RegistrarController@createHelpCenterTicket')->name('help.tickets.create');
+    Route::post('/help-center/tickets', 'Registrar\RegistrarController@storeHelpCenterTicket')->name('help.tickets.store')->middleware('throttle:20,1');
     Route::get('/help-center/live-chat', 'Registrar\RegistrarController@helpCenterLiveChat')->name('help.live-chat');
     Route::get('/help-center/{topic}', 'Registrar\RegistrarController@helpCenterTopic')->name('help.topic');
 
@@ -173,7 +185,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::put('/application/{applicant}/exam-schedule', 'Registrar\RegistrarController@updateApplicantExamSchedule')->name('application.exam-schedule.update');
         Route::put('/application/{applicant}/exam-result', 'Registrar\RegistrarController@updateApplicantExamResult')->name('application.exam-result.update');
         Route::put('/application/{applicant}/approval-status', 'Registrar\RegistrarController@updateApplicantApprovalStatus')->name('application.approval-status.update');
+        Route::put('/application/{applicant}/exam-interview', 'Registrar\RegistrarController@updateApplicantExamInterview')->name('application.exam-interview.update');
         Route::post('/application/bulk-status-update', 'Registrar\RegistrarController@bulkUpdateApplicantStatus')->name('application.bulk-status-update');
+        Route::post('/application/bulk-convert-to-student', 'Registrar\RegistrarController@bulkConvertToStudent')->name('application.bulk-convert-to-student');
         Route::get('/application/{applicant}/documents', 'Registrar\RegistrarController@applicantDocumentsData')->name('application.documents.data')->middleware('throttle:30,1');
         Route::get('/application/{applicant}/documents/available', 'Registrar\RegistrarController@availableApplicantDocuments')->name('application.documents.available')->middleware('throttle:30,1');
         Route::post('/application/{applicant}/documents/assign', 'Registrar\RegistrarController@assignApplicantDocuments')->name('application.documents.assign')->middleware('throttle:30,1');
@@ -192,6 +206,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::get('/approval-status', 'Registrar\RegistrarController@approvalStatus')->name('approval-status');
         Route::get('/exam-category', 'Registrar\RegistrarController@examCategory')->name('exam-category');
         Route::get('/exam-list', 'Registrar\RegistrarController@examList')->name('exam-list');
+        Route::get('/exam-interview-scheduling', 'Registrar\RegistrarController@examInterviewScheduling')->name('exam-interview-scheduling');
         Route::get('/batch-upload', 'Registrar\RegistrarController@batchUpload')->name('batch-upload');
         Route::post('/batch-upload', 'Registrar\RegistrarController@storeBatchUpload')->name('batch-upload.store');
         Route::get('/batch-upload/image/{studentProfileImage}', 'Registrar\RegistrarController@batchUploadImage')->name('batch-upload.image');
@@ -222,8 +237,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/subject-file/{subjectId}', 'Registrar\RegistrarController@updateSubjectFile')->name('subject-file.update');
             Route::delete('/subject-file/{subjectId}', 'Registrar\RegistrarController@destroySubjectFile')->name('subject-file.delete');
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
-            Route::post('/curriculum-file/copy', 'Registrar\RegistrarController@copyCurriculum')->name('curriculum-file.copy')->middleware('throttle:60,1');
             Route::post('/curriculum-file/setup', 'Registrar\RegistrarController@saveCurriculumSetup')->name('curriculum-file.setup')->middleware('throttle:60,1');
+            Route::put('/curriculum-file/{courseCurriculum}/workflow', 'Registrar\RegistrarController@updateCurriculumWorkflow')->name('curriculum-file.workflow')->middleware('throttle:60,1');
+            Route::get('/curriculum-year-tracking', 'Registrar\RegistrarController@curriculumYearTracking')->name('curriculum-year-tracking');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data')->middleware('throttle:60,1');
             Route::get('/pre-requisites/download/pdf', 'Registrar\RegistrarController@downloadPreRequisitesPdf')->name('pre-requisites.download')->middleware('throttle:60,1');
@@ -242,10 +258,14 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/room-file', 'Registrar\RegistrarController@storeRoomFile')->name('room-file.store')->middleware('throttle:60,1');
             Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
             Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
+            Route::get('/room-section-offering-management', 'Registrar\RegistrarController@roomSectionOfferingManagement')->name('room-section-offering-management');
+            Route::get('/coordination-deans-faculty', 'Registrar\RegistrarController@coordinationDeansFaculty')->name('coordination-deans-faculty');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
             Route::get('/section-offering/data', 'Registrar\RegistrarController@sectionOfferingData')->name('section-offering.data')->middleware('throttle:60,1');
             Route::get('/section-offering/curriculum-subjects', 'Registrar\RegistrarController@sectionOfferingCurriculumSubjects')->name('section-offering.curriculum-subjects')->middleware('throttle:60,1');
             Route::post('/section-offering', 'Registrar\RegistrarController@storeSectionOffering')->name('section-offering.store')->middleware('throttle:60,1');
+            Route::get('/class-schedule-preparation', 'Registrar\RegistrarController@classSchedulePreparation')->name('class-schedule-preparation');
+            Route::put('/class-schedule-preparation/{subject}', 'Registrar\RegistrarController@updateClassSchedulePreparation')->name('class-schedule-preparation.update')->middleware('throttle:60,1');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
             Route::get('/slot-monitoring/data', 'Registrar\RegistrarController@slotMonitoringData')->name('slot-monitoring.data')->middleware('throttle:60,1');
             Route::get('/slot-monitoring/reports/{reportType}', 'Registrar\RegistrarController@slotMonitoringReport')->name('slot-monitoring.report')->middleware('throttle:60,1')->where('reportType', 'actual-size|under-20|dissolved|closed');
@@ -260,10 +280,26 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         // Student Management
         Route::prefix('student-management')->name('student-mgmt.')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
+            Route::get('/student-records', 'Registrar\RegistrarController@studentRecordList')->name('student-records');
+            Route::get('/student-records/{student}', 'Registrar\RegistrarController@studentRecordProfile')->name('student-records.profile');
+            Route::post('/student-records/{student}/scholastic-comments', 'Registrar\RegistrarController@studentScholasticCommentSave')->name('student-records.scholastic-comments.save')->middleware('throttle:30,1');
+            Route::post('/student-records/{student}/medical', 'Registrar\RegistrarController@studentRecordMedicalSave')->name('student-records.medical.save');
+            Route::post('/student-records/{student}/clinic', 'Registrar\RegistrarController@studentClinicRecordSave')->name('student-records.clinic.save');
+            Route::delete('/student-records/{student}/clinic/{clinic}', 'Registrar\RegistrarController@studentClinicRecordDelete')->name('student-records.clinic.delete');
+            Route::get('/student-records/{student}/print/tor', 'Registrar\RegistrarController@studentPrintTor')->name('student-records.print.tor');
+            Route::get('/student-records/{student}/print/diploma', 'Registrar\RegistrarController@studentPrintDiploma')->name('student-records.print.diploma');
             Route::post('/student-enrollment', 'Registrar\RegistrarController@storeStudent')->name('student-enrollment.store');
             Route::put('/student-enrollment/{student}', 'Registrar\RegistrarController@updateStudent')->name('student-enrollment.update')->middleware('throttle:60,1');
             Route::delete('/student-enrollment/{student}', 'Registrar\RegistrarController@destroyStudent')->name('student-enrollment.destroy')->middleware('throttle:60,1');
             Route::get('/clinic-record', 'Registrar\RegistrarController@clinicRecord')->name('clinic-record');
+            Route::get('/academic-record/{student}', 'Registrar\RegistrarController@studentAcademicRecord')->name('academic-record.show');
+            Route::put('/academic-record/{student}/profile', 'Registrar\RegistrarController@updateStudentAcademicProfile')->name('academic-record.update-profile')->middleware('throttle:30,1');
+            Route::get('/academic-record/{student}/grades', 'Registrar\RegistrarController@getStudentGradeRecords')->name('academic-record.grades')->middleware('throttle:60,1');
+            Route::post('/academic-record/{student}/grades', 'Registrar\RegistrarController@storeStudentGradeRecord')->name('academic-record.grades.store')->middleware('throttle:30,1');
+            Route::put('/academic-record/{student}/grades/{record}', 'Registrar\RegistrarController@updateStudentGradeRecord')->name('academic-record.grades.update')->middleware('throttle:30,1');
+            Route::delete('/academic-record/{student}/grades/{record}', 'Registrar\RegistrarController@destroyStudentGradeRecord')->name('academic-record.grades.destroy')->middleware('throttle:30,1');
+            Route::post('/academic-record/grade-corrections/{gradeCorrectionRequest}/approve', 'Registrar\RegistrarController@approveGradeCorrectionRequest')->name('academic-record.grade-corrections.approve')->middleware('throttle:30,1');
+            Route::post('/academic-record/grade-corrections/{gradeCorrectionRequest}/reject', 'Registrar\RegistrarController@rejectGradeCorrectionRequest')->name('academic-record.grade-corrections.reject')->middleware('throttle:30,1');
         });
 
         // Faculty Management
@@ -356,7 +392,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/transmutation/copy', 'Registrar\Services\GradingAcademicController@transmutationCopy')->name('transmutation.copy');
             Route::put('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationUpdate')->name('transmutation.update');
             Route::delete('/transmutation/{transmutationRule}', 'Registrar\Services\GradingAcademicController@transmutationDestroy')->name('transmutation.destroy');
+            Route::get('/incomplete-failing', 'Registrar\Services\GradingAcademicController@incompleteFailing')->name('incomplete-failing');
             Route::get('/deficiency', 'Registrar\Services\GradingAcademicController@deficiency')->name('deficiency');
+            Route::get('/scholastic-comments', 'Registrar\Services\GradingAcademicController@scholasticComments')->name('scholastic-comments');
             Route::get('/deficiency/students/search', 'Registrar\Services\GradingAcademicController@deficiencyStudentSearch')->name('deficiency.students.search');
             Route::post('/deficiency/students', 'Registrar\Services\GradingAcademicController@deficiencyStudentStore')->name('deficiency.students.store');
             Route::get('/deficiency/{student}/records', 'Registrar\Services\GradingAcademicController@deficiencyRecords')->name('deficiency.records');
@@ -477,9 +515,11 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 | Applicant Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset'])->group(function () {
+Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.user', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/application-form', 'Applicant\ApplicantController@applicationForm')->name('application-form');
     Route::get('/help-center', 'Applicant\ApplicantController@helpCenter')->name('help.center');
+    Route::get('/help-center/tickets/create', 'Applicant\ApplicantController@createHelpCenterTicket')->name('help.tickets.create');
+    Route::post('/help-center/tickets', 'Applicant\ApplicantController@storeHelpCenterTicket')->name('help.tickets.store')->middleware('throttle:20,1');
     Route::get('/help-center/live-chat', 'Applicant\ApplicantController@helpCenterLiveChat')->name('help.live-chat');
     Route::get('/help-center/{topic}', 'Applicant\ApplicantController@helpCenterTopic')->name('help.topic');
     Route::post('/application-form/reset-progress', 'Applicant\ApplicantController@resetApplicationFormProgress')->name('application-form.reset-progress');
@@ -506,7 +546,7 @@ Route::prefix('applicant')->name('applicant.')->middleware(['auth', 'applicant.u
 | Faculty Portal Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_reset'])->group(function () {
+Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/load', 'Faculty\FacultyController@facultyLoad')->name('load');
     Route::get('/load/download', 'Faculty\FacultyController@downloadLoad')->name('load.download');
     Route::get('/class-list', 'Faculty\FacultyController@classList')->name('class-list');
@@ -530,7 +570,7 @@ Route::prefix('faculty')->name('faculty.')->middleware(['auth', 'force_password_
 
 
 
-Route::prefix('registrar/process/religion')->name('registrar.process.religion.')->group(function () {
+Route::prefix('registrar/process/religion')->name('registrar.process.religion.')->middleware(['auth', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/', 'ReligionController@index')->name('index');
     Route::get('/data', 'ReligionController@getData')->name('data');
     Route::post('/', 'ReligionController@store')->name('store');

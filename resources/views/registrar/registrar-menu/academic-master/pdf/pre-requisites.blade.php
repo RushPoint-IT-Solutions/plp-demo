@@ -8,7 +8,7 @@
     <h2>PLP Pre-requisites</h2>
     <p>
         Program: {{ $payload['program_title'] ?? '' }}<br>
-        Course: {{ ($payload['course']['code'] ?? '') . ' - ' . ($payload['course']['name'] ?? '') }}<br>
+        Program: {{ ($payload['course']['code'] ?? '') . ' - ' . ($payload['course']['name'] ?? '') }}<br>
         Curriculum Year: {{ $payload['curriculum_year'] ?? '' }}<br>
         Generated At: {{ optional($generatedAt)->format('Y-m-d H:i:s') }}
     </p>
@@ -23,12 +23,12 @@
                 <table width="100%" border="1" cellspacing="0" cellpadding="4">
                     <thead>
                         <tr>
-                            <th>Subject Code</th>
+                            <th>Course Code</th>
                             <th>Description</th>
                             <th>Credited Units</th>
                             <th>Pre-requisite</th>
                             <th>Co-requisite</th>
-                            <th>Equivalent Subject</th>
+                            <th>Equivalent Course</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,11 +45,11 @@
                     </tbody>
                 </table>
             @else
-                <p>No subject rows in this semester.</p>
+                <p>No course rows in this term.</p>
             @endif
         @endforeach
     @empty
-        <p>No curriculum subject records found for the selected filters.</p>
+        <p>No curriculum course records found for the selected filters.</p>
     @endforelse
 </body>
 </html>

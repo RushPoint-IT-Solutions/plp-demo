@@ -10,9 +10,9 @@
         <div class="ga-card ga-filter-card sched-filter-bar ga-periods-filter">
             <div class="ga-filter-grid ga-filter-grid-periods-lite">
                 <div><label class="ga-label">School Year</label><select class="app-filter-select" id="gcFilterSchoolYear"><option value="">All</option><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option></select></div>
-                <div><label class="ga-label">Semester</label><select class="app-filter-select" id="gcFilterSemester"><option value="">All</option><option>First</option><option>Second</option><option>Summer</option></select></div>
+                <div><label class="ga-label">Semester</label><select class="app-filter-select" id="gcFilterSemester"><option value="">All</option><option>First</option><option>Second</option></select></div>
                 <div><label class="ga-label">Section</label><select class="app-filter-select" id="gcFilterSection"><option value="">All</option><option>A</option><option>B</option><option>BSCS 3A</option><option>BSIT 2B</option></select></div>
-                <div><label class="ga-label">Period</label><select class="app-filter-select" id="gcFilterPeriod"><option value="">All</option><option>1</option><option>2</option><option>3</option></select></div>
+                <div><label class="ga-label">Period</label><select class="app-filter-select" id="gcFilterPeriod"><option value="">All</option><option>Prelim</option><option>Midterm</option><option>Final</option></select></div>
                 <div><label class="ga-label">Subject Type</label><select class="app-filter-select" id="gcFilterSubjectType"><option value="">All</option><option>Core</option><option>Applied</option><option>Specialized</option><option>No</option></select></div>
                 <div><label class="ga-label">Course Code</label><select class="app-filter-select" id="gcFilterCourseCode"><option value="">All</option><option>CS 301</option><option>IT 4102</option><option>CS301</option><option>IT201</option><option>MATH101</option></select></div>
                 <div class="ga-filter-inline-action">
@@ -107,16 +107,15 @@
                             <option value="">select semester</option>
                             <option>First</option>
                             <option>Second</option>
-                            <option>Summer</option>
                         </select>
                     </div>
                     <div class="req-modal-field-group">
-                        <label class="req-modal-label">PERIOD ID:</label>
+                        <label class="req-modal-label">PERIOD:</label>
                         <select class="req-modal-input" id="gaNewCompPeriod">
-                            <option value="">select all</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
+                            <option value="">select period</option>
+                            <option>Prelim</option>
+                            <option>Midterm</option>
+                            <option>Final</option>
                         </select>
                     </div>
                 </div>

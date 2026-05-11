@@ -36,6 +36,7 @@
                     <th class="sched-th">Lab Units</th>
                     <th class="sched-th">Grades</th>
                     <th class="sched-th">Remarks</th>
+                    <th class="sched-th">Form</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,10 +57,13 @@
                         <td class="sched-td">{{ $labUnits }}</td>
                         <td class="sched-td">{{ number_format((float) $row->final_average, 2) }}</td>
                         <td class="sched-td {{ $remarksClass }}">{{ $row->remarks }}</td>
+                        <td class="sched-td">
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('student.forms.show', 'change-grade') }}?grade_id={{ $row->id }}">Change Grade</a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td class="sched-td" colspan="7">No grade records found for this student.</td>
+                        <td class="sched-td" colspan="8">No grade records found for this student.</td>
                     </tr>
                 @endforelse
             </tbody>

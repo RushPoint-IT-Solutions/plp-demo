@@ -206,7 +206,7 @@
         }
 
         if (isLoading && els.body) {
-            els.body.innerHTML = '<tr><td colspan="9">Loading slots...</td></tr>';
+            els.body.innerHTML = '<tr><td colspan="10">Loading slots...</td></tr>';
         }
     }
 
@@ -259,7 +259,7 @@
         els.body.innerHTML = '';
 
         if (!ROWS.length) {
-            els.body.innerHTML = '<tr><td colspan="9">No slots found.</td></tr>';
+            els.body.innerHTML = '<tr><td colspan="10">No slots found.</td></tr>';
             return;
         }
 
@@ -268,6 +268,10 @@
             var statusLabel = normalizeText(row.status_label) || 'Open';
             var statusClass = getStatusClass(percentage, statusLabel);
             var tr = document.createElement('tr');
+            tr.setAttribute('data-sm-id', row.id || '');
+            tr.setAttribute('data-sm-total', row.total_slots || 0);
+            tr.setAttribute('data-sm-enrolled', row.enrolled_slots || 0);
+            tr.setAttribute('data-sm-label', escapeHtml(row.section) + ' / ' + escapeHtml(row.subject));
 
             tr.innerHTML =
                 '<td>' + escapeHtml(row.school_year) + '</td>' +
@@ -276,7 +280,7 @@
                 '<td>' + escapeHtml(row.section) + '</td>' +
                 '<td>' + escapeHtml(row.subject) + '</td>' +
                 '<td>' + escapeHtml(row.schedule) + '</td>' +
-                '<td class="sm-number-cell">' + escapeHtml(row.total_slots) + '</td>' +
+                '<td class="sm-number-cell sm-total-slots">' + escapeHtml(row.total_slots) + '</td>' +
                 '<td class="sm-number-cell">' + escapeHtml(row.enrolled_slots) + '</td>' +
                 '<td>' +
                     '<div class="slot-status-wrap">' +
@@ -286,6 +290,12 @@
                         '<span class="slot-pct ' + statusClass + '">' + percentage + '%</span>' +
                         '<span class="slot-status-label ' + statusClass + '">' + escapeHtml(statusLabel) + '</span>' +
                     '</div>' +
+                '</td>' +
+                '<td style="text-align:center;">' +
+                    '<button type="button" class="sm-edit-slots-btn" data-sm-row="' + escapeHtml(row.id || '') + '" ' +
+                        'style="font-size:0.72rem; font-weight:700; color:#006837; background:none; border:1px solid #006837; border-radius:4px; padding:3px 10px; cursor:pointer; white-space:nowrap;">' +
+                        'Edit Slots' +
+                    '</button>' +
                 '</td>';
 
             els.body.appendChild(tr);
@@ -518,6 +528,74 @@
                 openReport(REPORT_CLOSED_URL);
             });
         }
+    }
+
+    // Edit Slots modal wiring
+    var smEditModal = document.getElementById('smEditSlotsModal');
+    var smEditInput = document.getElementById('smEditSlotsInput');
+    var smEditEnrolled = document.getElementById('smEditEnrolledDisplay');
+    var smEditContext = document.getElementById('smEditSlotsContext');
+    var smSaveBtn = document.getElementById('smEditSlotsSaveBtn');
+    var smActiveRow = null;
+    var UPDATE_URL_TEMPLATE = PAGE.getAttribute('data-update-url-template') || '';
+    var SM_CSRF = PAGE.getAttribute('data-csrf') || '';
+
+    if (els.body) {
+        els.body.addEventListener('click', function (event) {
+            var btn = event.target.closest('.sm-edit-slots-btn');
+            if (!btn) return;
+            var rowId = btn.getAttribute('data-sm-row');
+            smActiveRow = document.querySelector('tr[data-sm-id="' + rowId + '"]');
+            if (!smActiveRow) return;
+
+            if (smEditContext) smEditContext.textContent = smActiveRow.getAttribute('data-sm-label') || '-';
+            if (smEditInput) smEditInput.value = smActiveRow.getAttribute('data-sm-total') || '';
+            if (smEditEnrolled) smEditEnrolled.value = smActiveRow.getAttribute('data-sm-enrolled') || '0';
+            if (smEditModal) smEditModal.style.display = 'flex';
+        });
+    }
+
+    if (smSaveBtn) {
+        smSaveBtn.addEventListener('click', function () {
+            if (!smActiveRow) return;
+            var newSlots = parseInt(smEditInput ? smEditInput.value : '', 10);
+            if (isNaN(newSlots) || newSlots < 0) {
+                alert('Please enter a valid number of slots.');
+                return;
+            }
+            var rowId = smActiveRow.getAttribute('data-sm-id');
+            var url = UPDATE_URL_TEMPLATE.replace('__ID__', rowId);
+
+            smSaveBtn.disabled = true;
+            smSaveBtn.textContent = 'Saving...';
+
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': SM_CSRF,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ total_slots: newSlots })
+            })
+            .then(function (res) { return res.json(); })
+            .then(function () {
+                smActiveRow.setAttribute('data-sm-total', newSlots);
+                var totalCell = smActiveRow.querySelector('.sm-total-slots');
+                if (totalCell) totalCell.textContent = newSlots;
+                if (smEditModal) smEditModal.style.display = 'none';
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Slots updated successfully.');
+                }
+            })
+            .catch(function () {
+                alert('Unable to update slots. Please try again.');
+            })
+            .finally(function () {
+                smSaveBtn.disabled = false;
+                smSaveBtn.textContent = 'Save';
+            });
+        });
     }
 
     bindEvents();

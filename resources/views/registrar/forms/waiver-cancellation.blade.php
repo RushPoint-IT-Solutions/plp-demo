@@ -171,6 +171,16 @@
                 <input type="text" id="wceEditYear" class="req-modal-input">
             </div>
         </div>
+        <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+            <div class="req-modal-field-group">
+                <label class="req-modal-label">Semester</label>
+                <select id="wceEditSemester" class="req-modal-input">
+                    <option value="First">First</option>
+                    <option value="Second">Second</option>
+                    <option value="Summer">Summer</option>
+                </select>
+            </div>
+        </div>
         <div class="req-modal-actions" style="margin-top:14px;">
             <button type="button" class="req-btn-cancel" onclick="wceCloseModal('wceEditModal')">Cancel</button>
             <button type="button" class="req-btn-save" onclick="wceSaveEdit()">Save</button>

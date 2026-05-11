@@ -22,6 +22,7 @@ class Applicant extends Model
         'permanent_municipality', 'permanent_province', 'permanent_region',
         'permanent_location_address_id',
         'exam_date', 'exam_room', 'exam_result_status', 'exam_score',
+        'interview_date', 'interview_room', 'interview_status', 'medical_clearance_status',
         'exam_result_status_id',
         'application_status', 'application_draft_step', 'application_submitted_at', 'application_portal_stage',
         'application_status_id',
@@ -31,6 +32,7 @@ class Applicant extends Model
     protected $casts = [
         'date_of_birth'   => 'date',
         'exam_date'       => 'datetime',
+        'interview_date'  => 'datetime',
         'same_as_present' => 'boolean',
         'application_submitted_at' => 'datetime',
         'application_portal_stage' => 'integer',

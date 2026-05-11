@@ -1678,6 +1678,8 @@ class AdminToolsController extends Controller
 
     private function fetchAccessControlMetadata(): array
     {
+        $this->ensureFriendlyAccessControlModules();
+
         $moduleRows = AccessControlModule::query()
             ->where('is_active', true)
             ->orderBy('sort_order')
@@ -1722,6 +1724,242 @@ class AdminToolsController extends Controller
         ];
     }
 
+    private function ensureFriendlyAccessControlModules(): void
+    {
+        if (!Schema::hasTable('access_control_modules')) {
+            return;
+        }
+
+        $now = now();
+        $moduleTree = $this->friendlyAccessControlModuleTree();
+        $rootIds = [];
+
+        foreach ($moduleTree as $root) {
+            DB::table('access_control_modules')->updateOrInsert(
+                ['code' => $root['code']],
+                [
+                    'name' => $root['name'],
+                    'parent_id' => null,
+                    'sort_order' => $root['sort_order'],
+                    'is_active' => true,
+                    'updated_at' => $now,
+                ]
+            );
+
+            $rootIds[$root['code']] = (int) DB::table('access_control_modules')
+                ->where('code', $root['code'])
+                ->value('id');
+        }
+
+        foreach ($moduleTree as $root) {
+            $parentId = $rootIds[$root['code']] ?? null;
+            if (!$parentId) {
+                continue;
+            }
+
+            foreach ($root['children'] as $index => $child) {
+                DB::table('access_control_modules')->updateOrInsert(
+                    ['code' => $child['code']],
+                    [
+                        'name' => $child['name'],
+                        'parent_id' => $parentId,
+                        'sort_order' => (($index + 1) * 10),
+                        'is_active' => true,
+                        'updated_at' => $now,
+                    ]
+                );
+            }
+        }
+
+        DB::table('access_control_modules')
+            ->whereIn('code', ['process', 'registrar', 'services', 'admin_tools'])
+            ->update([
+                'is_active' => false,
+                'updated_at' => $now,
+            ]);
+    }
+
+    private function friendlyAccessControlModuleTree(): array
+    {
+        return [
+            [
+                'code' => 'registrar_workspace',
+                'name' => 'Registrar Workspace',
+                'sort_order' => 5,
+                'children' => [
+                    ['code' => 'registrar_dashboard', 'name' => 'Dashboard'],
+                ],
+            ],
+            [
+                'code' => 'admissions',
+                'name' => 'Admissions',
+                'sort_order' => 10,
+                'children' => [
+                    ['code' => 'admissions_application_list', 'name' => 'Application List'],
+                    ['code' => 'admissions_document_submission', 'name' => 'Document Submission'],
+                    ['code' => 'admissions_approval_status', 'name' => 'Approval Status'],
+                    ['code' => 'admissions_exam_schedule', 'name' => 'Exam Schedule'],
+                    ['code' => 'admissions_exam_interview_scheduling', 'name' => 'Exam & Interview Scheduling'],
+                    ['code' => 'admissions_requirements', 'name' => 'Requirements'],
+                    ['code' => 'admissions_batch_upload_photos', 'name' => 'Batch Upload Photos'],
+                    ['code' => 'admissions_citizenship', 'name' => 'Citizenship'],
+                    ['code' => 'admissions_religion', 'name' => 'Religion'],
+                    ['code' => 'admissions_exam_category', 'name' => 'Exam Category'],
+                ],
+            ],
+            [
+                'code' => 'student_records',
+                'name' => 'Student Records',
+                'sort_order' => 20,
+                'children' => [
+                    ['code' => 'student_records_student_list', 'name' => 'Student List'],
+                    ['code' => 'student_records_enrollment_list', 'name' => 'Enrollment List'],
+                    ['code' => 'student_records_clinic_records', 'name' => 'Clinic Records'],
+                    ['code' => 'student_records_discipline', 'name' => 'Student Discipline'],
+                    ['code' => 'student_records_family', 'name' => 'Family Records'],
+                    ['code' => 'student_records_change_password', 'name' => 'Change Password'],
+                ],
+            ],
+            [
+                'code' => 'communication',
+                'name' => 'Communication',
+                'sort_order' => 25,
+                'children' => [
+                    ['code' => 'communication_ticketing_system', 'name' => 'Ticketing System'],
+                    ['code' => 'communication_student_inquiries', 'name' => 'Student Inquiries, Requests, and Feedback'],
+                    ['code' => 'communication_stakeholders', 'name' => 'Stakeholder Communication'],
+                    ['code' => 'communication_messages_module', 'name' => 'Messages Module'],
+                    ['code' => 'communication_email_templates', 'name' => 'Email Notifications & Templates'],
+                    ['code' => 'communication_complaints_concerns', 'name' => 'Handling Complaints and Concerns'],
+                ],
+            ],
+            [
+                'code' => 'academics',
+                'name' => 'Academics',
+                'sort_order' => 30,
+                'children' => [
+                    ['code' => 'academics_program_file', 'name' => 'Program File'],
+                    ['code' => 'academics_subject_file', 'name' => 'Course File'],
+                    ['code' => 'academics_curriculum_file', 'name' => 'Curriculum File'],
+                    ['code' => 'academics_curriculum_year_tracking', 'name' => 'Curriculum Year Tracking'],
+                    ['code' => 'academics_prerequisites', 'name' => 'Pre-requisites'],
+                    ['code' => 'academics_room_file', 'name' => 'Room File'],
+                    ['code' => 'academics_room_section_offering_management', 'name' => 'Room & Section Offering Management'],
+                    ['code' => 'academics_coordination_deans_faculty', 'name' => 'Coordination with Deans & Faculty'],
+                    ['code' => 'academics_section_offering', 'name' => 'Section Offering'],
+                    ['code' => 'academics_class_schedule_preparation', 'name' => 'Class Schedule Preparation'],
+                    ['code' => 'academics_slot_monitoring', 'name' => 'Slot Monitoring & Editing'],
+                    ['code' => 'academics_section_merging', 'name' => 'Section Merging'],
+                    ['code' => 'academics_class_list', 'name' => 'Class List'],
+                    ['code' => 'academics_attendance', 'name' => 'Attendance'],
+                    ['code' => 'academics_faculty_loads', 'name' => 'Faculty Loads'],
+                    ['code' => 'academics_grading_system', 'name' => 'Grading System'],
+                    ['code' => 'academics_grading_periods', 'name' => 'Grading Periods'],
+                    ['code' => 'academics_grading_components', 'name' => 'Grading Components'],
+                    ['code' => 'academics_transmutation_table', 'name' => 'Transmutation Table'],
+                    ['code' => 'academics_incomplete_failing_grades', 'name' => 'Incomplete & Failing Grades'],
+                    ['code' => 'academics_deficiency', 'name' => 'Deficiency'],
+                    ['code' => 'academics_scholastic_comments', 'name' => 'Scholastic Comments'],
+                ],
+            ],
+            [
+                'code' => 'faculty',
+                'name' => 'Faculty',
+                'sort_order' => 40,
+                'children' => [
+                    ['code' => 'faculty_directory', 'name' => 'Faculty Directory'],
+                    ['code' => 'faculty_faculty_loads', 'name' => 'Faculty Loads'],
+                    ['code' => 'faculty_class_list', 'name' => 'Class List'],
+                    ['code' => 'faculty_grading_sheets', 'name' => 'Grading Sheets'],
+                    ['code' => 'faculty_evaluation', 'name' => 'Faculty Evaluation'],
+                    ['code' => 'faculty_messaging', 'name' => 'Messaging'],
+                ],
+            ],
+            [
+                'code' => 'student_portal',
+                'name' => 'Student Portal',
+                'sort_order' => 45,
+                'children' => [
+                    ['code' => 'student_portal_dashboard', 'name' => 'Dashboard'],
+                    ['code' => 'student_portal_profile', 'name' => 'Profile'],
+                    ['code' => 'student_portal_grades', 'name' => 'Grades'],
+                    ['code' => 'student_portal_forms', 'name' => 'Forms & Requests'],
+                    ['code' => 'student_portal_help_center', 'name' => 'Help Center'],
+                ],
+            ],
+            [
+                'code' => 'applicant_portal',
+                'name' => 'Applicant Portal',
+                'sort_order' => 46,
+                'children' => [
+                    ['code' => 'applicant_portal_dashboard', 'name' => 'Dashboard'],
+                    ['code' => 'applicant_portal_application', 'name' => 'Application'],
+                    ['code' => 'applicant_portal_requirements', 'name' => 'Requirements'],
+                    ['code' => 'applicant_portal_help_center', 'name' => 'Help Center'],
+                ],
+            ],
+            [
+                'code' => 'parent_portal',
+                'name' => 'Parent Portal',
+                'sort_order' => 47,
+                'children' => [
+                    ['code' => 'parent_portal_dashboard', 'name' => 'Dashboard'],
+                    ['code' => 'parent_portal_grades', 'name' => 'Grades'],
+                    ['code' => 'parent_portal_help_center', 'name' => 'Help Center'],
+                    ['code' => 'parent_portal_contact_us', 'name' => 'Contact Us'],
+                ],
+            ],
+            [
+                'code' => 'documents_forms',
+                'name' => 'Documents & Forms',
+                'sort_order' => 50,
+                'children' => [
+                    ['code' => 'documents_forms_diploma', 'name' => 'Diploma'],
+                    ['code' => 'documents_forms_copy_of_grades', 'name' => 'Copy of Grades'],
+                    ['code' => 'documents_forms_registration_certificate', 'name' => 'Certificate of Registration'],
+                    ['code' => 'documents_forms_official_grade_report', 'name' => 'Official Grade Report'],
+                    ['code' => 'documents_forms_honorable_dismissal', 'name' => 'Honorable Dismissal'],
+                    ['code' => 'documents_forms_certificates', 'name' => 'Certificates'],
+                    ['code' => 'documents_forms_leave_of_absence', 'name' => 'Leave of Absence'],
+                    ['code' => 'documents_forms_cross_enroll', 'name' => 'Permission to Cross-Enroll'],
+                    ['code' => 'documents_forms_f137a', 'name' => 'Request Form F137A'],
+                    ['code' => 'documents_forms_graduation_clearance', 'name' => 'Graduation Clearance'],
+                    ['code' => 'documents_forms_waiver_cancellation', 'name' => 'Waiver & Cancellation'],
+                    ['code' => 'documents_forms_citizens_charter', 'name' => 'Citizen\'s Charter'],
+                ],
+            ],
+            [
+                'code' => 'reports',
+                'name' => 'Reports',
+                'sort_order' => 60,
+                'children' => [
+                    ['code' => 'reports_academic_reports', 'name' => 'Academic Reports'],
+                    ['code' => 'reports_certifications', 'name' => 'Certifications'],
+                    ['code' => 'reports_graduation_tagging', 'name' => 'Graduation Tagging'],
+                    ['code' => 'reports_alumni_tracker', 'name' => 'Alumni Tracker'],
+                    ['code' => 'reports_guidance_reports', 'name' => 'Guidance Reports'],
+                ],
+            ],
+            [
+                'code' => 'system',
+                'name' => 'System',
+                'sort_order' => 70,
+                'children' => [
+                    ['code' => 'system_configuration', 'name' => 'Configuration'],
+                    ['code' => 'system_academic_calendar', 'name' => 'Academic Calendar'],
+                    ['code' => 'system_announcements', 'name' => 'Announcements'],
+                    ['code' => 'system_user_accounts', 'name' => 'User Accounts'],
+                    ['code' => 'system_report_access', 'name' => 'Report Access'],
+                    ['code' => 'system_faculty_file', 'name' => 'Faculty File'],
+                    ['code' => 'system_student_profile', 'name' => 'Student Profile'],
+                    ['code' => 'system_student_grade_file', 'name' => 'Student Grade File'],
+                    ['code' => 'system_student_update', 'name' => 'Student Update'],
+                    ['code' => 'system_audit_trail', 'name' => 'Audit Trail'],
+                ],
+            ],
+        ];
+    }
+
     private function buildDefaultUserAccessMatrix(string $moduleCode, array $modules, array $permissionTypes): array
     {
         $matrix = [];
@@ -1746,15 +1984,34 @@ class AdminToolsController extends Controller
             return $matrix;
         }
 
-        if (!array_key_exists($normalizedModuleCode, $matrix)) {
-            return $matrix;
+        $rolePrefixes = [
+            'faculty' => ['faculty_', 'academics_grading_', 'academics_class_', 'academics_attendance'],
+            'student' => ['student_portal_'],
+            'applicant' => ['applicant_portal_'],
+            'parent' => ['parent_portal_'],
+        ];
+
+        $prefixes = $rolePrefixes[$normalizedModuleCode] ?? [];
+        if (empty($prefixes) && array_key_exists($normalizedModuleCode, $matrix)) {
+            $prefixes = [$normalizedModuleCode];
         }
 
-        if (array_key_exists('view', $matrix[$normalizedModuleCode])) {
-            $matrix[$normalizedModuleCode]['view'] = true;
-        }
-        if (array_key_exists('edit', $matrix[$normalizedModuleCode])) {
-            $matrix[$normalizedModuleCode]['edit'] = true;
+        foreach ($matrix as $code => $actions) {
+            $shouldAllow = false;
+            foreach ($prefixes as $prefix) {
+                if ((string) $code === (string) $prefix || strpos((string) $code, (string) $prefix) === 0) {
+                    $shouldAllow = true;
+                    break;
+                }
+            }
+
+            if (!$shouldAllow) {
+                continue;
+            }
+
+            foreach ($actions as $permissionCode => $flag) {
+                $matrix[$code][$permissionCode] = true;
+            }
         }
 
         return $matrix;

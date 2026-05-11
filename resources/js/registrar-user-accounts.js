@@ -176,17 +176,26 @@
     function uaDesiredRootOrder(code) {
         var normalized = uaNormalize(code).replace(/\s+/g, '_');
 
-        if (normalized === 'admin_tools' || normalized === 'admintools' || normalized.indexOf('admin') !== -1) {
+        if (normalized === 'admissions') {
             return 0;
         }
-        if (normalized === 'process') {
+        if (normalized === 'student_records') {
             return 1;
         }
-        if (normalized === 'registrar') {
+        if (normalized === 'academics') {
             return 2;
         }
-        if (normalized === 'services' || normalized === 'service') {
+        if (normalized === 'faculty') {
             return 3;
+        }
+        if (normalized === 'documents_forms') {
+            return 4;
+        }
+        if (normalized === 'reports') {
+            return 5;
+        }
+        if (normalized === 'system' || normalized === 'admin_tools' || normalized === 'admintools' || normalized.indexOf('admin') !== -1) {
+            return 6;
         }
 
         return 99;
@@ -213,10 +222,13 @@
 
     function uaBuildSidebarModuleChildrenMap() {
         var map = {
-            admin_tools: [],
-            process: [],
-            registrar: [],
-            services: [],
+            admissions: [],
+            student_records: [],
+            academics: [],
+            faculty: [],
+            documents_forms: [],
+            reports: [],
+            system: [],
         };
 
         var nav = document.querySelector('.sidebar-nav');
@@ -230,14 +242,20 @@
             var title = titleNode ? uaNormalize(titleNode.textContent || '') : '';
             var key = '';
 
-            if (title === 'admin tools') {
-                key = 'admin_tools';
-            } else if (title === 'process') {
-                key = 'process';
-            } else if (title === 'registrar') {
-                key = 'registrar';
-            } else if (title === 'services') {
-                key = 'services';
+            if (title === 'admissions') {
+                key = 'admissions';
+            } else if (title === 'student records') {
+                key = 'student_records';
+            } else if (title === 'academics') {
+                key = 'academics';
+            } else if (title === 'faculty') {
+                key = 'faculty';
+            } else if (title === 'documents & forms') {
+                key = 'documents_forms';
+            } else if (title === 'reports') {
+                key = 'reports';
+            } else if (title === 'system' || title === 'admin tools') {
+                key = 'system';
             }
 
             if (!key) {

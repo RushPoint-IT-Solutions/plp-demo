@@ -64,16 +64,16 @@
                 <select class="gs-filter-select" id="gsTerm">
                     <option value="First">First</option>
                     <option value="Second" selected>Second</option>
-                    <option value="Summer">Summer</option>
                 </select>
             </div>
             <div class="gs-filter-group gs-filter-even">
                 <span class="gs-filter-label">STATUS</span>
                 <select class="gs-filter-select" id="gsStatus">
                     <option value="Status">Status</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Rejected">Rejected</option>
+                    <option value="Submitted for Dean Review">Submitted for Dean Review</option>
+                    <option value="Dean Approved">Dean Approved</option>
+                    <option value="Registrar Finalized">Registrar Finalized</option>
+                    <option value="Returned for Revision">Returned for Revision</option>
                 </select>
             </div>
         </div>
@@ -120,7 +120,7 @@
                         <th rowspan="2">Description</th>
                         <th rowspan="2">Faculty</th>
                         <th colspan="2" class="gs-date-group-header">Date Posted</th>
-                        <th rowspan="2">Approved By</th>
+                        <th rowspan="2">Current Owner</th>
                         <th rowspan="2">Status</th>
                         <th rowspan="2">Action</th>
                     </tr>
@@ -193,12 +193,16 @@
                         <th>Name</th>
                         <th style="width:38px;">FDA</th>
                         <th style="width:38px;">NA</th>
+                        <th id="gsPrelimHeader" class="gs-grade-header-cell" title="Click to open Prelim grading modal">
+                            <span class="gs-grade-head-title">PRELIM</span>
+                            <span class="gs-grade-head-hint">Click to open</span>
+                        </th>
                         <th id="gsMidtermHeader" class="gs-grade-header-cell" title="Click to open Midterm grading modal">
                             <span class="gs-grade-head-title">MIDTERM</span>
                             <span class="gs-grade-head-hint">Click to open</span>
                         </th>
                         <th id="gsFinalHeader" class="gs-grade-header-cell" title="Click to open Final grading modal">
-                            <span class="gs-grade-head-title">FINALS</span>
+                            <span class="gs-grade-head-title">FINAL</span>
                             <span class="gs-grade-head-hint">Click to open</span>
                         </th>
                         <th>C Rating</th>

@@ -233,6 +233,7 @@
     data-medical-upsert-url-template="{{ route('registrar.process.application.documents.upsert', ['applicant' => '__APPLICANT_ID__', 'registrarRequirement' => '__REQUIREMENT_ID__']) }}"
     data-print-url="{{ route('registrar.process.application.print') }}"
     data-bulk-update-url="{{ route('registrar.process.application.bulk-status-update') }}"
+    data-bulk-convert-url="{{ route('registrar.process.application.bulk-convert-to-student') }}"
     data-csrf-token="{{ csrf_token() }}"
 >
 
@@ -371,6 +372,9 @@
 
                 <div class="d-flex gap-2">
                     <button type="button" class="app-toolbar-btn app-toolbar-btn-primary" id="bulkUpdateStatusBtn">Apply</button>
+                    <button type="button" class="app-toolbar-btn" id="bulkConvertToStudentBtn" style="background:#1d4ed8; color:#fff; border:none; border-radius:6px; padding:0 16px; height:36px; font-weight:700; font-size:0.8rem; cursor:pointer; white-space:nowrap;">
+                        Convert to Student
+                    </button>
                     <button type="button" class="app-toolbar-btn app-toolbar-btn-cancel" id="bulkCancelBtn">Cancel</button>
                 </div>
             </div>
@@ -459,6 +463,98 @@
                     <p style="font-size: 0.95rem; color: #64748b; margin-bottom: 25px;">The selected applicants have been successfully updated.</p>
                     <button type="button" class="btn btn-primary" id="reloadAfterSuccess" style="background: #006837; border: none; font-weight: 700; border-radius: 8px; padding: 8px 30px; width: 100%;">Done</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Convert to Student Modal --}}
+    <div class="modal fade" id="convertToStudentModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:520px;">
+            <div class="modal-content" style="border-radius:14px; border:none; box-shadow:0 12px 32px rgba(0,0,0,0.14);">
+                <div class="modal-header" style="border-bottom:1px solid #f1f5f9; padding:20px 24px;">
+                    <h5 class="modal-title" style="font-weight:800; color:#1e293b;">Convert Applicants to Students</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close" style="background:none; border:none; font-size:1.5rem; color:#64748b;">&times;</button>
+                </div>
+                <div class="modal-body" style="padding:22px 24px; display:flex; flex-direction:column; gap:14px;">
+
+                    <p style="font-size:0.88rem; color:#475569; margin:0;">
+                        You are about to convert <strong id="convertCount" style="color:#1d4ed8;">0</strong> selected applicant(s) into students.
+                        Each will receive a student number and an official PLP email account.
+                    </p>
+
+                    {{-- Student Number info --}}
+                    <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:14px 16px;">
+                        <p style="font-size:0.72rem; font-weight:800; color:#0369a1; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+                            <svg style="vertical-align:-2px; margin-right:4px;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Student Number Format
+                        </p>
+                        <p style="font-size:0.86rem; color:#0c4a6e; margin:0 0 3px;"><strong>PLP - YYYY - 5-digit sequence</strong></p>
+                        <p style="font-size:0.78rem; color:#64748b; margin:0;">Example: <code style="background:#e0f2fe; border-radius:3px; padding:1px 5px; font-size:0.82rem;">PLP-2026-00001</code> &mdash; resets yearly, withdrawn numbers never reused.</p>
+                    </div>
+
+                    {{-- Email info --}}
+                    <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:14px 16px;">
+                        <p style="font-size:0.72rem; font-weight:800; color:#15803d; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">
+                            <svg style="vertical-align:-2px; margin-right:4px;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            Official PLP Email (Auto-Generated)
+                        </p>
+                        <p style="font-size:0.86rem; color:#14532d; margin:0 0 3px;"><strong>firstname.lastname@plp.edu.ph</strong></p>
+                        <p style="font-size:0.78rem; color:#64748b; margin:0;">Example: <code style="background:#dcfce7; border-radius:3px; padding:1px 5px; font-size:0.82rem;">juan.delacruz@plp.edu.ph</code> &mdash; a portal account will be created with this email. Default password is the student number.</p>
+                    </div>
+
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #f1f5f9; padding:16px 24px; gap:10px;">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-dismiss="modal" style="font-weight:700; border-radius:8px; padding:8px 20px;">Cancel</button>
+                    <button type="button" class="btn" id="executeConvertToStudent" style="background:#1d4ed8; color:#fff; border:none; font-weight:700; border-radius:8px; padding:8px 24px;">
+                        Confirm Convert
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Convert to Student Result Modal --}}
+    <div class="modal fade" id="convertToStudentResultModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width:680px;">
+            <div class="modal-content" style="border-radius:14px; border:none; box-shadow:0 12px 32px rgba(0,0,0,0.14);">
+
+                <div class="modal-header" style="border-bottom:1px solid #f1f5f9; padding:18px 24px; align-items:center; gap:12px;">
+                    <div style="width:38px; height:38px; background:#dcfce7; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div style="flex:1;">
+                        <h5 style="font-weight:800; color:#1e293b; margin:0; font-size:1rem;">Conversion Complete</h5>
+                        <p id="convertResultSummary" style="font-size:0.78rem; color:#64748b; margin:2px 0 0;"></p>
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close" style="background:none; border:none; font-size:1.4rem; color:#64748b; line-height:1;">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:0; max-height:380px; overflow-y:auto;">
+                    {{-- Results table injected by JS --}}
+                    <table style="width:100%; border-collapse:collapse;" id="convertResultTable">
+                        <thead>
+                            <tr style="background:#f8fafc; border-bottom:1px solid #e4ede8; position:sticky; top:0;">
+                                <th style="padding:10px 20px; font-size:0.69rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; text-align:left; white-space:nowrap;">Student Name</th>
+                                <th style="padding:10px 14px; font-size:0.69rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; text-align:left; white-space:nowrap;">Student No.</th>
+                                <th style="padding:10px 14px; font-size:0.69rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; text-align:left; white-space:nowrap;">Official Email</th>
+                                <th style="padding:10px 14px; width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="convertResultBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer" style="border-top:1px solid #f1f5f9; padding:14px 24px; gap:10px; justify-content:space-between;">
+                    <button type="button" id="copyAllEmailsBtn" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; padding:8px 16px; font-weight:700; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        Copy All Emails
+                    </button>
+                    <button type="button" class="btn" id="reloadAfterConvert" data-bs-dismiss="modal" data-dismiss="modal" style="background:#1d4ed8; color:#fff; border:none; font-weight:700; border-radius:8px; padding:8px 28px;">
+                        Done &amp; Refresh
+                    </button>
+                </div>
+
             </div>
         </div>
     </div>

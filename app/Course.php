@@ -15,6 +15,8 @@ class Course extends Model
         'college_id',
         'department_id',
         'description',
+        'total_units',
+        'academic_year',
         'program_file',
         'slots',
         'track_category',

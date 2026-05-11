@@ -303,8 +303,9 @@
 }
 
 .status-approved { background: #e6f7ef; color: #006837; }
-.status-review { background: #fff8e6; color: #b7791f; } /* Yellow for Review */
-.status-submitted { background: #e6f4ff; color: #0056b3; } /* Blue for Submitted */
+.status-review { background: #fff8e6; color: #b7791f; }
+.status-submitted { background: #e6f4ff; color: #0056b3; }
+.status-followup { background: #f3e8ff; color: #7c3aed; }
 .status-not-submitted, .status-missing { background: #fff5f5; color: #c53030; }
 
 .mc-item-actions {

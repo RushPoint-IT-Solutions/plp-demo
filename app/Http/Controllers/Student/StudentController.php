@@ -250,7 +250,38 @@ class StudentController extends Controller
             ? StudentProfile::where('student_no', $student->student_no)->first()
             : null;
 
-        return view($viewByCategory[$category], compact('student', 'profile'));
+        $changeGradeRows = collect();
+        $selectedChangeGrade = null;
+
+        if ($category === 'change-grade' && $student) {
+            $changeGradeRows = StudentSubjectGrade::with('subject.facultyModel')
+                ->where('student_id', $student->id)
+                ->where(function ($query) {
+                    $query->whereNotNull('midterm')
+                        ->orWhereNotNull('final')
+                        ->orWhereNotNull('final_average');
+                })
+                ->orderByDesc('updated_at')
+                ->get();
+
+            $requestedGradeId = (int) request('grade_id');
+            $requestedSubjectId = (int) request('subject_id');
+
+            $selectedChangeGrade = $changeGradeRows->first(function ($row) use ($requestedGradeId, $requestedSubjectId) {
+                if ($requestedGradeId > 0 && (int) $row->id === $requestedGradeId) {
+                    return true;
+                }
+
+                return $requestedSubjectId > 0 && (int) $row->subject_id === $requestedSubjectId;
+            }) ?: $changeGradeRows->first();
+        }
+
+        return view($viewByCategory[$category], compact(
+            'student',
+            'profile',
+            'changeGradeRows',
+            'selectedChangeGrade'
+        ));
     }
 
     /**

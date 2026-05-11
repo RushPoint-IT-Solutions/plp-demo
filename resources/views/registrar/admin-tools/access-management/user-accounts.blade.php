@@ -39,8 +39,10 @@
                                 <option value="">All</option>
                                 <option value="Student">Student</option>
                                 <option value="Applicant">Applicant</option>
+                                <option value="Parent">Parent</option>
                                 <option value="Registrar">Registrar</option>
                                 <option value="Faculty">Faculty</option>
+                                <option value="Admin">Admin</option>
                             </select>
                         </div>
                         <button type="button" class="ua-clear-btn" id="uaClearBtn">Clear Entries</button>
@@ -201,7 +203,7 @@
             </table>
         </div>
 
-        <p class="ua-access-footnote" id="uaAccessFootnote">UI-only preview for now. Access values are kept in-memory until backend mapping is wired.</p>
+        <p class="ua-access-footnote" id="uaAccessFootnote">Access settings are saved for this user and override the role defaults.</p>
 
         <div class="ua-bottom-actions">
             <button type="button" class="req-btn-cancel" id="uaAccessCancelBtn">Cancel</button>

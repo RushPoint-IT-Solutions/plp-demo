@@ -65,12 +65,20 @@ class GradeRule extends Model
 
     public function syncPeriods(array $periodNames)
     {
+        $allowedPeriods = ['Prelim', 'Midterm', 'Final'];
+
         $cleanNames = collect($periodNames)
             ->map(function ($value) {
                 return trim((string) $value);
             })
+            ->map(function ($value) {
+                return $value === 'Finals' ? 'Final' : $value;
+            })
             ->filter(function ($value) {
                 return $value !== '';
+            })
+            ->filter(function ($value) use ($allowedPeriods) {
+                return in_array($value, $allowedPeriods, true);
             })
             ->unique()
             ->values();

@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const codeInput = document.getElementById('pfEditProgramCode');
             const nameInput = document.getElementById('pfEditProgramName');
             const departmentInput = document.getElementById('pfEditDepartment');
+            const degreeTypeInput = document.getElementById('pfEditDegreeType');
+            const totalUnitsInput = document.getElementById('pfEditTotalUnits');
+            const academicYearInput = document.getElementById('pfEditAcademicYear');
             const accreditationInput = document.getElementById('pfEditAccreditation');
 
             if (codeInput) {
@@ -368,6 +371,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (departmentInput) {
                 departmentInput.value = trigger.getAttribute('data-department-id') || '';
+            }
+            if (degreeTypeInput) {
+                degreeTypeInput.value = trigger.getAttribute('data-degree-type') || 'Degree';
+            }
+            if (totalUnitsInput) {
+                totalUnitsInput.value = trigger.getAttribute('data-total-units') || '';
+            }
+            if (academicYearInput) {
+                academicYearInput.value = trigger.getAttribute('data-academic-year') || '';
             }
             if (accreditationInput) {
                 accreditationInput.value = trigger.getAttribute('data-accreditation') || 'Pending Review';
@@ -643,4 +655,4 @@ document.addEventListener('click', function (event) {
             overlay.style.display = 'none';
         }
     });
-});
+});

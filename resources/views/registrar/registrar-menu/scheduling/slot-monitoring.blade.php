@@ -1,7 +1,7 @@
 @extends('layouts.registrar')
 
-@section('title', 'PLP - Slot Monitoring')
-@section('page-title', 'SLOT MONITORING')
+@section('title', 'PLP - Slot Monitoring & Editing')
+@section('page-title', 'SLOT MONITORING & EDITING')
 @section('body-class', 'page-slot-monitoring')
 
 @section('content')
@@ -13,6 +13,8 @@
     data-report-under20-url="{{ route('registrar.registrar-menu.scheduling.slot-monitoring.report', ['reportType' => 'under-20']) }}"
     data-report-dissolved-url="{{ route('registrar.registrar-menu.scheduling.slot-monitoring.report', ['reportType' => 'dissolved']) }}"
     data-report-closed-url="{{ route('registrar.registrar-menu.scheduling.slot-monitoring.report', ['reportType' => 'closed']) }}"
+    data-update-url-template="{{ route('registrar.registrar-menu.scheduling.slot-monitoring.update', ['slotMonitoring' => '__ID__']) }}"
+    data-csrf="{{ csrf_token() }}"
 >
 
     <div class="sched-filter-bar">
@@ -72,6 +74,7 @@
                     <th>Total Slots</th>
                     <th>Enrolled</th>
                     <th>Status</th>
+                    <th style="width:70px; text-align:center;">Action</th>
                 </tr>
             </thead>
             <tbody id="smBody"></tbody>
@@ -91,6 +94,26 @@
     </div>
 
 </div>
+{{-- Edit Slots Modal --}}
+<div class="req-modal-overlay" id="smEditSlotsModal" style="display:none;" onclick="if(event.target===this)document.getElementById('smEditSlotsModal').style.display='none'">
+    <div class="req-modal-box" style="max-width:420px;">
+        <h3 class="req-modal-title">EDIT TOTAL SLOTS</h3>
+        <div style="margin-bottom:10px; font-size:0.82rem; color:#475569;" id="smEditSlotsContext">-</div>
+        <div class="req-modal-field-group" style="margin-top:8px;">
+            <label class="req-modal-label">Total Slots</label>
+            <input type="number" id="smEditSlotsInput" class="req-modal-input" min="0" placeholder="e.g. 40">
+        </div>
+        <div class="req-modal-field-group" style="margin-top:10px;">
+            <label class="req-modal-label">Currently Enrolled</label>
+            <input type="text" id="smEditEnrolledDisplay" class="req-modal-input" readonly style="background:#f1f5f9; color:#64748b; cursor:not-allowed;">
+        </div>
+        <div class="req-modal-actions" style="margin-top:18px;">
+            <button type="button" class="req-btn-cancel" onclick="document.getElementById('smEditSlotsModal').style.display='none'">Cancel</button>
+            <button type="button" class="req-btn-save" id="smEditSlotsSaveBtn">Save</button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')

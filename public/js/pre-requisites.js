@@ -8,15 +8,31 @@
     var LIST_URL = page.getAttribute('data-list-url') || '';
     var DETAIL_URL_TEMPLATE = page.getAttribute('data-detail-url-template') || '';
     var SAVE_URL_TEMPLATE = page.getAttribute('data-save-url-template') || '';
+    var CURRICULUM_URL = page.getAttribute('data-curriculum-url') || '';
     var CSRF_TOKEN = page.getAttribute('data-csrf-token') || '';
 
     var courseSelect = document.getElementById('prereqCourse');
     var curriculumYearSelect = document.getElementById('prereqYear');
     var viewListButton = document.getElementById('btnViewList');
     var downloadButton = document.getElementById('prereqDownloadBtn');
+    var addCourseButton = document.getElementById('prereqAddCourseBtn');
+    var addCourseTopButton = document.getElementById('prereqAddCourseTopBtn');
     var saveButton = document.getElementById('prereqSaveBtn');
     var backButton = document.getElementById('prereqBackBtn');
     var subjectDownloadButton = document.getElementById('prereqSubjectDownloadBtn');
+    var addCourseModal = document.getElementById('prereqAddCourseModal');
+    var addCourseForm = document.getElementById('prereqAddCourseForm');
+    var addCourseCloseButton = document.getElementById('prereqAddCourseCloseBtn');
+    var addCourseCancelButton = document.getElementById('prereqAddCourseCancelBtn');
+    var addCourseSaveButton = document.getElementById('prereqAddCourseSaveBtn');
+    var addCourseProgram = document.getElementById('prereqAddProgram');
+    var addCourseCurriculumYear = document.getElementById('prereqAddCurriculumYear');
+    var addCourseDateFrom = document.getElementById('prereqAddDateFrom');
+    var addCourseDateTo = document.getElementById('prereqAddDateTo');
+    var addCourseYearLevel = document.getElementById('prereqAddYearLevel');
+    var addCourseTerm = document.getElementById('prereqAddTerm');
+    var addCourseSearch = document.getElementById('prereqAddCourseSearch');
+    var addCourseList = document.getElementById('prereqAddCourseList');
 
     var listView = document.getElementById('prereqListView');
     var detailView = document.getElementById('prereqDetailView');
@@ -96,7 +112,7 @@
         var total = Number(state.listMeta.total || 0);
 
         pagination.hidden = total <= Number(state.perPage);
-        pageInfoLabel.textContent = 'Page ' + currentPage + ' of ' + lastPage + ' (' + total + ' subject(s))';
+        pageInfoLabel.textContent = 'Page ' + currentPage + ' of ' + lastPage + ' (' + total + ' course(s))';
         prevPageButton.disabled = currentPage <= 1;
         nextPageButton.disabled = currentPage >= lastPage;
     }
@@ -107,6 +123,107 @@
         }
 
         return template.replace('__CURRICULUM_SUBJECT_ID__', String(id));
+    }
+
+    function getRequisiteLabel(typeCode) {
+        if (typeCode === 'pre') {
+            return 'Pre-Requisite';
+        }
+
+        if (typeCode === 'co') {
+            return 'Co-Requisite';
+        }
+
+        return 'Equivalent Course';
+    }
+
+    function syncAddCourseModalDefaults() {
+        if (addCourseProgram && courseSelect && courseSelect.value) {
+            addCourseProgram.value = String(courseSelect.value || '');
+        }
+
+        if (addCourseCurriculumYear && curriculumYearSelect && curriculumYearSelect.value) {
+            addCourseCurriculumYear.value = String(curriculumYearSelect.value || '');
+        }
+    }
+
+    function updateAddCourseSaveState() {
+        if (!addCourseSaveButton) {
+            return;
+        }
+
+        var hasProgram = !!(addCourseProgram && addCourseProgram.value);
+        var hasCurriculumYear = !!(addCourseCurriculumYear && String(addCourseCurriculumYear.value || '').trim());
+        var hasDates = !!(addCourseDateFrom && addCourseDateFrom.value && addCourseDateTo && addCourseDateTo.value);
+        var hasYearLevel = !!(addCourseYearLevel && addCourseYearLevel.value);
+        var hasTerm = !!(addCourseTerm && addCourseTerm.value);
+        var hasCourse = !!(addCourseList && addCourseList.querySelector('input[type="checkbox"]:checked'));
+
+        addCourseSaveButton.disabled = !(hasProgram && hasCurriculumYear && hasDates && hasYearLevel && hasTerm && hasCourse);
+    }
+
+    function filterAddCourseOptions() {
+        if (!addCourseSearch || !addCourseList) {
+            return;
+        }
+
+        var query = String(addCourseSearch.value || '').trim().toLowerCase();
+        addCourseList.querySelectorAll('.prereq-add-course-option').forEach(function (option) {
+            var text = option.getAttribute('data-course-text') || '';
+            option.hidden = !!query && text.indexOf(query) === -1;
+        });
+    }
+
+    function maybeUpdateAddCurriculumYearFromDates() {
+        if (!addCourseCurriculumYear || !addCourseDateFrom || !addCourseDateTo) {
+            updateAddCourseSaveState();
+            return;
+        }
+
+        var fromValue = String(addCourseDateFrom.value || '');
+        var toValue = String(addCourseDateTo.value || '');
+        if (!fromValue || !toValue) {
+            updateAddCourseSaveState();
+            return;
+        }
+
+        var fromYear = fromValue.slice(0, 4);
+        var toYear = toValue.slice(0, 4);
+        if (/^\d{4}$/.test(fromYear) && /^\d{4}$/.test(toYear)) {
+            addCourseCurriculumYear.value = fromYear + '-' + toYear;
+        }
+
+        updateAddCourseSaveState();
+    }
+
+    function openAddCourseModal() {
+        if (!addCourseModal) {
+            if (CURRICULUM_URL) {
+                window.location.href = CURRICULUM_URL;
+            }
+            return;
+        }
+
+        syncAddCourseModalDefaults();
+        filterAddCourseOptions();
+        updateAddCourseSaveState();
+        addCourseModal.hidden = false;
+        addCourseModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('prereq-modal-open');
+
+        if (addCourseSearch) {
+            addCourseSearch.focus();
+        }
+    }
+
+    function closeAddCourseModal() {
+        if (!addCourseModal) {
+            return;
+        }
+
+        addCourseModal.hidden = true;
+        addCourseModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('prereq-modal-open');
     }
 
     function escapeHtml(value) {
@@ -256,12 +373,12 @@
                 html += '<div class="prereq-sem-label">' + escapeHtml(semester.label) + '</div>';
                 html += '<div class="prereq-table-wrap">';
                 html += '<table class="prereq-table">';
-                html += '<thead><tr><th>Subject Code</th><th>Description</th><th>Credited Units</th><th>Pre-requisite</th><th>Co-requisite</th><th>Equivalent Subject</th></tr></thead>';
+                html += '<thead><tr><th>Course Code</th><th>Description</th><th>Credited Units</th><th>Pre-requisite</th><th>Co-requisite</th><th>Equivalent Course</th><th class="prereq-action-col">Setup</th></tr></thead>';
                 html += '<tbody>';
 
                 var subjects = semester.subjects || [];
                 if (!subjects.length) {
-                    html += '<tr><td colspan="6" class="prereq-empty-msg">No List of Subject(s) yet for this Year Level Semester...</td></tr>';
+                    html += '<tr><td colspan="7" class="prereq-empty-msg">No list of course(s) yet for this year level and term. Use Add Course to build this curriculum first.</td></tr>';
                 } else {
                     subjects.forEach(function (row) {
                         html += '<tr class="prereq-row" data-curriculum-subject-id="' + row.curriculum_subject_id + '">';
@@ -271,6 +388,7 @@
                         html += '<td>' + escapeHtml(row.pre_requisite_text || 'None') + '</td>';
                         html += '<td>' + escapeHtml(row.co_requisite_text || 'None') + '</td>';
                         html += '<td>' + escapeHtml(row.equivalent_subject_text || 'None') + '</td>';
+                        html += '<td class="prereq-action-col"><button type="button" class="prereq-row-setup-btn" data-action="open-setup" data-curriculum-subject-id="' + row.curriculum_subject_id + '">Setup</button></td>';
                         html += '</tr>';
                     });
                 }
@@ -355,7 +473,7 @@
 
     function downloadSubjectPdf() {
         if (!state.currentSubject || !state.currentSubject.curriculum_subject_id) {
-            showMessage('Please open a subject first before downloading.', 'warning');
+            showMessage('Please open a course first before downloading.', 'warning');
             return;
         }
 
@@ -430,7 +548,7 @@
             })
             .catch(function (errorPayload) {
                 console.error(errorPayload);
-                showMessage(resolveErrorMessage(errorPayload, 'Unable to load subject detail.'), 'warning');
+                showMessage(resolveErrorMessage(errorPayload, 'Unable to load course detail.'), 'warning');
             });
     }
 
@@ -462,14 +580,14 @@
 
             html += '<div class="prereq-avail-item">';
             html += '<span>' + escapeHtml(subject.code) + ' - ' + escapeHtml(subject.description) + '</span>';
-            html += '<button type="button" class="prereq-arrow-btn" data-action="add-subject" data-type="' + typeCode + '" data-subject-id="' + subjectId + '">';
-            html += '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+            html += '<button type="button" class="prereq-add-btn" data-action="add-subject" data-type="' + typeCode + '" data-subject-id="' + subjectId + '">';
+            html += 'Add ' + escapeHtml(getRequisiteLabel(typeCode));
             html += '</button>';
             html += '</div>';
         });
 
         if (!html) {
-            html = '<div class="prereq-avail-empty">-select pre-requisite subject here-</div>';
+            html = '<div class="prereq-avail-empty">No available course matches this search.</div>';
         }
 
         container.innerHTML = html;
@@ -483,7 +601,7 @@
 
         var selectedIds = state.selected[typeCode] || [];
         if (!selectedIds.length) {
-            container.innerHTML = '';
+            container.innerHTML = '<div class="prereq-selected-empty">No ' + escapeHtml(getRequisiteLabel(typeCode).toLowerCase()) + ' selected yet.</div>';
             return;
         }
 
@@ -573,7 +691,7 @@
             })
             .catch(function (errorPayload) {
                 console.error(errorPayload);
-                showMessage(resolveErrorMessage(errorPayload, 'Unable to save pre-requisite mappings.'), 'warning');
+                showMessage(resolveErrorMessage(errorPayload, 'Unable to save pre/co-requisite mappings.'), 'warning');
             })
             .finally(function () {
                 setButtonLoading(saveButton, false);
@@ -587,6 +705,7 @@
                 state.selectedCurriculumYear = '';
                 state.listPage = 1;
                 updateCurriculumYearOptions();
+                syncAddCourseModalDefaults();
             });
         }
 
@@ -594,6 +713,7 @@
             curriculumYearSelect.addEventListener('change', function () {
                 state.selectedCurriculumYear = String(curriculumYearSelect.value || '');
                 state.listPage = 1;
+                syncAddCourseModalDefaults();
             });
         }
 
@@ -606,6 +726,66 @@
 
         if (downloadButton) {
             downloadButton.addEventListener('click', downloadListPdf);
+        }
+
+        if (addCourseButton) {
+            addCourseButton.addEventListener('click', openAddCourseModal);
+        }
+
+        if (addCourseTopButton) {
+            addCourseTopButton.addEventListener('click', openAddCourseModal);
+        }
+
+        [addCourseCloseButton, addCourseCancelButton].forEach(function (button) {
+            if (!button) {
+                return;
+            }
+
+            button.addEventListener('click', closeAddCourseModal);
+        });
+
+        if (addCourseModal) {
+            addCourseModal.addEventListener('click', function (event) {
+                if (event.target === addCourseModal) {
+                    closeAddCourseModal();
+                }
+            });
+        }
+
+        [addCourseProgram, addCourseCurriculumYear, addCourseYearLevel, addCourseTerm].forEach(function (input) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('change', updateAddCourseSaveState);
+            input.addEventListener('input', updateAddCourseSaveState);
+        });
+
+        [addCourseDateFrom, addCourseDateTo].forEach(function (input) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('change', maybeUpdateAddCurriculumYearFromDates);
+            input.addEventListener('input', maybeUpdateAddCurriculumYearFromDates);
+        });
+
+        if (addCourseSearch) {
+            addCourseSearch.addEventListener('input', filterAddCourseOptions);
+        }
+
+        if (addCourseList) {
+            addCourseList.addEventListener('change', updateAddCourseSaveState);
+        }
+
+        if (addCourseForm) {
+            addCourseForm.addEventListener('submit', function (event) {
+                updateAddCourseSaveState();
+                if (addCourseSaveButton && addCourseSaveButton.disabled) {
+                    event.preventDefault();
+                    showMessage('Please complete Program, Curriculum Year, Date, Year Level, Term, and at least one Course.', 'warning');
+                }
+            });
         }
 
         if (saveButton) {
@@ -645,6 +825,16 @@
 
         if (listContent) {
             listContent.addEventListener('click', function (event) {
+                var setupButton = event.target.closest('[data-action="open-setup"][data-curriculum-subject-id]');
+                if (setupButton) {
+                    var setupSubjectId = Number(setupButton.getAttribute('data-curriculum-subject-id'));
+                    if (setupSubjectId) {
+                        openDetailView(setupSubjectId);
+                    }
+
+                    return;
+                }
+
                 var row = event.target.closest('.prereq-row[data-curriculum-subject-id]');
                 if (!row) {
                     return;
@@ -705,6 +895,8 @@
         }
 
         updateCurriculumYearOptions();
+        syncAddCourseModalDefaults();
+        updateAddCourseSaveState();
         bindEvents();
 
         if (state.selectedCourseId && state.selectedCurriculumYear) {

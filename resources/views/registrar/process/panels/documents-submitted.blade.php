@@ -12,6 +12,7 @@
                     <option value="Pending">Pending Review</option>
                     <option value="Submitted">Submitted</option>
                     <option value="Verified">Verified / Approved</option>
+                    <option value="To be followed up">To be followed up</option>
                     <option value="Missing">Missing / Rejected</option>
                 </select>
             </div>
@@ -50,6 +51,7 @@
                         'Verified' => 'status-approved',
                         'Pending' => 'status-review',
                         'Submitted' => 'status-submitted',
+                        'To be followed up' => 'status-followup',
                         'Missing' => 'status-not-submitted'
                     ];
                 @endphp
@@ -134,6 +136,7 @@
                         <option value="Pending">Pending</option>
                         <option value="Submitted">Submitted</option>
                         <option value="Verified">Verified</option>
+                        <option value="To be followed up">To be followed up</option>
                         <option value="Missing">Missing</option>
                     </select>
                 </div>

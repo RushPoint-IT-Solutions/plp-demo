@@ -14,7 +14,7 @@
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
             </div>
-            <button type="button" class="apst-new-btn" data-ga-modal-open="gaNewPeriodModal">+ New Grading Period</button>
+            <button type="button" class="apst-new-btn" data-ga-modal-open="gaNewPeriodModal">+ New Grading Rule</button>
         </div>
 
         <div class="ga-table-wrap app-table-wrap">
@@ -58,7 +58,7 @@
 
         <div class="req-modal-overlay" id="gaNewPeriodModal" style="display:none;">
             <div class="req-modal-box" style="max-width:620px;">
-                <h3 class="req-modal-title" id="gaNewPeriodTitle">ADD GRADING PERIOD</h3>
+                <h3 class="req-modal-title" id="gaNewPeriodTitle">ADD GRADING RULE</h3>
                 <div class="req-modal-fields">
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">GRADE CODE</label>
@@ -76,8 +76,9 @@
                 <div class="req-modal-field-group" style="margin-top:12px;">
                     <label class="req-modal-label">INCLUDE IN PERIODS</label>
                     <div class="ga-choice-group ga-choice-group-periods">
+                        <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Prelim" checked> Prelim</label>
                         <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Midterm" checked> Midterm</label>
-                        <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Finals" checked> Finals</label>
+                        <label class="ga-check"><input type="checkbox" class="ga-new-period-check" value="Final" checked> Final</label>
                     </div>
                 </div>
                 <div class="req-modal-actions">

@@ -196,7 +196,7 @@
 
         if (el.confirmMergeBtn) {
             el.confirmMergeBtn.disabled = busy;
-            el.confirmMergeBtn.textContent = state.isMerging ? 'Merging...' : 'Yes, Merge Sections';
+            el.confirmMergeBtn.textContent = state.isMerging ? 'Merging...' : 'Yes, Merge Same Course & Year';
         }
     }
 
@@ -380,6 +380,10 @@
     function candidateRows(sideKey) {
         var isSource = sideKey === 'source';
         var oppositeSlot = isSource ? toInt(state.target.slot, 0) : toInt(state.source.slot, 0);
+        var oppositeSide = isSource ? state.target : state.source;
+        var oppositeRow = findRow(oppositeSlot);
+        var requiredCourse = oppositeRow ? toInt(oppositeRow.course_id, 0) : toInt(oppositeSide.course, 0);
+        var requiredYear = oppositeRow ? toInt(oppositeRow.year_level, 0) : toInt(oppositeSide.year, 0);
 
         return state.rows.filter(function (row) {
             if (isSource && !row.source_available) {
@@ -387,6 +391,14 @@
             }
 
             if (oppositeSlot > 0 && toInt(row.id, 0) === oppositeSlot) {
+                return false;
+            }
+
+            if (requiredCourse > 0 && toInt(row.course_id, 0) !== requiredCourse) {
+                return false;
+            }
+
+            if (requiredYear > 0 && toInt(row.year_level, 0) !== requiredYear) {
                 return false;
             }
 
@@ -996,6 +1008,14 @@
         if (toInt(sourceRow.course_id, 0) !== toInt(targetRow.course_id, 0)) {
             if (showToast) {
                 notify('Source and target must belong to the same program.', 'warning');
+            }
+
+            return false;
+        }
+
+        if (toInt(sourceRow.year_level, 0) !== toInt(targetRow.year_level, 0)) {
+            if (showToast) {
+                notify('Source and target must belong to the same year level.', 'warning');
             }
 
             return false;

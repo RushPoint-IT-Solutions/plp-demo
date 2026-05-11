@@ -17,10 +17,14 @@ class Subject extends Model
         'is_subject_file_record',
         'lec', 'lab',
         'is_core', 'is_applied', 'is_specialized',
+        'hours', 'course_type',
         'time_start', 'time_end', 'room', 'faculty',
         'faculty_id',
         'year_section', 'course', 'course_id', 'semester', 'school_year', 'academic_term_id',
         'grading_status', 'grading_status_id',
+        'submitted_at', 'dean_approved_by', 'dean_approved_at',
+        'registrar_finalized_by', 'registrar_finalized_at',
+        'grading_returned_by', 'grading_returned_at', 'grading_return_reason',
         'load_type', 'load_type_id', 'credited_tuition_units', 'load_hours', 'added_by',
     ];
 
@@ -29,6 +33,10 @@ class Subject extends Model
         'is_core' => 'boolean',
         'is_applied' => 'boolean',
         'is_specialized' => 'boolean',
+        'submitted_at' => 'datetime',
+        'dean_approved_at' => 'datetime',
+        'registrar_finalized_at' => 'datetime',
+        'grading_returned_at' => 'datetime',
     ];
 
         public function curriculumAssignments()

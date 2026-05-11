@@ -98,48 +98,50 @@
                     </tr>
                 </thead>
                 <tbody id="hdTableBody">
-                    <tr data-row-id="1">
+                    @forelse($honorableDismissalRows as $student)
+                    @php
+                        $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
+                        $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
+                        $schoolYear = trim((string) ($student->school_year ?: optional($student->academicTerm)->school_year));
+                        $semester = trim((string) ($student->semester ?: optional($student->academicTerm)->term));
+                        $section = trim((string) ($program ?: 'PROGRAM') . ' ' . (string) ($yearLevel ?: 'YEAR'));
+                    @endphp
+                    <tr data-row-id="{{ $student->id }}"
+                        data-school-year="{{ $schoolYear }}"
+                        data-semester="{{ $semester }}"
+                        data-hd-no="{{ $student->student_no ? 'HD-' . $student->student_no : '' }}"
+                        data-hd-date="{{ now()->format('F d, Y') }}">
                         <td style="text-align: center;"><input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()"></td>
-                        <td>17-0501</td>
-                        <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview(1)">Libo-on, Karen Marie Sitchon</button></td>
-                        <td>BSIT</td>
-                        <td>Fourth</td>
-                        <td>BSIT 4A</td>
+                        <td>{{ $student->student_no ?: '-' }}</td>
+                        <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
+                        <td>{{ $program ?: '-' }}</td>
+                        <td>{{ $yearLevel ?: '-' }}</td>
+                        <td>{{ $section }}</td>
                         <td style="text-align:center;">
-                            <div class="apst-action-btn" data-hd-menu-toggle="hdMenu-1" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="hdMenu-1">
-                                <button type="button" onclick="hdOpenEdit(1)">
+                            <div class="apst-action-btn" data-hd-menu-toggle="hdMenu-{{ $student->id }}" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
+                            <div class="apst-dropdown" id="hdMenu-{{ $student->id }}">
+                                <button type="button" onclick="hdOpenPreview({{ $student->id }})">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                                    Preview
+                                </button>
+                                <button type="button" onclick="hdDownloadRow({{ $student->id }})">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                                    Download
+                                </button>
+                                <button type="button" onclick="hdOpenEdit({{ $student->id }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                                     Edit
                                 </button>
-                                <button type="button" class="apst-del-btn" onclick="hdOpenDelete(1)">
+                                <button type="button" class="apst-del-btn" onclick="hdOpenDelete({{ $student->id }})">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                    Delete
+                                    Remove
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    <tr data-row-id="2">
-                        <td style="text-align: center;"><input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()"></td>
-                        <td>21-00010</td>
-                        <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview(2)">Cerado, Roileen I.</button></td>
-                        <td>BSIT</td>
-                        <td>Fourth</td>
-                        <td>BSIT 1B</td>
-                        <td style="text-align:center;">
-                            <div class="apst-action-btn" data-hd-menu-toggle="hdMenu-2" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
-                            <div class="apst-dropdown" id="hdMenu-2">
-                                <button type="button" onclick="hdOpenEdit(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                                    Edit
-                                </button>
-                                <button type="button" class="apst-del-btn" onclick="hdOpenDelete(2)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @empty
+                    <tr><td colspan="7" style="text-align:center; color:#666;">No student records found.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -200,6 +202,7 @@
         </div>
         <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:center;">
             <button type="button" class="req-btn-cancel" onclick="hdClosePreview()">Close</button>
+            <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="hdDownloadPreview()">Download Form</button>
             <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="hdPrintPreview()">Print Form</button>
         </div>
     </div>

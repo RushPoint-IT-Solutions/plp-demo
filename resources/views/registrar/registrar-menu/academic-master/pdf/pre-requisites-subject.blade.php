@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Subject Configuration Export</title>
+    <title>Course Configuration Export</title>
 </head>
 <body>
-    <h2>PLP Subject Configuration</h2>
+    <h2>PLP Course Configuration</h2>
     <p>
         Program: {{ ($payload['course']['code'] ?? '') . ' - ' . ($payload['course']['name'] ?? '') }}<br>
         Curriculum Year: {{ $payload['curriculum_year'] ?? '' }}<br>
-        Subject: {{ ($payload['subject']['code'] ?? '') . ' - ' . ($payload['subject']['description'] ?? '') }}<br>
+        Course: {{ ($payload['subject']['code'] ?? '') . ' - ' . ($payload['subject']['description'] ?? '') }}<br>
         Credited Units: {{ $payload['subject']['credited_units'] ?? 0 }}<br>
         Generated At: {{ optional($generatedAt)->format('Y-m-d H:i:s') }}
     </p>
@@ -36,7 +36,7 @@
         <p>None</p>
     @endif
 
-    <h3>Equivalent Subject(s)</h3>
+    <h3>Equivalent Course(s)</h3>
     @if(!empty($payload['selected']['equivalent']))
         <ul>
             @foreach($payload['selected']['equivalent'] as $item)

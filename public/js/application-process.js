@@ -858,6 +858,159 @@
         });
     }
 
+    // --- Convert to Student ---
+    const bulkConvertToStudentBtn = document.getElementById('bulkConvertToStudentBtn');
+    const executeConvertToStudent = document.getElementById('executeConvertToStudent');
+    const reloadAfterConvert      = document.getElementById('reloadAfterConvert');
+    const copyAllEmailsBtn        = document.getElementById('copyAllEmailsBtn');
+
+    function showModal(el) {
+        if (!el) return;
+        if (window.jQuery) { $(el).modal('show'); }
+        else if (window.bootstrap) { new bootstrap.Modal(el).show(); }
+    }
+    function hideModal(el) {
+        if (!el) return;
+        if (window.jQuery) { $(el).modal('hide'); }
+        else if (window.bootstrap) { const m = bootstrap.Modal.getInstance(el); if (m) m.hide(); }
+    }
+
+    /** Render the results table inside the result modal */
+    function renderConvertResults(data) {
+        const summary = document.getElementById('convertResultSummary');
+        const tbody   = document.getElementById('convertResultBody');
+        if (!summary || !tbody) return;
+
+        summary.textContent = data.message || 'Conversion complete.';
+        tbody.innerHTML = '';
+
+        const results = Array.isArray(data.results) ? data.results : [];
+        if (results.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:24px; text-align:center; color:#94a3b8; font-size:0.84rem;">No new students were created.</td></tr>';
+            return;
+        }
+
+        results.forEach(function (r, idx) {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f0f4f2';
+            tr.innerHTML =
+                '<td style="padding:10px 20px; font-size:0.82rem; font-weight:600; color:#1e293b;">' + escHtml(r.name) + '</td>' +
+                '<td style="padding:10px 14px;">' +
+                    '<code style="font-size:0.78rem; background:#f1f5f9; border-radius:4px; padding:2px 7px; color:#334155;">' + escHtml(r.student_no) + '</code>' +
+                '</td>' +
+                '<td style="padding:10px 14px;">' +
+                    '<span style="font-size:0.8rem; color:#15803d; font-weight:600;">' + escHtml(r.email) + '</span>' +
+                '</td>' +
+                '<td style="padding:10px 14px;">' +
+                    '<button type="button" data-email="' + escHtml(r.email) + '" class="ctr-copy-email-btn" title="Copy email" ' +
+                    'style="border:none; background:#f0fdf4; border-radius:6px; padding:4px 8px; cursor:pointer; color:#15803d; font-size:0.72rem; font-weight:700; white-space:nowrap;">' +
+                    'Copy</button>' +
+                '</td>';
+            tbody.appendChild(tr);
+        });
+
+        // Wire individual copy buttons
+        tbody.querySelectorAll('.ctr-copy-email-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                copyText(btn.getAttribute('data-email'), btn);
+            });
+        });
+    }
+
+    function copyText(text, triggerEl) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function () { flashCopied(triggerEl); });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            flashCopied(triggerEl);
+        }
+    }
+
+    function flashCopied(el) {
+        if (!el) return;
+        const orig = el.textContent;
+        el.textContent = 'Copied!';
+        el.style.background = '#dcfce7';
+        setTimeout(function () { el.textContent = orig; el.style.background = ''; }, 1500);
+    }
+
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    if (bulkConvertToStudentBtn) {
+        bulkConvertToStudentBtn.addEventListener('click', function () {
+            const checkedBoxes = document.querySelectorAll('.applicant-row-checkbox:checked');
+            const selectedIds  = Array.from(checkedBoxes).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            const countEl = document.getElementById('convertCount');
+            if (countEl) countEl.textContent = selectedIds.length;
+
+            const convertModal = document.getElementById('convertToStudentModal');
+            if (!convertModal) return;
+            convertModal._pendingIds = selectedIds;
+            showModal(convertModal);
+        });
+    }
+
+    if (executeConvertToStudent) {
+        executeConvertToStudent.addEventListener('click', function () {
+            const convertModal = document.getElementById('convertToStudentModal');
+            const ids = convertModal ? convertModal._pendingIds : null;
+            if (!ids || ids.length === 0) return;
+
+            executeConvertToStudent.disabled = true;
+            executeConvertToStudent.innerHTML = '<span class="spinner-border spinner-border-sm" style="width:14px;height:14px;border-width:2px;"></span> Converting...';
+
+            const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const convertUrl = appProcessPage.getAttribute('data-bulk-convert-url');
+
+            fetch(convertUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                hideModal(convertModal);
+
+                renderConvertResults(data);
+
+                const resultModal = document.getElementById('convertToStudentResultModal');
+                showModal(resultModal);
+            })
+            .catch(function () {
+                alert('An unexpected error occurred during conversion. Please try again.');
+                executeConvertToStudent.disabled = false;
+                executeConvertToStudent.textContent = 'Confirm Convert';
+            });
+        });
+    }
+
+    if (copyAllEmailsBtn) {
+        copyAllEmailsBtn.addEventListener('click', function () {
+            const emails = Array.from(document.querySelectorAll('#convertResultBody .ctr-copy-email-btn'))
+                .map(function (btn) { return btn.getAttribute('data-email'); })
+                .filter(Boolean)
+                .join('\n');
+            if (emails) copyText(emails, copyAllEmailsBtn);
+        });
+    }
+
+    if (reloadAfterConvert) {
+        reloadAfterConvert.addEventListener('click', function () {
+            window.location.reload();
+        });
+    }
+
     if (selectAllApplicants) {
         selectAllApplicants.addEventListener('click', function(e) {
             e.stopPropagation();

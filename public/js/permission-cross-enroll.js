@@ -40,11 +40,51 @@ function pceEsc(v) {
     });
 }
 
+function pceCleanSemester(value) {
+    return String(value || '')
+        .replace(/\bsemester\b/ig, '')
+        .trim();
+}
+
+function pceFormatUnits(value) {
+    var num = parseFloat(value);
+    if (Number.isNaN(num)) return '';
+    return String(num).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
+}
+
+function pceSubjectRows(subjects) {
+    var rows = '';
+    var totalUnits = 0;
+    var list = Array.isArray(subjects) ? subjects.slice(0, 5) : [];
+
+    while (list.length < 5) {
+        list.push({ code: '', description: '', units: '' });
+    }
+
+    list.forEach(function(subject) {
+        var units = pceFormatUnits(subject.units);
+        var numericUnits = parseFloat(subject.units);
+        if (!Number.isNaN(numericUnits)) totalUnits += numericUnits;
+
+        rows += '<tr>'
+            + '<td>' + (subject.code ? pceEsc(subject.code) : '<span class="pce-underline"></span>') + '</td>'
+            + '<td>' + (subject.description ? pceEsc(subject.description) : '<span class="pce-underline"></span>') + '</td>'
+            + '<td>' + (units ? pceEsc(units) : '<span class="pce-underline"></span>') + '</td>'
+            + '</tr>';
+    });
+
+    return {
+        rows: rows,
+        totalUnits: totalUnits > 0 ? pceFormatUnits(totalUnits) : ''
+    };
+}
+
 function pceBuildTemplate(data) {
     var now = new Date();
-    var ay = '2025-2026';
-    var semester = 'Second';
+    var ay = data.schoolYear || '__________';
+    var semester = pceCleanSemester(data.semester) || '__________';
     var issueDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    var subjectTable = pceSubjectRows(data.subjects);
 
     return '' +
         '<div class="pce-header-space"></div>' +
@@ -71,15 +111,10 @@ function pceBuildTemplate(data) {
 
         '<table class="pce-subject-table">' +
             '<thead><tr><th>SUBJECT CODE</th><th>SUBJECT DESCRIPTION</th><th>UNITS</th></tr></thead>' +
-            '<tbody>' +
-                '<tr><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td></tr>' +
-                '<tr><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td></tr>' +
-                '<tr><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td></tr>' +
-                '<tr><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td><td><span class="pce-underline"></span></td></tr>' +
-            '</tbody>' +
+            '<tbody>' + subjectTable.rows + '</tbody>' +
         '</table>' +
 
-        '<div class="pce-total-row">TOTAL <span class="pce-total-line"></span> UNITS</div>' +
+        '<div class="pce-total-row">TOTAL <span class="pce-total-line">' + pceEsc(subjectTable.totalUnits) + '</span> UNITS</div>' +
 
         '<div class="pce-sign-wrap">' +
             '<div class="pce-respect">Respectfully yours,</div>' +
@@ -95,12 +130,22 @@ function pceGetRowData(rowId) {
     var row = pceGetRow(rowId);
     if (!row) return null;
     var cells = row.querySelectorAll('td');
+    var subjects = [];
+    try {
+        subjects = JSON.parse(row.getAttribute('data-subjects') || '[]');
+    } catch (error) {
+        subjects = [];
+    }
+
     return {
         studentNo: (cells[1] ? cells[1].textContent : '').trim(),
         studentName: (cells[2] ? cells[2].textContent : '').trim(),
         program: (cells[3] ? cells[3].textContent : '').trim(),
         year: (cells[4] ? cells[4].textContent : '').trim(),
-        section: (cells[5] ? cells[5].textContent : '').trim()
+        section: (cells[5] ? cells[5].textContent : '').trim(),
+        schoolYear: (row.getAttribute('data-school-year') || '').trim(),
+        semester: (row.getAttribute('data-semester') || '').trim(),
+        subjects: subjects
     };
 }
 
@@ -172,7 +217,10 @@ function pceOpenBlankPreview() {
         studentName: '',
         program: '',
         year: '',
-        section: ''
+        section: '',
+        schoolYear: '',
+        semester: '',
+        subjects: []
     });
     document.getElementById('pcePreviewModal').style.display = 'flex';
     document.body.classList.add('pce-preview-open');

@@ -295,6 +295,11 @@ function wceOpenEdit(rowId) {
     document.getElementById('wceEditName').value = (cells[2] ? cells[2].textContent : '').trim();
     document.getElementById('wceEditCourse').value = (cells[3] ? cells[3].textContent : '').trim();
     document.getElementById('wceEditYear').value = (cells[5] ? cells[5].textContent : '').trim();
+    var semesterSelect = document.getElementById('wceEditSemester');
+    if (semesterSelect) {
+        var semValue = (cells[4] ? cells[4].textContent : '').trim();
+        semesterSelect.value = semValue || 'First';
+    }
     wceOpenModal('wceEditModal');
 }
 
@@ -306,6 +311,8 @@ function wceSaveEdit() {
     var studentName = (document.getElementById('wceEditName').value || '').trim();
     var program = (document.getElementById('wceEditCourse').value || '').trim();
     var yearLevel = (document.getElementById('wceEditYear').value || '').trim();
+    var semesterEl = document.getElementById('wceEditSemester');
+    var semester = semesterEl ? semesterEl.value : '';
     var sectionValue = wceFormatSection(program, yearLevel);
 
     var finish = function() {
@@ -314,6 +321,7 @@ function wceSaveEdit() {
             cells[2].innerHTML = '<button type="button" class="doc-link-btn" onclick="wceOpenPreview(' + wceCurrentRowId + ')">' + wceEsc(studentName) + '</button>';
         }
         if (cells[3]) cells[3].textContent = program;
+        if (cells[4]) cells[4].textContent = semester;
         if (cells[5]) cells[5].textContent = yearLevel;
         if (cells[6]) cells[6].textContent = sectionValue;
         wceCloseModal('wceEditModal');
@@ -328,7 +336,8 @@ function wceSaveEdit() {
         student_no: studentNo,
         name: studentName,
         program: program,
-        year_level: yearLevel
+        year_level: yearLevel,
+        semester: semester
     }).then(function() {
         finish();
     }).catch(function(error) {

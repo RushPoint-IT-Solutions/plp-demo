@@ -12,6 +12,7 @@
     data-detail-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.show', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
     data-save-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.update', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
     data-subject-download-url-template="{{ route('registrar.registrar-menu.academic-master.pre-requisites.subject.download', ['courseCurriculumSubjectId' => '__CURRICULUM_SUBJECT_ID__']) }}"
+    data-curriculum-url="{{ route('registrar.registrar-menu.academic-master.curriculum-file') }}"
     data-csrf-token="{{ csrf_token() }}"
     data-course-years='@json($courseYearMap)'
     data-selected-course-id="{{ $selectedCourseId ?: '' }}"
@@ -19,17 +20,40 @@
 >
 
     {{-- ═══════════ VIEW 1: Filter Bar (always visible) ═══════════ --}}
+    @if(session('prereq_success'))
+        <div class="alert alert-success mb-3" role="alert">
+            {{ session('prereq_success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger mb-3" role="alert">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
+    <section class="prereq-hero">
+        <div>
+            <p class="prereq-eyebrow">Academic Master</p>
+            <h2>Pre/Co-Requisite Setup</h2>
+            <p>Select a program curriculum, open a course, then assign required courses before or alongside enrollment.</p>
+        </div>
+        <div class="prereq-hero-actions">
+            <button type="button" class="prereq-secondary-btn" id="prereqAddCourseTopBtn">Add Course to Curriculum</button>
+        </div>
+    </section>
+
     <div class="prereq-filter-bar">
         <div class="prereq-filter-left">
             <div class="prereq-filter-group">
-                <span class="app-filter-label">Course</span>
+                <span class="app-filter-label">Program</span>
                 <select class="app-filter-select" id="prereqCourse">
                     @forelse($courses as $course)
                         <option value="{{ $course->id }}" {{ (string) $selectedCourseId === (string) $course->id ? 'selected' : '' }}>
                             {{ $course->name ?: $course->description }}
                         </option>
                     @empty
-                        <option value="">No courses available</option>
+                        <option value="">No programs available</option>
                     @endforelse
                 </select>
             </div>
@@ -46,8 +70,14 @@
     {{-- ═══════════ VIEW 2: Subject List (hidden until View List clicked) ═══════════ --}}
     <div class="prereq-list-view" id="prereqListView" hidden>
         <div class="prereq-list-header">
-            <h2 class="prereq-program-title" id="prereqProgramTitle"></h2>
-            <button type="button" class="prereq-download-btn" id="prereqDownloadBtn">Download PDF</button>
+            <div>
+                <h2 class="prereq-program-title" id="prereqProgramTitle"></h2>
+                <div class="prereq-program-subtitle">Click Setup on a course row to add pre-requisite and co-requisite courses.</div>
+            </div>
+            <div class="prereq-list-actions">
+                <button type="button" class="prereq-download-btn" id="prereqAddCourseBtn">Add Course</button>
+                <button type="button" class="prereq-download-btn" id="prereqDownloadBtn">Download PDF</button>
+            </div>
         </div>
 
         <div id="prereqListContent">
@@ -68,9 +98,11 @@
                 <span class="prereq-detail-code" id="prereqDetailCode"></span>
                 <span class="prereq-detail-name" id="prereqDetailName"></span>
             </div>
-            <button type="button" class="prereq-download-btn" id="prereqBackBtn">Back to List</button>
-            <button type="button" class="prereq-download-btn" id="prereqSubjectDownloadBtn">Download Subject PDF</button>
-            <button type="button" class="prereq-save-btn" id="prereqSaveBtn">Save</button>
+            <div class="prereq-detail-actions">
+                <button type="button" class="prereq-download-btn" id="prereqBackBtn">Back to List</button>
+                <button type="button" class="prereq-download-btn" id="prereqSubjectDownloadBtn">Download Course PDF</button>
+                <button type="button" class="prereq-save-btn" id="prereqSaveBtn">Save Setup</button>
+            </div>
         </div>
 
         {{-- Pre-requisite(s) --}}
@@ -90,7 +122,7 @@
                     </div>
                 </div>
                 <div class="prereq-col">
-                    <div class="prereq-selected-label">-list of pre-requisite subject(s)-</div>
+                    <div class="prereq-selected-label">-list of pre-requisite course(s)-</div>
                     <div class="prereq-selected-list" id="prereqSelPre" data-type="pre">
                         {{-- Dynamic selected subjects --}}
                     </div>
@@ -114,7 +146,7 @@
                     </div>
                 </div>
                 <div class="prereq-col">
-                    <div class="prereq-selected-label">-list of co-requisite subject(s)-</div>
+                    <div class="prereq-selected-label">-list of co-requisite course(s)-</div>
                     <div class="prereq-selected-list" id="prereqSelCo" data-type="co">
                     </div>
                 </div>
@@ -125,7 +157,7 @@
         <div class="prereq-section">
             <div class="prereq-section-label">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
-                Equivalent Subject(s)
+                Equivalent Course(s)
             </div>
             <div class="prereq-section-body">
                 <div class="prereq-col">
@@ -137,7 +169,7 @@
                     </div>
                 </div>
                 <div class="prereq-col">
-                    <div class="prereq-selected-label">-list of equivalent subject(s)-</div>
+                    <div class="prereq-selected-label">-list of equivalent course(s)-</div>
                     <div class="prereq-selected-list" id="prereqSelEq" data-type="equivalent">
                     </div>
                 </div>
@@ -145,6 +177,103 @@
         </div>
     </div>
 
+    <div class="prereq-add-modal" id="prereqAddCourseModal" hidden aria-hidden="true">
+        <div class="prereq-add-modal-panel" role="dialog" aria-modal="true" aria-labelledby="prereqAddCourseTitle">
+            <div class="prereq-add-modal-head">
+                <div>
+                    <h3 id="prereqAddCourseTitle">Add Course to Curriculum</h3>
+                    <p>Choose where the course will be reflected in the curriculum structure.</p>
+                </div>
+                <button type="button" class="prereq-add-modal-close" id="prereqAddCourseCloseBtn" aria-label="Close">&times;</button>
+            </div>
+
+            <form method="POST" action="{{ route('registrar.registrar-menu.academic-master.curriculum-file.setup') }}" id="prereqAddCourseForm">
+                @csrf
+                <input type="hidden" name="return_to_pre_requisites" value="1">
+
+                <div class="prereq-add-grid">
+                    <div class="prereq-add-field">
+                        <label for="prereqAddProgram">Program</label>
+                        <select id="prereqAddProgram" name="setup_course_id" class="prereq-add-input">
+                            @forelse($courses as $course)
+                                <option value="{{ $course->id }}" {{ (string) old('setup_course_id', $selectedCourseId ?: '') === (string) $course->id ? 'selected' : '' }}>
+                                    {{ $course->name ?: $course->description }}
+                                </option>
+                            @empty
+                                <option value="">No Program Available</option>
+                            @endforelse
+                        </select>
+                    </div>
+
+                    <div class="prereq-add-field">
+                        <label for="prereqAddCurriculumYear">Curriculum Year</label>
+                        <input id="prereqAddCurriculumYear" name="setup_curriculum_year" type="text" class="prereq-add-input" value="{{ old('setup_curriculum_year', $selectedCurriculumYear) }}" placeholder="Example: 2026-2027">
+                    </div>
+
+                    <div class="prereq-add-field">
+                        <label for="prereqAddDateFrom">Date From</label>
+                        <input id="prereqAddDateFrom" name="setup_date_from" type="date" class="prereq-add-input" value="{{ old('setup_date_from', $selectedDateFrom) }}">
+                    </div>
+
+                    <div class="prereq-add-field">
+                        <label for="prereqAddDateTo">Date To</label>
+                        <input id="prereqAddDateTo" name="setup_date_to" type="date" class="prereq-add-input" value="{{ old('setup_date_to', $selectedDateTo) }}">
+                    </div>
+
+                    <div class="prereq-add-field">
+                        <label for="prereqAddYearLevel">Year Level to Reflect</label>
+                        <select id="prereqAddYearLevel" name="setup_year_block_id" class="prereq-add-input">
+                            <option value="">Select Year Level</option>
+                            @foreach($yearBlocks as $yearBlock)
+                                <option value="{{ $yearBlock->id }}" {{ (string) old('setup_year_block_id') === (string) $yearBlock->id ? 'selected' : '' }}>
+                                    {{ $yearBlock->label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="prereq-add-field">
+                        <label for="prereqAddTerm">Term / Semester</label>
+                        <select id="prereqAddTerm" name="setup_term_id" class="prereq-add-input">
+                            <option value="">Select Term</option>
+                            @foreach($semesters as $semester)
+                                <option value="{{ $semester->id }}" {{ (string) old('setup_term_id') === (string) $semester->id ? 'selected' : '' }}>
+                                    {{ $semester->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prereq-add-course-tools">
+                    <label for="prereqAddCourseSearch">Course Search</label>
+                    <input id="prereqAddCourseSearch" type="text" class="prereq-add-input" placeholder="Search course code or title">
+                </div>
+
+                <div class="prereq-add-course-list" id="prereqAddCourseList">
+                    @forelse($availableSubjects as $subject)
+                        @php
+                            $units = (float) ($subject->units ?: (($subject->lec ?: 0) + ($subject->lab ?: 0)));
+                            $oldSubjectIds = collect(old('setup_subject_ids', []))->map(function ($id) { return (string) $id; })->all();
+                        @endphp
+                        <label class="prereq-add-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}">
+                            <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
+                            <span class="prereq-add-course-code">{{ $subject->code }}</span>
+                            <span class="prereq-add-course-title">{{ $subject->name }}</span>
+                            <span class="prereq-add-course-meta">{{ number_format($units, 1) }} units &middot; {{ $subject->course_type ?: 'Major' }}</span>
+                        </label>
+                    @empty
+                        <div class="prereq-add-empty">No Course File records yet. Add courses in Course File first.</div>
+                    @endforelse
+                </div>
+
+                <div class="prereq-add-modal-actions">
+                    <button type="button" class="prereq-secondary-btn" id="prereqAddCourseCancelBtn">Cancel</button>
+                    <button type="submit" class="prereq-view-btn" id="prereqAddCourseSaveBtn">Save Course Placement</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @push('scripts')

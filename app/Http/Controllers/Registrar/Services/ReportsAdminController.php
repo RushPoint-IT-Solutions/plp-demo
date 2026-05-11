@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers\Registrar\Services;
 
+use App\AcademicTerm;
 use App\CertificateIssued;
+use App\Course;
 use App\GraduateTagging;
 use App\Http\Controllers\Controller;
 use App\Support\SystemConfigSchoolTermOptions;
 use App\Student;
 use App\StudentSubjectGrade;
+use App\YearBlock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class ReportsAdminController extends Controller
 {
@@ -54,11 +58,109 @@ class ReportsAdminController extends Controller
         return view('registrar.services.reports-admin.certifications', compact('students', 'recentCertificates', 'systemConfig'));
     }
 
-    public function taggingOfGraduates()
+    public function taggingOfGraduates(Request $request)
     {
-        $students = Student::query()
-            ->orderBy('name')
-            ->paginate(10);
+        $search = trim((string) $request->query('q', $request->query('student', '')));
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = trim((string) $request->query('semester', ''));
+        $program = trim((string) $request->query('program', ''));
+        $yearLevel = trim((string) $request->query('year_level', ''));
+        $status = trim((string) $request->query('status', ''));
+
+        $hasStudentSchoolYear = Schema::hasColumn('students', 'school_year');
+        $hasStudentSemester = Schema::hasColumn('students', 'semester');
+        $hasStudentTerm = Schema::hasColumn('students', 'term');
+        $hasStudentProgram = Schema::hasColumn('students', 'program');
+        $hasStudentYearLevel = Schema::hasColumn('students', 'year_level');
+        $hasAcademicTermId = Schema::hasColumn('students', 'academic_term_id') && Schema::hasTable('academic_terms');
+        $hasCourseId = Schema::hasColumn('students', 'course_id') && Schema::hasTable('courses');
+        $hasYearBlockId = Schema::hasColumn('students', 'year_block_id') && Schema::hasTable('year_blocks');
+
+        $query = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term', 'graduateTagging'])
+            ->orderBy('name');
+
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('student_no', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+
+                if (ctype_digit($search)) {
+                    $builder->orWhere('id', (int) $search);
+                }
+            });
+        }
+
+        if ($schoolYear !== '') {
+            if ($hasStudentSchoolYear) {
+                $query->where('school_year', $schoolYear);
+            } elseif ($hasAcademicTermId) {
+                $query->whereHas('academicTerm', function ($termQuery) use ($schoolYear) {
+                    $termQuery->where('school_year', $schoolYear);
+                });
+            }
+        }
+
+        if ($semester !== '') {
+            if ($hasStudentSemester) {
+                $query->where('semester', $semester);
+            } elseif ($hasStudentTerm) {
+                $query->where('term', $semester);
+            } elseif ($hasAcademicTermId) {
+                $query->whereHas('academicTerm', function ($termQuery) use ($semester) {
+                    $termQuery->where('term', $semester);
+                });
+            }
+        }
+
+        if ($program !== '') {
+            $query->where(function ($builder) use ($program, $hasStudentProgram, $hasCourseId) {
+                if ($hasStudentProgram) {
+                    $builder->where('program', $program);
+                }
+
+                if ($hasCourseId) {
+                    $method = $hasStudentProgram ? 'orWhereHas' : 'whereHas';
+                    $builder->{$method}('canonicalCourse', function ($courseQuery) use ($program) {
+                        $courseQuery->where('code', $program)
+                            ->orWhere('name', $program);
+                    });
+                }
+            });
+        }
+
+        if ($yearLevel !== '') {
+            if ($hasStudentYearLevel) {
+                $query->where('year_level', $yearLevel);
+            } elseif ($hasYearBlockId) {
+                $query->whereHas('yearBlock', function ($yearQuery) use ($yearLevel) {
+                    $yearQuery->where('label', $yearLevel);
+                });
+            }
+        }
+
+        if ($status === 'graduated') {
+            $query->whereHas('graduateTagging', function ($tagQuery) {
+                $tagQuery->where('is_graduate', true);
+            });
+        } elseif ($status === 'suspended') {
+            $query->whereHas('graduateTagging', function ($tagQuery) {
+                $tagQuery->where('suspend_account', true);
+            });
+        } elseif ($status === 'pending') {
+            $query->where(function ($builder) {
+                $builder->whereDoesntHave('graduateTagging')
+                    ->orWhereHas('graduateTagging', function ($tagQuery) {
+                        $tagQuery->where(function ($nested) {
+                            $nested->whereNull('is_graduate')->orWhere('is_graduate', false);
+                        })->where(function ($nested) {
+                            $nested->whereNull('suspend_account')->orWhere('suspend_account', false);
+                        });
+                    });
+            });
+        }
+
+        $students = $query->paginate(15)->appends($request->query());
 
         $studentIds = [];
         foreach ($students->items() as $student) {
@@ -70,7 +172,48 @@ class ReportsAdminController extends Controller
             ->get()
             ->keyBy('student_id');
 
-        return view('registrar.services.reports-admin.tagging-of-graduates', compact('students', 'taggings'));
+        $schoolYears = $hasStudentSchoolYear
+            ? Student::query()->whereNotNull('school_year')->where('school_year', '<>', '')->distinct()->orderByDesc('school_year')->pluck('school_year')
+            : ($hasAcademicTermId ? AcademicTerm::query()->whereNotNull('school_year')->where('school_year', '<>', '')->distinct()->orderByDesc('school_year')->pluck('school_year') : collect());
+
+        if ($hasStudentSemester) {
+            $semesters = Student::query()->whereNotNull('semester')->where('semester', '<>', '')->distinct()->orderBy('semester')->pluck('semester');
+        } elseif ($hasStudentTerm) {
+            $semesters = Student::query()->whereNotNull('term')->where('term', '<>', '')->distinct()->orderBy('term')->pluck('term');
+        } else {
+            $semesters = $hasAcademicTermId ? AcademicTerm::query()->whereNotNull('term')->where('term', '<>', '')->distinct()->orderBy('term')->pluck('term') : collect();
+        }
+
+        $programs = $hasStudentProgram
+            ? Student::query()->whereNotNull('program')->where('program', '<>', '')->distinct()->orderBy('program')->pluck('program')
+            : ($hasCourseId ? Course::query()->orderBy('code')->pluck('code') : collect());
+
+        $yearLevels = $hasStudentYearLevel
+            ? Student::query()->whereNotNull('year_level')->where('year_level', '<>', '')->distinct()->orderBy('year_level')->pluck('year_level')
+            : ($hasYearBlockId ? YearBlock::query()->orderBy('label')->pluck('label') : collect());
+
+        $summary = [
+            'total_students' => Student::query()->count(),
+            'graduates' => GraduateTagging::query()->where('is_graduate', true)->count(),
+            'suspended' => GraduateTagging::query()->where('suspend_account', true)->count(),
+            'matching' => $students->total(),
+        ];
+
+        return view('registrar.services.reports-admin.tagging-of-graduates', compact(
+            'students',
+            'taggings',
+            'schoolYears',
+            'semesters',
+            'programs',
+            'yearLevels',
+            'summary',
+            'search',
+            'schoolYear',
+            'semester',
+            'program',
+            'yearLevel',
+            'status'
+        ));
     }
 
     public function issueAcademicReport(Request $request): JsonResponse

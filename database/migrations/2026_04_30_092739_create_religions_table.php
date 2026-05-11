@@ -8,6 +8,10 @@ class CreateReligionsTable extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('religions')) {
+            return;
+        }
+
         Schema::create('religions', function (Blueprint $table) {
             $table->increments('id');
 

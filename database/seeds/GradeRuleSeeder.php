@@ -19,7 +19,7 @@ class GradeRuleSeeder extends Seeder
             ['code' => 'P', 'grade' => '1.0-3.0', 'remarks' => 'Passed'],
             ['code' => 'F', 'grade' => '5.0', 'remarks' => 'Failed'],
         ];
-        $defaultPeriods = ['Prelim', 'Midterm', 'Pre-Final', 'Finals'];
+        $defaultPeriods = ['Prelim', 'Midterm', 'Final'];
 
         foreach ($rows as $row) {
             $payload = [

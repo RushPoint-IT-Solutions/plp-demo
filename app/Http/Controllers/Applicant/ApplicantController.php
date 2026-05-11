@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use App\SystemAnnouncement;
+use App\Support\HelpCenterTicketService;
 
 class ApplicantController extends Controller
 {
@@ -870,6 +871,7 @@ class ApplicantController extends Controller
     public function helpCenter()
     {
         $topics = $this->helpCenterTopics();
+        $user = Auth::user();
 
         $popularQuestions = [
             [
@@ -889,7 +891,35 @@ class ApplicantController extends Controller
         return view('applicant.help-center.index', [
             'topics' => $topics,
             'popularQuestions' => $popularQuestions,
+            'helpTickets' => HelpCenterTicketService::recentTicketsForUser('Applicant', $user),
+            'helpTicketStoreRoute' => route('applicant.help.tickets.store'),
+            'helpTicketCreateRoute' => route('applicant.help.tickets.create'),
+            'helpTicketRequesterType' => 'Applicant',
+            'helpTicketUserName' => $user ? (string) $user->name : '',
+            'helpTicketUserEmail' => $user ? (string) $user->email : '',
         ]);
+    }
+
+    public function createHelpCenterTicket()
+    {
+        $user = Auth::user();
+
+        return view('shared.help-center-ticket-form-page', [
+            'backRoute' => route('applicant.help.center'),
+            'helpTicketStoreRoute' => route('applicant.help.tickets.store'),
+            'helpTicketRequesterType' => 'Applicant',
+            'helpTicketUserName' => $user ? (string) $user->name : '',
+            'helpTicketUserEmail' => $user ? (string) $user->email : '',
+        ]);
+    }
+
+    public function storeHelpCenterTicket(Request $request)
+    {
+        $ticket = HelpCenterTicketService::createFromRequest($request, 'Applicant', Auth::user());
+
+        return redirect()
+            ->route('applicant.help.center')
+            ->with('help_ticket_success', 'Ticket ' . $ticket->ticket_no . ' submitted successfully.');
     }
 
     public function helpCenterTopic($topic)

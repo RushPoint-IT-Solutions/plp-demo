@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var toInput = document.getElementById('msgTo');
     var subjectInput = document.getElementById('msgSubject');
     var bodyInput = document.getElementById('msgBody');
+    var page = document.getElementById('registrarMessagingPage');
 
     if (!composeModal || !composeBtn || !closeBtn || !discardBtn || !sendBtn || !toInput || !subjectInput || !bodyInput) {
         return;
@@ -43,12 +44,47 @@ document.addEventListener('DOMContentLoaded', function () {
         sendBtn.disabled = true;
         sendBtn.textContent = 'Sending...';
 
-        setTimeout(function () {
+        fetch(page.getAttribute('data-store-url'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': page.getAttribute('data-csrf') || ''
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                recipient: to,
+                subject: subject,
+                body: body,
+                folder: 'sent'
+            })
+        }).then(function (response) {
+            return response.json().catch(function () {
+                return {};
+            }).then(function (payload) {
+                if (!response.ok) {
+                    throw payload;
+                }
+
+                return payload;
+            });
+        }).then(function (payload) {
+            closeComposeModal();
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast(payload.message || 'Message saved to database.', 'success');
+            }
+            window.location.href = window.location.pathname + '?folder=sent';
+        }).catch(function (payload) {
+            var message = payload && payload.message ? payload.message : 'Unable to send message.';
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast(message, 'error');
+            } else {
+                alert(message);
+            }
+        }).finally(function () {
             sendBtn.disabled = false;
             sendBtn.innerHTML = originalHtml;
-            closeComposeModal();
-            alert('Message sent successfully.');
-        }, 600);
+        });
     }
 
     composeBtn.addEventListener('click', openComposeModal);

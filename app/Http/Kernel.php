@@ -64,5 +64,6 @@ class Kernel extends HttpKernel
         'applicant.user' => \App\Http\Middleware\EnsureApplicantModule::class,
         'parent.user' => \App\Http\Middleware\EnsureParentModule::class,
         'force_password_reset' => \App\Http\Middleware\ForcePasswordReset::class,
+        'user.access' => \App\Http\Middleware\EnsureUserAccessControl::class,
     ];
 }

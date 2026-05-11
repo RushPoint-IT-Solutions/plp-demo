@@ -5,9 +5,9 @@
 
 @section('content')
 <div class="pf-page" id="programFilePage"
-     data-success="{{ session('program_file_success', '') }}"
+    data-success="{{ session('program_file_success', '') }}"
      data-open-setup="{{ ($errors->has('dept_code') || $errors->has('dept_description')) ? '1' : '0' }}"
-    data-open-new="{{ ($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('accreditation_level')) ? '1' : '0' }}"
+    data-open-new="{{ ($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('degree_type') || $errors->has('total_units') || $errors->has('academic_year') || $errors->has('accreditation_level')) ? '1' : '0' }}"
     data-current-page="{{ (int) $programs->currentPage() }}"
     data-last-page="{{ (int) $programs->lastPage() }}">
     <div class="pf-toolbar">
@@ -71,7 +71,10 @@
                 <tr>
                     <th>Program Code</th>
                     <th>Program Name</th>
+                    <th>Degree Type</th>
                     <th>Department</th>
+                    <th>Total Units</th>
+                    <th>Academic Year</th>
                     <th>Accreditation Level</th>
                     <th class="pf-actions-head">Actions</th>
                 </tr>
@@ -81,7 +84,10 @@
                     <tr>
                         <td>{{ $program->code }}</td>
                         <td>{{ $program->name ?: $program->description }}</td>
+                        <td>{{ $program->program_type ?: 'Degree' }}</td>
                         <td>{{ optional($program->department)->description ?: '-' }}</td>
+                        <td>{{ $program->total_units !== null ? number_format((float) $program->total_units, 1) : '-' }}</td>
+                        <td>{{ $program->academic_year ?: '-' }}</td>
                         <td>{{ $program->program_file ?: 'Pending Review' }}</td>
                         <td class="pf-actions-cell">
                             <button type="button"
@@ -92,6 +98,9 @@
                                 data-code="{{ $program->code }}"
                                 data-name="{{ $program->name ?: $program->description }}"
                                 data-department-id="{{ $program->department_id }}"
+                                data-degree-type="{{ $program->program_type ?: 'Degree' }}"
+                                data-total-units="{{ $program->total_units }}"
+                                data-academic-year="{{ $program->academic_year }}"
                                 data-accreditation="{{ $program->program_file ?: 'Pending Review' }}"
                                 aria-label="Open row actions"
                                 title="Actions"><span></span><span></span><span></span></button>
@@ -109,7 +118,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center pf-empty-row">No programs found.</td>
+                        <td colspan="8" class="text-center pf-empty-row">No programs found.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -242,7 +251,7 @@
         <form method="POST" action="{{ route('registrar.registrar-menu.academic-master.program-file.setup') }}" id="newProgramForm">
             @csrf
 
-            @if($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('accreditation_level'))
+            @if($errors->has('program_code') || $errors->has('program_name') || $errors->has('department_id') || $errors->has('degree_type') || $errors->has('total_units') || $errors->has('academic_year') || $errors->has('accreditation_level'))
                 <div class="pf-form-error-box">
                     {{ $errors->first() }}
                 </div>
@@ -270,6 +279,21 @@
                 </div>
 
                 <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="newProgramDegreeType">Degree Type</label>
+                    <input type="text" class="pf-modal-input" id="newProgramDegreeType" name="degree_type" value="{{ old('degree_type', 'Degree') }}" placeholder="Degree">
+                </div>
+
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="newProgramTotalUnits">Total Units</label>
+                    <input type="number" step="0.1" min="0" class="pf-modal-input" id="newProgramTotalUnits" name="total_units" value="{{ old('total_units') }}" placeholder="Total Units">
+                </div>
+
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="newProgramAcademicYear">Academic Year</label>
+                    <input type="text" class="pf-modal-input" id="newProgramAcademicYear" name="academic_year" value="{{ old('academic_year') }}" placeholder="2026-2027">
+                </div>
+
+                <div class="pf-modal-field">
                     <label class="pf-modal-label" for="newProgramAccreditation">Accreditation Level</label>
                     <select class="pf-modal-select plp-select" id="newProgramAccreditation" name="accreditation_level" data-plp-select required>
                         <option value="">Select Level</option>
@@ -281,8 +305,6 @@
                     </select>
                 </div>
             </div>
-
-            <input type="hidden" name="program_type" value="Degree">
 
             <div class="pf-modal-actions pf-new-modal-actions">
                 <button type="button" class="pf-modal-btn-cancel" onclick="closeNewProgramModal()">Cancel</button>
@@ -319,6 +341,21 @@
                             <option value="{{ $department->id }}">{{ $department->description }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="pfEditDegreeType">Degree Type</label>
+                    <input type="text" class="pf-modal-input" id="pfEditDegreeType" name="degree_type">
+                </div>
+
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="pfEditTotalUnits">Total Units</label>
+                    <input type="number" step="0.1" min="0" class="pf-modal-input" id="pfEditTotalUnits" name="total_units">
+                </div>
+
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label" for="pfEditAcademicYear">Academic Year</label>
+                    <input type="text" class="pf-modal-input" id="pfEditAcademicYear" name="academic_year">
                 </div>
 
                 <div class="pf-modal-field pf-item-accreditation">

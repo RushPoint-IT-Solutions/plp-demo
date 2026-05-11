@@ -10,7 +10,7 @@
         <div class="ga-card ga-filter-card sched-filter-bar ga-periods-filter">
             <div class="ga-filter-grid ga-filter-grid-periods-lite">
                 <div><label class="ga-label">SY</label><select class="app-filter-select" id="gpFilterSchoolYear"><option value="">All</option><option>2025-2026</option><option>2024-2025</option><option>2023-2024</option></select></div>
-                <div><label class="ga-label">Semester</label><select class="app-filter-select" id="gpFilterSemester"><option value="">All</option><option>First</option><option>Second</option><option>Summer</option></select></div>
+                <div><label class="ga-label">Semester</label><select class="app-filter-select" id="gpFilterSemester"><option value="">All</option><option>First</option><option>Second</option></select></div>
                 <div><label class="ga-label">Grading Computation</label><select class="app-filter-select" id="gpFilterComputation"><option value="">All</option><option>Weighted</option><option>Averaging</option><option>Point-Based</option></select></div>
                 <div><label class="ga-label">Faculty</label><select class="app-filter-select" id="gpFilterFaculty"><option value="">All</option><option>Marasigan</option><option>Dela Cruz</option><option>Santos</option><option>Reyes</option></select></div>
                 <div><label class="ga-label">Subject</label><select class="app-filter-select" id="gpFilterSubject"><option value="">All</option><option>CS301</option><option>IT201</option><option>MATH101</option><option>ENG102</option></select></div>
@@ -89,8 +89,9 @@
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">PERIOD</label>
                         <select class="req-modal-input" id="gaAddPeriod">
+                            <option>Prelim</option>
                             <option>Midterm</option>
-                            <option>Finals</option>
+                            <option>Final</option>
                         </select>
                     </div>
                 </div>
@@ -159,7 +160,11 @@
                     </div>
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">PERIOD</label>
-                        <input type="text" class="req-modal-input" id="gaEditPeriod" placeholder="Period">
+                        <select class="req-modal-input" id="gaEditPeriod">
+                            <option>Prelim</option>
+                            <option>Midterm</option>
+                            <option>Final</option>
+                        </select>
                     </div>
                 </div>
                 <div class="req-modal-fields" style="margin-top:10px;">

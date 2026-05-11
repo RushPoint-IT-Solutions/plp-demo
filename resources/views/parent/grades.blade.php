@@ -116,8 +116,8 @@
                                     <th class="sched-th">Units</th>
                                     <th class="sched-th">Section</th>
                                     <th class="sched-th">Midterm</th>
-                                    <th class="sched-th">Finals</th>
-                                    <th class="sched-th">Final Grade</th>
+                                    <th class="sched-th">Final</th>
+                                    <th class="sched-th">Semestral Grade</th>
                                     <th class="sched-th">Grade Status</th>
                                 </tr>
                             </thead>

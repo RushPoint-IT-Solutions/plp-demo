@@ -49,13 +49,20 @@
                 <p class="batch-file-count" id="batchFileCount">No files selected.</p>
                 <button type="submit" id="batchUploadButton" class="batch-upload-btn" disabled>Upload Selected Files</button>
             </div>
+
+            {{-- Selected file thumbnail preview --}}
+            <div id="batchPreviewGrid" style="display:none; margin-top: 16px;">
+                <p style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Selected Files Preview</p>
+                <div id="batchPreviewGridItems" style="display: flex; flex-wrap: wrap; gap: 12px;"></div>
+            </div>
         </form>
 
         {{-- Note --}}
         <div class="batch-upload-note">
             <p><strong>Note:</strong></p>
             <p>Upload image files (jpg/jpeg), each with a maximum size of 1MB.</p>
-            <p>The filename must be the Student Number (example: 2023A0001.jpg).</p>
+            <p>The filename must be the Student Number in the format <strong>PLP-YYYY-NNNNN</strong>.</p>
+            <p>Example: <strong>PLP-2026-00001.jpg</strong></p>
         </div>
 
         <div class="batch-upload-results">

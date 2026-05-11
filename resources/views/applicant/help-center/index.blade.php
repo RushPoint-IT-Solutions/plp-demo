@@ -60,6 +60,8 @@
         @endforeach
     </div>
 
+    @include('shared.help-center-ticketing')
+
     <div class="reg-help-bottom">
         <div class="reg-help-panel">
             <h3 class="reg-help-panel-title">Popular Questions</h3>

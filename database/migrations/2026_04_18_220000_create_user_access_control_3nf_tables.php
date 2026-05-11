@@ -126,10 +126,13 @@ class CreateUserAccessControl3nfTables extends Migration
         $now = now();
 
         $moduleDefaults = [
-            ['code' => 'process', 'name' => 'PROCESS', 'sort_order' => 10],
-            ['code' => 'registrar', 'name' => 'REGISTRAR', 'sort_order' => 20],
-            ['code' => 'services', 'name' => 'SERVICES', 'sort_order' => 30],
-            ['code' => 'admin_tools', 'name' => 'ADMIN TOOLS', 'sort_order' => 40],
+            ['code' => 'admissions', 'name' => 'Admissions', 'sort_order' => 10],
+            ['code' => 'student_records', 'name' => 'Student Records', 'sort_order' => 20],
+            ['code' => 'academics', 'name' => 'Academics', 'sort_order' => 30],
+            ['code' => 'faculty', 'name' => 'Faculty', 'sort_order' => 40],
+            ['code' => 'documents_forms', 'name' => 'Documents & Forms', 'sort_order' => 50],
+            ['code' => 'reports', 'name' => 'Reports', 'sort_order' => 60],
+            ['code' => 'system', 'name' => 'System', 'sort_order' => 70],
         ];
 
         foreach ($moduleDefaults as $row) {

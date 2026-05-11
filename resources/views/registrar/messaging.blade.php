@@ -4,30 +4,7 @@
 @section('page-title', 'MESSAGING')
 
 @section('content')
-@php
-    $folder = request('folder', 'drafts');
-    $messages = [
-        'inbox' => [
-            ['sender' => 'Registrar Office', 'type' => 'Staff', 'subject' => 'Enrollment status update', 'date' => 'Mar 12, 2026'],
-            ['sender' => 'IT Department', 'type' => 'Admin', 'subject' => 'System maintenance notice', 'date' => 'Mar 10, 2026'],
-            ['sender' => 'Accounting', 'type' => 'Staff', 'subject' => 'Billing checklist for AY 2025-2026', 'date' => 'Mar 08, 2026'],
-        ],
-        'drafts' => [
-            ['sender' => 'You', 'type' => 'Draft', 'subject' => 'Memo: Section merging guidelines', 'date' => 'Mar 09, 2026'],
-            ['sender' => 'You', 'type' => 'Draft', 'subject' => 'Faculty load request template', 'date' => 'Mar 07, 2026'],
-        ],
-        'sent' => [
-            ['sender' => 'You', 'type' => 'Sent', 'subject' => 'Room file update for next term', 'date' => 'Mar 11, 2026'],
-            ['sender' => 'You', 'type' => 'Sent', 'subject' => 'Evaluation schedule reminder', 'date' => 'Mar 05, 2026'],
-        ],
-        'trash' => [
-            ['sender' => 'Admissions', 'type' => 'Staff', 'subject' => 'Old application checklist', 'date' => 'Feb 27, 2026'],
-        ],
-    ];
-    $folderMessages = $messages[$folder] ?? [];
-@endphp
-
-<div class="messaging-page msg-theme-lite">
+<div class="messaging-page msg-theme-lite" id="registrarMessagingPage" data-store-url="{{ route('registrar.messaging.store') }}" data-csrf="{{ csrf_token() }}">
     <div class="messaging-shell">
         <aside class="msg-sidebar">
             <a href="{{ route('registrar.messaging', ['folder' => 'inbox']) }}" class="msg-nav-link {{ $folder === 'inbox' ? 'active' : '' }}">
@@ -37,7 +14,7 @@
                         <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
                     </svg>
                 </span>
-                <span>Inbox</span>
+                <span>Inbox ({{ (int) ($folderCounts['inbox'] ?? 0) }})</span>
             </a>
             <a href="{{ route('registrar.messaging', ['folder' => 'drafts']) }}" class="msg-nav-link {{ $folder === 'drafts' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
@@ -46,7 +23,7 @@
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                 </span>
-                <span>Drafts</span>
+                <span>Drafts ({{ (int) ($folderCounts['drafts'] ?? 0) }})</span>
             </a>
             <a href="{{ route('registrar.messaging', ['folder' => 'sent']) }}" class="msg-nav-link {{ $folder === 'sent' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
@@ -55,7 +32,7 @@
                         <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                     </svg>
                 </span>
-                <span>Sent</span>
+                <span>Sent ({{ (int) ($folderCounts['sent'] ?? 0) }})</span>
             </a>
             <a href="{{ route('registrar.messaging', ['folder' => 'trash']) }}" class="msg-nav-link {{ $folder === 'trash' ? 'active' : '' }}">
                 <span class="msg-nav-icon">
@@ -67,7 +44,7 @@
                         <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                     </svg>
                 </span>
-                <span>Trash</span>
+                <span>Trash ({{ (int) ($folderCounts['trash'] ?? 0) }})</span>
             </a>
         </aside>
 
@@ -97,12 +74,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($folderMessages as $msg)
+                        @forelse($messages as $msg)
                             <tr>
-                                <td>{{ $msg['sender'] }}</td>
-                                <td>{{ $msg['type'] }}</td>
-                                <td>{{ $msg['subject'] }}</td>
-                                <td>{{ $msg['date'] }}</td>
+                                <td>{{ $msg->sender_name }}</td>
+                                <td>{{ $msg->sender_type }}</td>
+                                <td>
+                                    {{ $msg->subject }}
+                                    @if($msg->body)
+                                        <div style="color:#64748b;font-size:.82rem;">{{ \Illuminate\Support\Str::limit($msg->body, 90) }}</div>
+                                    @endif
+                                </td>
+                                <td>{{ optional($msg->created_at)->format('M d, Y h:i A') }}</td>
                             </tr>
                         @empty
                             <tr>

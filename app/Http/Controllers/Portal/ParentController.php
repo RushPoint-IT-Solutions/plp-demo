@@ -18,6 +18,7 @@ use App\StudentProfile;
 use App\StudentSubjectGrade;
 use App\SystemAnnouncement;
 use App\SystemReportDetailSetting;
+use App\Support\HelpCenterTicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -540,6 +541,7 @@ class ParentController extends Controller
     public function helpCenter()
     {
         $topics = $this->helpCenterTopics();
+        $user = Auth::user();
 
         $popularQuestions = [
             [
@@ -559,7 +561,35 @@ class ParentController extends Controller
         return view('parent.help-center.index', [
             'topics' => $topics,
             'popularQuestions' => $popularQuestions,
+            'helpTickets' => HelpCenterTicketService::recentTicketsForUser('Parent', $user),
+            'helpTicketStoreRoute' => route('parent.help.tickets.store'),
+            'helpTicketCreateRoute' => route('parent.help.tickets.create'),
+            'helpTicketRequesterType' => 'Parent',
+            'helpTicketUserName' => $user ? (string) $user->name : '',
+            'helpTicketUserEmail' => $user ? (string) $user->email : '',
         ]);
+    }
+
+    public function createHelpCenterTicket()
+    {
+        $user = Auth::user();
+
+        return view('shared.help-center-ticket-form-page', [
+            'backRoute' => route('parent.help.center'),
+            'helpTicketStoreRoute' => route('parent.help.tickets.store'),
+            'helpTicketRequesterType' => 'Parent',
+            'helpTicketUserName' => $user ? (string) $user->name : '',
+            'helpTicketUserEmail' => $user ? (string) $user->email : '',
+        ]);
+    }
+
+    public function storeHelpCenterTicket(Request $request)
+    {
+        $ticket = HelpCenterTicketService::createFromRequest($request, 'Parent', Auth::user());
+
+        return redirect()
+            ->route('parent.help.center')
+            ->with('help_ticket_success', 'Ticket ' . $ticket->ticket_no . ' submitted successfully.');
     }
 
     public function helpCenterTopic($topic)

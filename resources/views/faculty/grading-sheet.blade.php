@@ -98,7 +98,10 @@
                 <select class="gs-filter-select" id="fgsStatus">
                     <option value="">All</option>
                     <option value="Open For Encoding">Open For Encoding</option>
-                    <option value="Submitted">Submitted</option>
+                    <option value="Returned for Revision">Returned for Revision</option>
+                    <option value="Submitted for Dean Review">Submitted for Dean Review</option>
+                    <option value="Dean Approved">Dean Approved</option>
+                    <option value="Registrar Finalized">Registrar Finalized</option>
                 </select>
             </div>
             <div class="gs-filter-group gs-filter-even">
@@ -175,7 +178,7 @@
                         <th>Prelim</th>
                         <th>Midterm</th>
                         <th>Final</th>
-                        <th>Final Average</th>
+                        <th>Semestral Grade</th>
                         <th>Remarks</th>
                         <th style="width:88px;">Action</th>
                     </tr>
@@ -202,12 +205,16 @@
             <div class="fgs-row-edit-student" id="gradingRowEditStudent"></div>
             <div class="fgs-row-edit-fields">
                 <div class="req-modal-field-group">
+                    <label class="req-modal-label" for="gradingRowEditPrelim">PRELIM</label>
+                    <input type="number" class="req-modal-input" id="gradingRowEditPrelim" min="0" max="100" step="0.01" placeholder="0 to 100 or 1.00 to 5.00">
+                </div>
+                <div class="req-modal-field-group">
                     <label class="req-modal-label" for="gradingRowEditMidterm">MIDTERM</label>
-                    <input type="number" class="req-modal-input" id="gradingRowEditMidterm" min="1" max="5" step="0.01" placeholder="1.00 to 5.00">
+                    <input type="number" class="req-modal-input" id="gradingRowEditMidterm" min="0" max="100" step="0.01" placeholder="0 to 100 or 1.00 to 5.00">
                 </div>
                 <div class="req-modal-field-group">
                     <label class="req-modal-label" for="gradingRowEditFinal">FINAL</label>
-                    <input type="number" class="req-modal-input" id="gradingRowEditFinal" min="1" max="5" step="0.01" placeholder="1.00 to 5.00">
+                    <input type="number" class="req-modal-input" id="gradingRowEditFinal" min="0" max="100" step="0.01" placeholder="0 to 100 or 1.00 to 5.00">
                 </div>
                 <div class="req-modal-field-group fgs-row-edit-field-remarks">
                     <label class="req-modal-label" for="gradingRowEditRemarks">REMARKS</label>
@@ -242,6 +249,5 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ asset('js/faculty-grading-sheet.js') }}?v=..."></script>
 <script src="{{ asset('js/faculty-grading-sheet.js') }}?v={{ file_exists(public_path('js/faculty-grading-sheet.js')) ? filemtime(public_path('js/faculty-grading-sheet.js')) : time() }}"></script>
 @endpush

@@ -8,8 +8,9 @@ var GS_GRADE_MODAL_STATE = {
 };
 
 var GS_PHASES = [
+    { key: 'prelim', label: 'PRELIM' },
     { key: 'midterm', label: 'MIDTERM' },
-    { key: 'final', label: 'FINALS' }
+    { key: 'final', label: 'FINAL' }
 ];
 
 function gsSeedSections(serverSections) {
@@ -22,6 +23,7 @@ function gsSeedSections(serverSections) {
                     name: st.name || '',
                     fda: !!st.fda,
                     na: !!st.na,
+                    prelim: st.prelim !== null && st.prelim !== undefined ? Number(st.prelim) : null,
                     midterm: st.midterm !== null && st.midterm !== undefined ? Number(st.midterm) : null,
                     final: st.final !== null && st.final !== undefined ? Number(st.final) : null,
                     cRating: st.cRating !== null && st.cRating !== undefined ? Number(st.cRating) : null,
@@ -41,6 +43,7 @@ function gsSeedSections(serverSections) {
                 courseFull: sec.courseFull || '-',
                 schedule: sec.schedule || 'Room No. : TBA',
                 status: sec.status || 'Submitted',
+                statusCode: String(sec.statusCode || '').toUpperCase(),
                 students: students
             };
         });
@@ -115,20 +118,41 @@ function gsGetCsrf() {
         || '';
 }
 
-function gsStatusBadge() {
-    return '<span class="gs-badge gs-badge-submitted">Submitted</span>';
+function gsStatusBadge(status) {
+    var label = status || 'Submitted for Dean Review';
+    var normalized = String(label).toLowerCase();
+    var className = 'gs-badge-submitted';
+    if (normalized.indexOf('approved') !== -1 || normalized.indexOf('finalized') !== -1) className = 'gs-badge-approved';
+    if (normalized.indexOf('returned') !== -1 || normalized.indexOf('rejected') !== -1) className = 'gs-badge-rejected';
+    return '<span class="gs-badge ' + className + '">' + gsEscapeHtml(label) + '</span>';
 }
 
 function gsActionButtons(sec) {
+    var statusCode = String(sec.statusCode || '').toUpperCase();
+    if (statusCode === 'DEAN_APPROVED') {
+        return '<div class="gs-action-btns">'
+            + '<button type="button" class="gs-btn-approve" data-gs-action="finalized" '
+            +   'data-id="' + sec.id + '" '
+            +   'data-name="' + gsEscapeHtml(sec.description) + '" '
+            +   'data-section="' + gsEscapeHtml(sec.section) + '" '
+            +   'data-faculty="' + gsEscapeHtml(sec.faculty) + '">'
+            +   'Registrar Finalize'
+            + '</button>'
+            + '</div>';
+    }
+    if (statusCode === 'REGISTRAR_FINALIZED' || statusCode === 'REJECTED') {
+        return '<span class="text-muted">-</span>';
+    }
+
     return '<div class="gs-action-btns">'
-        + '<button type="button" class="gs-btn-approve" '
+        + '<button type="button" class="gs-btn-approve" data-gs-action="dean_approved" '
         +   'data-id="' + sec.id + '" '
         +   'data-name="' + gsEscapeHtml(sec.description) + '" '
         +   'data-section="' + gsEscapeHtml(sec.section) + '" '
         +   'data-faculty="' + gsEscapeHtml(sec.faculty) + '">'
-        +   'Approve'
+        +   'Dean Approve'
         + '</button>'
-        + '<button type="button" class="gs-btn-reject" '
+        + '<button type="button" class="gs-btn-reject" data-gs-action="rejected" '
         +   'data-id="' + sec.id + '" '
         +   'data-name="' + gsEscapeHtml(sec.description) + '" '
         +   'data-section="' + gsEscapeHtml(sec.section) + '" '
@@ -155,7 +179,7 @@ function renderSectionList() {
             '<td class="gs-date-cell">' + s.midterm + '</td>' +
             '<td class="gs-date-cell">' + s.final + '</td>' +
             '<td>' + s.approvedBy + '</td>' +
-            '<td>' + gsStatusBadge() + '</td>' +
+            '<td>' + gsStatusBadge(s.status) + '</td>' +
             '<td>' + gsActionButtons(s) + '</td>' +
         '</tr>';
     }
@@ -167,6 +191,9 @@ function renderSectionList() {
 
 function gsComputeRating(student) {
     var sum = 0, count = 0;
+    if (student.prelim !== null && student.prelim !== undefined && !isNaN(Number(student.prelim))) {
+        sum += Number(student.prelim); count++;
+    }
     if (student.midterm !== null && student.midterm !== undefined && !isNaN(Number(student.midterm))) {
         sum += Number(student.midterm); count++;
     }
@@ -225,6 +252,7 @@ function showDetailView(id) {
             '<td class="gs-col-name">' + st.name + '</td>' +
             '<td class="gs-col-flag"><input type="checkbox" class="gs-checkbox"' + (st.fda ? ' checked' : '') + '></td>' +
             '<td class="gs-col-flag"><input type="checkbox" class="gs-checkbox"' + (st.na ? ' checked' : '') + '></td>' +
+            '<td class="gs-col-grade gs-phase-cell" data-phase="prelim">' + gsFormatGrade(st.prelim) + '</td>' +
             '<td class="gs-col-grade gs-phase-cell" data-phase="midterm">' + gsFormatGrade(st.midterm) + '</td>' +
             '<td class="gs-col-grade gs-phase-cell" data-phase="final">' + gsFormatGrade(st.final) + '</td>' +
             '<td class="gs-col-grade">' + (cR !== null ? cR.toFixed(2) : '<span class="gs-grade-na">N/A</span>') + '</td>' +
@@ -363,9 +391,13 @@ function bindGradeTabClick() {
 }
 
 function bindGradeModalEvents() {
+    var prelimHeader = document.getElementById('gsPrelimHeader');
     var midtermHeader = document.getElementById('gsMidtermHeader');
     var finalHeader = document.getElementById('gsFinalHeader');
 
+    if (prelimHeader) {
+        prelimHeader.addEventListener('click', function() { openGradeModal('prelim'); });
+    }
     if (midtermHeader) {
         midtermHeader.addEventListener('click', function() { openGradeModal('midterm'); });
     }
@@ -390,10 +422,11 @@ function bindGradeModalEvents() {
 
 
 function doGradingAction(subjectId, action, name, section, faculty, btn) {
-    if (action === 'approved') {
+    if (action === 'dean_approved' || action === 'finalized') {
+        var isFinalize = action === 'finalized';
         Swal.fire({
-            title: 'Approve Grading Sheet?',
-            html: 'You are about to <strong>approve</strong> the grades submitted by:<br><br>'
+            title: isFinalize ? 'Finalize Grading Sheet?' : 'Dean Approve Grading Sheet?',
+            html: 'You are about to <strong>' + (isFinalize ? 'finalize' : 'approve') + '</strong> the grades submitted by:<br><br>'
                 + '<strong>' + gsEscapeHtml(name) + '</strong><br>'
                 + '<span style="color:#6b7280;font-size:0.9rem;">'
                 + gsEscapeHtml(section) + ' &bull; ' + gsEscapeHtml(faculty)
@@ -402,11 +435,11 @@ function doGradingAction(subjectId, action, name, section, faculty, btn) {
             showCancelButton: true,
             confirmButtonColor: '#15803d',
             cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Yes, Approve',
+            confirmButtonText: isFinalize ? 'Yes, Finalize' : 'Yes, Approve',
             cancelButtonText: 'Cancel',
         }).then(function (result) {
             if (!result.isConfirmed) return;
-            gsPostAction(subjectId, 'approved', '', name, section, btn);
+            gsPostAction(subjectId, action, '', name, section, btn);
         });
 
     } else {
@@ -457,7 +490,7 @@ function gsPostAction(subjectId, action, remarks, name, section, btn) {
         if (!data.ok) {
             Swal.fire({
                 title: 'Error',
-                text: 'Action failed. Please try again.',
+                text: data.message || 'Action failed. Please try again.',
                 icon: 'error',
                 confirmButtonColor: '#15803d',
             });
@@ -466,27 +499,34 @@ function gsPostAction(subjectId, action, remarks, name, section, btn) {
         }
 
         // Remove from local list — it's no longer Submitted
-        GS_SECTIONS = GS_SECTIONS.filter(function (s) {
-            return String(s.id) !== String(subjectId);
+        GS_SECTIONS.forEach(function (s) {
+            if (String(s.id) === String(subjectId)) {
+                s.statusCode = String(data.status || '').toUpperCase();
+                s.status = data.label || s.status;
+                s.approvedBy = data.approvedBy || (action === 'rejected' ? 'Returned' : 'Updated');
+            }
         });
 
         // Also sync window.GS_SERVER_SECTIONS if present
         if (window.GS_SERVER_SECTIONS) {
-            window.GS_SERVER_SECTIONS = window.GS_SERVER_SECTIONS.filter(function (s) {
-                return String(s.id) !== String(subjectId);
+            window.GS_SERVER_SECTIONS.forEach(function (s) {
+                if (String(s.id) === String(subjectId)) {
+                    s.statusCode = String(data.status || '').toUpperCase();
+                    s.status = data.label || s.status;
+                }
             });
         }
 
         // Re-render the list
         renderSectionList();
 
-        var isApproved = action === 'approved';
+        var isApproved = action === 'dean_approved' || action === 'finalized';
         Swal.fire({
-            title: isApproved ? 'Grades Approved!' : 'Grades Rejected',
+            title: action === 'finalized' ? 'Grades Finalized!' : (isApproved ? 'Grades Approved!' : 'Grades Rejected'),
             html: '<strong>' + gsEscapeHtml(name) + '</strong> '
                 + '(<span style="color:#6b7280;">' + gsEscapeHtml(section) + '</span>)<br><br>'
                 + (isApproved
-                    ? 'Grades have been <strong>approved</strong> successfully.'
+                    ? (action === 'finalized' ? 'Grades have been <strong>finalized</strong> successfully.' : 'Grades have been <strong>approved</strong> successfully.')
                     : 'Grades have been <strong>sent back</strong> to faculty for revision.'),
             icon: isApproved ? 'success' : 'info',
             confirmButtonColor: '#15803d',
@@ -512,7 +552,7 @@ function bindListBodyActions(listBody) {
             event.stopPropagation();
             doGradingAction(
                 approveBtn.getAttribute('data-id'),
-                'approved',
+                approveBtn.getAttribute('data-gs-action') || 'dean_approved',
                 approveBtn.getAttribute('data-name'),
                 approveBtn.getAttribute('data-section'),
                 approveBtn.getAttribute('data-faculty'),
@@ -526,7 +566,7 @@ function bindListBodyActions(listBody) {
             event.stopPropagation();
             doGradingAction(
                 rejectBtn.getAttribute('data-id'),
-                'rejected',
+                rejectBtn.getAttribute('data-gs-action') || 'rejected',
                 rejectBtn.getAttribute('data-name'),
                 rejectBtn.getAttribute('data-section'),
                 rejectBtn.getAttribute('data-faculty'),

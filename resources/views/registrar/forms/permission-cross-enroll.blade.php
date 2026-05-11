@@ -89,7 +89,20 @@
                 </thead>
                 <tbody id="pceTableBody">
                     @forelse($crossEnrollRows as $record)
-                    <tr data-row-id="{{ $record->id }}">
+                    @php
+                        $studentSubjects = optional($record->student)->subjects ?: collect();
+                        $subjectPayload = $studentSubjects->map(function ($subject) {
+                            return [
+                                'code' => (string) ($subject->code ?: ''),
+                                'description' => (string) ($subject->name ?: ''),
+                                'units' => $subject->units !== null ? (string) $subject->units : '',
+                            ];
+                        })->values();
+                    @endphp
+                    <tr data-row-id="{{ $record->id }}"
+                        data-school-year="{{ $record->school_year ?: optional($record->student)->school_year }}"
+                        data-semester="{{ $record->semester ?: optional($record->student)->semester }}"
+                        data-subjects="{{ e($subjectPayload->toJson()) }}">
                         <td style="text-align: center;"><input type="checkbox" class="pce-row-select" onchange="pceSyncSelectAll()"></td>
                         <td>{{ optional($record->student)->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="pceOpenPreview({{ $record->id }})">{{ optional($record->student)->name ?: '-' }}</button></td>

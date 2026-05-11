@@ -13,6 +13,10 @@
     $displayName = trim(($profile->first_name ?? '') . ' ' . ($profile->middle_name ?? '') . ' ' . ($profile->last_name ?? ''));
     $displayStudentNo = $profile->student_no ?? optional($student)->student_no;
     $displayNameUpper = strtoupper($displayName ?: optional($student)->name ?? '');
+    $crossEnrollSubjects = $student ? $student->subjects->take(5)->values() : collect();
+    $crossEnrollTotalUnits = $crossEnrollSubjects->sum(function ($subject) {
+        return is_numeric($subject->units) ? (float) $subject->units : 0;
+    });
 @endphp
 <div class="cor-scroll-wrapper acd-page">
     <div class="acd-canvas">
@@ -42,22 +46,20 @@
 
                 <div class="ce-subject-grid">
                     <div>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--xl" value=""></p>
+                        @for($i = 0; $i < 5; $i++)
+                            @php($subject = $crossEnrollSubjects->get($i))
+                            <p><input type="text" class="acd-inline-input acd-inline-input--xl" value="{{ $subject ? trim(($subject->code ?: '') . ' - ' . ($subject->name ?: '')) : '' }}"></p>
+                        @endfor
                     </div>
                     <div>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
-                        <p><input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Units</p>
+                        @for($i = 0; $i < 5; $i++)
+                            @php($subject = $crossEnrollSubjects->get($i))
+                            <p><input type="text" class="acd-inline-input acd-inline-input--sm" value="{{ $subject && $subject->units !== null ? rtrim(rtrim(number_format((float) $subject->units, 2, '.', ''), '0'), '.') : '' }}"> Units</p>
+                        @endfor
                     </div>
                 </div>
 
-                <p class="ce-total">TOTAL = <input type="text" class="acd-inline-input acd-inline-input--sm acd-inline-input--center" value=""> UNITS</p>
+                <p class="ce-total">TOTAL = <input type="text" class="acd-inline-input acd-inline-input--sm acd-inline-input--center" value="{{ $crossEnrollTotalUnits > 0 ? rtrim(rtrim(number_format($crossEnrollTotalUnits, 2, '.', ''), '0'), '.') : '' }}"> UNITS</p>
                 <p>I have passed the pre-requisite to the foregoing subjects, and I will promptly submit my ratings in the course after the close of the school term.</p>
 
                 <div class="ce-sign-grid">

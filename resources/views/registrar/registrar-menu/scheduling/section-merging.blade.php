@@ -177,7 +177,7 @@
 
                 <div class="smrg-bottom-actions">
                     <button type="button" class="pf-btn pf-btn-secondary" id="smrgCancelBtn">Cancel</button>
-                    <button type="button" class="pf-btn pf-btn-primary" id="smrgMergeBtn">Merge</button>
+                    <button type="button" class="pf-btn pf-btn-primary" id="smrgMergeBtn">Merge Same Course & Year</button>
                 </div>
             </div>
         </div>
@@ -186,11 +186,11 @@
     <!-- Modals -->
     <div class="pf-modal-overlay" id="mergeConfirmModal" style="display:none;">
         <div class="pf-modal-box" style="text-align:center; max-width:480px; padding:30px;">
-            <div class="pf-modal-title" style="color:#006837; font-size: 1.25rem; font-weight:700; margin-bottom: 20px; letter-spacing: 1px;">CONFIRM SECTION INTEGRATION</div>
-            <p style="font-size:0.95rem; color:#444; margin-bottom:30px; line-height: 1.5;">Are you sure you want to merge these sections? This action will consolidate all associated documents and metadata into a single repository. This process cannot be undone.</p>
+            <div class="pf-modal-title" style="color:#006837; font-size: 1.25rem; font-weight:700; margin-bottom: 20px; letter-spacing: 1px;">CONFIRM SECTION MERGING</div>
+            <p style="font-size:0.95rem; color:#444; margin-bottom:30px; line-height: 1.5;">Are you sure you want to merge these sections? Only sections with the same course, year level, and subject can be merged. This process cannot be undone.</p>
             <div class="pf-modal-actions" style="justify-content:center; gap: 16px;">
                 <button type="button" class="pf-modal-btn-cancel" id="smrgConfirmCancelBtn">Cancel</button>
-                <button type="button" class="pf-modal-btn-save" style="background:#006837;" id="smrgConfirmMergeBtn">Yes, Merge Sections</button>
+                <button type="button" class="pf-modal-btn-save" style="background:#006837;" id="smrgConfirmMergeBtn">Yes, Merge Same Course & Year</button>
             </div>
         </div>
     </div>
@@ -198,7 +198,7 @@
     <div class="pf-modal-overlay" id="mergeSuccessModal" style="display:none;">
         <div class="pf-modal-box" style="text-align:center; max-width:420px; padding: 30px;">
             <div class="pf-modal-title" style="color:#006837; font-size: 1.3rem; font-weight:700; margin-bottom: 16px; letter-spacing: 1px;">SUCCESSFUL!</div>
-            <p style="font-size:0.95rem; color:#444; margin-bottom:30px;">Sections Successfully Integrated</p>
+            <p style="font-size:0.95rem; color:#444; margin-bottom:30px;">Sections successfully merged.</p>
             <div class="pf-modal-actions" style="justify-content:center;">
                 <button type="button" class="pf-modal-btn-save" style="background:#006837; min-width:120px;" id="smrgSuccessOkBtn">Okay</button>
             </div>

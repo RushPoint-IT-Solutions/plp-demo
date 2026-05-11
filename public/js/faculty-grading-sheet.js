@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var rowEditPayload = document.getElementById('gradingRowEditPayload');
     var rowEditModal = document.getElementById('gradingRowEditModal');
     var rowEditStudent = document.getElementById('gradingRowEditStudent');
+    var rowEditPrelim = document.getElementById('gradingRowEditPrelim');
     var rowEditMidterm = document.getElementById('gradingRowEditMidterm');
     var rowEditFinal = document.getElementById('gradingRowEditFinal');
     var rowEditRemarks = document.getElementById('gradingRowEditRemarks');
@@ -70,14 +71,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function statusText(value) {
-        return String(value || '').toLowerCase() === 'submitted' ? 'Submitted' : 'Open For Encoding';
+        var normalized = String(value || '').toLowerCase();
+        if (normalized === 'submitted') return 'Submitted for Dean Review';
+        if (normalized === 'dean approved') return 'Dean Approved';
+        if (normalized === 'registrar finalized') return 'Registrar Finalized';
+        if (normalized === 'rejected' || normalized === 'returned for revision') return 'Returned for Revision';
+        return value || 'Open For Encoding';
     }
 
     function statusBadge(value) {
-        if (String(value || '').toLowerCase() === 'submitted') {
-            return '<span class="grading-status-submitted">Submitted</span>';
+        var label = statusText(value);
+        var normalized = String(label || '').toLowerCase();
+        if (normalized === 'submitted for dean review' || normalized === 'dean approved' || normalized === 'registrar finalized') {
+            return '<span class="grading-status-submitted">' + escapeHtml(label) + '</span>';
         }
-        return '<span class="grading-status-open">Open For Encoding</span>';
+        return '<span class="grading-status-open">' + escapeHtml(label) + '</span>';
     }
 
     // ─── SweetAlert2 Helpers ─────────────────────────────────────────────────────
@@ -219,10 +227,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var rows = '';
         filteredSubjects.forEach(function (subject, index) {
-            var isSubmitted = String(subject.status || '').toLowerCase() === 'submitted';
+            var normalizedStatus = String(statusText(subject.status)).toLowerCase();
+            var canSubmit = normalizedStatus === 'open for encoding' || normalizedStatus === 'returned for revision';
 
-            var actionBtn = isSubmitted
-                ? '<span class="fgs-submitted-label">&#10004; Submitted</span>'
+            var actionBtn = !canSubmit
+                ? '<span class="fgs-submitted-label">&#10004; ' + escapeHtml(statusText(subject.status)) + '</span>'
                 : '<button type="button" class="fgs-quick-submit-btn" data-subject-id="' + escapeHtml(subject.id) + '">Submit Grades</button>';
 
             rows += '<tr class="grading-subject-row" data-subject-id="' + escapeHtml(subject.id) + '">'
@@ -280,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Update local data
                 allSubjects.forEach(function (s) {
                     if (String(s.id) === String(subjectId)) {
-                        s.status = 'Submitted';
+                        s.status = 'Submitted for Dean Review';
                     }
                 });
                 applySubjectFilters();
@@ -377,7 +386,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var students = getFilteredStudents((subject && subject.students) ? subject.students : []);
         var total = students.length;
         var totalPages = Math.max(1, Math.ceil(total / detailPageSize));
-        var canEdit = String(subject.status || '').toLowerCase() !== 'submitted';
+        var normalizedStatus = String(statusText(subject.status)).toLowerCase();
+        var canEdit = normalizedStatus === 'open for encoding' || normalizedStatus === 'returned for revision';
 
         if (detailPage > totalPages) {
             detailPage = totalPages;
@@ -415,8 +425,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Show/hide submit button based on status
         if (submitBtn) {
-            var isSubmitted = String(subject.status || '').toLowerCase() === 'submitted';
-            submitBtn.style.display = isSubmitted ? 'none' : 'inline-flex';
+            var normalizedSubjectStatus = String(statusText(subject.status)).toLowerCase();
+            var canSubmit = normalizedSubjectStatus === 'open for encoding' || normalizedSubjectStatus === 'returned for revision';
+            submitBtn.style.display = canSubmit ? 'inline-flex' : 'none';
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Grades';
         }
@@ -458,10 +469,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // Update local data
-                activeSubject.status = 'Submitted';
+                activeSubject.status = 'Submitted for Dean Review';
                 allSubjects.forEach(function (s) {
                     if (String(s.id) === String(activeSubject.id)) {
-                        s.status = 'Submitted';
+                        s.status = 'Submitted for Dean Review';
                     }
                 });
 
@@ -511,6 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rowEditStudent) {
             rowEditStudent.textContent = String(student.student_no || '') + ' - ' + String(student.name || '');
         }
+        if (rowEditPrelim) rowEditPrelim.value = student.prelim || '';
         if (rowEditMidterm) rowEditMidterm.value = student.midterm || '';
         if (rowEditFinal) rowEditFinal.value = student.final || '';
         if (rowEditRemarks) rowEditRemarks.value = student.remarks || '';
@@ -525,29 +537,37 @@ document.addEventListener('DOMContentLoaded', function () {
         var student = getStudentById(activeSubject, activeStudentId);
         if (!student) return;
 
+        var prelim     = rowEditPrelim ? rowEditPrelim.value.trim() : '';
         var midterm    = rowEditMidterm ? rowEditMidterm.value.trim() : '';
         var finalGrade = rowEditFinal   ? rowEditFinal.value.trim()   : '';
         var remarks    = rowEditRemarks ? rowEditRemarks.value.trim() : '';
 
         // Only midterm is required — final is optional (may not be done yet)
-        if (!midterm) {
+        if (!prelim || !midterm) {
             closeRowEditModal(); // close first so SweetAlert appears on top
-            swalWarning('Missing Grade', 'Please enter at least the Midterm grade.');
+            swalWarning('Missing Grade', 'Please enter Prelim and Midterm grades.');
             return;
         }
 
+        var prelimNum = parseFloat(prelim);
         var midtermNum = parseFloat(midterm);
         var finalNum   = finalGrade !== '' ? parseFloat(finalGrade) : null;
 
-        if (isNaN(midtermNum) || midtermNum < 1 || midtermNum > 5) {
+        if (isNaN(prelimNum) || prelimNum < 0 || prelimNum > 100) {
             closeRowEditModal();
-            swalWarning('Invalid Midterm Grade', 'Midterm grade must be between 1.00 and 5.00.');
+            swalWarning('Invalid Prelim Grade', 'Prelim grade must be between 0 and 100. Grade-point values from 1.00 to 5.00 are still accepted.');
             return;
         }
 
-        if (finalNum !== null && (isNaN(finalNum) || finalNum < 1 || finalNum > 5)) {
+        if (isNaN(midtermNum) || midtermNum < 0 || midtermNum > 100) {
             closeRowEditModal();
-            swalWarning('Invalid Final Grade', 'Final grade must be between 1.00 and 5.00.');
+            swalWarning('Invalid Midterm Grade', 'Midterm grade must be between 0 and 100. Grade-point values from 1.00 to 5.00 are still accepted.');
+            return;
+        }
+
+        if (finalNum !== null && (isNaN(finalNum) || finalNum < 0 || finalNum > 100)) {
+            closeRowEditModal();
+            swalWarning('Invalid Final Grade', 'Final grade must be between 0 and 100. Grade-point values from 1.00 to 5.00 are still accepted.');
             return;
         }
 
@@ -564,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
             body: JSON.stringify({
                 subject_id: activeSubject.id,
                 student_id: activeStudentId,
+                prelim:     prelimNum,
                 midterm:    midtermNum,
                 final:      finalNum,   // null if not yet entered
                 remarks:    remarks,

@@ -13,7 +13,6 @@
         ['value' => '', 'label' => '-Select Semester-'],
         ['value' => 'First', 'label' => 'First'],
         ['value' => 'Second', 'label' => 'Second'],
-        ['value' => 'Summer', 'label' => 'Summer'],
     ];
 
     $statusOptions = [
@@ -26,7 +25,6 @@
         ['value' => '', 'label' => '-Select Period-'],
         ['value' => 'Prelim', 'label' => 'Prelim'],
         ['value' => 'Midterm', 'label' => 'Midterm'],
-        ['value' => 'Pre-Final', 'label' => 'Pre-Final'],
         ['value' => 'Final', 'label' => 'Final'],
     ];
 

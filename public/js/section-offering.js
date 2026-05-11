@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     var count = state.curriculumIncludedIds.length;
-    soCurriculumSummary.textContent = count + ' subject' + (count === 1 ? '' : 's') + ' selected';
+    soCurriculumSummary.textContent = count + ' course' + (count === 1 ? '' : 's') + ' selected';
   }
   function buildCurriculumOptionLabel(row) {
     var code = normalizeText(row.code);
@@ -1243,7 +1243,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       renderCurriculumLists();
       if (!rows.length) {
-        setModalFeedback('No curriculum subjects found for this program/year/term.', false);
+        setModalFeedback('No published curriculum courses found for this program, year level, and term. Publish the curriculum first in Curriculum File.', false);
         return;
       }
       setModalFeedback('', false);

@@ -271,11 +271,11 @@
                     </div>
 
                     <div class="so-modal-field so-modal-col-12">
-                        <label>Curriculum Subjects</label>
+                        <label>Published Curriculum Courses</label>
                         <div class="so-curriculum-picker">
                             <div class="so-curriculum-list-wrap">
-                                <div class="so-curriculum-list-title">Available Subjects</div>
-                                <select id="soCurriculumAvailable" class="so-curriculum-list" multiple size="8" aria-label="Available curriculum subjects"></select>
+                                <div class="so-curriculum-list-title">Available Courses</div>
+                                <select id="soCurriculumAvailable" class="so-curriculum-list" multiple size="8" aria-label="Available published curriculum courses"></select>
                             </div>
 
                             <div class="so-curriculum-actions" aria-label="Move curriculum subjects">
@@ -286,11 +286,11 @@
                             </div>
 
                             <div class="so-curriculum-list-wrap">
-                                <div class="so-curriculum-list-title">Subjects Included</div>
-                                <select id="soCurriculumIncluded" class="so-curriculum-list" multiple size="8" aria-label="Curriculum subjects included in section"></select>
+                                <div class="so-curriculum-list-title">Courses Included</div>
+                                <select id="soCurriculumIncluded" class="so-curriculum-list" multiple size="8" aria-label="Published curriculum courses included in section"></select>
                             </div>
                         </div>
-                        <div class="so-curriculum-summary" id="soCurriculumSummary">0 subjects selected</div>
+                        <div class="so-curriculum-summary" id="soCurriculumSummary">0 courses selected</div>
                     </div>
                 </div>
 
