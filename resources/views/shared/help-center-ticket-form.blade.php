@@ -18,7 +18,7 @@
             <span>Category</span>
             <select name="category" required>
                 @foreach($ticketCategories as $category)
-                    <option value="{{ $category }}" {{ old('category') === $category ? 'selected' : '' }}>{{ $category }}</option>
+                    <option value="{{ $category }}" {{ old('category', request('category', 'Inquiry')) === $category ? 'selected' : '' }}>{{ $category }}</option>
                 @endforeach
             </select>
         </label>
@@ -34,7 +34,7 @@
 
     <label class="reg-help-ticket-full">
         <span>Subject</span>
-        <input type="text" name="subject" value="{{ old('subject') }}" placeholder="Brief summary of your concern" required>
+        <input type="text" name="subject" value="{{ old('subject', request('subject')) }}" placeholder="Brief summary of your concern" required>
     </label>
 
     <label class="reg-help-ticket-full">

@@ -69,7 +69,7 @@ $rf137a-black: #000;
         transform-origin: top center;
         zoom: var(--rf137a-zoom);
         font-size: 12pt;
-        line-height: 1.32;
+        line-height: 2;
     }
 
     @supports not (zoom: 1) {
@@ -83,7 +83,7 @@ $rf137a-black: #000;
         color: $rf137a-black !important;
         border-color: $rf137a-black !important;
         font-size: 12pt !important;
-        line-height: 1.32;
+        line-height: 2;
     }
 
     .rf137a-topline {
@@ -288,7 +288,7 @@ $rf137a-black: #000;
     .registrar-body .rf137a-sheet,
     .registrar-body .rf137a-sheet * {
         font-size: 12pt !important;
-        line-height: 1.32 !important;
+        line-height: 2 !important;
     }
 
     .registrar-body .rf137a-sheet .rf137a-paragraph {

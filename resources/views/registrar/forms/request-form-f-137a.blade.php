@@ -8,6 +8,11 @@
 @endpush
 
 @section('content')
+@php
+    $studentName = optional($student)->name ? strtoupper(optional($student)->name) : '';
+    $requestDate = now()->format('F j,');
+    $requestYearSuffix = substr(now()->format('Y'), -1);
+@endphp
 <div class="rf137a-page" id="rf137a-page">
     <div class="rf137a-actions d-flex justify-content-end w-100 d-print-none">
         <button type="button" id="rf137a-print-btn" class="btn btn-success rf137a-print-btn" title="Print this form" aria-label="Print this form">Print</button>
@@ -17,9 +22,9 @@
             <p class="rf137a-form-no">PLPRO FORM NO.4A</p>
             <label class="rf137a-date-line">
                 <span class="rf137a-date-label">Date</span>
-                <input type="text" class="rf137a-inline-input rf137a-inline-input--date" value="{{ old('request_date') }}">
+                <input type="text" class="rf137a-inline-input rf137a-inline-input--date" value="{{ old('request_date', $requestDate) }}">
                 <span class="rf137a-date-year">202</span>
-                <input type="text" class="rf137a-inline-input rf137a-inline-input--year" value="{{ old('request_year_suffix') }}" maxlength="1">
+                <input type="text" class="rf137a-inline-input rf137a-inline-input--year" value="{{ old('request_year_suffix', $requestYearSuffix) }}" maxlength="1">
             </label>
         </div>
 
@@ -33,7 +38,7 @@
         <p class="rf137a-paragraph">
             This is to request from your good office to furnish Pamantasan ng Lungsod ng Pasig the original copy of Form 137A of
             <span class="rf137a-sentence-field">
-                <input type="text" class="rf137a-inline-input rf137a-inline-input--sentence" value="{{ old('student_name') }}">
+                <input type="text" class="rf137a-inline-input rf137a-inline-input--sentence" value="{{ old('student_name', $studentName) }}">
             </span>,
             who has been temporarily admitted in this university upon presentation of his/her credentials, which shows he/she have attended your school and is eligible for transfer.
         </p>
@@ -52,7 +57,7 @@
 
         <div class="rf137a-signature-block">
             <p class="rf137a-signature-intro">Very truly yours,</p>
-            <p class="rf137a-signatory-name">FEDERICO G. NUEVA, MT</p>
+            <p class="rf137a-signatory-name">MR. FEDERICO G. NUEVA</p>
             <p class="rf137a-signatory-role">University Registrar</p>
         </div>
 

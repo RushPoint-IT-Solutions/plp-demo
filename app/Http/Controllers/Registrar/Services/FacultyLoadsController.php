@@ -172,6 +172,32 @@ class FacultyLoadsController extends Controller
 
         $availableSubjectsTotal = (clone $availableSubjectsBaseQuery)->count();
 
+        if ($availableSubjectsTotal === 0 && ($selectedSchoolYear !== '' || $selectedSemester !== '')) {
+            $availableSubjectsBaseQuery = Subject::query()
+                ->with('canonicalCourse')
+                ->whereNull('faculty_id')
+                ->when($loadingSearch !== '', function ($q) use ($loadingSearch) {
+                    $like = '%' . $loadingSearch . '%';
+
+                    return $q->where(function ($inner) use ($like) {
+                        $inner->where('subjects.code', 'like', $like)
+                            ->orWhere('subjects.name', 'like', $like)
+                            ->orWhere('subjects.year_section', 'like', $like)
+                            ->orWhere('subjects.days', 'like', $like)
+                            ->orWhereHas('canonicalCourse', function ($courseQuery) use ($like) {
+                                $courseQuery->where('code', 'like', $like)
+                                    ->orWhere('name', 'like', $like);
+                            });
+                    });
+                })
+                ->orderByRaw('CASE WHEN subjects.course_id IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('subjects.course_id')
+                ->orderByRaw('COALESCE(subjects.year_section, "")')
+                ->orderBy('subjects.code');
+
+            $availableSubjectsTotal = (clone $availableSubjectsBaseQuery)->count();
+        }
+
         $availableSubjects = (clone $availableSubjectsBaseQuery)
             ->limit(201)
             ->get();

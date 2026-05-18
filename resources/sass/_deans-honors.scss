@@ -1,0 +1,182 @@
+@page {
+    size: 14in 8.5in;
+    margin: 0;
+}
+
+@font-face {
+    font-family: 'Old Towne';
+    src: url('../fonts/EnglishTowne.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+.registrar-body {
+    .deans-honors {
+        position: relative;
+        width: 14in;
+        min-height: 8.5in;
+        margin: 0 auto;
+        padding: 0.72in 1.15in 0.72in;
+        background: #fff url('../img/deans-honors-border.png') center / 100% 100% no-repeat;
+        color: #1f1609;
+        font-family: Georgia, 'Times New Roman', serif;
+        text-align: center;
+        box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+
+        @media screen and (max-width: 1400px) {
+            transform: scale(0.82);
+            transform-origin: top center;
+            margin-bottom: -1.45in;
+        }
+
+        @media screen and (max-width: 1000px) {
+            transform: scale(0.68);
+            margin-bottom: -2.3in;
+        }
+
+        @media print {
+            width: 14in;
+            min-height: 8.5in;
+            margin: 0;
+            padding: 0.72in 1.15in 0.72in;
+            box-shadow: none;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+    }
+
+    .deans-honors__seal {
+        position: absolute;
+        top: 1.05in;
+        left: 50%;
+        width: 0.9in;
+        height: 0.9in;
+        object-fit: contain;
+        transform: translateX(-50%);
+    }
+
+    .deans-honors__header {
+        margin-top: 1.24in;
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.15;
+        color: #111;
+
+        p {
+            margin: 0;
+            font-size: 11pt;
+        }
+
+        h2 {
+            margin: 0.03in 0 0;
+            font-size: 16pt;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+    }
+
+    .deans-honors__body {
+        width: 8.6in;
+        margin: 0.34in auto 0;
+        line-height: 1.12;
+    }
+
+    .deans-honors__kicker,
+    .deans-honors__recognition,
+    .deans-honors__term,
+    .deans-honors__of,
+    .deans-honors__date {
+        margin: 0;
+        font-size: 16pt;
+        color: #1b1b1b;
+    }
+
+    .deans-honors h1 {
+        margin: 0.05in 0 0.08in;
+        color: #4b2d06;
+        font-family: 'Old Towne', Georgia, 'Times New Roman', serif;
+        font-size: 48pt;
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: 0;
+    }
+
+    .deans-honors__term {
+        margin-top: 0.14in;
+        line-height: 1.25;
+
+        span {
+            font-weight: 700;
+        }
+    }
+
+    .deans-honors__of {
+        margin-top: 0.1in;
+    }
+
+    .deans-honors__student {
+        margin: 0.06in auto 0;
+        color: #111;
+        font-size: 23pt;
+        font-weight: 700;
+        line-height: 1.12;
+        text-transform: uppercase;
+    }
+
+    .deans-honors__program {
+        margin: 0.02in auto 0;
+        color: #111;
+        font-size: 12pt;
+        font-style: italic;
+        line-height: 1.2;
+    }
+
+    .deans-honors__date {
+        margin-top: 0.28in;
+        font-size: 14pt;
+
+        sup {
+            font-size: 8pt;
+            line-height: 0;
+        }
+    }
+
+    .deans-honors__footer {
+        position: absolute;
+        left: 50%;
+        bottom: 1.2in;
+        width: 3in;
+        text-align: center;
+        transform: translateX(-50%);
+    }
+
+    .deans-honors__registrar {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        align-items: center;
+        color: #111;
+        font-family: Arial, Helvetica, sans-serif;
+
+        strong {
+            font-size: 12pt;
+            line-height: 1.05;
+        }
+
+        span {
+            font-size: 11pt;
+            line-height: 1.05;
+        }
+    }
+
+    .deans-honors__signature {
+        display: block;
+        width: 1.55in;
+        height: auto;
+        margin: 0 auto -0.08in;
+        object-fit: contain;
+    }
+}

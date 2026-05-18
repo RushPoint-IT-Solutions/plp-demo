@@ -10,12 +10,16 @@
 @section('content')
 @php
     $studentName = optional($student)->name ? strtoupper(optional($student)->name) : 'STUDENT NAME';
-    $programText = optional($student)->program ? optional($student)->program : 'PROGRAM';
+    $course = optional($student)->canonicalCourse;
+    $programText = optional($student)->program ?: (optional($course)->name ?: optional($course)->code ?: 'PROGRAM');
     $gwaText = isset($gwa) && $gwa !== null ? number_format($gwa, 2) : '-';
     $signaturePath = public_path('img/signature-registrar.png');
 @endphp
 
 <div class="pf-page">
+    <div class="certificate-print-actions d-print-none">
+        <button type="button" class="req-btn-save" onclick="window.print()">Print Certificate</button>
+    </div>
     <article class="certificate-gwa">
         <header class="certificate-gwa__header">
             <h1 class="certificate-gwa__title">Certificate of<br>General Weighted Average</h1>
@@ -46,8 +50,8 @@
                     >
                @endif
 
+                <div class="certificate-gwa__signatory-name">MR. FEDERICE G. NUEVA</div>
                 <div class="certificate-gwa__signatory-title">University Registrar</div>
-                <!-- Registrar name/signature intentionally left blank per request -->
             </div>
 
             <div class="certificate-gwa__seal">Not Valid Without<br>University Seal</div>

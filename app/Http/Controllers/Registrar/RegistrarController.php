@@ -154,9 +154,19 @@ class RegistrarController extends Controller
         // Gender breakdown
         $maleCount = 0;
         $femaleCount = 0;
-        if (Schema::hasColumn('students', 'sex')) {
-            $maleCount   = Student::whereRaw('LOWER(sex) = ?', ['male'])->count();
-            $femaleCount = Student::whereRaw('LOWER(sex) = ?', ['female'])->count();
+        $genderRows = Student::query()
+            ->leftJoin('student_profiles as sp', 'sp.student_id', '=', 'students.id')
+            ->selectRaw("LOWER(TRIM(COALESCE(NULLIF(students.sex, ''), NULLIF(sp.gender, '')))) as gender_value, COUNT(*) as total")
+            ->groupBy('gender_value')
+            ->pluck('total', 'gender_value');
+
+        foreach ($genderRows as $genderValue => $count) {
+            $normalizedGender = strtolower(trim((string) $genderValue));
+            if (in_array($normalizedGender, ['male', 'm'], true)) {
+                $maleCount += (int) $count;
+            } elseif (in_array($normalizedGender, ['female', 'f'], true)) {
+                $femaleCount += (int) $count;
+            }
         }
 
         // Graduate count
@@ -364,28 +374,29 @@ class RegistrarController extends Controller
     public function storeRegistrarMessage(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'recipient' => 'required|string|max:190',
-            'subject' => 'required|string|max:190',
-            'body' => 'required|string|max:5000',
+            'recipient' => 'required_unless:folder,drafts|nullable|string|max:190',
+            'subject' => 'required_unless:folder,drafts|nullable|string|max:190',
+            'body' => 'required_unless:folder,drafts|nullable|string|max:5000',
             'folder' => 'nullable|in:sent,drafts',
         ]);
 
         $user = auth()->user();
+        $folder = (string) ($validated['folder'] ?? 'sent');
 
         $message = RegistrarMessage::query()->create([
-            'folder' => (string) ($validated['folder'] ?? 'sent'),
+            'folder' => $folder,
             'sender_name' => $user && trim((string) $user->name) !== '' ? (string) $user->name : 'Registrar Office',
             'sender_type' => 'Registrar',
-            'recipient' => trim((string) $validated['recipient']),
-            'subject' => trim((string) $validated['subject']),
-            'body' => trim((string) $validated['body']),
+            'recipient' => trim((string) ($validated['recipient'] ?? '')),
+            'subject' => trim((string) ($validated['subject'] ?? 'Untitled draft')),
+            'body' => trim((string) ($validated['body'] ?? '')),
             'source_type' => 'manual',
             'created_by_user_id' => $user ? (int) $user->id : null,
         ]);
 
         return response()->json([
             'ok' => true,
-            'message' => 'Message saved to database.',
+            'message' => $folder === 'drafts' ? 'Draft saved successfully.' : 'Message saved to database.',
             'id' => (int) $message->id,
         ], 201);
     }
@@ -537,15 +548,18 @@ class RegistrarController extends Controller
     public function storeEmailNotificationTemplate(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:80|regex:/^[A-Za-z0-9_-]+$/|unique:registrar_email_templates,code',
+            'code' => 'required|string|max:80|regex:/^[A-Za-z0-9_-]+$/',
             'name' => 'required|string|max:150',
             'audience' => 'required|string|max:80',
             'subject' => 'required|string|max:190',
             'body' => 'required|string|max:10000',
         ]);
 
-        RegistrarEmailTemplate::query()->create([
-            'code' => strtoupper(trim($validated['code'])),
+        $code = strtoupper(trim($validated['code']));
+
+        RegistrarEmailTemplate::query()->updateOrCreate([
+            'code' => $code,
+        ], [
             'name' => trim($validated['name']),
             'audience' => trim($validated['audience']),
             'subject' => trim($validated['subject']),
@@ -554,7 +568,7 @@ class RegistrarController extends Controller
             'updated_by_user_id' => auth()->id(),
         ]);
 
-        return response()->json(['ok' => true, 'message' => 'Email template created successfully.'], 201);
+        return response()->json(['ok' => true, 'message' => 'Email template saved successfully.'], 201);
     }
 
     public function updateEmailNotificationTemplate(Request $request, RegistrarEmailTemplate $registrarEmailTemplate): JsonResponse
@@ -5603,7 +5617,7 @@ class RegistrarController extends Controller
 
         $subjectCode = $this->sanitizeFilenameSegment($payload['subject']['code'] ?? 'course');
         $curriculumYear = $this->sanitizeFilenameSegment($payload['curriculum_year'] ?? 'curriculum');
-        $filename = 'course-config-' . $subjectCode . '-' . $curriculumYear . '-' . now()->format('Ymd_His') . '.pdf';
+        $filename = 'subject-config-' . $subjectCode . '-' . $curriculumYear . '-' . now()->format('Ymd_His') . '.pdf';
 
         $html = view('registrar.registrar-menu.academic-master.pdf.pre-requisites-subject', [
             'payload' => $payload,
@@ -7990,14 +8004,14 @@ class RegistrarController extends Controller
         $semesterIds = $this->resolveSectionOfferingSemesterIds($semester);
         $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
 
-        if (!$curriculum || !$yearBlockId || !count($semesterIds)) {
+        if (!$curriculum) {
             return response()->json([
                 'ok' => true,
                 'rows' => [],
                 'meta' => [
                     'course_id' => $courseId,
-                    'curriculum_id' => $curriculum ? (int) $curriculum->id : null,
-                    'curriculum_year' => $curriculum ? (string) $curriculum->curriculum_year_code : '',
+                    'curriculum_id' => null,
+                    'curriculum_year' => '',
                     'year_level' => $yearLevel,
                     'semester' => $semester,
                     'total' => 0,
@@ -8005,11 +8019,19 @@ class RegistrarController extends Controller
             ]);
         }
 
-        $rows = CourseCurriculumSubject::query()
+        $rowsQuery = CourseCurriculumSubject::query()
             ->with('subject')
-            ->where('course_curriculum_id', (int) $curriculum->id)
-            ->where('year_block_id', (int) $yearBlockId)
-            ->whereIn('semester_id', $semesterIds)
+            ->where('course_curriculum_id', (int) $curriculum->id);
+
+        if ($yearBlockId) {
+            $rowsQuery->where('year_block_id', (int) $yearBlockId);
+        }
+
+        if (count($semesterIds)) {
+            $rowsQuery->whereIn('semester_id', $semesterIds);
+        }
+
+        $rows = $rowsQuery
             ->orderBy('display_order')
             ->orderBy('id')
             ->get()
@@ -8087,7 +8109,7 @@ class RegistrarController extends Controller
 
         if ($selectedCurriculumSubjectIds->isEmpty()) {
             throw ValidationException::withMessages([
-                'curriculum_subject_ids' => ['Select at least one curriculum subject.'],
+                'curriculum_subject_ids' => ['Select at least one available course.'],
             ]);
         }
 
@@ -8115,8 +8137,6 @@ class RegistrarController extends Controller
         $assignments = CourseCurriculumSubject::query()
             ->with('subject')
             ->where('course_curriculum_id', (int) $curriculum->id)
-            ->where('year_block_id', (int) $yearBlockId)
-            ->whereIn('semester_id', $semesterIds)
             ->whereIn('id', $selectedCurriculumSubjectIds->all())
             ->orderBy('display_order')
             ->orderBy('id')
@@ -8124,7 +8144,7 @@ class RegistrarController extends Controller
 
         if ($assignments->count() !== $selectedCurriculumSubjectIds->count()) {
             throw ValidationException::withMessages([
-                'curriculum_subject_ids' => ['One or more selected curriculum subjects are invalid for the chosen course, year level, or semester.'],
+                'curriculum_subject_ids' => ['One or more selected courses are invalid for the chosen program.'],
             ]);
         }
 
@@ -9977,6 +9997,24 @@ class RegistrarController extends Controller
             ->unique('id')
             ->sortBy('code')
             ->values();
+
+        if ($courses->isEmpty()) {
+            $courses = Course::query()
+                ->orderBy('code')
+                ->orderBy('name')
+                ->get(['id', 'code', 'name'])
+                ->map(function (Course $course) {
+                    $code = trim((string) $course->code);
+                    $name = trim((string) $course->name);
+                    return [
+                        'id' => (int) $course->id,
+                        'code' => $code,
+                        'name' => $name,
+                        'label' => trim($code . ($code !== '' && $name !== '' ? ' - ' : '') . $name),
+                    ];
+                })
+                ->values();
+        }
 
         $yearLevels = $mappedRows
             ->pluck('year_level')
@@ -11989,22 +12027,35 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Application for Leave of Absence - Enrolled
      */
-    public function formsApplicationLeaveAbsenceEnrolled(Request $request)
+    public function formsApplicationLeaveAbsenceEnrolled(Request $request, ?Student $student = null)
     {
+        if (!$student && $request->filled('student_id')) {
+            $student = Student::find($request->query('student_id'));
+        }
+
+        $studentColumns = ['id', 'student_no', 'name'];
+        foreach (['college', 'program', 'year_level', 'school_year', 'semester', 'course_id', 'year_block_id', 'academic_term_id'] as $column) {
+            if (Schema::hasColumn('students', $column)) {
+                $studentColumns[] = $column;
+            }
+        }
+
         $students = Student::query()
-            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when($student, function ($query) use ($student) {
+                $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
+            })
             ->orderBy('name')
             ->limit(500)
-            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id', 'academic_term_id']);
+            ->get($studentColumns);
 
-        $selectedStudentId = (int) $request->query('student_id', 0);
+        $selectedStudentId = $student ? (int) $student->id : 0;
         if ($selectedStudentId <= 0 && $students->isNotEmpty()) {
             $selectedStudentId = (int) $students->first()->id;
         }
 
-        $student = null;
         if ($selectedStudentId > 0) {
-            $student = Student::find($selectedStudentId);
+            $student = Student::with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])->find($selectedStudentId);
         }
 
         $gradeRows = collect();
@@ -12071,16 +12122,42 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Graduation Clearance
      */
-    public function formsGraduationClearance()
+    public function formsGraduationClearance(?Student $student = null)
     {
-        return view('registrar.forms.graduation-clearance');
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        $studentColumns = ['id', 'student_no', 'name'];
+        foreach (['college', 'course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester'] as $column) {
+            if (Schema::hasColumn('students', $column)) {
+                $studentColumns[] = $column;
+            }
+        }
+
+        $graduationClearanceRows = Student::query()
+            ->with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when($student, function ($query) use ($student) {
+                $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
+            })
+            ->orderBy('name')
+            ->limit(100)
+            ->get($studentColumns);
+
+        $selectedStudentId = $student ? (int) $student->id : null;
+
+        return view('registrar.forms.graduation-clearance', compact('graduationClearanceRows', 'selectedStudentId'));
     }
 
     /**
      * Registrar > Forms > Honorable Dismissal
      */
-    public function formsHonorableDismissal()
+    public function formsHonorableDismissal(?Student $student = null)
     {
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
         $studentColumns = ['id', 'student_no', 'name'];
         foreach (['course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester'] as $column) {
             if (Schema::hasColumn('students', $column)) {
@@ -12090,11 +12167,16 @@ class RegistrarController extends Controller
 
         $honorableDismissalRows = Student::query()
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when($student, function ($query) use ($student) {
+                $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
+            })
             ->orderBy('name')
             ->limit(100)
             ->get($studentColumns);
 
-        return view('registrar.forms.honorable-dismissal', compact('honorableDismissalRows'));
+        $selectedStudentId = $student ? (int) $student->id : null;
+
+        return view('registrar.forms.honorable-dismissal', compact('honorableDismissalRows', 'selectedStudentId'));
     }
 
     /**
@@ -12345,47 +12427,119 @@ class RegistrarController extends Controller
      */
     public function formsCertificateGwa(?\App\Student $student = null)
     {
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
         $gwa = null;
 
         if ($student) {
-            $grades = StudentSubjectGrade::with('subject')
-                ->where('student_id', $student->id)
-                ->get();
+            $student->loadMissing('canonicalCourse');
 
-            $weightedSum = 0.0;
-            $unitsSum = 0.0;
-            $plainSum = 0.0;
-            $plainCount = 0;
+            if (Schema::hasTable('student_grade_records')) {
+                $gradeRecords = \App\StudentGradeRecord::where(function ($q) use ($student) {
+                    $q->where('student_id', $student->id)
+                        ->orWhere('student_no', $student->student_no);
+                })->get();
 
-            foreach ($grades as $rec) {
-                if ($rec->final_average === null) {
-                    continue;
-                }
-                $avg = (float) $rec->final_average;
-                $units = 0.0;
-                if ($rec->relationLoaded('subject') && $rec->subject && isset($rec->subject->units) && is_numeric($rec->subject->units)) {
-                    $units = (float) $rec->subject->units;
-                }
+                $gradedRecords = $gradeRecords->filter(function ($record) {
+                    return !$record->inc
+                        && is_numeric($record->final_grade)
+                        && (float) $record->final_grade > 0
+                        && (float) $record->units > 0;
+                });
 
-                if ($units > 0) {
-                    $weightedSum += $avg * $units;
-                    $unitsSum += $units;
-                } else {
-                    $plainSum += $avg;
-                    $plainCount++;
+                if ($gradedRecords->isNotEmpty()) {
+                    $weightedSum = $gradedRecords->sum(function ($record) {
+                        return (float) $record->final_grade * (float) $record->units;
+                    });
+                    $unitsSum = $gradedRecords->sum(function ($record) {
+                        return (float) $record->units;
+                    });
+                    $gwa = $unitsSum > 0 ? round($weightedSum / $unitsSum, 2) : null;
                 }
             }
 
-            if ($unitsSum > 0) {
-                $gwa = round($weightedSum / $unitsSum, 2);
-            } elseif ($plainCount > 0) {
-                $gwa = round($plainSum / $plainCount, 2);
-            } else {
-                $gwa = null;
+            if ($gwa === null) {
+                $grades = StudentSubjectGrade::with('subject')
+                    ->where('student_id', $student->id)
+                    ->get();
+
+                $weightedSum = 0.0;
+                $unitsSum = 0.0;
+                $plainSum = 0.0;
+                $plainCount = 0;
+
+                foreach ($grades as $rec) {
+                    if ($rec->final_average === null) {
+                        continue;
+                    }
+                    $avg = (float) $rec->final_average;
+                    $units = 0.0;
+                    if ($rec->relationLoaded('subject') && $rec->subject && isset($rec->subject->units) && is_numeric($rec->subject->units)) {
+                        $units = (float) $rec->subject->units;
+                    }
+
+                    if ($units > 0) {
+                        $weightedSum += $avg * $units;
+                        $unitsSum += $units;
+                    } else {
+                        $plainSum += $avg;
+                        $plainCount++;
+                    }
+                }
+
+                if ($unitsSum > 0) {
+                    $gwa = round($weightedSum / $unitsSum, 2);
+                } elseif ($plainCount > 0) {
+                    $gwa = round($plainSum / $plainCount, 2);
+                }
             }
         }
 
         return view('registrar.forms.certificates.certificate-gwa', compact('student', 'gwa'));
+    }
+
+    /**
+     * Registrar > Forms > Dean's Honors Certificate
+     */
+    public function formsCertificateDeansHonors(?\App\Student $student = null)
+    {
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'academicTerm']);
+        }
+
+        return view('registrar.forms.certificates.deans-honors', [
+            'student' => $student,
+            'issuedDate' => request()->query('issued_date'),
+            'awardTitle' => "Dean's Honors List Award",
+            'pageTitle' => "Dean's Honors Certificate",
+        ]);
+    }
+
+    /**
+     * Registrar > Forms > President's Honors Certificate
+     */
+    public function formsCertificatePresidentsHonors(?\App\Student $student = null)
+    {
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'academicTerm']);
+        }
+
+        return view('registrar.forms.certificates.deans-honors', [
+            'student' => $student,
+            'issuedDate' => request()->query('issued_date'),
+            'awardTitle' => "President's Honors List Award",
+            'pageTitle' => "President's Honors Certificate",
+        ]);
     }
 
     /**
@@ -12479,9 +12633,13 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Request Form for F 137A
      */
-    public function formsRequestFormF137a()
+    public function formsRequestFormF137a(?Student $student = null)
     {
-        return view('registrar.forms.request-form-f-137a');
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        return view('registrar.forms.request-form-f-137a', compact('student'));
     }
 
     private function citizensCharterPages(): array
@@ -12873,7 +13031,7 @@ scholastic records but instead shall be replaced with the computed Semestral gra
                     ['label' => 'How feedback is processed', 'value' => '1. Acknowledgement of Feedback and Suggestion\n\n2. Convey feedbacks to concerned personnel\n\n3. Deliberation of Feedbacks and Suggestions that may be adopted/Find possible solution for negative feedbacks\n\n4. Update sender on actions taken to respond to their feedback'],
                     ['label' => 'How to file a complaint', 'value' => "Complaints must be sent in writing to the Registrar's Office either via snail mail, email or personally submitted to the office."],
                     ['label' => 'How complaints are processed', 'value' => '1. Acknowledgement of Written Complaint\n\n2. Validation of Complaint/Investigation\n\n3. Respond with written solution/decision/ action taken within 48 hours from receipt of complaint.'],
-                    ['label' => 'Contact Information', 'value' => '\n<b>EMAIL</b>: \nregistrar@plpasig.edu.ph\n<b>NO</b>: (362) 8628-1014 local 110'],
+                    ['label' => 'Contact Information', 'value' => '\n<b>EMAIL</b>: \nregistrar@plpasig.edu.ph\n<b>NO</b>: 02-8642-8300 local 110'],
                 ],
             ],
         ];

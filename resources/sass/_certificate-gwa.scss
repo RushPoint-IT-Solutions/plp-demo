@@ -3,6 +3,14 @@
     margin: 25mm 20mm;
 }
 
+@font-face {
+    font-family: 'Old Towne';
+    src: url('../fonts/EnglishTowne.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 .registrar-body {
     .certificate-gwa {
         position: relative;
@@ -41,8 +49,9 @@
 
     .certificate-gwa__title {
         margin: 18mm 0 6mm;
+        font-family: 'Old Towne', 'Times New Roman', Times, serif;
         font-size: 24pt;
-        font-weight: 700;
+        font-weight: 400;
         line-height: 1.1;
     }
 
@@ -50,9 +59,9 @@
         width: 100%;
         max-width: 160mm;
         margin: 0 auto;
-        text-align: center;
+        text-align: justify;
         font-size: 12pt;
-        line-height: 1.55;
+        line-height: 2;
         letter-spacing: 0.01em;
     }
 
@@ -90,6 +99,8 @@
         align-items: center;
         justify-content: flex-end;
         gap: 2mm;
+        width: 70mm;
+        margin-left: auto;
         padding-top: 18mm;
         text-align: center;
     }
@@ -108,6 +119,13 @@
         height: 1px;
         margin: 0 auto 10mm;
         border-top: 1px solid #000;
+    }
+
+    .certificate-gwa__signatory-name {
+        font-size: 12pt;
+        font-weight: 700;
+        line-height: 1.1;
+        text-transform: uppercase;
     }
 
     .certificate-gwa__signatory-title {

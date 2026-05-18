@@ -2316,19 +2316,24 @@ class AdminToolsController extends Controller
     public function facultyFileStore(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:60|unique:master_faculty_files,code',
+            'code' => 'nullable|string|max:60|unique:master_faculty_files,code',
             'name' => 'required|string|max:190',
             'department' => 'required|string|max:190',
             'status' => 'required|string|in:Active,Inactive',
         ]);
 
+        $code = trim((string) ($validated['code'] ?? ''));
+        if ($code === '') {
+            $code = $this->nextFacultyFileCode();
+        }
+
         $sourceFacultyId = Faculty::query()
-            ->where('code', $validated['code'])
+            ->where('code', $code)
             ->orWhere('name', $validated['name'])
             ->value('id');
 
         $row = MasterFacultyFile::create([
-            'code' => $validated['code'],
+            'code' => $code,
             'source_faculty_id' => $sourceFacultyId ?: null,
             'name' => $validated['name'],
             'department' => $validated['department'],
@@ -2352,7 +2357,7 @@ class AdminToolsController extends Controller
     public function facultyFileUpdate(Request $request, MasterFacultyFile $masterFacultyFile): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:60|unique:master_faculty_files,code,' . $masterFacultyFile->id,
+            'code' => 'nullable|string|max:60|unique:master_faculty_files,code,' . $masterFacultyFile->id,
             'name' => 'required|string|max:190',
             'department' => 'required|string|max:190',
             'status' => 'required|string|in:Active,Inactive',
@@ -2361,13 +2366,18 @@ class AdminToolsController extends Controller
             'config_payload.sections' => 'nullable|array',
         ]);
 
+        $code = trim((string) ($validated['code'] ?? ''));
+        if ($code === '') {
+            $code = $masterFacultyFile->code ?: $this->nextFacultyFileCode();
+        }
+
         $sourceFacultyId = Faculty::query()
-            ->where('code', $validated['code'])
+            ->where('code', $code)
             ->orWhere('name', $validated['name'])
             ->value('id');
 
         $updateData = [
-            'code' => $validated['code'],
+            'code' => $code,
             'source_faculty_id' => $sourceFacultyId ?: null,
             'name' => $validated['name'],
             'department' => $validated['department'],
@@ -2398,6 +2408,29 @@ class AdminToolsController extends Controller
         $masterFacultyFile->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    private function nextFacultyFileCode(): string
+    {
+        $prefix = 'FAC-';
+        $lastCode = MasterFacultyFile::query()
+            ->where('code', 'like', $prefix . '%')
+            ->orderByDesc('id')
+            ->value('code');
+
+        $lastNumber = 0;
+        if (preg_match('/^FAC-(\d+)$/', (string) $lastCode, $matches)) {
+            $lastNumber = (int) $matches[1];
+        } else {
+            $lastNumber = (int) MasterFacultyFile::query()->count();
+        }
+
+        do {
+            $lastNumber++;
+            $code = $prefix . str_pad((string) $lastNumber, 4, '0', STR_PAD_LEFT);
+        } while (MasterFacultyFile::query()->where('code', $code)->exists());
+
+        return $code;
     }
 
     public function studentProfile()

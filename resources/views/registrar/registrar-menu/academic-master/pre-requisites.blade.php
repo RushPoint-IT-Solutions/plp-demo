@@ -38,9 +38,6 @@
             <h2>Pre/Co-Requisite Setup</h2>
             <p>Select a program curriculum, open a course, then assign required courses before or alongside enrollment.</p>
         </div>
-        <div class="prereq-hero-actions">
-            <button type="button" class="prereq-secondary-btn" id="prereqAddCourseTopBtn">Add Course to Curriculum</button>
-        </div>
     </section>
 
     <div class="prereq-filter-bar">
@@ -75,7 +72,7 @@
                 <div class="prereq-program-subtitle">Click Setup on a course row to add pre-requisite and co-requisite courses.</div>
             </div>
             <div class="prereq-list-actions">
-                <button type="button" class="prereq-download-btn" id="prereqAddCourseBtn">Add Course</button>
+                <button type="button" class="prereq-download-btn" id="prereqAddCourseBtn">Add Course to Curriculum</button>
                 <button type="button" class="prereq-download-btn" id="prereqDownloadBtn">Download PDF</button>
             </div>
         </div>

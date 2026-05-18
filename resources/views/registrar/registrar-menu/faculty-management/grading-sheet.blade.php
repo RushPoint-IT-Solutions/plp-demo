@@ -36,6 +36,54 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        @media print {
+            body.page-registrar-grading-sheet .student-page-header,
+            body.page-registrar-grading-sheet .registrar-sidebar,
+            body.page-registrar-grading-sheet .gs-filter-bar,
+            body.page-registrar-grading-sheet .gs-detail-toolbar,
+            body.page-registrar-grading-sheet #gsListView,
+            body.page-registrar-grading-sheet .pf-pagination {
+                display: none !important;
+            }
+            body.page-registrar-grading-sheet .pf-page {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body.page-registrar-grading-sheet #gsDetailView {
+                display: block !important;
+            }
+            body.page-registrar-grading-sheet .gs-section-banner-v2 {
+                border: 1px solid #111;
+                margin: 0 0 10px;
+                padding: 8px;
+                box-shadow: none;
+            }
+            body.page-registrar-grading-sheet .gs-banner-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 4px 16px;
+                font-size: 10px;
+            }
+            body.page-registrar-grading-sheet .student-table-wrapper {
+                overflow: visible !important;
+            }
+            body.page-registrar-grading-sheet .gs-detail-table {
+                width: 100% !important;
+                min-width: 0 !important;
+                border-collapse: collapse !important;
+                font-size: 9px;
+            }
+            body.page-registrar-grading-sheet .gs-detail-table th,
+            body.page-registrar-grading-sheet .gs-detail-table td {
+                border: 1px solid #111 !important;
+                padding: 4px !important;
+                color: #000 !important;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+        }
     </style>
 @endpush
 

@@ -263,6 +263,8 @@
                     </a>
                     <div class="sidebar-nested-menu">
                         <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-gwa') ? 'active' : '' }}">Certificate of GWA</a>
+                        <a href="{{ route('registrar.registrar-menu.forms.certificates.deans-honors') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.deans-honors*') ? 'active' : '' }}">Dean's Honors</a>
+                        <a href="{{ route('registrar.registrar-menu.forms.certificates.presidents-honors') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.presidents-honors*') ? 'active' : '' }}">President's Honors</a>
                         <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') ? 'active' : '' }}">Form 8C-2 (Graduation)</a>
                         <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') ? 'active' : '' }}">Form 8D-2 (Honor)</a>
                     </div>

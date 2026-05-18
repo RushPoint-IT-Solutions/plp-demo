@@ -12,9 +12,14 @@
     $selectedStudent = $student;
     $studentName = optional($selectedStudent)->name ?: '';
     $studentNo = optional($selectedStudent)->student_no ?: '';
-    $program = optional($selectedStudent)->program ?: '';
-    $schoolYear = optional($selectedStudent)->school_year ?: '';
-    $semester = optional($selectedStudent)->semester ?: '';
+    $program = optional($selectedStudent)->program ?: optional(optional($selectedStudent)->canonicalCourse)->code ?: optional(optional($selectedStudent)->canonicalCourse)->name ?: '';
+    $college = optional($selectedStudent)->college ?: '';
+    $yearLevel = optional($selectedStudent)->year_level ?: optional(optional($selectedStudent)->yearBlock)->label ?: '';
+    $schoolYear = optional($selectedStudent)->school_year ?: optional(optional($selectedStudent)->academicTerm)->school_year ?: '';
+    $semester = optional($selectedStudent)->semester ?: optional(optional($selectedStudent)->academicTerm)->term ?: '';
+    $section = trim(($program ?: 'PROGRAM') . ' ' . ($yearLevel ?: 'YEAR'));
+    $studentEmail = optional(optional($selectedStudent)->profile)->student_email ?: '';
+    $studentPhone = optional(optional($selectedStudent)->profile)->mobile_number ?: '';
 
     $displayRows = collect($gradeRows ?? [])->take(8)->values()->all();
     $blankRow = [
@@ -24,7 +29,7 @@
         'professor_name_signature' => '',
     ];
 
-    while (count($displayRows) < 8) {
+    while (count($displayRows) < 9) {
         $displayRows[] = $blankRow;
     }
 @endphp
@@ -67,6 +72,17 @@
 
     <div class="loae-a4-stage">
     <article class="loae-sheet a4-wrapper" aria-label="Application for Leave of Absence - Enrolled">
+        <header class="loae-document-head">
+            <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="loae-document-logo">
+            <div class="loae-document-heading">
+                <p class="loae-header-line loae-header-line--city">City Government of Pasig</p>
+                <p class="loae-header-line loae-header-line--school">PAMANTASAN NG LUNGSOD NG PASIG</p>
+                <p class="loae-header-line loae-header-line--office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
+                <p class="loae-header-line loae-header-line--address">Alkalde Jose St. Kapasigan, Pasig City, Philippines 1600</p>
+                <p class="loae-header-line loae-header-line--contact">Tel Nos. 628-1015 loc 107 Telefax 628-1015</p>
+            </div>
+        </header>
+
         <p class="loae-form-no">PLPRO FORM NO. IH-2 Revised 2023</p>
         <h2 class="loae-title">APPLICATION FOR LEAVE OF ABSENCE - ENROLLED</h2>
 
@@ -79,8 +95,8 @@
             I,
             <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('student_name', $studentName) }}"></span>,
             a student currently enrolled in Pamantasan ng Lungsod ng Pasig with student number
-            <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('student_no', $studentNo) }}"></span>
-            under the BS
+            <span class="loae-sentence-field loae-sentence-field--student-no"><input type="text" class="loae-inline" value="{{ old('student_no', $studentNo) }}"></span>
+            under the
             <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('program', $program) }}"></span>
             Program, hereby request for the withdrawal of my enrolment and application for a leave of absence effective this
             <span class="loae-sentence-field"><input type="text" class="loae-inline" value="{{ old('semester', $semester) }}"></span>
@@ -270,7 +286,7 @@
 <script src="{{ asset('js/registrar-loa-enrolled.js') }}?v={{ time() }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const allStudents = {!! json_encode($students->map(function($s) { return ['id' => $s->id, 'student_no' => $s->student_no, 'name' => $s->name, 'label' => $s->student_no . ' - ' . $s->name]; })) !!};
+        const allStudents = {!! json_encode($students->map(function($s) { return ['id' => $s->id, 'student_no' => (string) $s->student_no, 'name' => (string) $s->name, 'label' => trim((string) $s->student_no . ' - ' . (string) $s->name)]; })) !!};
         const searchInput = document.getElementById('loae-student-search');
         const resultsContainer = document.getElementById('loae-search-results');
         const studentIdInput = document.getElementById('loae-student-id');
@@ -293,8 +309,8 @@
             }
 
             const filtered = allStudents.filter(s => 
-                s.student_no.toLowerCase().includes(query) || 
-                s.name.toLowerCase().includes(query)
+                String(s.student_no || '').toLowerCase().includes(query) ||
+                String(s.name || '').toLowerCase().includes(query)
             ).slice(0, 10);
 
             if (filtered.length === 0) {
@@ -317,7 +333,7 @@
                 studentIdInput.value = studentId;
                 resultsContainer.classList.add('d-none');
                 // Auto-submit
-                window.location.href = '{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}?student_id=' + studentId;
+                window.location.href = '{{ url('/registrar/registrar-menu/forms/application-leave-of-absence-enrolled') }}/' + studentId;
             }
         });
 

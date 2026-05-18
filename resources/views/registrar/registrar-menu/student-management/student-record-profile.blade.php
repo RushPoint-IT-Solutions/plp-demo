@@ -913,15 +913,17 @@
                                 ['Certificate of Registration (COR)', route('registrar.registrar-menu.forms.cor.certificate-of-registration'),'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0-1.756 1.077'],
                                 ['Copy of Grades (COG)', route('registrar.registrar-menu.forms.cog.copy-of-grades'),'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M12 12h4M12 16h4M8 12h.01M8 16h.01'],
                                 ['Official Grade Report', route('registrar.registrar-menu.forms.official-grade-report'),'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8'],
-                                ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa'),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],
+                                ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],
+                                ['Dean\'s Honors', route('registrar.registrar-menu.forms.certificates.deans-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
+                                ['President\'s Honors', route('registrar.registrar-menu.forms.certificates.presidents-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
                                 ['Form 8C-2 (Graduation)', route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2'),'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3'],
                                 ['Form 8D-2 (Honor)', route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2'),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z'],
                                 ['Diploma', route('registrar.registrar-menu.forms.diploma'),'M22 10v6M2 10l10-5 10 5-10 5z M6 12v5c3 3 9 3 12 0v-5'],
-                                ['Honorable Dismissal', route('registrar.registrar-menu.forms.honorable-dismissal'),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
-                                ['Graduation Clearance', route('registrar.registrar-menu.forms.graduation-clearance'),'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
-                                ['Leave of Absence', route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled'),'M8 2v3M16 2v3M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5z'],
+                                ['Honorable Dismissal', route('registrar.registrar-menu.forms.honorable-dismissal.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+                                ['Graduation Clearance', route('registrar.registrar-menu.forms.graduation-clearance.show', ['student' => $student->id]),'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
+                                ['Leave of Absence', route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled.show', ['student' => $student->id]),'M8 2v3M16 2v3M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5z'],
                                 ['Cross-Enroll Permit', route('registrar.registrar-menu.forms.permission-cross-enroll'),'M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4-3 3-3-3m3-3v11'],
-                                ['Request Form F137A', route('registrar.registrar-menu.forms.request-form-f-137a'),'M4 4h16v16H4zM4 9h16M9 9v11'],
+                                ['Request Form F137A', route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id]),'M4 4h16v16H4zM4 9h16M9 9v11'],
                             ];
                         @endphp
                         @foreach($certs as [$certName,$certUrl,$certIcon])

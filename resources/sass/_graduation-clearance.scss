@@ -1,5 +1,20 @@
 /* Graduation Clearance checklist adjustments (UI parity with forms.css) */
 
+.gc-sheet {
+    line-height: 2;
+}
+
+.gc-check-text,
+.gc-check-office {
+    line-height: 2;
+}
+
+.gc-blank {
+    min-height: 1.1em;
+    line-height: 1.2;
+    text-align: center;
+}
+
 .gc-check-row.gc-check-row-office-only {
     min-height: 9px;
     margin-top: -3px;
@@ -20,6 +35,17 @@
     align-items: center;
 }
 
+.gc-check-row.gc-check-row-research {
+    min-height: 20px;
+    margin-top: -1px;
+    margin-bottom: 1px;
+}
+
+.gc-check-row.gc-check-row-research .gc-check-text,
+.gc-check-row.gc-check-row-research .gc-check-office {
+    line-height: 1.2;
+}
+
 @media print {
     body.gc-printing .gc-check-row.gc-check-row-office-only {
         min-height: 8px !important;
@@ -30,6 +56,17 @@
     body.gc-printing .gc-check-row.gc-check-row-office-only .gc-check-office {
         white-space: nowrap !important;
         font-size: 9.8pt !important;
-        line-height: 0.95 !important;
+        line-height: 2 !important;
+    }
+
+    body.gc-printing .gc-check-row.gc-check-row-research {
+        min-height: 20px !important;
+        margin-top: -1px !important;
+        margin-bottom: 1px !important;
+    }
+
+    body.gc-printing .gc-check-row.gc-check-row-research .gc-check-text,
+    body.gc-printing .gc-check-row.gc-check-row-research .gc-check-office {
+        line-height: 1.2 !important;
     }
 }

@@ -411,7 +411,7 @@
         <a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sar-qa-btn sar-qa-btn-green" target="_blank">
             📊 Copy of Grades
         </a>
-        <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa') }}" class="sar-qa-btn sar-qa-btn-blue" target="_blank">
+        <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]) }}" class="sar-qa-btn sar-qa-btn-blue" target="_blank">
             🏅 Cert. of GWA
         </a>
         <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sar-qa-btn sar-qa-btn-blue" target="_blank">
@@ -789,10 +789,20 @@
                 <div class="sar-cert-name">Official Grade Report</div>
                 <div class="sar-cert-desc">Comprehensive official grade report document</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">🏅</div>
                 <div class="sar-cert-name">Certificate of GWA</div>
                 <div class="sar-cert-desc">Certifies the student's General Weighted Average</div>
+            </a>
+            <a href="{{ route('registrar.registrar-menu.forms.certificates.deans-honors.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
+                <div class="sar-cert-icon">DH</div>
+                <div class="sar-cert-name">Dean's Honors</div>
+                <div class="sar-cert-desc">Dean's Honors List Award for this student</div>
+            </a>
+            <a href="{{ route('registrar.registrar-menu.forms.certificates.presidents-honors.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
+                <div class="sar-cert-icon">PH</div>
+                <div class="sar-cert-name">President's Honors</div>
+                <div class="sar-cert-desc">President's Honors List Award for this student</div>
             </a>
             <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">🎓</div>
@@ -809,12 +819,12 @@
                 <div class="sar-cert-name">Diploma</div>
                 <div class="sar-cert-desc">Official PLP diploma for program completion</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">📄</div>
                 <div class="sar-cert-name">Honorable Dismissal</div>
                 <div class="sar-cert-desc">Certificate for transferring students</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">✅</div>
                 <div class="sar-cert-name">Graduation Clearance</div>
                 <div class="sar-cert-desc">Clearance form verifying all requirements for graduation</div>
@@ -824,12 +834,12 @@
                 <div class="sar-cert-name">Cross-Enrollment Permit</div>
                 <div class="sar-cert-desc">Permission to enroll subjects at another institution</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">📝</div>
                 <div class="sar-cert-name">Request Form for F 137A</div>
                 <div class="sar-cert-desc">Formal request for high school records</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">⏸️</div>
                 <div class="sar-cert-name">Leave of Absence</div>
                 <div class="sar-cert-desc">Application form for temporary leave from enrollment</div>

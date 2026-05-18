@@ -75,7 +75,7 @@
   transform-origin: top center;
   zoom: var(--rf137a-zoom);
   font-size: 12pt;
-  line-height: 1.32;
+  line-height: 2;
 }
 
 @supports not (zoom: 1) {
@@ -89,7 +89,7 @@
   color: #000 !important;
   border-color: #000 !important;
   font-size: 12pt !important;
-  line-height: 1.32;
+  line-height: 2;
 }
 
 .registrar-body .rf137a-topline {
@@ -293,7 +293,7 @@
   .registrar-body .rf137a-sheet,
   .registrar-body .rf137a-sheet * {
     font-size: 12pt !important;
-    line-height: 1.32 !important;
+    line-height: 2 !important;
   }
 
   .registrar-body .rf137a-sheet .rf137a-paragraph {

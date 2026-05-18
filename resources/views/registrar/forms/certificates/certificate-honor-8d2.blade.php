@@ -36,6 +36,9 @@
 @endphp
 
 <div class="pf-page">
+    <div class="certificate-print-actions d-print-none">
+        <button type="button" class="req-btn-save" onclick="window.print()">Print Certificate</button>
+    </div>
     <article class="certificate-8d2">
         <header class="certificate-8d2__header">
             <h1 class="certificate-8d2__title">Certificate of Honor</h1>

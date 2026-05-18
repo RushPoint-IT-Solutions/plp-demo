@@ -87,34 +87,36 @@
                         <th>Section</th>
                     </tr>
                 </thead>
-                <tbody id="gcTableBody">
-                    <tr data-form-type="non-board">
+                <tbody id="gcTableBody" data-selected-row-id="{{ $selectedStudentId }}">
+                    @forelse($graduationClearanceRows as $student)
+                    @php
+                        $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
+                        $programName = trim((string) (optional($student->canonicalCourse)->name ?: $program));
+                        $college = trim((string) ($student->college ?: ''));
+                        $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
+                        $section = trim((string) (($program ?: 'PROGRAM') . ' ' . ($yearLevel ?: 'YEAR')));
+                        $email = trim((string) optional($student->profile)->student_email);
+                        $phone = trim((string) optional($student->profile)->mobile_number);
+                        $boardProgram = preg_match('/\b(BSED|BEED|BSN|BS\s*NURSING|PSYCHOLOGY|CRIMINOLOGY|ACCOUNTANCY)\b/i', $program . ' ' . $programName);
+                        $formType = $boardProgram ? 'board' : 'non-board';
+                    @endphp
+                    <tr data-row-id="{{ $student->id }}"
+                        data-form-type="{{ $formType }}"
+                        data-college="{{ $college }}"
+                        data-email="{{ $email }}"
+                        data-phone="{{ $phone }}"
+                        data-date="{{ now()->format('F d, Y') }}">
                         <td style="text-align: center;"><input type="checkbox" class="gc-row-select" onchange="gcSyncSelectAll()"></td>
-                        <td>2122B0104</td>
-                        <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">Jhon Mark Samson</button></td>
-                        <td>BSIT</td>
-                        <td>Non-Board</td>
-                        <td>Fourth</td>
-                        <td>BSIT 4A</td>
+                        <td>{{ $student->student_no ?: '-' }}</td>
+                        <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">{{ $student->name ?: '-' }}</button></td>
+                        <td>{{ $program ?: '-' }}</td>
+                        <td>{{ $formType === 'board' ? 'Board' : 'Non-Board' }}</td>
+                        <td>{{ $yearLevel ?: '-' }}</td>
+                        <td>{{ $section }}</td>
                     </tr>
-                    <tr data-form-type="board">
-                        <td style="text-align: center;"><input type="checkbox" class="gc-row-select" onchange="gcSyncSelectAll()"></td>
-                        <td>2122B0115</td>
-                        <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">Mary Ann dela Cruz</button></td>
-                        <td>BSED</td>
-                        <td>Board</td>
-                        <td>Fourth</td>
-                        <td>BSED 4A</td>
-                    </tr>
-                    <tr data-form-type="non-board">
-                        <td style="text-align: center;"><input type="checkbox" class="gc-row-select" onchange="gcSyncSelectAll()"></td>
-                        <td>2324E0012</td>
-                        <td><button type="button" class="doc-link-btn" onclick="gcOpenPreviewFromRow(this)">Analyn Marbibi Rebosora</button></td>
-                        <td>BS Entrepreneurship</td>
-                        <td>Non-Board</td>
-                        <td>Fourth</td>
-                        <td>BSENT 4A</td>
-                    </tr>
+                    @empty
+                    <tr><td colspan="7" style="text-align:center; color:#666;">No student records found.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

@@ -322,14 +322,18 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('forms')->name('forms.')->group(function () {
             Route::get('/placeholder', 'Registrar\RegistrarController@formsPlaceholder')->name('placeholder');
             Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
+            Route::get('/application-leave-of-absence-enrolled/{student}', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled.show');
             Route::get('/application-leave-of-absence-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
+            Route::get('/graduation-clearance/{student}', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance.show');
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
+            Route::get('/honorable-dismissal/{student}', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal.show');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
             Route::get('/citizens-charter', 'Registrar\RegistrarController@formsCitizensCharter')->name('citizens-charter');
+            Route::get('/request-form-f-137a/{student}', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a.show');
             Route::get('/request-form-f-137a', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a');
             Route::post('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnrollStore')->name('permission-cross-enroll.store');
             Route::put('/permission-cross-enroll/{crossEnrollmentRequest}', 'Registrar\RegistrarController@formsPermissionCrossEnrollUpdate')->name('permission-cross-enroll.update');
@@ -343,6 +347,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::prefix('certificates')->name('certificates.')->group(function () {
                 Route::get('/certificate-of-gwa/{student}', 'Registrar\\RegistrarController@formsCertificateGwa')->name('certificate-gwa.show');
                 Route::get('/certificate-of-gwa', 'Registrar\\RegistrarController@formsCertificateGwa')->name('certificate-gwa');
+                Route::get('/deans-honors/{student}', 'Registrar\\RegistrarController@formsCertificateDeansHonors')->name('deans-honors.show');
+                Route::get('/deans-honors', 'Registrar\\RegistrarController@formsCertificateDeansHonors')->name('deans-honors');
+                Route::get('/presidents-honors/{student}', 'Registrar\\RegistrarController@formsCertificatePresidentsHonors')->name('presidents-honors.show');
+                Route::get('/presidents-honors', 'Registrar\\RegistrarController@formsCertificatePresidentsHonors')->name('presidents-honors');
                 Route::get('/8c2-certificate-of-graduation', 'Registrar\\RegistrarController@formsCertificateGraduation8c2')->name('certificate-graduation-8c2');
                 Route::get('/8d2-certificate-of-honor', 'Registrar\\RegistrarController@formsCertificateHonor8d2')->name('certificate-honor-8d2');
             });

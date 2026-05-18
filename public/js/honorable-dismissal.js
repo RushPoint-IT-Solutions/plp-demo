@@ -34,7 +34,7 @@ function hdBuildTemplate(data, meta) {
 
     /* Registrar signature */
     var sig = '<div class="hd-registrar-sig">' +
-        '<div class="hd-sig-name">FEDERICO G. NUEVA, MT</div>' +
+        '<div class="hd-sig-name">MR. FEDERICO G. NUEVA</div>' +
         '<div class="hd-sig-title">University Registrar</div>' +
     '</div>';
 
@@ -282,3 +282,11 @@ function hdOpenDelete(id){hdCurrentRowId=id;hdOpenModal('hdDeleteModal');}
 function hdConfirmDelete(){var r=hdGetRow(hdCurrentRowId);if(r)r.remove();hdSyncSelectAll();hdCloseModal('hdDeleteModal');}
 document.addEventListener('click',function(e){var t=e.target.closest('[data-hd-menu-toggle]');if(t){e.stopPropagation();hdToggleMenu(t.getAttribute('data-hd-menu-toggle'),t);return;}if(!e.target.closest('.apst-dropdown'))hdCloseMenus();});
 window.addEventListener('scroll',hdCloseMenus,true);
+
+document.addEventListener('DOMContentLoaded', function() {
+    var tableBody = document.getElementById('hdTableBody');
+    var selectedRowId = tableBody ? (tableBody.getAttribute('data-selected-row-id') || '').trim() : '';
+    if (selectedRowId && hdGetRow(selectedRowId)) {
+        hdOpenPreview(selectedRowId);
+    }
+});

@@ -8,7 +8,7 @@
     $isConfigMode = request('view') === 'config';
     $cfgRow = $cfgFaculty ?? null;
     $cfgId = request('id', optional($cfgRow)->id);
-    $cfgCode = request('code', optional($cfgRow)->code ?? '01A');
+    $cfgCode = request('code', optional($cfgRow)->code ?? '');
     $cfgName = request('name', optional($cfgRow)->name ?? 'Dela Cruz, Juan');
     $cfgDepartment = request('department', optional($cfgRow)->department ?? 'Computer Studies');
     $cfgStatus = request('status', optional($cfgRow)->status ?? 'Active');
@@ -71,7 +71,7 @@
 
             <div class="ffc-grid-top">
                 <div class="ffc-field"><label class="app-filter-label" for="ffcFacultyName">Faculty Name</label><input id="ffcFacultyName" class="app-filter-input" type="text" value="{{ $cfgName }}"></div>
-                <div class="ffc-field"><label class="app-filter-label" for="ffcFacultyCode">Faculty Code</label><input id="ffcFacultyCode" class="app-filter-input" type="text" value="{{ $cfgCode }}"></div>
+                <div class="ffc-field"><label class="app-filter-label" for="ffcFacultyCode">Faculty Code</label><input id="ffcFacultyCode" class="app-filter-input" type="text" value="{{ $cfgCode }}" placeholder="Auto-generated if blank"></div>
                 <div class="ffc-field"><label class="app-filter-label" for="ffcFacultyStatusTop">Status</label><select id="ffcFacultyStatusTop" class="app-filter-select"><option value="Active" @if($cfgStatus === 'Active') selected @endif>Active</option><option value="Inactive" @if($cfgStatus === 'Inactive') selected @endif>Inactive</option></select></div>
             </div>
 
@@ -246,7 +246,7 @@
         <div class="sc-modal-grid" style="margin-top:10px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Faculty Code</label>
-                <input id="ffCodeInput" type="text" class="req-modal-input" placeholder="e.g. 01A">
+                <input id="ffCodeInput" type="text" class="req-modal-input" placeholder="Auto-generated if blank">
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Status</label>
@@ -535,8 +535,8 @@
         var department = document.getElementById('ffDepartmentInput').value.trim();
         var status = document.getElementById('ffStatusInput').value;
 
-        if (!code || !name || !department) {
-            alert('Please fill in Faculty Code, Faculty Name, and Department.');
+        if (!name || !department) {
+            alert('Please fill in Faculty Name and Department. Faculty Code is generated automatically when blank.');
             return;
         }
 
@@ -987,8 +987,8 @@
             }
         };
 
-        if (!payload.code || !payload.name || !payload.department) {
-            alert('Faculty Code, Faculty Name, and Office Department are required.');
+        if (!payload.name || !payload.department) {
+            alert('Faculty Name and Office Department are required. Faculty Code is generated automatically when blank.');
             return;
         }
 

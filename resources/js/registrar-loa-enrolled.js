@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        var targetWidth = 794;
+        var targetWidth = 816;
         var availableWidth = stage.clientWidth;
         var scale = 1;
 

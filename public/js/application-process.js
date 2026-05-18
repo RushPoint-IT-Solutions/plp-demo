@@ -53,6 +53,7 @@
     var approvalSaveBtn = document.getElementById('approvalSaveBtn');
 
     var selectedApplicantRow = null;
+    var isSyncingApprovalUi = false;
 
     function submitFilterForm() {
         if (!applicationFilterForm || filterIsSubmitting) {
@@ -213,6 +214,12 @@
             return;
         }
 
+        if (isSyncingApprovalUi) {
+            return;
+        }
+
+        isSyncingApprovalUi = true;
+
         var status = normalizeApplicationStatus(approvalStatusSelect.value);
         approvalStatusSelect.value = status;
         
@@ -231,6 +238,8 @@
         } else {
             approvalDateAccepted.value = '';
         }
+
+        isSyncingApprovalUi = false;
     }
 
     function setApprovalPanelFromRow(row) {

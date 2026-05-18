@@ -53,6 +53,21 @@
   flex-wrap: nowrap;
 }
 
+.registrar-body .loae-toolbar > .form-row {
+  display: grid;
+  grid-template-columns: auto minmax(260px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+}
+
+.registrar-body .loae-toolbar > .form-row > [class*="col"] {
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 0 !important;
+}
+
 .registrar-body .loae-toolbar,
 .registrar-body .loae-toolbar * {
   font-size: 10pt !important;
@@ -129,7 +144,7 @@
 
 .registrar-body .loae-toolbar__button {
   height: 38px;
-  min-width: 80px;
+  min-width: 110px;
   padding: 0 12px;
   background: #006837;
   border: 1px solid #006837;
@@ -165,6 +180,11 @@
   .registrar-body .loae-toolbar {
     flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .registrar-body .loae-toolbar > .form-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .registrar-body .student-page-header {
@@ -238,15 +258,16 @@
 }
 
 .registrar-body .loae-sheet {
-  width: 794px;
-  min-width: 794px;
-  min-height: 1123px;
+  width: 816px;
+  min-width: 816px;
+  min-height: 1344px;
   margin: 0 auto;
-  padding: 0.5in;
+  padding: 1in 0.8in;
   box-sizing: border-box;
   border: 1px solid #000;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   background: #fff;
+  font-family: "Arial Narrow", Arial, sans-serif;
   transform-origin: top center;
   zoom: var(--loae-zoom);
 }
@@ -260,8 +281,9 @@
 .registrar-body .loae-sheet,
 .registrar-body .loae-sheet * {
   color: #000 !important;
-  font-size: 8pt !important;
+  font-size: 10pt !important;
   border-color: #000 !important;
+  line-height: 1.15;
 }
 
 .registrar-body .loae-sheet input,
@@ -273,17 +295,69 @@
 }
 
 .registrar-body .loae-form-no {
-  margin: 0 0 4px;
-  font-size: 10pt;
-  font-weight: 700;
+  margin: 0;
+  font-size: 10pt !important;
+  font-weight: 400;
   letter-spacing: 0.02em;
 }
 
+.registrar-body .loae-document-head {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 86px;
+  margin: -0.55in 0 10px;
+}
+
+.registrar-body .loae-document-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.registrar-body .loae-document-heading {
+  text-align: center;
+  padding-right: 28px;
+}
+
+.registrar-body .loae-header-line {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.registrar-body .loae-header-line--city {
+  font-family: "Bookman Old Style", Georgia, serif;
+  font-size: 10.5pt !important;
+  letter-spacing: 0.14em;
+}
+
+.registrar-body .loae-header-line--school {
+  font-family: "Bookman Old Style", Georgia, serif;
+  font-size: 12.5pt !important;
+  letter-spacing: 0.16em;
+}
+
+.registrar-body .loae-header-line--office {
+  color: #177a1d !important;
+  font-family: "Bookman Old Style", Georgia, serif;
+  font-size: 12.5pt !important;
+  letter-spacing: 0.14em;
+}
+
+.registrar-body .loae-header-line--address,
+.registrar-body .loae-header-line--contact {
+  font-family: "Bookman Old Style", Georgia, serif;
+  font-size: 7.6pt !important;
+  letter-spacing: 0.08em;
+}
+
 .registrar-body .loae-title {
-  margin: 0 0 14px;
-  font-size: 1.1rem !important;
+  margin: 0 0 10px;
+  font-size: 16pt !important;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .registrar-body .loae-date-row {
@@ -297,6 +371,7 @@
 .registrar-body .loae-date-row--stacked {
   flex-direction: column;
   align-items: flex-end;
+  margin-bottom: 14px;
 }
 
 .registrar-body .loae-date-caption {
@@ -305,6 +380,37 @@
   display: block;
   text-align: center;
   margin-right: 1.7rem;
+}
+
+.registrar-body .loae-student-panel {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 8px;
+  border: 1px solid #000;
+}
+
+.registrar-body .loae-student-panel__row {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) 68px 155px;
+  align-items: end;
+  gap: 5px;
+}
+
+.registrar-body .loae-student-panel__row label {
+  margin: 0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.registrar-body .loae-inline--panel {
+  width: 100%;
+  min-width: 0;
+  text-align: left !important;
+}
+
+.registrar-body .loae-inline--panel-sm {
+  text-align: center !important;
 }
 
 .registrar-body .loae-date-input {
@@ -330,9 +436,9 @@
 .registrar-body .loae-paragraph--sentence {
   display: block;
   white-space: normal;
-  text-align: left;
+  text-align: justify;
   text-indent: 0;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .registrar-body .loae-sentence-field {
@@ -496,17 +602,13 @@
 .registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
   width: 180px;
   max-width: 180px;
-  /* Ensure the 'Counseled:' paragraph in the guidance box aligns right */
-}
-
-.registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line .registrar-body .loae-box--guidance .counsel {
-  text-align: right !important;
-  margin-right: 5rem !important;
-}
-
-.registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
   box-sizing: border-box;
   display: inline-block;
+}
+
+.registrar-body .loae-box--guidance .counsel {
+  text-align: right !important;
+  margin-right: 5rem !important;
 }
 
 .registrar-body .loae-box--guidance .loae-sign-role {
@@ -547,6 +649,27 @@
   border-collapse: collapse;
   border: 1px solid #000;
   margin-bottom: 10px;
+  table-layout: fixed;
+}
+
+.registrar-body .loae-grade-table th:nth-child(1),
+.registrar-body .loae-grade-table td:nth-child(1) {
+  width: 13%;
+}
+
+.registrar-body .loae-grade-table th:nth-child(2),
+.registrar-body .loae-grade-table td:nth-child(2) {
+  width: 43%;
+}
+
+.registrar-body .loae-grade-table th:nth-child(3),
+.registrar-body .loae-grade-table td:nth-child(3) {
+  width: 11%;
+}
+
+.registrar-body .loae-grade-table th:nth-child(4),
+.registrar-body .loae-grade-table td:nth-child(4) {
+  width: 33%;
 }
 
 .registrar-body .loae-grade-table th,
@@ -891,7 +1014,7 @@
 
 @media print {
 @page {
-    size: A4 portrait;
+    size: 8.5in 14in;
     margin: 0 !important;
 }
 
@@ -1014,11 +1137,11 @@
   }
 
   .registrar-body .loae-sheet {
-    width: auto !important;
-    min-width: 0 !important;
-    min-height: auto !important;
+    width: 8.5in !important;
+    min-width: 8.5in !important;
+    min-height: 14in !important;
     margin: 0 !important;
-    padding: 2in 1in 1in 1in !important;
+    padding: 1in 0.8in !important;
     zoom: 1 !important;
     transform: none !important;
     border: none !important;

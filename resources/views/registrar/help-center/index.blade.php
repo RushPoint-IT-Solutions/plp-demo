@@ -81,7 +81,7 @@
         <div class="reg-help-panel">
             <h3 class="reg-help-panel-title">Need More Help?</h3>
             <div class="reg-help-contact-grid">
-                <a href="mailto:info@rushpoint.com.ph" class="reg-help-contact-card">
+                <a href="{{ route('registrar.help.tickets.create', ['category' => 'Inquiry', 'subject' => 'Email Us']) }}" class="reg-help-contact-card">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="19" cy="6" r="5" fill="currentColor" stroke="none"/></svg>
                     <span>Email Us</span>
                 </a>

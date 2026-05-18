@@ -79,6 +79,9 @@
                 <option>50</option>
             </select>
             <span style="letter-spacing: 0.05em;">ENTRIES</span>
+            <span style="margin-left:auto;">PRINT 1: <strong id="diplomaPrint1Count">0</strong></span>
+            <span>PRINT 2: <strong id="diplomaPrint2Count">0</strong></span>
+            <span>TOTAL: <strong id="diplomaStatusTotal">0</strong></span>
         </div>
 
         <div class="ga-table-wrap app-table-wrap">

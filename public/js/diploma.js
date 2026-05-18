@@ -239,6 +239,27 @@ function diplomaHandleCopyChange(selectEl) {
     if (!row) return;
 
     row.setAttribute('data-copy-type', selectEl.value || 'print-2');
+    diplomaUpdateStatusCounts();
+}
+
+function diplomaUpdateStatusCounts() {
+    var rows = Array.from(document.querySelectorAll('#diplomaTableBody tr[data-row-id]'));
+    var print1 = 0;
+    var print2 = 0;
+
+    rows.forEach(function(row) {
+        var selectEl = row.querySelector('.diploma-copy-select');
+        var value = selectEl ? selectEl.value : row.getAttribute('data-copy-type');
+        if (value === 'print-1') print1++;
+        else if (value === 'print-2') print2++;
+    });
+
+    var print1El = document.getElementById('diplomaPrint1Count');
+    var print2El = document.getElementById('diplomaPrint2Count');
+    var totalEl = document.getElementById('diplomaStatusTotal');
+    if (print1El) print1El.textContent = String(print1);
+    if (print2El) print2El.textContent = String(print2);
+    if (totalEl) totalEl.textContent = String(rows.length);
 }
 
 window.addEventListener('afterprint', function() {
@@ -360,6 +381,7 @@ function diplomaConfirmDelete() {
     var row = diplomaGetRow(diplomaCurrentRowId);
     if (row) row.remove();
     diplomaSyncSelectAll();
+    diplomaUpdateStatusCounts();
     diplomaCloseModal('diplomaDeleteModal');
 }
 
@@ -381,3 +403,4 @@ window.addEventListener('scroll', diplomaCloseMenus, true);
 document.querySelectorAll('#diplomaTableBody .diploma-copy-select').forEach(function(selectEl) {
     diplomaHandleCopyChange(selectEl);
 });
+diplomaUpdateStatusCounts();

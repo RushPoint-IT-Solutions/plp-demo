@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!stage || !sheet) {
       return;
     }
-    var targetWidth = 794;
+    var targetWidth = 816;
     var availableWidth = stage.clientWidth;
     var scale = 1;
     if (availableWidth > 0 && availableWidth < targetWidth) {

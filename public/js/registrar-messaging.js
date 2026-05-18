@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var closeBtn = document.getElementById('msgComposeCloseBtn');
     var discardBtn = document.getElementById('msgComposeDiscardBtn');
     var sendBtn = document.getElementById('msgComposeSendBtn');
+    var draftBtn = document.getElementById('msgComposeDraftBtn');
     var toInput = document.getElementById('msgTo');
     var subjectInput = document.getElementById('msgSubject');
     var bodyInput = document.getElementById('msgBody');
@@ -30,19 +31,28 @@ document.addEventListener('DOMContentLoaded', function () {
         resetComposeForm();
     }
 
-    function sendComposeModal() {
+    function saveComposeModal(folder) {
         var to = toInput.value.trim();
         var subject = subjectInput.value.trim();
         var body = bodyInput.value.trim();
+        var isDraft = folder === 'drafts';
 
-        if (!to || !subject || !body) {
+        if (!isDraft && (!to || !subject || !body)) {
             alert('Please fill in all fields before sending.');
             return;
         }
 
+        if (isDraft && !to && !subject && !body) {
+            alert('Write a recipient, subject, or message before saving a draft.');
+            return;
+        }
+
+        var actionBtn = isDraft && draftBtn ? draftBtn : sendBtn;
         var originalHtml = sendBtn.innerHTML;
+        var originalDraftHtml = draftBtn ? draftBtn.innerHTML : '';
         sendBtn.disabled = true;
-        sendBtn.textContent = 'Sending...';
+        if (draftBtn) draftBtn.disabled = true;
+        actionBtn.textContent = isDraft ? 'Saving...' : 'Sending...';
 
         fetch(page.getAttribute('data-store-url'), {
             method: 'POST',
@@ -56,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 recipient: to,
                 subject: subject,
                 body: body,
-                folder: 'sent'
+                folder: isDraft ? 'drafts' : 'sent'
             })
         }).then(function (response) {
             return response.json().catch(function () {
@@ -73,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (typeof showRegistrarToast === 'function') {
                 showRegistrarToast(payload.message || 'Message saved to database.', 'success');
             }
-            window.location.href = window.location.pathname + '?folder=sent';
+            window.location.href = window.location.pathname + '?folder=' + (isDraft ? 'drafts' : 'sent');
         }).catch(function (payload) {
             var message = payload && payload.message ? payload.message : 'Unable to send message.';
             if (typeof showRegistrarToast === 'function') {
@@ -84,13 +94,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }).finally(function () {
             sendBtn.disabled = false;
             sendBtn.innerHTML = originalHtml;
+            if (draftBtn) {
+                draftBtn.disabled = false;
+                draftBtn.innerHTML = originalDraftHtml;
+            }
         });
     }
 
     composeBtn.addEventListener('click', openComposeModal);
     closeBtn.addEventListener('click', closeComposeModal);
     discardBtn.addEventListener('click', closeComposeModal);
-    sendBtn.addEventListener('click', sendComposeModal);
+    sendBtn.addEventListener('click', function () { saveComposeModal('sent'); });
+    if (draftBtn) {
+        draftBtn.addEventListener('click', function () { saveComposeModal('drafts'); });
+    }
 
     composeModal.addEventListener('click', function (event) {
         if (event.target === composeModal) {

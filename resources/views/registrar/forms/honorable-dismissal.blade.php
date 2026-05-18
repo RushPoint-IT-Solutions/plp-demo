@@ -97,7 +97,7 @@
                         <th style="text-align: center; width: 70px;">Action</th>
                     </tr>
                 </thead>
-                <tbody id="hdTableBody">
+                <tbody id="hdTableBody" data-selected-row-id="{{ $selectedStudentId }}">
                     @forelse($honorableDismissalRows as $student)
                     @php
                         $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));

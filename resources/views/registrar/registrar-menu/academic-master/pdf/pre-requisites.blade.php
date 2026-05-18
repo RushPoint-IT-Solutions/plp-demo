@@ -3,40 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Pre-requisites Export</title>
+    <style>
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 10px; color: #1f2937; }
+        h1 { margin: 0 0 4px; font-size: 18px; text-align: center; }
+        .meta { width: 100%; margin: 8px 0 12px; border-collapse: collapse; }
+        .meta td { padding: 3px 6px; border: 0; }
+        h2 { margin: 14px 0 6px; font-size: 13px; color: #064e3b; }
+        h3 { margin: 10px 0 5px; font-size: 11px; color: #065f46; }
+        table.curriculum { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        table.curriculum th,
+        table.curriculum td { border: 1px solid #9ca3af; padding: 5px; vertical-align: top; word-wrap: break-word; }
+        table.curriculum th { background: #e8f5ee; font-weight: bold; text-align: center; }
+        .code { width: 12%; }
+        .desc { width: 26%; }
+        .units { width: 8%; text-align: center; }
+        .req { width: 18%; }
+        .empty { color: #6b7280; font-style: italic; }
+    </style>
 </head>
 <body>
-    <h2>PLP Pre-requisites</h2>
-    <p>
-        Program: {{ $payload['program_title'] ?? '' }}<br>
-        Program: {{ ($payload['course']['code'] ?? '') . ' - ' . ($payload['course']['name'] ?? '') }}<br>
-        Curriculum Year: {{ $payload['curriculum_year'] ?? '' }}<br>
-        Generated At: {{ optional($generatedAt)->format('Y-m-d H:i:s') }}
-    </p>
+    <h1>PLP Pre-requisites</h1>
+    <table class="meta">
+        <tr>
+            <td><strong>Program:</strong> {{ ($payload['course']['code'] ?? '') . ' - ' . ($payload['course']['name'] ?? '') }}</td>
+            <td><strong>Curriculum Year:</strong> {{ $payload['curriculum_year'] ?? '' }}</td>
+            <td><strong>Generated:</strong> {{ optional($generatedAt)->format('Y-m-d H:i:s') }}</td>
+        </tr>
+    </table>
 
     @forelse(($payload['years'] ?? []) as $year)
-        <h3>{{ $year['label'] ?? '' }}</h3>
+        <h2>{{ $year['label'] ?? '' }}</h2>
 
         @foreach(($year['semesters'] ?? []) as $semester)
-            <h4>{{ $semester['label'] ?? '' }}</h4>
+            <h3>{{ $semester['label'] ?? '' }}</h3>
 
             @if(!empty($semester['subjects']))
-                <table width="100%" border="1" cellspacing="0" cellpadding="4">
+                <table class="curriculum">
                     <thead>
                         <tr>
-                            <th>Course Code</th>
-                            <th>Description</th>
-                            <th>Credited Units</th>
-                            <th>Pre-requisite</th>
-                            <th>Co-requisite</th>
-                            <th>Equivalent Course</th>
+                            <th class="code">Course Code</th>
+                            <th class="desc">Description</th>
+                            <th class="units">Units</th>
+                            <th class="req">Pre-requisite</th>
+                            <th class="req">Co-requisite</th>
+                            <th class="req">Equivalent Course</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($semester['subjects'] as $subject)
                             <tr>
-                                <td>{{ $subject['code'] ?? '' }}</td>
-                                <td>{{ $subject['description'] ?? '' }}</td>
-                                <td>{{ $subject['credited_units'] ?? 0 }}</td>
+                                <td class="code">{{ $subject['code'] ?? '' }}</td>
+                                <td class="desc">{{ $subject['description'] ?? '' }}</td>
+                                <td class="units">{{ $subject['credited_units'] ?? 0 }}</td>
                                 <td>{{ $subject['pre_requisite_text'] ?? 'None' }}</td>
                                 <td>{{ $subject['co_requisite_text'] ?? 'None' }}</td>
                                 <td>{{ $subject['equivalent_subject_text'] ?? 'None' }}</td>
@@ -45,11 +63,11 @@
                     </tbody>
                 </table>
             @else
-                <p>No course rows in this term.</p>
+                <p class="empty">No course rows in this term.</p>
             @endif
         @endforeach
     @empty
-        <p>No curriculum course records found for the selected filters.</p>
+        <p class="empty">No curriculum course records found for the selected filters.</p>
     @endforelse
 </body>
 </html>

@@ -16,6 +16,10 @@ function gcGetRowDataFromRow(row) {
         studentNo: (cells[1] ? cells[1].textContent : '').trim(),
         studentName: (cells[2] ? cells[2].textContent : '').trim(),
         program: (cells[3] ? cells[3].textContent : '').trim(),
+        college: (row.getAttribute('data-college') || '').trim(),
+        email: (row.getAttribute('data-email') || '').trim(),
+        phone: (row.getAttribute('data-phone') || '').trim(),
+        date: (row.getAttribute('data-date') || '').trim(),
         year: (cells[5] ? cells[5].textContent : '').trim(),
         section: (cells[6] ? cells[6].textContent : '').trim(),
         formType: normalizedType
@@ -52,6 +56,10 @@ function gcBuildTemplate(data) {
             office: 'Supreme Student Council'
         },
         {
+            text: 'Cleared research requirements',
+            office: 'Research Department'
+        },
+        {
             text: 'Accomplished and Submitted Student\'s<br>Evaluation of Implemented Intervention Form<br>For AY 2024 - 2025',
             office: 'University Research Office',
             showCheck: isBoardType
@@ -64,7 +72,11 @@ function gcBuildTemplate(data) {
 
     var rows = requirements.map(function(item) {
         var withCheck = item.showCheck !== false;
+        var isResearchDepartment = item.office === 'Research Department';
         var rowClass = withCheck ? 'gc-check-row' : 'gc-check-row gc-check-row-office-only';
+        if (isResearchDepartment) {
+            rowClass += ' gc-check-row-research';
+        }
         var leftHtml = withCheck
             ? '<span class="gc-check-box"></span><span class="gc-check-text">' + item.text + '</span>'
             : '';
@@ -86,24 +98,24 @@ function gcBuildTemplate(data) {
 
         '<div class="gc-line-row gc-line-row-main">' +
             '<span class="gc-label gc-label-fullname">Full Name :</span>' +
-            '<span class="gc-blank gc-blank-name"></span>' +
+            '<span class="gc-blank gc-blank-name">' + gcEsc(model.studentName) + '</span>' +
             '<span class="gc-label gc-label-id">Student ID Number:</span>' +
-            '<span class="gc-blank gc-blank-id"></span>' +
+            '<span class="gc-blank gc-blank-id">' + gcEsc(model.studentNo) + '</span>' +
         '</div>' +
         '<div class="gc-subhint gc-subhint-name">(Surname, Given Name, Middle Name, Extension Name)</div>' +
 
         '<div class="gc-line-row gc-line-row-dual">' +
             '<span class="gc-label">College :</span>' +
-            '<span class="gc-blank gc-blank-college"></span>' +
+            '<span class="gc-blank gc-blank-college">' + gcEsc(model.college) + '</span>' +
             '<span class="gc-label gc-label-right">Program:</span>' +
-            '<span class="gc-blank gc-blank-program"></span>' +
+            '<span class="gc-blank gc-blank-program">' + gcEsc(model.program) + '</span>' +
         '</div>' +
 
         '<div class="gc-line-row gc-line-row-dual">' +
             '<span class="gc-label">Contact Email:</span>' +
-            '<span class="gc-blank gc-blank-email"></span>' +
+            '<span class="gc-blank gc-blank-email">' + gcEsc(model.email) + '</span>' +
             '<span class="gc-label gc-label-right">Contact Phone Number:</span>' +
-            '<span class="gc-blank gc-blank-phone"></span>' +
+            '<span class="gc-blank gc-blank-phone">' + gcEsc(model.phone) + '</span>' +
         '</div>' +
 
         '<div class="gc-req-title">Checklist of Graduation Requirements:</div>' +
@@ -113,13 +125,13 @@ function gcBuildTemplate(data) {
 
         '<div class="gc-declaration-title">Student Declaration:</div>' +
         '<div class="gc-declaration">' +
-            '<span>I, </span><span class="gc-blank gc-blank-decl"></span>' +
+            '<span>I, </span><span class="gc-blank gc-blank-decl">' + gcEsc(model.studentName) + '</span>' +
             '<span> confirm that I have met all the graduation requirements as outlined above and request clearance to graduate. I understand that my graduation status is contingent upon successfully meeting these requirements</span>' +
         '</div>' +
 
         '<div class="gc-sign-row">' +
             '<span class="gc-label">Student\'s Signature:</span><span class="gc-blank gc-blank-sign"></span>' +
-            '<span class="gc-label gc-label-right">Date Submitted:</span><span class="gc-blank gc-blank-date"></span>' +
+            '<span class="gc-label gc-label-right">Date Submitted:</span><span class="gc-blank gc-blank-date">' + gcEsc(model.date) + '</span>' +
         '</div>' +
         '<div class="gc-sign-row">' +
             '<span class="gc-label">Received by:</span><span class="gc-blank gc-blank-sign"></span>' +
@@ -291,4 +303,13 @@ window.addEventListener('afterprint', function() {
     document.body.classList.remove('gc-printing');
     var container = document.getElementById('gcPrintContainer');
     if (container) container.innerHTML = '';
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    var tableBody = document.getElementById('gcTableBody');
+    var selectedRowId = tableBody ? (tableBody.getAttribute('data-selected-row-id') || '').trim() : '';
+    var selectedRow = selectedRowId ? document.querySelector('#gcTableBody tr[data-row-id="' + selectedRowId + '"]') : null;
+    if (selectedRow) {
+        gcOpenPreviewFromRow(selectedRow.querySelector('.doc-link-btn'));
+    }
 });
