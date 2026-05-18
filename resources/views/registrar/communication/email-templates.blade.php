@@ -12,7 +12,7 @@
             <div><label>Audience</label><input name="audience" required placeholder="Student / Applicant / Stakeholder"></div>
             <div class="full"><label>Name</label><input name="name" required placeholder="Template name"></div>
             <div class="full"><label>Subject</label><input name="subject" required placeholder="Email subject"></div>
-            <div class="full"><label>Body</label><textarea name="body" required placeholder="Use placeholders like {{ '{{name}}' }}, {{ '{{status}}' }}, {{ '{{student_email}}' }}"></textarea></div>
+            <div class="full"><label>Body</label><textarea name="body" required placeholder="Use placeholders like @{{name}}, @{{status}}, @{{student_email}}"></textarea></div>
             <div><button class="et-save" type="submit">Add Template</button></div>
         </div>
     </form>

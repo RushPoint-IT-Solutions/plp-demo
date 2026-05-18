@@ -12561,9 +12561,17 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Form No. 8D-2 Certificate of Honor
      */
-    public function formsCertificateHonor8d2()
+    public function formsCertificateHonor8d2(?\App\Student $student = null)
     {
-        return view('registrar.forms.certificates.certificate-honor-8d2');
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'graduateTagging']);
+        }
+
+        return view('registrar.forms.certificates.certificate-honor-8d2', compact('student'));
     }
 
     /**

@@ -353,6 +353,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
                 Route::get('/presidents-honors', 'Registrar\\RegistrarController@formsCertificatePresidentsHonors')->name('presidents-honors');
                 Route::get('/8c2-certificate-of-graduation/{student}', 'Registrar\\RegistrarController@formsCertificateGraduation8c2')->name('certificate-graduation-8c2.show');
                 Route::get('/8c2-certificate-of-graduation', 'Registrar\\RegistrarController@formsCertificateGraduation8c2')->name('certificate-graduation-8c2');
+                Route::get('/8d2-certificate-of-honor/{student}', 'Registrar\\RegistrarController@formsCertificateHonor8d2')->name('certificate-honor-8d2.show');
                 Route::get('/8d2-certificate-of-honor', 'Registrar\\RegistrarController@formsCertificateHonor8d2')->name('certificate-honor-8d2');
             });
 

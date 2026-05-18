@@ -15,13 +15,16 @@
     $studentName = $studentName !== '' ? strtoupper($studentName) : 'STUDENT NAME';
 
     $programText = trim((string) optional($studentModel)->program);
+    if ($programText === '' && $studentModel && $studentModel->relationLoaded('canonicalCourse')) {
+        $programText = trim((string) (optional($studentModel->canonicalCourse)->name ?: optional($studentModel->canonicalCourse)->code));
+    }
     $programText = $programText !== '' ? $programText : 'DEGREE/PROGRAM';
 
     $honorValue = isset($honor_title) ? $honor_title : (isset($honor) ? $honor : optional($studentModel)->honor);
     $honorText = trim((string) $honorValue);
     $honorText = $honorText !== '' ? strtoupper($honorText) : 'HONOR';
 
-    $graduationDateValue = isset($graduation_date) ? $graduation_date : optional($studentModel)->graduation_date;
+    $graduationDateValue = isset($graduation_date) ? $graduation_date : optional(optional($studentModel)->graduateTagging)->date_graduated;
     $graduationDateText = 'DATE';
 
     if (!empty($graduationDateValue)) {
@@ -69,6 +72,7 @@
                     >
                @endif
 
+                <div class="certificate-8d2__signatory-name">Mr. Federico G. Nueva</div>
                 <div class="certificate-8d2__signatory-title">University Registrar</div>
             </div>
 

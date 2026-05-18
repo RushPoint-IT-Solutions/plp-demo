@@ -417,7 +417,7 @@
         <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sar-qa-btn sar-qa-btn-blue" target="_blank">
             📈 Grade Report
         </a>
-        <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sar-qa-btn sar-qa-btn-slate" target="_blank">
+        <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.print.diploma', $student->id) }}" class="sar-qa-btn sar-qa-btn-slate" target="_blank">
             🎓 Diploma
         </a>
     </div>
@@ -809,12 +809,12 @@
                 <div class="sar-cert-name">Certificate of Graduation (8C-2)</div>
                 <div class="sar-cert-desc">Official Form 8C-2 certifying graduation</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">⭐</div>
                 <div class="sar-cert-name">Certificate of Honor (8D-2)</div>
                 <div class="sar-cert-desc">Academic distinction certificate — Latin honors</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.print.diploma', $student->id) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">📜</div>
                 <div class="sar-cert-name">Diploma</div>
                 <div class="sar-cert-desc">Official PLP diploma for program completion</div>

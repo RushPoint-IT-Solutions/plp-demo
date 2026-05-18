@@ -229,7 +229,7 @@
                         <p class="cor-registrar-signature-role">STUDENT SIGNATURE</p>
                     </div>
                     <div class="cor-registrar-signature-block">
-                        <p class="cor-registrar-signature-name">Prof. Federico G. Nueva</p>
+                        <p class="cor-registrar-signature-name">Mr. Federico G. Nueva</p>
                         <p class="cor-registrar-signature-role">UNIVERSITY REGISTRAR</p>
                     </div>
                 </div>
