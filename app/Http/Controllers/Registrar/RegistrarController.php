@@ -12545,9 +12545,17 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Form No. 8C-2 Certificate of Graduation
      */
-    public function formsCertificateGraduation8c2()
+    public function formsCertificateGraduation8c2(?\App\Student $student = null)
     {
-        return view('registrar.forms.certificates.certificate-graduation-8c2');
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        if ($student) {
+            $student->loadMissing(['canonicalCourse', 'graduateTagging']);
+        }
+
+        return view('registrar.forms.certificates.certificate-graduation-8c2', compact('student'));
     }
 
     /**
@@ -12585,7 +12593,13 @@ class RegistrarController extends Controller
 
         $student = null;
         if ($selectedStudentId > 0) {
-            $student = Student::with('subjects')->find($selectedStudentId);
+            $student = Student::with([
+                'subjects',
+                'profile',
+                'canonicalCourse:id,code,name',
+                'yearBlock:id,label',
+                'academicTerm:id,school_year,term',
+            ])->find($selectedStudentId);
         }
 
         $subjects = collect();

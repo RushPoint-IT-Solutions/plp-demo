@@ -15,9 +15,12 @@
     $studentName = $studentName !== '' ? strtoupper($studentName) : 'STUDENT NAME';
 
     $programText = trim((string) optional($studentModel)->program);
+    if ($programText === '' && $studentModel && $studentModel->relationLoaded('canonicalCourse')) {
+        $programText = trim((string) (optional($studentModel->canonicalCourse)->name ?: optional($studentModel->canonicalCourse)->code));
+    }
     $programText = $programText !== '' ? $programText : 'DEGREE/PROGRAM';
 
-    $graduationDateValue = isset($graduation_date) ? $graduation_date : optional($studentModel)->graduation_date;
+    $graduationDateValue = isset($graduation_date) ? $graduation_date : optional(optional($studentModel)->graduateTagging)->date_graduated;
     $graduationDateText = 'DATE';
 
     if (!empty($graduationDateValue)) {

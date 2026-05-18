@@ -405,7 +405,7 @@
 <div class="sar-tab-content" id="sar-tab-overview">
 
     <div class="sar-quick-actions">
-        <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="sar-qa-btn sar-qa-btn-green" target="_blank">
+        <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}?student_id={{ $student->id }}" class="sar-qa-btn sar-qa-btn-green" target="_blank">
             📄 COR
         </a>
         <a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sar-qa-btn sar-qa-btn-green" target="_blank">
@@ -774,7 +774,7 @@
         <div class="sar-section-title">Generate Official Documents</div>
         <div style="font-size:0.8rem;color:#64748b;margin-bottom:18px;">Click any document to open its generation page. Student details are pre-filled from the system.</div>
         <div class="sar-cert-grid">
-            <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}?student_id={{ $student->id }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">📋</div>
                 <div class="sar-cert-name">Certificate of Registration (COR)</div>
                 <div class="sar-cert-desc">Official enrollment certificate for the current semester</div>
@@ -804,7 +804,7 @@
                 <div class="sar-cert-name">President's Honors</div>
                 <div class="sar-cert-desc">President's Honors List Award for this student</div>
             </a>
-            <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') }}" class="sar-cert-card" target="_blank">
+            <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">🎓</div>
                 <div class="sar-cert-name">Certificate of Graduation (8C-2)</div>
                 <div class="sar-cert-desc">Official Form 8C-2 certifying graduation</div>

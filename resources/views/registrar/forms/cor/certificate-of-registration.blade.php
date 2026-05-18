@@ -5,25 +5,49 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/cor-certificate-of-registration.css') }}?v={{ time() }}">
-<style>
-    @media print {
-        .cor-registrar-sheet { margin-top: 2in !important; }
-    }
-</style>
 @endpush
 
 @section('content')
 @php
+    $studentProfile = optional($student)->profile;
     $formattedEnrollmentDate = optional(optional($student)->created_at)->format('m/d/Y');
     $formattedDatePrinted = now()->format('m/d/Y');
     $formattedTimePrinted = now()->format('g:i:sa');
     $defaultPrintedBy = optional(auth()->user())->name ?: 'Registrar User';
 
     $formattedSchoolYear = trim((string) optional($student)->school_year);
+    if ($formattedSchoolYear === '' && optional($student)->relationLoaded('academicTerm')) {
+        $formattedSchoolYear = trim((string) optional(optional($student)->academicTerm)->school_year);
+    }
+
     $formattedSemester = strtoupper(trim((string) optional($student)->semester));
-    $schoolYearLabel = $formattedSchoolYear !== ''
-        ? $formattedSchoolYear . ($formattedSemester !== '' ? ' / ' . $formattedSemester . ' SEMESTER' : '')
+    if ($formattedSemester === '' && optional($student)->relationLoaded('academicTerm')) {
+        $formattedSemester = strtoupper(trim((string) optional(optional($student)->academicTerm)->term));
+    }
+
+    $semesterLabel = $formattedSemester !== ''
+        ? (strpos($formattedSemester, 'SEMESTER') !== false ? $formattedSemester : $formattedSemester . ' SEMESTER')
         : '-';
+    $academicYearLabel = $formattedSchoolYear !== '' ? $formattedSchoolYear : '-';
+    $schoolYearLabel = $academicYearLabel . ($semesterLabel !== '-' ? ' / ' . $semesterLabel : '');
+    $shortSemesterLabel = $semesterLabel;
+    $shortSemesterLabel = str_replace(' SEMESTER', ' SEM', $shortSemesterLabel);
+    $enrolledStampTerm = trim($shortSemesterLabel . ' ' . $academicYearLabel);
+
+    $programText = trim((string) optional($student)->program);
+    if ($programText === '' && optional($student)->relationLoaded('canonicalCourse')) {
+        $programText = trim((string) (optional(optional($student)->canonicalCourse)->name ?: optional(optional($student)->canonicalCourse)->code));
+    }
+    $programText = $programText !== '' ? $programText : '-';
+
+    $addressParts = array_filter([
+        trim((string) optional($studentProfile)->present_street),
+        trim((string) optional($studentProfile)->present_barangay),
+        trim((string) optional($studentProfile)->present_municipality),
+        trim((string) optional($studentProfile)->present_province),
+    ]);
+    $addressText = count($addressParts) ? implode(', ', $addressParts) : trim((string) optional($student)->address);
+    $addressText = $addressText !== '' ? $addressText : '-';
 
     $studentDisplayName = strtoupper((string) optional($student)->name);
     $studentDisplayName = $studentDisplayName !== '' ? $studentDisplayName : '-';
@@ -59,21 +83,34 @@
 
     <div style="width: 100%; display: grid; place-items: center; padding: 20px 0;">
         <article class="cor-registrar-sheet a4-wrapper" style="margin: 0 !important; display: block; float: none; text-align: left;" aria-label="Certificate of Registration">
+        <header class="cor-registrar-header">
+            <img class="cor-registrar-header__logo" src="{{ asset('img/logobg.png') }}" alt="PLP Logo">
+            <div class="cor-registrar-header__school">
+                <p>Republic of the Philippines</p>
+                <p>City Government of Pasig</p>
+                <h1>PAMANTASAN NG LUNGSOD NG PASIG</h1>
+                <h2>CERTIFICATE OF REGISTRATION</h2>
+            </div>
+            <div class="cor-registrar-header__term">
+                <p><span>Academic Year</span>{{ $academicYearLabel }}</p>
+                <p><span>Semester</span>{{ $semesterLabel }}</p>
+            </div>
+        </header>
+
         <section class="cor-registrar-student-info">
             <div class="cor-registrar-info-grid">
                 <div class="cor-registrar-info-col">
-                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Enrollment No:</span><span class="cor-registrar-info-value">{{ optional($student)->registration_no ?: '-' }}</span></div>
                     <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Student No:</span><span class="cor-registrar-info-value">{{ optional($student)->student_no ?: '-' }}</span></div>
                     <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Student Name:</span><span class="cor-registrar-info-value cor-registrar-info-value--name">{{ optional($student)->name ?: '-' }}</span></div>
-                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Address:</span><span class="cor-registrar-info-value">{{ optional($student)->address ?: '-' }}</span></div>
-                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Course:</span><span class="cor-registrar-info-value">{{ optional($student)->program ?: '-' }}</span></div>
+                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Address:</span><span class="cor-registrar-info-value">{{ $addressText }}</span></div>
+                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Course:</span><span class="cor-registrar-info-value">{{ $programText }}</span></div>
                     <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Department:</span><span class="cor-registrar-info-value">{{ optional($student)->college ?: '-' }}</span></div>
                 </div>
 
                 <div class="cor-registrar-info-col">
                     <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Enrollment Date:</span><span class="cor-registrar-info-value">{{ $formattedEnrollmentDate ?: '-' }}</span></div>
                     <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Curriculum:</span><span class="cor-registrar-info-value">{{ optional($student)->curriculum ?: '-' }}</span></div>
-                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">School Year:</span><span class="cor-registrar-info-value">{{ $schoolYearLabel }}</span></div>
+                    <div class="cor-registrar-info-line"><span class="cor-registrar-info-label">Academic Year:</span><span class="cor-registrar-info-value">{{ $schoolYearLabel }}</span></div>
                 </div>
 
                 <div class="cor-registrar-info-col">
@@ -183,6 +220,7 @@
             </div>
 
             <div class="cor-registrar-assessment__right">
+                <div class="cor-registrar-enrolled-mark">OFFICIALLY ENROLLED</div>
                 <p class="cor-registrar-certification">This is to certify that the student whose name appears on this document is officially enrolled this term with subject load listed above.</p>
 
                 <div class="cor-registrar-signatures">
@@ -194,6 +232,14 @@
                         <p class="cor-registrar-signature-name">Prof. Federico G. Nueva</p>
                         <p class="cor-registrar-signature-role">UNIVERSITY REGISTRAR</p>
                     </div>
+                </div>
+
+                <div class="cor-registrar-official-stamp">
+                    <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo">
+                    <p>PAMANTASAN NG LUNGSOD NG PASIG</p>
+                    <p>OFFICE OF THE UNIVERSITY REGISTRAR</p>
+                    <strong>OFFICIALLY ENROLLED</strong>
+                    <span>{{ $enrolledStampTerm }}</span>
                 </div>
 
                 <div class="cor-registrar-notice">
