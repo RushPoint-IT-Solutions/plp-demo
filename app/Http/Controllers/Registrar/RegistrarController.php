@@ -14570,7 +14570,7 @@ class RegistrarController extends Controller
     public function storeStudent(Request $request)
     {
         $request->validate([
-            'student_no' => 'required|unique:students,student_no',
+            'student_no' => 'nullable|unique:students,student_no',
             'name' => 'required|string',
             'sex' => 'nullable|string',
             'age' => 'nullable|integer',
@@ -14586,8 +14586,7 @@ class RegistrarController extends Controller
         $defaultPass = null;
 
         DB::transaction(function () use ($request, &$defaultPass) {
-            $student = Student::create($request->only([
-                'student_no',
+            $payload = $request->only([
                 'name',
                 'sex',
                 'age',
@@ -14598,7 +14597,16 @@ class RegistrarController extends Controller
                 'scholarship',
                 'school_year',
                 'semester',
-            ]));
+            ]);
+
+            $year = (int) date('Y');
+            if (preg_match('/^\d{4}/', (string) $request->input('school_year'), $matches)) {
+                $year = (int) $matches[0];
+            }
+
+            $payload['student_no'] = trim((string) $request->input('student_no')) ?: Student::generateStudentNo($year);
+
+            $student = Student::create($payload);
 
             $defaultPass = 'PLP-' . $student->student_no;
 
@@ -16892,11 +16900,7 @@ class RegistrarController extends Controller
 
         $subjects = collect();
         if ($student) {
-            $subjects = $student->subjects
-                ->sortBy(function ($subject) {
-                    return strtoupper((string) $subject->code);
-                })
-                ->values();
+            $subjects = $student->subjects->values();
         }
 
         $totalUnits = (float) $subjects->sum(function ($subject) {

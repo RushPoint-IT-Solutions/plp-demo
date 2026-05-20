@@ -56,7 +56,7 @@ class ScholarshipController extends Controller
             ->when($status !== '', function ($query) use ($status) {
                 $query->where('status', $status);
             })
-            ->orderByRaw("FIELD(status, 'Open', 'Ongoing', 'Closed', 'Ended')")
+            ->orderByRaw("CASE status WHEN 'Open' THEN 1 WHEN 'Ongoing' THEN 2 WHEN 'Closed' THEN 3 WHEN 'Ended' THEN 4 ELSE 5 END")
             ->orderByDesc('created_at')
             ->paginate(15)
             ->appends($request->query());

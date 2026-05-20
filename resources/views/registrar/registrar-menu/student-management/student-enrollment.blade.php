@@ -378,7 +378,7 @@
     <div class="pf-modal-overlay" id="seAddStudentModal" style="display:none;">
         <div class="pf-modal-box" style="max-width:520px;">
             <div class="pf-modal-title">Add Student</div>
-            <p class="se-modal-note">Search an applicant to auto-fill the student ID and name, or type them manually.</p>
+            <p class="se-modal-note">Search an applicant to auto-fill details, or leave Student ID blank to generate the next YY-00001 sequence.</p>
             <form action="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment.store') }}" method="POST">
                 @csrf
                 <div class="se-modal-grid">
@@ -387,11 +387,10 @@
                         @include('registrar.components.search-dropdown-input', [
                             'id' => 'seAddStudentId',
                             'name' => 'student_no',
-                            'placeholder' => 'Search applicant ID',
+                            'placeholder' => 'Auto-generate if blank',
                             'wrapperClass' => 'se-student-search-wrap',
                             'dropdownId' => 'seAddStudentIdDropdown',
                             'inputAttributes' => [
-                                'required' => true,
                             ],
                         ])
                     </div>

@@ -36,20 +36,25 @@ class Student extends Model
 
     /**
      * Generate the next available student number for the given year.
-     * Format: PLP-YYYY-NNNNN (5-digit, resets each year, withdrawn numbers are never reused).
+     * Format: YY-00001 (5-digit sequence, resets each year).
      */
     public static function generateStudentNo(int $year): string
     {
-        $prefix = 'PLP-' . $year . '-';
+        $prefix = substr((string) $year, -2) . '-';
 
-        // Find the highest sequence used this year across ALL students (including withdrawn)
-        $last = static::where('student_no', 'like', $prefix . '%')
-            ->orderByDesc('student_no')
-            ->value('student_no');
+        $maxSequence = static::where('student_no', 'like', $prefix . '%')
+            ->pluck('student_no')
+            ->map(function ($studentNo) use ($prefix) {
+                $studentNo = (string) $studentNo;
+                if (!preg_match('/^' . preg_quote($prefix, '/') . '(\d{5})$/', $studentNo, $matches)) {
+                    return 0;
+                }
 
-        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+                return (int) $matches[1];
+            })
+            ->max();
 
-        return $prefix . str_pad($next, 5, '0', STR_PAD_LEFT);
+        return $prefix . str_pad(((int) $maxSequence) + 1, 5, '0', STR_PAD_LEFT);
     }
 
     /**
