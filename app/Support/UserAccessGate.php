@@ -130,6 +130,8 @@ class UserAccessGate
             'registrar.registrar-menu.forms.permission-cross-enroll' => 'documents_forms_cross_enroll',
             'registrar.registrar-menu.forms.request-form-f-137a' => 'documents_forms_f137a',
             'registrar.registrar-menu.forms.graduation-clearance' => 'documents_forms_graduation_clearance',
+            'registrar.registrar-menu.forms.clearance-2' => 'documents_forms_graduation_clearance',
+            'registrar.registrar-menu.forms.clearance-2.show' => 'documents_forms_graduation_clearance',
             'registrar.registrar-menu.forms.waiver-cancellation' => 'documents_forms_waiver_cancellation',
             'registrar.registrar-menu.forms.citizens-charter' => 'documents_forms_citizens_charter',
             'registrar.services.reports-admin.academic-reports' => 'reports_academic_reports',

@@ -979,6 +979,16 @@
                             <div style="font-size:10.5px;color:#3b82f6;font-weight:600;">COR</div>
                         </a>
 
+                        {{-- Clearance 2 --}}
+                        <a href="{{ route('registrar.registrar-menu.forms.clearance-2.show', ['student' => $student->id]) }}"
+                           target="_blank"
+                           style="display:flex;flex-direction:column;align-items:center;gap:8px;background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1.5px solid #c084fc;border-radius:12px;padding:18px 22px;text-decoration:none;color:#6b21a8;min-width:145px;transition:box-shadow .15s;"
+                           onmouseover="this.style.boxShadow='0 4px 16px rgba(107,33,168,.2)'" onmouseout="this.style.boxShadow=''">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            <div style="font-size:12.5px;font-weight:700;text-align:center;line-height:1.3;">Clearance<br>2</div>
+                            <div style="font-size:10.5px;color:#7e22ce;font-weight:600;">CLEARANCE</div>
+                        </a>
+
                         {{-- TOR --}}
                         <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.print.tor', $student->id) }}"
                            target="_blank"
@@ -1036,6 +1046,7 @@
                         @php
                             $certs = [
                                 ['Certificate of Registration (COR)', route('registrar.registrar-menu.forms.cor.certificate-of-registration') . '?student_id=' . $student->id,'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0-1.756 1.077'],
+                                ['Clearance 2', route('registrar.registrar-menu.forms.clearance-2.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
                                 ['Copy of Grades (COG)', route('registrar.registrar-menu.forms.cog.copy-of-grades'),'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M12 12h4M12 16h4M8 12h.01M8 16h.01'],
                                 ['Official Grade Report', route('registrar.registrar-menu.forms.official-grade-report'),'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8'],
                                 ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],

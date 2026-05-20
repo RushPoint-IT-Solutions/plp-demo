@@ -16438,6 +16438,33 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar > Forms > Clearance 2
+     */
+    public function formsClearance2(?Student $student = null)
+    {
+        if (!$student && request()->filled('student_id')) {
+            $student = Student::find(request()->query('student_id'));
+        }
+
+        if ($student) {
+            $student->load([
+                'profile',
+                'canonicalCourse:id,code,name',
+                'yearBlock:id,label',
+                'academicTerm:id,school_year,term',
+            ]);
+        }
+
+        $studentOptions = Student::query()
+            ->with(['canonicalCourse:id,code,name'])
+            ->orderBy('name')
+            ->limit(200)
+            ->get(['id', 'student_no', 'name', 'course_id']);
+
+        return view('registrar.forms.clearance-2', compact('student', 'studentOptions'));
+    }
+
+    /**
      * Registrar > Forms > Honorable Dismissal
      */
     public function formsHonorableDismissal(?Student $student = null)

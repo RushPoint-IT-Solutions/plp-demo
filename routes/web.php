@@ -359,6 +359,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
             Route::get('/graduation-clearance/{student}', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance.show');
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
+            Route::get('/clearance-2/{student}', 'Registrar\RegistrarController@formsClearance2')->name('clearance-2.show');
+            Route::get('/clearance-2', 'Registrar\RegistrarController@formsClearance2')->name('clearance-2');
             Route::get('/honorable-dismissal/{student}', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal.show');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
