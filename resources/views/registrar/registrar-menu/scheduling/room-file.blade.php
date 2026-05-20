@@ -11,7 +11,7 @@
     data-store-url="{{ route('registrar.registrar-menu.scheduling.room-file.store') }}"
     data-store-building-url="{{ route('registrar.registrar-menu.scheduling.room-file.building.store') }}"
     data-store-hallway-url="{{ route('registrar.registrar-menu.scheduling.room-file.hallway.store') }}"
-    data-program-file-url="{{ route('registrar.registrar-menu.academic-master.program-file') }}"
+    data-program-file-url="{{ route('registrar.registrar-menu.academic-master.subject-file') }}"
     data-update-url-template="{{ route('registrar.registrar-menu.scheduling.room-file.update', ['room' => '__ROOM_ID__']) }}"
     data-delete-url-template="{{ route('registrar.registrar-menu.scheduling.room-file.delete', ['room' => '__ROOM_ID__']) }}"
     data-csrf-token="{{ csrf_token() }}"
@@ -63,7 +63,7 @@
                     </th>
                     <th aria-sort="none">
                         <button type="button" class="rf-sort-btn" data-sort="program">
-                            <span class="rf-sort-label">Programs</span>
+                            <span class="rf-sort-label">Allowed Subjects</span>
                             <span class="rf-sort-indicator">Sort</span>
                         </button>
                     </th>
@@ -146,19 +146,20 @@
                     <input type="number" class="pf-modal-input" id="newRoomStudents" placeholder="e.g. 50" required min="1">
                 </div>
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Programs</label>
+                    <label class="pf-modal-label">Allowed Subjects</label>
                     <div class="rf-program-inline">
-                        <select class="pf-modal-select" id="newRoomProgram" required>
+                        <select class="pf-modal-select" id="newRoomProgram" required multiple size="6">
                             <option value="">- Select Program -</option>
                         </select>
                         <button
                             type="button"
                             class="rf-setup-add-btn"
                             id="newGoProgramSetupBtn"
-                            title="Open Program File"
-                            aria-label="Open program setup"
+                            title="Open Subject File"
+                            aria-label="Open subject setup"
                         >+</button>
                     </div>
+                    <small style="display:block; margin-top:6px; color:#66756b;">Hold Ctrl to select multiple subjects allowed in this room.</small>
                 </div>
                 <div class="pf-modal-actions">
                     <button type="button" class="pf-modal-btn-cancel" onclick="closeNewRoomModal()">Cancel</button>
@@ -219,19 +220,20 @@
                     <input type="number" class="pf-modal-input" id="editRoomStudents" required min="1">
                 </div>
                 <div class="pf-modal-field">
-                    <label class="pf-modal-label">Programs</label>
+                    <label class="pf-modal-label">Allowed Subjects</label>
                     <div class="rf-program-inline">
-                        <select class="pf-modal-select" id="editRoomProgram" required>
+                        <select class="pf-modal-select" id="editRoomProgram" required multiple size="6">
                             <option value="">- Select Program -</option>
                         </select>
                         <button
                             type="button"
                             class="rf-setup-add-btn"
                             id="editGoProgramSetupBtn"
-                            title="Open Program File"
-                            aria-label="Open program setup"
+                            title="Open Subject File"
+                            aria-label="Open subject setup"
                         >+</button>
                     </div>
+                    <small style="display:block; margin-top:6px; color:#66756b;">Only selected subjects can use this room during room generation and assignment.</small>
                 </div>
                 <div class="pf-modal-actions">
                     <button type="button" class="pf-modal-btn-cancel" onclick="closeEditRoomModal()">Cancel</button>

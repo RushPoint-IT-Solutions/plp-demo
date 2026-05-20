@@ -22,7 +22,7 @@ class ReportsAdminController extends Controller
         $totalStudents = Student::query()->count();
         $failingStudents = StudentSubjectGrade::query()
             ->whereNotNull('final_average')
-            ->where('final_average', '>=', 3.0)
+            ->where('final_average', '<', 75.0)
             ->distinct()
             ->count('student_id');
         $students = Student::query()->orderBy('name')->limit(200)->get(['id', 'student_no', 'name']);

@@ -218,9 +218,9 @@ class ParentAuthSeeder extends Seeder
         }
 
         $gradeSet = [
-            ['prelim' => 1.75, 'midterm' => 1.50, 'final' => 1.50, 'final_average' => 1.58, 'remarks' => 'Passed'],
-            ['prelim' => 2.00, 'midterm' => 1.75, 'final' => 1.75, 'final_average' => 1.83, 'remarks' => 'Passed'],
-            ['prelim' => 2.25, 'midterm' => 2.00, 'final' => 2.00, 'final_average' => 2.08, 'remarks' => 'Passed'],
+            ['midterm' => 92.00, 'final' => 90.00, 'final_average' => 91.00, 'status' => 'Passed', 'remarks' => 'Passed'],
+            ['midterm' => 88.00, 'final' => 90.00, 'final_average' => 89.00, 'status' => 'Passed', 'remarks' => 'Passed'],
+            ['midterm' => 84.00, 'final' => 86.00, 'final_average' => 85.00, 'status' => 'Passed', 'remarks' => 'Passed'],
         ];
 
         foreach ($subjectIds as $index => $subjectId) {
@@ -237,20 +237,25 @@ class ParentAuthSeeder extends Seeder
 
             $grade = $gradeSet[$index % count($gradeSet)];
 
+            $payload = [
+                'prelim' => null,
+                'midterm' => $grade['midterm'],
+                'final' => $grade['final'],
+                'final_average' => $grade['final_average'],
+                'remarks' => $grade['remarks'],
+                'updated_at' => $now,
+                'created_at' => $now,
+            ];
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $payload['status'] = $grade['status'];
+            }
+
             DB::table('student_subject_grades')->updateOrInsert(
                 [
                     'student_id' => $studentId,
                     'subject_id' => $subjectId,
                 ],
-                [
-                    'prelim' => $grade['prelim'],
-                    'midterm' => $grade['midterm'],
-                    'final' => $grade['final'],
-                    'final_average' => $grade['final_average'],
-                    'remarks' => $grade['remarks'],
-                    'updated_at' => $now,
-                    'created_at' => $now,
-                ]
+                $payload
             );
         }
     }

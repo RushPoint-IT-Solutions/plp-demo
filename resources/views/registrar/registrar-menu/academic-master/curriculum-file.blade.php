@@ -5,6 +5,24 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<style>
+    .cf-setup-note {
+        margin-top: 6px;
+        color: #64748b;
+        font-size: .78rem;
+        line-height: 1.45;
+    }
+    .cf-setup-guide {
+        margin: 0 0 14px;
+        border: 1px solid #d7eadf;
+        border-radius: 8px;
+        background: #f3fbf6;
+        padding: 10px 12px;
+        color: #315a3f;
+        font-size: .82rem;
+        line-height: 1.45;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -80,6 +98,9 @@
                         <p>Select the active year level and term, then add the official courses that belong to that curriculum period.</p>
                     </div>
                 </div>
+                <div class="cf-setup-guide">
+                    Follow the setup steps in order. Program and curriculum year define the curriculum record, term and year level define where the courses belong, and selected courses become the official curriculum subjects for that period.
+                </div>
                 <form class="cf-panel-form" id="cfSetupForm" method="POST" action="{{ route('registrar.registrar-menu.academic-master.curriculum-file.setup') }}">
                     @csrf
 
@@ -100,27 +121,33 @@
                                 <option value="">No Program Available</option>
                             @endforelse
                         </select>
+                        <div class="cf-setup-note">Choose the program that owns this curriculum. The saved courses will appear under this program in curriculum, prerequisites, and section offering workflows.</div>
                     </div>
 
                     <div class="cf-subtitle">2. Curriculum Year Coverage</div>
+                    <div class="cf-setup-note">Set the date range for when this curriculum version is valid. If you leave the code blank, the system can derive it from these dates.</div>
 
                     <div class="cf-field-split">
                         <div class="cf-field-row">
                             <label class="req-modal-label" for="cfSetupDateFrom">Date From</label>
                             <input id="cfSetupDateFrom" name="setup_date_from" type="date" class="req-modal-input" value="{{ old('setup_date_from', $selectedDateFrom) }}">
+                            <div class="cf-setup-note">Use the first effective date of this curriculum version.</div>
                         </div>
                         <div class="cf-field-row">
                             <label class="req-modal-label" for="cfSetupDateTo">Date To</label>
                             <input id="cfSetupDateTo" name="setup_date_to" type="date" class="req-modal-input" value="{{ old('setup_date_to', $selectedDateTo) }}">
+                            <div class="cf-setup-note">Use the last effective date. It must be the same as or later than Date From.</div>
                         </div>
                     </div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfSetupCurriculumYear">Curriculum Year Code</label>
                         <input id="cfSetupCurriculumYear" name="setup_curriculum_year" type="text" class="req-modal-input" placeholder="Auto: 2026-2027" value="{{ old('setup_curriculum_year', $selectedCurriculumYear) }}">
+                        <div class="cf-setup-note">This label groups curriculum courses, prerequisite setup, and section offering choices. Example: 2026-2027.</div>
                     </div>
 
                     <div class="cf-subtitle">3. Active Year Level and Term</div>
+                    <div class="cf-setup-note">These selections decide the exact curriculum bucket where the selected courses will be placed.</div>
 
                     <div class="cf-field-split">
                         <div class="cf-field-row">
@@ -133,6 +160,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="cf-setup-note">Select the semester or term where these courses should be taken.</div>
                         </div>
                         <div class="cf-field-row">
                             <label class="req-modal-label" for="cfSetupYearLevel">Year Level</label>
@@ -144,14 +172,17 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="cf-setup-note">Select the student year level for this group of curriculum courses.</div>
                         </div>
                     </div>
 
                     <div class="cf-subtitle">4. Add Courses for Selected Year Level</div>
+                    <div class="cf-setup-note">Search and check every course that belongs to the selected term and year level. Save again for each additional term or year level.</div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfCourseSearch">Course Search</label>
                         <input id="cfCourseSearch" type="text" class="req-modal-input" placeholder="Search course code or title">
+                        <div class="cf-setup-note">Filtering only changes what is visible in the picker; checked courses remain selected until you uncheck them.</div>
                     </div>
 
                     <div class="cf-course-picker" id="cfCoursePicker">
@@ -174,6 +205,7 @@
                     <div class="cf-actions">
                         <button type="submit" class="pf-btn-new" id="cfSaveSetupBtn">Save Setup</button>
                         <button type="button" class="pf-btn-new" id="cfOpenPrerequisitesSetupBtn">Setup Pre/Co-Requisites</button>
+                        <span class="cf-setup-note">After saving courses, open Pre/Co-Requisites to connect prerequisite, co-requisite, and equivalent course rules.</span>
                     </div>
                 </form>
             </section>

@@ -220,7 +220,7 @@
             </div>
 
             <div class="cor-registrar-assessment__right">
-                <div class="cor-registrar-enrolled-mark">OFFICIALLY ENROLLED</div>
+                {{-- <div class="cor-registrar-enrolled-mark">OFFICIALLY ENROLLED</div> --}}
                 <p class="cor-registrar-certification">This is to certify that the student whose name appears on this document is officially enrolled this term with subject load listed above.</p>
 
                 <div class="cor-registrar-signatures">
@@ -229,7 +229,7 @@
                         <p class="cor-registrar-signature-role">STUDENT SIGNATURE</p>
                     </div>
                     <div class="cor-registrar-signature-block">
-                        <p class="cor-registrar-signature-name">Mr. Federico G. Nueva</p>
+                        <p class="cor-registrar-signature-name">Federico G. Nueva</p>
                         <p class="cor-registrar-signature-role">UNIVERSITY REGISTRAR</p>
                     </div>
                 </div>

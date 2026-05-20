@@ -19,7 +19,33 @@
         ['value' => 'Second', 'label' => 'Second'],
         ['value' => 'Summer', 'label' => 'Summer'],
     ]);
+
+    $activePrograms = array_values($activeProgramDirectory ?? []);
 @endphp
+
+@push('styles')
+<style>
+    .so-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+    .so-tab-btn { background:#f8fafc; border:1px solid #d7e2dc; border-radius:8px; color:#315a3f; cursor:pointer; font-weight:900; min-height:38px; padding:8px 13px; }
+    .so-tab-btn.is-active { background:#146c43; border-color:#146c43; color:#fff; }
+    .so-tab-panel { display:none; }
+    .so-tab-panel.is-active { display:block; }
+    .so-active-program-card { background:#fff; border:1px solid #dfe8e2; border-radius:8px; margin-bottom:16px; padding:14px; }
+    .so-active-program-grid { display:grid; grid-template-columns:1.1fr 1fr auto; gap:12px; align-items:end; }
+    .so-active-program-results { display:grid; grid-template-columns:repeat(3, minmax(180px, 1fr)); gap:12px; margin-top:14px; }
+    .so-active-program-panel { border:1px solid #e2e8f0; border-radius:8px; padding:12px; }
+    .so-active-program-label { color:#64748b; display:block; font-size:.74rem; font-weight:900; text-transform:uppercase; }
+    .so-active-program-value { color:#143521; display:block; font-size:1rem; font-weight:900; margin-top:4px; }
+    .so-chip-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .so-chip { background:#eef7f1; border-radius:999px; color:#17633a; display:inline-flex; font-size:.78rem; font-weight:900; padding:5px 9px; }
+    .so-chip.neutral { background:#eef2f7; color:#334155; }
+    .so-available-section-row { border-top:1px solid #eef2f7; display:flex; justify-content:space-between; gap:10px; padding:8px 0; }
+    .so-section-view-btn { background:#fff; border:1px solid #b9d6c5; border-radius:7px; color:#145c39; cursor:pointer; font-size:.78rem; font-weight:900; min-height:30px; padding:5px 10px; }
+    @media (max-width:900px) {
+        .so-active-program-grid, .so-active-program-results { grid-template-columns:1fr; }
+    }
+</style>
+@endpush
 
 @section('content')
 <div
@@ -28,10 +54,16 @@
     data-fetch-url="{{ route('registrar.registrar-menu.scheduling.section-offering.data') }}"
     data-store-url="{{ route('registrar.registrar-menu.scheduling.section-offering.store') }}"
     data-curriculum-url="{{ route('registrar.registrar-menu.scheduling.section-offering.curriculum-subjects') }}"
+    data-active-programs='@json($activePrograms)'
 >
+    <div class="so-tabs" role="tablist" aria-label="Section Offering views">
+        <button type="button" class="so-tab-btn is-active" data-so-tab="directory">Section Directory</button>
+        <button type="button" class="so-tab-btn" data-so-tab="active-programs">Active Program Search</button>
+    </div>
 
-    {{-- Filter Bar --}}
-    <div class="sched-filter-bar">
+    <div class="so-tab-panel is-active" id="soTabDirectory">
+        {{-- Filter Bar --}}
+        <div class="sched-filter-bar">
         <div class="sched-filter-row sched-filter-row-main so-filter-row">
             <div class="sched-filter-group so-filter-search">
                 <span class="app-filter-label">Search Section</span>
@@ -94,10 +126,10 @@
                 ])
             </div>
         </div>
-    </div>
+        </div>
 
-    {{-- Sections Directory --}}
-    <div class="so-card so-directory-card" id="soSectionListCard">
+        {{-- Sections Directory --}}
+        <div class="so-card so-directory-card" id="soSectionListCard">
         <div class="so-card-header">
             <div class="so-card-title">Section Directory</div>
             <div class="so-directory-header-actions">
@@ -118,6 +150,7 @@
                         <th>Slots</th>
                         <th>Professor</th>
                         <th>Subjects</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="soSectionListBody">
@@ -138,6 +171,35 @@
                         <button type="button" class="rtp-page-btn" id="soNextBtn" aria-label="Next page">&gt;</button>
                     </div>
                 </nav>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="so-tab-panel" id="soTabActivePrograms">
+        <div class="so-active-program-card">
+            <div class="so-active-program-grid">
+                <div>
+                    <label class="app-filter-label" for="soActiveProgramSearch">Search Active Program</label>
+                    <input type="text" class="app-filter-input" id="soActiveProgramSearch" placeholder="Type program code or name">
+                </div>
+                <div>
+                    <label class="app-filter-label" for="soActiveProgramSelect">Active Program</label>
+                    <select class="app-filter-input" id="soActiveProgramSelect">
+                        @forelse($activePrograms as $program)
+                            <option value="{{ $program['course_id'] }}">{{ $program['label'] }}</option>
+                        @empty
+                            <option value="">No active programs found</option>
+                        @endforelse
+                    </select>
+                </div>
+                <button type="button" class="pf-btn-new" id="soActiveProgramApply">View Availability</button>
+            </div>
+            <div class="so-active-program-results" id="soActiveProgramResults">
+                <div class="so-active-program-panel">
+                    <span class="so-active-program-label">Program</span>
+                    <span class="so-active-program-value">Select an active program</span>
+                </div>
             </div>
         </div>
     </div>
@@ -163,6 +225,7 @@
                         <th>Description</th>
                         <th>Lec</th>
                         <th>Lab</th>
+                        <th>Hours</th>
                         <th>Tuition Units</th>
                         <th>Cred. Units</th>
                         <th>Section</th>
@@ -268,6 +331,13 @@
                     <div class="so-modal-field so-modal-col-6">
                         <label for="soModalDescription">Description</label>
                         <input id="soModalDescription" type="text" class="app-filter-input" placeholder="Optional section notes">
+                    </div>
+
+                    <div class="so-modal-field so-modal-col-12">
+                        <label class="setup-checkbox-label" for="soModalAutoSchedule">
+                            <input type="checkbox" id="soModalAutoSchedule" class="req-checkbox-input" checked>
+                            Auto-generate room and schedule for included courses
+                        </label>
                     </div>
 
                     <div class="so-modal-field so-modal-col-12">
@@ -425,4 +495,133 @@
 @push('scripts')
 <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script src="{{ asset('js/section-offering.js') }}?v={{ file_exists(public_path('js/section-offering.js')) ? filemtime(public_path('js/section-offering.js')) : time() }}"></script>
+<script>
+    (function () {
+        var root = document.getElementById('sectionOfferingPage');
+        if (!root) {
+            return;
+        }
+
+        var tabs = root.querySelectorAll('[data-so-tab]');
+        var directoryPanel = document.getElementById('soTabDirectory');
+        var activePanel = document.getElementById('soTabActivePrograms');
+        tabs.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var target = button.getAttribute('data-so-tab');
+                tabs.forEach(function (item) {
+                    item.classList.toggle('is-active', item === button);
+                });
+                if (directoryPanel) {
+                    directoryPanel.classList.toggle('is-active', target === 'directory');
+                }
+                if (activePanel) {
+                    activePanel.classList.toggle('is-active', target === 'active-programs');
+                }
+            });
+        });
+
+        var programs = [];
+        try {
+            programs = JSON.parse(root.getAttribute('data-active-programs') || '[]');
+        } catch (error) {
+            programs = [];
+        }
+
+        var searchInput = document.getElementById('soActiveProgramSearch');
+        var select = document.getElementById('soActiveProgramSelect');
+        var apply = document.getElementById('soActiveProgramApply');
+        var results = document.getElementById('soActiveProgramResults');
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function chips(items, emptyText) {
+            if (!items || !items.length) {
+                return '<span class="so-chip neutral">' + escapeHtml(emptyText) + '</span>';
+            }
+            return items.map(function (item) {
+                return '<span class="so-chip">' + escapeHtml(item) + '</span>';
+            }).join('');
+        }
+
+        function findSelectedProgram() {
+            var id = select ? String(select.value || '') : '';
+            var matched = null;
+            programs.some(function (program) {
+                if (String(program.course_id) === id) {
+                    matched = program;
+                    return true;
+                }
+                return false;
+            });
+            return matched || programs[0] || null;
+        }
+
+        function renderProgram(program) {
+            if (!results) {
+                return;
+            }
+            if (!program) {
+                results.innerHTML = '<div class="so-active-program-panel"><span class="so-active-program-label">Program</span><span class="so-active-program-value">No active program found</span></div>';
+                return;
+            }
+            var sections = Array.isArray(program.sections) ? program.sections : [];
+            var sectionHtml = sections.length
+                ? sections.map(function (section) {
+                    return '<div class="so-available-section-row"><div><strong>' + escapeHtml(section.section || '-') + '</strong><div class="so-muted">' + escapeHtml(section.year || 'N/A') + '</div></div><span class="so-chip neutral">' + escapeHtml(section.subject_count || 0) + ' subjects</span></div>';
+                }).join('')
+                : '<div class="so-available-section-row"><span class="so-muted">No generated sections yet for this active program.</span></div>';
+
+            results.innerHTML =
+                '<div class="so-active-program-panel"><span class="so-active-program-label">Program</span><span class="so-active-program-value">' + escapeHtml(program.label || '-') + '</span><div class="so-chip-list"><span class="so-chip neutral">' + escapeHtml(program.subject_count || 0) + ' curriculum subjects</span><span class="so-chip neutral">' + escapeHtml(program.curriculum_count || 0) + ' active curriculum</span></div></div>' +
+                '<div class="so-active-program-panel"><span class="so-active-program-label">Available Year Levels</span><div class="so-chip-list">' + chips(program.years || [], 'No year levels') + '</div><span class="so-active-program-label" style="margin-top:12px;">Terms</span><div class="so-chip-list">' + chips(program.terms || [], 'No terms') + '</div></div>' +
+                '<div class="so-active-program-panel"><span class="so-active-program-label">Available Sections</span>' + sectionHtml + '</div>';
+        }
+
+        function filterProgramOptions() {
+            if (!select) {
+                return;
+            }
+            var query = searchInput ? String(searchInput.value || '').toLowerCase().trim() : '';
+            var selected = String(select.value || '');
+            select.innerHTML = '';
+            programs.filter(function (program) {
+                if (query === '') {
+                    return true;
+                }
+                return String(program.label || '').toLowerCase().indexOf(query) !== -1;
+            }).forEach(function (program) {
+                var option = document.createElement('option');
+                option.value = String(program.course_id);
+                option.textContent = program.label || ('Program #' + program.course_id);
+                select.appendChild(option);
+            });
+            if (selected && select.querySelector('option[value="' + selected + '"]')) {
+                select.value = selected;
+            }
+            renderProgram(findSelectedProgram());
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterProgramOptions);
+        }
+        if (select) {
+            select.addEventListener('change', function () {
+                renderProgram(findSelectedProgram());
+            });
+        }
+        if (apply) {
+            apply.addEventListener('click', function () {
+                renderProgram(findSelectedProgram());
+            });
+        }
+        renderProgram(findSelectedProgram());
+    }());
+</script>
 @endpush

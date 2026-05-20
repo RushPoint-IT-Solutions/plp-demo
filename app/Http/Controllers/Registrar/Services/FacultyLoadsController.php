@@ -2,34 +2,161 @@
 
 namespace App\Http\Controllers\Registrar\Services;
 
+use App\College;
+use App\Department;
 use App\Faculty;
 use App\Http\Controllers\Controller;
+use App\MasterFacultyFile;
 use App\Semester;
+use App\StudentSubjectGrade;
 use App\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class FacultyLoadsController extends Controller
 {
     public function index(Request $request)
     {
         $search = trim((string) $request->query('q', ''));
+        $selectedDepartmentId = (int) $request->query('department_id', 0);
+        $selectedCollegeId = (int) $request->query('college_id', 0);
 
-        $faculties = Faculty::query()
+        $facultyQuery = Faculty::query()
+            ->with(['departmentLookup.college', 'college'])
             ->when($search !== '', function ($q) use ($search) {
-                $q->where('code', 'like', '%' . $search . '%')
-                    ->orWhere('name', 'like', '%' . $search . '%');
+                $q->where(function ($query) use ($search) {
+                    $query->where('code', 'like', '%' . $search . '%')
+                        ->orWhere('name', 'like', '%' . $search . '%');
+                });
             })
-            ->orderBy('name')
+            ->when($selectedDepartmentId > 0 && Schema::hasColumn('faculties', 'department_id'), function ($q) use ($selectedDepartmentId) {
+                $q->where('department_id', $selectedDepartmentId);
+            })
+            ->when(
+                $selectedCollegeId > 0
+                    && (Schema::hasColumn('faculties', 'college_id')
+                        || (Schema::hasColumn('faculties', 'department_id') && Schema::hasColumn('departments', 'college_id'))),
+                function ($q) use ($selectedCollegeId) {
+                $q->where(function ($query) use ($selectedCollegeId) {
+                    if (Schema::hasColumn('faculties', 'college_id')) {
+                        $query->where('college_id', $selectedCollegeId);
+                    }
+
+                    if (Schema::hasColumn('faculties', 'department_id') && Schema::hasColumn('departments', 'college_id')) {
+                        $query->orWhereHas('departmentLookup', function ($departmentQuery) use ($selectedCollegeId) {
+                            $departmentQuery->where('college_id', $selectedCollegeId);
+                        });
+                    }
+                });
+            })
+            ->orderBy('name');
+
+        $faculties = (clone $facultyQuery)
             ->paginate(10)
             ->appends($request->query());
 
-        return view('registrar.services.classroom-faculty.faculty-loads.index', compact('faculties', 'search'));
+        $dashboardFaculties = (clone $facultyQuery)->get();
+        $facultyIds = $dashboardFaculties->pluck('id')->map(function ($id) {
+            return (int) $id;
+        })->all();
+
+        [$currentSchoolYear, $currentSemester] = $this->defaultFacultyLoadTermFilters();
+
+        $loadSummaries = collect();
+        if (count($facultyIds) > 0) {
+            $loadSummaries = Subject::query()
+                ->select('faculty_id', DB::raw('SUM(' . $this->facultyLoadSqlExpression() . ') as current_load'), DB::raw('COUNT(*) as subject_count'))
+                ->whereIn('faculty_id', $facultyIds)
+                ->when($currentSchoolYear !== '', function ($query) use ($currentSchoolYear) {
+                    return $query->whereHas('academicTerm', function ($termQuery) use ($currentSchoolYear) {
+                        $termQuery->where('school_year', $currentSchoolYear);
+                    });
+                })
+                ->when($currentSemester !== '', function ($query) use ($currentSemester) {
+                    return $query->whereHas('academicTerm', function ($termQuery) use ($currentSemester) {
+                        $termQuery->whereIn('term', $this->semesterAliases($currentSemester));
+                    });
+                })
+                ->groupBy('faculty_id')
+                ->get()
+                ->keyBy('faculty_id')
+                ->map(function ($row) {
+                    return [
+                        'current_load' => (float) ($row->current_load ?? 0),
+                        'subject_count' => (int) ($row->subject_count ?? 0),
+                    ];
+                });
+        }
+
+        $loadDashboard = [
+            'total_faculty' => (int) $dashboardFaculties->count(),
+            'underload_count' => 0,
+            'full_load_count' => 0,
+            'overload_count' => 0,
+            'remaining_load' => 0.0,
+            'overload_units' => 0.0,
+        ];
+
+        foreach ($dashboardFaculties as $facultyRow) {
+            $summary = $loadSummaries->get((int) $facultyRow->id, ['current_load' => 0, 'subject_count' => 0]);
+            $computedLoad = $this->computedFacultyLoadSummary(
+                (int) $facultyRow->id,
+                (float) ($summary['current_load'] ?? 0),
+                (int) ($summary['subject_count'] ?? 0)
+            );
+            $remainingLoad = (float) $computedLoad['remaining_load'];
+            $status = (string) $computedLoad['status'];
+
+            if ($status === 'Overload') {
+                $loadDashboard['overload_count']++;
+                $loadDashboard['overload_units'] += abs($remainingLoad);
+            } elseif ($status === 'Full Load') {
+                $loadDashboard['full_load_count']++;
+            } else {
+                $loadDashboard['underload_count']++;
+                $loadDashboard['remaining_load'] += max(0, $remainingLoad);
+            }
+
+            $loadSummaries->put((int) $facultyRow->id, $computedLoad);
+        }
+
+        $loadTermLabel = trim(($currentSemester !== '' ? ($currentSemester . ' Semester') : '') . ($currentSchoolYear !== '' ? (' SY ' . $currentSchoolYear) : ''));
+
+        $colleges = College::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'abbr']);
+        $departmentColumns = ['id', 'code', 'description'];
+        if (Schema::hasColumn('departments', 'college_id')) {
+            $departmentColumns[] = 'college_id';
+        }
+
+        $departmentOptions = Department::query()
+            ->with('college')
+            ->when($selectedCollegeId > 0 && Schema::hasColumn('departments', 'college_id'), function ($query) use ($selectedCollegeId) {
+                $query->where('college_id', $selectedCollegeId);
+            })
+            ->orderBy('description')
+            ->get($departmentColumns);
+
+        return view('registrar.services.classroom-faculty.faculty-loads.index', compact(
+            'faculties',
+            'search',
+            'loadSummaries',
+            'loadTermLabel',
+            'loadDashboard',
+            'colleges',
+            'departmentOptions',
+            'selectedDepartmentId',
+            'selectedCollegeId'
+        ));
     }
 
     public function show(Request $request, $facultyId)
     {
-        $faculty = Faculty::findOrFail($facultyId);
+        $faculty = Faculty::with(['departmentLookup.college', 'college'])->findOrFail($facultyId);
 
         $schoolYears = Subject::query()
             ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
@@ -106,9 +233,9 @@ class FacultyLoadsController extends Controller
             ->values()
             ->all();
 
-        $tab = (string) $request->query('tab', 'load');
-        if (!in_array($tab, ['load', 'loading'], true)) {
-            $tab = 'load';
+        $tab = (string) $request->query('tab', 'profile');
+        if (!in_array($tab, ['profile', 'allowed', 'schedule', 'load', 'loading', 'history', 'grades'], true)) {
+            $tab = 'profile';
         }
 
         $loadingSearch = trim((string) $request->query('loading_q', ''));
@@ -253,6 +380,127 @@ class FacultyLoadsController extends Controller
             'units' => (float) $assignedSubjectsForSchedule->sum(function (Subject $s) { return (float) ($s->units ?? 0); }),
         ];
 
+        $currentLoad = (float) $assignedSubjectsForSchedule->sum(function (Subject $s) {
+            return $this->facultyLoadValue($s);
+        });
+        $computedLoad = $this->computedFacultyLoadSummary((int) $faculty->id, $currentLoad, (int) $assignedSubjectsForSchedule->count());
+        $maxLoad = (float) $computedLoad['max_load'];
+        $remainingLoad = (float) $computedLoad['remaining_load'];
+
+        $profileRow = $this->facultyProfileRow($faculty);
+        $profileState = $profileRow && is_array($profileRow->config_payload)
+            ? (array) ($profileRow->config_payload['form_state'] ?? [])
+            : [];
+        $photoPath = trim((string) ($profileState['profile_photo_path'] ?? ''));
+        $qualifiedSubjects = $this->qualifiedSubjectsForFaculty((int) $faculty->id);
+        $qualifiedSubjectIds = $qualifiedSubjects->pluck('id')->map(function ($id) {
+            return (int) $id;
+        })->all();
+        $availableQualifiedSubjectOptions = Subject::query()
+            ->when(count($qualifiedSubjectIds) > 0, function ($query) use ($qualifiedSubjectIds) {
+                $query->whereNotIn('id', $qualifiedSubjectIds);
+            })
+            ->orderBy('code')
+            ->orderBy('name')
+            ->limit(300)
+            ->get(['id', 'code', 'name'])
+            ->map(function (Subject $subject) {
+                return [
+                    'id' => (int) $subject->id,
+                    'label' => trim((string) $subject->code . ' - ' . (string) $subject->name),
+                ];
+            })
+            ->values();
+        $loadStatus = (string) $computedLoad['status'];
+
+        $departmentName = (string) (optional($faculty->departmentLookup)->description ?: (Schema::hasColumn('faculties', 'department') ? ($faculty->department ?? '') : ''));
+        $collegeName = (string) (optional($faculty->college)->name ?: optional(optional($faculty->departmentLookup)->college)->name ?: '');
+        $collegeCode = (string) (optional($faculty->college)->abbr ?: optional(optional($faculty->departmentLookup)->college)->abbr ?: optional($faculty->college)->code ?: optional(optional($faculty->departmentLookup)->college)->code ?: '');
+
+        $facultyProfile = [
+            'department' => (string) ($profileState['department'] ?? $departmentName),
+            'college' => $collegeName,
+            'college_code' => $collegeCode,
+            'employment_type' => (string) (Schema::hasColumn('faculties', 'employment_type') ? ($faculty->employment_type ?? 'Full-time Teacher') : ($profileState['position'] ?? 'Full-time Teacher')),
+            'position' => (string) ($profileState['position'] ?? ''),
+            'email' => (string) ($profileState['email_address'] ?? ''),
+            'mobile' => (string) ($profileState['mobile_no'] ?? ''),
+            'status' => (string) ($profileState['status'] ?? 'Active'),
+            'photo_url' => $photoPath !== '' ? asset('storage/' . $photoPath) : '',
+            'max_load' => $maxLoad,
+            'current_load' => $currentLoad,
+            'remaining_load' => $remainingLoad,
+            'load_status' => $loadStatus,
+            'assigned_subjects' => (int) $assignedSubjectsForSchedule->count(),
+            'qualified_subjects' => $qualifiedSubjects,
+            'qualified_subject_count' => (int) $qualifiedSubjects->count(),
+            'sections' => (int) $assignedSubjectsForSchedule->pluck('year_section')->filter()->unique()->count(),
+            'students' => (int) $assignedSubjectsForSchedule->sum(function (Subject $s) {
+                return (int) ($s->students_count ?? 0);
+            }),
+        ];
+
+        $loadHistory = Subject::query()
+            ->with(['academicTerm', 'canonicalCourse'])
+            ->withCount('students')
+            ->where('faculty_id', $faculty->id)
+            ->orderByDesc('academic_term_id')
+            ->orderBy('code')
+            ->limit(150)
+            ->get()
+            ->groupBy(function (Subject $subject) {
+                $term = $subject->academicTerm;
+                $schoolYear = trim((string) optional($term)->school_year);
+                $semester = $this->normalizeSemesterLabel((string) optional($term)->term);
+                return trim(($schoolYear !== '' ? $schoolYear : 'No School Year') . ' ' . ($semester !== '' ? $semester : 'No Term'));
+            });
+
+        $gradeHistory = collect();
+        if (Schema::hasTable('student_subject_grades')) {
+            $gradeHistory = StudentSubjectGrade::query()
+                ->join('subjects as s', 's.id', '=', 'student_subject_grades.subject_id')
+                ->leftJoin('students as st', 'st.id', '=', 'student_subject_grades.student_id')
+                ->leftJoin('academic_terms as at', 'at.id', '=', 's.academic_term_id')
+                ->leftJoin('courses as c', 'c.id', '=', 's.course_id')
+                ->where('s.faculty_id', $faculty->id)
+                ->select([
+                    'student_subject_grades.*',
+                    's.code as subject_code',
+                    's.name as subject_name',
+                    's.year_section',
+                    'at.school_year',
+                    'at.term',
+                    'c.code as course_code',
+                    'st.student_no',
+                    'st.name as student_name',
+                ])
+                ->orderByDesc('student_subject_grades.updated_at')
+                ->limit(200)
+                ->get();
+        }
+
+        $facultyDepartmentColumns = ['id', 'code', 'description'];
+        if (Schema::hasColumn('departments', 'college_id')) {
+            $facultyDepartmentColumns[] = 'college_id';
+        }
+        $facultyDepartmentOptions = Department::query()
+            ->with('college')
+            ->orderBy('description')
+            ->get($facultyDepartmentColumns);
+        $facultyCollegeOptions = College::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'abbr']);
+        $employmentTypeOptions = Schema::hasTable('teacher_load_settings')
+            ? DB::table('teacher_load_settings')->orderBy('employment_type')->pluck('employment_type')->filter()->values()->all()
+            : [];
+        $employmentTypeOptions = array_values(array_unique(array_merge($employmentTypeOptions, [
+            'Full-time Teacher',
+            'Part-time Teacher',
+            'Department Head',
+            'Visiting Lecturer',
+        ])));
+
         return view('registrar.services.classroom-faculty.faculty-loads.show', compact(
             'faculty',
             'tab',
@@ -268,8 +516,216 @@ class FacultyLoadsController extends Controller
             'availableSubjectsHasMore',
             'availableSubjectsTotal',
             'groupedSchedule',
-            'totals'
+            'totals',
+            'facultyProfile',
+            'loadHistory',
+            'gradeHistory',
+            'availableQualifiedSubjectOptions',
+            'facultyDepartmentOptions',
+            'facultyCollegeOptions',
+            'employmentTypeOptions'
         ));
+    }
+
+    public function updateProfile(Request $request, $facultyId)
+    {
+        $faculty = Faculty::findOrFail($facultyId);
+
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:50', 'unique:faculties,code,' . $faculty->id],
+            'name' => ['required', 'string', 'max:255'],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
+            'employment_type' => ['nullable', 'string', 'max:60'],
+            'max_load_units' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+        ]);
+
+        $department = !empty($validated['department_id'])
+            ? Department::find((int) $validated['department_id'])
+            : null;
+        $collegeId = $validated['college_id'] ?? (Schema::hasColumn('departments', 'college_id') ? optional($department)->college_id : null);
+
+        $payload = [
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+        ];
+
+        if (Schema::hasColumn('faculties', 'department')) {
+            $payload['department'] = optional($department)->description;
+        }
+        if (Schema::hasColumn('faculties', 'department_id')) {
+            $payload['department_id'] = $validated['department_id'] ?? null;
+        }
+        if (Schema::hasColumn('faculties', 'college_id')) {
+            $payload['college_id'] = $collegeId;
+        }
+        if (Schema::hasColumn('faculties', 'employment_type')) {
+            $payload['employment_type'] = $validated['employment_type'] ?: 'Full-time Teacher';
+        }
+        if (Schema::hasColumn('faculties', 'max_load_units')) {
+            $payload['max_load_units'] = $validated['max_load_units'] ?? null;
+        }
+
+        $faculty->update($payload);
+
+        if (Schema::hasTable('users') && Schema::hasColumn('users', 'faculty_id')) {
+            $userPayload = ['name' => $validated['name']];
+
+            DB::table('users')
+                ->where('faculty_id', $faculty->id)
+                ->update($userPayload);
+        }
+
+        return back()->with('status', 'Faculty profile updated successfully.');
+    }
+
+    public function departments(Request $request)
+    {
+        $search = trim((string) $request->query('q', ''));
+        $selectedCollegeId = (int) $request->query('college_id', 0);
+
+        $departments = Department::query()
+            ->with('college')
+            ->withCount('faculties')
+            ->when($selectedCollegeId > 0 && Schema::hasColumn('departments', 'college_id'), function ($query) use ($selectedCollegeId) {
+                $query->where('college_id', $selectedCollegeId);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('code', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            })
+            ->orderBy('description')
+            ->paginate(12)
+            ->appends($request->query());
+
+        $colleges = College::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'abbr']);
+
+        $summary = [
+            'departments' => Department::count(),
+            'colleges' => College::where('is_active', true)->count(),
+            'assigned_faculty' => Schema::hasColumn('faculties', 'department_id')
+                ? Faculty::whereNotNull('department_id')->count()
+                : 0,
+            'unassigned_faculty' => Schema::hasColumn('faculties', 'department_id')
+                ? Faculty::whereNull('department_id')->count()
+                : Faculty::count(),
+        ];
+
+        return view('registrar.registrar-menu.faculty-management.departments', compact('departments', 'colleges', 'search', 'summary', 'selectedCollegeId'));
+    }
+
+    public function storeDepartment(Request $request)
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:30', 'unique:departments,code'],
+            'description' => ['required', 'string', 'max:255', 'unique:departments,description'],
+            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
+        ]);
+
+        if (!Schema::hasColumn('departments', 'college_id')) {
+            unset($validated['college_id']);
+        }
+
+        Department::create($validated);
+
+        return back()->with('success', 'Department created successfully.');
+    }
+
+    public function updateDepartment(Request $request, Department $department)
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:30', 'unique:departments,code,' . $department->id],
+            'description' => ['required', 'string', 'max:255', 'unique:departments,description,' . $department->id],
+            'college_id' => ['nullable', 'integer', 'exists:colleges,id'],
+        ]);
+
+        if (!Schema::hasColumn('departments', 'college_id')) {
+            unset($validated['college_id']);
+        }
+
+        $department->update($validated);
+
+        if (Schema::hasColumn('departments', 'college_id') && Schema::hasColumn('faculties', 'department_id') && Schema::hasColumn('faculties', 'college_id')) {
+            Faculty::where('department_id', $department->id)
+                ->where(function ($query) {
+                    $query->whereNull('college_id')->orWhere('college_id', 0);
+                })
+                ->update(['college_id' => $department->college_id]);
+        }
+
+        return back()->with('success', 'Department updated successfully.');
+    }
+
+    public function destroyDepartment(Department $department)
+    {
+        if ($department->faculties()->exists() || $department->courses()->exists()) {
+            return back()->withErrors(['department' => 'This department is linked to faculty or programs and cannot be deleted.']);
+        }
+
+        $department->delete();
+
+        return back()->with('success', 'Department deleted successfully.');
+    }
+
+    public function allowSubject(Request $request, $facultyId)
+    {
+        if (!Schema::hasTable('teacher_allowed_subjects')) {
+            return back()->withErrors(['subject_id' => 'Teacher qualification table is not available. Run migrations first.']);
+        }
+
+        $faculty = Faculty::findOrFail($facultyId);
+        $validated = $request->validate([
+            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
+            'school_year' => ['nullable', 'string'],
+            'semester' => ['nullable', 'string'],
+        ]);
+
+        DB::table('teacher_allowed_subjects')->updateOrInsert([
+            'faculty_id' => (int) $faculty->id,
+            'subject_id' => (int) $validated['subject_id'],
+        ], [
+            'assigned_by_user_id' => optional($request->user())->id,
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]);
+
+        return redirect()
+            ->route($this->facultyShowRouteName($request), [
+                'faculty' => (int) $faculty->id,
+                'tab' => 'allowed',
+                'school_year' => $validated['school_year'] ?? null,
+                'semester' => $validated['semester'] ?? null,
+            ])
+            ->with('status', 'Allowed subject added successfully.')
+            ->with('status_type', 'success');
+    }
+
+    public function removeAllowedSubject(Request $request, $facultyId, $subjectId)
+    {
+        if (!Schema::hasTable('teacher_allowed_subjects')) {
+            return back()->withErrors(['subject_id' => 'Teacher qualification table is not available. Run migrations first.']);
+        }
+
+        $faculty = Faculty::findOrFail($facultyId);
+        DB::table('teacher_allowed_subjects')
+            ->where('faculty_id', (int) $faculty->id)
+            ->where('subject_id', (int) $subjectId)
+            ->delete();
+
+        return redirect()
+            ->route($this->facultyShowRouteName($request), [
+                'faculty' => (int) $faculty->id,
+                'tab' => 'allowed',
+                'school_year' => $request->input('school_year'),
+                'semester' => $request->input('semester'),
+            ])
+            ->with('status', 'Allowed subject removed successfully.')
+            ->with('status_type', 'success');
     }
 
     public function assign(Request $request, $facultyId)
@@ -328,6 +784,21 @@ class FacultyLoadsController extends Controller
                 ->with('status_type', 'danger');
         }
 
+        if (!$this->teacherQualifiedForSubject((int) $faculty->id, $subject)) {
+            return redirect()
+                ->route('registrar.services.classroom-faculty.faculty-loads.show', [
+                    'faculty' => $faculty->id,
+                    'tab' => 'loading',
+                    'school_year' => $selectedSchoolYear !== '' ? $selectedSchoolYear : null,
+                    'semester' => $selectedSemester !== '' ? $selectedSemester : null,
+                    'loading_q' => trim((string) ($validated['loading_q'] ?? '')) ?: null,
+                ])
+                ->withInput()
+                ->withErrors(['subject_id' => 'Selected faculty member is not qualified to teach this subject.'])
+                ->with('status', 'Unable to assign subject because the faculty qualification rule failed.')
+                ->with('status_type', 'danger');
+        }
+
         $creditedTuitionUnits = array_key_exists('credited_tuition_units', $validated) && $validated['credited_tuition_units'] !== null
             ? round((float) $validated['credited_tuition_units'], 2)
             : null;
@@ -335,6 +806,21 @@ class FacultyLoadsController extends Controller
         $loadHours = array_key_exists('load_hours', $validated) && $validated['load_hours'] !== null
             ? round((float) $validated['load_hours'], 2)
             : null;
+
+        if (!$this->teacherLoadWithinLimit((int) $faculty->id, $subject, $creditedTuitionUnits, $loadHours)) {
+            return redirect()
+                ->route('registrar.services.classroom-faculty.faculty-loads.show', [
+                    'faculty' => $faculty->id,
+                    'tab' => 'loading',
+                    'school_year' => $selectedSchoolYear !== '' ? $selectedSchoolYear : null,
+                    'semester' => $selectedSemester !== '' ? $selectedSemester : null,
+                    'loading_q' => trim((string) ($validated['loading_q'] ?? '')) ?: null,
+                ])
+                ->withInput()
+                ->withErrors(['subject_id' => 'Assigning this subject will exceed the faculty member maximum load.'])
+                ->with('status', 'Unable to assign subject because the faculty load limit would be exceeded.')
+                ->with('status_type', 'danger');
+        }
 
         $subject->faculty_id = $faculty->id;
         $subject->load_type = $validated['load_type'];
@@ -465,6 +951,47 @@ class FacultyLoadsController extends Controller
         return '';
     }
 
+    private function defaultFacultyLoadTermFilters(): array
+    {
+        if (!Schema::hasTable('academic_terms')) {
+            return ['', ''];
+        }
+
+        $schoolYears = Subject::query()
+            ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
+            ->select('at.school_year')
+            ->distinct()
+            ->orderBy('at.school_year', 'desc')
+            ->pluck('school_year');
+
+        $schoolYear = (string) ($schoolYears->first() ?: '');
+        if ($schoolYear === '') {
+            return ['', ''];
+        }
+
+        $terms = Subject::query()
+            ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
+            ->where('at.school_year', $schoolYear)
+            ->distinct()
+            ->pluck('at.term')
+            ->map(function ($term) {
+                return $this->normalizeSemesterLabel((string) $term);
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($terms->contains('Second')) {
+            return [$schoolYear, 'Second'];
+        }
+
+        if ($terms->contains('First')) {
+            return [$schoolYear, 'First'];
+        }
+
+        return [$schoolYear, (string) ($terms->first() ?: '')];
+    }
+
     private function semesterAliases(string $canonicalLabel): array
     {
         if ($canonicalLabel === 'First') {
@@ -514,5 +1041,175 @@ class FacultyLoadsController extends Controller
         }
 
         return 'Other';
+    }
+
+    private function teacherQualifiedForSubject(int $facultyId, Subject $subject): bool
+    {
+        if (!Schema::hasTable('teacher_allowed_subjects')) {
+            return true;
+        }
+
+        $rows = DB::table('teacher_allowed_subjects')->where('faculty_id', $facultyId)->count();
+        if ($rows === 0) {
+            return true;
+        }
+
+        return DB::table('teacher_allowed_subjects')
+            ->join('subjects as allowed_subjects', 'allowed_subjects.id', '=', 'teacher_allowed_subjects.subject_id')
+            ->where('faculty_id', $facultyId)
+            ->where(function ($query) use ($subject) {
+                $query->where('teacher_allowed_subjects.subject_id', (int) $subject->id)
+                    ->orWhere('allowed_subjects.code', (string) $subject->code);
+            })
+            ->exists();
+    }
+
+    private function teacherLoadWithinLimit(int $facultyId, Subject $subject, ?float $incomingCreditedUnits = null, ?float $incomingLoadHours = null): bool
+    {
+        $max = $this->teacherMaxLoadUnits($facultyId);
+        if ($max <= 0) {
+            return true;
+        }
+
+        $current = (float) Subject::query()
+            ->where('faculty_id', $facultyId)
+            ->where('id', '<>', (int) $subject->id)
+            ->when((int) $subject->academic_term_id > 0, function ($query) use ($subject) {
+                $query->where('academic_term_id', (int) $subject->academic_term_id);
+            })
+            ->sum(DB::raw($this->facultyLoadSqlExpression()));
+
+        $incoming = $incomingCreditedUnits !== null
+            ? (float) $incomingCreditedUnits
+            : $this->facultyLoadValue($subject);
+
+        return ($current + $incoming) <= $max;
+    }
+
+    private function facultyLoadValue(Subject $subject): float
+    {
+        if ($subject->credited_tuition_units !== null && $subject->credited_tuition_units !== '') {
+            return (float) $subject->credited_tuition_units;
+        }
+
+        return 0.0;
+    }
+
+    private function computedFacultyLoadSummary(int $facultyId, float $currentLoad, int $subjectCount = 0): array
+    {
+        $maxLoad = $this->teacherMaxLoadUnits($facultyId);
+        $remainingLoad = $maxLoad - $currentLoad;
+        $status = 'Underload';
+
+        if ($currentLoad > $maxLoad) {
+            $status = 'Overload';
+        } elseif (abs($currentLoad - $maxLoad) < 0.01) {
+            $status = 'Full Load';
+        }
+
+        return [
+            'current_load' => $currentLoad,
+            'subject_count' => $subjectCount,
+            'max_load' => $maxLoad,
+            'remaining_load' => $remainingLoad,
+            'status' => $status,
+        ];
+    }
+
+    private function facultyLoadSqlExpression(): string
+    {
+        $parts = [];
+
+        if (Schema::hasColumn('subjects', 'credited_tuition_units')) {
+            $parts[] = 'credited_tuition_units';
+        }
+
+        return $parts ? 'COALESCE(' . implode(', ', $parts) . ', 0)' : '0';
+    }
+
+    private function teacherMaxLoadUnits(int $facultyId): float
+    {
+        $faculty = Faculty::query()->find($facultyId);
+        if (!$faculty) {
+            return 0.0;
+        }
+
+        if (Schema::hasColumn('faculties', 'max_load_units') && (float) ($faculty->max_load_units ?? 0) > 0) {
+            return (float) $faculty->max_load_units;
+        }
+
+        $type = Schema::hasColumn('faculties', 'employment_type')
+            ? (string) ($faculty->employment_type ?: 'Full-time Teacher')
+            : 'Full-time Teacher';
+
+        if (Schema::hasTable('teacher_load_settings')) {
+            $configured = DB::table('teacher_load_settings')
+                ->where('employment_type', $type)
+                ->value('max_load_units');
+            if ($configured !== null) {
+                return (float) $configured;
+            }
+        }
+
+        $defaults = [
+            'Full-time Teacher' => 24,
+            'Part-time Teacher' => 12,
+            'Department Head' => 9,
+            'Visiting Lecturer' => 6,
+        ];
+
+        return (float) ($defaults[$type] ?? 24);
+    }
+
+    private function facultyProfileRow(Faculty $faculty)
+    {
+        if (!Schema::hasTable('master_faculty_files')) {
+            return null;
+        }
+
+        if (Schema::hasColumn('master_faculty_files', 'source_faculty_id')) {
+            $row = MasterFacultyFile::query()
+                ->where('source_faculty_id', (int) $faculty->id)
+                ->first();
+            if ($row) {
+                return $row;
+            }
+        }
+
+        $code = trim((string) $faculty->code);
+        if ($code !== '') {
+            $row = MasterFacultyFile::query()->where('code', $code)->first();
+            if ($row) {
+                return $row;
+            }
+        }
+
+        $name = trim((string) $faculty->name);
+        return $name !== '' ? MasterFacultyFile::query()->where('name', $name)->first() : null;
+    }
+
+    private function qualifiedSubjectsForFaculty(int $facultyId)
+    {
+        if (!Schema::hasTable('teacher_allowed_subjects')) {
+            return collect();
+        }
+
+        return Subject::query()
+            ->join('teacher_allowed_subjects as tas', 'tas.subject_id', '=', 'subjects.id')
+            ->where('tas.faculty_id', $facultyId)
+            ->orderBy('subjects.code')
+            ->orderBy('subjects.name')
+            ->get(['subjects.id', 'subjects.code', 'subjects.name', 'subjects.units', 'subjects.lec', 'subjects.lab', 'subjects.course_type']);
+    }
+
+    private function facultyShowRouteName(Request $request): string
+    {
+        $routeName = optional($request->route())->getName();
+
+        if (is_string($routeName) && strpos($routeName, 'registrar.registrar-menu.faculty-mgmt.') === 0) {
+            return 'registrar.registrar-menu.faculty-mgmt.faculty-list.show';
+        }
+
+        return 'registrar.services.classroom-faculty.faculty-loads.show';
     }
 }

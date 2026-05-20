@@ -92,7 +92,8 @@
                 <div style="display:flex; gap:12px;">
                     <div class="req-modal-field-group" style="flex:1;">
                         <label class="req-modal-label">Hours</label>
-                        <input type="number" step="0.5" min="0" class="req-modal-input" id="sfInputHours" placeholder="0">
+                        <input type="number" step="0.5" min="0.5" class="req-modal-input" id="sfInputHours" placeholder="e.g. 3.0">
+                        <small style="display:block; margin-top:5px; color:#64748b; font-size:.78rem;">Used as the schedule duration for room generation.</small>
                     </div>
                     <div class="req-modal-field-group" style="flex:1;">
                         <label class="req-modal-label">Course Type</label>

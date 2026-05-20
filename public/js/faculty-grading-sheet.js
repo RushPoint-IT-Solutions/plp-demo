@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var rowEditPayload = document.getElementById('gradingRowEditPayload');
     var rowEditModal = document.getElementById('gradingRowEditModal');
     var rowEditStudent = document.getElementById('gradingRowEditStudent');
-    var rowEditPrelim = document.getElementById('gradingRowEditPrelim');
     var rowEditMidterm = document.getElementById('gradingRowEditMidterm');
     var rowEditFinal = document.getElementById('gradingRowEditFinal');
     var rowEditRemarks = document.getElementById('gradingRowEditRemarks');
@@ -37,10 +36,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var allSubjects = [];
+    var gradeRules = [];
     try {
         allSubjects = JSON.parse(dataNode.getAttribute('data-subjects') || '[]');
     } catch (error) {
         allSubjects = [];
+    }
+    try {
+        gradeRules = JSON.parse(dataNode.getAttribute('data-grade-rules') || '[]');
+    } catch (error) {
+        gradeRules = [];
     }
 
     var filteredSubjects = allSubjects.slice();
@@ -49,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var detailPageSize = 10;
     var detailButtonWindow = 5;
     var activeStudentId = null;
+    var autoSaveTimers = {};
 
     // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -360,23 +366,89 @@ document.addEventListener('DOMContentLoaded', function () {
             + (detailPage >= totalPages ? 'disabled' : '') + ' data-detail-next="1">&#x203A;</button>';
     }
 
+    function gradeInput(studentId, field, value) {
+        return '<input type="number" class="fgs-grade-input" '
+            + 'data-student-id="' + escapeHtml(studentId) + '" '
+            + 'data-grade-field="' + escapeHtml(field) + '" '
+            + 'min="50" max="100" step="0.01" inputmode="decimal" value="' + escapeHtml(value || '') + '">';
+    }
+
+    function remarksInput(studentId, value) {
+        return '<input type="text" class="fgs-remarks-input" '
+            + 'data-student-id="' + escapeHtml(studentId) + '" '
+            + 'data-grade-field="remarks" value="' + escapeHtml(value || '') + '">';
+    }
+
+    function gradeRuleSelect(studentId, value) {
+        var html = '<select class="fgs-grade-rule-select" data-student-id="' + escapeHtml(studentId) + '" data-grade-field="grade_rule_id">';
+        html += '<option value="">No status</option>';
+        gradeRules.forEach(function (rule) {
+            var selected = String(value || '') === String(rule.id) ? ' selected' : '';
+            var label = String(rule.code || '') + (rule.remarks ? ' - ' + String(rule.remarks) : '');
+            html += '<option value="' + escapeHtml(rule.id) + '"' + selected + '>'
+                + escapeHtml(label)
+                + '</option>';
+        });
+        html += '</select>';
+        return html;
+    }
+
+    function getGradeRuleById(ruleId) {
+        for (var i = 0; i < gradeRules.length; i += 1) {
+            if (String(gradeRules[i].id) === String(ruleId)) {
+                return gradeRules[i];
+            }
+        }
+        return null;
+    }
+
+    function getGradeRuleByCode(code) {
+        for (var i = 0; i < gradeRules.length; i += 1) {
+            if (String(gradeRules[i].code || '').toUpperCase() === String(code || '').toUpperCase()) {
+                return gradeRules[i];
+            }
+        }
+        return null;
+    }
+
+    function isNoNumericGradeRule(rule) {
+        var code = rule ? String(rule.code || '').toUpperCase() : '';
+        return code === 'OD' || code === 'UD' || code === 'INC';
+    }
+
+    function computeFinalGrade(midterm, finalGrade) {
+        var midtermNum = parseFloat(midterm);
+        var finalNum = parseFloat(finalGrade);
+        if (isNaN(midtermNum) || isNaN(finalNum)) {
+            return '';
+        }
+        return (Math.round(((midtermNum + finalNum) / 2) * 100) / 100).toFixed(2);
+    }
+
     function buildReadOnlyRows(students, canEdit) {
         var html = '';
         students.forEach(function (st, index) {
-            var editButton = canEdit
-                ? '<button type="button" class="fgs-row-edit-btn" data-student-id="' + escapeHtml(st.id) + '">Edit</button>'
+            var rowAction = canEdit
+                ? '<button type="button" class="fgs-row-submit-btn" data-student-id="' + escapeHtml(st.id) + '">Submit Grade</button>'
+                    + '<span class="fgs-autosave-status" data-student-id="' + escapeHtml(st.id) + '" data-grade-field="autosave_status"></span>'
                 : '<span class="text-muted">-</span>';
+            var hasGradeRule = !!st.grade_rule_id;
+            var gradeRuleCell = canEdit ? gradeRuleSelect(st.id, st.grade_rule_id) : escapeHtml(st.status || st.grade_rule_code || '');
+            var midtermCell = canEdit ? gradeInput(st.id, 'midterm', st.midterm) : escapeHtml(st.midterm || '');
+            var finalCell = canEdit ? gradeInput(st.id, 'final', st.final) : escapeHtml(st.final || '');
+            var finalResultCell = st.final_average || computeFinalGrade(st.midterm, st.final);
+            var remarksCell = canEdit ? remarksInput(st.id, st.remarks) : escapeHtml(st.remarks || '');
 
             html += '<tr>'
                 + '<td>' + (index + 1) + '</td>'
                 + '<td>' + escapeHtml(st.student_no || '-') + '</td>'
                 + '<td>' + escapeHtml(st.name || '') + '</td>'
-                + '<td>' + escapeHtml(st.prelim || '') + '</td>'
-                + '<td>' + escapeHtml(st.midterm || '') + '</td>'
-                + '<td>' + escapeHtml(st.final || '') + '</td>'
-                + '<td>' + escapeHtml(st.final_average || '') + '</td>'
-                + '<td>' + escapeHtml(st.remarks || '') + '</td>'
-                + '<td class="fgs-col-action">' + editButton + '</td>'
+                + '<td>' + midtermCell + '</td>'
+                + '<td>' + finalCell + '</td>'
+                + '<td data-student-id="' + escapeHtml(st.id) + '" data-grade-field="final_average">' + (finalResultCell ? escapeHtml(finalResultCell) : '<span class="fgs-cell-muted">-</span>') + '</td>'
+                + '<td>' + gradeRuleCell + '</td>'
+                + '<td>' + remarksCell + '</td>'
+                + '<td class="fgs-col-action">' + rowAction + '</td>'
                 + '</tr>';
         });
         return html;
@@ -401,6 +473,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             detailBody.innerHTML = buildReadOnlyRows(pageStudents, canEdit);
         }
+
+        pageStudents.forEach(function (student) {
+            updateRowMode(student.id);
+        });
 
         detailTitle.textContent = subject.name || '';
         detailSection.textContent = subject.section || '';
@@ -522,7 +598,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rowEditStudent) {
             rowEditStudent.textContent = String(student.student_no || '') + ' - ' + String(student.name || '');
         }
-        if (rowEditPrelim) rowEditPrelim.value = student.prelim || '';
         if (rowEditMidterm) rowEditMidterm.value = student.midterm || '';
         if (rowEditFinal) rowEditFinal.value = student.final || '';
         if (rowEditRemarks) rowEditRemarks.value = student.remarks || '';
@@ -537,37 +612,29 @@ document.addEventListener('DOMContentLoaded', function () {
         var student = getStudentById(activeSubject, activeStudentId);
         if (!student) return;
 
-        var prelim     = rowEditPrelim ? rowEditPrelim.value.trim() : '';
         var midterm    = rowEditMidterm ? rowEditMidterm.value.trim() : '';
         var finalGrade = rowEditFinal   ? rowEditFinal.value.trim()   : '';
         var remarks    = rowEditRemarks ? rowEditRemarks.value.trim() : '';
 
         // Only midterm is required — final is optional (may not be done yet)
-        if (!prelim || !midterm) {
+        if (!midterm || !finalGrade) {
             closeRowEditModal(); // close first so SweetAlert appears on top
-            swalWarning('Missing Grade', 'Please enter Prelim and Midterm grades.');
+            swalWarning('Missing Grade', 'Please enter Midterm and Final grades.');
             return;
         }
 
-        var prelimNum = parseFloat(prelim);
         var midtermNum = parseFloat(midterm);
-        var finalNum   = finalGrade !== '' ? parseFloat(finalGrade) : null;
+        var finalNum   = parseFloat(finalGrade);
 
-        if (isNaN(prelimNum) || prelimNum < 0 || prelimNum > 100) {
+        if (isNaN(midtermNum) || midtermNum < 50 || midtermNum > 100) {
             closeRowEditModal();
-            swalWarning('Invalid Prelim Grade', 'Prelim grade must be between 0 and 100. Grade-point values from 1.00 to 5.00 are still accepted.');
+            swalWarning('Invalid Midterm Grade', 'Midterm grade must be between 50 and 100.');
             return;
         }
 
-        if (isNaN(midtermNum) || midtermNum < 0 || midtermNum > 100) {
+        if (isNaN(finalNum) || finalNum < 50 || finalNum > 100) {
             closeRowEditModal();
-            swalWarning('Invalid Midterm Grade', 'Midterm grade must be between 0 and 100. Grade-point values from 1.00 to 5.00 are still accepted.');
-            return;
-        }
-
-        if (finalNum !== null && (isNaN(finalNum) || finalNum < 0 || finalNum > 100)) {
-            closeRowEditModal();
-            swalWarning('Invalid Final Grade', 'Final grade must be between 0 and 100. Grade-point values from 1.00 to 5.00 are still accepted.');
+            swalWarning('Invalid Final Grade', 'Final grade must be between 50 and 100.');
             return;
         }
 
@@ -584,9 +651,8 @@ document.addEventListener('DOMContentLoaded', function () {
             body: JSON.stringify({
                 subject_id: activeSubject.id,
                 student_id: activeStudentId,
-                prelim:     prelimNum,
                 midterm:    midtermNum,
-                final:      finalNum,   // null if not yet entered
+                final:      finalNum,
                 remarks:    remarks,
             }),
         })
@@ -598,10 +664,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            student.prelim        = data.prelim;
             student.midterm       = data.midterm;
             student.final         = data.final;
             student.final_average = data.final_average;
+            student.status        = data.status;
+            student.grade_rule_id = data.grade_rule_id;
             student.remarks       = data.remarks;
 
             closeRowEditModal();
@@ -624,6 +691,216 @@ document.addEventListener('DOMContentLoaded', function () {
         .finally(function () {
             rowEditSave.disabled = false;
             rowEditSave.textContent = 'Save';
+        });
+    }
+
+    function getRowFieldValue(studentId, field) {
+        var inputs = detailBody.querySelectorAll('[data-grade-field="' + field + '"]');
+        for (var i = 0; i < inputs.length; i += 1) {
+            if (String(inputs[i].getAttribute('data-student-id')) === String(studentId)) {
+                return inputs[i].value.trim();
+            }
+        }
+        return '';
+    }
+
+    function setRowFieldValue(studentId, field, value) {
+        var inputs = detailBody.querySelectorAll('[data-grade-field="' + field + '"]');
+        for (var i = 0; i < inputs.length; i += 1) {
+            if (String(inputs[i].getAttribute('data-student-id')) === String(studentId)) {
+                inputs[i].value = value || '';
+                return;
+            }
+        }
+    }
+
+    function setAutoSaveStatus(studentId, text, isSaving) {
+        var statuses = detailBody.querySelectorAll('[data-grade-field="autosave_status"]');
+        for (var i = 0; i < statuses.length; i += 1) {
+            if (String(statuses[i].getAttribute('data-student-id')) === String(studentId)) {
+                statuses[i].textContent = text || '';
+                statuses[i].style.color = isSaving ? '#6b7280' : '#15803d';
+                return;
+            }
+        }
+    }
+
+    function updateRowMode(studentId) {
+        setRowSemestralGrade(studentId);
+    }
+
+    function findGradeDisplayCell(studentId, field) {
+        var cells = detailBody.querySelectorAll('[data-grade-field="' + field + '"]');
+        for (var i = 0; i < cells.length; i += 1) {
+            if (String(cells[i].getAttribute('data-student-id')) === String(studentId)) {
+                return cells[i];
+            }
+        }
+        return null;
+    }
+
+    function setRowSemestralGrade(studentId) {
+        var finalAverageCell = findGradeDisplayCell(studentId, 'final_average');
+        if (!finalAverageCell) return;
+
+        var finalGradeAverage = computeFinalGrade(
+            getRowFieldValue(studentId, 'midterm'),
+            getRowFieldValue(studentId, 'final')
+        );
+
+        finalAverageCell.innerHTML = finalGradeAverage
+            ? escapeHtml(finalGradeAverage)
+            : '<span class="fgs-cell-muted">-</span>';
+
+        setAutomaticPassFailStatus(studentId, finalGradeAverage);
+    }
+
+    function setAutomaticPassFailStatus(studentId, semestralGrade) {
+        var currentRule = getGradeRuleById(getRowFieldValue(studentId, 'grade_rule_id'));
+        var currentCode = currentRule ? String(currentRule.code || '').toUpperCase() : '';
+
+        if (currentCode === 'OD' || currentCode === 'UD' || currentCode === 'INC') {
+            return;
+        }
+
+        var numericGrade = parseFloat(semestralGrade);
+        if (isNaN(numericGrade)) {
+            if (currentCode === 'P' || currentCode === 'F') {
+                setRowFieldValue(studentId, 'grade_rule_id', '');
+            }
+            return;
+        }
+
+        var statusRule = getGradeRuleByCode(numericGrade >= 75 ? 'P' : 'F');
+        if (!statusRule) {
+            return;
+        }
+
+        setRowFieldValue(studentId, 'grade_rule_id', statusRule.id);
+    }
+
+    function scheduleAutoSave(studentId) {
+        if (autoSaveTimers[studentId]) {
+            clearTimeout(autoSaveTimers[studentId]);
+        }
+        setAutoSaveStatus(studentId, 'Saving draft...', true);
+        autoSaveTimers[studentId] = setTimeout(function () {
+            saveStudentGrade(studentId, null, true);
+        }, 900);
+    }
+
+    function saveStudentGrade(studentId, submitButton, isDraft) {
+        if (!activeSubject) return;
+
+        var student = getStudentById(activeSubject, studentId);
+        if (!student) return;
+
+        var gradeRuleId = getRowFieldValue(studentId, 'grade_rule_id');
+        var midterm = getRowFieldValue(studentId, 'midterm');
+        var finalGrade = getRowFieldValue(studentId, 'final');
+        var remarks = getRowFieldValue(studentId, 'remarks');
+        var gradeRule = getGradeRuleById(gradeRuleId);
+        var canSkipNumericGrades = isNoNumericGradeRule(gradeRule);
+
+        if (canSkipNumericGrades) {
+            midterm = '';
+            finalGrade = '';
+        }
+
+        if (!canSkipNumericGrades && (!midterm || !finalGrade)) {
+            if (isDraft) {
+                setAutoSaveStatus(studentId, '', false);
+                return;
+            }
+            swalWarning('Missing Grade', 'Please enter Midterm and Final grades for ' + String(student.name || 'this student') + '.');
+            return;
+        }
+
+        var midtermNum = midterm !== '' ? parseFloat(midterm) : null;
+        var finalNum = finalGrade !== '' ? parseFloat(finalGrade) : null;
+
+        if (!canSkipNumericGrades && (isNaN(midtermNum) || midtermNum < 50 || midtermNum > 100)) {
+            if (isDraft) {
+                setAutoSaveStatus(studentId, '', false);
+                return;
+            }
+            swalWarning('Invalid Midterm Grade', 'Midterm grade must be between 50 and 100.');
+            return;
+        }
+
+        if (!canSkipNumericGrades && (isNaN(finalNum) || finalNum < 50 || finalNum > 100)) {
+            if (isDraft) {
+                setAutoSaveStatus(studentId, '', false);
+                return;
+            }
+            swalWarning('Invalid Final Grade', 'Final grade must be between 50 and 100.');
+            return;
+        }
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+        }
+
+        fetch('/faculty/grading-sheet/update-row', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrf(),
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                subject_id: activeSubject.id,
+                student_id: studentId,
+                grade_rule_id: gradeRuleId || null,
+                midterm: midtermNum,
+                final: finalNum,
+                remarks: remarks,
+                draft: !!isDraft,
+            }),
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (!data.ok) {
+                swalError('Submit Failed', 'Failed to submit the grade. Please try again.');
+                return;
+            }
+
+            student.midterm = data.midterm;
+            student.final = data.final;
+            student.final_average = data.final_average;
+            student.status = data.status;
+            student.grade_rule_id = data.grade_rule_id;
+            student.remarks = data.remarks;
+
+            if (isDraft) {
+                setAutoSaveStatus(studentId, 'Draft saved', false);
+            } else {
+                renderDetail(activeSubject);
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Student grade submitted',
+                    showConfirmButton: false,
+                    timer: 2200,
+                    timerProgressBar: true,
+                });
+            }
+        })
+        .catch(function () {
+            if (isDraft) {
+                setAutoSaveStatus(studentId, 'Draft not saved', false);
+                return;
+            }
+            swalError('Network Error', 'Something went wrong. Please try again.');
+        })
+        .finally(function () {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Grade';
+            }
         });
     }
 
@@ -701,12 +978,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Detail body: edit button
+    // Detail body: submit one student's grade
     if (detailBody) {
         detailBody.addEventListener('click', function (event) {
-            var editBtn = event.target.closest('.fgs-row-edit-btn');
-            if (!editBtn) return;
-            openRowEditModal(editBtn.getAttribute('data-student-id'));
+            var submitRowBtn = event.target.closest('.fgs-row-submit-btn');
+            if (!submitRowBtn) return;
+            saveStudentGrade(submitRowBtn.getAttribute('data-student-id'), submitRowBtn);
+        });
+
+        detailBody.addEventListener('input', function (event) {
+            var gradeInputNode = event.target.closest('[data-grade-field="midterm"], [data-grade-field="final"], [data-grade-field="remarks"]');
+            if (!gradeInputNode) return;
+            var studentId = gradeInputNode.getAttribute('data-student-id');
+            if (gradeInputNode.getAttribute('data-grade-field') !== 'remarks') {
+                setRowSemestralGrade(studentId);
+            }
+            scheduleAutoSave(studentId);
+        });
+
+        detailBody.addEventListener('change', function (event) {
+            var gradeRuleNode = event.target.closest('[data-grade-field="grade_rule_id"]');
+            if (!gradeRuleNode) return;
+            var studentId = gradeRuleNode.getAttribute('data-student-id');
+            if (isNoNumericGradeRule(getGradeRuleById(gradeRuleNode.value))) {
+                setRowFieldValue(studentId, 'midterm', '');
+                setRowFieldValue(studentId, 'final', '');
+            }
+            updateRowMode(studentId);
+            scheduleAutoSave(studentId);
         });
     }
 

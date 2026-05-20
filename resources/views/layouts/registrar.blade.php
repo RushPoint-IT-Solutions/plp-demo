@@ -167,6 +167,39 @@
             font-size: 0.85rem;
             color: #495057;
         }
+        .registrar-topbar-context {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding-left: 12px;
+        }
+        .registrar-topbar-kicker {
+            display: block;
+            color: #6b7a70;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+        .registrar-topbar-title {
+            display: block;
+            color: #143521;
+            font-size: 0.95rem;
+            font-weight: 800;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+            .registrar-topbar-context {
+                padding-left: 4px;
+            }
+            .registrar-topbar-title {
+                font-size: 0.82rem;
+                max-width: 42vw;
+            }
+        }
     </style>
 
 </head>
@@ -197,6 +230,11 @@
                         <line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>
                 </button>
+
+                <div class="registrar-topbar-context" aria-label="Current page">
+                    <span class="registrar-topbar-kicker">Registrar Portal</span>
+                    <span class="registrar-topbar-title">@yield('page-title', 'Dashboard')</span>
+                </div>
 
                 <div class="topbar-icons">
                     {{-- Help Center --}}

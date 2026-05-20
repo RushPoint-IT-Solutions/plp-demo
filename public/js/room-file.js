@@ -242,12 +242,12 @@ function buildFetchUrl(searchValue, pageValue) {
 }
 
 function syncOptionCaches(options) {
-    if (!options || !Array.isArray(options.buildings) || !Array.isArray(options.programs)) {
+    if (!options || !Array.isArray(options.buildings)) {
         return;
     }
 
     ROOM_OPTIONS.buildings = options.buildings;
-    ROOM_OPTIONS.programs = options.programs;
+    ROOM_OPTIONS.programs = Array.isArray(options.subjects) ? options.subjects : (options.programs || []);
     optionsLoaded = true;
 
     renderBuildingOptions('newRoomBuilding', null);
@@ -374,7 +374,7 @@ function renderRoomTable() {
             '<td>' + escapeHtml(room.floor_number) + '</td>' +
             '<td>' + escapeHtml(room.location_label || '-') + '</td>' +
             '<td>' + escapeHtml(room.capacity) + '</td>' +
-            '<td>' + escapeHtml(room.program_label || '-') + '</td>' +
+            '<td>' + escapeHtml(room.subject_label || room.program_label || '-') + '</td>' +
             '<td>' + escapeHtml(room.updated_by || '-') + '</td>';
 
         tbody.appendChild(tr);
@@ -436,13 +436,35 @@ function renderProgramOptions(selectId, selectedId) {
         return;
     }
 
+    var selectedIds = Array.isArray(selectedId) ? selectedId.map(function (id) {
+        return Number(id);
+    }) : (selectedId ? [Number(selectedId)] : []);
+
     var optionsHtml = '<option value="">- Select Program -</option>';
     ROOM_OPTIONS.programs.forEach(function (program) {
-        var selected = selectedId && Number(selectedId) === Number(program.id) ? ' selected' : '';
+        var selected = selectedIds.indexOf(Number(program.id)) !== -1 ? ' selected' : '';
         optionsHtml += '<option value="' + Number(program.id) + '"' + selected + '>' + escapeHtml(program.label || program.code || program.name) + '</option>';
     });
 
     select.innerHTML = optionsHtml;
+}
+
+function selectedProgramIds(selectId) {
+    var select = document.getElementById(selectId);
+    if (!select) {
+        return [];
+    }
+
+    return Array.prototype.slice.call(select.options || [])
+        .filter(function (option) {
+            return option.selected && Number(option.value) > 0;
+        })
+        .map(function (option) {
+            return Number(option.value);
+        })
+        .filter(function (id, index, list) {
+            return id > 0 && list.indexOf(id) === index;
+        });
 }
 
 function getBuildingById(buildingId) {
@@ -888,9 +910,9 @@ function extractRoomPayload(prefix) {
     var buildingId = Number(document.getElementById(prefix + 'RoomBuilding').value);
     var hallwayId = Number(document.getElementById(prefix + 'RoomHallway').value);
     var capacity = Number(document.getElementById(prefix + 'RoomStudents').value);
-    var programId = Number(document.getElementById(prefix + 'RoomProgram').value);
+    var subjectIds = selectedProgramIds(prefix + 'RoomProgram');
 
-    if (!roomNumber || !floorNumber || !buildingId || !hallwayId || !capacity || !programId) {
+    if (!roomNumber || !floorNumber || !buildingId || !hallwayId || !capacity || !subjectIds.length) {
         showErrorMessage('Please fill in all fields.');
         return null;
     }
@@ -906,7 +928,7 @@ function extractRoomPayload(prefix) {
         room_building_id: buildingId,
         room_hallway_id: hallwayId,
         capacity: capacity,
-        course_ids: [programId]
+        subject_ids: subjectIds
     };
 }
 
@@ -929,7 +951,7 @@ function openNewRoomModal() {
 
     var newProgramSelect = document.getElementById('newRoomProgram');
     if (newProgramSelect && newProgramSelect.options.length > 1) {
-        newProgramSelect.value = newProgramSelect.options[1].value;
+        newProgramSelect.options[1].selected = true;
     }
 
     document.getElementById('newRoomModal').style.display = 'flex';
@@ -990,8 +1012,7 @@ function openEditRoomModal(id) {
     renderBuildingOptions('editRoomBuilding', room.room_building_id);
     renderHallwayOptions(room.room_building_id, 'editRoomHallway', room.room_hallway_id);
 
-    var selectedProgramId = room.program_ids && room.program_ids.length ? room.program_ids[0] : null;
-    renderProgramOptions('editRoomProgram', selectedProgramId);
+    renderProgramOptions('editRoomProgram', room.subject_ids || room.program_ids || []);
 
     document.getElementById('editRoomModal').style.display = 'flex';
 }

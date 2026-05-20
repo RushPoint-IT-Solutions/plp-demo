@@ -89,7 +89,6 @@
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">PERIOD</label>
                         <select class="req-modal-input" id="gaAddPeriod">
-                            <option>Prelim</option>
                             <option>Midterm</option>
                             <option>Final</option>
                         </select>
@@ -161,7 +160,6 @@
                     <div class="req-modal-field-group">
                         <label class="req-modal-label">PERIOD</label>
                         <select class="req-modal-input" id="gaEditPeriod">
-                            <option>Prelim</option>
                             <option>Midterm</option>
                             <option>Final</option>
                         </select>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Registrar;
 
 use App\ApplicationStatus;
+use App\AcademicTerm;
 use App\Applicant;
 use App\ApplicantApplicationPreference;
 use App\ApplicantEducationalBackground;
@@ -12,6 +13,7 @@ use App\ApplicantRequirementSubmission;
 use App\ApplicantRequirementSubmissionFile;
 use App\AlumniTrackerSetting;
 use App\CancellationWaiver;
+use App\College;
 use App\Course;
 use App\CourseCurriculum;
 use App\CourseCurriculumSubject;
@@ -53,6 +55,8 @@ use App\StudentClinicRecord;
 use App\GraduateTagging;
 use App\GradeCorrectionRequest;
 use App\StudentSubjectGrade;
+use App\ScholarshipProgram;
+use App\ScholarshipStudent;
 use App\SystemAnnouncement;
 use App\MasterStudentGradeFile;
 use App\TransmutationRule;
@@ -125,6 +129,16 @@ class RegistrarController extends Controller
         'COLLEGE OF BUSINESS ADMINISTRATION',
         'COLLEGE OF EDUCATION',
     ];
+    private const ROOM_ASSIGNMENT_TYPES = [
+        'Lecture Room',
+        'Computer Laboratory',
+        'Science Laboratory',
+        'PE Area',
+        'Auditorium',
+        'Online / Virtual Room',
+    ];
+    private const ROOM_AVAILABLE_START_TIME = '07:00';
+    private const ROOM_AVAILABLE_END_TIME = '21:00';
 
     public function __construct()
     {
@@ -4780,14 +4794,14 @@ class RegistrarController extends Controller
             'title' => 'required|string|max:255',
             'lec' => 'nullable|integer|min:0|max:99',
             'lab' => 'nullable|integer|min:0|max:99',
-            'hours' => 'nullable|numeric|min:0|max:999',
+            'hours' => 'required|numeric|min:0.5|max:999',
             'course_type' => 'required|in:Major,Minor,GE,Elective',
         ]);
 
         $lec = (int) ($validated['lec'] ?? 0);
         $lab = (int) ($validated['lab'] ?? 0);
 
-        $subject = Subject::create([
+        $subjectPayload = [
             'code' => $validated['code'],
             'name' => trim($validated['title']),
             'units' => (float) ($lec + $lab),
@@ -4799,7 +4813,28 @@ class RegistrarController extends Controller
             'is_core' => $this->requestBoolean($request, 'core'),
             'is_applied' => $this->requestBoolean($request, 'applied'),
             'is_specialized' => $this->requestBoolean($request, 'specialized'),
-        ]);
+        ];
+
+        $roomRequirementSubject = (object) [
+            'code' => $validated['code'],
+            'name' => trim($validated['title']),
+            'course_type' => $validated['course_type'],
+            'required_lecture_room_type' => null,
+            'required_laboratory_room_type' => null,
+        ];
+        if (Schema::hasColumn('subjects', 'required_lecture_room_type')) {
+            $subjectPayload['required_lecture_room_type'] = $this->resolveSubjectRequiredRoomType($roomRequirementSubject, 'Lecture');
+        }
+        if (Schema::hasColumn('subjects', 'required_laboratory_room_type')) {
+            $subjectPayload['required_laboratory_room_type'] = $lab > 0
+                ? $this->resolveSubjectRequiredRoomType($roomRequirementSubject, 'Laboratory')
+                : null;
+        }
+        if (Schema::hasColumn('subjects', 'room_requirement_status')) {
+            $subjectPayload['room_requirement_status'] = 'Pending';
+        }
+
+        $subject = Subject::create($subjectPayload);
 
         return response()->json([
             'ok' => true,
@@ -4841,7 +4876,7 @@ class RegistrarController extends Controller
             'title' => 'required|string|max:255',
             'lec' => 'nullable|integer|min:0|max:99',
             'lab' => 'nullable|integer|min:0|max:99',
-            'hours' => 'nullable|numeric|min:0|max:999',
+            'hours' => 'required|numeric|min:0.5|max:999',
             'course_type' => 'required|in:Major,Minor,GE,Elective',
         ]);
 
@@ -4853,6 +4888,17 @@ class RegistrarController extends Controller
         $subject->units = (float) ($lec + $lab);
         $subject->hours = $validated['hours'] ?? null;
         $subject->course_type = $validated['course_type'];
+        if (Schema::hasColumn('subjects', 'required_lecture_room_type')) {
+            $subject->required_lecture_room_type = $subject->required_lecture_room_type ?: $this->resolveSubjectRequiredRoomType($subject, 'Lecture');
+        }
+        if (Schema::hasColumn('subjects', 'required_laboratory_room_type')) {
+            $subject->required_laboratory_room_type = $lab > 0
+                ? ($subject->required_laboratory_room_type ?: $this->resolveSubjectRequiredRoomType($subject, 'Laboratory'))
+                : null;
+        }
+        if (Schema::hasColumn('subjects', 'room_requirement_status')) {
+            $subject->room_requirement_status = $subject->room_requirement_status ?: 'Pending';
+        }
         $subject->lec = $lec;
         $subject->lab = $lab;
         $subject->is_core = $this->requestBoolean($request, 'core');
@@ -4900,6 +4946,9 @@ class RegistrarController extends Controller
             'lab' => (float) ($subject->lab ?: 0),
             'hours' => (float) ($subject->hours ?: 0),
             'course_type' => (string) ($subject->course_type ?: 'Major'),
+            'required_lecture_room_type' => (string) ($subject->required_lecture_room_type ?: $this->resolveSubjectRequiredRoomType($subject, 'Lecture')),
+            'required_laboratory_room_type' => (string) ($subject->required_laboratory_room_type ?: ((int) $subject->lab > 0 ? $this->resolveSubjectRequiredRoomType($subject, 'Laboratory') : '')),
+            'room_requirement_status' => (string) ($subject->room_requirement_status ?: 'Pending'),
             'core' => (bool) $subject->is_core,
             'applied' => (bool) $subject->is_applied,
             'specialized' => (bool) $subject->is_specialized,
@@ -6610,15 +6659,44 @@ class RegistrarController extends Controller
         $sectionQuery = trim((string) $request->query('section', ''));
         $search = trim((string) $request->query('q', ''));
         $courseId = (int) $request->query('course_id', 0);
+        $statusFilter = trim((string) $request->query('status', ''));
+        $statusKey = function ($status) {
+            return strtolower(str_replace([' ', '/'], '_', trim((string) $status)));
+        };
 
-        $rooms = Room::query()
+        $roomsQuery = Room::query()
             ->with(['hallway.building:id,name', 'courses', 'updatedBy:id,name'])
+            ->when($courseId > 0, function ($query) use ($courseId) {
+                $query->whereHas('courses', function ($courseQuery) use ($courseId) {
+                    $courseQuery->where('courses.id', $courseId);
+                });
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('room_number', 'like', '%' . $search . '%')
+                        ->orWhere('room_code', 'like', '%' . $search . '%')
+                        ->orWhere('room_name', 'like', '%' . $search . '%')
+                        ->orWhere('room_type', 'like', '%' . $search . '%')
+                        ->orWhereHas('hallway', function ($hallwayQuery) use ($search) {
+                            $hallwayQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhereHas('building', function ($buildingQuery) use ($search) {
+                                    $buildingQuery->where('name', 'like', '%' . $search . '%');
+                                });
+                        })
+                        ->orWhereHas('courses', function ($courseQuery) use ($search) {
+                            $courseQuery->where('code', 'like', '%' . $search . '%')
+                                ->orWhere('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
             ->orderBy('floor_number')
-            ->orderBy('room_number')
-            ->limit(80)
-            ->get()
+            ->orderBy('room_number');
+
+        $rooms = $roomsQuery->get()
             ->map(function (Room $room) {
-                return $this->mapRoomFileRow($room);
+                $row = $this->mapRoomFileRow($room);
+                $row['availability'] = $row['available_start_time'] . ' - ' . $row['available_end_time'];
+                return $row;
             })
             ->values();
 
@@ -6628,9 +6706,324 @@ class RegistrarController extends Controller
             $sectionQuery,
             $search,
             $courseId
-        )->limit(500)->get();
+        )->limit(1000)->get();
 
-        $sections = $subjectRows
+        $roomLookup = [];
+        foreach ($rooms as $room) {
+            $aliases = array_filter([
+                (string) ($room['id'] ?? ''),
+                trim((string) ($room['room_code'] ?? '')),
+                trim((string) ($room['room_number'] ?? '')),
+                'Room#' . trim((string) ($room['room_code'] ?? '')),
+                'Room#' . trim((string) ($room['room_number'] ?? '')),
+            ]);
+
+            foreach ($aliases as $alias) {
+                $roomLookup[strtolower(trim($alias))] = $room;
+            }
+        }
+
+        $assignmentRows = collect();
+        if (Schema::hasTable('class_room_assignments')) {
+            $assignmentQuery = DB::table('class_room_assignments as cra')
+                ->leftJoin('subjects as s', 's.id', '=', 'cra.class_offering_id')
+                ->leftJoin('academic_terms as at', 'at.id', '=', 's.academic_term_id')
+                ->leftJoin('courses as c', 'c.id', '=', 's.course_id')
+                ->leftJoin('rooms as r', 'r.id', '=', 'cra.room_id')
+                ->select([
+                    'cra.*',
+                    's.code as subject_code',
+                    's.name as subject_name',
+                    's.course_id as course_id',
+                    's.year_section as section',
+                    'at.school_year as school_year',
+                    'at.term as term',
+                    'c.code as course_code',
+                    DB::raw('COALESCE(r.room_code, r.room_number, "") as room_code'),
+                ]);
+
+            if ($schoolYear !== '') {
+                $assignmentQuery->where(function ($query) use ($schoolYear) {
+                    $query->where('cra.academic_year', $schoolYear)
+                        ->orWhere('at.school_year', $schoolYear);
+                });
+            }
+
+            if ($semester !== '') {
+                $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                    ->map(function ($value) {
+                        return strtolower(trim((string) $value));
+                    })
+                    ->values()
+                    ->all();
+
+                $assignmentQuery->where(function ($query) use ($semesterAliases) {
+                    $query->whereIn(DB::raw('LOWER(TRIM(COALESCE(cra.semester, "")))'), $semesterAliases)
+                        ->orWhereIn(DB::raw('LOWER(TRIM(COALESCE(at.term, "")))'), $semesterAliases);
+                });
+            }
+
+            if ($courseId > 0) {
+                $assignmentQuery->where('s.course_id', $courseId);
+            }
+            if ($sectionQuery !== '') {
+                $assignmentQuery->where('cra.section_id', 'like', '%' . $sectionQuery . '%');
+            }
+            if ($search !== '') {
+                $assignmentQuery->where(function ($query) use ($search) {
+                    $query->where('s.code', 'like', '%' . $search . '%')
+                        ->orWhere('s.name', 'like', '%' . $search . '%')
+                        ->orWhere('cra.section_id', 'like', '%' . $search . '%')
+                        ->orWhere('c.code', 'like', '%' . $search . '%')
+                        ->orWhere('r.room_code', 'like', '%' . $search . '%')
+                        ->orWhere('r.room_number', 'like', '%' . $search . '%');
+                });
+            }
+
+            $assignmentRows = $assignmentQuery
+                ->orderByDesc('cra.updated_at')
+                ->limit(1000)
+                ->get();
+        }
+
+        $studentCounts = collect();
+        if (Schema::hasTable('student_section_assignments')) {
+            $studentCountQuery = DB::table('student_section_assignments as ssa')
+                ->leftJoin('academic_terms as at', 'at.id', '=', 'ssa.academic_term_id')
+                ->select([
+                    'ssa.course_id',
+                    'ssa.section',
+                    'at.school_year',
+                    'at.term',
+                    DB::raw('COUNT(*) as total'),
+                ])
+                ->groupBy('ssa.course_id', 'ssa.section', 'at.school_year', 'at.term');
+
+            if ($schoolYear !== '') {
+                $studentCountQuery->where('at.school_year', $schoolYear);
+            }
+            if ($semester !== '') {
+                $semesterAliases = collect($this->slotMonitoringSemesterAliases($semester))
+                    ->map(function ($value) {
+                        return strtolower(trim((string) $value));
+                    })
+                    ->values()
+                    ->all();
+                $studentCountQuery->whereIn(DB::raw('LOWER(TRIM(COALESCE(at.term, "")))'), $semesterAliases);
+            }
+            if ($courseId > 0) {
+                $studentCountQuery->where('ssa.course_id', $courseId);
+            }
+
+            $studentCounts = $studentCountQuery->get()->keyBy(function ($row) {
+                return implode('|', [
+                    (int) $row->course_id,
+                    trim((string) $row->school_year),
+                    $this->normalizeSlotMonitoringSemester((string) $row->term),
+                    trim((string) $row->section),
+                ]);
+            });
+        }
+
+        $offeringRows = $subjectRows
+            ->map(function ($row) use ($roomLookup) {
+                $roomText = trim((string) ($row->room ?? ''));
+                $room = $roomText !== '' ? ($roomLookup[strtolower($roomText)] ?? $roomLookup[strtolower('Room#' . $roomText)] ?? null) : null;
+                $courseIdValue = (int) ($row->course_id ?? 0);
+                $programAllowed = !$room || in_array($courseIdValue, (array) ($room['program_ids'] ?? []), true);
+                $hasSchedule = trim((string) ($row->days ?? '')) !== ''
+                    && trim((string) ($row->time_start ?? '')) !== ''
+                    && trim((string) ($row->time_end ?? '')) !== '';
+                $hasRoom = $roomText !== '';
+                $validationIssues = [];
+
+                $status = 'Ready';
+                if (!$hasSchedule && !$hasRoom) {
+                    $status = 'Needs Schedule and Room';
+                    $validationIssues[] = 'Missing schedule';
+                    $validationIssues[] = 'No room assigned';
+                } elseif (!$hasSchedule) {
+                    $status = 'Needs Schedule';
+                    $validationIssues[] = 'Missing schedule';
+                } elseif (!$hasRoom) {
+                    $status = 'Needs Room';
+                    $validationIssues[] = 'No room assigned';
+                } elseif ($roomText !== '' && !$room) {
+                    $status = 'Needs Room';
+                    $validationIssues[] = 'Assigned room is not found in the room file';
+                } elseif (!$programAllowed) {
+                    $status = 'Program Not Allowed';
+                    $validationIssues[] = 'Assigned room is not allowed for this program';
+                }
+
+                return [
+                    'id' => (int) ($row->id ?? 0),
+                    'school_year' => trim((string) ($row->school_year ?? '')),
+                    'semester' => $this->normalizeSlotMonitoringSemester((string) ($row->semester_label ?? '')),
+                    'course_id' => $courseIdValue,
+                    'course_code' => trim((string) ($row->course_code ?? '')),
+                    'section' => trim((string) ($row->section ?? '')),
+                    'subject_code' => trim((string) ($row->subject_code ?? '')),
+                    'subject_name' => trim((string) ($row->subject_name ?? '')),
+                    'faculty_name' => trim((string) ($row->faculty_name ?? '')),
+                    'days' => trim((string) ($row->days ?? '')),
+                    'time_start' => $this->classScheduleTimeInputValue((string) ($row->time_start ?? '')),
+                    'time_end' => $this->classScheduleTimeInputValue((string) ($row->time_end ?? '')),
+                    'room' => $roomText,
+                    'room_label' => $room ? ($room['room_code'] . ' / Room #' . $room['room_number']) : ($roomText !== '' ? $roomText : 'TBA'),
+                    'room_type' => $room['room_type'] ?? '',
+                    'room_capacity' => (int) ($room['capacity'] ?? 0),
+                    'program_allowed' => $programAllowed,
+                    'status' => $status,
+                    'validation_issues' => $validationIssues,
+                    'status_reason' => implode('; ', $validationIssues),
+                    'schedule_lines' => $this->buildSectionOfferingScheduleLines(
+                        (string) ($row->days ?? ''),
+                        (string) ($row->time_start ?? ''),
+                        (string) ($row->time_end ?? ''),
+                        $roomText
+                    ),
+                ];
+            })
+            ->values();
+
+        $conflictSubjectIds = [];
+        for ($leftIndex = 0; $leftIndex < $offeringRows->count(); $leftIndex++) {
+            $left = $offeringRows[$leftIndex];
+            if ($left['time_start'] === '' || $left['time_end'] === '' || $left['days'] === '') {
+                continue;
+            }
+
+            for ($rightIndex = $leftIndex + 1; $rightIndex < $offeringRows->count(); $rightIndex++) {
+                $right = $offeringRows[$rightIndex];
+                if ($right['time_start'] === '' || $right['time_end'] === '' || $right['days'] === '') {
+                    continue;
+                }
+                if ($left['school_year'] !== $right['school_year'] || $left['semester'] !== $right['semester']) {
+                    continue;
+                }
+                if (!$this->autoScheduleOverlaps([
+                    'days' => $left['days'],
+                    'time_start' => $left['time_start'],
+                    'time_end' => $left['time_end'],
+                ], [
+                    'days' => $right['days'],
+                    'time_start' => $right['time_start'],
+                    'time_end' => $right['time_end'],
+                ])) {
+                    continue;
+                }
+
+                $sameRoom = $left['room'] !== '' && strtolower($left['room']) === strtolower($right['room']);
+                $sameSection = $left['section'] !== '' && $left['section'] === $right['section'];
+                $sameFaculty = $left['faculty_name'] !== '' && $left['faculty_name'] === $right['faculty_name'];
+
+                if ($sameRoom || $sameSection || $sameFaculty) {
+                    $conflictSubjectIds[$left['id']] = true;
+                    $conflictSubjectIds[$right['id']] = true;
+                }
+            }
+        }
+
+        $offeringRows = $offeringRows
+            ->map(function ($row) use ($conflictSubjectIds, $statusKey) {
+                if (isset($conflictSubjectIds[(int) $row['id']])) {
+                    $row['status'] = 'Conflict';
+                    $issues = (array) ($row['validation_issues'] ?? []);
+                    $issues[] = 'Schedule overlaps with the same room, section, or faculty';
+                    $row['validation_issues'] = array_values(array_unique($issues));
+                    $row['status_reason'] = implode('; ', $row['validation_issues']);
+                }
+
+                $keys = [$statusKey($row['status'] ?? '')];
+                if (empty($row['program_allowed'])) {
+                    $keys[] = 'program_not_allowed';
+                }
+                foreach ((array) ($row['validation_issues'] ?? []) as $issue) {
+                    $issue = strtolower((string) $issue);
+                    if (strpos($issue, 'schedule') !== false && strpos($issue, 'overlap') === false) {
+                        $keys[] = 'needs_schedule';
+                    }
+                    if (strpos($issue, 'room') !== false && strpos($issue, 'allowed') === false && strpos($issue, 'overlap') === false) {
+                        $keys[] = 'needs_room';
+                    }
+                    if (strpos($issue, 'overlap') !== false) {
+                        $keys[] = 'conflict';
+                    }
+                }
+                $row['status_keys'] = array_values(array_unique(array_filter($keys)));
+
+                return $row;
+            })
+            ->values();
+
+        if ($statusFilter !== '') {
+            $offeringRows = $offeringRows
+                ->filter(function ($row) use ($statusFilter, $statusKey) {
+                    return in_array($statusFilter, (array) ($row['status_keys'] ?? [$statusKey($row['status'] ?? '')]), true);
+                })
+                ->values();
+        }
+
+        $roomUsage = [];
+        foreach ($offeringRows as $offering) {
+            $roomText = trim((string) ($offering['room'] ?? ''));
+            if ($roomText === '') {
+                continue;
+            }
+            $room = $roomLookup[strtolower($roomText)] ?? $roomLookup[strtolower('Room#' . $roomText)] ?? null;
+            if (!$room) {
+                continue;
+            }
+            $roomId = (int) $room['id'];
+            if (!isset($roomUsage[$roomId])) {
+                $roomUsage[$roomId] = [
+                    'offerings' => 0,
+                    'sections' => [],
+                    'subjects' => [],
+                    'rows' => [],
+                ];
+            }
+            $roomUsage[$roomId]['offerings']++;
+            $roomUsage[$roomId]['sections'][$offering['section']] = true;
+            $roomUsage[$roomId]['subjects'][] = $offering['subject_code'];
+            $roomUsage[$roomId]['rows'][] = [
+                'school_year' => (string) ($offering['school_year'] ?? ''),
+                'semester' => (string) ($offering['semester'] ?? ''),
+                'program' => (string) ($offering['course_code'] ?? ''),
+                'section' => (string) ($offering['section'] ?? ''),
+                'subject' => trim((string) ($offering['subject_code'] ?? '') . ' ' . (string) ($offering['subject_name'] ?? '')),
+                'faculty' => (string) ($offering['faculty_name'] ?? ''),
+                'schedule' => implode(', ', (array) ($offering['schedule_lines'] ?? [])),
+                'status' => (string) ($offering['status'] ?? ''),
+            ];
+        }
+
+        $rooms = $rooms
+            ->map(function ($room) use ($roomUsage) {
+                $usage = $roomUsage[(int) $room['id']] ?? ['offerings' => 0, 'sections' => [], 'subjects' => [], 'rows' => []];
+                $room['offering_count'] = (int) ($usage['offerings'] ?? 0);
+                $room['section_count'] = count($usage['sections'] ?? []);
+                $room['subject_preview'] = implode(', ', array_slice(array_filter($usage['subjects'] ?? []), 0, 4));
+                $room['usage_rows'] = array_slice((array) ($usage['rows'] ?? []), 0, 12);
+                return $room;
+            })
+            ->values();
+
+        $visibleSubjectIds = $offeringRows
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->all();
+
+        $sectionSourceRows = $statusFilter === ''
+            ? $subjectRows
+            : $subjectRows->filter(function ($row) use ($visibleSubjectIds) {
+                return in_array((int) ($row->id ?? 0), $visibleSubjectIds, true);
+            })->values();
+
+        $sections = $sectionSourceRows
             ->groupBy(function ($row) {
                 return implode('|', [
                     (int) ($row->course_id ?? 0),
@@ -6639,9 +7032,20 @@ class RegistrarController extends Controller
                     trim((string) ($row->section ?? '')),
                 ]);
             })
-            ->map(function ($groupRows) {
+            ->map(function ($groupRows) use ($studentCounts, $offeringRows) {
                 $groupRows = collect($groupRows)->values();
                 $first = $groupRows->first();
+                $schoolYearValue = trim((string) ($first->school_year ?? ''));
+                $semesterValue = $this->normalizeSlotMonitoringSemester((string) ($first->semester_label ?? ''));
+                $courseIdValue = (int) ($first->course_id ?? 0);
+                $sectionValue = trim((string) ($first->section ?? ''));
+                $sectionKey = implode('|', [$courseIdValue, $schoolYearValue, $semesterValue, $sectionValue]);
+                $sectionOfferings = $offeringRows->filter(function ($offering) use ($schoolYearValue, $semesterValue, $courseIdValue, $sectionValue) {
+                    return (int) $offering['course_id'] === $courseIdValue
+                        && (string) $offering['school_year'] === $schoolYearValue
+                        && (string) $offering['semester'] === $semesterValue
+                        && (string) $offering['section'] === $sectionValue;
+                })->values();
 
                 $scheduledRows = $groupRows->filter(function ($row) {
                     return trim((string) ($row->days ?? '')) !== ''
@@ -6688,14 +7092,28 @@ class RegistrarController extends Controller
                     ->values()
                     ->all();
 
+                $roomCapacity = $sectionOfferings
+                    ->pluck('room_capacity')
+                    ->filter(function ($capacity) {
+                        return (int) $capacity > 0;
+                    })
+                    ->max() ?: 0;
+                $students = (int) optional($studentCounts->get($sectionKey))->total;
+                $pendingCount = $sectionOfferings->filter(function ($offering) {
+                    return (string) $offering['status'] !== 'Ready';
+                })->count();
+
                 return [
-                    'school_year' => trim((string) ($first->school_year ?? '')),
-                    'semester' => $this->normalizeSlotMonitoringSemester((string) ($first->semester_label ?? '')),
+                    'school_year' => $schoolYearValue,
+                    'semester' => $semesterValue,
                     'course_code' => trim((string) ($first->course_code ?? '')),
                     'course_name' => trim((string) ($first->course_name ?? '')),
-                    'section' => trim((string) ($first->section ?? '')),
+                    'section' => $sectionValue,
                     'subject_count' => (int) $groupRows->count(),
                     'scheduled_count' => (int) $scheduledRows->count(),
+                    'pending_count' => (int) $pendingCount,
+                    'student_count' => $students,
+                    'room_capacity' => (int) $roomCapacity,
                     'rooms' => $roomsUsed,
                     'faculty' => $faculty,
                     'schedule_samples' => $scheduleSamples,
@@ -6719,7 +7137,7 @@ class RegistrarController extends Controller
             ->values()
             ->all();
 
-        $semesterOptions = collect(['First', 'Second'])
+        $semesterOptions = collect(['First', 'Second', 'Summer'])
             ->map(function ($value) {
                 return ['value' => $value, 'label' => $value];
             })
@@ -6741,26 +7159,92 @@ class RegistrarController extends Controller
             ->values()
             ->all();
 
+        $sectionOptions = $subjectRows
+            ->pluck('section')
+            ->map(function ($section) {
+                return trim((string) $section);
+            })
+            ->filter(function ($section) {
+                return $section !== '';
+            })
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
         $summary = [
             'rooms' => (int) $rooms->count(),
             'capacity' => (int) $rooms->sum('capacity'),
             'sections' => (int) $sections->count(),
             'scheduled_subjects' => (int) $sections->sum('scheduled_count'),
             'subjects' => (int) $sections->sum('subject_count'),
+            'ready_offerings' => (int) $offeringRows->filter(function ($row) { return $row['status'] === 'Ready'; })->count(),
+            'pending_offerings' => (int) $offeringRows->filter(function ($row) { return $row['status'] !== 'Ready'; })->count(),
+            'conflicts' => (int) $offeringRows->filter(function ($row) { return in_array('conflict', (array) ($row['status_keys'] ?? []), true); })->count(),
+            'assignments' => (int) $assignmentRows->count(),
+        ];
+
+        $paginateCollection = function ($collection, $pageName, $perPage) use ($request) {
+            $collection = collect($collection)->values();
+            $total = $collection->count();
+            $lastPage = max(1, (int) ceil($total / max(1, (int) $perPage)));
+            $page = max(1, min((int) $request->query($pageName, 1), $lastPage));
+            $items = $collection->forPage($page, $perPage)->values();
+
+            return [
+                $items,
+                [
+                    'page_name' => $pageName,
+                    'page' => $page,
+                    'per_page' => $perPage,
+                    'last_page' => $lastPage,
+                    'total' => $total,
+                    'from' => $total === 0 ? 0 : (($page - 1) * $perPage) + 1,
+                    'to' => min($total, $page * $perPage),
+                ],
+            ];
+        };
+
+        list($rooms, $roomsPagination) = $paginateCollection($rooms, 'rooms_page', 50);
+        list($sections, $sectionsPagination) = $paginateCollection($sections, 'sections_page', 25);
+        list($offeringRows, $offeringsPagination) = $paginateCollection($offeringRows, 'offerings_page', 50);
+        list($assignmentRows, $assignmentsPagination) = $paginateCollection($assignmentRows, 'assignments_page', 50);
+
+        $pagination = [
+            'rooms' => $roomsPagination,
+            'sections' => $sectionsPagination,
+            'offerings' => $offeringsPagination,
+            'assignments' => $assignmentsPagination,
+        ];
+
+        $statusOptions = [
+            ['value' => '', 'label' => 'All Statuses'],
+            ['value' => 'ready', 'label' => 'Ready'],
+            ['value' => 'needs_schedule_and_room', 'label' => 'Needs Schedule and Room'],
+            ['value' => 'needs_schedule', 'label' => 'Needs Schedule'],
+            ['value' => 'needs_room', 'label' => 'Needs Room'],
+            ['value' => 'program_not_allowed', 'label' => 'Program Not Allowed'],
+            ['value' => 'conflict', 'label' => 'Conflict'],
         ];
 
         return view('registrar.registrar-menu.scheduling.room-section-offering-management', compact(
             'rooms',
             'sections',
+            'offeringRows',
+            'assignmentRows',
+            'pagination',
             'summary',
             'schoolYearOptions',
             'semesterOptions',
             'courseOptions',
+            'statusOptions',
+            'sectionOptions',
             'schoolYear',
             'semester',
             'sectionQuery',
             'search',
-            'courseId'
+            'courseId',
+            'statusFilter'
         ));
     }
 
@@ -6769,6 +7253,383 @@ class RegistrarController extends Controller
         $this->seedRoomDimensionsIfEmpty();
 
         return view('registrar.registrar-menu.scheduling.room-file');
+    }
+
+    public function roomGenerationAssignment(Request $request)
+    {
+        $this->seedRoomDimensionsIfEmpty();
+
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+        $schoolYearOptions = collect(array_values($configOptions['school_years'] ?? []))
+            ->map(function ($schoolYear) {
+                $value = trim((string) $schoolYear);
+                return ['value' => $value, 'label' => $value];
+            })
+            ->filter(function ($option) {
+                return (string) ($option['value'] ?? '') !== '';
+            })
+            ->values()
+            ->all();
+
+        $semesterOptions = collect(['First', 'Second', 'Summer'])
+            ->map(function ($semester) {
+                return ['value' => $semester, 'label' => $semester];
+            })
+            ->all();
+
+        $programOptions = Course::query()
+            ->orderBy('code')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                $code = trim((string) $course->code);
+                $name = trim((string) $course->name);
+                return [
+                    'id' => (int) $course->id,
+                    'label' => $code !== '' && $name !== '' ? $code . ' - ' . $name : ($code !== '' ? $code : $name),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $yearLevelOptions = YearBlock::query()
+            ->orderBy('id')
+            ->get(['id', 'label'])
+            ->map(function (YearBlock $yearBlock) {
+                return [
+                    'id' => (int) $yearBlock->id,
+                    'label' => (string) $yearBlock->label,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $sectionOptions = Subject::query()
+            ->whereNotNull('year_section')
+            ->whereRaw("TRIM(COALESCE(year_section, '')) <> ''")
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('is_subject_file_record')
+                        ->orWhere('is_subject_file_record', 0);
+                });
+            })
+            ->select('year_section')
+            ->distinct()
+            ->orderBy('year_section')
+            ->pluck('year_section')
+            ->map(function ($section) {
+                return trim((string) $section);
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        return view('registrar.registrar-menu.scheduling.room-generation-assignment', compact(
+            'schoolYearOptions',
+            'semesterOptions',
+            'programOptions',
+            'yearLevelOptions',
+            'sectionOptions'
+        ));
+    }
+
+    public function generateRoomsForAssignment(Request $request): JsonResponse
+    {
+        $this->ensureRoomAssignmentSchemaReady();
+        $this->seedRoomDimensionsIfEmpty();
+
+        $validated = $request->validate([
+            'course_id' => 'nullable|integer|min:1|exists:courses,id',
+        ]);
+
+        $selectedCourseId = (int) ($validated['course_id'] ?? 0);
+        $allowedCourseIds = $selectedCourseId > 0
+            ? [$selectedCourseId]
+            : Course::query()
+                ->orderBy('id')
+                ->pluck('id')
+                ->map(function ($id) {
+                    return (int) $id;
+                })
+                ->filter(function ($id) {
+                    return $id > 0;
+                })
+                ->values()
+                ->all();
+
+        $created = 0;
+        $updated = 0;
+        $programAssignments = 0;
+        $subjectAssignments = 0;
+
+        DB::transaction(function () use ($allowedCourseIds, &$created, &$updated, &$programAssignments, &$subjectAssignments) {
+            $building = RoomBuilding::query()->firstOrCreate(['name' => 'Campus 1']);
+            $hallway = RoomHallway::query()->firstOrCreate([
+                'room_building_id' => (int) $building->id,
+                'name' => 'Main Hallway',
+            ]);
+
+            $defaults = [
+                ['code' => 'R101', 'name' => 'R101', 'type' => 'Lecture Room', 'capacity' => 40, 'room_number' => 101],
+                ['code' => 'R102', 'name' => 'R102', 'type' => 'Lecture Room', 'capacity' => 45, 'room_number' => 102],
+                ['code' => 'R201', 'name' => 'R201', 'type' => 'Lecture Room', 'capacity' => 80, 'room_number' => 201],
+                ['code' => 'CLAB1', 'name' => 'Computer Laboratory 1', 'type' => 'Computer Laboratory', 'capacity' => 35, 'room_number' => 301],
+                ['code' => 'CLAB2', 'name' => 'Computer Laboratory 2', 'type' => 'Computer Laboratory', 'capacity' => 35, 'room_number' => 302],
+                ['code' => 'SCI-LAB1', 'name' => 'Science Laboratory 1', 'type' => 'Science Laboratory', 'capacity' => 30, 'room_number' => 401],
+                ['code' => 'PE-GYM', 'name' => 'PE Gym', 'type' => 'PE Area', 'capacity' => 60, 'room_number' => 501],
+                ['code' => 'ONLINE', 'name' => 'Online / Virtual Room', 'type' => 'Online / Virtual Room', 'capacity' => 999, 'room_number' => 901],
+            ];
+
+            foreach ($defaults as $roomData) {
+                $room = Room::query()
+                    ->where('room_code', $roomData['code'])
+                    ->first();
+
+                if (!$room) {
+                    $room = Room::query()->create([
+                        'room_code' => $roomData['code'],
+                        'room_name' => $roomData['name'],
+                        'room_hallway_id' => (int) $hallway->id,
+                        'room_number' => (int) $roomData['room_number'],
+                        'floor_number' => 1,
+                        'capacity' => (int) $roomData['capacity'],
+                        'room_type' => $roomData['type'],
+                        'available_days' => 'MTWTHFS',
+                        'available_start_time' => $this->autoScheduleDayStartTime(),
+                        'available_end_time' => $this->autoScheduleDayEndTime(),
+                        'status' => 'Active',
+                        'updated_by_user_id' => auth()->id(),
+                    ]);
+                    $created++;
+                } else {
+                    $payload = [
+                        'room_name' => $room->room_name ?: $roomData['name'],
+                        'room_type' => $room->room_type ?: $roomData['type'],
+                        'capacity' => max((int) $room->capacity, (int) $roomData['capacity']),
+                        'available_days' => $room->available_days ?: 'MTWTHFS',
+                        'available_start_time' => $room->available_start_time ?: $this->autoScheduleDayStartTime(),
+                        'available_end_time' => $room->available_end_time ?: $this->autoScheduleDayEndTime(),
+                        'status' => $room->status ?: 'Active',
+                        'updated_by_user_id' => auth()->id(),
+                    ];
+
+                    $room->fill($payload);
+                    if ($room->isDirty()) {
+                        $room->save();
+                        $updated++;
+                    }
+                }
+
+                if (!empty($allowedCourseIds)) {
+                    $beforeCount = (int) DB::table('room_course_assignments')
+                        ->where('room_id', (int) $room->id)
+                        ->whereIn('course_id', $allowedCourseIds)
+                        ->count();
+
+                    $syncPayload = [];
+                    foreach ($allowedCourseIds as $courseId) {
+                        $syncPayload[(int) $courseId] = [
+                            'assigned_by_user_id' => auth()->id(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    $room->courses()->syncWithoutDetaching($syncPayload);
+
+                    $afterCount = (int) DB::table('room_course_assignments')
+                        ->where('room_id', (int) $room->id)
+                        ->whereIn('course_id', $allowedCourseIds)
+                        ->count();
+                    $programAssignments += max(0, $afterCount - $beforeCount);
+                }
+
+                if (Schema::hasTable('room_allowed_subjects')) {
+                    $compatibleSubjectIds = Subject::query()
+                        ->whereIn('course_id', $allowedCourseIds)
+                        ->get()
+                        ->filter(function (Subject $subject) use ($room) {
+                            $required = $this->resolveSubjectRequiredRoomType($subject, (float) ($subject->lab ?: 0) > 0 ? 'Laboratory' : 'Lecture');
+                            return $this->roomTypeMatchesSubject($room, $subject, $required)
+                                && (int) $room->capacity >= $this->autoScheduleRequiredCapacity($subject);
+                        })
+                        ->pluck('id')
+                        ->map(function ($id) {
+                            return (int) $id;
+                        })
+                        ->values();
+
+                    foreach ($compatibleSubjectIds as $subjectId) {
+                        $before = DB::table('room_allowed_subjects')
+                            ->where('room_id', (int) $room->id)
+                            ->where('subject_id', (int) $subjectId)
+                            ->exists();
+                        DB::table('room_allowed_subjects')->updateOrInsert([
+                            'room_id' => (int) $room->id,
+                            'subject_id' => (int) $subjectId,
+                        ], [
+                            'assigned_by_user_id' => auth()->id(),
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]);
+                        if (!$before) {
+                            $subjectAssignments++;
+                        }
+                    }
+                }
+            }
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Room generation completed.',
+            'created_count' => $created,
+            'updated_count' => $updated,
+            'program_assignment_count' => $programAssignments,
+            'subject_assignment_count' => $subjectAssignments,
+            'rooms' => Room::query()->count(),
+        ]);
+    }
+
+    public function assignRoomsPerSectionSubject(Request $request): JsonResponse
+    {
+        $this->ensureRoomAssignmentSchemaReady();
+
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'course_id' => 'nullable|integer|min:0',
+            'year_block_id' => 'nullable|integer|min:0',
+            'section' => 'nullable|string|max:120',
+            'only_pending' => 'nullable|boolean',
+        ]);
+
+        $schoolYear = $this->normalizeSectionOfferingSchoolYear((string) $validated['school_year']);
+        $semester = $this->normalizeSlotMonitoringSemester((string) $validated['semester']);
+        $courseId = (int) ($validated['course_id'] ?? 0);
+        $yearBlockId = (int) ($validated['year_block_id'] ?? 0);
+        $section = trim((string) ($validated['section'] ?? ''));
+        $onlyPending = $this->requestBoolean($request, 'only_pending');
+
+        if ($semester === '') {
+            throw ValidationException::withMessages([
+                'semester' => ['Please select a valid semester.'],
+            ]);
+        }
+
+        $subjects = $this->roomAssignmentOfferingsQuery($schoolYear, $semester, $courseId, $yearBlockId, $section)
+            ->get();
+
+        if ($subjects->isEmpty()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'No class offerings matched the selected filters.',
+                'summary' => ['assigned' => 0, 'pending' => 0, 'conflicts' => 0],
+                'assigned' => [],
+                'issues' => [],
+            ]);
+        }
+
+        $assigned = [];
+        $issues = [];
+        $summary = ['assigned' => 0, 'pending' => 0, 'conflicts' => 0];
+
+        DB::transaction(function () use ($subjects, $schoolYear, $semester, $onlyPending, &$assigned, &$issues, &$summary) {
+            foreach ($subjects as $subject) {
+                $components = $this->roomAssignmentComponentsForSubject($subject);
+                if (!count($components)) {
+                    $summary['pending']++;
+                    $issues[] = $this->roomAssignmentReportRow((object) [
+                        'class_offering_id' => (int) $subject->id,
+                        'course_code' => (string) $subject->code,
+                        'subject_name' => (string) $subject->name,
+                        'section_id' => (string) $subject->year_section,
+                        'schedule_component_type' => 'Hours',
+                        'academic_year' => $schoolYear,
+                        'semester' => $semester,
+                        'assignment_status' => 'Pending Room Assignment',
+                        'remarks' => 'Subject Hours is required before room schedule generation. Update Hours in Subject File.',
+                    ]);
+                    continue;
+                }
+
+                foreach ($components as $component) {
+                    if ($onlyPending && $this->roomAssignmentComponentAlreadyAssigned((int) $subject->id, (string) $component['type'])) {
+                        continue;
+                    }
+
+                    $result = $this->assignRoomForSubjectComponent($subject, $component, $schoolYear, $semester);
+                    if ($result['status'] === 'Assigned') {
+                        $summary['assigned']++;
+                        $assigned[] = $result['row'];
+                    } else {
+                        if ($result['status'] === 'Room Conflict') {
+                            $summary['conflicts']++;
+                        } else {
+                            $summary['pending']++;
+                        }
+                        $issues[] = $result['row'];
+                    }
+                }
+            }
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Room assignment completed.',
+            'summary' => $summary,
+            'assigned' => $assigned,
+            'issues' => $issues,
+        ]);
+    }
+
+    public function roomAssignmentReport(Request $request): JsonResponse
+    {
+        $this->ensureRoomAssignmentSchemaReady();
+
+        $schoolYear = $this->normalizeSectionOfferingSchoolYear((string) $request->query('school_year', ''));
+        $semester = $this->normalizeSlotMonitoringSemester((string) $request->query('semester', ''));
+        $courseId = (int) $request->query('course_id', 0);
+        $section = trim((string) $request->query('section', ''));
+
+        $query = DB::table('class_room_assignments as cra')
+            ->leftJoin('subjects as s', 's.id', '=', 'cra.class_offering_id')
+            ->leftJoin('rooms as r', 'r.id', '=', 'cra.room_id')
+            ->select([
+                'cra.*',
+                's.name as subject_name',
+                's.course_id as subject_course_id',
+                DB::raw('COALESCE(r.room_code, r.room_number, "") as room_code'),
+            ]);
+
+        if ($schoolYear !== '') {
+            $query->where('cra.academic_year', $schoolYear);
+        }
+        if ($semester !== '') {
+            $query->where('cra.semester', $semester);
+        }
+        if ($courseId > 0) {
+            $query->where('s.course_id', $courseId);
+        }
+        if ($section !== '') {
+            $query->where('cra.section_id', $section);
+        }
+
+        $rows = $query
+            ->orderBy('cra.assignment_status')
+            ->orderBy('cra.course_code')
+            ->orderBy('cra.section_id')
+            ->limit(300)
+            ->get()
+            ->map(function ($row) {
+                return $this->roomAssignmentReportRow($row);
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+        ]);
     }
 
     public function roomFileData(Request $request): JsonResponse
@@ -6785,16 +7646,24 @@ class RegistrarController extends Controller
         $query = Room::query()
             ->select([
                 'rooms.id',
+                'rooms.room_code',
+                'rooms.room_name',
                 'rooms.room_hallway_id',
                 'rooms.room_number',
                 'rooms.floor_number',
                 'rooms.capacity',
+                'rooms.room_type',
+                'rooms.available_days',
+                'rooms.available_start_time',
+                'rooms.available_end_time',
+                'rooms.status',
                 'rooms.updated_by_user_id',
                 'rooms.updated_at',
             ])
             ->with([
                 'hallway.building:id,name',
                 'courses',
+                'allowedSubjects',
                 'updatedBy:id,name',
             ]);
 
@@ -6807,10 +7676,17 @@ class RegistrarController extends Controller
 
         $paginator = $query->paginate($perPage, [
             'rooms.id',
+            'rooms.room_code',
+            'rooms.room_name',
             'rooms.room_hallway_id',
             'rooms.room_number',
             'rooms.floor_number',
             'rooms.capacity',
+            'rooms.room_type',
+            'rooms.available_days',
+            'rooms.available_start_time',
+            'rooms.available_end_time',
+            'rooms.status',
             'rooms.updated_by_user_id',
             'rooms.updated_at',
         ], 'page', $page);
@@ -6844,21 +7720,26 @@ class RegistrarController extends Controller
     public function storeRoomFile(StoreRoomRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids']);
+        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids'] ?? []);
+        $subjectIds = $this->normalizeRoomSubjectIds($validated['subject_ids'] ?? []);
 
         $room = null;
 
         DB::beginTransaction();
         try {
-            $room = Room::create([
+            $roomPayload = [
                 'room_hallway_id' => (int) $validated['room_hallway_id'],
                 'room_number' => (int) $validated['room_number'],
                 'floor_number' => (int) $validated['floor_number'],
                 'capacity' => (int) $validated['capacity'],
                 'updated_by_user_id' => auth()->id(),
-            ]);
+            ];
+            $roomPayload = array_merge($roomPayload, $this->defaultExtendedRoomPayload((int) $validated['room_number']));
+
+            $room = Room::create($roomPayload);
 
             $room->courses()->sync($courseIds);
+            $this->syncRoomAllowedSubjects($room, $subjectIds);
 
             DB::commit();
         } catch (QueryException $exception) {
@@ -6876,7 +7757,7 @@ class RegistrarController extends Controller
             throw $exception;
         }
 
-        $room->load(['hallway.building:id,name', 'courses', 'updatedBy:id,name']);
+        $room->load(['hallway.building:id,name', 'courses', 'allowedSubjects', 'updatedBy:id,name']);
 
         return response()->json([
             'ok' => true,
@@ -7030,19 +7911,24 @@ class RegistrarController extends Controller
     public function updateRoomFile(UpdateRoomRequest $request, Room $room): JsonResponse
     {
         $validated = $request->validated();
-        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids']);
+        $courseIds = $this->normalizeRoomCourseIds($validated['course_ids'] ?? []);
+        $subjectIds = $this->normalizeRoomSubjectIds($validated['subject_ids'] ?? []);
 
         DB::beginTransaction();
         try {
-            $room->update([
+            $roomPayload = [
                 'room_hallway_id' => (int) $validated['room_hallway_id'],
                 'room_number' => (int) $validated['room_number'],
                 'floor_number' => (int) $validated['floor_number'],
                 'capacity' => (int) $validated['capacity'],
                 'updated_by_user_id' => auth()->id(),
-            ]);
+            ];
+            $roomPayload = array_merge($roomPayload, $this->defaultExtendedRoomPayload((int) $validated['room_number'], $room));
+
+            $room->update($roomPayload);
 
             $room->courses()->sync($courseIds);
+            $this->syncRoomAllowedSubjects($room, $subjectIds);
 
             DB::commit();
         } catch (QueryException $exception) {
@@ -7060,7 +7946,7 @@ class RegistrarController extends Controller
             throw $exception;
         }
 
-        $room->load(['hallway.building:id,name', 'courses', 'updatedBy:id,name']);
+        $room->load(['hallway.building:id,name', 'courses', 'allowedSubjects', 'updatedBy:id,name']);
 
         return response()->json([
             'ok' => true,
@@ -7200,9 +8086,35 @@ class RegistrarController extends Controller
             })
             ->values();
 
+        $subjects = Subject::query()
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('is_subject_file_record')
+                        ->orWhere('is_subject_file_record', 1)
+                        ->orWhere('is_subject_file_record', true);
+                });
+            })
+            ->orderBy('code')
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'code', 'name'])
+            ->map(function (Subject $subject) {
+                $code = trim((string) $subject->code);
+                $name = trim((string) $subject->name);
+
+                return [
+                    'id' => (int) $subject->id,
+                    'code' => $code,
+                    'name' => $name,
+                    'label' => $code !== '' && $name !== '' ? $code . ' - ' . $name : ($code !== '' ? $code : $name),
+                ];
+            })
+            ->values();
+
         return [
             'buildings' => $buildings,
             'programs' => $programs,
+            'subjects' => $subjects,
         ];
     }
 
@@ -7246,9 +8158,16 @@ class RegistrarController extends Controller
 
         return [
             'id' => (int) $room->id,
+            'room_code' => (string) ($room->room_code ?: ('R' . $room->room_number)),
+            'room_name' => (string) ($room->room_name ?: ('Room ' . $room->room_number)),
             'room_number' => (int) $room->room_number,
             'floor_number' => (int) $room->floor_number,
             'capacity' => (int) $room->capacity,
+            'room_type' => (string) ($room->room_type ?: 'Lecture Room'),
+            'available_days' => (string) ($room->available_days ?: 'MTWTHFS'),
+            'available_start_time' => $this->classScheduleTimeInputValue((string) ($room->available_start_time ?: $this->autoScheduleDayStartTime())),
+            'available_end_time' => $this->classScheduleTimeInputValue((string) ($room->available_end_time ?: $this->autoScheduleDayEndTime())),
+            'status' => (string) ($room->status ?: 'Active'),
             'room_building_id' => $room->hallway ? (int) $room->hallway->room_building_id : null,
             'room_hallway_id' => (int) $room->room_hallway_id,
             'building' => $buildingName,
@@ -7257,9 +8176,41 @@ class RegistrarController extends Controller
             'program_ids' => $programIds,
             'program_labels' => $programLabels,
             'program_label' => count($programLabels) ? implode(', ', $programLabels) : '-',
+            'subject_ids' => $subjectIds,
+            'subject_labels' => $subjectLabels,
+            'subject_label' => count($subjectLabels) ? implode(', ', $subjectLabels) : (count($programLabels) ? implode(', ', $programLabels) : '-'),
             'updated_by' => $updatedByName,
             'updated_at' => $room->updated_at ? $room->updated_at->toDateTimeString() : null,
         ];
+    }
+
+    private function defaultExtendedRoomPayload(int $roomNumber, Room $room = null): array
+    {
+        $payload = [];
+
+        if (Schema::hasColumn('rooms', 'room_code')) {
+            $payload['room_code'] = $room && $room->room_code ? $room->room_code : ('R' . $roomNumber);
+        }
+        if (Schema::hasColumn('rooms', 'room_name')) {
+            $payload['room_name'] = $room && $room->room_name ? $room->room_name : ('Room ' . $roomNumber);
+        }
+        if (Schema::hasColumn('rooms', 'room_type')) {
+            $payload['room_type'] = $room && $room->room_type ? $room->room_type : 'Lecture Room';
+        }
+        if (Schema::hasColumn('rooms', 'available_days')) {
+            $payload['available_days'] = $room && $room->available_days ? $room->available_days : 'MTWTHFS';
+        }
+        if (Schema::hasColumn('rooms', 'available_start_time')) {
+            $payload['available_start_time'] = $room && $room->available_start_time ? $room->available_start_time : $this->autoScheduleDayStartTime();
+        }
+        if (Schema::hasColumn('rooms', 'available_end_time')) {
+            $payload['available_end_time'] = $room && $room->available_end_time ? $room->available_end_time : $this->autoScheduleDayEndTime();
+        }
+        if (Schema::hasColumn('rooms', 'status')) {
+            $payload['status'] = $room && $room->status ? $room->status : 'Active';
+        }
+
+        return $payload;
     }
 
     private function normalizeRoomCourseIds(array $courseIds)
@@ -7274,6 +8225,38 @@ class RegistrarController extends Controller
         }
 
         return $normalized;
+    }
+
+    private function normalizeRoomSubjectIds(array $subjectIds)
+    {
+        $normalized = [];
+
+        foreach ($subjectIds as $subjectId) {
+            $id = (int) $subjectId;
+            if ($id > 0 && !in_array($id, $normalized, true)) {
+                $normalized[] = $id;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function syncRoomAllowedSubjects(Room $room, array $subjectIds): void
+    {
+        if (!Schema::hasTable('room_allowed_subjects')) {
+            return;
+        }
+
+        $syncPayload = [];
+        foreach ($subjectIds as $subjectId) {
+            $syncPayload[(int) $subjectId] = [
+                'assigned_by_user_id' => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        $room->allowedSubjects()->sync($syncPayload);
     }
 
     private function normalizeRoomHallwayName($name)
@@ -7422,11 +8405,532 @@ class RegistrarController extends Controller
         });
     }
 
+    private function ensureRoomAssignmentSchemaReady(): void
+    {
+        $requiredTables = ['rooms', 'subjects', 'class_room_assignments'];
+        foreach ($requiredTables as $table) {
+            if (!Schema::hasTable($table)) {
+                throw ValidationException::withMessages([
+                    'room_assignment' => ['Room assignment tables are not ready. Please run migrations first.'],
+                ]);
+            }
+        }
+    }
+
+    private function roomAssignmentOfferingsQuery(string $schoolYear, string $semester, int $courseId = 0, int $yearBlockId = 0, string $section = '')
+    {
+        $query = Subject::query()
+            ->with('academicTerm')
+            ->whereNotNull('course_id')
+            ->whereNotNull('year_section')
+            ->whereRaw("TRIM(COALESCE(year_section, '')) <> ''");
+
+        if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+            $query->where(function ($builder) {
+                $builder->whereNull('is_subject_file_record')
+                    ->orWhere('is_subject_file_record', 0);
+            });
+        }
+
+        if ($courseId > 0) {
+            $query->where('course_id', $courseId);
+        }
+
+        if ($section !== '') {
+            $query->where('year_section', $section);
+        }
+
+        if ($yearBlockId > 0) {
+            $yearLabel = (string) YearBlock::query()->where('id', $yearBlockId)->value('label');
+            $yearNumber = $this->academicSetupYearLevelNumber($yearLabel);
+            if ($yearNumber > 0) {
+                $query->where(function ($builder) use ($yearNumber) {
+                    $builder->where('year_section', 'like', '%-' . $yearNumber . '%')
+                        ->orWhere('year_section', 'like', '% ' . $yearNumber . '%');
+                });
+            }
+        }
+
+        if ($schoolYear !== '' || $semester !== '') {
+            $query->whereHas('academicTerm', function ($termQuery) use ($schoolYear, $semester) {
+                if ($schoolYear !== '') {
+                    $termQuery->where('school_year', $schoolYear);
+                }
+
+                if ($semester !== '') {
+                    $aliases = collect($this->slotMonitoringSemesterAliases($semester))
+                        ->map(function ($value) {
+                            return strtolower(trim((string) $value));
+                        })
+                        ->values()
+                        ->all();
+
+                    $termQuery->whereIn(DB::raw('LOWER(TRIM(term))'), $aliases);
+                }
+            });
+        }
+
+        return $query->orderBy('course_id')->orderBy('year_section')->orderBy('code')->orderBy('id');
+    }
+
+    private function roomAssignmentComponentsForSubject(Subject $subject): array
+    {
+        $hours = (float) ($subject->hours ?: 0);
+        if ($hours <= 0) {
+            return [];
+        }
+
+        $hasLaboratory = (float) ($subject->lab ?: 0) > 0
+            || trim((string) ($subject->required_laboratory_room_type ?? '')) !== '';
+
+        if ($hasLaboratory) {
+            return [[
+                'type' => 'Laboratory',
+                'hours' => $hours,
+                'required_room_type' => $this->resolveSubjectRequiredRoomType($subject, 'Laboratory'),
+            ]];
+        }
+
+        return [[
+            'type' => $this->roomAssignmentLectureComponentType($subject),
+            'hours' => $hours,
+            'required_room_type' => $this->resolveSubjectRequiredRoomType($subject, 'Lecture'),
+        ]];
+    }
+
+    private function roomAssignmentLectureComponentType(Subject $subject): string
+    {
+        $type = $this->resolveSubjectRequiredRoomType($subject, 'Lecture');
+        if ($type === 'PE Area') {
+            return 'PE';
+        }
+        if ($type === 'Online / Virtual Room') {
+            return 'Online';
+        }
+
+        return 'Lecture';
+    }
+
+    private function resolveSubjectRequiredRoomType($subject, string $componentType): string
+    {
+        $general = trim((string) ($subject->required_room_type ?? ''));
+        if ($general !== '') {
+            return $this->normalizeRoomAssignmentType($general);
+        }
+
+        if ($componentType === 'Laboratory') {
+            $explicit = trim((string) ($subject->required_laboratory_room_type ?? ''));
+            if ($explicit !== '') {
+                return $this->normalizeRoomAssignmentType($explicit);
+            }
+
+            return $this->inferLaboratoryRoomType($subject);
+        }
+
+        $explicit = trim((string) ($subject->required_lecture_room_type ?? ''));
+        if ($explicit !== '') {
+            return $this->normalizeRoomAssignmentType($explicit);
+        }
+
+        $name = strtoupper(trim((string) $subject->code . ' ' . (string) $subject->name . ' ' . (string) $subject->course_type));
+        if (strpos($name, 'ONLINE') !== false || strpos($name, 'VIRTUAL') !== false) {
+            return 'Online / Virtual Room';
+        }
+        if (preg_match('/\bPE\b|PHYSICAL EDUCATION|PATHFIT/', $name) === 1) {
+            return 'PE Area';
+        }
+
+        return 'Lecture Room';
+    }
+
+    private function inferLaboratoryRoomType($subject): string
+    {
+        $name = strtoupper(trim((string) $subject->code . ' ' . (string) $subject->name . ' ' . (string) $subject->course_type));
+        if (strpos($name, 'SCI') !== false || strpos($name, 'BIO') !== false || strpos($name, 'CHEM') !== false || strpos($name, 'PHYS') !== false) {
+            return 'Science Laboratory';
+        }
+        if (strpos($name, 'ONLINE') !== false || strpos($name, 'VIRTUAL') !== false) {
+            return 'Online / Virtual Room';
+        }
+
+        return 'Computer Laboratory';
+    }
+
+    private function normalizeRoomAssignmentType(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+        foreach (self::ROOM_ASSIGNMENT_TYPES as $type) {
+            if ($normalized === strtolower($type)) {
+                return $type;
+            }
+        }
+
+        if (strpos($normalized, 'computer') !== false) {
+            return 'Computer Laboratory';
+        }
+        if (strpos($normalized, 'science') !== false) {
+            return 'Science Laboratory';
+        }
+        if (strpos($normalized, 'pe') !== false || strpos($normalized, 'gym') !== false) {
+            return 'PE Area';
+        }
+        if (strpos($normalized, 'online') !== false || strpos($normalized, 'virtual') !== false) {
+            return 'Online / Virtual Room';
+        }
+        if (strpos($normalized, 'auditorium') !== false) {
+            return 'Auditorium';
+        }
+
+        return 'Lecture Room';
+    }
+
+    private function assignRoomForSubjectComponent(Subject $subject, array $component, string $schoolYear, string $semester): array
+    {
+        $sectionSize = $this->roomAssignmentSectionSize($subject, $schoolYear, $semester);
+        $slot = $this->roomAssignmentSlotForComponent($subject, $component);
+        $requiredRoomType = (string) $component['required_room_type'];
+        $room = $this->findAvailableRoomForAssignment($requiredRoomType, $sectionSize, $slot, $schoolYear, $semester, $subject);
+        $validationIssues = $room ? $this->roomAssignmentValidationIssues($room, $subject, $slot, $schoolYear, $semester) : [];
+        if (count($validationIssues)) {
+            $room = null;
+        }
+        $status = $room ? 'Assigned' : 'Pending Room Assignment';
+        $remarks = $room
+            ? 'Assigned automatically by room generation process.'
+            : (count($validationIssues)
+                ? implode(' ', $validationIssues)
+                : 'No active room assigned to this program matched type, capacity, availability, and schedule conflict rules.');
+
+        $payload = [
+            'class_offering_id' => (int) $subject->id,
+            'course_code' => (string) $subject->code,
+            'section_id' => (string) $subject->year_section,
+            'room_id' => $room ? (int) $room->id : null,
+            'room_type_required' => $requiredRoomType,
+            'schedule_component_type' => (string) $component['type'],
+            'academic_year' => $schoolYear,
+            'semester' => $semester,
+            'day' => (string) $slot['days'],
+            'start_time' => (string) $slot['time_start'],
+            'end_time' => (string) $slot['time_end'],
+            'assignment_status' => $status,
+            'remarks' => $remarks,
+            'created_by' => auth()->id(),
+            'updated_at' => now(),
+            'created_at' => now(),
+        ];
+
+        DB::table('class_room_assignments')->updateOrInsert([
+            'class_offering_id' => (int) $subject->id,
+            'schedule_component_type' => (string) $component['type'],
+        ], $payload);
+
+        if ($room) {
+            $subject->room = $this->roomAssignmentRoomCode($room);
+            $subject->room_requirement_status = 'Assigned';
+            if (trim((string) $subject->days) === '') {
+                $subject->days = (string) $slot['days'];
+            }
+            if (trim((string) $subject->time_start) === '') {
+                $subject->time_start = (string) $slot['time_start'];
+            }
+            if (trim((string) $subject->time_end) === '') {
+                $subject->time_end = (string) $slot['time_end'];
+            }
+            $subject->save();
+        } else {
+            $subject->room_requirement_status = 'Pending';
+            $subject->save();
+        }
+
+        $row = $this->roomAssignmentReportRow((object) array_merge($payload, [
+            'id' => DB::table('class_room_assignments')
+                ->where('class_offering_id', (int) $subject->id)
+                ->where('schedule_component_type', (string) $component['type'])
+                ->value('id'),
+            'subject_name' => (string) $subject->name,
+            'room_code' => $room ? $this->roomAssignmentRoomCode($room) : '',
+        ]));
+
+        return [
+            'status' => $status,
+            'row' => $row,
+        ];
+    }
+
+    private function roomAssignmentSectionSize(Subject $subject, string $schoolYear, string $semester): int
+    {
+        $academicTermId = (int) $subject->academic_term_id;
+        $section = trim((string) $subject->year_section);
+
+        if (Schema::hasTable('student_section_assignments') && $academicTermId > 0 && $section !== '') {
+            $count = (int) DB::table('student_section_assignments')
+                ->where('academic_term_id', $academicTermId)
+                ->where('section', $section)
+                ->count();
+            if ($count > 0) {
+                return $count;
+            }
+        }
+
+        if (Schema::hasTable('student_subject')) {
+            $count = (int) DB::table('student_subject')
+                ->where('subject_id', (int) $subject->id)
+                ->count();
+            if ($count > 0) {
+                return $count;
+            }
+        }
+
+        $subject->loadMissing('canonicalCourse');
+        if ($subject->canonicalCourse && (int) $subject->canonicalCourse->slots > 0) {
+            return (int) $subject->canonicalCourse->slots;
+        }
+
+        return 40;
+    }
+
+    private function roomAssignmentSlotForComponent(Subject $subject, array $component): array
+    {
+        $days = trim((string) $subject->days);
+        $timeStart = trim((string) $subject->time_start);
+        $timeEnd = trim((string) $subject->time_end);
+
+        if ($days !== '' && $timeStart !== '' && $timeEnd !== '' && (string) $component['type'] === 'Lecture') {
+            return [
+                'days' => $days,
+                'time_start' => $this->classScheduleTimeInputValue($timeStart),
+                'time_end' => $this->classScheduleTimeInputValue($timeEnd),
+            ];
+        }
+
+        $durationMinutes = max(60, (int) round(((float) ($component['hours'] ?? 1.5)) * 60));
+        $starts = $this->autoScheduleStartTimes($durationMinutes);
+        $patterns = ['MWF', 'TTH', 'MW', 'F', 'S'];
+
+        foreach ($patterns as $pattern) {
+            foreach ($starts as $start) {
+                $slot = [
+                    'days' => $pattern,
+                    'time_start' => $start,
+                    'time_end' => Carbon::createFromFormat('H:i', $start)->addMinutes($durationMinutes)->format('H:i'),
+                ];
+
+                if (!$this->hasAutoScheduleSectionOrFacultyConflict($subject, $slot, $this->loadScheduleConflictRows(collect([$subject])))) {
+                    return $slot;
+                }
+            }
+        }
+
+        return [
+            'days' => $days !== '' ? $days : 'MWF',
+            'time_start' => $timeStart !== '' ? $this->classScheduleTimeInputValue($timeStart) : $this->autoScheduleDayStartTime(),
+            'time_end' => $timeEnd !== '' ? $this->classScheduleTimeInputValue($timeEnd) : $this->autoScheduleFallbackEndTime($durationMinutes),
+        ];
+    }
+
+    private function autoScheduleFallbackEndTime(int $durationMinutes): string
+    {
+        $start = Carbon::createFromFormat('H:i', $this->autoScheduleDayStartTime());
+        $end = $start->copy()->addMinutes($durationMinutes);
+        $latestEnd = Carbon::createFromFormat('H:i', $this->autoScheduleDayEndTime());
+
+        if ($end->gt($latestEnd)) {
+            return $latestEnd->format('H:i');
+        }
+
+        return $end->format('H:i');
+    }
+
+    private function findAvailableRoomForAssignment(string $requiredRoomType, int $sectionSize, array $slot, string $schoolYear, string $semester, Subject $subject)
+    {
+        $courseId = (int) $subject->course_id;
+        $rooms = Room::query()
+            ->with('hallway.building:id,name')
+            ->when(Schema::hasTable('room_allowed_subjects'), function ($query) use ($subject) {
+                $query->whereHas('allowedSubjects', function ($subjectQuery) use ($subject) {
+                    $subjectQuery->where('subjects.id', (int) $subject->id)
+                        ->orWhere('subjects.code', (string) $subject->code);
+                });
+            }, function ($query) use ($courseId) {
+                $query->whereHas('courses', function ($courseQuery) use ($courseId) {
+                    $courseQuery->where('courses.id', $courseId);
+                });
+            })
+            ->where('capacity', '>=', $sectionSize)
+            ->when(Schema::hasColumn('rooms', 'room_type'), function ($query) use ($requiredRoomType) {
+                $query->where('room_type', $requiredRoomType);
+            })
+            ->when(Schema::hasColumn('rooms', 'status'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('status')
+                        ->orWhere('status', '')
+                        ->orWhere('status', 'Active');
+                });
+            })
+            ->orderByRaw('capacity - ? asc', [$sectionSize])
+            ->orderBy('capacity')
+            ->orderBy('room_number')
+            ->get();
+
+        foreach ($rooms as $room) {
+            if (!count($this->roomAssignmentValidationIssues($room, $subject, $slot, $schoolYear, $semester))) {
+                return $room;
+            }
+        }
+
+        return null;
+    }
+
+    private function roomAssignmentValidationIssues(Room $room, Subject $subject, array $slot, string $schoolYear, string $semester): array
+    {
+        $issues = [];
+        $courseId = (int) $subject->course_id;
+
+        if (!$this->roomAllowsSubject($room, $subject)) {
+            $issues[] = 'Subject is not allowed in this room.';
+        }
+
+        if (!$this->roomAssignmentRoomAvailableForSlot($room, $slot)) {
+            $issues[] = 'Room is not available for the selected days/time.';
+        }
+
+        if ($this->roomAssignmentHasConflict($room, $slot, $schoolYear, $semester, (int) $subject->id)) {
+            $issues[] = 'Room has a schedule conflict.';
+        }
+
+        if ($this->hasAutoScheduleSectionOrFacultyConflict($subject, $slot, $this->loadScheduleConflictRows(collect([$subject])))) {
+            $issues[] = 'Section or faculty has a schedule conflict.';
+        }
+
+        return array_values(array_unique($issues));
+    }
+
+    private function roomAssignmentRoomAvailableForSlot(Room $room, array $slot): bool
+    {
+        $availableDays = trim((string) ($room->available_days ?: 'MTWTHFS'));
+        $roomDays = $this->autoScheduleDayTokens($availableDays);
+        $slotDays = $this->autoScheduleDayTokens((string) ($slot['days'] ?? ''));
+
+        if (count($roomDays) && count(array_diff($slotDays, $roomDays)) > 0) {
+            return false;
+        }
+
+        $availableStart = $this->autoScheduleMinutes((string) ($room->available_start_time ?: $this->autoScheduleDayStartTime()));
+        $availableEnd = $this->autoScheduleMinutes((string) ($room->available_end_time ?: $this->autoScheduleDayEndTime()));
+        $slotStart = $this->autoScheduleMinutes((string) ($slot['time_start'] ?? ''));
+        $slotEnd = $this->autoScheduleMinutes((string) ($slot['time_end'] ?? ''));
+
+        if ($availableStart === null || $availableEnd === null || $slotStart === null || $slotEnd === null) {
+            return false;
+        }
+
+        return $slotStart >= $availableStart && $slotEnd <= $availableEnd;
+    }
+
+    private function roomAssignmentHasConflict(Room $room, array $slot, string $schoolYear, string $semester, int $subjectId): bool
+    {
+        $assignmentConflicts = DB::table('class_room_assignments')
+            ->where('room_id', (int) $room->id)
+            ->where('academic_year', $schoolYear)
+            ->where('semester', $semester)
+            ->where('class_offering_id', '<>', $subjectId)
+            ->whereIn('assignment_status', ['Assigned', 'Manual Override'])
+            ->get();
+
+        foreach ($assignmentConflicts as $assignment) {
+            if ($this->autoScheduleOverlaps($slot, [
+                'days' => (string) $assignment->day,
+                'time_start' => (string) $assignment->start_time,
+                'time_end' => (string) $assignment->end_time,
+            ])) {
+                return true;
+            }
+        }
+
+        $roomCode = $this->roomAssignmentRoomCode($room);
+        $roomAliases = array_values(array_unique(array_filter([
+            $roomCode,
+            (string) $room->room_number,
+            'Room#' . $roomCode,
+            'Room#' . (string) $room->room_number,
+        ])));
+        $subjectConflicts = Subject::query()
+            ->where('id', '<>', $subjectId)
+            ->whereIn('room', $roomAliases)
+            ->whereHas('academicTerm', function ($termQuery) use ($schoolYear, $semester) {
+                $termQuery->where('school_year', $schoolYear)
+                    ->whereIn(DB::raw('LOWER(TRIM(term))'), collect($this->slotMonitoringSemesterAliases($semester))->map(function ($value) {
+                        return strtolower(trim((string) $value));
+                    })->all());
+            })
+            ->whereNotNull('days')
+            ->whereNotNull('time_start')
+            ->whereNotNull('time_end')
+            ->get(['id', 'days', 'time_start', 'time_end']);
+
+        foreach ($subjectConflicts as $conflict) {
+            if ($this->autoScheduleOverlaps($slot, [
+                'days' => (string) $conflict->days,
+                'time_start' => (string) $conflict->time_start,
+                'time_end' => (string) $conflict->time_end,
+            ])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function roomAssignmentComponentAlreadyAssigned(int $subjectId, string $componentType): bool
+    {
+        return DB::table('class_room_assignments')
+            ->where('class_offering_id', $subjectId)
+            ->where('schedule_component_type', $componentType)
+            ->whereIn('assignment_status', ['Assigned', 'Manual Override'])
+            ->exists();
+    }
+
+    private function roomAssignmentRoomCode(Room $room): string
+    {
+        $code = trim((string) ($room->room_code ?? ''));
+        if ($code !== '') {
+            return $code;
+        }
+
+        return (string) $room->room_number;
+    }
+
+    private function roomAssignmentReportRow($row): array
+    {
+        $roomCode = trim((string) ($row->room_code ?? ''));
+
+        return [
+            'id' => (int) ($row->id ?? 0),
+            'class_offering_id' => (int) ($row->class_offering_id ?? 0),
+            'course_code' => (string) ($row->course_code ?? ''),
+            'subject_name' => (string) ($row->subject_name ?? ''),
+            'section_id' => (string) ($row->section_id ?? ''),
+            'room_code' => $roomCode,
+            'room_type_required' => (string) ($row->room_type_required ?? ''),
+            'schedule_component_type' => (string) ($row->schedule_component_type ?? ''),
+            'academic_year' => (string) ($row->academic_year ?? ''),
+            'semester' => (string) ($row->semester ?? ''),
+            'day' => (string) ($row->day ?? ''),
+            'start_time' => $this->classScheduleTimeInputValue((string) ($row->start_time ?? '')),
+            'end_time' => $this->classScheduleTimeInputValue((string) ($row->end_time ?? '')),
+            'assignment_status' => (string) ($row->assignment_status ?? 'Pending Room Assignment'),
+            'remarks' => (string) ($row->remarks ?? ''),
+        ];
+    }
+
     /**
      * Registrar > Scheduling > Section Offering
      */
     public function classSchedulePreparation(Request $request)
     {
+        $this->seedRoomDimensionsIfEmpty();
+
         $schoolYear = trim((string) $request->query('school_year', ''));
         $semester = $this->normalizeSlotMonitoringSemester((string) $request->query('semester', ''));
         $section = trim((string) $request->query('section', ''));
@@ -7596,6 +9100,13 @@ class RegistrarController extends Controller
             ]);
         }
 
+        $manualIssues = $this->manualScheduleValidationIssues($subject, $data);
+        if (count($manualIssues)) {
+            throw ValidationException::withMessages([
+                'schedule' => [$manualIssues[0]],
+            ]);
+        }
+
         $payload = [];
         foreach (['days', 'time_start', 'time_end', 'room', 'faculty_id'] as $column) {
             if (!Schema::hasColumn('subjects', $column)) {
@@ -7612,6 +9123,7 @@ class RegistrarController extends Controller
 
         $subject->fill($payload);
         $subject->save();
+        $this->upsertClassRoomAssignmentFromSubject($subject, 'Manual Override');
         $subject->load('facultyModel');
 
         return response()->json([
@@ -7625,6 +9137,106 @@ class RegistrarController extends Controller
                 'faculty_id' => $subject->faculty_id ? (int) $subject->faculty_id : null,
                 'faculty_name' => $subject->facultyModel ? (string) $subject->facultyModel->name : '',
             ],
+        ]);
+    }
+
+    public function autoGenerateClassSchedulePreparation(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'school_year' => 'nullable|string|max:20',
+            'semester' => 'nullable|string|max:30',
+            'section' => 'nullable|string|max:120',
+            'course_id' => 'nullable|integer|min:0',
+            'overwrite' => 'nullable|boolean',
+            'auto_create_rooms' => 'nullable|boolean',
+        ]);
+
+        $schoolYear = trim((string) ($validated['school_year'] ?? ''));
+        $semester = $this->normalizeSlotMonitoringSemester((string) ($validated['semester'] ?? ''));
+        $section = trim((string) ($validated['section'] ?? ''));
+        $courseId = (int) ($validated['course_id'] ?? 0);
+        $overwrite = $this->requestBoolean($request, 'overwrite');
+        $autoCreateRooms = $request->has('auto_create_rooms')
+            ? $this->requestBoolean($request, 'auto_create_rooms')
+            : true;
+
+        $query = Subject::query()
+            ->whereNotNull('course_id')
+            ->whereNotNull('year_section')
+            ->whereRaw("TRIM(COALESCE(year_section, '')) <> ''");
+
+        if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+            $query->where(function ($builder) {
+                $builder->whereNull('is_subject_file_record')
+                    ->orWhere('is_subject_file_record', 0);
+            });
+        }
+
+        if ($schoolYear !== '' || $semester !== '') {
+            $query->whereHas('academicTerm', function ($termQuery) use ($schoolYear, $semester) {
+                if ($schoolYear !== '') {
+                    $termQuery->where('school_year', $schoolYear);
+                }
+
+                if ($semester !== '') {
+                    $aliases = collect($this->slotMonitoringSemesterAliases($semester))
+                        ->map(function ($value) {
+                            return strtolower(trim((string) $value));
+                        })
+                        ->values()
+                        ->all();
+
+                    $termQuery->whereIn(DB::raw('LOWER(TRIM(term))'), $aliases);
+                }
+            });
+        }
+
+        if ($courseId > 0) {
+            $query->where('course_id', $courseId);
+        }
+
+        if ($section !== '') {
+            $query->where('year_section', 'like', '%' . $section . '%');
+        }
+
+        if (!$overwrite) {
+            $query->where(function ($builder) {
+                $builder->whereNull('days')
+                    ->orWhereNull('time_start')
+                    ->orWhereNull('time_end')
+                    ->orWhereNull('room')
+                    ->orWhereRaw("TRIM(COALESCE(days, '')) = ''")
+                    ->orWhereRaw("TRIM(COALESCE(time_start, '')) = ''")
+                    ->orWhereRaw("TRIM(COALESCE(time_end, '')) = ''")
+                    ->orWhereRaw("TRIM(COALESCE(room, '')) = ''");
+            });
+        }
+
+        $subjects = $query
+            ->orderBy('course_id')
+            ->orderBy('year_section')
+            ->orderBy('code')
+            ->orderBy('id')
+            ->limit(500)
+            ->get();
+
+        if ($subjects->isEmpty()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'No unscheduled generated subjects matched the current filters.',
+                'updated_count' => 0,
+                'created_rooms' => 0,
+            ]);
+        }
+
+        $result = $this->autoAssignSubjectRoomsAndSchedules($subjects, $autoCreateRooms, $overwrite);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Automatic room and schedule generation completed.',
+            'updated_count' => (int) $result['updated_count'],
+            'created_rooms' => (int) $result['created_rooms'],
+            'skipped_count' => (int) $result['skipped_count'],
         ]);
     }
 
@@ -7737,12 +9349,1768 @@ class RegistrarController extends Controller
             ? (string) ($semesterOptions[0]['value'] ?? '')
             : (string) ($configOptions['default_semester'] ?? 'First');
 
+        $existingSectionsByCourse = Subject::query()
+            ->whereNotNull('course_id')
+            ->whereNotNull('year_section')
+            ->whereRaw("TRIM(COALESCE(year_section, '')) <> ''")
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('is_subject_file_record')
+                        ->orWhere('is_subject_file_record', 0);
+                });
+            })
+            ->get(['course_id', 'year_section'])
+            ->groupBy('course_id')
+            ->map(function ($rows) {
+                return collect($rows)
+                    ->groupBy(function ($row) {
+                        return trim((string) $row->year_section);
+                    })
+                    ->map(function ($sectionRows, $sectionLabel) {
+                        $yearNumber = $this->extractYearLevelFromSectionLabel((string) $sectionLabel);
+
+                        return [
+                            'section' => (string) $sectionLabel,
+                            'year' => $yearNumber ? $this->sectionOfferingYearLevelLabel($yearNumber) : 'N/A',
+                            'subject_count' => (int) collect($sectionRows)->count(),
+                        ];
+                    })
+                    ->sortBy(function ($row) {
+                        return $this->sectionOfferingYearLevelWeight((string) ($row['year'] ?? '')) . '|'
+                            . strtolower((string) ($row['section'] ?? ''));
+                    })
+                    ->values()
+                    ->all();
+            });
+
+        $activeProgramDirectory = CourseCurriculum::query()
+            ->with(['course:id,code,name', 'curriculumSubjects.yearBlock:id,label', 'curriculumSubjects.semester:id,name'])
+            ->when(Schema::hasColumn('course_curricula', 'is_active'), function ($query) {
+                $query->where('is_active', true);
+            })
+            ->orderBy('course_id')
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy('course_id')
+            ->map(function ($curricula, $courseId) use ($existingSectionsByCourse) {
+                $curriculum = collect($curricula)->first();
+                $course = optional($curriculum)->course;
+                $code = trim((string) optional($course)->code);
+                $name = trim((string) optional($course)->name);
+                $label = $code !== '' && $name !== '' ? $code . ' - ' . $name : ($code !== '' ? $code : $name);
+                $subjects = collect($curricula)->flatMap(function ($item) {
+                    return $item->curriculumSubjects ?: collect();
+                });
+
+                $years = $subjects
+                    ->map(function ($assignment) {
+                        return trim((string) optional($assignment->yearBlock)->label);
+                    })
+                    ->filter()
+                    ->unique()
+                    ->sortBy(function ($year) {
+                        return $this->sectionOfferingYearLevelWeight((string) $year);
+                    })
+                    ->values()
+                    ->all();
+
+                $terms = $subjects
+                    ->map(function ($assignment) {
+                        return trim((string) optional($assignment->semester)->name);
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                return [
+                    'course_id' => (int) $courseId,
+                    'code' => $code,
+                    'name' => $name,
+                    'label' => $label !== '' ? $label : ('Program #' . (int) $courseId),
+                    'curriculum_count' => (int) collect($curricula)->count(),
+                    'subject_count' => (int) $subjects->count(),
+                    'years' => $years,
+                    'terms' => $terms,
+                    'sections' => $existingSectionsByCourse->get((int) $courseId, []),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $subjectIds = $room->allowedSubjects
+            ? $room->allowedSubjects->pluck('id')->map(function ($subjectId) {
+                return (int) $subjectId;
+            })->values()->all()
+            : [];
+
+        $subjectLabels = $room->allowedSubjects
+            ? $room->allowedSubjects->map(function (Subject $subject) {
+                $code = trim((string) $subject->code);
+                return $code !== '' ? $code : (string) $subject->name;
+            })->filter(function ($value) {
+                return $value !== '';
+            })->values()->all()
+            : [];
+
         return view('registrar.registrar-menu.scheduling.section-offering', compact(
             'schoolYearOptions',
             'semesterOptions',
             'defaultSchoolYear',
-            'defaultSemester'
+            'defaultSemester',
+            'activeProgramDirectory'
         ));
+    }
+
+    public function academicTermLifecycle(Request $request)
+    {
+        $terms = Schema::hasTable('academic_terms')
+            ? AcademicTerm::query()->orderByDesc('school_year')->orderByDesc('id')->limit(40)->get()
+            : collect();
+
+        $currentTerm = $terms->first(function ($term) {
+            return !in_array((string) ($term->status ?? ''), ['Closed', 'Archived'], true);
+        }) ?: $terms->first();
+
+        $logs = collect();
+        if (Schema::hasTable('academic_term_lifecycle_logs')) {
+            $logs = DB::table('academic_term_lifecycle_logs as log')
+                ->leftJoin('academic_terms as from_term', 'from_term.id', '=', 'log.from_academic_term_id')
+                ->leftJoin('academic_terms as to_term', 'to_term.id', '=', 'log.to_academic_term_id')
+                ->select([
+                    'log.*',
+                    'from_term.school_year as from_school_year',
+                    'from_term.term as from_term_label',
+                    'to_term.school_year as to_school_year',
+                    'to_term.term as to_term_label',
+                ])
+                ->orderByDesc('log.created_at')
+                ->limit(20)
+                ->get();
+        }
+
+        return view('registrar.registrar-menu.scheduling.academic-term-lifecycle', compact('terms', 'currentTerm', 'logs'));
+    }
+
+    public function closeCurrentSemester(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('academic_terms') || !Schema::hasColumn('academic_terms', 'status')) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Academic term lifecycle fields are not ready. Please run migrations first.',
+            ], 409);
+        }
+
+        $validated = $request->validate([
+            'academic_term_id' => 'required|integer|exists:academic_terms,id',
+        ]);
+
+        $term = AcademicTerm::query()->findOrFail((int) $validated['academic_term_id']);
+        if (in_array((string) $term->status, ['Closed', 'Archived'], true)) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'This semester is already closed.',
+                'status' => (string) $term->status,
+                'issues' => [],
+            ]);
+        }
+
+        $issues = $this->academicTermCloseValidationIssues((int) $term->id);
+        if (count($issues) > 0) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Resolve semester closing validations before closing this term.',
+                'issues' => $issues,
+            ], 422);
+        }
+
+        $oldStatus = (string) ($term->status ?: 'Draft');
+        $term->status = 'Closed';
+        $term->closed_at = now();
+        $term->closed_by_user_id = auth()->id();
+        $term->save();
+
+        AuditTrailRecorder::record('ACADEMIC_TERM_CLOSED', [[
+            'type' => 'AcademicTerm',
+            'id' => (int) $term->id,
+            'label' => (string) $term->school_year . ' ' . (string) $term->term,
+            'changes' => [
+                ['field' => 'status', 'old' => $oldStatus, 'new' => 'Closed'],
+            ],
+        ]], [
+            'source_action' => __FUNCTION__,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Current semester closed successfully.',
+            'status' => 'Closed',
+            'issues' => [],
+        ]);
+    }
+
+    public function openNewAcademicTerm(Request $request): JsonResponse
+    {
+        $requiredTables = ['academic_terms', 'program_term_offerings', 'student_promotions', 'academic_term_lifecycle_logs', 'academic_setup_generation_logs', 'student_section_assignments'];
+        foreach ($requiredTables as $table) {
+            if (!Schema::hasTable($table)) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Academic term lifecycle tables are not ready. Please run migrations first.',
+                ], 409);
+            }
+        }
+
+        $validated = $request->validate([
+            'current_academic_term_id' => 'required|integer|exists:academic_terms,id',
+            'max_students_per_section' => 'nullable|integer|min:1|max:300',
+            'auto_create_rooms' => 'nullable|boolean',
+        ]);
+
+        $currentTerm = AcademicTerm::query()->findOrFail((int) $validated['current_academic_term_id']);
+        if ((string) $currentTerm->status !== 'Closed') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Current semester must be closed before opening a new academic term.',
+            ], 422);
+        }
+
+        $next = $this->determineNextAcademicTerm((string) $currentTerm->school_year, (string) $currentTerm->term);
+        $nextTermId = $this->resolveSectionOfferingAcademicTermId($next['school_year'], $next['semester']);
+        $nextTerm = AcademicTerm::query()->findOrFail($nextTermId);
+        $nextTerm->status = 'Draft';
+        $nextTerm->opened_at = $nextTerm->opened_at ?: now();
+        $nextTerm->opened_by_user_id = $nextTerm->opened_by_user_id ?: auth()->id();
+        $nextTerm->save();
+
+        $maxStudentsPerSection = (int) ($validated['max_students_per_section'] ?? 40);
+        $autoCreateRooms = $request->has('auto_create_rooms') ? $this->requestBoolean($request, 'auto_create_rooms') : true;
+        $report = $this->emptyAcademicTermOpeningReport($currentTerm, $nextTerm);
+
+        $lifecycleLogId = (int) DB::table('academic_term_lifecycle_logs')->insertGetId([
+            'from_academic_term_id' => (int) $currentTerm->id,
+            'to_academic_term_id' => (int) $nextTerm->id,
+            'created_by_user_id' => auth()->id(),
+            'action' => 'open_new_academic_term',
+            'status' => 'draft',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        try {
+            DB::transaction(function () use (
+                $currentTerm,
+                $nextTerm,
+                $next,
+                $maxStudentsPerSection,
+                $autoCreateRooms,
+                $lifecycleLogId,
+                &$report
+            ) {
+                $programs = Course::query()->orderBy('code')->orderBy('name')->get();
+                $yearBlocks = YearBlock::query()->orderBy('id')->get();
+
+                foreach ($programs as $program) {
+                    $availability = $this->programTermAvailability($program, $yearBlocks);
+
+                    DB::table('program_term_offerings')->updateOrInsert([
+                        'academic_term_id' => (int) $nextTerm->id,
+                        'course_id' => (int) $program->id,
+                    ], [
+                        'academic_year' => (string) $nextTerm->school_year,
+                        'semester' => (string) $nextTerm->term,
+                        'program_code' => (string) ($program->code ?: 'PROGRAM-' . (int) $program->id),
+                        'is_offered_this_term' => (bool) $availability['is_offered'],
+                        'accepting_new_students' => (bool) $availability['accepting_new_students'],
+                        'allowed_year_levels' => implode(',', $availability['allowed_year_numbers']),
+                        'curriculum_version' => $this->programCurrentCurriculumVersion((int) $program->id),
+                        'status' => (string) $availability['status'],
+                        'created_by' => auth()->id(),
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]);
+
+                    if (!$availability['is_offered']) {
+                        $report['programs_not_opened'][] = [
+                            'code' => (string) $program->code,
+                            'reason' => (string) $availability['reason'],
+                        ];
+                        continue;
+                    }
+
+                    $report['programs_opened'][] = (string) $program->code;
+                    $promotionResult = $this->promoteStudentsForNewTerm(
+                        $program,
+                        $currentTerm,
+                        $nextTerm,
+                        $availability['allowed_year_block_ids']
+                    );
+                    $report['counts']['students_promoted_count'] += $promotionResult['promoted_count'];
+                    $report['counts']['irregular_students_count'] += $promotionResult['irregular_count'];
+                    foreach ($promotionResult['issues'] as $issue) {
+                        $report['pending_issues'][] = $issue;
+                    }
+
+                    foreach ($availability['allowed_year_block_ids'] as $yearBlockId) {
+                        $generation = $this->generateNewTermSetupForProgramYear(
+                            $program,
+                            (int) $yearBlockId,
+                            $nextTerm,
+                            $next['semester'],
+                            $maxStudentsPerSection,
+                            $autoCreateRooms,
+                            $lifecycleLogId
+                        );
+
+                        foreach ($generation['counts'] as $key => $value) {
+                            $report['counts'][$key] += (int) $value;
+                        }
+                        foreach ($generation['issues'] as $issue) {
+                            $report['pending_issues'][] = $issue;
+                        }
+                    }
+                }
+
+                $report['counts']['programs_opened_count'] = count($report['programs_opened']);
+                $report['counts']['programs_not_opened_count'] = count($report['programs_not_opened']);
+                $report['counts']['pending_issue_count'] = count($report['pending_issues']);
+                $newStatus = $report['counts']['pending_issue_count'] > 0 ? 'Open for Setup' : 'Open for Enrollment';
+                $report['new_term']['status'] = $newStatus;
+
+                AcademicTerm::query()
+                    ->where('id', (int) $nextTerm->id)
+                    ->update([
+                        'status' => $newStatus,
+                        'updated_at' => now(),
+                    ]);
+
+                DB::table('academic_term_lifecycle_logs')
+                    ->where('id', $lifecycleLogId)
+                    ->update($report['counts'] + [
+                        'status' => $newStatus,
+                        'report_payload' => json_encode($report),
+                        'updated_at' => now(),
+                    ]);
+            });
+        } catch (\Throwable $exception) {
+            DB::table('academic_term_lifecycle_logs')
+                ->where('id', $lifecycleLogId)
+                ->update([
+                    'status' => 'failed',
+                    'report_payload' => json_encode($report + ['error' => $exception->getMessage()]),
+                    'updated_at' => now(),
+                ]);
+
+            throw $exception;
+        }
+
+        $nextTerm->refresh();
+
+        AuditTrailRecorder::record('ACADEMIC_TERM_OPENED', [[
+            'type' => 'AcademicTermLifecycleLog',
+            'id' => $lifecycleLogId,
+            'label' => (string) $nextTerm->school_year . ' ' . (string) $nextTerm->term,
+            'changes' => [
+                ['field' => 'status', 'old' => 'Draft', 'new' => (string) $nextTerm->status],
+                ['field' => 'programs_opened', 'old' => null, 'new' => (string) $report['counts']['programs_opened_count']],
+                ['field' => 'pending_issues', 'old' => null, 'new' => (string) $report['counts']['pending_issue_count']],
+            ],
+        ]], [
+            'source_action' => __FUNCTION__,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'New academic term opened successfully.',
+            'log_id' => $lifecycleLogId,
+            'term' => [
+                'id' => (int) $nextTerm->id,
+                'school_year' => (string) $nextTerm->school_year,
+                'semester' => (string) $nextTerm->term,
+                'status' => (string) $nextTerm->status,
+            ],
+            'report' => $report,
+        ]);
+    }
+
+    public function publishNewAcademicTerm(Request $request, $academicTerm): JsonResponse
+    {
+        if (!Schema::hasTable('academic_terms') || !Schema::hasColumn('academic_terms', 'status')) {
+            return response()->json(['ok' => false, 'message' => 'Academic term lifecycle fields are not ready.'], 409);
+        }
+
+        $term = AcademicTerm::query()->findOrFail((int) $academicTerm);
+        $openIssues = 0;
+        if (Schema::hasTable('academic_term_lifecycle_logs')) {
+            $latestLog = DB::table('academic_term_lifecycle_logs')
+                ->where('to_academic_term_id', (int) $term->id)
+                ->orderByDesc('id')
+                ->first();
+            $openIssues = $latestLog ? (int) $latestLog->pending_issue_count : 0;
+        }
+
+        if ($openIssues > 0) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Resolve pending setup issues before publishing the new term.',
+                'pending_issue_count' => $openIssues,
+            ], 422);
+        }
+
+        $oldStatus = (string) ($term->status ?: 'Draft');
+        $term->status = 'Open for Enrollment';
+        $term->save();
+
+        $latestLogId = DB::table('academic_term_lifecycle_logs')
+            ->where('to_academic_term_id', (int) $term->id)
+            ->orderByDesc('id')
+            ->value('id');
+
+        if ($latestLogId) {
+            DB::table('academic_term_lifecycle_logs')
+                ->where('id', (int) $latestLogId)
+                ->update([
+                    'status' => 'published',
+                    'published_at' => now(),
+                    'updated_at' => now(),
+                ]);
+        }
+
+        AuditTrailRecorder::record('ACADEMIC_TERM_PUBLISHED', [[
+            'type' => 'AcademicTerm',
+            'id' => (int) $term->id,
+            'label' => (string) $term->school_year . ' ' . (string) $term->term,
+            'changes' => [
+                ['field' => 'status', 'old' => $oldStatus, 'new' => 'Open for Enrollment'],
+            ],
+        ]], [
+            'source_action' => __FUNCTION__,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'New academic term published for enrollment.',
+            'status' => 'Open for Enrollment',
+        ]);
+    }
+
+    private function academicTermCloseValidationIssues(int $academicTermId): array
+    {
+        $issues = [];
+        $subjects = Subject::query()
+            ->where('academic_term_id', $academicTermId)
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('is_subject_file_record')
+                        ->orWhere('is_subject_file_record', 0);
+                });
+            })
+            ->get(['id', 'code', 'name', 'year_section']);
+
+        foreach ($subjects as $subject) {
+            $enrolledStudentIds = DB::table('student_subject')
+                ->where('subject_id', (int) $subject->id)
+                ->pluck('student_id')
+                ->map(function ($value) {
+                    return (int) $value;
+                })
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($enrolledStudentIds->isEmpty()) {
+                continue;
+            }
+
+            $gradeRows = StudentSubjectGrade::query()
+                ->where('subject_id', (int) $subject->id)
+                ->whereIn('student_id', $enrolledStudentIds->all())
+                ->get(['student_id', 'final_average', 'remarks']);
+
+            if ($gradeRows->count() < $enrolledStudentIds->count()) {
+                $issues[] = [
+                    'type' => 'Grades not encoded',
+                    'label' => trim((string) $subject->code . ' ' . (string) $subject->year_section),
+                    'description' => 'One or more enrolled students do not have finalized grade records.',
+                ];
+            }
+
+            $incompleteCount = $gradeRows->filter(function (StudentSubjectGrade $grade) {
+                $remarks = strtolower(trim((string) $grade->remarks));
+                return $remarks === 'incomplete' || $remarks === 'inc' || $grade->final_average === null;
+            })->count();
+
+            if ($incompleteCount > 0) {
+                $issues[] = [
+                    'type' => 'Incomplete grades flagged',
+                    'label' => trim((string) $subject->code . ' ' . (string) $subject->year_section),
+                    'description' => $incompleteCount . ' incomplete grade record(s) need registrar review.',
+                ];
+            }
+        }
+
+        return array_slice($issues, 0, 100);
+    }
+
+    private function determineNextAcademicTerm(string $schoolYear, string $term): array
+    {
+        $canonicalSemester = $this->normalizeSlotMonitoringSemester($term);
+        if ($canonicalSemester === '') {
+            $canonicalSemester = stripos($term, '2') !== false || stripos($term, 'second') !== false ? 'Second' : 'First';
+        }
+
+        if ($canonicalSemester === 'First') {
+            return [
+                'school_year' => $schoolYear,
+                'semester' => 'Second',
+            ];
+        }
+
+        if (preg_match('/^(\d{4})-(\d{4})$/', trim($schoolYear), $matches) === 1) {
+            $nextStart = (int) $matches[1] + 1;
+            return [
+                'school_year' => $nextStart . '-' . ($nextStart + 1),
+                'semester' => 'First',
+            ];
+        }
+
+        $year = (int) Carbon::now()->format('Y');
+        return [
+            'school_year' => $year . '-' . ($year + 1),
+            'semester' => 'First',
+        ];
+    }
+
+    private function emptyAcademicTermOpeningReport(AcademicTerm $currentTerm, AcademicTerm $nextTerm): array
+    {
+        return [
+            'current_term' => [
+                'academic_year' => (string) $currentTerm->school_year,
+                'semester' => (string) $currentTerm->term,
+                'status' => (string) $currentTerm->status,
+            ],
+            'new_term' => [
+                'academic_year' => (string) $nextTerm->school_year,
+                'semester' => (string) $nextTerm->term,
+                'status' => 'Draft',
+            ],
+            'programs_opened' => [],
+            'programs_not_opened' => [],
+            'pending_issues' => [],
+            'counts' => [
+                'programs_opened_count' => 0,
+                'programs_not_opened_count' => 0,
+                'students_promoted_count' => 0,
+                'irregular_students_count' => 0,
+                'sections_created_count' => 0,
+                'class_offerings_generated_count' => 0,
+                'rooms_assigned_count' => 0,
+                'faculty_assigned_count' => 0,
+                'schedules_generated_count' => 0,
+                'student_loads_generated_count' => 0,
+                'pending_issue_count' => 0,
+            ],
+        ];
+    }
+
+    private function programTermAvailability(Course $program, $yearBlocks): array
+    {
+        $statusText = strtolower(trim((string) $program->program_file));
+        $inactiveStatuses = ['inactive', 'closed', 'not offered this term', 'not_offered_this_term'];
+        if (in_array($statusText, $inactiveStatuses, true)) {
+            return [
+                'is_offered' => false,
+                'accepting_new_students' => false,
+                'allowed_year_block_ids' => [],
+                'allowed_year_numbers' => [],
+                'status' => ucwords(str_replace('_', ' ', $statusText)),
+                'reason' => ucwords(str_replace('_', ' ', $statusText)),
+            ];
+        }
+
+        $phasingOut = strpos($statusText, 'phasing') !== false;
+        $allowed = collect($yearBlocks)->filter(function (YearBlock $yearBlock) use ($phasingOut) {
+            $number = $this->academicSetupYearLevelNumber((string) $yearBlock->label);
+            return $number > 0 && (!$phasingOut || $number > 1);
+        })->values();
+
+        return [
+            'is_offered' => true,
+            'accepting_new_students' => !$phasingOut,
+            'allowed_year_block_ids' => $allowed->pluck('id')->map(function ($value) {
+                return (int) $value;
+            })->all(),
+            'allowed_year_numbers' => $allowed->map(function (YearBlock $yearBlock) {
+                return $this->academicSetupYearLevelNumber((string) $yearBlock->label);
+            })->filter()->values()->all(),
+            'status' => $phasingOut ? 'Phasing Out' : 'Open',
+            'reason' => $phasingOut ? 'Phasing Out' : 'Active',
+        ];
+    }
+
+    private function programCurrentCurriculumVersion(int $courseId): ?string
+    {
+        $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
+        if (!$curriculum) {
+            return null;
+        }
+
+        return (string) ($curriculum->curriculum_year_code ?: $curriculum->curriculum_year ?: $curriculum->id);
+    }
+
+    private function promoteStudentsForNewTerm(Course $program, AcademicTerm $currentTerm, AcademicTerm $nextTerm, array $allowedYearBlockIds): array
+    {
+        $result = [
+            'promoted_count' => 0,
+            'irregular_count' => 0,
+            'issues' => [],
+        ];
+        $studentColumns = ['id', 'student_no', 'name', 'course_id', 'year_block_id'];
+        if (Schema::hasColumn('students', 'year_level')) {
+            $studentColumns[] = 'year_level';
+        }
+
+        $students = Student::query()
+            ->active()
+            ->where('course_id', (int) $program->id)
+            ->where('academic_term_id', (int) $currentTerm->id)
+            ->get($studentColumns);
+
+        foreach ($students as $student) {
+            $evaluation = $this->evaluateStudentPromotionStatus($student, (int) $currentTerm->id);
+            $nextYearBlockId = $this->nextYearBlockIdForPromotion((int) $student->year_block_id, (string) $currentTerm->term);
+            if (!$nextYearBlockId || !in_array($nextYearBlockId, $allowedYearBlockIds, true)) {
+                DB::table('student_promotions')->updateOrInsert([
+                    'student_id' => (int) $student->id,
+                    'to_academic_term_id' => (int) $nextTerm->id,
+                ], [
+                    'from_academic_term_id' => (int) $currentTerm->id,
+                    'from_year_block_id' => (int) $student->year_block_id ?: null,
+                    'to_year_block_id' => null,
+                    'promotion_status' => 'Graduation Evaluation',
+                    'remarks' => 'Student completed the terminal year level or is outside allowed year levels.',
+                    'created_by' => auth()->id(),
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]);
+                continue;
+            }
+
+            $promotionStatus = $evaluation['is_irregular'] ? 'Needs Adviser Approval' : 'Promoted';
+            if ($evaluation['is_irregular']) {
+                $result['irregular_count']++;
+                $result['issues'][] = [
+                    'type' => 'Irregular student',
+                    'label' => (string) ($student->student_no ?: $student->name),
+                    'description' => implode(', ', $evaluation['flags']) . '. Adviser approval is required before final loading.',
+                ];
+            }
+
+            DB::table('student_promotions')->updateOrInsert([
+                'student_id' => (int) $student->id,
+                'to_academic_term_id' => (int) $nextTerm->id,
+            ], [
+                'from_academic_term_id' => (int) $currentTerm->id,
+                'from_year_block_id' => (int) $student->year_block_id ?: null,
+                'to_year_block_id' => $nextYearBlockId,
+                'promotion_status' => $promotionStatus,
+                'remarks' => count($evaluation['flags']) ? implode('; ', $evaluation['flags']) : 'Passed all encoded subjects.',
+                'created_by' => auth()->id(),
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]);
+
+            $payload = [
+                'academic_term_id' => (int) $nextTerm->id,
+                'school_year' => (string) $nextTerm->school_year,
+                'semester' => (string) $nextTerm->term,
+                'year_block_id' => $nextYearBlockId,
+            ];
+            $yearLabel = YearBlock::query()->where('id', $nextYearBlockId)->value('label');
+            if ($yearLabel && Schema::hasColumn('students', 'year_level')) {
+                $payload['year_level'] = (string) $yearLabel;
+            }
+            Student::query()->where('id', (int) $student->id)->update($payload);
+            $result['promoted_count']++;
+        }
+
+        return $result;
+    }
+
+    private function evaluateStudentPromotionStatus(Student $student, int $academicTermId): array
+    {
+        $flags = [];
+        $subjectIds = $student->subjects()
+            ->where('subjects.academic_term_id', $academicTermId)
+            ->pluck('subjects.id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->all();
+
+        if (!count($subjectIds)) {
+            return ['is_irregular' => true, 'flags' => ['No finalized enrollment load found']];
+        }
+
+        $grades = StudentSubjectGrade::query()
+            ->where('student_id', (int) $student->id)
+            ->whereIn('subject_id', $subjectIds)
+            ->get(['subject_id', 'final_average', 'remarks']);
+
+        if ($grades->count() < count($subjectIds)) {
+            $flags[] = 'Missing encoded grades';
+        }
+
+        foreach ($grades as $grade) {
+            $remarks = strtolower(trim((string) $grade->remarks));
+            if (in_array($remarks, ['incomplete', 'inc'], true) || $grade->final_average === null) {
+                $flags[] = 'Incomplete grades';
+            }
+            if (in_array($remarks, ['failed', 'fail', 'f'], true) || ($grade->final_average !== null && (float) $grade->final_average < 75.0)) {
+                $flags[] = 'Failed/back subject';
+            }
+        }
+
+        $flags = array_values(array_unique($flags));
+
+        return [
+            'is_irregular' => count($flags) > 0,
+            'flags' => $flags,
+        ];
+    }
+
+    private function nextYearBlockIdForPromotion(int $currentYearBlockId, string $currentTermLabel)
+    {
+        $current = YearBlock::query()->where('id', $currentYearBlockId)->first();
+        if (!$current) {
+            return null;
+        }
+
+        $currentNumber = $this->academicSetupYearLevelNumber((string) $current->label);
+        $currentSemester = $this->normalizeSlotMonitoringSemester($currentTermLabel);
+        $nextNumber = ($currentSemester === 'Second' || $currentSemester === 'Summer')
+            ? $currentNumber + 1
+            : $currentNumber;
+
+        if ($nextNumber < 1) {
+            return null;
+        }
+
+        return $this->resolveSectionOfferingYearBlockId($nextNumber);
+    }
+
+    private function generateNewTermSetupForProgramYear(
+        Course $program,
+        int $yearBlockId,
+        AcademicTerm $nextTerm,
+        string $semesterCanonical,
+        int $maxStudentsPerSection,
+        bool $autoCreateRooms,
+        int $lifecycleLogId
+    ): array {
+        $setupLogId = (int) DB::table('academic_setup_generation_logs')->insertGetId([
+            'generated_by_user_id' => auth()->id(),
+            'academic_term_id' => (int) $nextTerm->id,
+            'course_id' => (int) $program->id,
+            'year_block_id' => $yearBlockId,
+            'school_year' => (string) $nextTerm->school_year,
+            'semester' => $semesterCanonical,
+            'max_students_per_section' => $maxStudentsPerSection,
+            'status' => 'term_lifecycle_draft',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $counts = [
+            'sections_created_count' => 0,
+            'class_offerings_generated_count' => 0,
+            'rooms_assigned_count' => 0,
+            'faculty_assigned_count' => 0,
+            'schedules_generated_count' => 0,
+            'student_loads_generated_count' => 0,
+        ];
+        $issues = [];
+
+        $students = Student::query()
+            ->active()
+            ->where('course_id', (int) $program->id)
+            ->where('academic_term_id', (int) $nextTerm->id)
+            ->where('year_block_id', $yearBlockId)
+            ->orderBy('name')
+            ->orderBy('student_no')
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
+
+        if ($students->isEmpty()) {
+            return ['counts' => $counts, 'issues' => $issues];
+        }
+
+        $curriculum = $this->resolveSectionOfferingCurriculum((int) $program->id);
+        if (!$curriculum) {
+            return [
+                'counts' => $counts,
+                'issues' => [[
+                    'type' => 'Course not in curriculum',
+                    'label' => (string) $program->code,
+                    'description' => 'No published curriculum is available for this program.',
+                ]],
+            ];
+        }
+
+        $semesterIds = $this->resolveSectionOfferingSemesterIds($semesterCanonical);
+        $assignments = CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->where('year_block_id', $yearBlockId)
+            ->when(count($semesterIds) > 0, function ($query) use ($semesterIds) {
+                $query->whereIn('semester_id', $semesterIds);
+            })
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($assignments->isEmpty()) {
+            return [
+                'counts' => $counts,
+                'issues' => [[
+                    'type' => 'Course not in curriculum',
+                    'label' => (string) $program->code,
+                    'description' => 'No curriculum subjects match the promoted year level and new semester.',
+                ]],
+            ];
+        }
+
+        $yearBlock = YearBlock::query()->find($yearBlockId);
+        $yearNumber = $this->academicSetupYearLevelNumber((string) optional($yearBlock)->label);
+        $requiredSectionCount = max(1, (int) ceil($students->count() / max($maxStudentsPerSection, 1)));
+        $sectionPlan = $this->academicSetupSectionPlan((string) $program->code, $yearNumber, $requiredSectionCount);
+        $existingLabels = $this->academicSetupExistingSectionLabels((int) $program->id, (int) $nextTerm->id);
+
+        foreach ($sectionPlan as $sectionRow) {
+            $sectionLabel = (string) $sectionRow['desired'];
+            if (!$existingLabels->intersect(collect($sectionRow['aliases']))->count()) {
+                $inserted = $this->createAcademicSetupSectionOfferings($assignments, (int) $program->id, (int) $nextTerm->id, $sectionLabel);
+                $counts['sections_created_count']++;
+                $counts['class_offerings_generated_count'] += $inserted;
+            }
+        }
+
+        $sectionLabels = $this->academicSetupExistingSectionLabels((int) $program->id, (int) $nextTerm->id)
+            ->filter(function ($label) use ($sectionPlan) {
+                foreach ($sectionPlan as $sectionRow) {
+                    if (in_array((string) $label, (array) $sectionRow['aliases'], true)) {
+                        return true;
+                    }
+                }
+                return false;
+            })
+            ->values();
+
+        foreach ($students->values() as $index => $student) {
+            $sectionIndex = (int) floor($index / max($maxStudentsPerSection, 1));
+            $sectionLabel = (string) ($sectionLabels[$sectionIndex] ?? $sectionLabels->last());
+            if ($sectionLabel === '') {
+                continue;
+            }
+
+            $promotionStatus = DB::table('student_promotions')
+                ->where('student_id', (int) $student->id)
+                ->where('to_academic_term_id', (int) $nextTerm->id)
+                ->value('promotion_status');
+
+            DB::table('student_section_assignments')->updateOrInsert([
+                'academic_term_id' => (int) $nextTerm->id,
+                'student_id' => (int) $student->id,
+            ], [
+                'course_id' => (int) $program->id,
+                'year_block_id' => $yearBlockId,
+                'section' => $sectionLabel,
+                'status' => 'active',
+                'approval_status' => $promotionStatus === 'Needs Adviser Approval' ? 'adviser_review' : 'auto_approved',
+                'flags' => $promotionStatus === 'Needs Adviser Approval' ? 'Irregular student; adviser approval required' : null,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]);
+        }
+
+        $subjects = Subject::query()
+            ->where('course_id', (int) $program->id)
+            ->where('academic_term_id', (int) $nextTerm->id)
+            ->whereIn('year_section', $sectionLabels->all())
+            ->get();
+
+        $counts['faculty_assigned_count'] += $this->assignAcademicSetupFaculty($subjects);
+        $schedule = $this->autoAssignSubjectRoomsAndSchedules($subjects, $autoCreateRooms, false);
+        $counts['schedules_generated_count'] += (int) $schedule['updated_count'];
+
+        if (Schema::hasTable('class_room_assignments')) {
+            foreach ($subjects as $subject) {
+                foreach ($this->roomAssignmentComponentsForSubject($subject) as $component) {
+                    $result = $this->assignRoomForSubjectComponent($subject, $component, (string) $nextTerm->school_year, $semesterCanonical);
+                    if ((string) $result['status'] === 'Assigned') {
+                        $counts['rooms_assigned_count']++;
+                    }
+                }
+            }
+        }
+
+        $subjectsBySection = Subject::query()
+            ->where('course_id', (int) $program->id)
+            ->where('academic_term_id', (int) $nextTerm->id)
+            ->whereIn('year_section', $sectionLabels->all())
+            ->get()
+            ->groupBy('year_section');
+
+        foreach ($students as $student) {
+            $section = DB::table('student_section_assignments')
+                ->where('academic_term_id', (int) $nextTerm->id)
+                ->where('student_id', (int) $student->id)
+                ->value('section');
+
+            foreach ($subjectsBySection->get((string) $section, collect()) as $subject) {
+                DB::table('student_subject')->updateOrInsert([
+                    'student_id' => (int) $student->id,
+                    'subject_id' => (int) $subject->id,
+                ], [
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]);
+                $counts['student_loads_generated_count']++;
+            }
+        }
+
+        $this->validateAcademicSetupGeneration(
+            $setupLogId,
+            (int) $program->id,
+            (int) $nextTerm->id,
+            $sectionLabels->all(),
+            $maxStudentsPerSection
+        );
+
+        if (Schema::hasTable('academic_setup_pending_issues')) {
+            $issues = DB::table('academic_setup_pending_issues')
+                ->where('generation_log_id', $setupLogId)
+                ->where('status', 'open')
+                ->orderBy('id')
+                ->get()
+                ->map(function ($issue) {
+                    return [
+                        'type' => (string) $issue->issue_type,
+                        'label' => (string) ($issue->affected_label ?: ''),
+                        'description' => (string) $issue->description,
+                    ];
+                })
+                ->all();
+        }
+
+        DB::table('academic_setup_generation_logs')
+            ->where('id', $setupLogId)
+            ->update($counts + [
+                'pending_issue_count' => count($issues),
+                'status' => count($issues) ? 'pending_issues' : 'ready_for_publish',
+                'updated_at' => now(),
+            ]);
+
+        return ['counts' => $counts, 'issues' => $issues];
+    }
+
+    public function academicSetupAutomation(Request $request)
+    {
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+        $schoolYearOptions = collect(array_values($configOptions['school_years'] ?? []))
+            ->map(function ($schoolYear) {
+                $value = trim((string) $schoolYear);
+                return ['value' => $value, 'label' => $value];
+            })
+            ->filter(function ($option) {
+                return (string) ($option['value'] ?? '') !== '';
+            })
+            ->values()
+            ->all();
+
+        $semesterOptions = collect(['First', 'Second', 'Summer'])
+            ->map(function ($semester) {
+                return ['value' => $semester, 'label' => $semester];
+            })
+            ->all();
+
+        $programOptions = Course::query()
+            ->orderBy('code')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                $code = trim((string) $course->code);
+                $name = trim((string) $course->name);
+
+                return [
+                    'id' => (int) $course->id,
+                    'label' => $code !== '' && $name !== '' ? $code . ' - ' . $name : ($code !== '' ? $code : $name),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $yearLevelOptions = YearBlock::query()
+            ->orderBy('id')
+            ->get(['id', 'label'])
+            ->map(function (YearBlock $yearBlock) {
+                return [
+                    'id' => (int) $yearBlock->id,
+                    'label' => (string) $yearBlock->label,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $logs = collect();
+        if (Schema::hasTable('academic_setup_generation_logs')) {
+            $logs = DB::table('academic_setup_generation_logs as log')
+                ->leftJoin('courses as c', 'c.id', '=', 'log.course_id')
+                ->leftJoin('year_blocks as yb', 'yb.id', '=', 'log.year_block_id')
+                ->select([
+                    'log.*',
+                    'c.code as course_code',
+                    'c.name as course_name',
+                    'yb.label as year_level_label',
+                ])
+                ->orderByDesc('log.created_at')
+                ->limit(20)
+                ->get();
+        }
+
+        return view('registrar.registrar-menu.scheduling.academic-setup-automation', compact(
+            'schoolYearOptions',
+            'semesterOptions',
+            'programOptions',
+            'yearLevelOptions',
+            'logs'
+        ));
+    }
+
+    public function generateAcademicSetupAutomation(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('academic_setup_generation_logs')
+            || !Schema::hasTable('academic_setup_pending_issues')
+            || !Schema::hasTable('student_section_assignments')) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Academic setup automation tables are not ready. Please run migrations first.',
+            ], 409);
+        }
+
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'campus' => 'nullable|string|max:120',
+            'course_id' => 'required|integer|exists:courses,id',
+            'year_block_id' => 'required|integer|exists:year_blocks,id',
+            'max_students_per_section' => 'required|integer|min:1|max:300',
+            'auto_create_rooms' => 'nullable|boolean',
+        ]);
+
+        $schoolYear = $this->normalizeSectionOfferingSchoolYear((string) $validated['school_year']);
+        $semester = $this->normalizeSlotMonitoringSemester((string) $validated['semester']);
+        $campus = trim((string) ($validated['campus'] ?? ''));
+        $courseId = (int) $validated['course_id'];
+        $yearBlockId = (int) $validated['year_block_id'];
+        $maxStudentsPerSection = (int) $validated['max_students_per_section'];
+        $autoCreateRooms = $request->has('auto_create_rooms') ? $this->requestBoolean($request, 'auto_create_rooms') : true;
+
+        if ($semester === '') {
+            throw ValidationException::withMessages([
+                'semester' => ['Please select a valid semester.'],
+            ]);
+        }
+
+        $course = Course::query()->findOrFail($courseId);
+        $yearBlock = YearBlock::query()->findOrFail($yearBlockId);
+        $yearNumber = $this->academicSetupYearLevelNumber((string) $yearBlock->label);
+        if ($yearNumber < 1) {
+            throw ValidationException::withMessages([
+                'year_block_id' => ['The selected year level cannot be used for automatic section naming.'],
+            ]);
+        }
+
+        $academicTermId = $this->resolveSectionOfferingAcademicTermId($schoolYear, $semester);
+        $logId = (int) DB::table('academic_setup_generation_logs')->insertGetId([
+            'generated_by_user_id' => auth()->id(),
+            'academic_term_id' => $academicTermId,
+            'course_id' => $courseId,
+            'year_block_id' => $yearBlockId,
+            'school_year' => $schoolYear,
+            'semester' => $semester,
+            'campus' => $campus !== '' ? $campus : null,
+            'max_students_per_section' => $maxStudentsPerSection,
+            'status' => 'draft',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $counts = [
+            'programs_generated_count' => 0,
+            'courses_generated_count' => 0,
+            'sections_created_count' => 0,
+            'students_assigned_count' => 0,
+            'class_offerings_generated_count' => 0,
+            'rooms_assigned_count' => 0,
+            'faculty_assigned_count' => 0,
+            'schedules_generated_count' => 0,
+            'student_loads_generated_count' => 0,
+        ];
+
+        try {
+            DB::transaction(function () use (
+                $course,
+                $courseId,
+                $yearBlockId,
+                $yearNumber,
+                $academicTermId,
+                $schoolYear,
+                $semester,
+                $maxStudentsPerSection,
+                $autoCreateRooms,
+                $logId,
+                &$counts
+            ) {
+                Course::query()
+                    ->where('id', $courseId)
+                    ->update(['slots' => $maxStudentsPerSection]);
+
+                $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
+                if (!$curriculum) {
+                    $this->recordAcademicSetupIssue(
+                        $logId,
+                        'Course not in curriculum',
+                        'Program',
+                        $courseId,
+                        (string) $course->code,
+                        'No published or active curriculum was found for the selected program.',
+                        'Publish the current curriculum in Curriculum File, then generate again.'
+                    );
+                    return;
+                }
+
+                $semesterIds = $this->resolveSectionOfferingSemesterIds($semester);
+                $assignments = CourseCurriculumSubject::query()
+                    ->with('subject')
+                    ->where('course_curriculum_id', (int) $curriculum->id)
+                    ->where('year_block_id', $yearBlockId)
+                    ->when(count($semesterIds) > 0, function ($query) use ($semesterIds) {
+                        $query->whereIn('semester_id', $semesterIds);
+                    })
+                    ->orderBy('display_order')
+                    ->orderBy('id')
+                    ->get();
+
+                if ($assignments->isEmpty()) {
+                    $this->recordAcademicSetupIssue(
+                        $logId,
+                        'Course not in curriculum',
+                        'Curriculum',
+                        (int) $curriculum->id,
+                        (string) $curriculum->curriculum_year_code,
+                        'No curriculum subjects match the selected year level and semester.',
+                        'Add subjects to the curriculum for this year level and semester.'
+                    );
+                    return;
+                }
+
+                $students = Student::query()
+                    ->active()
+                    ->where('course_id', $courseId)
+                    ->where('year_block_id', $yearBlockId)
+                    ->orderBy('name')
+                    ->orderBy('student_no')
+                    ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
+
+                if ($students->isEmpty()) {
+                    $this->recordAcademicSetupIssue(
+                        $logId,
+                        'Students without section',
+                        'Program',
+                        $courseId,
+                        (string) $course->code,
+                        'No active students were found for the selected program and year level.',
+                        'Check student program/year tagging before generation.'
+                    );
+                }
+
+                $requiredSectionCount = max(1, (int) ceil(max($students->count(), 1) / $maxStudentsPerSection));
+                $sectionPlan = $this->academicSetupSectionPlan((string) $course->code, $yearNumber, $requiredSectionCount);
+                $sectionLabels = collect($sectionPlan)->pluck('desired')->values()->all();
+                $existingLabels = $this->academicSetupExistingSectionLabels($courseId, $academicTermId);
+
+                foreach ($sectionPlan as $sectionRow) {
+                    $sectionLabel = (string) $sectionRow['desired'];
+                    $knownLabels = collect($sectionRow['aliases']);
+
+                    if (!$existingLabels->intersect($knownLabels)->count()) {
+                        $inserted = $this->createAcademicSetupSectionOfferings(
+                            $assignments,
+                            $courseId,
+                            $academicTermId,
+                            $sectionLabel
+                        );
+
+                        $counts['sections_created_count']++;
+                        $counts['class_offerings_generated_count'] += $inserted;
+                    }
+                }
+
+                $allSectionLabels = $this->academicSetupExistingSectionLabels($courseId, $academicTermId)
+                    ->filter(function ($label) use ($sectionPlan) {
+                        foreach ($sectionPlan as $sectionRow) {
+                            if (in_array((string) $label, (array) $sectionRow['aliases'], true)) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    })
+                    ->values();
+
+                $studentSectionMap = [];
+                foreach ($students->values() as $index => $student) {
+                    $sectionIndex = (int) floor($index / $maxStudentsPerSection);
+                    $sectionLabel = (string) ($allSectionLabels[$sectionIndex] ?? $allSectionLabels->last());
+                    if ($sectionLabel === '') {
+                        $this->recordAcademicSetupIssue(
+                            $logId,
+                            'Students without section',
+                            'Student',
+                            (int) $student->id,
+                            (string) ($student->student_no ?: $student->name),
+                            'The student could not be assigned because no section exists.',
+                            'Create at least one section offering for this program and term.'
+                        );
+                        continue;
+                    }
+
+                    DB::table('student_section_assignments')->updateOrInsert([
+                        'academic_term_id' => $academicTermId,
+                        'student_id' => (int) $student->id,
+                    ], [
+                        'course_id' => $courseId,
+                        'year_block_id' => $yearBlockId,
+                        'section' => $sectionLabel,
+                        'status' => 'active',
+                        'approval_status' => 'auto_approved',
+                        'flags' => null,
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]);
+
+                    $studentSectionMap[(int) $student->id] = $sectionLabel;
+                    $counts['students_assigned_count']++;
+                }
+
+                $subjects = Subject::query()
+                    ->where('course_id', $courseId)
+                    ->where('academic_term_id', $academicTermId)
+                    ->whereIn('year_section', $allSectionLabels->all())
+                    ->get();
+
+                $counts['faculty_assigned_count'] = $this->assignAcademicSetupFaculty($subjects);
+
+                $scheduleResult = $this->autoAssignSubjectRoomsAndSchedules($subjects, $autoCreateRooms, false);
+                $counts['schedules_generated_count'] = (int) $scheduleResult['updated_count'];
+                $counts['rooms_assigned_count'] = Subject::query()
+                    ->where('course_id', $courseId)
+                    ->where('academic_term_id', $academicTermId)
+                    ->whereIn('year_section', $allSectionLabels->all())
+                    ->whereRaw("TRIM(COALESCE(room, '')) <> ''")
+                    ->count();
+
+                $subjectsBySection = Subject::query()
+                    ->where('course_id', $courseId)
+                    ->where('academic_term_id', $academicTermId)
+                    ->whereIn('year_section', $allSectionLabels->all())
+                    ->get()
+                    ->groupBy('year_section');
+
+                foreach ($students as $student) {
+                    $sectionLabel = $studentSectionMap[(int) $student->id] ?? '';
+                    if ($sectionLabel === '' || !$subjectsBySection->has($sectionLabel)) {
+                        continue;
+                    }
+
+                    foreach ($subjectsBySection->get($sectionLabel) as $subject) {
+                        DB::table('student_subject')->updateOrInsert([
+                            'student_id' => (int) $student->id,
+                            'subject_id' => (int) $subject->id,
+                        ], [
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]);
+                        $counts['student_loads_generated_count']++;
+                    }
+                }
+
+                $this->validateAcademicSetupGeneration(
+                    $logId,
+                    $courseId,
+                    $academicTermId,
+                    $allSectionLabels->all(),
+                    $maxStudentsPerSection
+                );
+            });
+        } catch (\Throwable $exception) {
+            DB::table('academic_setup_generation_logs')
+                ->where('id', $logId)
+                ->update([
+                    'status' => 'failed',
+                    'updated_at' => now(),
+                ]);
+
+            throw $exception;
+        }
+
+        $pendingIssues = (int) DB::table('academic_setup_pending_issues')
+            ->where('generation_log_id', $logId)
+            ->where('status', 'open')
+            ->count();
+
+        $status = $pendingIssues > 0 ? 'pending_issues' : 'ready_for_publish';
+        DB::table('academic_setup_generation_logs')
+            ->where('id', $logId)
+            ->update($counts + [
+                'pending_issue_count' => $pendingIssues,
+                'status' => $status,
+                'updated_at' => now(),
+            ]);
+
+        AuditTrailRecorder::record('ACADEMIC_SETUP_GENERATED', [[
+            'type' => 'AcademicSetupGenerationLog',
+            'id' => $logId,
+            'label' => $schoolYear . ' ' . $semester . ' ' . (string) $course->code,
+            'changes' => [
+                ['field' => 'status', 'old' => null, 'new' => $status],
+                ['field' => 'sections_created', 'old' => null, 'new' => (string) $counts['sections_created_count']],
+                ['field' => 'student_loads_generated', 'old' => null, 'new' => (string) $counts['student_loads_generated_count']],
+                ['field' => 'pending_issues', 'old' => null, 'new' => (string) $pendingIssues],
+            ],
+        ]], [
+            'source_action' => __FUNCTION__,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => $pendingIssues > 0
+                ? 'Academic setup generated with pending issues.'
+                : 'Academic setup generated and ready for publishing.',
+            'log_id' => $logId,
+            'status' => $status,
+            'counts' => $counts + ['pending_issue_count' => $pendingIssues],
+            'issues' => $this->academicSetupIssueRows($logId),
+        ]);
+    }
+
+    public function publishAcademicSetupAutomation(Request $request, $generationLog): JsonResponse
+    {
+        if (!Schema::hasTable('academic_setup_generation_logs') || !Schema::hasTable('academic_setup_pending_issues')) {
+            return response()->json(['ok' => false, 'message' => 'Academic setup automation tables are not ready.'], 409);
+        }
+
+        $log = DB::table('academic_setup_generation_logs')->where('id', (int) $generationLog)->first();
+        if (!$log) {
+            return response()->json(['ok' => false, 'message' => 'Generation log not found.'], 404);
+        }
+
+        $openIssues = (int) DB::table('academic_setup_pending_issues')
+            ->where('generation_log_id', (int) $generationLog)
+            ->where('status', 'open')
+            ->count();
+
+        if ($openIssues > 0) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Resolve pending issues before publishing this academic setup.',
+                'pending_issue_count' => $openIssues,
+            ], 422);
+        }
+
+        DB::table('academic_setup_generation_logs')
+            ->where('id', (int) $generationLog)
+            ->update([
+                'status' => 'published',
+                'published_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        AuditTrailRecorder::record('ACADEMIC_SETUP_PUBLISHED', [[
+            'type' => 'AcademicSetupGenerationLog',
+            'id' => (int) $generationLog,
+            'label' => (string) $log->school_year . ' ' . (string) $log->semester,
+            'changes' => [
+                ['field' => 'status', 'old' => (string) $log->status, 'new' => 'published'],
+            ],
+        ]], [
+            'source_action' => __FUNCTION__,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Academic setup published successfully.',
+        ]);
+    }
+
+    private function academicSetupYearLevelNumber(string $label): int
+    {
+        $normalized = strtolower(trim($label));
+        if ($normalized === '') {
+            return 0;
+        }
+
+        $map = [
+            'first' => 1,
+            'second' => 2,
+            'third' => 3,
+            'fourth' => 4,
+            'fifth' => 5,
+            'sixth' => 6,
+        ];
+
+        foreach ($map as $word => $number) {
+            if (strpos($normalized, $word) !== false) {
+                return $number;
+            }
+        }
+
+        if (preg_match('/([1-6])/', $normalized, $matches) === 1) {
+            return (int) $matches[1];
+        }
+
+        return 0;
+    }
+
+    private function academicSetupSectionPlan(string $programCode, int $yearNumber, int $count): array
+    {
+        $programCode = strtoupper(preg_replace('/[^A-Z0-9]/', '', trim($programCode)));
+        if ($programCode === '') {
+            $programCode = 'PROGRAM';
+        }
+
+        $rows = [];
+        for ($index = 0; $index < $count; $index++) {
+            $suffix = $this->academicSetupSectionSuffix($index);
+            $desired = $programCode . '-' . $yearNumber . $suffix;
+            $legacy = $yearNumber . '-' . $suffix;
+
+            $rows[] = [
+                'desired' => $desired,
+                'aliases' => [$desired, $legacy],
+            ];
+        }
+
+        return $rows;
+    }
+
+    private function academicSetupSectionSuffix(int $index): string
+    {
+        $letters = '';
+        $value = $index;
+
+        do {
+            $letters = chr(65 + ($value % 26)) . $letters;
+            $value = (int) floor($value / 26) - 1;
+        } while ($value >= 0);
+
+        return $letters;
+    }
+
+    private function academicSetupExistingSectionLabels(int $courseId, int $academicTermId)
+    {
+        $query = Subject::query()
+            ->where('course_id', $courseId)
+            ->where('academic_term_id', $academicTermId)
+            ->whereNotNull('year_section')
+            ->whereRaw("TRIM(COALESCE(year_section, '')) <> ''");
+
+        if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+            $query->where(function ($builder) {
+                $builder->whereNull('is_subject_file_record')
+                    ->orWhere('is_subject_file_record', 0);
+            });
+        }
+
+        return $query
+            ->pluck('year_section')
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->sort()
+            ->values();
+    }
+
+    private function createAcademicSetupSectionOfferings($assignments, int $courseId, int $academicTermId, string $sectionLabel): int
+    {
+        $now = now();
+        $addedBy = auth()->check() ? trim((string) optional(auth()->user())->name) : '';
+        if ($addedBy === '') {
+            $addedBy = null;
+        }
+
+        $rows = collect($assignments)
+            ->map(function (CourseCurriculumSubject $assignment) use ($courseId, $academicTermId, $sectionLabel, $addedBy, $now) {
+                $subject = $assignment->subject;
+                $code = trim((string) optional($subject)->code);
+                $name = trim((string) optional($subject)->name);
+
+                return [
+                    'code' => $code !== '' ? $code : ('SUBJ-' . (int) $assignment->id),
+                    'name' => $name !== '' ? $name : ('Curriculum Subject ' . (int) $assignment->id),
+                    'is_subject_file_record' => 0,
+                    'units' => $subject ? (float) $subject->units : (float) $assignment->credited_units,
+                    'lec' => $subject ? (int) $subject->lec : 0,
+                    'lab' => $subject ? (int) $subject->lab : 0,
+                    'hours' => $subject ? (float) ($subject->hours ?: 0) : (float) ($assignment->credited_units ?: 0),
+                    'course_type' => $subject ? (string) ($subject->course_type ?: '') : null,
+                    'is_core' => $subject ? (int) ((bool) $subject->is_core) : 0,
+                    'is_applied' => $subject ? (int) ((bool) $subject->is_applied) : 0,
+                    'is_specialized' => $subject ? (int) ((bool) $subject->is_specialized) : 0,
+                    'days' => null,
+                    'time_start' => null,
+                    'time_end' => null,
+                    'room' => null,
+                    'faculty_id' => null,
+                    'year_section' => $sectionLabel,
+                    'course_id' => $courseId,
+                    'academic_term_id' => $academicTermId,
+                    'grading_status_id' => null,
+                    'load_type_id' => null,
+                    'credited_tuition_units' => (float) $assignment->credited_units,
+                    'load_hours' => null,
+                    'added_by' => $addedBy,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (!count($rows)) {
+            return 0;
+        }
+
+        DB::table('subjects')->insert($rows);
+
+        return count($rows);
+    }
+
+    private function assignAcademicSetupFaculty($subjects): int
+    {
+        $subjects = collect($subjects)->filter(function ($subject) {
+            return $subject instanceof Subject && empty($subject->faculty_id);
+        })->values();
+
+        if ($subjects->isEmpty() || !Schema::hasTable('faculties')) {
+            return 0;
+        }
+
+        $facultyIds = Faculty::query()
+            ->orderBy('name')
+            ->pluck('id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->filter(function ($value) {
+                return $value > 0;
+            })
+            ->values();
+
+        if ($facultyIds->isEmpty()) {
+            return 0;
+        }
+
+        $assigned = 0;
+        $index = 0;
+        foreach ($subjects as $subject) {
+            $subject->faculty_id = (int) $facultyIds[$index % $facultyIds->count()];
+            $subject->load_type = $subject->load_type ?: 'Regular';
+            $subject->save();
+            $assigned++;
+            $index++;
+        }
+
+        return $assigned;
+    }
+
+    private function validateAcademicSetupGeneration(
+        int $logId,
+        int $courseId,
+        int $academicTermId,
+        array $sectionLabels,
+        int $maxStudentsPerSection
+    ): void {
+        $subjects = Subject::query()
+            ->where('course_id', $courseId)
+            ->where('academic_term_id', $academicTermId)
+            ->whereIn('year_section', $sectionLabels)
+            ->get();
+
+        foreach ($subjects as $subject) {
+            $label = trim((string) $subject->code) . ' - ' . trim((string) $subject->year_section);
+
+            if (trim((string) $subject->room) === '') {
+                $this->recordAcademicSetupIssue(
+                    $logId,
+                    'Classes without rooms',
+                    'Subject',
+                    (int) $subject->id,
+                    $label,
+                    'This class offering does not have an assigned room.',
+                    'Add an active room with enough capacity or rerun with automatic room creation enabled.'
+                );
+            }
+
+            if (empty($subject->faculty_id)) {
+                $this->recordAcademicSetupIssue(
+                    $logId,
+                    'Classes without faculty',
+                    'Subject',
+                    (int) $subject->id,
+                    $label,
+                    'This class offering does not have an assigned faculty member.',
+                    'Assign faculty in Faculty Loads or configure faculty qualification data.'
+                );
+            }
+
+            if (trim((string) $subject->days) === '' || trim((string) $subject->time_start) === '' || trim((string) $subject->time_end) === '') {
+                $this->recordAcademicSetupIssue(
+                    $logId,
+                    'Schedule conflicts',
+                    'Subject',
+                    (int) $subject->id,
+                    $label,
+                    'This class offering does not have a complete schedule.',
+                    'Assign a conflict-free day and time in Class Schedule Preparation.'
+                );
+            }
+        }
+
+        $sectionCounts = DB::table('student_section_assignments')
+            ->select('section', DB::raw('COUNT(*) as total'))
+            ->where('academic_term_id', $academicTermId)
+            ->where('course_id', $courseId)
+            ->whereIn('section', $sectionLabels)
+            ->groupBy('section')
+            ->get();
+
+        foreach ($sectionCounts as $sectionCount) {
+            if ((int) $sectionCount->total > $maxStudentsPerSection) {
+                $this->recordAcademicSetupIssue(
+                    $logId,
+                    'Section full',
+                    'Section',
+                    null,
+                    (string) $sectionCount->section,
+                    'The section has ' . (int) $sectionCount->total . ' students, exceeding the maximum of ' . $maxStudentsPerSection . '.',
+                    'Create another section or increase the approved section capacity.'
+                );
+            }
+        }
+
+        $this->recordAcademicSetupScheduleConflicts($logId, $subjects);
+    }
+
+    private function recordAcademicSetupScheduleConflicts(int $logId, $subjects): void
+    {
+        $subjects = collect($subjects)->values();
+
+        for ($leftIndex = 0; $leftIndex < $subjects->count(); $leftIndex++) {
+            $left = $subjects[$leftIndex];
+            if (!$this->subjectHasCompleteSchedule($left)) {
+                continue;
+            }
+
+            for ($rightIndex = $leftIndex + 1; $rightIndex < $subjects->count(); $rightIndex++) {
+                $right = $subjects[$rightIndex];
+                if (!$this->subjectHasCompleteSchedule($right)) {
+                    continue;
+                }
+
+                $candidate = [
+                    'days' => (string) $left->days,
+                    'time_start' => (string) $left->time_start,
+                    'time_end' => (string) $left->time_end,
+                ];
+
+                $other = [
+                    'days' => (string) $right->days,
+                    'time_start' => (string) $right->time_start,
+                    'time_end' => (string) $right->time_end,
+                ];
+
+                if (!$this->autoScheduleOverlaps($candidate, $other)) {
+                    continue;
+                }
+
+                $sameSection = trim((string) $left->year_section) === trim((string) $right->year_section);
+                $sameRoom = trim((string) $left->room) !== '' && trim((string) $left->room) === trim((string) $right->room);
+                $sameFaculty = !empty($left->faculty_id) && (int) $left->faculty_id === (int) $right->faculty_id;
+
+                if ($sameSection || $sameRoom || $sameFaculty) {
+                    $this->recordAcademicSetupIssue(
+                        $logId,
+                        'Schedule conflicts',
+                        'Subject',
+                        (int) $left->id,
+                        trim((string) $left->code) . ' / ' . trim((string) $right->code),
+                        'Two class offerings overlap for the same section, room, or faculty.',
+                        'Adjust one schedule in Class Schedule Preparation.'
+                    );
+                }
+            }
+        }
+    }
+
+    private function recordAcademicSetupIssue(
+        int $logId,
+        string $issueType,
+        ?string $affectedType,
+        ?int $affectedId,
+        ?string $affectedLabel,
+        string $description,
+        ?string $suggestedAction = null
+    ): void {
+        DB::table('academic_setup_pending_issues')->insert([
+            'generation_log_id' => $logId,
+            'issue_type' => $issueType,
+            'affected_type' => $affectedType,
+            'affected_id' => $affectedId,
+            'affected_label' => $affectedLabel,
+            'description' => $description,
+            'suggested_action' => $suggestedAction,
+            'status' => 'open',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function academicSetupIssueRows(int $logId): array
+    {
+        if (!Schema::hasTable('academic_setup_pending_issues')) {
+            return [];
+        }
+
+        return DB::table('academic_setup_pending_issues')
+            ->where('generation_log_id', $logId)
+            ->orderBy('issue_type')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($issue) {
+                return [
+                    'issue_type' => (string) $issue->issue_type,
+                    'affected_label' => (string) ($issue->affected_label ?: ''),
+                    'description' => (string) $issue->description,
+                    'suggested_action' => (string) ($issue->suggested_action ?: ''),
+                    'status' => (string) $issue->status,
+                ];
+            })
+            ->all();
     }
 
     public function sectionOfferingData(Request $request): JsonResponse
@@ -7827,6 +11195,7 @@ class RegistrarController extends Controller
                             'description' => $subjectName !== '' ? $subjectName : 'N/A',
                             'lec' => (int) ($row->lec ?? 0),
                             'lab' => (int) ($row->lab ?? 0),
+                            'hours' => (float) ($row->hours ?? 0),
                             'tuitionUnits' => $tuitionUnits,
                             'creditUnits' => $creditUnits,
                             'room' => $room !== '' ? ('Room#' . $room) : 'TBA',
@@ -8046,6 +11415,7 @@ class RegistrarController extends Controller
                     'units' => $subject ? (float) $subject->units : (float) $assignment->credited_units,
                     'lec' => $subject ? (int) $subject->lec : 0,
                     'lab' => $subject ? (int) $subject->lab : 0,
+                    'hours' => $subject ? (float) ($subject->hours ?: 0) : (float) ($assignment->credited_units ?: 0),
                     'credited_units' => (float) $assignment->credited_units,
                 ];
             })
@@ -8195,6 +11565,7 @@ class RegistrarController extends Controller
                 $units = $subject ? (float) $subject->units : (float) $assignment->credited_units;
                 $lec = $subject ? (int) $subject->lec : 0;
                 $lab = $subject ? (int) $subject->lab : 0;
+                $hours = $subject ? (float) ($subject->hours ?: 0) : (float) ($assignment->credited_units ?: 0);
 
                 $creditedTuitionUnits = $subject && $subject->credited_tuition_units !== null
                     ? (float) $subject->credited_tuition_units
@@ -8211,6 +11582,8 @@ class RegistrarController extends Controller
                     'units' => $units,
                     'lec' => $lec,
                     'lab' => $lab,
+                    'hours' => $hours,
+                    'course_type' => $subject ? (string) ($subject->course_type ?: '') : null,
                     'is_core' => $subject ? (int) ((bool) $subject->is_core) : 0,
                     'is_applied' => $subject ? (int) ((bool) $subject->is_applied) : 0,
                     'is_specialized' => $subject ? (int) ((bool) $subject->is_specialized) : 0,
@@ -8250,6 +11623,29 @@ class RegistrarController extends Controller
             DB::table('subjects')->insert($rowsToInsert);
         });
 
+        $autoScheduleResult = [
+            'updated_count' => 0,
+            'created_rooms' => 0,
+            'skipped_count' => 0,
+        ];
+
+        if ((bool) ($validated['auto_schedule'] ?? true)) {
+            $createdSubjects = Subject::query()
+                ->where('course_id', $courseId)
+                ->where('academic_term_id', $academicTermId)
+                ->where('year_section', $sectionLabel)
+                ->whereIn('code', collect($rowsToInsert)->pluck('code')->all())
+                ->orderBy('code')
+                ->orderBy('id')
+                ->get();
+
+            $autoScheduleResult = $this->autoAssignSubjectRoomsAndSchedules(
+                $createdSubjects,
+                (bool) ($validated['auto_create_rooms'] ?? true),
+                false
+            );
+        }
+
         AuditTrailRecorder::record('SECTION_OFFERING_CREATED', [[
             'type' => 'SectionOfferingBatch',
             'id' => null,
@@ -8280,8 +11676,825 @@ class RegistrarController extends Controller
                 'subject_count' => count($rowsToInsert),
                 'adviser' => $adviserName !== '' ? $adviserName : null,
                 'adviser_applied' => $facultyId !== null,
+                'auto_scheduled_count' => (int) $autoScheduleResult['updated_count'],
+                'auto_created_rooms' => (int) $autoScheduleResult['created_rooms'],
             ],
         ], 201);
+    }
+
+    private function autoAssignSubjectRoomsAndSchedules($subjects, bool $autoCreateRooms = true, bool $overwrite = false): array
+    {
+        $subjects = collect($subjects)->filter(function ($subject) {
+            return $subject instanceof Subject;
+        })->values();
+
+        if ($subjects->isEmpty()) {
+            return [
+                'updated_count' => 0,
+                'created_rooms' => 0,
+                'skipped_count' => 0,
+            ];
+        }
+
+        $this->seedRoomDimensionsIfEmpty();
+
+        $createdRooms = 0;
+        $updated = 0;
+        $skipped = 0;
+        $conflicts = $this->loadScheduleConflictRows($subjects);
+        $roomCache = [];
+
+        foreach ($subjects as $subject) {
+            if (!$overwrite && $this->subjectHasCompleteSchedule($subject)) {
+                $skipped++;
+                continue;
+            }
+
+            if ((int) ($subject->faculty_id ?: 0) <= 0) {
+                $faculty = $this->findAvailableTeacherForSubject($subject, $conflicts);
+                if ($faculty) {
+                    $subject->faculty_id = (int) $faculty->id;
+                }
+            }
+
+            $courseId = (int) $subject->course_id;
+            if (!array_key_exists($courseId, $roomCache)) {
+                $roomCache[$courseId] = $this->availableRoomsForAutoSchedule($courseId, $subject);
+            }
+
+            if ($roomCache[$courseId]->isEmpty() && $autoCreateRooms) {
+                $room = $this->createAutoScheduleRoom($courseId, $this->autoScheduleRequiredCapacity($subject), $subject);
+                $createdRooms++;
+                $this->syncAutoRoomAllowedSubject($room, $subject);
+                $roomCache[$courseId] = $this->availableRoomsForAutoSchedule($courseId, $subject);
+            }
+
+            $assignment = $this->findAutoScheduleAssignment($subject, $roomCache[$courseId], $conflicts);
+
+            if (!$assignment && $autoCreateRooms) {
+                $room = $this->createAutoScheduleRoom($courseId, $this->autoScheduleRequiredCapacity($subject), $subject);
+                $createdRooms++;
+                $this->syncAutoRoomAllowedSubject($room, $subject);
+                $roomCache[$courseId]->push($room);
+                $assignment = $this->findAutoScheduleAssignment($subject, $roomCache[$courseId], $conflicts);
+            }
+
+            if (!$assignment) {
+                $skipped++;
+                continue;
+            }
+
+            $subject->days = $assignment['days'];
+            $subject->time_start = $assignment['time_start'];
+            $subject->time_end = $assignment['time_end'];
+            $subject->room = (string) $assignment['room'];
+            if (Schema::hasColumn('subjects', 'room_requirement_status')) {
+                $subject->room_requirement_status = 'Assigned';
+            }
+            $subject->save();
+
+            $conflicts[] = [
+                'id' => (int) $subject->id,
+                'academic_term_id' => (int) $subject->academic_term_id,
+                'section' => (string) $subject->year_section,
+                'faculty_id' => (int) ($subject->faculty_id ?: 0),
+                'days' => (string) $subject->days,
+                'time_start' => (string) $subject->time_start,
+                'time_end' => (string) $subject->time_end,
+                'room' => (string) $subject->room,
+            ];
+
+            $updated++;
+        }
+
+        return [
+            'updated_count' => $updated,
+            'created_rooms' => $createdRooms,
+            'skipped_count' => $skipped,
+        ];
+    }
+
+    private function loadScheduleConflictRows($subjects): array
+    {
+        $academicTermIds = collect($subjects)
+            ->pluck('academic_term_id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->filter(function ($value) {
+                return $value > 0;
+            })
+            ->unique()
+            ->values();
+
+        if ($academicTermIds->isEmpty()) {
+            return [];
+        }
+
+        return Subject::query()
+            ->select(['id', 'academic_term_id', 'year_section', 'faculty_id', 'days', 'time_start', 'time_end', 'room'])
+            ->whereIn('academic_term_id', $academicTermIds->all())
+            ->whereNotNull('days')
+            ->whereNotNull('time_start')
+            ->whereNotNull('time_end')
+            ->whereNotNull('room')
+            ->whereRaw("TRIM(COALESCE(days, '')) <> ''")
+            ->whereRaw("TRIM(COALESCE(time_start, '')) <> ''")
+            ->whereRaw("TRIM(COALESCE(time_end, '')) <> ''")
+            ->whereRaw("TRIM(COALESCE(room, '')) <> ''")
+            ->get()
+            ->map(function (Subject $subject) {
+                return [
+                    'id' => (int) $subject->id,
+                    'academic_term_id' => (int) $subject->academic_term_id,
+                    'section' => (string) $subject->year_section,
+                    'faculty_id' => (int) ($subject->faculty_id ?: 0),
+                    'days' => (string) $subject->days,
+                    'time_start' => (string) $subject->time_start,
+                    'time_end' => (string) $subject->time_end,
+                    'room' => (string) $subject->room,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function subjectHasCompleteSchedule(Subject $subject): bool
+    {
+        return trim((string) $subject->days) !== ''
+            && trim((string) $subject->time_start) !== ''
+            && trim((string) $subject->time_end) !== ''
+            && trim((string) $subject->room) !== '';
+    }
+
+    private function availableRoomsForAutoSchedule(int $courseId, Subject $subject = null)
+    {
+        if ($courseId <= 0 && !$subject) {
+            return collect();
+        }
+
+        return Room::query()
+            ->with(['courses' => function ($query) {
+                $query->select('courses.id');
+            }, 'allowedSubjects' => function ($query) {
+                $query->select('subjects.id');
+            }])
+            ->when($subject && Schema::hasTable('room_allowed_subjects'), function ($query) use ($subject) {
+                $query->whereHas('allowedSubjects', function ($subjectQuery) use ($subject) {
+                    $subjectQuery->where('subjects.id', (int) $subject->id)
+                        ->orWhere('subjects.code', (string) $subject->code);
+                });
+            }, function ($query) use ($courseId) {
+                $query->whereHas('courses', function ($courseQuery) use ($courseId) {
+                    $courseQuery->where('courses.id', $courseId);
+                });
+            })
+            ->when(Schema::hasColumn('rooms', 'status'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('status')
+                        ->orWhere('status', '')
+                        ->orWhere('status', 'Active');
+                });
+            })
+            ->orderBy('capacity')
+            ->orderBy('floor_number')
+            ->orderBy('room_number')
+            ->get();
+    }
+
+    private function findAutoScheduleAssignment(Subject $subject, $rooms, array $conflicts)
+    {
+        $requiredCapacity = $this->autoScheduleRequiredCapacity($subject);
+        $requiredRoomType = $this->resolveSubjectRequiredRoomType($subject, ((float) ($subject->lab ?: 0) > 0 ? 'Laboratory' : 'Lecture'));
+        $slots = $this->autoScheduleTimeSlots($subject);
+        $rooms = collect($rooms)
+            ->filter(function (Room $room) use ($requiredCapacity, $requiredRoomType, $subject) {
+                return (int) $room->capacity >= $requiredCapacity
+                    && $this->roomTypeMatchesSubject($room, $subject, $requiredRoomType)
+                    && $this->roomAllowsSubject($room, $subject);
+            })
+            ->values();
+
+        if ($rooms->isEmpty()) {
+            return null;
+        }
+
+        foreach ($slots as $slot) {
+            if ($this->hasAutoScheduleSectionOrFacultyConflict($subject, $slot, $conflicts)) {
+                continue;
+            }
+
+            if ((int) ($subject->faculty_id ?: 0) > 0
+                && !$this->teacherAvailableForSlot((int) $subject->faculty_id, $slot)) {
+                continue;
+            }
+
+            foreach ($rooms as $room) {
+                $candidate = [
+                    'days' => $slot['days'],
+                    'time_start' => $slot['time_start'],
+                    'time_end' => $slot['time_end'],
+                    'room' => $this->roomAssignmentRoomCode($room),
+                ];
+
+                if ($this->roomAssignmentRoomAvailableForSlot($room, $candidate)
+                    && !$this->hasAutoScheduleRoomConflict($subject, $candidate, $conflicts)) {
+                    return $candidate;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function autoScheduleRequiredCapacity(Subject $subject): int
+    {
+        $capacity = 50;
+        $subject->loadMissing('canonicalCourse');
+
+        if ($subject->canonicalCourse && (int) $subject->canonicalCourse->slots > 0) {
+            $capacity = (int) $subject->canonicalCourse->slots;
+        }
+
+        return max($capacity, 30);
+    }
+
+    private function autoScheduleTimeSlots(Subject $subject): array
+    {
+        $patterns = ['MWF', 'TTH', 'MW', 'TTH', 'F', 'S'];
+        $durationMinutes = $this->autoScheduleSubjectDurationMinutes($subject);
+        if ($durationMinutes <= 0) {
+            return [];
+        }
+        $starts = $this->autoScheduleStartTimes($durationMinutes);
+        $slots = [];
+
+        foreach ($patterns as $pattern) {
+            foreach ($starts as $start) {
+                $end = Carbon::createFromFormat('H:i', $start)
+                    ->addMinutes($durationMinutes)
+                    ->format('H:i');
+
+                $slots[] = [
+                    'days' => $pattern,
+                    'time_start' => $start,
+                    'time_end' => $end,
+                ];
+            }
+        }
+
+        return $slots;
+    }
+
+    private function autoScheduleSubjectDurationMinutes(Subject $subject): int
+    {
+        $hours = (float) ($subject->hours ?: 0);
+        if ($hours <= 0) {
+            return 0;
+        }
+
+        $startMinutes = $this->autoScheduleMinutes($this->autoScheduleDayStartTime());
+        $endMinutes = $this->autoScheduleMinutes($this->autoScheduleDayEndTime());
+        $availableMinutes = max($endMinutes - $startMinutes, 60);
+        $durationMinutes = (int) round($hours * 60);
+
+        return min(max($durationMinutes, 60), $availableMinutes);
+    }
+
+    private function autoScheduleStartTimes(int $durationMinutes): array
+    {
+        $dayStart = $this->autoScheduleDayStartTime();
+        $dayEnd = $this->autoScheduleDayEndTime();
+        $cursor = Carbon::createFromFormat('H:i', $dayStart);
+        $latestEnd = Carbon::createFromFormat('H:i', $dayEnd);
+        $starts = [];
+
+        if ($latestEnd->lte($cursor)) {
+            $latestEnd = Carbon::createFromFormat('H:i', '21:00');
+        }
+
+        while ($cursor->copy()->addMinutes($durationMinutes)->lte($latestEnd)) {
+            $starts[] = $cursor->format('H:i');
+            $cursor->addMinutes(30);
+        }
+
+        return $starts;
+    }
+
+    private function autoScheduleDayStartTime(): string
+    {
+        return self::ROOM_AVAILABLE_START_TIME;
+    }
+
+    private function autoScheduleDayEndTime(): string
+    {
+        return self::ROOM_AVAILABLE_END_TIME;
+    }
+
+    private function normalizeAutoScheduleBoundary(string $value, string $fallback): string
+    {
+        $value = trim($value);
+        if (!preg_match('/^\d{2}:\d{2}$/', $value)) {
+            return $fallback;
+        }
+
+        try {
+            Carbon::createFromFormat('H:i', $value);
+            return $value;
+        } catch (\Throwable $exception) {
+            return $fallback;
+        }
+    }
+
+    private function hasAutoScheduleSectionOrFacultyConflict(Subject $subject, array $slot, array $conflicts): bool
+    {
+        foreach ($conflicts as $conflict) {
+            if ((int) ($conflict['id'] ?? 0) === (int) $subject->id) {
+                continue;
+            }
+
+            if ((int) ($conflict['academic_term_id'] ?? 0) !== (int) $subject->academic_term_id) {
+                continue;
+            }
+
+            if (!$this->autoScheduleOverlaps($slot, $conflict)) {
+                continue;
+            }
+
+            $sameSection = trim((string) ($conflict['section'] ?? '')) !== ''
+                && trim((string) ($conflict['section'] ?? '')) === trim((string) $subject->year_section);
+            $sameFaculty = (int) ($subject->faculty_id ?: 0) > 0
+                && (int) ($conflict['faculty_id'] ?? 0) === (int) $subject->faculty_id;
+
+            if ($sameSection || $sameFaculty) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasAutoScheduleRoomConflict(Subject $subject, array $candidate, array $conflicts): bool
+    {
+        foreach ($conflicts as $conflict) {
+            if ((int) ($conflict['id'] ?? 0) === (int) $subject->id) {
+                continue;
+            }
+
+            if ((int) ($conflict['academic_term_id'] ?? 0) !== (int) $subject->academic_term_id) {
+                continue;
+            }
+
+            if (trim((string) ($conflict['room'] ?? '')) !== trim((string) ($candidate['room'] ?? ''))) {
+                continue;
+            }
+
+            if ($this->autoScheduleOverlaps($candidate, $conflict)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function autoScheduleOverlaps(array $left, array $right): bool
+    {
+        $sharedDays = array_intersect(
+            $this->autoScheduleDayTokens((string) ($left['days'] ?? '')),
+            $this->autoScheduleDayTokens((string) ($right['days'] ?? ''))
+        );
+
+        if (!count($sharedDays)) {
+            return false;
+        }
+
+        $leftStart = $this->autoScheduleMinutes((string) ($left['time_start'] ?? ''));
+        $leftEnd = $this->autoScheduleMinutes((string) ($left['time_end'] ?? ''));
+        $rightStart = $this->autoScheduleMinutes((string) ($right['time_start'] ?? ''));
+        $rightEnd = $this->autoScheduleMinutes((string) ($right['time_end'] ?? ''));
+
+        if ($leftStart === null || $leftEnd === null || $rightStart === null || $rightEnd === null) {
+            return false;
+        }
+
+        return $leftStart < $rightEnd && $rightStart < $leftEnd;
+    }
+
+    private function autoScheduleDayTokens(string $days): array
+    {
+        $value = strtoupper(preg_replace('/[^A-Z]/', '', $days));
+        $tokens = [];
+        $map = ['TH' => 'R', 'SU' => 'U'];
+        $value = str_replace(array_keys($map), array_values($map), $value);
+
+        foreach (str_split($value) as $token) {
+            if (in_array($token, ['M', 'T', 'W', 'R', 'F', 'S', 'U'], true)) {
+                $tokens[] = $token;
+            }
+        }
+
+        return array_values(array_unique($tokens));
+    }
+
+    private function autoScheduleMinutes(string $time)
+    {
+        $value = trim($time);
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            $parsed = Carbon::parse($value);
+            return ((int) $parsed->format('H') * 60) + (int) $parsed->format('i');
+        } catch (\Exception $exception) {
+            return null;
+        }
+    }
+
+    private function createAutoScheduleRoom(int $courseId, int $capacity, Subject $subject = null): Room
+    {
+        $building = RoomBuilding::query()->firstOrCreate([
+            'name' => 'AUTO GENERATED',
+        ]);
+
+        $hallway = RoomHallway::query()->firstOrCreate([
+            'room_building_id' => (int) $building->id,
+            'name' => 'AUTO',
+        ]);
+
+        $nextRoomNumber = (int) Room::query()
+            ->where('room_hallway_id', (int) $hallway->id)
+            ->where('floor_number', 1)
+            ->max('room_number');
+
+        if ($nextRoomNumber < 900) {
+            $nextRoomNumber = 900;
+        }
+
+        $roomPayload = [
+            'room_hallway_id' => (int) $hallway->id,
+            'room_number' => $nextRoomNumber + 1,
+            'floor_number' => 1,
+            'capacity' => max($capacity, 50),
+            'updated_by_user_id' => auth()->id(),
+        ];
+        $roomType = $subject
+            ? $this->resolveSubjectRequiredRoomType($subject, (float) ($subject->lab ?: 0) > 0 ? 'Laboratory' : 'Lecture')
+            : 'Lecture Room';
+
+        $roomPayload = array_merge($roomPayload, [
+            'room_code' => 'AUTO-' . ($nextRoomNumber + 1),
+            'room_name' => 'Auto Generated Room ' . ($nextRoomNumber + 1),
+            'room_type' => $roomType,
+            'available_days' => 'MTWTHFS',
+            'available_start_time' => $this->autoScheduleDayStartTime(),
+            'available_end_time' => $this->autoScheduleDayEndTime(),
+            'status' => 'Active',
+        ]);
+        $roomPayload = array_filter($roomPayload, function ($value, $key) {
+            return in_array($key, ['room_hallway_id', 'room_number', 'floor_number', 'capacity', 'updated_by_user_id'], true)
+                || Schema::hasColumn('rooms', $key);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $room = Room::query()->create($roomPayload);
+
+        if ($courseId > 0) {
+            $room->courses()->syncWithoutDetaching([
+                $courseId => [
+                    'assigned_by_user_id' => auth()->id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+        }
+
+        return $room;
+    }
+
+    private function syncAutoRoomAllowedSubject(Room $room, Subject $subject): void
+    {
+        if (!Schema::hasTable('room_allowed_subjects')) {
+            return;
+        }
+
+        DB::table('room_allowed_subjects')->updateOrInsert([
+            'room_id' => (int) $room->id,
+            'subject_id' => (int) $subject->id,
+        ], [
+            'assigned_by_user_id' => auth()->id(),
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]);
+    }
+
+    private function manualScheduleValidationIssues(Subject $subject, array $data): array
+    {
+        $days = trim((string) ($data['days'] ?? $subject->days ?? ''));
+        $timeStart = trim((string) ($data['time_start'] ?? $subject->time_start ?? ''));
+        $timeEnd = trim((string) ($data['time_end'] ?? $subject->time_end ?? ''));
+        $roomValue = trim((string) ($data['room'] ?? $subject->room ?? ''));
+        $facultyId = (int) ($data['faculty_id'] ?? $subject->faculty_id ?? 0);
+        $issues = [];
+
+        if ($days === '' || $timeStart === '' || $timeEnd === '') {
+            return [];
+        }
+
+        $slot = ['days' => $days, 'time_start' => $timeStart, 'time_end' => $timeEnd];
+        $term = $subject->academicTerm;
+        $schoolYear = (string) ($term->school_year ?? $subject->school_year ?? '');
+        $semester = $this->normalizeSlotMonitoringSemester((string) ($term->term ?? $subject->semester ?? ''));
+
+        if ($roomValue !== '') {
+            $room = $this->findRoomByScheduleValue($roomValue);
+            if (!$room) {
+                $issues[] = 'Selected room was not found in the Room File.';
+            } else {
+                $sectionSize = $this->roomAssignmentSectionSize($subject, $schoolYear, $semester);
+                $requiredRoomType = $this->resolveSubjectRequiredRoomType($subject, ((float) ($subject->lab ?: 0) > 0 ? 'Laboratory' : 'Lecture'));
+
+                if (!$this->roomAllowsSubject($room, $subject)) {
+                    $issues[] = 'Subject ' . (string) $subject->code . ' is not allowed in room ' . $this->roomAssignmentRoomCode($room) . '.';
+                }
+                if ((int) $room->capacity < $sectionSize) {
+                    $issues[] = 'Room ' . $this->roomAssignmentRoomCode($room) . ' capacity is lower than the section size of ' . $sectionSize . '.';
+                }
+                if (!$this->roomTypeMatchesSubject($room, $subject, $requiredRoomType)) {
+                    $issues[] = 'Room type mismatch. ' . (string) $subject->code . ' requires ' . $requiredRoomType . '.';
+                }
+                if (!$this->roomAssignmentRoomAvailableForSlot($room, $slot)) {
+                    $issues[] = 'Room ' . $this->roomAssignmentRoomCode($room) . ' is not available for the selected day and time.';
+                }
+                $roomConflict = $this->roomAssignmentConflictDetail($room, $slot, $schoolYear, $semester, (int) $subject->id);
+                if ($roomConflict !== '') {
+                    $issues[] = $roomConflict;
+                }
+            }
+        }
+
+        if ($facultyId > 0) {
+            if (!$this->teacherQualifiedForSubject($facultyId, $subject)) {
+                $issues[] = 'Selected teacher is not qualified for ' . (string) $subject->code . '.';
+            }
+            if (!$this->teacherLoadWithinLimit($facultyId, $subject)) {
+                $issues[] = 'Selected teacher will exceed the maximum teaching load.';
+            }
+            if (!$this->teacherAvailableForSlot($facultyId, $slot)) {
+                $issues[] = 'Selected teacher is not available for the selected day and time.';
+            }
+        }
+
+        $conflicts = $this->loadScheduleConflictRows(collect([$subject]));
+        $testSubject = clone $subject;
+        $testSubject->faculty_id = $facultyId;
+        if ($this->hasAutoScheduleSectionOrFacultyConflict($testSubject, $slot, $conflicts)) {
+            $issues[] = 'Teacher or section already has an overlapping schedule.';
+        }
+
+        return array_values(array_unique($issues));
+    }
+
+    private function roomAllowsSubject(Room $room, Subject $subject): bool
+    {
+        if (Schema::hasTable('room_allowed_subjects')) {
+            $roomSubjectRows = DB::table('room_allowed_subjects')
+                ->where('room_id', (int) $room->id)
+                ->count();
+
+            if ($roomSubjectRows > 0) {
+                return DB::table('room_allowed_subjects')
+                    ->join('subjects as allowed_subjects', 'allowed_subjects.id', '=', 'room_allowed_subjects.subject_id')
+                    ->where('room_id', (int) $room->id)
+                    ->where(function ($query) use ($subject) {
+                        $query->where('room_allowed_subjects.subject_id', (int) $subject->id)
+                            ->orWhere('allowed_subjects.code', (string) $subject->code);
+                    })
+                    ->exists();
+            }
+        }
+
+        $courseId = (int) $subject->course_id;
+        return $courseId <= 0 || DB::table('room_course_assignments')
+            ->where('room_id', (int) $room->id)
+            ->where('course_id', $courseId)
+            ->exists();
+    }
+
+    private function roomTypeMatchesSubject(Room $room, Subject $subject, string $requiredRoomType): bool
+    {
+        $roomType = $this->normalizeRoomAssignmentType((string) ($room->room_type ?: 'Lecture Room'));
+        $required = $this->normalizeRoomAssignmentType($requiredRoomType);
+
+        if ((float) ($subject->lab ?: 0) > 0) {
+            return strpos(strtolower($roomType), 'laboratory') !== false;
+        }
+
+        if ($required === 'Lecture Room') {
+            return in_array($roomType, ['Lecture Room', 'Auditorium'], true);
+        }
+
+        return $roomType === $required;
+    }
+
+    private function findRoomByScheduleValue(string $value)
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        return Room::query()
+            ->where('room_code', $value)
+            ->orWhere('room_number', $value)
+            ->orWhereRaw("CONCAT('Room#', room_number) = ?", [$value])
+            ->first();
+    }
+
+    private function roomAssignmentConflictDetail(Room $room, array $slot, string $schoolYear, string $semester, int $subjectId): string
+    {
+        $assignments = DB::table('class_room_assignments as cra')
+            ->leftJoin('subjects as s', 's.id', '=', 'cra.class_offering_id')
+            ->where('cra.room_id', (int) $room->id)
+            ->where('cra.academic_year', $schoolYear)
+            ->where('cra.semester', $semester)
+            ->where('cra.class_offering_id', '<>', $subjectId)
+            ->whereIn('cra.assignment_status', ['Assigned', 'Manual Override'])
+            ->select('cra.*', 's.code as subject_code', 's.year_section')
+            ->get();
+
+        foreach ($assignments as $assignment) {
+            if ($this->autoScheduleOverlaps($slot, [
+                'days' => (string) $assignment->day,
+                'time_start' => (string) $assignment->start_time,
+                'time_end' => (string) $assignment->end_time,
+            ])) {
+                return 'Room ' . $this->roomAssignmentRoomCode($room) . ' is already occupied on '
+                    . (string) $assignment->day . ' from '
+                    . $this->classScheduleTimeInputValue((string) $assignment->start_time) . ' to '
+                    . $this->classScheduleTimeInputValue((string) $assignment->end_time) . ' by '
+                    . trim((string) $assignment->subject_code . ' - ' . (string) $assignment->year_section) . '.';
+            }
+        }
+
+        return '';
+    }
+
+    private function teacherQualifiedForSubject(int $facultyId, Subject $subject): bool
+    {
+        if (!Schema::hasTable('teacher_allowed_subjects')) {
+            return true;
+        }
+
+        $rows = DB::table('teacher_allowed_subjects')->where('faculty_id', $facultyId)->count();
+        if ($rows === 0) {
+            return true;
+        }
+
+        return DB::table('teacher_allowed_subjects')
+            ->join('subjects as allowed_subjects', 'allowed_subjects.id', '=', 'teacher_allowed_subjects.subject_id')
+            ->where('faculty_id', $facultyId)
+            ->where(function ($query) use ($subject) {
+                $query->where('teacher_allowed_subjects.subject_id', (int) $subject->id)
+                    ->orWhere('allowed_subjects.code', (string) $subject->code);
+            })
+            ->exists();
+    }
+
+    private function teacherLoadWithinLimit(int $facultyId, Subject $subject): bool
+    {
+        $max = $this->teacherMaxLoadUnits($facultyId);
+        if ($max <= 0) {
+            return true;
+        }
+
+        $current = (float) Subject::query()
+            ->where('faculty_id', $facultyId)
+            ->where('id', '<>', (int) $subject->id)
+            ->when((int) $subject->academic_term_id > 0, function ($query) use ($subject) {
+                $query->where('academic_term_id', (int) $subject->academic_term_id);
+            })
+            ->sum(DB::raw('COALESCE(credited_tuition_units, units, 0)'));
+
+        return ($current + (float) ($subject->credited_tuition_units ?: $subject->units ?: 0)) <= $max;
+    }
+
+    private function teacherMaxLoadUnits(int $facultyId): float
+    {
+        $faculty = Faculty::query()->find($facultyId);
+        if (!$faculty) {
+            return 0.0;
+        }
+
+        if (Schema::hasColumn('faculties', 'max_load_units') && (float) ($faculty->max_load_units ?? 0) > 0) {
+            return (float) $faculty->max_load_units;
+        }
+
+        $type = Schema::hasColumn('faculties', 'employment_type')
+            ? (string) ($faculty->employment_type ?: 'Full-time Teacher')
+            : 'Full-time Teacher';
+
+        if (Schema::hasTable('teacher_load_settings')) {
+            $configured = DB::table('teacher_load_settings')
+                ->where('employment_type', $type)
+                ->value('max_load_units');
+            if ($configured !== null) {
+                return (float) $configured;
+            }
+        }
+
+        $defaults = [
+            'Full-time Teacher' => 24,
+            'Part-time Teacher' => 12,
+            'Department Head' => 9,
+            'Visiting Lecturer' => 6,
+        ];
+
+        return (float) ($defaults[$type] ?? 24);
+    }
+
+    private function teacherAvailableForSlot(int $facultyId, array $slot): bool
+    {
+        if (!Schema::hasTable('teacher_availability')) {
+            return true;
+        }
+
+        $availabilityRows = DB::table('teacher_availability')
+            ->where('faculty_id', $facultyId)
+            ->where('is_available', true)
+            ->get();
+
+        if ($availabilityRows->isEmpty()) {
+            return true;
+        }
+
+        $slotDays = $this->autoScheduleDayTokens((string) ($slot['days'] ?? ''));
+        $slotStart = $this->autoScheduleMinutes((string) ($slot['time_start'] ?? ''));
+        $slotEnd = $this->autoScheduleMinutes((string) ($slot['time_end'] ?? ''));
+
+        foreach ($slotDays as $day) {
+            $covered = false;
+            foreach ($availabilityRows as $row) {
+                $rowDays = $this->autoScheduleDayTokens((string) $row->day);
+                if (!in_array($day, $rowDays, true)) {
+                    continue;
+                }
+
+                $rowStart = $this->autoScheduleMinutes((string) $row->start_time);
+                $rowEnd = $this->autoScheduleMinutes((string) $row->end_time);
+                if ($slotStart !== null && $slotEnd !== null && $rowStart !== null && $rowEnd !== null
+                    && $slotStart >= $rowStart && $slotEnd <= $rowEnd) {
+                    $covered = true;
+                    break;
+                }
+            }
+
+            if (!$covered) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function findAvailableTeacherForSubject(Subject $subject, array $conflicts)
+    {
+        return Faculty::query()
+            ->orderBy('name')
+            ->get()
+            ->first(function (Faculty $faculty) use ($subject) {
+                return $this->teacherQualifiedForSubject((int) $faculty->id, $subject)
+                    && $this->teacherLoadWithinLimit((int) $faculty->id, $subject);
+            });
+    }
+
+    private function upsertClassRoomAssignmentFromSubject(Subject $subject, string $status): void
+    {
+        if (!Schema::hasTable('class_room_assignments')) {
+            return;
+        }
+
+        $room = $this->findRoomByScheduleValue((string) $subject->room);
+        $term = $subject->academicTerm;
+
+        DB::table('class_room_assignments')->updateOrInsert([
+            'class_offering_id' => (int) $subject->id,
+            'schedule_component_type' => (float) ($subject->lab ?: 0) > 0 ? 'Laboratory' : 'Lecture',
+        ], [
+            'course_code' => (string) $subject->code,
+            'section_id' => (string) $subject->year_section,
+            'room_id' => $room ? (int) $room->id : null,
+            'room_type_required' => $this->resolveSubjectRequiredRoomType($subject, (float) ($subject->lab ?: 0) > 0 ? 'Laboratory' : 'Lecture'),
+            'academic_year' => (string) ($term->school_year ?? $subject->school_year ?? ''),
+            'semester' => $this->normalizeSlotMonitoringSemester((string) ($term->term ?? $subject->semester ?? '')),
+            'day' => (string) $subject->days,
+            'start_time' => (string) $subject->time_start,
+            'end_time' => (string) $subject->time_end,
+            'assignment_status' => $status,
+            'remarks' => 'Saved through manual class schedule preparation.',
+            'created_by' => auth()->id(),
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]);
     }
 
     private function resolveSectionOfferingPage($value): int
@@ -8530,6 +12743,7 @@ class RegistrarController extends Controller
                 DB::raw('COALESCE(sm_subjects.units, 0) as units'),
                 DB::raw('COALESCE(sm_subjects.lec, 0) as lec'),
                 DB::raw('COALESCE(sm_subjects.lab, 0) as lab'),
+                DB::raw('COALESCE(sm_subjects.hours, 0) as hours'),
                 DB::raw('sm_subjects.credited_tuition_units as credited_tuition_units'),
                 DB::raw('COALESCE(sm_subjects.days, "") as days'),
                 DB::raw('COALESCE(sm_subjects.time_start, "") as time_start'),
@@ -10307,7 +14521,7 @@ class RegistrarController extends Controller
             }
         }
 
-        if (preg_match('/(?:^|\s)([1-9])(?:\s*[-]|\b)/', $normalized, $matches) === 1) {
+        if (preg_match('/(?:^|[^0-9])([1-9])(?:\s*[-]|\b|[a-z])/', $normalized, $matches) === 1) {
             return (int) $matches[1];
         }
 
@@ -10715,6 +14929,19 @@ class RegistrarController extends Controller
                 ->get();
         }
 
+        $scholarshipPrograms = collect([]);
+        $studentScholarships = collect([]);
+        if (Schema::hasTable('scholarship_programs') && Schema::hasTable('scholarship_student')) {
+            $scholarshipPrograms = ScholarshipProgram::orderByRaw("CASE status WHEN 'Open' THEN 1 WHEN 'Ongoing' THEN 2 WHEN 'Closed' THEN 3 WHEN 'Ended' THEN 4 ELSE 5 END")
+                ->orderBy('name')
+                ->get();
+            $studentScholarships = ScholarshipStudent::where('student_id', $student->id)
+                ->with('program')
+                ->orderByDesc('school_year')
+                ->orderBy('semester')
+                ->get();
+        }
+
         return view('registrar.registrar-menu.student-management.student-record-profile', compact(
             'student', 'gradeRecords', 'gradesBySyTerm', 'gwa', 'totalUnitsEarned',
             'academicStanding', 'deficiencies', 'courses',
@@ -10722,7 +14949,8 @@ class RegistrarController extends Controller
             'enrolledSubjects', 'subjectGrades', 'enrolledBySyTerm',
             'curriculum', 'curriculumByYearSem',
             'profileUpdateUrl', 'medicalRecord', 'clinicRecords',
-            'graduateTagging', 'isGraduated', 'scholasticComments'
+            'graduateTagging', 'isGraduated', 'scholasticComments',
+            'scholarshipPrograms', 'studentScholarships'
         ));
     }
 
@@ -11277,20 +15505,48 @@ class RegistrarController extends Controller
      */
     public function facultyCreate()
     {
-        return view('registrar.registrar-menu.faculty-management.faculty-create');
+        $departments = Department::query()
+            ->with('college')
+            ->orderBy('description')
+            ->get();
+        $colleges = College::orderBy('sort_order')->orderBy('name')->get();
+
+        return view('registrar.registrar-menu.faculty-management.faculty-create', compact('departments', 'colleges'));
     }
 
     public function storeFaculty(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'code' => 'required|unique:faculties,code',
             'name' => 'required|string',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'college_id' => 'nullable|integer|exists:colleges,id',
         ]);
 
         $defaultPass = null;
 
-        DB::transaction(function () use ($request, &$defaultPass) {
-            $faculty = Faculty::create($request->only(['code', 'name']));
+        DB::transaction(function () use ($validated, &$defaultPass) {
+            $department = !empty($validated['department_id'])
+                ? Department::find($validated['department_id'])
+                : null;
+            $collegeId = $validated['college_id'] ?? (Schema::hasColumn('departments', 'college_id') ? optional($department)->college_id : null);
+
+            $payload = [
+                'code' => $validated['code'],
+                'name' => $validated['name'],
+            ];
+
+            if (Schema::hasColumn('faculties', 'department')) {
+                $payload['department'] = optional($department)->description;
+            }
+            if (Schema::hasColumn('faculties', 'department_id')) {
+                $payload['department_id'] = $validated['department_id'] ?? null;
+            }
+            if (Schema::hasColumn('faculties', 'college_id')) {
+                $payload['college_id'] = $collegeId;
+            }
+
+            $faculty = Faculty::create($payload);
 
             $defaultPass = 'PLP-' . $faculty->code;
 
@@ -11349,11 +15605,11 @@ class RegistrarController extends Controller
                     'name' => (string) $student->name,
                     'fda' => false,
                     'na' => false,
-                    'prelim' => $grade && $grade->prelim !== null ? (float) $grade->prelim : null,
                     'midterm' => $grade && $grade->midterm !== null ? (float) $grade->midterm : null,
                     'final' => $grade && $grade->final !== null ? (float) $grade->final : null,
                     'cRating' => $grade && $grade->final_average !== null ? (float) $grade->final_average : null,
                     'fRating' => $grade && $grade->final_average !== null ? (float) $grade->final_average : null,
+                    'status' => $grade ? (string) ($grade->status ?: $grade->remarks) : '',
                     'remarks' => $grade ? (string) $grade->remarks : '',
                 ];
             })->values()->all();
@@ -11486,7 +15742,7 @@ class RegistrarController extends Controller
     {
         $validated = $request->validate([
             'subject_id' => 'required|exists:subjects,id',
-            'phase' => ['required', Rule::in(['prelim', 'midterm', 'final'])],
+            'phase' => ['required', Rule::in(['midterm', 'final'])],
             'grades' => 'required|array',
         ]);
 
@@ -11517,12 +15773,14 @@ class RegistrarController extends Controller
             $gradeRow->{$phase} = $gradeValue;
             $transmuted = $this->computeRegistrarTransmutedGrade(
                 $subject,
-                $gradeRow->prelim,
                 $gradeRow->midterm,
                 $gradeRow->final
             );
             $gradeRow->final_average = $transmuted['grade'];
             $gradeRow->remarks = $transmuted['remarks'];
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $gradeRow->status = $transmuted['status'];
+            }
             $gradeRow->save();
 
             $student = $subject->students->firstWhere('id', (int) $studentId);
@@ -11550,10 +15808,10 @@ class RegistrarController extends Controller
             ->map(function ($row) {
                 return [
                     'student_id' => (int) $row->student_id,
-                    'prelim' => $row->prelim !== null ? (float) $row->prelim : null,
                     'midterm' => $row->midterm !== null ? (float) $row->midterm : null,
                     'final' => $row->final !== null ? (float) $row->final : null,
                     'final_average' => $row->final_average !== null ? (float) $row->final_average : null,
+                    'status' => (string) (($row->status ?? '') ?: ($row->remarks ?: '')),
                     'remarks' => (string) ($row->remarks ?: ''),
                 ];
             })
@@ -11569,9 +15827,9 @@ class RegistrarController extends Controller
         ]);
     }
 
-    private function computeRegistrarTransmutedGrade(Subject $subject, $prelim, $midterm, $final): array
+    private function computeRegistrarTransmutedGrade(Subject $subject, $midterm, $final): array
     {
-        $grades = collect([$prelim, $midterm, $final])
+        $grades = collect([$midterm, $final])
             ->filter(function ($value) {
                 return $value !== null && $value !== '' && is_numeric($value);
             })
@@ -11581,27 +15839,16 @@ class RegistrarController extends Controller
             ->values();
 
         if ($grades->count() === 0) {
-            return ['grade' => null, 'remarks' => null];
+            return ['grade' => null, 'remarks' => null, 'status' => null];
         }
 
         $rawAverage = round($grades->avg(), 2);
-        if ($rawAverage <= 5) {
-            return [
-                'grade' => $rawAverage,
-                'remarks' => $rawAverage <= 3.00 ? 'Passed' : 'Failed',
-            ];
-        }
-
-        $rule = $this->matchingRegistrarTransmutationRule($subject, $rawAverage);
-        if (!$rule) {
-            return ['grade' => null, 'remarks' => 'No transmutation rule'];
-        }
-
-        $grade = round((float) $rule->transmuted_grade, 2);
+        $status = $rawAverage >= 75.0 ? 'Passed' : 'Failed';
 
         return [
-            'grade' => $grade,
-            'remarks' => trim((string) $rule->remarks) ?: ($grade <= 3.00 ? 'Passed' : 'Failed'),
+            'grade' => $rawAverage,
+            'remarks' => $status,
+            'status' => $status,
         ];
     }
 
@@ -12114,8 +16361,41 @@ class RegistrarController extends Controller
     /**
      * Registrar > Forms > Diploma
      */
-    public function formsDiploma()
+    public function formsDiploma(Request $request)
     {
+        if ($request->filled('student_id')) {
+            $student = Student::with(['profile', 'canonicalCourse'])->find($request->query('student_id'));
+
+            if ($student) {
+                $graduateTagging = null;
+                if (Schema::hasTable('graduate_taggings')) {
+                    $graduateTagging = GraduateTagging::where('student_id', $student->id)->first();
+                }
+
+                $signatories = collect([]);
+                if (Schema::hasTable('system_config_name_signatures') && Schema::hasTable('system_config_signature_designations')) {
+                    $signatories = DB::table('system_config_name_signatures as s')
+                        ->join('system_config_signature_designations as d', 's.designation_id', '=', 'd.id')
+                        ->where('s.is_active', 1)
+                        ->orderBy('d.sort_order')
+                        ->select('s.signer_name', 's.signature_path', 'd.name as designation_name', 'd.code')
+                        ->get();
+                }
+
+                $president = $signatories->first(function ($s) {
+                    return stripos($s->designation_name, 'president') !== false;
+                }) ?? $signatories->first();
+
+                $registrar = $signatories->first(function ($s) {
+                    return stripos($s->designation_name, 'registrar') !== false;
+                });
+
+                return view('registrar.registrar-menu.student-management.print.diploma', compact(
+                    'student', 'graduateTagging', 'president', 'registrar'
+                ));
+            }
+        }
+
         return view('registrar.forms.diploma');
     }
 

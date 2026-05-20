@@ -23,7 +23,6 @@
 
     $gradePeriodOptions = [
         ['value' => '', 'label' => '-Select Period-'],
-        ['value' => 'Prelim', 'label' => 'Prelim'],
         ['value' => 'Midterm', 'label' => 'Midterm'],
         ['value' => 'Final', 'label' => 'Final'],
     ];

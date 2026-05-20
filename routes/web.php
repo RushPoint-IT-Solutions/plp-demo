@@ -258,13 +258,25 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/room-file', 'Registrar\RegistrarController@storeRoomFile')->name('room-file.store')->middleware('throttle:60,1');
             Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
             Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
+            Route::get('/room-generation-assignment', 'Registrar\RegistrarController@roomGenerationAssignment')->name('room-generation-assignment');
+            Route::post('/room-generation-assignment/generate', 'Registrar\RegistrarController@generateRoomsForAssignment')->name('room-generation-assignment.generate')->middleware('throttle:30,1');
+            Route::post('/room-generation-assignment/assign', 'Registrar\RegistrarController@assignRoomsPerSectionSubject')->name('room-generation-assignment.assign')->middleware('throttle:30,1');
+            Route::get('/room-generation-assignment/report', 'Registrar\RegistrarController@roomAssignmentReport')->name('room-generation-assignment.report')->middleware('throttle:60,1');
             Route::get('/room-section-offering-management', 'Registrar\RegistrarController@roomSectionOfferingManagement')->name('room-section-offering-management');
             Route::get('/coordination-deans-faculty', 'Registrar\RegistrarController@coordinationDeansFaculty')->name('coordination-deans-faculty');
+            Route::get('/academic-term-lifecycle', 'Registrar\RegistrarController@academicTermLifecycle')->name('academic-term-lifecycle');
+            Route::post('/academic-term-lifecycle/close', 'Registrar\RegistrarController@closeCurrentSemester')->name('academic-term-lifecycle.close')->middleware('throttle:10,1');
+            Route::post('/academic-term-lifecycle/open', 'Registrar\RegistrarController@openNewAcademicTerm')->name('academic-term-lifecycle.open')->middleware('throttle:10,1');
+            Route::post('/academic-term-lifecycle/{academicTerm}/publish', 'Registrar\RegistrarController@publishNewAcademicTerm')->name('academic-term-lifecycle.publish')->middleware('throttle:10,1');
+            Route::get('/academic-setup-automation', 'Registrar\RegistrarController@academicSetupAutomation')->name('academic-setup-automation');
+            Route::post('/academic-setup-automation/generate', 'Registrar\RegistrarController@generateAcademicSetupAutomation')->name('academic-setup-automation.generate')->middleware('throttle:20,1');
+            Route::post('/academic-setup-automation/{generationLog}/publish', 'Registrar\RegistrarController@publishAcademicSetupAutomation')->name('academic-setup-automation.publish')->middleware('throttle:20,1');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
             Route::get('/section-offering/data', 'Registrar\RegistrarController@sectionOfferingData')->name('section-offering.data')->middleware('throttle:60,1');
             Route::get('/section-offering/curriculum-subjects', 'Registrar\RegistrarController@sectionOfferingCurriculumSubjects')->name('section-offering.curriculum-subjects')->middleware('throttle:60,1');
             Route::post('/section-offering', 'Registrar\RegistrarController@storeSectionOffering')->name('section-offering.store')->middleware('throttle:60,1');
             Route::get('/class-schedule-preparation', 'Registrar\RegistrarController@classSchedulePreparation')->name('class-schedule-preparation');
+            Route::post('/class-schedule-preparation/auto-generate', 'Registrar\RegistrarController@autoGenerateClassSchedulePreparation')->name('class-schedule-preparation.auto-generate')->middleware('throttle:30,1');
             Route::put('/class-schedule-preparation/{subject}', 'Registrar\RegistrarController@updateClassSchedulePreparation')->name('class-schedule-preparation.update')->middleware('throttle:60,1');
             Route::get('/slot-monitoring', 'Registrar\RegistrarController@slotMonitoring')->name('slot-monitoring');
             Route::get('/slot-monitoring/data', 'Registrar\RegistrarController@slotMonitoringData')->name('slot-monitoring.data')->middleware('throttle:60,1');
@@ -282,6 +294,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
             Route::get('/student-records', 'Registrar\RegistrarController@studentRecordList')->name('student-records');
             Route::get('/student-records/{student}', 'Registrar\RegistrarController@studentRecordProfile')->name('student-records.profile');
+            Route::post('/student-records/{student}/scholarships', 'Registrar\ScholarshipController@tagStudent')->name('student-records.scholarships.save')->middleware('throttle:30,1');
+            Route::delete('/student-records/{student}/scholarships/{tag}', 'Registrar\ScholarshipController@untagStudent')->name('student-records.scholarships.delete')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/scholastic-comments', 'Registrar\RegistrarController@studentScholasticCommentSave')->name('student-records.scholastic-comments.save')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/medical', 'Registrar\RegistrarController@studentRecordMedicalSave')->name('student-records.medical.save');
             Route::post('/student-records/{student}/clinic', 'Registrar\RegistrarController@studentClinicRecordSave')->name('student-records.clinic.save');
@@ -302,10 +316,28 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/academic-record/grade-corrections/{gradeCorrectionRequest}/reject', 'Registrar\RegistrarController@rejectGradeCorrectionRequest')->name('academic-record.grade-corrections.reject')->middleware('throttle:30,1');
         });
 
+        // Scholarship Module
+        Route::prefix('scholarships')->name('scholarships.')->group(function () {
+            Route::get('/', 'Registrar\ScholarshipController@index')->name('index');
+            Route::post('/', 'Registrar\ScholarshipController@store')->name('store')->middleware('throttle:30,1');
+            Route::put('/{scholarship}', 'Registrar\ScholarshipController@update')->name('update')->middleware('throttle:30,1');
+            Route::delete('/{scholarship}', 'Registrar\ScholarshipController@destroy')->name('destroy')->middleware('throttle:30,1');
+            Route::get('/reports/scholars-by-type', 'Registrar\ScholarshipController@report')->name('report');
+        });
+
         // Faculty Management
         Route::prefix('faculty-management')->name('faculty-mgmt.')->group(function () {
             Route::get('/faculty-create', 'Registrar\RegistrarController@facultyCreate')->name('faculty-create');
             Route::post('/faculty-create', 'Registrar\RegistrarController@storeFaculty')->name('faculty-create.store');
+            Route::get('/departments', 'Registrar\Services\FacultyLoadsController@departments')->name('departments');
+            Route::post('/departments', 'Registrar\Services\FacultyLoadsController@storeDepartment')->name('departments.store');
+            Route::put('/departments/{department}', 'Registrar\Services\FacultyLoadsController@updateDepartment')->name('departments.update');
+            Route::delete('/departments/{department}', 'Registrar\Services\FacultyLoadsController@destroyDepartment')->name('departments.destroy');
+            Route::get('/faculty-list', 'Registrar\Services\FacultyLoadsController@index')->name('faculty-list');
+            Route::get('/faculty-list/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('faculty-list.show');
+            Route::put('/faculty-list/{faculty}/profile', 'Registrar\Services\FacultyLoadsController@updateProfile')->name('faculty-list.profile.update');
+            Route::post('/faculty-list/{faculty}/allowed-subjects', 'Registrar\Services\FacultyLoadsController@allowSubject')->name('faculty-list.allowed-subjects.store');
+            Route::delete('/faculty-list/{faculty}/allowed-subjects/{subject}', 'Registrar\Services\FacultyLoadsController@removeAllowedSubject')->name('faculty-list.allowed-subjects.destroy');
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
             Route::post('/grading-sheet/action', 'Registrar\RegistrarController@gradingSheetAction')->name('grading-sheet.action');
             Route::post('/grading-sheet/update-phase', 'Registrar\RegistrarController@gradingSheetUpdatePhase')->name('grading-sheet.update-phase')->middleware('throttle:60,1');
@@ -379,7 +411,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::prefix('faculty-loads')->name('faculty-loads.')->group(function () {
                 Route::get('/', 'Registrar\Services\FacultyLoadsController@index')->name('index');
                 Route::get('/{faculty}', 'Registrar\Services\FacultyLoadsController@show')->name('show');
+                Route::put('/{faculty}/profile', 'Registrar\Services\FacultyLoadsController@updateProfile')->name('profile.update');
                 Route::post('/{faculty}/assign', 'Registrar\Services\FacultyLoadsController@assign')->name('assign');
+                Route::post('/{faculty}/allowed-subjects', 'Registrar\Services\FacultyLoadsController@allowSubject')->name('allowed-subjects.store');
+                Route::delete('/{faculty}/allowed-subjects/{subject}', 'Registrar\Services\FacultyLoadsController@removeAllowedSubject')->name('allowed-subjects.destroy');
                 Route::get('/{faculty}/print-strength-of-classes', 'Registrar\Services\FacultyLoadsController@printStrengthOfClasses')->name('print-strength-of-classes');
             });
         });

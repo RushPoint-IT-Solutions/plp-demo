@@ -8,7 +8,6 @@ var GS_GRADE_MODAL_STATE = {
 };
 
 var GS_PHASES = [
-    { key: 'prelim', label: 'PRELIM' },
     { key: 'midterm', label: 'MIDTERM' },
     { key: 'final', label: 'FINAL' }
 ];
@@ -23,11 +22,11 @@ function gsSeedSections(serverSections) {
                     name: st.name || '',
                     fda: !!st.fda,
                     na: !!st.na,
-                    prelim: st.prelim !== null && st.prelim !== undefined ? Number(st.prelim) : null,
                     midterm: st.midterm !== null && st.midterm !== undefined ? Number(st.midterm) : null,
                     final: st.final !== null && st.final !== undefined ? Number(st.final) : null,
                     cRating: st.cRating !== null && st.cRating !== undefined ? Number(st.cRating) : null,
                     fRating: st.fRating !== null && st.fRating !== undefined ? Number(st.fRating) : null,
+                    status: st.status || '',
                     remarks: st.remarks || ''
                 };
             });
@@ -189,37 +188,23 @@ function renderSectionList() {
     if (pageInfo) pageInfo.textContent = 'Showing ' + GS_SECTIONS.length + ' sections';
 }
 
-function gsComputeRating(student) {
-    var sum = 0, count = 0;
-    if (student.prelim !== null && student.prelim !== undefined && !isNaN(Number(student.prelim))) {
-        sum += Number(student.prelim); count++;
+function gsComputeFinalResult(student) {
+    if (student.cRating !== null && student.cRating !== undefined && !isNaN(Number(student.cRating))) {
+        return Number(student.cRating);
     }
-    if (student.midterm !== null && student.midterm !== undefined && !isNaN(Number(student.midterm))) {
-        sum += Number(student.midterm); count++;
+    if (student.midterm === null || student.midterm === undefined || isNaN(Number(student.midterm))) {
+        return null;
     }
-    if (student.final !== null && student.final !== undefined && !isNaN(Number(student.final))) {
-        sum += Number(student.final); count++;
+    if (student.final === null || student.final === undefined || isNaN(Number(student.final))) {
+        return null;
     }
-    return count > 0 ? sum / count : null;
+    return (Number(student.midterm) + Number(student.final)) / 2;
 }
 
-function gsComputeFRating(cRating) {
-    if (cRating === null) return null;
-    if (cRating >= 97) return 1.00;
-    if (cRating >= 94) return 1.25;
-    if (cRating >= 91) return 1.50;
-    if (cRating >= 88) return 1.75;
-    if (cRating >= 85) return 2.00;
-    if (cRating >= 82) return 2.25;
-    if (cRating >= 79) return 2.50;
-    if (cRating >= 76) return 2.75;
-    if (cRating >= 75) return 3.00;
-    return 5.00;
-}
-
-function gsGetRemarks(fRating) {
-    if (fRating === null) return '';
-    return fRating <= 3.00 ? 'Passed' : 'Failed';
+function gsGetStatus(finalResult, explicitStatus) {
+    if (explicitStatus) return explicitStatus;
+    if (finalResult === null) return '';
+    return finalResult >= 75 ? 'Passed' : 'Failed';
 }
 
 function gsFormatGrade(v) {
@@ -241,10 +226,10 @@ function showDetailView(id) {
     var html = '';
     for (var i = 0; i < sec.students.length; i++) {
         var st = sec.students[i];
-        var cR = gsComputeRating(st);
-        var fR = gsComputeFRating(cR);
-        var remarks = gsGetRemarks(fR);
-        var remarksClass = remarks === 'Passed' ? 'gs-remarks-passed' : (remarks === 'Failed' ? 'gs-remarks-failed' : '');
+        var finalResult = gsComputeFinalResult(st);
+        var status = gsGetStatus(finalResult, st.status);
+        var remarks = st.remarks || status;
+        var statusClass = status === 'Passed' ? 'gs-remarks-passed' : (status === 'Failed' ? 'gs-remarks-failed' : '');
 
         html += '<tr>' +
             '<td class="gs-col-num">' + (i + 1) + '</td>' +
@@ -252,12 +237,11 @@ function showDetailView(id) {
             '<td class="gs-col-name">' + st.name + '</td>' +
             '<td class="gs-col-flag"><input type="checkbox" class="gs-checkbox"' + (st.fda ? ' checked' : '') + '></td>' +
             '<td class="gs-col-flag"><input type="checkbox" class="gs-checkbox"' + (st.na ? ' checked' : '') + '></td>' +
-            '<td class="gs-col-grade gs-phase-cell" data-phase="prelim">' + gsFormatGrade(st.prelim) + '</td>' +
             '<td class="gs-col-grade gs-phase-cell" data-phase="midterm">' + gsFormatGrade(st.midterm) + '</td>' +
             '<td class="gs-col-grade gs-phase-cell" data-phase="final">' + gsFormatGrade(st.final) + '</td>' +
-            '<td class="gs-col-grade">' + (cR !== null ? cR.toFixed(2) : '<span class="gs-grade-na">N/A</span>') + '</td>' +
-            '<td class="gs-col-grade">' + (fR !== null ? fR.toFixed(2) : '<span class="gs-grade-na">N/A</span>') + '</td>' +
-            '<td class="gs-col-remarks ' + remarksClass + '">' + remarks + '</td>' +
+            '<td class="gs-col-grade">' + (finalResult !== null ? finalResult.toFixed(2) : '<span class="gs-grade-na">N/A</span>') + '</td>' +
+            '<td class="gs-col-remarks ' + statusClass + '">' + status + '</td>' +
+            '<td>' + gsEscapeHtml(remarks) + '</td>' +
         '</tr>';
     }
     detailBody.innerHTML = html;
@@ -391,13 +375,9 @@ function bindGradeTabClick() {
 }
 
 function bindGradeModalEvents() {
-    var prelimHeader = document.getElementById('gsPrelimHeader');
     var midtermHeader = document.getElementById('gsMidtermHeader');
     var finalHeader = document.getElementById('gsFinalHeader');
 
-    if (prelimHeader) {
-        prelimHeader.addEventListener('click', function() { openGradeModal('prelim'); });
-    }
     if (midtermHeader) {
         midtermHeader.addEventListener('click', function() { openGradeModal('midterm'); });
     }

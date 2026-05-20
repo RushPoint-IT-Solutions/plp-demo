@@ -51,7 +51,6 @@ class SystemConfigurationSeeder extends Seeder
         }
 
         $rows = [
-            ['term' => $termFirst, 'period' => 'Prelim', 'date_from' => '2025-08-12'],
             ['term' => $termFirst, 'period' => 'Midterm', 'date_from' => '2025-09-20'],
             ['term' => $termSecond, 'period' => 'Final', 'date_from' => '2026-02-10'],
         ];

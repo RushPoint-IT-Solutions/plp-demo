@@ -38,7 +38,7 @@ class GradingAcademicController extends Controller
             'grade' => 'nullable|string|max:20',
             'remarks' => 'required|string|max:255',
             'periods' => 'nullable|array',
-            'periods.*' => 'nullable|string|in:Prelim,Midterm,Final',
+            'periods.*' => 'nullable|string|in:Midterm,Final',
         ]);
 
         $rule = GradeRule::create([
@@ -59,7 +59,7 @@ class GradingAcademicController extends Controller
             'grade' => 'nullable|string|max:20',
             'remarks' => 'required|string|max:255',
             'periods' => 'nullable|array',
-            'periods.*' => 'nullable|string|in:Prelim,Midterm,Final',
+            'periods.*' => 'nullable|string|in:Midterm,Final',
         ]);
 
         $gradeRule->update([
@@ -99,7 +99,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'section_subject_faculty' => 'required|string|max:150',
-            'period' => 'required|string|in:Prelim,Midterm,Final',
+            'period' => 'required|string|in:Midterm,Final',
             'description' => 'required|string|max:120',
             'percentage' => 'required|numeric|min:0|max:100',
             'start_date' => 'nullable|date',
@@ -132,7 +132,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'section_subject_faculty' => 'required|string|max:150',
-            'period' => 'required|string|in:Prelim,Midterm,Final',
+            'period' => 'required|string|in:Midterm,Final',
             'description' => 'required|string|max:120',
             'percentage' => 'required|numeric|min:0|max:100',
             'start_date' => 'nullable|date',
@@ -186,7 +186,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'school_year' => 'required|string|max:20',
-            'period' => 'required|string|in:Prelim,Midterm,Final',
+            'period' => 'required|string|in:Midterm,Final',
             'semester' => 'required|string|in:First,Second',
             'section' => 'required|string|max:40',
             'course_code' => 'required|string|max:40',
@@ -221,7 +221,7 @@ class GradingAcademicController extends Controller
     {
         $validated = $request->validate([
             'school_year' => 'required|string|max:20',
-            'period' => 'required|string|in:Prelim,Midterm,Final',
+            'period' => 'required|string|in:Midterm,Final',
             'semester' => 'required|string|in:First,Second',
             'section' => 'required|string|max:40',
             'course_code' => 'required|string|max:40',
@@ -904,7 +904,6 @@ class GradingAcademicController extends Controller
                 'st.student_no',
                 'st.name as student_name',
                 'g.subject_id',
-                'g.prelim',
                 'g.midterm',
                 'g.final',
                 'g.final_average',
@@ -930,7 +929,7 @@ class GradingAcademicController extends Controller
                 $inner->whereRaw('LOWER(COALESCE(g.remarks, "")) like ?', ['%incomplete%'])
                     ->orWhereRaw('LOWER(COALESCE(g.remarks, "")) = ?', ['inc'])
                     ->orWhereRaw('LOWER(COALESCE(g.remarks, "")) like ?', ['%failed%'])
-                    ->orWhere('g.final_average', '>', 3);
+                    ->orWhere('g.final_average', '<', 75);
             });
 
             if ($search !== '') {
@@ -977,7 +976,7 @@ class GradingAcademicController extends Controller
                     'faculty' => $row->faculty ?? '',
                     'grade' => $row->final_average,
                     'remarks' => $row->remarks ?: $riskType,
-                    'prelim' => $row->prelim,
+                    'prelim' => null,
                     'midterm' => $row->midterm,
                     'final' => $row->final,
                 ];
@@ -1054,7 +1053,6 @@ class GradingAcademicController extends Controller
                     'faculty' => $row->professor,
                     'grade' => $row->inc ? 'INC' : $row->final_grade,
                     'remarks' => $row->remarks ?: ($row->grade_status ?: ($isIncomplete ? 'Incomplete' : 'Failing')),
-                    'prelim' => null,
                     'midterm' => null,
                     'final' => null,
                 ];

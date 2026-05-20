@@ -37,9 +37,39 @@
                 <input type="text" name="code" class="pf-search-input" style="width: 100%; border: 1px solid #ccc; padding: 8px;" required>
             </div>
             
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
                 <label style="display:block; font-weight:bold; margin-bottom:5px;">Full Name</label>
                 <input type="text" name="name" class="pf-search-input" style="width: 100%; border: 1px solid #ccc; padding: 8px;" required>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-weight:bold; margin-bottom:5px;">Department</label>
+                <select name="department_id" class="pf-search-input" style="width: 100%; border: 1px solid #ccc; padding: 8px;">
+                    <option value="">Select Department</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                            {{ $department->code }} - {{ $department->description }}
+                            @if(optional($department->college)->abbr)
+                                ({{ $department->college->abbr }})
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+                <small style="display:block; margin-top:5px; color:#64748b;">
+                    Manage departments from Faculty > Departments.
+                </small>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; font-weight:bold; margin-bottom:5px;">College</label>
+                <select name="college_id" class="pf-search-input" style="width: 100%; border: 1px solid #ccc; padding: 8px;">
+                    <option value="">Use Department College</option>
+                    @foreach($colleges as $college)
+                        <option value="{{ $college->id }}" {{ old('college_id') == $college->id ? 'selected' : '' }}>
+                            {{ $college->abbr ?: $college->code }} - {{ $college->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
             
             <button type="submit" class="pf-btn-new" style="padding: 10px 20px;">Create Faculty & Generate Login</button>

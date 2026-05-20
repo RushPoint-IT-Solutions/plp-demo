@@ -86,8 +86,8 @@
                                 </td>
                                 <td>
                                     <span class="ifg-grade">{{ $row->grade ?? 'N/A' }}</span>
-                                    @if($row->prelim !== null || $row->midterm !== null || $row->final !== null)
-                                        <small>P {{ $row->prelim ?? '-' }} | M {{ $row->midterm ?? '-' }} | F {{ $row->final ?? '-' }}</small>
+                                    @if($row->midterm !== null || $row->final !== null)
+                                        <small>M {{ $row->midterm ?? '-' }} | F {{ $row->final ?? '-' }}</small>
                                     @endif
                                 </td>
                                 <td><span class="ifg-badge {{ $row->risk_type === 'Incomplete' ? 'warn' : 'danger' }}">{{ $row->risk_type }}</span></td>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\AcademicCalendarEvent;
 use App\MasterFacultyFile;
 use App\FacultyEvaluation;
+use App\GradeRule;
 use App\NotificationDelivery;
 use App\NotificationType;
 use App\PortalNotification;
@@ -624,8 +625,21 @@ class FacultyController extends Controller
     {
         $faculty = $this->currentFaculty();
         $subjects = $this->subjectsForFaculty($faculty)
-            ->with(['students', 'studentGrades'])
+            ->with(['students', 'studentGrades.gradeRule'])
             ->get();
+        $gradeRules = GradeRule::query()
+            ->whereIn('code', ['OD', 'UD', 'INC', 'F', 'P'])
+            ->orderByRaw("FIELD(code, 'OD', 'UD', 'INC', 'F', 'P')")
+            ->get()
+            ->map(function ($rule) {
+                return [
+                    'id' => $rule->id,
+                    'code' => $rule->code,
+                    'grade' => $rule->grade,
+                    'remarks' => $rule->remarks,
+                ];
+            })
+            ->values();
 
         $gradingSubjects = $subjects->map(function ($subject) {
             $gradeMap = $subject->studentGrades->keyBy('student_id');
@@ -637,10 +651,12 @@ class FacultyController extends Controller
                     'id' => $student->id,
                     'student_no' => $student->student_no,
                     'name' => $student->name,
-                    'prelim' => $grade ? number_format((float) $grade->prelim, 2) : '',
-                    'midterm' => $grade ? number_format((float) $grade->midterm, 2) : '',
-                    'final' => $grade ? number_format((float) $grade->final, 2) : '',
-                    'final_average' => $grade ? number_format((float) $grade->final_average, 2) : '',
+                    'midterm' => ($grade && $grade->midterm !== null) ? number_format((float) $grade->midterm, 2) : '',
+                    'final' => ($grade && $grade->final !== null) ? number_format((float) $grade->final, 2) : '',
+                    'final_average' => ($grade && $grade->final_average !== null) ? number_format((float) $grade->final_average, 2) : '',
+                    'grade_rule_id' => $grade ? $grade->grade_rule_id : '',
+                    'grade_rule_code' => ($grade && $grade->gradeRule) ? $grade->gradeRule->code : '',
+                    'status' => $grade ? (string) ($grade->status ?: $grade->remarks) : '',
                     'remarks' => $grade ? $grade->remarks : '',
                 ];
             });
@@ -655,11 +671,12 @@ class FacultyController extends Controller
                 'semester' => (string) ($subject->semester ?: ''),
                 'school_year' => (string) ($subject->school_year ?: ''),
                 'status' => optional($subject->gradingStatusLookup)->label ?? 'Open For Encoding',
+                'transmutation_rules' => $this->transmutationRulesForSubject($subject),
                 'students' => $students,
             ];
         })->values();
 
-        return view('faculty.grading-sheet', compact('subjects', 'gradingSubjects'));
+        return view('faculty.grading-sheet', compact('subjects', 'gradingSubjects', 'gradeRules'));
     }
 
     /**
@@ -683,32 +700,38 @@ class FacultyController extends Controller
                 continue;
             }
 
-            $prelim = isset($row['prelim']) && $row['prelim'] !== '' ? (float) $row['prelim'] : null;
             $midterm = isset($row['midterm']) && $row['midterm'] !== '' ? (float) $row['midterm'] : null;
             $final = isset($row['final']) && $row['final'] !== '' ? (float) $row['final'] : null;
             $remarksInput = isset($row['remarks']) ? trim((string) $row['remarks']) : '';
 
-            if ($prelim === null || $midterm === null || $final === null) {
+            if ($midterm === null || $final === null) {
                 continue;
             }
 
-            if (!$this->isValidEncodedGrade($prelim) || !$this->isValidEncodedGrade($midterm) || !$this->isValidEncodedGrade($final)) {
+            if (!$this->isValidEncodedGrade($midterm) || !$this->isValidEncodedGrade($final)) {
                 continue;
             }
 
-            $transmuted = $this->transmutedSemestralGrade($subject, [$prelim, $midterm, $final]);
-            $average = $transmuted['grade'];
-            $remarks = $remarksInput !== '' ? $remarksInput : $transmuted['remarks'];
+            $average = $this->finalResultFromMidtermFinal($midterm, $final);
+            $status = $this->statusForFinalResult($average);
+            $remarks = $remarksInput !== '' ? $remarksInput : $status;
+            $gradeRule = $this->passFailGradeRuleForFinalResult($average);
+
+            $payload = [
+                'prelim' => null,
+                'midterm' => $midterm,
+                'final' => $final,
+                'final_average' => $average,
+                'grade_rule_id' => $gradeRule ? $gradeRule->id : null,
+                'remarks' => $remarks,
+            ];
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $payload['status'] = $status;
+            }
 
             StudentSubjectGrade::updateOrCreate(
                 ['subject_id' => $subject->id, 'student_id' => $student->id],
-                [
-                    'prelim' => $prelim,
-                    'midterm' => $midterm,
-                    'final' => $final,
-                    'final_average' => $average,
-                    'remarks' => $remarks,
-                ]
+                $payload
             );
         }
 
@@ -731,54 +754,112 @@ class FacultyController extends Controller
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
             'student_id' => 'required',
-            'prelim' => 'required|numeric|min:0|max:100',
-            'midterm' => 'required|numeric|min:0|max:100',
-            'final' => 'nullable|numeric|min:0|max:100',
+            'grade_rule_id' => 'nullable|exists:grade_rules,id',
+            'midterm' => 'nullable|numeric|min:50|max:100',
+            'final' => 'nullable|numeric|min:50|max:100',
             'remarks' => 'nullable|string|max:500',
+            'draft' => 'nullable|boolean',
         ]);
 
         $subject = $this->subjectsForFaculty($this->currentFaculty())
             ->findOrFail($request->input('subject_id'));
 
         $studentId = $request->input('student_id');
-        $prelim    = (float) $request->input('prelim');
-        $midterm   = (float) $request->input('midterm');
+        $gradeRule = $request->filled('grade_rule_id')
+            ? GradeRule::find($request->input('grade_rule_id'))
+            : null;
+        $midterm   = $request->filled('midterm') ? (float) $request->input('midterm') : null;
         $final     = $request->input('final') !== null ? (float) $request->input('final') : null;
         $remarks = trim((string) $request->input('remarks', ''));
+        $gradeRuleCode = $gradeRule ? strtoupper(trim((string) $gradeRule->code)) : '';
+        $canSkipNumericGrades = in_array($gradeRuleCode, ['OD', 'UD', 'INC'], true);
+
+        $isDraft = in_array(strtolower((string) $request->input('draft', '')), ['1', 'true', 'on', 'yes'], true);
+
+        if ($canSkipNumericGrades) {
+            $midterm = null;
+            $final = null;
+        } elseif (!$isDraft && ($midterm === null || $final === null)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Midterm and Final grades are required unless the status is OD, UD, or INC.',
+            ], 422);
+        }
 
         $average = null;
-        if ($prelim !== null && $final !== null) {
-            $transmuted = $this->transmutedSemestralGrade($subject, [$prelim, $midterm, $final]);
-            $average = $transmuted['grade'];
-            if ($remarks === '') {
-                $remarks = $transmuted['remarks'];
+        $status = null;
+        if ($midterm !== null && $final !== null) {
+            $average = $this->finalResultFromMidtermFinal($midterm, $final);
+            $status = $this->statusForFinalResult($average);
+            if (!$gradeRule) {
+                $gradeRule = $this->passFailGradeRuleForFinalResult($average);
             }
+        }
+
+        if ($remarks === '' && $status !== null) {
+            $remarks = $status;
+        }
+
+        $payload = [
+            'prelim'        => null,
+            'midterm'       => $midterm,
+            'final'         => $final,
+            'final_average' => $average,
+            'grade_rule_id' => $gradeRule ? $gradeRule->id : null,
+            'remarks'       => $remarks !== '' ? $remarks : null,
+            'draft_saved_at' => now(),
+        ];
+        if (Schema::hasColumn('student_subject_grades', 'status')) {
+            $payload['status'] = $status;
         }
 
         StudentSubjectGrade::updateOrCreate(
             ['subject_id' => $subject->id, 'student_id' => $studentId],
-            [
-                'prelim'        => $prelim,
-                'midterm'       => $midterm,
-                'final'         => $final,
-                'final_average' => $average,
-                'remarks'       => $remarks !== '' ? $remarks : null,
-            ]
+            $payload
         );
 
         return response()->json([
             'ok'            => true,
-            'prelim'        => number_format($prelim, 2),
-            'midterm'       => number_format($midterm, 2),
+            'midterm'       => $midterm !== null ? number_format($midterm, 2) : '',
             'final'         => $final !== null ? number_format($final, 2) : '',
             'final_average' => $average !== null ? number_format($average, 2) : '',
+            'grade_rule_id' => $gradeRule ? $gradeRule->id : '',
+            'status'        => $status ?: '',
             'remarks'       => $remarks,
+            'draft_saved_at' => now()->format('Y-m-d H:i:s'),
         ]);
     }
 
     private function isValidEncodedGrade($grade): bool
     {
-        return is_numeric($grade) && (float) $grade >= 0 && (float) $grade <= 100;
+        return is_numeric($grade) && (float) $grade >= 50 && (float) $grade <= 100;
+    }
+
+    private function finalResultFromMidtermFinal($midterm, $final): ?float
+    {
+        if (!is_numeric($midterm) || !is_numeric($final)) {
+            return null;
+        }
+
+        return round((((float) $midterm + (float) $final) / 2), 2);
+    }
+
+    private function statusForFinalResult($grade): ?string
+    {
+        if (!is_numeric($grade)) {
+            return null;
+        }
+
+        return (float) $grade >= 75.0 ? 'Passed' : 'Failed';
+    }
+
+    private function passFailGradeRuleForFinalResult($grade)
+    {
+        if (!is_numeric($grade)) {
+            return null;
+        }
+
+        return GradeRule::where('code', ((float) $grade >= 75.0) ? 'P' : 'F')->first();
     }
 
     private function transmutedSemestralGrade(Subject $subject, array $grades): array
@@ -854,7 +935,96 @@ class FacultyController extends Controller
             }
         }
 
-        return $termQuery->orderByDesc('initial_from')->first();
+        $global = clone $base;
+        if (Schema::hasColumn('transmutation_rules', 'academic_term_id')) {
+            $global->whereNull('academic_term_id');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'course_id')) {
+            $global->whereNull('course_id');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'school_year')) {
+            $global->whereNull('school_year');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'term')) {
+            $global->whereNull('term');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'program')) {
+            $global->whereNull('program');
+        }
+
+        return $global->orderByDesc('initial_from')->first();
+    }
+
+    private function transmutationRulesForSubject(Subject $subject): array
+    {
+        if (!Schema::hasTable('transmutation_rules')) {
+            return [];
+        }
+
+        $base = TransmutationRule::query();
+
+        if (Schema::hasColumn('transmutation_rules', 'academic_term_id') && !empty($subject->academic_term_id)) {
+            $base->where('academic_term_id', (int) $subject->academic_term_id);
+        } elseif (Schema::hasColumn('transmutation_rules', 'school_year') && Schema::hasColumn('transmutation_rules', 'term')) {
+            $base->where('school_year', (string) $subject->school_year)
+                ->whereIn('term', $this->transmutationTermAliases($subject->semester));
+        }
+
+        if (Schema::hasColumn('transmutation_rules', 'course_id') && !empty($subject->course_id)) {
+            $courseRules = (clone $base)
+                ->where('course_id', (int) $subject->course_id)
+                ->orderByDesc('initial_from')
+                ->get();
+
+            if ($courseRules->isNotEmpty()) {
+                return $this->formatTransmutationRules($courseRules);
+            }
+        }
+
+        if (Schema::hasColumn('transmutation_rules', 'program')) {
+            $program = trim((string) ($subject->course ?: $subject->code));
+            if ($program !== '') {
+                $programRules = (clone $base)
+                    ->where('program', $program)
+                    ->orderByDesc('initial_from')
+                    ->get();
+
+                if ($programRules->isNotEmpty()) {
+                    return $this->formatTransmutationRules($programRules);
+                }
+            }
+        }
+
+        $global = TransmutationRule::query();
+        if (Schema::hasColumn('transmutation_rules', 'academic_term_id')) {
+            $global->whereNull('academic_term_id');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'course_id')) {
+            $global->whereNull('course_id');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'school_year')) {
+            $global->whereNull('school_year');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'term')) {
+            $global->whereNull('term');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'program')) {
+            $global->whereNull('program');
+        }
+
+        return $this->formatTransmutationRules($global->orderByDesc('initial_from')->get());
+    }
+
+    private function formatTransmutationRules($rules): array
+    {
+        return $rules->map(function ($rule) {
+            return [
+                'from' => (float) $rule->initial_from,
+                'to' => (float) $rule->initial_to,
+                'grade' => (float) $rule->transmuted_grade,
+                'remarks' => trim((string) $rule->remarks),
+            ];
+        })->values()->all();
     }
 
     private function transmutationTermAliases($semester): array
@@ -878,7 +1048,7 @@ class FacultyController extends Controller
         ]);
 
         $subject = $this->subjectsForFaculty($this->currentFaculty())
-            ->with(['students', 'studentGrades'])
+            ->with(['students', 'studentGrades.gradeRule'])
             ->findOrFail($request->input('subject_id'));
 
         $gradeMap = $subject->studentGrades->keyBy('student_id');
@@ -887,13 +1057,13 @@ class FacultyController extends Controller
         foreach ($subject->students as $student) {
             $grade = $gradeMap->get($student->id);
 
-            $hasPrelim = $grade && $grade->prelim !== null && $grade->prelim !== '';
+            $gradeRuleCode = ($grade && $grade->gradeRule) ? strtoupper(trim((string) $grade->gradeRule->code)) : '';
+            $canSkipNumericGrades = in_array($gradeRuleCode, ['OD', 'UD', 'INC'], true);
             $hasMidterm = $grade && $grade->midterm !== null && $grade->midterm !== '';
             $hasFinal   = $grade && $grade->final !== null && $grade->final !== '';
 
-            if (!$hasPrelim || !$hasMidterm || !$hasFinal) {
+            if (!$canSkipNumericGrades && (!$hasMidterm || !$hasFinal)) {
                 $missing[] = $student->name . ' (missing: '
-                    . (!$hasPrelim ? 'Prelim ' : '')
                     . (!$hasMidterm ? 'Midterm ' : '')
                     . (!$hasFinal ? 'Final' : '')
                     . ')';

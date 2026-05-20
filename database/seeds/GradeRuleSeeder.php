@@ -14,12 +14,13 @@ class GradeRuleSeeder extends Seeder
 
         $now = now();
         $rows = [
-            ['code' => 'INC', 'grade' => 'N/A', 'remarks' => 'No Appearance'],
-            ['code' => 'FDA', 'grade' => 'FDA', 'remarks' => 'Failure Due To Absences'],
-            ['code' => 'P', 'grade' => '1.0-3.0', 'remarks' => 'Passed'],
-            ['code' => 'F', 'grade' => '5.0', 'remarks' => 'Failed'],
+            ['code' => 'OD', 'grade' => 'OD', 'remarks' => 'Officially Drop'],
+            ['code' => 'UD', 'grade' => 'UD', 'remarks' => 'Unofficially Drop'],
+            ['code' => 'INC', 'grade' => 'INC', 'remarks' => 'Incomplete'],
+            ['code' => 'F', 'grade' => 'F', 'remarks' => 'Failed'],
+            ['code' => 'P', 'grade' => 'P', 'remarks' => 'Pass'],
         ];
-        $defaultPeriods = ['Prelim', 'Midterm', 'Final'];
+        $defaultPeriods = ['Midterm', 'Final'];
 
         foreach ($rows as $row) {
             $payload = [

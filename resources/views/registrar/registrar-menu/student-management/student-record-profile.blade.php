@@ -286,6 +286,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 16.74V4.67C22 3.47 21.02 2.58 19.83 2.68H19.77C17.67 2.86 14.48 3.93 12.7 5.05L12.53 5.16C12.24 5.34 11.76 5.34 11.47 5.16L11.22 5.01C9.44 3.9 6.26 2.84 4.16 2.67C2.97 2.57 2 3.47 2 4.66V16.74C2 17.7 2.78 18.6 3.74 18.72L4.03 18.76C6.2 19.05 9.55 20.15 11.47 21.2L11.51 21.22C11.78 21.37 12.21 21.37 12.47 21.22C14.39 20.16 17.75 19.05 19.93 18.76L20.26 18.72C21.22 18.6 22 17.7 22 16.74Z"/></svg>
                 Curriculum
             </button>
+            <button class="srp-tab" data-tab="scholarships">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3L3 7.5L12 12L21 7.5L12 3Z"/><path d="M5 10v5.5C5 17.43 8.13 19 12 19s7-1.57 7-3.5V10"/><path d="M21 7.5V13"/></svg>
+                Scholarships
+                @if(($studentScholarships ?? collect())->count())<span class="srp-tab-badge blue">{{ $studentScholarships->count() }}</span>@endif
+            </button>
             <button class="srp-tab" data-tab="scholastic-comments">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
                 Scholastic Comments
@@ -556,7 +561,7 @@
                     @php
                         $totalSubjects = $enrolledSubjects->count();
                         $totalUnits    = $enrolledSubjects->sum('units');
-                        $passedCount   = $subjectGrades->filter(function($g) { return !empty($g->final_average) && (float)$g->final_average <= 3.0; })->count();
+                        $passedCount   = $subjectGrades->filter(function($g) { return !empty($g->final_average) && (float)$g->final_average >= 75.0; })->count();
                     @endphp
                     @foreach([
                         ['Subjects Enrolled', $totalSubjects, '#eff6ff','#2563eb'],
@@ -866,7 +871,7 @@
 
                         {{-- Diploma (graduates only) --}}
                         @if($isGraduated)
-                        <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.print.diploma', $student->id) }}"
+                        <a href="{{ route('registrar.registrar-menu.forms.diploma') }}?student_id={{ $student->id }}"
                            target="_blank"
                            style="display:flex;flex-direction:column;align-items:center;gap:8px;background:linear-gradient(135deg,#fefce8,#fef9c3);border:1.5px solid #fde047;border-radius:12px;padding:18px 22px;text-decoration:none;color:#713f12;min-width:145px;transition:box-shadow .15s;"
                            onmouseover="this.style.boxShadow='0 4px 16px rgba(161,98,7,.2)'" onmouseout="this.style.boxShadow=''">
@@ -918,7 +923,7 @@
                                 ['President\'s Honors', route('registrar.registrar-menu.forms.certificates.presidents-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
                                 ['Form 8C-2 (Graduation)', route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2.show', ['student' => $student->id]),'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3'],
                                 ['Form 8D-2 (Honor)', route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z'],
-                                ['Diploma', route('registrar.registrar-menu.student-mgmt.student-records.print.diploma', $student->id),'M22 10v6M2 10l10-5 10 5-10 5z M6 12v5c3 3 9 3 12 0v-5'],
+                                ['Diploma', route('registrar.registrar-menu.forms.diploma') . '?student_id=' . $student->id,'M22 10v6M2 10l10-5 10 5-10 5z M6 12v5c3 3 9 3 12 0v-5'],
                                 ['Honorable Dismissal', route('registrar.registrar-menu.forms.honorable-dismissal.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
                                 ['Graduation Clearance', route('registrar.registrar-menu.forms.graduation-clearance.show', ['student' => $student->id]),'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
                                 ['Leave of Absence', route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled.show', ['student' => $student->id]),'M8 2v3M16 2v3M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5z'],

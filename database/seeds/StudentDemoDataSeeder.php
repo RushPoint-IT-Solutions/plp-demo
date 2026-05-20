@@ -214,17 +214,22 @@ class StudentDemoDataSeeder extends Seeder
                 ['student_id' => $student->id, 'subject_id' => $subjectId]
             );
 
+            $payload = [
+                'prelim'        => null,
+                'midterm'       => 92.00,
+                'final'         => 90.00,
+                'final_average' => 91.00,
+                'remarks'       => 'Passed',
+                'updated_at'    => $now,
+                'created_at'    => $now,
+            ];
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $payload['status'] = 'Passed';
+            }
+
             DB::table('student_subject_grades')->updateOrInsert(
                 ['student_id' => $student->id, 'subject_id' => $subjectId],
-                [
-                    'prelim'        => 1.75,
-                    'midterm'       => 1.50,
-                    'final'         => 1.50,
-                    'final_average' => 1.58,
-                    'remarks'       => 'Passed',
-                    'updated_at'    => $now,
-                    'created_at'    => $now,
-                ]
+                $payload
             );
         }
 
@@ -234,27 +239,32 @@ class StudentDemoDataSeeder extends Seeder
             ->orderBy('id')
             ->first();
 
-        $defaultPrelim = $sampleGrade ? (float) $sampleGrade->prelim : 1.75;
-        $defaultMidterm = $sampleGrade ? (float) $sampleGrade->midterm : 1.50;
-        $defaultFinal = $sampleGrade ? (float) $sampleGrade->final : 1.50;
-        $defaultAverage = $sampleGrade ? (float) $sampleGrade->final_average : 1.58;
+        $defaultMidterm = $sampleGrade ? (float) $sampleGrade->midterm : 92.00;
+        $defaultFinal = $sampleGrade ? (float) $sampleGrade->final : 90.00;
+        $defaultAverage = $sampleGrade ? (float) $sampleGrade->final_average : 91.00;
+        $defaultStatus = ($sampleGrade && isset($sampleGrade->status)) ? (string) $sampleGrade->status : 'Passed';
         $defaultRemarks = $sampleGrade ? (string) $sampleGrade->remarks : 'Passed';
 
         $enrollments = DB::table('student_subject')
             ->get(['student_id', 'subject_id']);
 
         foreach ($enrollments as $enrollment) {
+            $payload = [
+                'prelim' => null,
+                'midterm' => $defaultMidterm,
+                'final' => $defaultFinal,
+                'final_average' => $defaultAverage,
+                'remarks' => $defaultRemarks,
+                'updated_at' => $now,
+                'created_at' => $now,
+            ];
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $payload['status'] = $defaultStatus;
+            }
+
             DB::table('student_subject_grades')->updateOrInsert(
                 ['student_id' => $enrollment->student_id, 'subject_id' => $enrollment->subject_id],
-                [
-                    'prelim' => $defaultPrelim,
-                    'midterm' => $defaultMidterm,
-                    'final' => $defaultFinal,
-                    'final_average' => $defaultAverage,
-                    'remarks' => $defaultRemarks,
-                    'updated_at' => $now,
-                    'created_at' => $now,
-                ]
+                $payload
             );
         }
     }

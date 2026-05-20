@@ -518,8 +518,9 @@ function saveSubject() {
     if (isNaN(lab) || lab < 0) {
         lab = 0;
     }
-    if (isNaN(hours) || hours < 0) {
-        hours = 0;
+    if (isNaN(hours) || hours <= 0) {
+        showErrorMessage('Hours is required and must be greater than 0. This is used for room schedule duration.');
+        return;
     }
 
     var isEditing = !!editingId;

@@ -35,8 +35,10 @@ class StoreRoomRequest extends FormRequest
                     $query->where('room_building_id', (int) $this->input('room_building_id'));
                 }),
             ],
-            'course_ids' => 'required|array|min:1|max:10',
-            'course_ids.*' => 'required|integer|distinct|exists:courses,id',
+            'course_ids' => 'nullable|array|max:20',
+            'course_ids.*' => 'nullable|integer|distinct|exists:courses,id',
+            'subject_ids' => 'required|array|min:1|max:100',
+            'subject_ids.*' => 'required|integer|distinct|exists:subjects,id',
         ];
     }
 

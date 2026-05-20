@@ -241,10 +241,6 @@
                         <th>Name</th>
                         <th style="width:38px;">FDA</th>
                         <th style="width:38px;">NA</th>
-                        <th id="gsPrelimHeader" class="gs-grade-header-cell" title="Click to open Prelim grading modal">
-                            <span class="gs-grade-head-title">PRELIM</span>
-                            <span class="gs-grade-head-hint">Click to open</span>
-                        </th>
                         <th id="gsMidtermHeader" class="gs-grade-header-cell" title="Click to open Midterm grading modal">
                             <span class="gs-grade-head-title">MIDTERM</span>
                             <span class="gs-grade-head-hint">Click to open</span>
@@ -253,8 +249,8 @@
                             <span class="gs-grade-head-title">FINAL</span>
                             <span class="gs-grade-head-hint">Click to open</span>
                         </th>
-                        <th>C Rating</th>
-                        <th>F Rating</th>
+                        <th>Final Result</th>
+                        <th>Status</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>

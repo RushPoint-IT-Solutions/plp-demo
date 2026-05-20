@@ -33,7 +33,7 @@ class GradingComponentSeeder extends Seeder
         $rows = [
             [
                 'school_year' => '2025-2026',
-                'period' => 'Prelim',
+                'period' => 'Midterm',
                 'semester' => 'First',
                 'section' => 'BSIT-4A',
                 'course_code' => 'IT 4102',
@@ -47,7 +47,7 @@ class GradingComponentSeeder extends Seeder
             ],
             [
                 'school_year' => '2025-2026',
-                'period' => 'Prelim',
+                'period' => 'Final',
                 'semester' => 'First',
                 'section' => 'BSCS-3A',
                 'course_code' => 'CS 301',

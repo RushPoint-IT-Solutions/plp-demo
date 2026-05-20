@@ -18,6 +18,8 @@ class Subject extends Model
         'lec', 'lab',
         'is_core', 'is_applied', 'is_specialized',
         'hours', 'course_type',
+        'required_room_type', 'required_equipment', 'max_class_size',
+        'required_lecture_room_type', 'required_laboratory_room_type', 'room_requirement_status',
         'time_start', 'time_end', 'room', 'faculty',
         'faculty_id',
         'year_section', 'course', 'course_id', 'semester', 'school_year', 'academic_term_id',
@@ -100,6 +102,20 @@ class Subject extends Model
     public function canonicalCourse()
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function allowedRooms()
+    {
+        return $this->belongsToMany(Room::class, 'room_allowed_subjects', 'subject_id', 'room_id')
+            ->withPivot('assigned_by_user_id')
+            ->withTimestamps();
+    }
+
+    public function qualifiedFaculty()
+    {
+        return $this->belongsToMany(Faculty::class, 'teacher_allowed_subjects', 'subject_id', 'faculty_id')
+            ->withPivot('assigned_by_user_id')
+            ->withTimestamps();
     }
 
     public function gradingStatusLookup()

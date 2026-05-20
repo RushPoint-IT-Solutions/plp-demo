@@ -13,7 +13,10 @@ class StudentSubjectGrade extends Model
         'midterm',
         'final',
         'final_average',
+        'status',
+        'grade_rule_id',
         'remarks',
+        'draft_saved_at',
     ];
 
     public function subject()
@@ -24,5 +27,10 @@ class StudentSubjectGrade extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function gradeRule()
+    {
+        return $this->belongsTo(GradeRule::class);
     }
 }

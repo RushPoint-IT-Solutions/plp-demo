@@ -115,6 +115,25 @@
         {{-- ══════════════════════════════════════ --}}
         {{-- ACADEMICS                              --}}
         {{-- ══════════════════════════════════════ --}}
+        {{-- SCHOLARSHIP MODULE                    --}}
+        <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.scholarships.*') ? 'open' : '' }}">
+            <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.scholarships.*') ? 'active' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3L3 7.5L12 12L21 7.5L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5 10V15.5C5 17.43 8.13 19 12 19C15.87 19 19 17.43 19 15.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 7.5V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Scholarship</span>
+                <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </a>
+            <div class="sidebar-dropdown-menu">
+                <a href="{{ route('registrar.registrar-menu.scholarships.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.scholarships.index') ? 'active' : '' }}">Program Setup</a>
+                <a href="{{ route('registrar.registrar-menu.scholarships.report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.scholarships.report') ? 'active' : '' }}">Scholars by Type</a>
+            </div>
+        </div>
+
         @php
             $academicsActive = request()->routeIs('registrar.registrar-menu.academic-master.*')
                             || request()->routeIs('registrar.registrar-menu.scheduling.*')
@@ -155,17 +174,30 @@
                 {{-- Scheduling --}}
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'active' : '' }}">
-                        Scheduling
+                        Term Setup & Scheduling
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
+                        <div class="sidebar-section-label">Term Process</div>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.academic-term-lifecycle') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-term-lifecycle*') ? 'active' : '' }}">1. Close / Open Term</a>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.academic-setup-automation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-setup-automation*') ? 'active' : '' }}">2. Generate Academic Setup</a>
+
+                        <div class="sidebar-section-divider"></div>
+                        <div class="sidebar-section-label">Rooms</div>
                         <a href="{{ route('registrar.registrar-menu.scheduling.room-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-file') ? 'active' : '' }}">Room File</a>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-generation-assignment*') ? 'active' : '' }}">Generate & Assign Rooms</a>
                         <a href="{{ route('registrar.registrar-menu.scheduling.room-section-offering-management') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-section-offering-management') ? 'active' : '' }}">Room & Section Offering</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.coordination-deans-faculty') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.coordination-deans-faculty') ? 'active' : '' }}">Coordination with Deans & Faculty</a>
+
+                        <div class="sidebar-section-divider"></div>
+                        <div class="sidebar-section-label">Class Scheduling</div>
                         <a href="{{ route('registrar.registrar-menu.scheduling.section-offering') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.section-offering') ? 'active' : '' }}">Section Offering</a>
                         <a href="{{ route('registrar.registrar-menu.scheduling.class-schedule-preparation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.class-schedule-preparation') ? 'active' : '' }}">Class Schedule Preparation</a>
                         <a href="{{ route('registrar.registrar-menu.scheduling.slot-monitoring') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.slot-monitoring') ? 'active' : '' }}">Slot Monitoring & Editing</a>
                         <a href="{{ route('registrar.registrar-menu.scheduling.section-merging') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.section-merging') ? 'active' : '' }}">Section Merging</a>
+
+                        <div class="sidebar-section-divider"></div>
+                        <div class="sidebar-section-label">Coordination</div>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.coordination-deans-faculty') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.coordination-deans-faculty') ? 'active' : '' }}">Deans & Faculty Coordination</a>
                     </div>
                 </div>
 
@@ -223,7 +255,9 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-create') ? 'active' : '' }}">Faculty Directory</a>
+                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-list*') ? 'active' : '' }}">Faculty Profiles</a>
+                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.departments') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.departments*') ? 'active' : '' }}">Departments</a>
+                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-create') ? 'active' : '' }}">Create Faculty</a>
                 <a href="{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.grading-sheet') ? 'active' : '' }}">Grading Sheets</a>
                 <a href="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.evaluation') ? 'active' : '' }}">Faculty Evaluation</a>
             </div>

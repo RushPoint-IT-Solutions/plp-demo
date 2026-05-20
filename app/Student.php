@@ -101,6 +101,11 @@ class Student extends Model
         return $this->hasOne(GraduateTagging::class, 'student_id');
     }
 
+    public function scholarshipTags()
+    {
+        return $this->hasMany(ScholarshipStudent::class, 'student_id');
+    }
+
     /**
      * Helper: formatted school year + semester label.
      * e.g. "SY 2025-2026 2nd Semester"

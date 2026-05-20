@@ -59,6 +59,73 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
+
+        .faculty-grading-sheet-page .fgs-grade-input,
+        .faculty-grading-sheet-page .fgs-remarks-input,
+        .faculty-grading-sheet-page .fgs-grade-rule-select {
+            width: 100%;
+            min-width: 72px;
+            padding: 0.38rem 0.45rem;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.86rem;
+            color: #111827;
+            background: #fff;
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        .faculty-grading-sheet-page .fgs-grade-input::-webkit-outer-spin-button,
+        .faculty-grading-sheet-page .fgs-grade-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .faculty-grading-sheet-page .fgs-remarks-input {
+            min-width: 95px;
+            max-width: 120px;
+        }
+
+        .faculty-grading-sheet-page .fgs-grade-rule-select {
+            min-width: 145px;
+        }
+
+        .faculty-grading-sheet-page .fgs-row-submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 104px;
+            padding: 0.38rem 0.7rem;
+            background: #15803d;
+            color: #fff;
+            border: 0;
+            border-radius: 5px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .faculty-grading-sheet-page .fgs-row-submit-btn:hover:not(:disabled) {
+            background: #166534;
+        }
+
+        .faculty-grading-sheet-page .fgs-row-submit-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .faculty-grading-sheet-page .fgs-cell-muted {
+            color: #6b7280;
+        }
+
+        .faculty-grading-sheet-page .fgs-autosave-status {
+            display: block;
+            margin-top: 0.25rem;
+            color: #15803d;
+            font-size: 0.74rem;
+            font-weight: 600;
+        }
     </style>
 @endpush
 
@@ -175,12 +242,12 @@
                         <th>#</th>
                         <th>Student No.</th>
                         <th>Name</th>
-                        <th>Prelim</th>
                         <th>Midterm</th>
                         <th>Final</th>
-                        <th>Semestral Grade</th>
-                        <th>Remarks</th>
-                        <th style="width:88px;">Action</th>
+                        <th>Final Result</th>
+                        <th>Status</th>
+                        <th style="width:120px;">Remarks</th>
+                        <th style="width:128px;">Submission of Grade</th>
                     </tr>
                 </thead>
                 <tbody id="gradingDetailBody"></tbody>
@@ -205,16 +272,12 @@
             <div class="fgs-row-edit-student" id="gradingRowEditStudent"></div>
             <div class="fgs-row-edit-fields">
                 <div class="req-modal-field-group">
-                    <label class="req-modal-label" for="gradingRowEditPrelim">PRELIM</label>
-                    <input type="number" class="req-modal-input" id="gradingRowEditPrelim" min="0" max="100" step="0.01" placeholder="0 to 100 or 1.00 to 5.00">
-                </div>
-                <div class="req-modal-field-group">
                     <label class="req-modal-label" for="gradingRowEditMidterm">MIDTERM</label>
-                    <input type="number" class="req-modal-input" id="gradingRowEditMidterm" min="0" max="100" step="0.01" placeholder="0 to 100 or 1.00 to 5.00">
+                    <input type="number" class="req-modal-input" id="gradingRowEditMidterm" min="50" max="100" step="0.01" placeholder="50 to 100">
                 </div>
                 <div class="req-modal-field-group">
                     <label class="req-modal-label" for="gradingRowEditFinal">FINAL</label>
-                    <input type="number" class="req-modal-input" id="gradingRowEditFinal" min="0" max="100" step="0.01" placeholder="0 to 100 or 1.00 to 5.00">
+                    <input type="number" class="req-modal-input" id="gradingRowEditFinal" min="50" max="100" step="0.01" placeholder="50 to 100">
                 </div>
                 <div class="req-modal-field-group fgs-row-edit-field-remarks">
                     <label class="req-modal-label" for="gradingRowEditRemarks">REMARKS</label>
@@ -228,7 +291,7 @@
         </div>
     </div>
 
-    <div id="gradingSheetData" data-subjects='@json($gradingSubjects)'></div>
+    <div id="gradingSheetData" data-subjects='@json($gradingSubjects)' data-grade-rules='@json($gradeRules ?? [])'></div>
 
 </div>
 

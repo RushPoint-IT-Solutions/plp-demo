@@ -99,7 +99,7 @@ class HighVolumeRoomFileSeeder extends Seeder
                 }
 
                 $timestamp = now();
-                $roomId = (int) DB::table('rooms')->insertGetId([
+                $roomPayload = [
                     'room_hallway_id' => $hallwayId,
                     'room_number' => $roomNumber,
                     'floor_number' => $floorNumber,
@@ -107,7 +107,31 @@ class HighVolumeRoomFileSeeder extends Seeder
                     'updated_by_user_id' => $actorUserId > 0 ? $actorUserId : null,
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
-                ]);
+                ];
+
+                if (Schema::hasColumn('rooms', 'room_code')) {
+                    $roomPayload['room_code'] = 'HV-' . $hallwayId . '-' . $floorNumber . '-' . $roomNumber;
+                }
+                if (Schema::hasColumn('rooms', 'room_name')) {
+                    $roomPayload['room_name'] = 'Room ' . $roomNumber;
+                }
+                if (Schema::hasColumn('rooms', 'room_type')) {
+                    $roomPayload['room_type'] = 'Lecture Room';
+                }
+                if (Schema::hasColumn('rooms', 'available_days')) {
+                    $roomPayload['available_days'] = 'MTWTHFS';
+                }
+                if (Schema::hasColumn('rooms', 'available_start_time')) {
+                    $roomPayload['available_start_time'] = '07:00:00';
+                }
+                if (Schema::hasColumn('rooms', 'available_end_time')) {
+                    $roomPayload['available_end_time'] = '21:00:00';
+                }
+                if (Schema::hasColumn('rooms', 'status')) {
+                    $roomPayload['status'] = 'Active';
+                }
+
+                $roomId = (int) DB::table('rooms')->insertGetId($roomPayload);
 
                 $courseId = $courseIds[$created % $courseCount];
 

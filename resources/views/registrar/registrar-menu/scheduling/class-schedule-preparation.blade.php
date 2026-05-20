@@ -14,6 +14,7 @@
     class="pf-page csp-page"
     id="classSchedulePreparationPage"
     data-update-url-template="{{ route('registrar.registrar-menu.scheduling.class-schedule-preparation.update', ['subject' => '__SUBJECT__']) }}"
+    data-auto-generate-url="{{ route('registrar.registrar-menu.scheduling.class-schedule-preparation.auto-generate') }}"
     data-csrf="{{ csrf_token() }}"
 >
     <style>
@@ -23,6 +24,7 @@
         .csp-page .csp-stat-value { color:#123822; display:block; font-size:1.45rem; font-weight:800; margin-top:4px; }
         .csp-page .csp-filters { background:#fff; border:1px solid #dfe8e2; border-radius:8px; padding:14px; margin-bottom:16px; }
         .csp-page .csp-filter-grid { display:grid; grid-template-columns:1fr 1fr 1.2fr 1fr 1.5fr auto; gap:12px; align-items:end; }
+        .csp-page .csp-filter-actions { display:flex; gap:8px; align-items:center; }
         .csp-page .csp-field label { display:block; color:#46564a; font-size:.78rem; font-weight:700; margin-bottom:5px; }
         .csp-page .csp-input, .csp-page .csp-select { width:100%; min-height:38px; border:1px solid #cfd9d2; border-radius:7px; color:#143521; padding:8px 10px; background:#fff; }
         .csp-page .csp-table input, .csp-page .csp-table select { min-width:110px; height:34px; border:1px solid #cfd9d2; border-radius:7px; padding:5px 8px; background:#fff; }
@@ -106,7 +108,10 @@
                 <label for="cspSearch">Search</label>
                 <input class="csp-input" id="cspSearch" type="text" name="q" value="{{ $search ?? '' }}" placeholder="Subject, room, instructor">
             </div>
-            <button type="submit" class="pf-btn-new">Filter</button>
+            <div class="csp-filter-actions">
+                <button type="submit" class="pf-btn-new">Filter</button>
+                <button type="button" class="pf-btn-new" id="cspAutoGenerate">Auto Generate</button>
+            </div>
         </div>
     </form>
 
@@ -185,7 +190,9 @@
     }
 
     var updateTemplate = page.getAttribute('data-update-url-template') || '';
+    var autoGenerateUrl = page.getAttribute('data-auto-generate-url') || '';
     var csrf = page.getAttribute('data-csrf') || '';
+    var autoGenerateButton = document.getElementById('cspAutoGenerate');
 
     function toast(message, type) {
         if (typeof window.showRegistrarToast === 'function') {
@@ -282,6 +289,67 @@
                 button.textContent = 'Save';
             });
     });
+
+    if (autoGenerateButton) {
+        autoGenerateButton.addEventListener('click', function () {
+            if (!autoGenerateUrl) {
+                toast('Auto generation endpoint is unavailable.', 'error');
+                return;
+            }
+
+            var payload = {
+                school_year: document.getElementById('cspSchoolYear').value,
+                semester: document.getElementById('cspSemester').value,
+                course_id: document.getElementById('cspCourse').value,
+                section: document.getElementById('cspSection').value,
+                overwrite: false,
+                auto_create_rooms: true
+            };
+
+            autoGenerateButton.disabled = true;
+            autoGenerateButton.textContent = 'Generating';
+
+            fetch(autoGenerateUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok) {
+                            throw data;
+                        }
+                        return data;
+                    });
+                })
+                .then(function (data) {
+                    var updated = data && typeof data.updated_count !== 'undefined' ? data.updated_count : 0;
+                    var rooms = data && typeof data.created_rooms !== 'undefined' ? data.created_rooms : 0;
+                    toast('Auto generated ' + updated + ' schedule row(s)' + (rooms > 0 ? ' and added ' + rooms + ' room(s).' : '.'), 'success');
+                    window.location.reload();
+                })
+                .catch(function (error) {
+                    var message = 'Unable to auto generate schedules.';
+                    if (error && error.errors) {
+                        var keys = Object.keys(error.errors);
+                        if (keys.length && error.errors[keys[0]] && error.errors[keys[0]][0]) {
+                            message = error.errors[keys[0]][0];
+                        }
+                    } else if (error && error.message) {
+                        message = error.message;
+                    }
+                    toast(message, 'error');
+                })
+                .finally(function () {
+                    autoGenerateButton.disabled = false;
+                    autoGenerateButton.textContent = 'Auto Generate';
+                });
+        });
+    }
 })();
 </script>
 @endsection

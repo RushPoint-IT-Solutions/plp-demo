@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var soModalSlots = document.getElementById('soModalSlots');
     var soModalAdviser = document.getElementById('soModalAdviser');
     var soModalDescription = document.getElementById('soModalDescription');
+    var soModalAutoSchedule = document.getElementById('soModalAutoSchedule');
     var soCurriculumAvailable = document.getElementById('soCurriculumAvailable');
     var soCurriculumIncluded = document.getElementById('soCurriculumIncluded');
     var soCurriculumAdd = document.getElementById('soCurriculumAdd');
@@ -616,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var rows = section.subjects || [];
 
         if (!rows.length) {
-            soBody.innerHTML = '<tr><td colspan="11" class="so-empty-row">No subjects are assigned to this section yet.</td></tr>';
+            soBody.innerHTML = '<tr><td colspan="12" class="so-empty-row">No subjects are assigned to this section yet.</td></tr>';
         } else {
             soBody.innerHTML = rows.map(function (item, index) {
                 var scheduleLines = (item.schedules || []).map(function (line) {
@@ -629,6 +630,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<td>' + escapeHtml(item.description || '-') + '</td>' +
                     '<td>' + escapeHtml(item.lec || 0) + '</td>' +
                     '<td>' + escapeHtml(item.lab || 0) + '</td>' +
+                    '<td>' + escapeHtml(item.hours || 0) + '</td>' +
                     '<td>' + escapeHtml(item.tuitionUnits || 0) + '</td>' +
                     '<td>' + escapeHtml(item.creditUnits || 0) + '</td>' +
                     '<td>' + escapeHtml(sectionLabel) + '</td>' +
@@ -1047,7 +1049,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!state.sections.length) {
-            soSectionListBody.innerHTML = '<tr><td colspan="8" class="so-empty-row">No sections found for the selected filters.</td></tr>';
+            soSectionListBody.innerHTML = '<tr><td colspan="9" class="so-empty-row">No sections found for the selected filters.</td></tr>';
             return;
         }
 
@@ -1066,6 +1068,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 '<td>' + escapeHtml(entry.slots || 0) + '</td>' +
                 '<td>' + escapeHtml(entry.adviser || 'TBA') + '</td>' +
                 '<td>' + escapeHtml(subjectCount) + '</td>' +
+                '<td><button type="button" class="so-section-view-btn" data-so-view-section="' + escapeHtml(entry.id) + '">View</button></td>' +
                 '</tr>';
         }).join('');
     }
@@ -1146,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.isLoading = !!loading;
 
         if (loading && soSectionListBody) {
-            soSectionListBody.innerHTML = '<tr><td colspan="8" class="so-empty-row">' + escapeHtml(message || 'Loading sections...') + '</td></tr>';
+            soSectionListBody.innerHTML = '<tr><td colspan="9" class="so-empty-row">' + escapeHtml(message || 'Loading sections...') + '</td></tr>';
         }
 
         renderPagination();
@@ -1238,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', function () {
             renderPagination();
 
             if (soSectionListBody) {
-                soSectionListBody.innerHTML = '<tr><td colspan="8" class="so-empty-row">Unable to load section data right now.</td></tr>';
+                soSectionListBody.innerHTML = '<tr><td colspan="9" class="so-empty-row">Unable to load section data right now.</td></tr>';
             }
 
             showMessage(getPayloadErrorMessage(errorPayload, 'Unable to load Section Offering data.'), 'warning');
@@ -1316,16 +1319,18 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildCurriculumOptionLabel(row) {
         var code = normalizeText(row.code);
         var description = normalizeText(row.description);
+        var hours = Number(row.hours || 0);
+        var hourLabel = hours > 0 ? ' (' + hours + ' hrs)' : '';
 
         if (code !== '' && description !== '') {
-            return code + ' - ' + description;
+            return code + ' - ' + description + hourLabel;
         }
 
         if (code !== '') {
-            return code;
+            return code + hourLabel;
         }
 
-        return description !== '' ? description : 'Untitled Subject';
+        return (description !== '' ? description : 'Untitled Subject') + hourLabel;
     }
 
     function sortRowsByLabel(rows) {
@@ -1613,6 +1618,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (soModalSlots && normalizeText(soModalSlots.value) === '') {
             soModalSlots.value = '30';
         }
+
+        if (soModalAutoSchedule) {
+            soModalAutoSchedule.checked = true;
+        }
     }
 
     function openAddSectionModal() {
@@ -1659,6 +1668,8 @@ document.addEventListener('DOMContentLoaded', function () {
             slots: toInt(soModalSlots ? soModalSlots.value : '', 0),
             adviser: normalizeText(soModalAdviser ? soModalAdviser.value : ''),
             description: normalizeText(soModalDescription ? soModalDescription.value : ''),
+            auto_schedule: !!(soModalAutoSchedule && soModalAutoSchedule.checked),
+            auto_create_rooms: true,
             curriculum_subject_ids: state.curriculumIncludedIds.slice()
         };
     }
@@ -1763,6 +1774,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (soSectionListBody) {
         soSectionListBody.addEventListener('click', function (event) {
+            var viewButton = event.target.closest('[data-so-view-section]');
+            if (viewButton) {
+                event.stopPropagation();
+                selectSection(viewButton.getAttribute('data-so-view-section'));
+                return;
+            }
+
             var row = event.target.closest('tr[data-section-id]');
             if (!row) {
                 return;
