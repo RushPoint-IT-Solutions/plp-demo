@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Schema;
 
 class FacultyLoadsController extends Controller
 {
+    private const TEACHER_DEFAULT_MAX_LOAD_UNITS = 30;
+
     public function index(Request $request)
     {
         $search = trim((string) $request->query('q', ''));
@@ -165,7 +167,8 @@ class FacultyLoadsController extends Controller
             ->orderBy('at.school_year', 'desc')
             ->pluck('school_year');
 
-        $defaultSchoolYear = $schoolYears->first();
+        [$defaultLoadSchoolYear, $defaultLoadSemester] = $this->defaultFacultyLoadTermFilters();
+        $defaultSchoolYear = $defaultLoadSchoolYear !== '' ? $defaultLoadSchoolYear : $schoolYears->first();
         $selectedSchoolYear = (string) $request->query('school_year', $defaultSchoolYear);
         if ($selectedSchoolYear !== '' && !$schoolYears->contains($selectedSchoolYear)) {
             $selectedSchoolYear = (string) $defaultSchoolYear;
@@ -199,12 +202,10 @@ class FacultyLoadsController extends Controller
             return $this->semesterWeight($label);
         })->values();
 
-        $defaultSemester = '';
-        if ($semesterLabels->contains('Second')) {
-            $defaultSemester = 'Second';
-        } elseif ($semesterLabels->contains('First')) {
-            $defaultSemester = 'First';
-        } elseif ($semesterLabels->count()) {
+        $defaultSemester = $defaultLoadSemester !== '' && $semesterLabels->contains($defaultLoadSemester)
+            ? $defaultLoadSemester
+            : '';
+        if ($defaultSemester === '' && $semesterLabels->count()) {
             $defaultSemester = (string) $semesterLabels->first();
         }
 
@@ -957,6 +958,59 @@ class FacultyLoadsController extends Controller
             return ['', ''];
         }
 
+        $assignedTerms = Subject::query()
+            ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
+            ->whereNotNull('subjects.faculty_id')
+            ->where('subjects.faculty_id', '>', 0)
+            ->select(
+                'at.school_year',
+                'at.term',
+                DB::raw('COUNT(subjects.id) as subject_count'),
+                DB::raw('SUM(' . $this->facultyLoadSqlExpression() . ') as total_load')
+            )
+            ->groupBy('at.school_year', 'at.term')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'school_year' => (string) ($row->school_year ?? ''),
+                    'semester' => $this->normalizeSemesterLabel((string) ($row->term ?? '')),
+                    'subject_count' => (int) ($row->subject_count ?? 0),
+                    'total_load' => (float) ($row->total_load ?? 0),
+                ];
+            })
+            ->filter(function ($row) {
+                return $row['school_year'] !== '' && $row['semester'] !== '';
+            })
+            ->values();
+
+        if ($assignedTerms->count() > 0) {
+            $schoolYear = (string) $assignedTerms
+                ->pluck('school_year')
+                ->sortByDesc(function ($schoolYear) {
+                    return (string) $schoolYear;
+                })
+                ->first();
+
+            $term = $assignedTerms
+                ->where('school_year', $schoolYear)
+                ->sort(function ($left, $right) {
+                    $loadCompare = ((float) $right['total_load']) <=> ((float) $left['total_load']);
+                    if ($loadCompare !== 0) {
+                        return $loadCompare;
+                    }
+
+                    $subjectCompare = ((int) $right['subject_count']) <=> ((int) $left['subject_count']);
+                    if ($subjectCompare !== 0) {
+                        return $subjectCompare;
+                    }
+
+                    return $this->semesterWeight((string) $left['semester']) <=> $this->semesterWeight((string) $right['semester']);
+                })
+                ->first();
+
+            return [$schoolYear, (string) ($term['semester'] ?? '')];
+        }
+
         $schoolYears = Subject::query()
             ->join('academic_terms as at', 'at.id', '=', 'subjects.academic_term_id')
             ->select('at.school_year')
@@ -981,12 +1035,12 @@ class FacultyLoadsController extends Controller
             ->unique()
             ->values();
 
-        if ($terms->contains('Second')) {
-            return [$schoolYear, 'Second'];
-        }
-
         if ($terms->contains('First')) {
             return [$schoolYear, 'First'];
+        }
+
+        if ($terms->contains('Second')) {
+            return [$schoolYear, 'Second'];
         }
 
         return [$schoolYear, (string) ($terms->first() ?: '')];
@@ -1056,7 +1110,7 @@ class FacultyLoadsController extends Controller
 
         return DB::table('teacher_allowed_subjects')
             ->join('subjects as allowed_subjects', 'allowed_subjects.id', '=', 'teacher_allowed_subjects.subject_id')
-            ->where('faculty_id', $facultyId)
+            ->where('teacher_allowed_subjects.faculty_id', $facultyId)
             ->where(function ($query) use ($subject) {
                 $query->where('teacher_allowed_subjects.subject_id', (int) $subject->id)
                     ->orWhere('allowed_subjects.code', (string) $subject->code);
@@ -1152,13 +1206,13 @@ class FacultyLoadsController extends Controller
         }
 
         $defaults = [
-            'Full-time Teacher' => 24,
+            'Full-time Teacher' => self::TEACHER_DEFAULT_MAX_LOAD_UNITS,
             'Part-time Teacher' => 12,
             'Department Head' => 9,
             'Visiting Lecturer' => 6,
         ];
 
-        return (float) ($defaults[$type] ?? 24);
+        return (float) ($defaults[$type] ?? self::TEACHER_DEFAULT_MAX_LOAD_UNITS);
     }
 
     private function facultyProfileRow(Faculty $faculty)

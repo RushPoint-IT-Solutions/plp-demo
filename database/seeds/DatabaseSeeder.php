@@ -53,7 +53,6 @@ class DatabaseSeeder extends Seeder
             RegistrarAuthSeeder::class,
             FacultyAuthSeeder::class,
             UserAccount3nfSeeder::class,
-            HighVolumeFacultySeeder::class,
             StudentSeeder::class,
             StudentFirstLoginDemoSeeder::class,
             ParentAuthSeeder::class,
@@ -72,6 +71,7 @@ class DatabaseSeeder extends Seeder
             SlotMonitoringReportSeeder::class,
             RegistrarRequirement3nfSeeder::class,
             SystemConfigurationSeeder::class,
+            CompactFacultyLoadSeeder::class,
         ]);
 
         if ((bool) env('SEED_HIGH_VOLUME_TRASH', false)) {

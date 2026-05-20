@@ -11,7 +11,11 @@
 @php
     $studentName = optional($student)->name ? strtoupper(optional($student)->name) : 'STUDENT NAME';
     $course = optional($student)->canonicalCourse;
-    $programText = optional($student)->program ?: (optional($course)->name ?: optional($course)->code ?: 'PROGRAM');
+    $programText = optional($course)->description
+        ?: optional($course)->name
+        ?: optional($student)->program
+        ?: optional($course)->code
+        ?: 'PROGRAM';
     $gwaText = isset($gwa) && $gwa !== null ? number_format($gwa, 2) : '-';
     $signaturePath = public_path('img/signature-registrar.png');
 @endphp
@@ -50,7 +54,7 @@
                     >
                @endif
 
-                <div class="certificate-gwa__signatory-name">MR. FEDERICE G. NUEVA</div>
+                <div class="certificate-gwa__signatory-name">MR. FEDERICO G. NUEVA</div>
                 <div class="certificate-gwa__signatory-title">University Registrar</div>
             </div>
 

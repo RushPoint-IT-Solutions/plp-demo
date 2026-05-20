@@ -360,6 +360,10 @@ function renderRoomTable() {
                     '<span></span><span></span><span></span>' +
                 '</div>' +
                 '<div class="apst-dropdown" id="rfMenu' + room.id + '">' +
+                    '<button onclick="openRoomScheduleModal(' + room.id + ')">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>' +
+                        ' View Schedule' +
+                    '</button>' +
                     '<button onclick="openEditRoomModal(' + room.id + ')">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
                         ' Edit' +
@@ -379,6 +383,70 @@ function renderRoomTable() {
 
         tbody.appendChild(tr);
     });
+}
+
+function openRoomScheduleModal(id) {
+    var room = ROOMS.find(function (item) {
+        return Number(item.id) === Number(id);
+    });
+
+    if (!room) {
+        return;
+    }
+
+    closeOpenMenus();
+
+    var modal = document.getElementById('roomScheduleModal');
+    var title = document.getElementById('roomScheduleTitle');
+    var summary = document.getElementById('roomScheduleSummary');
+    var tbody = document.getElementById('roomScheduleRows');
+
+    if (!modal || !title || !summary || !tbody) {
+        showErrorMessage('Room schedule view is unavailable right now.');
+        return;
+    }
+
+    title.textContent = 'Room Schedule - ' + (room.room_code || ('Room #' + room.room_number));
+    summary.innerHTML = [
+        ['Room', room.room_name || ('Room #' + room.room_number)],
+        ['Type', room.room_type || 'Lecture Room'],
+        ['Location', room.location_label || '-'],
+        ['Capacity', room.capacity || 0]
+    ].map(function (item) {
+        return '<div style="border:1px solid #e3ece6; border-radius:8px; padding:9px 10px; background:#fbfdfb;">'
+            + '<div style="font-size:.7rem; font-weight:800; color:#66756b; text-transform:uppercase;">' + escapeHtml(item[0]) + '</div>'
+            + '<div style="font-weight:800; color:#143521; margin-top:2px;">' + escapeHtml(item[1]) + '</div>'
+            + '</div>';
+    }).join('');
+
+    var schedules = Array.isArray(room.current_schedules) ? room.current_schedules : [];
+    if (!schedules.length) {
+        tbody.innerHTML = '<tr><td colspan="5">No current schedule found for this room.</td></tr>';
+    } else {
+        tbody.innerHTML = schedules.map(function (schedule) {
+            var subject = [schedule.subject_code, schedule.subject_name].filter(Boolean).join(' - ');
+            var programSection = [schedule.program_code, schedule.section].filter(Boolean).join(' / ');
+            var term = [schedule.semester, schedule.academic_year].filter(Boolean).join(' ');
+            var time = [schedule.time_start, schedule.time_end].filter(Boolean).join(' - ');
+            var scheduleLine = [schedule.day, time].filter(Boolean).join(' ');
+            return '<tr>'
+                + '<td><strong>' + escapeHtml(subject || '-') + '</strong><div style="font-size:.78rem;color:#66756b;">' + escapeHtml(schedule.component || '') + '</div></td>'
+                + '<td>' + escapeHtml(programSection || '-') + '<div style="font-size:.78rem;color:#66756b;">' + escapeHtml(term || '') + '</div></td>'
+                + '<td>' + escapeHtml(scheduleLine || 'TBA') + '</td>'
+                + '<td>' + escapeHtml(schedule.faculty_name || 'TBA') + '</td>'
+                + '<td>' + escapeHtml(schedule.status || 'Assigned') + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeRoomScheduleModal() {
+    var modal = document.getElementById('roomScheduleModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function renderPagination() {
@@ -1300,6 +1368,7 @@ function bindRoomFileControls() {
         if (event.key === 'Escape') {
             closeNewRoomModal();
             closeEditRoomModal();
+            closeRoomScheduleModal();
             closeBuildingModal();
             closeHallwayModal();
             closeDeleteRoomModal();

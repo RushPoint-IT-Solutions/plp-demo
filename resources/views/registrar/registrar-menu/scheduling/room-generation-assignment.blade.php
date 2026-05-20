@@ -8,7 +8,9 @@
     class="rga-page"
     id="roomGenerationAssignmentPage"
     data-generate-url="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment.generate') }}"
+    data-generate-teachers-url="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment.generate-teachers') }}"
     data-assign-url="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment.assign') }}"
+    data-assign-pending-availability-url="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment.assign-pending-availability') }}"
     data-report-url="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment.report') }}"
     data-csrf="{{ csrf_token() }}"
 >
@@ -98,8 +100,10 @@
                 </div>
                 <div class="rga-actions">
                     <button type="button" class="rga-btn secondary" id="rgaGenerateRooms">Generate Rooms</button>
+                    <button type="button" class="rga-btn secondary" id="rgaGenerateTeachers">Generate Teacher Allowed Subjects</button>
                     <button type="submit" class="rga-btn" id="rgaAssignRooms">Assign Rooms Per Section and Subject</button>
                     <button type="button" class="rga-btn secondary" id="rgaRegeneratePending">Regenerate Pending Room Assignments</button>
+                    <button type="button" class="rga-btn secondary" id="rgaAssignPendingAvailability">Assign Pending Availability</button>
                     <button type="button" class="rga-btn secondary" id="rgaViewConflicts">View Room Conflicts</button>
                     <button type="button" class="rga-btn secondary" id="rgaManual">Manual Room Assignment</button>
                 </div>
@@ -147,8 +151,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var alertBox = document.getElementById('rgaAlert');
     var summary = document.getElementById('rgaSummary');
     var generateBtn = document.getElementById('rgaGenerateRooms');
+    var generateTeachersBtn = document.getElementById('rgaGenerateTeachers');
     var assignBtn = document.getElementById('rgaAssignRooms');
     var pendingBtn = document.getElementById('rgaRegeneratePending');
+    var pendingAvailabilityBtn = document.getElementById('rgaAssignPendingAvailability');
     var conflictsBtn = document.getElementById('rgaViewConflicts');
     var manualBtn = document.getElementById('rgaManual');
 
@@ -219,13 +225,28 @@ document.addEventListener('DOMContentLoaded', function () {
         showAlert('warn', 'Generating missing room records...');
         requestJson(page.dataset.generateUrl, { method: 'POST', body: new FormData(form) })
             .then(function (payload) {
-                showAlert('success', payload.message + ' Created: ' + payload.created_count + ', Updated: ' + payload.updated_count + ', Program links: ' + (payload.program_assignment_count || 0) + '.');
+                showAlert('success', payload.message + ' Created: ' + payload.created_count + ', Updated: ' + payload.updated_count + ', Laboratory rooms: ' + (payload.laboratory_room_count || 0) + ', Program links: ' + (payload.program_assignment_count || 0) + '.');
             })
             .catch(function (error) {
                 showAlert('error', error.message || 'Unable to generate rooms.');
             })
             .finally(function () {
                 generateBtn.disabled = false;
+            });
+    });
+
+    generateTeachersBtn.addEventListener('click', function () {
+        generateTeachersBtn.disabled = true;
+        showAlert('warn', 'Generating teacher allowed subjects after room generation...');
+        requestJson(page.dataset.generateTeachersUrl, { method: 'POST', body: new FormData(form) })
+            .then(function (payload) {
+                showAlert('success', (payload.message || 'Teacher allowed subjects generated.') + ' Added: ' + (payload.created_count || 0) + ', Teachers: ' + (payload.teacher_count || 0) + '.');
+            })
+            .catch(function (error) {
+                showAlert('error', error.message || 'Unable to generate teacher allowed subjects.');
+            })
+            .finally(function () {
+                generateTeachersBtn.disabled = false;
             });
     });
 
@@ -266,6 +287,24 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .finally(function () {
                 pendingBtn.disabled = false;
+            });
+    });
+
+    pendingAvailabilityBtn.addEventListener('click', function () {
+        var data = new FormData(form);
+        pendingAvailabilityBtn.disabled = true;
+        showAlert('warn', 'Assigning pending rooms by adjusting room availability where needed...');
+        requestJson(page.dataset.assignPendingAvailabilityUrl, { method: 'POST', body: data })
+            .then(function (payload) {
+                setSummary(payload.summary);
+                renderRows(reportRowsFromPayload(payload));
+                showAlert((payload.summary || {}).pending > 0 ? 'warn' : 'success', payload.message || 'Pending availability assignments processed.');
+            })
+            .catch(function (error) {
+                showAlert('error', error.message || 'Unable to assign pending availability rows.');
+            })
+            .finally(function () {
+                pendingAvailabilityBtn.disabled = false;
             });
     });
 

@@ -186,6 +186,7 @@
                         <div class="sidebar-section-label">Rooms</div>
                         <a href="{{ route('registrar.registrar-menu.scheduling.room-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-file') ? 'active' : '' }}">Room File</a>
                         <a href="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-generation-assignment*') ? 'active' : '' }}">Generate & Assign Rooms</a>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.teacher-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.teacher-generation-assignment*') ? 'active' : '' }}">Generate & Assign Teachers</a>
                         <a href="{{ route('registrar.registrar-menu.scheduling.room-section-offering-management') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-section-offering-management') ? 'active' : '' }}">Room & Section Offering</a>
 
                         <div class="sidebar-section-divider"></div>

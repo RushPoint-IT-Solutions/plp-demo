@@ -98,6 +98,32 @@
 </div>
 
 {{-- ══════ NEW ROOM MODAL ══════ --}}
+<div class="pf-modal-overlay" id="roomScheduleModal" style="display:none;">
+    <div class="pf-modal-box" style="max-width:920px;">
+        <div class="pf-modal-title" id="roomScheduleTitle">Room Schedule</div>
+        <div id="roomScheduleSummary" style="display:grid; grid-template-columns:repeat(4, minmax(120px, 1fr)); gap:10px; margin-bottom:14px; font-size:.86rem;"></div>
+        <div style="overflow:auto; border:1px solid #e5ece7; border-radius:8px;">
+            <table class="student-table registrar-table" style="min-width:820px; margin:0;">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Program / Section</th>
+                        <th>Schedule</th>
+                        <th>Teacher</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="roomScheduleRows">
+                    <tr><td colspan="5">No current schedule found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pf-modal-actions" style="justify-content:flex-end; margin-top:18px;">
+            <button type="button" class="pf-modal-btn-cancel" onclick="closeRoomScheduleModal()">Close</button>
+        </div>
+    </div>
+</div>
+
 <div class="pf-modal-overlay" id="newRoomModal" style="display:none;">
     <div class="pf-modal-box">
         <div class="pf-modal-title">New Room</div>

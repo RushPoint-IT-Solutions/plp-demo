@@ -260,8 +260,15 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
             Route::get('/room-generation-assignment', 'Registrar\RegistrarController@roomGenerationAssignment')->name('room-generation-assignment');
             Route::post('/room-generation-assignment/generate', 'Registrar\RegistrarController@generateRoomsForAssignment')->name('room-generation-assignment.generate')->middleware('throttle:30,1');
+            Route::post('/room-generation-assignment/generate-teachers', 'Registrar\RegistrarController@generateTeacherAllowedSubjectsForAssignment')->name('room-generation-assignment.generate-teachers')->middleware('throttle:30,1');
             Route::post('/room-generation-assignment/assign', 'Registrar\RegistrarController@assignRoomsPerSectionSubject')->name('room-generation-assignment.assign')->middleware('throttle:30,1');
+            Route::post('/room-generation-assignment/assign-pending-availability', 'Registrar\RegistrarController@assignPendingRoomsByAvailability')->name('room-generation-assignment.assign-pending-availability')->middleware('throttle:30,1');
+            Route::post('/room-generation-assignment/teacher-allowed-subjects', 'Registrar\RegistrarController@storeTeacherAllowedSubjectForAssignment')->name('room-generation-assignment.teacher-allowed-subjects.store')->middleware('throttle:30,1');
+            Route::delete('/room-generation-assignment/teacher-allowed-subjects', 'Registrar\RegistrarController@destroyTeacherAllowedSubjectForAssignment')->name('room-generation-assignment.teacher-allowed-subjects.destroy')->middleware('throttle:30,1');
             Route::get('/room-generation-assignment/report', 'Registrar\RegistrarController@roomAssignmentReport')->name('room-generation-assignment.report')->middleware('throttle:60,1');
+            Route::get('/teacher-generation-assignment', 'Registrar\RegistrarController@teacherGenerationAssignment')->name('teacher-generation-assignment');
+            Route::post('/teacher-generation-assignment/generate', 'Registrar\RegistrarController@generateTeachersForAssignedSubjects')->name('teacher-generation-assignment.generate')->middleware('throttle:30,1');
+            Route::get('/teacher-generation-assignment/report', 'Registrar\RegistrarController@teacherAssignmentReport')->name('teacher-generation-assignment.report')->middleware('throttle:60,1');
             Route::get('/room-section-offering-management', 'Registrar\RegistrarController@roomSectionOfferingManagement')->name('room-section-offering-management');
             Route::get('/coordination-deans-faculty', 'Registrar\RegistrarController@coordinationDeansFaculty')->name('coordination-deans-faculty');
             Route::get('/academic-term-lifecycle', 'Registrar\RegistrarController@academicTermLifecycle')->name('academic-term-lifecycle');

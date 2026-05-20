@@ -73,7 +73,7 @@
     </div>
 
     <div class="rsom-note">
-        This page combines room file data, allowed room programs, section offerings, class room assignments, and schedule readiness. Rooms are available from 7:00 AM to 9:00 PM, and generated assignments should only use rooms allowed for the offering's program.
+        This page combines room file data, allowed room subjects, section offerings, class room assignments, and schedule readiness. Rooms are available from 7:00 AM to 9:00 PM, and generated assignments should only use rooms allowed for the offering's subject.
     </div>
 
     <div class="rsom-summary">
@@ -143,7 +143,7 @@
                         <option value="{{ $option['id'] }}" {{ $selectedCourseId === (int) $option['id'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
                     @endforeach
                 </select>
-                <span class="rsom-filter-hint">Choose a program to show only its allowed rooms, sections, and subjects.</span>
+                <span class="rsom-filter-hint">Choose a program to show rooms that allow subjects under that program.</span>
             </div>
             <div class="rsom-field">
                 <label for="rsomSection">Search by Section</label>
@@ -176,7 +176,7 @@
         Current display: {{ number_format((int) ($summary['subjects'] ?? 0)) }} course/subject offering(s), {{ number_format((int) ($summary['sections'] ?? 0)) }} section(s), and {{ number_format((int) ($summary['rooms'] ?? 0)) }} room(s) matched by the filters.
     </div>
 
-    <div class="rsom-section-title">Room Details, Availability & Program Assignment</div>
+    <div class="rsom-section-title">Room Details, Availability & Subject Assignment</div>
     <div class="student-table-wrapper table-responsive">
         <table class="student-table registrar-table" data-no-auto-pager="1">
             <thead>
@@ -186,7 +186,7 @@
                     <th>Floor</th>
                     <th>Capacity</th>
                     <th>Building / Hallway</th>
-                    <th>Assigned Programs</th>
+                    <th>Allowed Subjects</th>
                     <th>Current Usage</th>
                     <th>Updated By</th>
                     <th>Action</th>
@@ -206,7 +206,7 @@
                         <td>{{ $room['floor_number'] }}</td>
                         <td>{{ number_format((int) $room['capacity']) }}</td>
                         <td>{{ $room['location_label'] !== '' ? $room['location_label'] : 'Unassigned' }}</td>
-                        <td>{{ $room['program_label'] }}</td>
+                        <td>{{ $room['subject_label'] }}</td>
                         <td>
                             <span class="rsom-pill neutral">{{ (int) ($room['offering_count'] ?? 0) }} offerings</span>
                             <span class="rsom-pill neutral">{{ (int) ($room['section_count'] ?? 0) }} sections</span>
@@ -348,7 +348,7 @@
                 @forelse($offeringRows as $offering)
                     @php
                         $status = (string) ($offering['status'] ?? '');
-                        $statusClass = $status === 'Ready' ? '' : ($status === 'Conflict' || $status === 'Program Not Allowed' ? 'danger' : 'warn');
+                        $statusClass = $status === 'Ready' ? '' : ($status === 'Conflict' || $status === 'Subject Not Allowed' ? 'danger' : 'warn');
                     @endphp
                     <tr>
                         <td>
@@ -499,7 +499,7 @@
                     detail('Availability', text(room.availability, '07:00 - 21:00')),
                     detail('Floor', text(room.floor_number, 'N/A')),
                     detail('Capacity', text(room.capacity, '0')),
-                    detail('Allowed Programs', text(room.program_label, 'No program assigned')),
+                    detail('Allowed Subjects', text(room.subject_label, 'No subject assigned')),
                     detail('Current Offerings', text(room.offering_count, '0')),
                     detail('Current Sections', text(room.section_count, '0')),
                     detail('Updated By', text(room.updated_by, 'System'))
