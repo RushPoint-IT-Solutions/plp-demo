@@ -126,6 +126,124 @@
             font-size: 0.74rem;
             font-weight: 600;
         }
+
+        .faculty-grading-sheet-page .fgs-subject-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.65rem;
+            margin: 0.8rem 0 1rem;
+            padding: 0.85rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .faculty-grading-sheet-page .fgs-summary-item {
+            min-width: 0;
+        }
+
+        .faculty-grading-sheet-page .fgs-summary-label {
+            display: block;
+            margin-bottom: 0.12rem;
+            color: #6b7280;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .faculty-grading-sheet-page .fgs-summary-value {
+            color: #111827;
+            font-size: 0.88rem;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .faculty-grading-sheet-page .fgs-phase-status {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        .faculty-grading-sheet-page .fgs-phase-box {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0.75rem;
+            background: #f9fafb;
+        }
+
+        .faculty-grading-sheet-page .fgs-phase-title {
+            margin: 0 0 0.45rem;
+            color: #111827;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .faculty-grading-sheet-page .fgs-phase-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.18rem 0;
+            color: #374151;
+            font-size: 0.82rem;
+        }
+
+        .faculty-grading-sheet-page .fgs-phase-line strong {
+            color: #111827;
+        }
+
+        .faculty-grading-sheet-page .fgs-transmutation-box {
+            margin-bottom: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .faculty-grading-sheet-page .fgs-transmutation-head {
+            padding: 0.65rem 0.8rem;
+            color: #111827;
+            font-size: 0.86rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: #f3f6f4;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .faculty-grading-sheet-page .fgs-transmutation-scroll {
+            max-height: 180px;
+            overflow: auto;
+        }
+
+        .faculty-grading-sheet-page .fgs-transmutation-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .faculty-grading-sheet-page .fgs-transmutation-table th,
+        .faculty-grading-sheet-page .fgs-transmutation-table td {
+            padding: 0.42rem 0.65rem;
+            border-bottom: 1px solid #edf1ee;
+            color: #1f2937;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .faculty-grading-sheet-page .fgs-transmutation-table th {
+            color: #374151;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            background: #fafafa;
+        }
+
+        @media (max-width: 900px) {
+            .faculty-grading-sheet-page .fgs-subject-summary,
+            .faculty-grading-sheet-page .fgs-phase-status {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 @endpush
 
@@ -230,9 +348,63 @@
             <div class="faculty-detail-title" id="gradingDetailTitle"></div>
             <div class="faculty-detail-section" id="gradingDetailSection"></div>
 
-            <button type="button" class="gs-submit-grades-btn" id="gradingSubmitBtn" style="display:none;">
-                Submit Grades
+            <button type="button" class="gs-submit-grades-btn" id="gradingPostMidtermBtn" style="display:none;">
+                Post Midterm
             </button>
+            <button type="button" class="gs-submit-grades-btn" id="gradingPostFinalBtn" style="display:none;">
+                Post Final
+            </button>
+        </div>
+
+        <div class="fgs-subject-summary">
+            <div class="fgs-summary-item">
+                <span class="fgs-summary-label">Subject Name</span>
+                <span class="fgs-summary-value" id="gradingMetaSubject">-</span>
+            </div>
+            <div class="fgs-summary-item">
+                <span class="fgs-summary-label">Subject Description</span>
+                <span class="fgs-summary-value" id="gradingMetaDescription">-</span>
+            </div>
+            <div class="fgs-summary-item">
+                <span class="fgs-summary-label">Professor</span>
+                <span class="fgs-summary-value" id="gradingMetaProfessor">-</span>
+            </div>
+            <div class="fgs-summary-item">
+                <span class="fgs-summary-label">Schedule</span>
+                <span class="fgs-summary-value" id="gradingMetaSchedule">-</span>
+            </div>
+        </div>
+
+        <div class="fgs-phase-status">
+            <div class="fgs-phase-box">
+                <h4 class="fgs-phase-title">Midterm Status</h4>
+                <div class="fgs-phase-line"><span>Faculty Post</span><strong id="gradingMidtermPostStatus">-</strong></div>
+                <div class="fgs-phase-line"><span>Dean</span><strong id="gradingMidtermDeanStatus">-</strong></div>
+                <div class="fgs-phase-line"><span>Registrar</span><strong id="gradingMidtermRegistrarStatus">-</strong></div>
+            </div>
+            <div class="fgs-phase-box">
+                <h4 class="fgs-phase-title">Finals Status</h4>
+                <div class="fgs-phase-line"><span>Faculty Post</span><strong id="gradingFinalPostStatus">-</strong></div>
+                <div class="fgs-phase-line"><span>Dean</span><strong id="gradingFinalDeanStatus">-</strong></div>
+                <div class="fgs-phase-line"><span>Registrar</span><strong id="gradingFinalRegistrarStatus">-</strong></div>
+            </div>
+        </div>
+
+        <div class="fgs-transmutation-box" id="gradingTransmutationBox" style="display:none;">
+            <div class="fgs-transmutation-head">Transmutation Table</div>
+            <div class="fgs-transmutation-scroll">
+                <table class="fgs-transmutation-table">
+                    <thead>
+                        <tr>
+                            <th>Initial From</th>
+                            <th>Initial To</th>
+                            <th>Eq. Grade</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradingTransmutationBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="faculty-table-wrap">
@@ -244,7 +416,8 @@
                         <th>Name</th>
                         <th>Midterm</th>
                         <th>Final</th>
-                        <th>Final Result</th>
+                        <th>Average</th>
+                        <th>Eq. Grade</th>
                         <th>Status</th>
                         <th style="width:120px;">Remarks</th>
                         <th style="width:128px;">Submission of Grade</th>
@@ -255,12 +428,6 @@
         </div>
 
         <div id="gradingRowEditPayload"></div>
-
-            <div class="rtp-pagination faculty-gs-pager faculty-gs-hidden" id="gradingDetailPager">
-                <nav class="rtp-nav" aria-label="Table pagination">
-                    <div class="rtp-list" id="gradingDetailPagerList"></div>
-                </nav>
-            </div>
     </form>
 
     <div class="req-modal-overlay fgs-row-edit-overlay" id="gradingRowEditModal" style="display:none;" aria-hidden="true">

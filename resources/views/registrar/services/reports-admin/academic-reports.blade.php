@@ -90,6 +90,7 @@
                 <button class="rep-btn" onclick="openReportModal('Student class list (by section)')">Student class list (by section)</button>
                 <button class="rep-btn" onclick="openReportModal('Student class list (by subject)')">Student class list (by subject)</button>
                 <button class="rep-btn" onclick="openReportModal('Student list with failing grade')">Student list with failing grade</button>
+                <a class="rep-btn" href="{{ route('registrar.services.reports-admin.gwa-report') }}" style="text-decoration:none;">Student GWA per semester report</a>
                 <button class="rep-btn" onclick="openReportModal('Student subject unit with deficient / deficiency in pre-requisites')">Student subject unit with deficient / deficiency in pre-requisites</button>
                 <button class="rep-btn" onclick="openReportModal('Student transcript of records')">Student transcript of records</button>
             </div>

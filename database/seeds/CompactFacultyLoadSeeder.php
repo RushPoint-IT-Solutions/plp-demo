@@ -15,6 +15,8 @@ class CompactFacultyLoadSeeder extends Seeder
         'FAC-004' => ['name' => 'Cruz, Miguel', 'department' => 'College of Computer Studies'],
         'FAC-005' => ['name' => 'Garcia, Elena', 'department' => 'College of Education'],
         'FAC-006' => ['name' => 'Mendoza, Rafael', 'department' => 'College of Nursing'],
+        'FAC-007' => ['name' => 'Lim, Andrea', 'department' => 'General Education Faculty'],
+        'FAC-008' => ['name' => 'Torres, Paolo', 'department' => 'General Education Faculty'],
     ];
 
     public function run()

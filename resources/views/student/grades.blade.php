@@ -34,7 +34,8 @@
                     <th class="sched-th">Units</th>
                     <th class="sched-th">Lec Units</th>
                     <th class="sched-th">Lab Units</th>
-                    <th class="sched-th">Grades</th>
+                    <th class="sched-th">Midterm</th>
+                    <th class="sched-th">Final Grade</th>
                     <th class="sched-th">Remarks</th>
                     <th class="sched-th">Form</th>
                 </tr>
@@ -48,6 +49,10 @@
                             : (strtolower((string) $row->remarks) === 'incomplete' ? 'remark-incomplete' : 'remark-nyp');
                         $lecUnits = number_format((float) optional($subject)->units, 1);
                         $labUnits = '0.0';
+                        $midtermPosted = !\Illuminate\Support\Facades\Schema::hasColumn('student_subject_grades', 'midterm_posted_at') || $row->midterm_posted_at;
+                        $finalPosted = !\Illuminate\Support\Facades\Schema::hasColumn('student_subject_grades', 'final_posted_at') || $row->final_posted_at;
+                        $displayMidterm = $midtermPosted && $row->midterm !== null ? number_format((float) $row->midterm, 2) : 'NYP';
+                        $displayFinal = $finalPosted && $row->final_average !== null ? number_format((float) $row->final_average, 2) : 'NYP';
                     @endphp
                     <tr>
                         <td class="sched-td">{{ optional($subject)->code }}</td>
@@ -55,15 +60,20 @@
                         <td class="sched-td">{{ number_format((float) optional($subject)->units, 1) }}</td>
                         <td class="sched-td">{{ $lecUnits }}</td>
                         <td class="sched-td">{{ $labUnits }}</td>
-                        <td class="sched-td">{{ number_format((float) $row->final_average, 2) }}</td>
-                        <td class="sched-td {{ $remarksClass }}">{{ $row->remarks }}</td>
+                        <td class="sched-td">{{ $displayMidterm }}</td>
+                        <td class="sched-td">{{ $displayFinal }}</td>
+                        <td class="sched-td {{ $remarksClass }}">{{ $finalPosted ? $row->remarks : 'NYP' }}</td>
                         <td class="sched-td">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('student.forms.show', 'change-grade') }}?grade_id={{ $row->id }}">Change Grade</a>
+                            @if($finalPosted)
+                                <a class="btn btn-sm btn-outline-success" href="{{ route('student.forms.show', 'change-grade') }}?grade_id={{ $row->id }}">Change Grade</a>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td class="sched-td" colspan="8">No grade records found for this student.</td>
+                        <td class="sched-td" colspan="9">No posted grade records found for this student.</td>
                     </tr>
                 @endforelse
             </tbody>

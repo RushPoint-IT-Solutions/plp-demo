@@ -133,9 +133,18 @@ class StudentController extends Controller
 
         $gradeRows = collect();
         if ($student) {
-            $gradeRows = StudentSubjectGrade::with('subject')
-                ->where('student_id', $student->id)
-                ->get();
+            $gradeQuery = StudentSubjectGrade::with('subject')
+                ->where('student_id', $student->id);
+
+            if (Schema::hasColumn('student_subject_grades', 'midterm_posted_at')
+                && Schema::hasColumn('student_subject_grades', 'final_posted_at')) {
+                $gradeQuery->where(function ($query) {
+                    $query->whereNotNull('midterm_posted_at')
+                        ->orWhereNotNull('final_posted_at');
+                });
+            }
+
+            $gradeRows = $gradeQuery->get();
         }
 
         $semesterOptions = $gradeRows
@@ -254,15 +263,19 @@ class StudentController extends Controller
         $selectedChangeGrade = null;
 
         if ($category === 'change-grade' && $student) {
-            $changeGradeRows = StudentSubjectGrade::with('subject.facultyModel')
+            $changeGradeQuery = StudentSubjectGrade::with('subject.facultyModel')
                 ->where('student_id', $student->id)
                 ->where(function ($query) {
                     $query->whereNotNull('midterm')
                         ->orWhereNotNull('final')
                         ->orWhereNotNull('final_average');
-                })
-                ->orderByDesc('updated_at')
-                ->get();
+                });
+
+            if (Schema::hasColumn('student_subject_grades', 'final_posted_at')) {
+                $changeGradeQuery->whereNotNull('final_posted_at');
+            }
+
+            $changeGradeRows = $changeGradeQuery->orderByDesc('updated_at')->get();
 
             $requestedGradeId = (int) request('grade_id');
             $requestedSubjectId = (int) request('subject_id');

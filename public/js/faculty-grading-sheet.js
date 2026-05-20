@@ -29,7 +29,20 @@ document.addEventListener('DOMContentLoaded', function () {
     var yearLabel = document.getElementById('fgsYearLabel');
     var detailToolsRow = document.getElementById('fgsDetailToolsRow');
     var filterBar = document.getElementById('fgsFilterBar');
-    var submitBtn = document.getElementById('gradingSubmitBtn');
+    var postMidtermBtn = document.getElementById('gradingPostMidtermBtn');
+    var postFinalBtn = document.getElementById('gradingPostFinalBtn');
+    var metaSubject = document.getElementById('gradingMetaSubject');
+    var metaDescription = document.getElementById('gradingMetaDescription');
+    var metaProfessor = document.getElementById('gradingMetaProfessor');
+    var metaSchedule = document.getElementById('gradingMetaSchedule');
+    var midtermPostStatus = document.getElementById('gradingMidtermPostStatus');
+    var midtermDeanStatus = document.getElementById('gradingMidtermDeanStatus');
+    var midtermRegistrarStatus = document.getElementById('gradingMidtermRegistrarStatus');
+    var finalPostStatus = document.getElementById('gradingFinalPostStatus');
+    var finalDeanStatus = document.getElementById('gradingFinalDeanStatus');
+    var finalRegistrarStatus = document.getElementById('gradingFinalRegistrarStatus');
+    var transmutationBox = document.getElementById('gradingTransmutationBox');
+    var transmutationBody = document.getElementById('gradingTransmutationBody');
 
     if (!dataNode || !subjectView || !detailView || !subjectBody || !detailBody) {
         return;
@@ -51,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var filteredSubjects = allSubjects.slice();
     var activeSubject = null;
     var detailPage = 1;
-    var detailPageSize = 10;
+    var detailPageSize = 100000;
     var detailButtonWindow = 5;
     var activeStudentId = null;
     var autoSaveTimers = {};
@@ -88,10 +101,20 @@ document.addEventListener('DOMContentLoaded', function () {
     function statusBadge(value) {
         var label = statusText(value);
         var normalized = String(label || '').toLowerCase();
-        if (normalized === 'submitted for dean review' || normalized === 'dean approved' || normalized === 'registrar finalized') {
+        if (normalized === 'midterm posted' || normalized === 'submitted for dean review' || normalized === 'dean approved' || normalized === 'registrar finalized') {
             return '<span class="grading-status-submitted">' + escapeHtml(label) + '</span>';
         }
         return '<span class="grading-status-open">' + escapeHtml(label) + '</span>';
+    }
+
+    function listStatusForSubject(subject) {
+        if (subject && subject.midterm_posted) {
+            return 'Midterm Posted';
+        }
+        if (subject && subject.midterm_drafted) {
+            return 'Midterm Drafted';
+        }
+        return statusText(subject ? subject.status : '');
     }
 
     // ─── SweetAlert2 Helpers ─────────────────────────────────────────────────────
@@ -233,12 +256,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var rows = '';
         filteredSubjects.forEach(function (subject, index) {
+            var displayStatus = listStatusForSubject(subject);
             var normalizedStatus = String(statusText(subject.status)).toLowerCase();
             var canSubmit = normalizedStatus === 'open for encoding' || normalizedStatus === 'returned for revision';
 
             var actionBtn = !canSubmit
-                ? '<span class="fgs-submitted-label">&#10004; ' + escapeHtml(statusText(subject.status)) + '</span>'
-                : '<button type="button" class="fgs-quick-submit-btn" data-subject-id="' + escapeHtml(subject.id) + '">Submit Grades</button>';
+                ? '<span class="fgs-submitted-label">&#10004; ' + escapeHtml(displayStatus) + '</span>'
+                : '<button type="button" class="fgs-quick-submit-btn fgs-open-detail-btn" data-subject-id="' + escapeHtml(subject.id) + '">Open Grades</button>';
 
             rows += '<tr class="grading-subject-row" data-subject-id="' + escapeHtml(subject.id) + '">'
                 + '<td>' + (index + 1) + '</td>'
@@ -246,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 + '<td class="td-code">' + escapeHtml(subject.code || '-') + '</td>'
                 + '<td>' + escapeHtml(subject.name || '-') + '</td>'
                 + '<td>' + escapeHtml(subject.days || '-') + '</td>'
-                + '<td>' + statusBadge(subject.status) + '</td>'
+                + '<td>' + statusBadge(displayStatus) + '</td>'
                 + '<td class="fgs-col-action">' + actionBtn + '</td>'
                 + '</tr>';
         });
@@ -366,11 +390,73 @@ document.addEventListener('DOMContentLoaded', function () {
             + (detailPage >= totalPages ? 'disabled' : '') + ' data-detail-next="1">&#x203A;</button>';
     }
 
-    function gradeInput(studentId, field, value) {
+    function dateStatus(value, readyText, pendingText) {
+        return value ? readyText : pendingText;
+    }
+
+    function renderSubjectMeta(subject) {
+        if (!subject) return;
+
+        if (metaSubject) metaSubject.textContent = subject.code || '-';
+        if (metaDescription) metaDescription.textContent = subject.name || '-';
+        if (metaProfessor) metaProfessor.textContent = subject.professor || '-';
+        if (metaSchedule) {
+            var schedule = subject.schedule || subject.days || '-';
+            if (subject.room) {
+                schedule += ' | Room: ' + subject.room;
+            }
+            metaSchedule.textContent = schedule;
+        }
+
+        if (midtermPostStatus) {
+            midtermPostStatus.textContent = subject.midterm_posted ? 'Posted' : 'Not Posted';
+        }
+        if (midtermDeanStatus) {
+            midtermDeanStatus.textContent = dateStatus(subject.dean_approved_at, 'Approved by Dean', dateStatus(subject.submitted_at, 'Submitted to Dean', 'Not Submitted'));
+        }
+        if (midtermRegistrarStatus) {
+            midtermRegistrarStatus.textContent = dateStatus(subject.registrar_finalized_at, 'Submitted to Registrar', 'Not Submitted');
+        }
+        if (finalPostStatus) {
+            finalPostStatus.textContent = subject.final_posted ? 'Posted' : 'Not Posted';
+        }
+        if (finalDeanStatus) {
+            finalDeanStatus.textContent = dateStatus(subject.dean_approved_at, 'Approved by Dean', dateStatus(subject.submitted_at, 'Submitted to Dean', 'Not Submitted'));
+        }
+        if (finalRegistrarStatus) {
+            finalRegistrarStatus.textContent = dateStatus(subject.registrar_finalized_at, 'Submitted to Registrar', 'Not Submitted');
+        }
+
+        renderTransmutationTable(subject.transmutation_rules || []);
+    }
+
+    function renderTransmutationTable(rules) {
+        if (!transmutationBox || !transmutationBody) return;
+
+        if (!rules || !rules.length) {
+            transmutationBox.style.display = 'none';
+            transmutationBody.innerHTML = '';
+            return;
+        }
+
+        transmutationBox.style.display = 'block';
+        transmutationBody.innerHTML = rules.map(function (rule) {
+            return '<tr>'
+                + '<td>' + escapeHtml(formatGradeNumber(rule.from)) + '</td>'
+                + '<td>' + escapeHtml(formatGradeNumber(rule.to)) + '</td>'
+                + '<td>' + escapeHtml(formatGradeNumber(rule.grade)) + '</td>'
+                + '<td>' + escapeHtml(rule.remarks || '-') + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    function gradeInput(studentId, field, value, disabled) {
         return '<input type="number" class="fgs-grade-input" '
             + 'data-student-id="' + escapeHtml(studentId) + '" '
             + 'data-grade-field="' + escapeHtml(field) + '" '
-            + 'min="50" max="100" step="0.01" inputmode="decimal" value="' + escapeHtml(value || '') + '">';
+            + 'min="50" max="100" step="0.01" inputmode="decimal" value="' + escapeHtml(value || '') + '" '
+            + (disabled ? 'disabled title="Posted grades are locked"' : '')
+            + '>';
     }
 
     function remarksInput(studentId, value) {
@@ -416,7 +502,15 @@ document.addEventListener('DOMContentLoaded', function () {
         return code === 'OD' || code === 'UD' || code === 'INC';
     }
 
-    function computeFinalGrade(midterm, finalGrade) {
+    function formatGradeNumber(value) {
+        var num = parseFloat(value);
+        if (isNaN(num)) {
+            return '';
+        }
+        return (Math.round(num * 100) / 100).toFixed(2);
+    }
+
+    function computeRawAverage(midterm, finalGrade) {
         var midtermNum = parseFloat(midterm);
         var finalNum = parseFloat(finalGrade);
         if (isNaN(midtermNum) || isNaN(finalNum)) {
@@ -425,27 +519,51 @@ document.addEventListener('DOMContentLoaded', function () {
         return (Math.round(((midtermNum + finalNum) / 2) * 100) / 100).toFixed(2);
     }
 
+    function computeEquivalentGrade(midterm, finalGrade) {
+        var rawAverage = computeRawAverage(midterm, finalGrade);
+        var rawNum = parseFloat(rawAverage);
+        if (isNaN(rawNum)) {
+            return '';
+        }
+
+        var rules = (activeSubject && activeSubject.transmutation_rules) ? activeSubject.transmutation_rules : [];
+        for (var i = 0; i < rules.length; i += 1) {
+            var from = parseFloat(rules[i].from);
+            var to = parseFloat(rules[i].to);
+            if (!isNaN(from) && !isNaN(to) && rawNum >= from && rawNum <= to) {
+                return formatGradeNumber(rules[i].grade);
+            }
+        }
+
+        return formatGradeNumber(rawNum);
+    }
+
     function buildReadOnlyRows(students, canEdit) {
         var html = '';
+        var isReturnedForRevision = activeSubject
+            && String(statusText(activeSubject.status)).toLowerCase() === 'returned for revision';
         students.forEach(function (st, index) {
-            var rowAction = canEdit
-                ? '<button type="button" class="fgs-row-submit-btn" data-student-id="' + escapeHtml(st.id) + '">Submit Grade</button>'
+            var isFullyPosted = !!st.midterm_posted && !!st.final_posted;
+            var rowAction = canEdit && (!isFullyPosted || isReturnedForRevision)
+                ? '<button type="button" class="fgs-row-submit-btn" data-student-id="' + escapeHtml(st.id) + '">Save Grade</button>'
                     + '<span class="fgs-autosave-status" data-student-id="' + escapeHtml(st.id) + '" data-grade-field="autosave_status"></span>'
                 : '<span class="text-muted">-</span>';
             var hasGradeRule = !!st.grade_rule_id;
             var gradeRuleCell = canEdit ? gradeRuleSelect(st.id, st.grade_rule_id) : escapeHtml(st.status || st.grade_rule_code || '');
-            var midtermCell = canEdit ? gradeInput(st.id, 'midterm', st.midterm) : escapeHtml(st.midterm || '');
-            var finalCell = canEdit ? gradeInput(st.id, 'final', st.final) : escapeHtml(st.final || '');
-            var finalResultCell = st.final_average || computeFinalGrade(st.midterm, st.final);
+            var midtermCell = canEdit ? gradeInput(st.id, 'midterm', st.midterm, !!st.midterm_posted && !isReturnedForRevision) : escapeHtml(st.midterm || '');
+            var finalCell = canEdit ? gradeInput(st.id, 'final', st.final, !!st.final_posted && !isReturnedForRevision) : escapeHtml(st.final || '');
+            var averageCell = st.final_average || computeRawAverage(st.midterm, st.final);
+            var eqGradeCell = computeEquivalentGrade(st.midterm, st.final);
             var remarksCell = canEdit ? remarksInput(st.id, st.remarks) : escapeHtml(st.remarks || '');
 
             html += '<tr>'
                 + '<td>' + (index + 1) + '</td>'
                 + '<td>' + escapeHtml(st.student_no || '-') + '</td>'
                 + '<td>' + escapeHtml(st.name || '') + '</td>'
-                + '<td>' + midtermCell + '</td>'
-                + '<td>' + finalCell + '</td>'
-                + '<td data-student-id="' + escapeHtml(st.id) + '" data-grade-field="final_average">' + (finalResultCell ? escapeHtml(finalResultCell) : '<span class="fgs-cell-muted">-</span>') + '</td>'
+            + '<td>' + midtermCell + (st.midterm_posted ? '<div class="fgs-autosave-status">Posted</div>' : '') + '</td>'
+            + '<td>' + finalCell + (st.final_posted ? '<div class="fgs-autosave-status">Posted</div>' : '') + '</td>'
+                + '<td data-student-id="' + escapeHtml(st.id) + '" data-grade-field="final_average">' + (averageCell ? escapeHtml(averageCell) : '<span class="fgs-cell-muted">-</span>') + '</td>'
+                + '<td data-student-id="' + escapeHtml(st.id) + '" data-grade-field="equivalent_grade">' + (eqGradeCell ? escapeHtml(eqGradeCell) : '<span class="fgs-cell-muted">-</span>') + '</td>'
                 + '<td>' + gradeRuleCell + '</td>'
                 + '<td>' + remarksCell + '</td>'
                 + '<td class="fgs-col-action">' + rowAction + '</td>'
@@ -457,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderDetail(subject) {
         var students = getFilteredStudents((subject && subject.students) ? subject.students : []);
         var total = students.length;
-        var totalPages = Math.max(1, Math.ceil(total / detailPageSize));
+        var totalPages = 1;
         var normalizedStatus = String(statusText(subject.status)).toLowerCase();
         var canEdit = normalizedStatus === 'open for encoding' || normalizedStatus === 'returned for revision';
 
@@ -465,11 +583,10 @@ document.addEventListener('DOMContentLoaded', function () {
             detailPage = totalPages;
         }
 
-        var start = (detailPage - 1) * detailPageSize;
-        var pageStudents = students.slice(start, start + detailPageSize);
+        var pageStudents = students;
 
         if (!pageStudents.length) {
-            detailBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-3">No students found.</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">No students found.</td></tr>';
         } else {
             detailBody.innerHTML = buildReadOnlyRows(pageStudents, canEdit);
         }
@@ -481,8 +598,14 @@ document.addEventListener('DOMContentLoaded', function () {
         detailTitle.textContent = subject.name || '';
         detailSection.textContent = subject.section || '';
         subjectIdInput.value = subject.id || '';
+        renderSubjectMeta(subject);
 
-        renderDetailPager(totalPages);
+        if (detailPager) {
+            detailPager.classList.add('faculty-gs-hidden');
+        }
+        if (detailPagerList) {
+            detailPagerList.innerHTML = '';
+        }
     }
 
     function openGradingDetail(subjectId) {
@@ -499,32 +622,38 @@ document.addEventListener('DOMContentLoaded', function () {
         detailView.classList.remove('faculty-gs-hidden');
         setFilterMode(true);
 
-        // Show/hide submit button based on status
-        if (submitBtn) {
-            var normalizedSubjectStatus = String(statusText(subject.status)).toLowerCase();
-            var canSubmit = normalizedSubjectStatus === 'open for encoding' || normalizedSubjectStatus === 'returned for revision';
-            submitBtn.style.display = canSubmit ? 'inline-flex' : 'none';
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Grades';
+        var normalizedSubjectStatus = String(statusText(subject.status)).toLowerCase();
+        var canSubmit = normalizedSubjectStatus === 'open for encoding' || normalizedSubjectStatus === 'returned for revision';
+        if (postMidtermBtn) {
+            postMidtermBtn.style.display = canSubmit && !subject.midterm_posted ? 'inline-flex' : 'none';
+            postMidtermBtn.disabled = false;
+            postMidtermBtn.textContent = 'Post Midterm';
+        }
+        if (postFinalBtn) {
+            postFinalBtn.style.display = canSubmit && subject.midterm_posted && !subject.final_posted ? 'inline-flex' : 'none';
+            postFinalBtn.disabled = false;
+            postFinalBtn.textContent = 'Post Final';
         }
     }
 
     // ─── Submit Grades (from detail view) ─────────────────────────────────────────
 
-    function submitGrades() {
+    function submitGrades(phase) {
         if (!activeSubject) return;
+        var phaseLabel = phase === 'midterm' ? 'Midterm' : 'Final';
+        var targetBtn = phase === 'midterm' ? postMidtermBtn : postFinalBtn;
 
         swalConfirm(
-            'Submit Grades?',
-            'You are about to submit grades for <br>'
+            'Post ' + phaseLabel + ' Grades?',
+            'You are about to post ' + phaseLabel.toLowerCase() + ' grades for <br>'
                 + '<strong>' + escapeHtml(activeSubject.name) + '</strong><br>'
                 + '<span style="color:#6b7280;font-size:0.9rem;">' + escapeHtml(activeSubject.section) + '</span><br><br>'
-                + 'This <strong>cannot be undone</strong>.'
+                + 'Posted grades will become visible to students.'
         ).then(function (result) {
             if (!result.isConfirmed) return;
 
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            targetBtn.disabled = true;
+            targetBtn.textContent = 'Posting...';
 
             fetch('/faculty/grading-sheet/submit-grades', {
                 method: 'POST',
@@ -533,39 +662,60 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': getCsrf(),
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ subject_id: activeSubject.id }),
+                body: JSON.stringify({ subject_id: activeSubject.id, phase: phase }),
             })
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 if (!data.ok) {
                     swalMissingGrades(data.message, data.missing);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Submit Grades';
+                    targetBtn.disabled = false;
+                    targetBtn.textContent = 'Post ' + phaseLabel;
                     return;
                 }
 
                 // Update local data
-                activeSubject.status = 'Submitted for Dean Review';
+                if (phase === 'midterm') {
+                    activeSubject.midterm_posted = true;
+                    activeSubject.midterm_drafted = false;
+                    activeSubject.students.forEach(function (student) {
+                        student.midterm_posted = true;
+                        student.midterm_posted_at = data.posted_at || '';
+                    });
+                } else {
+                    activeSubject.final_posted = true;
+                    activeSubject.status = 'Submitted for Dean Review';
+                    activeSubject.submitted_at = data.posted_at || activeSubject.submitted_at || '';
+                    activeSubject.students.forEach(function (student) {
+                        student.final_posted = true;
+                        student.final_posted_at = data.posted_at || '';
+                    });
+                }
                 allSubjects.forEach(function (s) {
                     if (String(s.id) === String(activeSubject.id)) {
-                        s.status = 'Submitted for Dean Review';
+                        s.midterm_posted = activeSubject.midterm_posted;
+                        s.midterm_drafted = activeSubject.midterm_drafted;
+                        s.final_posted = activeSubject.final_posted;
+                        if (phase === 'final') {
+                            s.status = 'Submitted for Dean Review';
+                            s.submitted_at = activeSubject.submitted_at;
+                        }
                     }
                 });
 
-                submitBtn.style.display = 'none';
                 renderDetail(activeSubject);
+                openGradingDetail(activeSubject.id);
 
                 swalSuccess(
-                    'Grades Submitted!',
+                    phaseLabel + ' Grades Posted!',
                     '<strong>' + escapeHtml(activeSubject.name) + '</strong><br>'
                         + '<span style="color:#6b7280;font-size:0.9rem;">' + escapeHtml(activeSubject.section) + '</span><br><br>'
-                        + 'Grades have been submitted successfully.'
+                        + 'Students can now view the posted ' + phaseLabel.toLowerCase() + ' grades.'
                 );
             })
             .catch(function () {
                 swalError('Network Error', 'Something went wrong. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Grades';
+                targetBtn.disabled = false;
+                targetBtn.textContent = 'Post ' + phaseLabel;
             });
         });
     }
@@ -616,23 +766,22 @@ document.addEventListener('DOMContentLoaded', function () {
         var finalGrade = rowEditFinal   ? rowEditFinal.value.trim()   : '';
         var remarks    = rowEditRemarks ? rowEditRemarks.value.trim() : '';
 
-        // Only midterm is required — final is optional (may not be done yet)
-        if (!midterm || !finalGrade) {
+        if (!midterm && !finalGrade) {
             closeRowEditModal(); // close first so SweetAlert appears on top
-            swalWarning('Missing Grade', 'Please enter Midterm and Final grades.');
+            swalWarning('Missing Grade', 'Please enter at least one grade.');
             return;
         }
 
         var midtermNum = parseFloat(midterm);
         var finalNum   = parseFloat(finalGrade);
 
-        if (isNaN(midtermNum) || midtermNum < 50 || midtermNum > 100) {
+        if (midterm && (isNaN(midtermNum) || midtermNum < 50 || midtermNum > 100)) {
             closeRowEditModal();
             swalWarning('Invalid Midterm Grade', 'Midterm grade must be between 50 and 100.');
             return;
         }
 
-        if (isNaN(finalNum) || finalNum < 50 || finalNum > 100) {
+        if (finalGrade && (isNaN(finalNum) || finalNum < 50 || finalNum > 100)) {
             closeRowEditModal();
             swalWarning('Invalid Final Grade', 'Final grade must be between 50 and 100.');
             return;
@@ -651,8 +800,8 @@ document.addEventListener('DOMContentLoaded', function () {
             body: JSON.stringify({
                 subject_id: activeSubject.id,
                 student_id: activeStudentId,
-                midterm:    midtermNum,
-                final:      finalNum,
+                midterm:    midterm ? midtermNum : null,
+                final:      finalGrade ? finalNum : null,
                 remarks:    remarks,
             }),
         })
@@ -670,6 +819,19 @@ document.addEventListener('DOMContentLoaded', function () {
             student.status        = data.status;
             student.grade_rule_id = data.grade_rule_id;
             student.remarks       = data.remarks;
+            student.midterm_posted = data.midterm_posted;
+            student.final_posted = data.final_posted;
+            student.midterm_posted_at = data.midterm_posted_at;
+            student.final_posted_at = data.final_posted_at;
+            activeSubject.midterm_posted = activeSubject.students.length > 0 && activeSubject.students.every(function (item) {
+                return !!item.midterm_posted;
+            });
+            activeSubject.final_posted = activeSubject.students.length > 0 && activeSubject.students.every(function (item) {
+                return !!item.final_posted;
+            });
+            activeSubject.midterm_drafted = activeSubject.students.some(function (item) {
+                return item.midterm && !item.midterm_posted;
+            });
 
             closeRowEditModal();
             renderDetail(activeSubject);
@@ -741,18 +903,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function setRowSemestralGrade(studentId) {
         var finalAverageCell = findGradeDisplayCell(studentId, 'final_average');
-        if (!finalAverageCell) return;
+        var equivalentGradeCell = findGradeDisplayCell(studentId, 'equivalent_grade');
+        if (!finalAverageCell && !equivalentGradeCell) return;
 
-        var finalGradeAverage = computeFinalGrade(
+        var rawAverage = computeRawAverage(
+            getRowFieldValue(studentId, 'midterm'),
+            getRowFieldValue(studentId, 'final')
+        );
+        var equivalentGrade = computeEquivalentGrade(
             getRowFieldValue(studentId, 'midterm'),
             getRowFieldValue(studentId, 'final')
         );
 
-        finalAverageCell.innerHTML = finalGradeAverage
-            ? escapeHtml(finalGradeAverage)
-            : '<span class="fgs-cell-muted">-</span>';
+        if (finalAverageCell) {
+            finalAverageCell.innerHTML = rawAverage
+                ? escapeHtml(rawAverage)
+                : '<span class="fgs-cell-muted">-</span>';
+        }
+        if (equivalentGradeCell) {
+            equivalentGradeCell.innerHTML = equivalentGrade
+                ? escapeHtml(equivalentGrade)
+                : '<span class="fgs-cell-muted">-</span>';
+        }
 
-        setAutomaticPassFailStatus(studentId, finalGradeAverage);
+        setAutomaticPassFailStatus(studentId, equivalentGrade);
     }
 
     function setAutomaticPassFailStatus(studentId, semestralGrade) {
@@ -771,7 +945,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        var statusRule = getGradeRuleByCode(numericGrade >= 75 ? 'P' : 'F');
+        var statusRule = getGradeRuleByCode(numericGrade <= 5 ? (numericGrade <= 3 ? 'P' : 'F') : (numericGrade >= 75 ? 'P' : 'F'));
         if (!statusRule) {
             return;
         }
@@ -807,19 +981,19 @@ document.addEventListener('DOMContentLoaded', function () {
             finalGrade = '';
         }
 
-        if (!canSkipNumericGrades && (!midterm || !finalGrade)) {
+        if (!canSkipNumericGrades && !midterm && !finalGrade) {
             if (isDraft) {
                 setAutoSaveStatus(studentId, '', false);
                 return;
             }
-            swalWarning('Missing Grade', 'Please enter Midterm and Final grades for ' + String(student.name || 'this student') + '.');
+            swalWarning('Missing Grade', 'Please enter at least one grade for ' + String(student.name || 'this student') + '.');
             return;
         }
 
         var midtermNum = midterm !== '' ? parseFloat(midterm) : null;
         var finalNum = finalGrade !== '' ? parseFloat(finalGrade) : null;
 
-        if (!canSkipNumericGrades && (isNaN(midtermNum) || midtermNum < 50 || midtermNum > 100)) {
+        if (!canSkipNumericGrades && midterm !== '' && (isNaN(midtermNum) || midtermNum < 50 || midtermNum > 100)) {
             if (isDraft) {
                 setAutoSaveStatus(studentId, '', false);
                 return;
@@ -828,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (!canSkipNumericGrades && (isNaN(finalNum) || finalNum < 50 || finalNum > 100)) {
+        if (!canSkipNumericGrades && finalGrade !== '' && (isNaN(finalNum) || finalNum < 50 || finalNum > 100)) {
             if (isDraft) {
                 setAutoSaveStatus(studentId, '', false);
                 return;
@@ -839,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (submitButton) {
             submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...';
+            submitButton.textContent = 'Saving...';
         }
 
         fetch('/faculty/grading-sheet/update-row', {
@@ -872,6 +1046,19 @@ document.addEventListener('DOMContentLoaded', function () {
             student.status = data.status;
             student.grade_rule_id = data.grade_rule_id;
             student.remarks = data.remarks;
+            student.midterm_posted = data.midterm_posted;
+            student.final_posted = data.final_posted;
+            student.midterm_posted_at = data.midterm_posted_at;
+            student.final_posted_at = data.final_posted_at;
+            activeSubject.midterm_posted = activeSubject.students.length > 0 && activeSubject.students.every(function (item) {
+                return !!item.midterm_posted;
+            });
+            activeSubject.final_posted = activeSubject.students.length > 0 && activeSubject.students.every(function (item) {
+                return !!item.final_posted;
+            });
+            activeSubject.midterm_drafted = activeSubject.students.some(function (item) {
+                return item.midterm && !item.midterm_posted;
+            });
 
             if (isDraft) {
                 setAutoSaveStatus(studentId, 'Draft saved', false);
@@ -882,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     toast: true,
                     position: 'top-end',
                     icon: 'success',
-                    title: 'Student grade submitted',
+                title: 'Student grade saved',
                     showConfirmButton: false,
                     timer: 2200,
                     timerProgressBar: true,
@@ -899,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .finally(function () {
             if (submitButton) {
                 submitButton.disabled = false;
-                submitButton.textContent = 'Submit Grade';
+                submitButton.textContent = 'Save Grade';
             }
         });
     }
@@ -909,10 +1096,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Subject table: row click → open detail, button click → quick submit
     if (subjectBody) {
         subjectBody.addEventListener('click', function (event) {
-            var quickSubmitBtn = event.target.closest('.fgs-quick-submit-btn');
-            if (quickSubmitBtn) {
+            var openDetailBtn = event.target.closest('.fgs-open-detail-btn');
+            if (openDetailBtn) {
                 event.stopPropagation();
-                doQuickSubmit(quickSubmitBtn.getAttribute('data-subject-id'), quickSubmitBtn);
+                openGradingDetail(openDetailBtn.getAttribute('data-subject-id'));
                 return;
             }
 
@@ -1009,9 +1196,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Submit button (detail view)
-    if (submitBtn) {
-        submitBtn.addEventListener('click', submitGrades);
+    if (postMidtermBtn) {
+        postMidtermBtn.addEventListener('click', function () { submitGrades('midterm'); });
+    }
+    if (postFinalBtn) {
+        postFinalBtn.addEventListener('click', function () { submitGrades('final'); });
     }
 
     // Row edit modal controls

@@ -37,6 +37,145 @@ class ReportsAdminController extends Controller
         return view('registrar.services.reports-admin.academic-reports', compact('summary', 'students', 'systemConfig'));
     }
 
+    public function gwaReport(Request $request)
+    {
+        $search = trim((string) $request->query('q', ''));
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = trim((string) $request->query('semester', ''));
+        $program = trim((string) $request->query('program', ''));
+
+        $gradeQuery = StudentSubjectGrade::query()
+            ->with(['student', 'subject'])
+            ->whereNotNull('final_average')
+            ->whereHas('student')
+            ->whereHas('subject');
+
+        if (Schema::hasColumn('student_subject_grades', 'final_posted_at')) {
+            $gradeQuery->whereNotNull('final_posted_at');
+        }
+
+        if ($schoolYear !== '') {
+            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($schoolYear) {
+                $subjectQuery->where('school_year', $schoolYear);
+            });
+        }
+
+        if ($semester !== '') {
+            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($semester) {
+                $subjectQuery->where('semester', $semester);
+            });
+        }
+
+        if ($program !== '') {
+            $gradeQuery->where(function ($query) use ($program) {
+                $query->whereHas('student', function ($studentQuery) use ($program) {
+                    $studentQuery->where('program', $program);
+                })->orWhereHas('subject', function ($subjectQuery) use ($program) {
+                    $subjectQuery->where('course', $program);
+                });
+            });
+        }
+
+        if ($search !== '') {
+            $gradeQuery->whereHas('student', function ($studentQuery) use ($search) {
+                $studentQuery->where('student_no', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        $gradeRows = $gradeQuery->get();
+
+        $rows = $gradeRows
+            ->groupBy(function ($grade) {
+                return implode('|', [
+                    $grade->student_id,
+                    (string) optional($grade->subject)->school_year,
+                    (string) optional($grade->subject)->semester,
+                ]);
+            })
+            ->map(function ($grades) {
+                $first = $grades->first();
+                $student = $first->student;
+                $schoolYear = (string) optional($first->subject)->school_year;
+                $semester = (string) optional($first->subject)->semester;
+
+                $totalUnits = 0.0;
+                $weightedTotal = 0.0;
+
+                foreach ($grades as $grade) {
+                    $units = (float) optional($grade->subject)->units;
+                    if ($units <= 0) {
+                        $units = 1.0;
+                    }
+
+                    $totalUnits += $units;
+                    $weightedTotal += ((float) $grade->final_average) * $units;
+                }
+
+                $gwa = $totalUnits > 0 ? round($weightedTotal / $totalUnits, 2) : null;
+
+                return [
+                    'student_id' => $student ? $student->id : null,
+                    'student_no' => $student ? (string) $student->student_no : '',
+                    'student_name' => $student ? (string) $student->name : '',
+                    'program' => $student ? (string) ($student->program ?: optional($first->subject)->course) : (string) optional($first->subject)->course,
+                    'year_level' => $student ? (string) ($student->year_level ?: '') : '',
+                    'school_year' => $schoolYear,
+                    'semester' => $semester,
+                    'subjects_count' => $grades->count(),
+                    'total_units' => $totalUnits,
+                    'gwa' => $gwa,
+                ];
+            })
+            ->sortBy([
+                ['school_year', 'desc'],
+                ['semester', 'asc'],
+                ['student_name', 'asc'],
+            ])
+            ->values();
+
+        $schoolYears = StudentSubjectGrade::query()
+            ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+            ->whereNotNull('subjects.school_year')
+            ->where('subjects.school_year', '<>', '')
+            ->distinct()
+            ->orderByDesc('subjects.school_year')
+            ->pluck('subjects.school_year');
+
+        $semesters = StudentSubjectGrade::query()
+            ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+            ->whereNotNull('subjects.semester')
+            ->where('subjects.semester', '<>', '')
+            ->distinct()
+            ->orderBy('subjects.semester')
+            ->pluck('subjects.semester');
+
+        $programs = collect()
+            ->merge(Schema::hasColumn('students', 'program') ? Student::query()->whereNotNull('program')->where('program', '<>', '')->distinct()->orderBy('program')->pluck('program') : collect())
+            ->merge(Schema::hasColumn('subjects', 'course') ? \App\Subject::query()->whereNotNull('course')->where('course', '<>', '')->distinct()->orderBy('course')->pluck('course') : collect())
+            ->filter()
+            ->unique()
+            ->values();
+
+        $summary = [
+            'students' => $rows->pluck('student_id')->filter()->unique()->count(),
+            'records' => $rows->count(),
+            'average_gwa' => $rows->whereNotNull('gwa')->avg('gwa'),
+        ];
+
+        return view('registrar.services.reports-admin.gwa-report', compact(
+            'rows',
+            'schoolYears',
+            'semesters',
+            'programs',
+            'summary',
+            'search',
+            'schoolYear',
+            'semester',
+            'program'
+        ));
+    }
+
     public function guidanceReports(Request $request)
     {
         $systemConfig = $this->reportSystemConfig($request);

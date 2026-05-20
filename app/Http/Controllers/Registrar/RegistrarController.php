@@ -8215,7 +8215,7 @@ class RegistrarController extends Controller
                 $faculty = $this->findAvailableTeacherForSubject($subject, $conflicts);
                 if (!$faculty) {
                     $summary['pending']++;
-                    $issues[] = $this->teacherAssignmentReportRow($subject, 'Pending Teacher Assignment', 'No qualified teacher is available without load or schedule conflict.');
+                    $issues[] = $this->teacherAssignmentReportRow($subject, 'Pending Teacher Assignment', $this->teacherAssignmentPendingRemarks($subject, $conflicts));
                     continue;
                 }
 
@@ -8238,6 +8238,8 @@ class RegistrarController extends Controller
                     'time_start' => (string) $subject->time_start,
                     'time_end' => (string) $subject->time_end,
                     'room' => (string) $subject->room,
+                    'subject_code' => (string) $subject->code,
+                    'subject_name' => (string) $subject->name,
                 ];
 
                 $summary['assigned']++;
@@ -8262,15 +8264,18 @@ class RegistrarController extends Controller
         $yearBlockId = (int) $request->query('year_block_id', 0);
         $section = trim((string) $request->query('section', ''));
 
-        $rows = $this->roomAssignmentOfferingsQuery($schoolYear, $semester, $courseId, $yearBlockId, $section)
+        $reportSubjects = $this->roomAssignmentOfferingsQuery($schoolYear, $semester, $courseId, $yearBlockId, $section)
             ->with(['canonicalCourse', 'facultyModel'])
             ->withCount('students')
             ->when(Schema::hasTable('student_subject'), function ($query) {
                 $query->whereHas('students');
             })
             ->limit(300)
-            ->get()
-            ->map(function (Subject $subject) {
+            ->get();
+        $reportConflicts = $this->loadScheduleConflictRows($reportSubjects);
+
+        $rows = $reportSubjects
+            ->map(function (Subject $subject) use ($reportConflicts) {
                 if ((int) ($subject->faculty_id ?: 0) > 0) {
                     return $this->teacherAssignmentReportRow($subject, 'Assigned', 'Teacher assigned.');
                 }
@@ -8279,7 +8284,7 @@ class RegistrarController extends Controller
                     return $this->teacherAssignmentReportRow($subject, 'Pending Room/Schedule', 'Generate and assign room schedule first.');
                 }
 
-                return $this->teacherAssignmentReportRow($subject, 'Pending Teacher Assignment', 'Ready for teacher generation.');
+                return $this->teacherAssignmentReportRow($subject, 'Pending Teacher Assignment', $this->teacherAssignmentPendingRemarks($subject, $reportConflicts));
             })
             ->values();
 
@@ -12870,7 +12875,7 @@ class RegistrarController extends Controller
         }
 
         return Subject::query()
-            ->select(['id', 'academic_term_id', 'year_section', 'faculty_id', 'days', 'time_start', 'time_end', 'room'])
+            ->select(['id', 'academic_term_id', 'year_section', 'faculty_id', 'days', 'time_start', 'time_end', 'room', 'code', 'name'])
             ->whereIn('academic_term_id', $academicTermIds->all())
             ->whereNotNull('days')
             ->whereNotNull('time_start')
@@ -12891,6 +12896,8 @@ class RegistrarController extends Controller
                     'time_start' => (string) $subject->time_start,
                     'time_end' => (string) $subject->time_end,
                     'room' => (string) $subject->room,
+                    'subject_code' => (string) $subject->code,
+                    'subject_name' => (string) $subject->name,
                 ];
             })
             ->values()
@@ -13575,12 +13582,143 @@ class RegistrarController extends Controller
             });
     }
 
+    private function teacherAssignmentPendingRemarks(Subject $subject, array $conflicts): string
+    {
+        $slot = [
+            'days' => (string) $subject->days,
+            'time_start' => $this->classScheduleTimeInputValue((string) $subject->time_start),
+            'time_end' => $this->classScheduleTimeInputValue((string) $subject->time_end),
+        ];
+
+        $missing = [];
+        if (trim((string) $subject->room) === '') {
+            $missing[] = 'room';
+        }
+        if (trim((string) $slot['days']) === '') {
+            $missing[] = 'days';
+        }
+        if (trim((string) $slot['time_start']) === '' || trim((string) $slot['time_end']) === '') {
+            $missing[] = 'time';
+        }
+        if (count($missing)) {
+            return 'Pending: missing ' . implode(', ', $missing) . ' before teacher generation.';
+        }
+
+        $faculties = Faculty::query()->orderBy('name')->get();
+        if ($faculties->isEmpty()) {
+            return 'Pending: no faculty records are available.';
+        }
+
+        $reasons = [];
+        $qualified = 0;
+        foreach ($faculties as $faculty) {
+            $facultyId = (int) $faculty->id;
+            $facultyName = trim((string) $faculty->name) ?: ('Faculty #' . $facultyId);
+
+            if (!$this->teacherQualifiedForSubject($facultyId, $subject)) {
+                $reasons[] = $facultyName . ' is not allowed for ' . trim((string) $subject->code) . '.';
+                continue;
+            }
+            $qualified++;
+
+            $loadDetail = $this->teacherLoadConflictDetail($facultyId, $subject);
+            if ($loadDetail !== '') {
+                $reasons[] = $facultyName . ' ' . $loadDetail;
+                continue;
+            }
+
+            if (!$this->teacherAvailableForSlot($facultyId, $slot)) {
+                $reasons[] = $facultyName . ' is not available on ' . trim((string) $slot['days']) . ' ' . trim((string) $slot['time_start']) . '-' . trim((string) $slot['time_end']) . '.';
+                continue;
+            }
+
+            $dailyDetail = $this->teacherDailyHoursConflictDetail($facultyId, $subject, $slot, $conflicts);
+            if ($dailyDetail !== '') {
+                $reasons[] = $facultyName . ' ' . $dailyDetail;
+                continue;
+            }
+
+            $scheduleDetail = $this->teacherScheduleConflictDetail($facultyId, $subject, $slot, $conflicts);
+            if ($scheduleDetail !== '') {
+                $reasons[] = $facultyName . ' ' . $scheduleDetail;
+                continue;
+            }
+
+            $reasons[] = $facultyName . ' passed checks but was not selected; rerun generation after refreshing the page.';
+        }
+
+        $sampleReasons = array_slice(array_values(array_unique($reasons)), 0, 5);
+        $prefix = 'Pending: no teacher passed all rules for ' . trim((string) $subject->code) . ' '
+            . trim((string) $subject->year_section) . '. Qualified teachers checked: '
+            . $qualified . '/' . $faculties->count() . '.';
+
+        if (!count($sampleReasons)) {
+            return $prefix;
+        }
+
+        return $prefix . ' Details: ' . implode(' ', $sampleReasons);
+    }
+
+    private function teacherLoadConflictDetail(int $facultyId, Subject $subject): string
+    {
+        $max = $this->teacherMaxLoadUnits($facultyId);
+        if ($max <= 0) {
+            return '';
+        }
+
+        $current = (float) Subject::query()
+            ->where('faculty_id', $facultyId)
+            ->where('id', '<>', (int) $subject->id)
+            ->when((int) $subject->academic_term_id > 0, function ($query) use ($subject) {
+                $query->where('academic_term_id', (int) $subject->academic_term_id);
+            })
+            ->sum(DB::raw('COALESCE(credited_tuition_units, units, 0)'));
+        $incoming = (float) ($subject->credited_tuition_units ?: $subject->units ?: 0);
+
+        if (($current + $incoming) <= $max) {
+            return '';
+        }
+
+        return 'would exceed max load (' . number_format($current, 1) . ' + ' . number_format($incoming, 1) . ' > ' . number_format($max, 1) . ' units).';
+    }
+
+    private function teacherScheduleConflictDetail(int $facultyId, Subject $subject, array $slot, array $conflicts): string
+    {
+        foreach ($conflicts as $conflict) {
+            if ((int) ($conflict['id'] ?? 0) === (int) $subject->id) {
+                continue;
+            }
+            if ((int) ($conflict['academic_term_id'] ?? 0) !== (int) $subject->academic_term_id) {
+                continue;
+            }
+            if ((int) ($conflict['faculty_id'] ?? 0) !== $facultyId) {
+                continue;
+            }
+            if (!$this->autoScheduleOverlaps($slot, $conflict)) {
+                continue;
+            }
+
+            $label = trim((string) ($conflict['subject_code'] ?? '') . ' ' . (string) ($conflict['section'] ?? ''));
+            return 'has schedule conflict with ' . ($label !== '' ? $label : 'another assigned subject') . ' on '
+                . trim((string) ($conflict['days'] ?? '')) . ' '
+                . $this->classScheduleTimeInputValue((string) ($conflict['time_start'] ?? '')) . '-'
+                . $this->classScheduleTimeInputValue((string) ($conflict['time_end'] ?? '')) . '.';
+        }
+
+        return '';
+    }
+
     private function teacherDailyHoursWithinLimit(int $facultyId, Subject $subject, array $slot, array $conflicts): bool
+    {
+        return $this->teacherDailyHoursConflictDetail($facultyId, $subject, $slot, $conflicts) === '';
+    }
+
+    private function teacherDailyHoursConflictDetail(int $facultyId, Subject $subject, array $slot, array $conflicts): string
     {
         $slotStart = $this->autoScheduleMinutes((string) ($slot['time_start'] ?? ''));
         $slotEnd = $this->autoScheduleMinutes((string) ($slot['time_end'] ?? ''));
         if ($slotStart === null || $slotEnd === null || $slotEnd <= $slotStart) {
-            return false;
+            return 'has invalid time data for the incoming schedule.';
         }
 
         $incomingMinutes = $slotEnd - $slotStart;
@@ -13616,11 +13754,11 @@ class RegistrarController extends Controller
 
         foreach ($dailyMinutes as $minutes) {
             if ((int) $minutes > self::TEACHER_MAX_DAILY_MINUTES) {
-                return false;
+                return 'would exceed the 9-hour daily limit (' . number_format($minutes / 60, 1) . ' hours in one day).';
             }
         }
 
-        return true;
+        return '';
     }
 
     private function upsertClassRoomAssignmentFromSubject(Subject $subject, string $status): void

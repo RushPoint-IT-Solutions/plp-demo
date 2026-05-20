@@ -14,21 +14,19 @@ class SampleUniversalTransmutationSeeder extends Seeder
 
         $now = now();
         $bands = [
-            ['from' => 97.00, 'to' => 100.00, 'grade' => 1.00, 'code' => 'A+', 'remarks' => 'Passed'],
-            ['from' => 94.00, 'to' => 96.99, 'grade' => 1.25, 'code' => 'A', 'remarks' => 'Passed'],
-            ['from' => 91.00, 'to' => 93.99, 'grade' => 1.50, 'code' => 'B+', 'remarks' => 'Passed'],
-            ['from' => 88.00, 'to' => 90.99, 'grade' => 1.75, 'code' => 'B', 'remarks' => 'Passed'],
-            ['from' => 85.00, 'to' => 87.99, 'grade' => 2.00, 'code' => 'C+', 'remarks' => 'Passed'],
-            ['from' => 82.00, 'to' => 84.99, 'grade' => 2.25, 'code' => 'C', 'remarks' => 'Passed'],
-            ['from' => 79.00, 'to' => 81.99, 'grade' => 2.50, 'code' => 'D+', 'remarks' => 'Passed'],
-            ['from' => 76.00, 'to' => 78.99, 'grade' => 2.75, 'code' => 'D', 'remarks' => 'Passed'],
-            ['from' => 75.00, 'to' => 75.99, 'grade' => 3.00, 'code' => 'P', 'remarks' => 'Passed'],
-            ['from' => 50.00, 'to' => 74.99, 'grade' => 5.00, 'code' => 'F', 'remarks' => 'Failed'],
+            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00, 'code' => 'A+', 'remarks' => 'Passed'],
+            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25, 'code' => 'A', 'remarks' => 'Passed'],
+            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50, 'code' => 'B+', 'remarks' => 'Passed'],
+            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75, 'code' => 'B', 'remarks' => 'Passed'],
+            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00, 'code' => 'C+', 'remarks' => 'Passed'],
+            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25, 'code' => 'C', 'remarks' => 'Passed'],
+            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50, 'code' => 'D+', 'remarks' => 'Passed'],
+            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75, 'code' => 'D', 'remarks' => 'Passed'],
+            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00, 'code' => 'P', 'remarks' => 'Passed'],
+            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00, 'code' => 'F', 'remarks' => 'Failed'],
         ];
 
-        $legacyGlobal = DB::table('transmutation_rules')
-            ->where('initial_from', '<', 50)
-            ->where('initial_to', 74.99);
+        $legacyGlobal = DB::table('transmutation_rules');
 
         foreach (['school_year', 'term', 'program', 'academic_term_id', 'course_id'] as $column) {
             if (Schema::hasColumn('transmutation_rules', $column)) {

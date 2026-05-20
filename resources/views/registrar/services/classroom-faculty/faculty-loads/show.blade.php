@@ -396,7 +396,7 @@
             .ffp-student-modal-subtitle { color:#64748b; font-size:.84rem; margin-top:3px; }
             .ffp-student-modal-close { background:#f8fafc; border:1px solid #d8e0da; border-radius:7px; color:#334155; cursor:pointer; font-size:1rem; font-weight:900; height:34px; line-height:1; width:34px; }
             .ffp-student-modal-body { padding:18px 20px 20px; }
-            .ffp-student-summary { display:grid; grid-template-columns:repeat(4, minmax(120px, 1fr)); gap:10px; margin-bottom:14px; }
+            .ffp-student-summary { display:grid; grid-template-columns:repeat(5, minmax(120px, 1fr)); gap:10px; margin-bottom:14px; }
             .ffp-student-summary div { border:1px solid #e2e8f0; border-radius:8px; padding:9px 11px; }
             .ffp-student-summary span { color:#64748b; display:block; font-size:.7rem; font-weight:900; text-transform:uppercase; }
             .ffp-student-summary strong { color:#143521; display:block; font-size:.9rem; margin-top:3px; }
@@ -404,6 +404,8 @@
             .ffp-student-table th, .ffp-student-table td { border-bottom:1px solid #edf3ef; padding:9px 10px; text-align:left; }
             .ffp-student-table th { color:#607264; font-size:.74rem; font-weight:900; text-transform:uppercase; }
             .ffp-student-empty { color:#64748b; padding:22px; text-align:center; }
+            .ffp-profile-link { color:#146c43; font-weight:900; text-decoration:none; }
+            .ffp-profile-link:hover { color:#0f5132; text-decoration:underline; }
             @media (max-width:760px){ .ffp-student-summary { grid-template-columns:1fr 1fr; } }
         </style>
         <div class="rfl-loading-header rfl-schedule-table-title">FACULTY SCHEDULE</div>
@@ -423,7 +425,8 @@
                 </thead>
                 <tbody>
                     @php
-                        $scheduleItems = $assignedSubjectsForSchedule->flatMap(function ($s) {
+                        $facultyProfileUrl = route($facultyShowRoute, ['faculty' => $faculty->id, 'tab' => 'profile', 'school_year' => $selectedSchoolYear, 'semester' => $selectedSemester]);
+                        $scheduleItems = $assignedSubjectsForSchedule->flatMap(function ($s) use ($facultyName, $facultyProfileUrl) {
                             $raw = strtoupper((string) $s->days);
                             $compact = str_replace(['TH', 'TTH'], ['R', 'TR'], preg_replace('/[^A-Z]/', '', $raw));
                             $map = ['M' => 'Monday', 'T' => 'Tuesday', 'W' => 'Wednesday', 'R' => 'Thursday', 'F' => 'Friday', 'S' => 'Saturday', 'U' => 'Sunday'];
@@ -432,7 +435,7 @@
                                 if (isset($map[$token])) $days[] = $map[$token];
                             }
                             if (!count($days)) $days = ['Unscheduled'];
-                            return collect(array_unique($days))->map(function ($day) use ($s) {
+                            return collect(array_unique($days))->map(function ($day) use ($s, $facultyName, $facultyProfileUrl) {
                                 return [
                                     'day' => $day,
                                     'sort' => strtotime((string) $s->time_start) ?: 0,
@@ -442,6 +445,8 @@
                                     'room' => (string) $s->room,
                                     'program' => (string) optional($s->canonicalCourse)->code,
                                     'program_name' => (string) (optional($s->canonicalCourse)->description ?: optional($s->canonicalCourse)->name ?: optional($s->canonicalCourse)->code),
+                                    'faculty_name' => $facultyName,
+                                    'faculty_url' => $facultyProfileUrl,
                                     'students' => (int) ($s->students_count ?? 0),
                                     'student_rows' => $s->students->map(function ($student) {
                                         return [
@@ -449,6 +454,7 @@
                                             'name' => (string) ($student->name ?: ''),
                                             'program' => (string) (optional($student->canonicalCourse)->code ?: $student->program ?: ''),
                                             'year_level' => (string) ($student->year_level ?: ''),
+                                            'profile_url' => route('registrar.registrar-menu.student-mgmt.student-records.profile', $student->id),
                                         ];
                                     })->values()->all(),
                                 ];
@@ -528,8 +534,16 @@
                         .replace(/'/g, '&#39;');
                 }
 
-                function summaryItem(label, value) {
-                    return '<div><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value || 'N/A') + '</strong></div>';
+                function linkHtml(label, url) {
+                    if (!url) {
+                        return escapeHtml(label || 'N/A');
+                    }
+
+                    return '<a class="ffp-profile-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + escapeHtml(label || 'N/A') + '</a>';
+                }
+
+                function summaryItem(label, value, url) {
+                    return '<div><span>' + escapeHtml(label) + '</span><strong>' + linkHtml(value || 'N/A', url || '') + '</strong></div>';
                 }
 
                 function openModal(data) {
@@ -543,6 +557,7 @@
                         summaryItem('Section', data.section),
                         summaryItem('Program', data.program_name || data.program),
                         summaryItem('Schedule', [data.day, data.time].filter(Boolean).join(' ')),
+                        summaryItem('Faculty', data.faculty_name, data.faculty_url),
                         summaryItem('Students', data.students || 0)
                     ].join('');
 
@@ -554,7 +569,7 @@
                             return '<tr>' +
                                 '<td>' + (index + 1) + '</td>' +
                                 '<td>' + escapeHtml(student.student_no || '-') + '</td>' +
-                                '<td>' + escapeHtml(student.name || '-') + '</td>' +
+                                '<td>' + linkHtml(student.name || '-', student.profile_url || '') + '</td>' +
                                 '<td>' + escapeHtml(student.program || '-') + '</td>' +
                                 '<td>' + escapeHtml(student.year_level || '-') + '</td>' +
                             '</tr>';

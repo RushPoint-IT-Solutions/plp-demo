@@ -17,6 +17,8 @@ class StudentSubjectGrade extends Model
         'grade_rule_id',
         'remarks',
         'draft_saved_at',
+        'midterm_posted_at',
+        'final_posted_at',
     ];
 
     public function subject()

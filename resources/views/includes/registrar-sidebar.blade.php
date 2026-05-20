@@ -337,6 +337,7 @@
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Academic</div>
                 <a href="{{ route('registrar.services.reports-admin.academic-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.academic-reports') ? 'active' : '' }}">Academic Reports</a>
+                <a href="{{ route('registrar.services.reports-admin.gwa-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.gwa-report') ? 'active' : '' }}">GWA Report</a>
                 <a href="{{ route('registrar.services.reports-admin.certifications') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.certifications') ? 'active' : '' }}">Certifications</a>
                 <a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.tagging-of-graduates') ? 'active' : '' }}">Graduation Tagging</a>
 

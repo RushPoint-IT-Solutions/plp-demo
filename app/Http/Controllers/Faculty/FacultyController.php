@@ -641,10 +641,13 @@ class FacultyController extends Controller
             })
             ->values();
 
-        $gradingSubjects = $subjects->map(function ($subject) {
+        $hasMidtermPostedColumn = Schema::hasColumn('student_subject_grades', 'midterm_posted_at');
+        $hasFinalPostedColumn = Schema::hasColumn('student_subject_grades', 'final_posted_at');
+
+        $gradingSubjects = $subjects->map(function ($subject) use ($faculty, $hasMidtermPostedColumn, $hasFinalPostedColumn) {
             $gradeMap = $subject->studentGrades->keyBy('student_id');
 
-            $students = $subject->students->values()->map(function ($student) use ($gradeMap) {
+            $students = $subject->students->values()->map(function ($student) use ($gradeMap, $hasMidtermPostedColumn, $hasFinalPostedColumn) {
                 $grade = $gradeMap->get($student->id);
 
                 return [
@@ -658,8 +661,23 @@ class FacultyController extends Controller
                     'grade_rule_code' => ($grade && $grade->gradeRule) ? $grade->gradeRule->code : '',
                     'status' => $grade ? (string) ($grade->status ?: $grade->remarks) : '',
                     'remarks' => $grade ? $grade->remarks : '',
+                    'midterm_posted' => $hasMidtermPostedColumn && $grade && $grade->midterm_posted_at !== null,
+                    'final_posted' => $hasFinalPostedColumn && $grade && $grade->final_posted_at !== null,
+                    'midterm_posted_at' => ($hasMidtermPostedColumn && $grade && $grade->midterm_posted_at) ? (string) $grade->midterm_posted_at : '',
+                    'final_posted_at' => ($hasFinalPostedColumn && $grade && $grade->final_posted_at) ? (string) $grade->final_posted_at : '',
                 ];
             });
+
+            $studentCount = $students->count();
+            $midtermPostedCount = $students->filter(function ($student) {
+                return !empty($student['midterm_posted']);
+            })->count();
+            $finalPostedCount = $students->filter(function ($student) {
+                return !empty($student['final_posted']);
+            })->count();
+            $midtermDraftedCount = $students->filter(function ($student) {
+                return isset($student['midterm']) && $student['midterm'] !== '' && empty($student['midterm_posted']);
+            })->count();
 
             return [
                 'id' => $subject->id,
@@ -667,10 +685,19 @@ class FacultyController extends Controller
                 'name' => $subject->name,
                 'units' => number_format((float) $subject->units, 1),
                 'days' => str_replace(',', ', ', (string) $subject->days),
+                'schedule' => trim(str_replace(',', ', ', (string) $subject->days) . ' ' . (string) $subject->formatted_time),
+                'room' => (string) ($subject->room ?: ''),
+                'professor' => (string) ($faculty->name ?: $subject->faculty ?: ''),
                 'section' => trim(($subject->course ?: '') . ' ' . ($subject->year_section ?: '')),
                 'semester' => (string) ($subject->semester ?: ''),
                 'school_year' => (string) ($subject->school_year ?: ''),
                 'status' => optional($subject->gradingStatusLookup)->label ?? 'Open For Encoding',
+                'midterm_posted' => $studentCount > 0 && $midtermPostedCount === $studentCount,
+                'midterm_drafted' => $midtermDraftedCount > 0,
+                'final_posted' => $studentCount > 0 && $finalPostedCount === $studentCount,
+                'submitted_at' => $subject->submitted_at ? $subject->submitted_at->format('Y-m-d H:i:s') : '',
+                'dean_approved_at' => $subject->dean_approved_at ? $subject->dean_approved_at->format('Y-m-d H:i:s') : '',
+                'registrar_finalized_at' => $subject->registrar_finalized_at ? $subject->registrar_finalized_at->format('Y-m-d H:i:s') : '',
                 'transmutation_rules' => $this->transmutationRulesForSubject($subject),
                 'students' => $students,
             ];
@@ -713,7 +740,9 @@ class FacultyController extends Controller
             }
 
             $average = $this->finalResultFromMidtermFinal($midterm, $final);
-            $status = $this->statusForFinalResult($average);
+            $transmuted = $this->transmutedSemestralGrade($subject, [$midterm, $final]);
+            $equivalentGrade = $transmuted['grade'] ?: $average;
+            $status = $transmuted['remarks'] ?: $this->statusForFinalResult($equivalentGrade);
             $remarks = $remarksInput !== '' ? $remarksInput : $status;
             $gradeRule = $this->passFailGradeRuleForFinalResult($average);
 
@@ -773,16 +802,48 @@ class FacultyController extends Controller
         $remarks = trim((string) $request->input('remarks', ''));
         $gradeRuleCode = $gradeRule ? strtoupper(trim((string) $gradeRule->code)) : '';
         $canSkipNumericGrades = in_array($gradeRuleCode, ['OD', 'UD', 'INC'], true);
+        $existingGrade = StudentSubjectGrade::where('subject_id', $subject->id)
+            ->where('student_id', $studentId)
+            ->first();
+        $subjectStatusLabel = strtolower(trim((string) (optional($subject->gradingStatusLookup)->label ?: $subject->grading_status)));
+        $isReturnedForRevision = $subjectStatusLabel === 'returned for revision'
+            || strpos($subjectStatusLabel, 'returned') !== false;
 
         $isDraft = in_array(strtolower((string) $request->input('draft', '')), ['1', 'true', 'on', 'yes'], true);
+
+        if ($existingGrade && Schema::hasColumn('student_subject_grades', 'midterm_posted_at')
+            && $existingGrade->midterm_posted_at !== null && $midterm !== null
+            && (float) $existingGrade->midterm !== (float) $midterm && !$isReturnedForRevision) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Midterm grade is already posted and cannot be changed.',
+            ], 422);
+        }
+        if ($existingGrade && Schema::hasColumn('student_subject_grades', 'midterm_posted_at')
+            && $existingGrade->midterm_posted_at !== null && !$isReturnedForRevision) {
+            $midterm = $existingGrade->midterm !== null ? (float) $existingGrade->midterm : null;
+        }
+
+        if ($existingGrade && Schema::hasColumn('student_subject_grades', 'final_posted_at')
+            && $existingGrade->final_posted_at !== null && $final !== null
+            && (float) $existingGrade->final !== (float) $final && !$isReturnedForRevision) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Final grade is already posted and cannot be changed.',
+            ], 422);
+        }
+        if ($existingGrade && Schema::hasColumn('student_subject_grades', 'final_posted_at')
+            && $existingGrade->final_posted_at !== null && !$isReturnedForRevision) {
+            $final = $existingGrade->final !== null ? (float) $existingGrade->final : null;
+        }
 
         if ($canSkipNumericGrades) {
             $midterm = null;
             $final = null;
-        } elseif (!$isDraft && ($midterm === null || $final === null)) {
+        } elseif (!$isDraft && $midterm === null && $final === null) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Midterm and Final grades are required unless the status is OD, UD, or INC.',
+                'message' => 'Please enter at least one grade before saving.',
             ], 422);
         }
 
@@ -790,7 +851,9 @@ class FacultyController extends Controller
         $status = null;
         if ($midterm !== null && $final !== null) {
             $average = $this->finalResultFromMidtermFinal($midterm, $final);
-            $status = $this->statusForFinalResult($average);
+            $transmuted = $this->transmutedSemestralGrade($subject, [$midterm, $final]);
+            $equivalentGrade = $transmuted['grade'] ?: $average;
+            $status = $transmuted['remarks'] ?: $this->statusForFinalResult($equivalentGrade);
             if (!$gradeRule) {
                 $gradeRule = $this->passFailGradeRuleForFinalResult($average);
             }
@@ -809,11 +872,21 @@ class FacultyController extends Controller
             'remarks'       => $remarks !== '' ? $remarks : null,
             'draft_saved_at' => now(),
         ];
+        if ($isReturnedForRevision && $existingGrade && Schema::hasColumn('student_subject_grades', 'midterm_posted_at')
+            && $existingGrade->midterm_posted_at !== null && $midterm !== null
+            && (float) $existingGrade->midterm !== (float) $midterm) {
+            $payload['midterm_posted_at'] = null;
+        }
+        if ($isReturnedForRevision && $existingGrade && Schema::hasColumn('student_subject_grades', 'final_posted_at')
+            && $existingGrade->final_posted_at !== null && $final !== null
+            && (float) $existingGrade->final !== (float) $final) {
+            $payload['final_posted_at'] = null;
+        }
         if (Schema::hasColumn('student_subject_grades', 'status')) {
             $payload['status'] = $status;
         }
 
-        StudentSubjectGrade::updateOrCreate(
+        $gradeRow = StudentSubjectGrade::updateOrCreate(
             ['subject_id' => $subject->id, 'student_id' => $studentId],
             $payload
         );
@@ -827,6 +900,10 @@ class FacultyController extends Controller
             'status'        => $status ?: '',
             'remarks'       => $remarks,
             'draft_saved_at' => now()->format('Y-m-d H:i:s'),
+            'midterm_posted' => Schema::hasColumn('student_subject_grades', 'midterm_posted_at') && $gradeRow->midterm_posted_at !== null,
+            'final_posted' => Schema::hasColumn('student_subject_grades', 'final_posted_at') && $gradeRow->final_posted_at !== null,
+            'midterm_posted_at' => Schema::hasColumn('student_subject_grades', 'midterm_posted_at') && $gradeRow->midterm_posted_at ? (string) $gradeRow->midterm_posted_at : '',
+            'final_posted_at' => Schema::hasColumn('student_subject_grades', 'final_posted_at') && $gradeRow->final_posted_at ? (string) $gradeRow->final_posted_at : '',
         ]);
     }
 
@@ -850,6 +927,10 @@ class FacultyController extends Controller
             return null;
         }
 
+        if ((float) $grade <= 5.0) {
+            return (float) $grade <= 3.0 ? 'Passed' : 'Failed';
+        }
+
         return (float) $grade >= 75.0 ? 'Passed' : 'Failed';
     }
 
@@ -859,7 +940,11 @@ class FacultyController extends Controller
             return null;
         }
 
-        return GradeRule::where('code', ((float) $grade >= 75.0) ? 'P' : 'F')->first();
+        $passed = (float) $grade <= 5.0
+            ? (float) $grade <= 3.0
+            : (float) $grade >= 75.0;
+
+        return GradeRule::where('code', $passed ? 'P' : 'F')->first();
     }
 
     private function transmutedSemestralGrade(Subject $subject, array $grades): array
@@ -887,7 +972,12 @@ class FacultyController extends Controller
 
         $rule = $this->matchingTransmutationRule($subject, $rawAverage);
         if (!$rule) {
-            return ['grade' => null, 'remarks' => 'No transmutation rule'];
+            $defaultRule = $this->defaultTransmutationRuleForRawAverage($rawAverage);
+
+            return [
+                'grade' => $defaultRule ? $defaultRule['grade'] : $rawAverage,
+                'remarks' => $defaultRule ? $defaultRule['remarks'] : null,
+            ];
         }
 
         $grade = round((float) $rule->transmuted_grade, 2);
@@ -955,10 +1045,37 @@ class FacultyController extends Controller
         return $global->orderByDesc('initial_from')->first();
     }
 
+    private function defaultTransmutationBands(): array
+    {
+        return [
+            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00, 'remarks' => 'Passed'],
+            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25, 'remarks' => 'Passed'],
+            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50, 'remarks' => 'Passed'],
+            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75, 'remarks' => 'Passed'],
+            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00, 'remarks' => 'Passed'],
+            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25, 'remarks' => 'Passed'],
+            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50, 'remarks' => 'Passed'],
+            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75, 'remarks' => 'Passed'],
+            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00, 'remarks' => 'Passed'],
+            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00, 'remarks' => 'Failed'],
+        ];
+    }
+
+    private function defaultTransmutationRuleForRawAverage(float $rawAverage): ?array
+    {
+        foreach ($this->defaultTransmutationBands() as $band) {
+            if ($rawAverage >= $band['from'] && $rawAverage <= $band['to']) {
+                return $band;
+            }
+        }
+
+        return null;
+    }
+
     private function transmutationRulesForSubject(Subject $subject): array
     {
         if (!Schema::hasTable('transmutation_rules')) {
-            return [];
+            return $this->defaultTransmutationBands();
         }
 
         $base = TransmutationRule::query();
@@ -1012,7 +1129,13 @@ class FacultyController extends Controller
             $global->whereNull('program');
         }
 
-        return $this->formatTransmutationRules($global->orderByDesc('initial_from')->get());
+        $globalRules = $global->orderByDesc('initial_from')->get();
+
+        if ($globalRules->isEmpty()) {
+            return $this->defaultTransmutationBands();
+        }
+
+        return $this->formatTransmutationRules($globalRules);
     }
 
     private function formatTransmutationRules($rules): array
@@ -1045,7 +1168,10 @@ class FacultyController extends Controller
     {
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
+            'phase' => 'nullable|in:midterm,final',
         ]);
+
+        $phase = $request->input('phase', 'final');
 
         $subject = $this->subjectsForFaculty($this->currentFaculty())
             ->with(['students', 'studentGrades.gradeRule'])
@@ -1061,8 +1187,20 @@ class FacultyController extends Controller
             $canSkipNumericGrades = in_array($gradeRuleCode, ['OD', 'UD', 'INC'], true);
             $hasMidterm = $grade && $grade->midterm !== null && $grade->midterm !== '';
             $hasFinal   = $grade && $grade->final !== null && $grade->final !== '';
+            $midtermPosted = $grade && Schema::hasColumn('student_subject_grades', 'midterm_posted_at')
+                ? $grade->midterm_posted_at !== null
+                : false;
 
-            if (!$canSkipNumericGrades && (!$hasMidterm || !$hasFinal)) {
+            if ($phase === 'midterm' && !$canSkipNumericGrades && !$hasMidterm) {
+                $missing[] = $student->name . ' (missing: Midterm)';
+            }
+
+            if ($phase === 'final' && !$canSkipNumericGrades && !$midtermPosted) {
+                $missing[] = $student->name . ' (midterm not yet posted)';
+                continue;
+            }
+
+            if ($phase === 'final' && !$canSkipNumericGrades && (!$hasMidterm || !$hasFinal)) {
                 $missing[] = $student->name . ' (missing: '
                     . (!$hasMidterm ? 'Midterm ' : '')
                     . (!$hasFinal ? 'Final' : '')
@@ -1073,27 +1211,63 @@ class FacultyController extends Controller
         if (!empty($missing)) {
             return response()->json([
                 'ok'      => false,
-                'message' => 'Some students have missing grades. Please complete all grades before submitting.',
+                'message' => $phase === 'midterm'
+                    ? 'Some students have missing midterm grades. Please complete them before posting.'
+                    : 'Some students have missing final grades. Please complete midterm and final grades before posting.',
                 'missing' => $missing,
             ], 422);
         }
 
-        $subject->grading_status_id = \DB::table('subject_grading_statuses')
-            ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
-            ->value('id');
-        $subject->submitted_at = now();
-        $subject->dean_approved_by = null;
-        $subject->dean_approved_at = null;
-        $subject->registrar_finalized_by = null;
-        $subject->registrar_finalized_at = null;
-        $subject->grading_returned_by = null;
-        $subject->grading_returned_at = null;
-        $subject->grading_return_reason = null;
-        $subject->save();
+        $postedAt = now();
+        $postedColumn = $phase === 'midterm' ? 'midterm_posted_at' : 'final_posted_at';
+
+        if (Schema::hasColumn('student_subject_grades', $postedColumn)) {
+            foreach ($subject->students as $student) {
+                $grade = $gradeMap->get($student->id);
+                if (!$grade) {
+                    continue;
+                }
+
+                $payload = [$postedColumn => $postedAt];
+
+                if ($phase === 'final' && $grade->midterm !== null && $grade->final !== null) {
+                    $average = $this->finalResultFromMidtermFinal($grade->midterm, $grade->final);
+                    $transmuted = $this->transmutedSemestralGrade($subject, [$grade->midterm, $grade->final]);
+                    $equivalentGrade = $transmuted['grade'] ?: $average;
+                    $payload['final_average'] = $average;
+
+                    if (Schema::hasColumn('student_subject_grades', 'status')) {
+                        $payload['status'] = $transmuted['remarks'] ?: $this->statusForFinalResult($equivalentGrade);
+                    }
+                }
+
+                $grade->fill($payload);
+                $grade->save();
+            }
+        }
+
+        if ($phase === 'final') {
+            $subject->grading_status_id = \DB::table('subject_grading_statuses')
+                ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
+                ->value('id');
+            $subject->submitted_at = $postedAt;
+            $subject->dean_approved_by = null;
+            $subject->dean_approved_at = null;
+            $subject->registrar_finalized_by = null;
+            $subject->registrar_finalized_at = null;
+            $subject->grading_returned_by = null;
+            $subject->grading_returned_at = null;
+            $subject->grading_return_reason = null;
+            $subject->save();
+        }
 
         return response()->json([
             'ok'      => true,
-            'message' => 'Grades submitted successfully.',
+            'phase' => $phase,
+            'posted_at' => $postedAt->format('Y-m-d H:i:s'),
+            'message' => $phase === 'midterm'
+                ? 'Midterm grades posted successfully.'
+                : 'Final grades posted successfully.',
         ]);
     }
 
