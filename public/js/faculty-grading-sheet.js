@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var filterBar = document.getElementById('fgsFilterBar');
     var postMidtermBtn = document.getElementById('gradingPostMidtermBtn');
     var postFinalBtn = document.getElementById('gradingPostFinalBtn');
+    var printMidtermBtn = document.getElementById('gradingPrintMidtermBtn');
+    var printFinalBtn = document.getElementById('gradingPrintFinalBtn');
     var metaSubject = document.getElementById('gradingMetaSubject');
     var metaDescription = document.getElementById('gradingMetaDescription');
     var metaProfessor = document.getElementById('gradingMetaProfessor');
@@ -634,6 +636,89 @@ document.addEventListener('DOMContentLoaded', function () {
             postFinalBtn.disabled = false;
             postFinalBtn.textContent = 'Post Final';
         }
+        if (printMidtermBtn) {
+            printMidtermBtn.style.display = 'inline-flex';
+        }
+        if (printFinalBtn) {
+            printFinalBtn.style.display = 'inline-flex';
+        }
+    }
+
+    function printGradeList(phase) {
+        if (!activeSubject) return;
+
+        var isMidterm = phase === 'midterm';
+        var title = isMidterm ? 'MIDTERM GRADES' : 'FINAL GRADES';
+        var students = (activeSubject.students || []).slice();
+        var rows = students.map(function (student, index) {
+            var average = student.final_average || computeRawAverage(student.midterm, student.final);
+            var equivalent = computeEquivalentGrade(student.midterm, student.final);
+            var gradeCell = isMidterm
+                ? escapeHtml(student.midterm || '-')
+                : escapeHtml(student.final || '-');
+            var extraCells = isMidterm
+                ? ''
+                : '<td>' + escapeHtml(average || '-') + '</td>'
+                    + '<td>' + escapeHtml(equivalent || '-') + '</td>'
+                    + '<td>' + escapeHtml(student.remarks || student.status || '-') + '</td>';
+
+            return '<tr>'
+                + '<td>' + (index + 1) + '</td>'
+                + '<td>' + escapeHtml(student.student_no || '-') + '</td>'
+                + '<td>' + escapeHtml(student.name || '-') + '</td>'
+                + '<td>' + gradeCell + '</td>'
+                + extraCells
+                + '</tr>';
+        }).join('');
+
+        var finalHeaders = isMidterm
+            ? ''
+            : '<th>Average</th><th>Eq. Grade</th><th>Remarks</th>';
+
+        var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escapeHtml(title) + '</title>'
+            + '<style>'
+            + '@page{size:letter;margin:0.45in;}'
+            + 'body{font-family:Arial,sans-serif;color:#111;margin:0;font-size:11px;}'
+            + '.head{text-align:center;margin-bottom:14px;}'
+            + '.school{font-size:15px;font-weight:700;text-transform:uppercase;}'
+            + '.office{font-size:12px;font-weight:700;margin-top:2px;}'
+            + '.title{font-size:14px;font-weight:800;margin-top:10px;text-decoration:underline;}'
+            + '.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin:12px 0;font-size:10px;}'
+            + '.meta div{border-bottom:1px solid #ddd;padding-bottom:2px;}'
+            + 'table{width:100%;border-collapse:collapse;margin-top:8px;}'
+            + 'th,td{border:1px solid #222;padding:4px 5px;text-align:left;vertical-align:top;}'
+            + 'th{font-size:10px;text-transform:uppercase;background:#f2f2f2;}'
+            + '.sign{display:flex;justify-content:space-between;margin-top:34px;gap:32px;}'
+            + '.line{flex:1;text-align:center;border-top:1px solid #111;padding-top:4px;font-size:10px;font-weight:700;}'
+            + '@media print{button{display:none;}}'
+            + '</style></head><body>'
+            + '<div class="head">'
+            + '<div class="school">Pamantasan ng Lungsod ng Pasig</div>'
+            + '<div class="office">Office of the Faculty</div>'
+            + '<div class="title">' + escapeHtml(title) + '</div>'
+            + '</div>'
+            + '<div class="meta">'
+            + '<div><strong>Subject:</strong> ' + escapeHtml((activeSubject.code || '') + ' - ' + (activeSubject.name || '')) + '</div>'
+            + '<div><strong>Professor:</strong> ' + escapeHtml(activeSubject.professor || '-') + '</div>'
+            + '<div><strong>Section:</strong> ' + escapeHtml(activeSubject.section || '-') + '</div>'
+            + '<div><strong>Schedule:</strong> ' + escapeHtml(activeSubject.schedule || activeSubject.days || '-') + (activeSubject.room ? ' | Room: ' + escapeHtml(activeSubject.room) : '') + '</div>'
+            + '<div><strong>School Year:</strong> ' + escapeHtml(activeSubject.school_year || '-') + '</div>'
+            + '<div><strong>Semester:</strong> ' + escapeHtml(activeSubject.semester || '-') + '</div>'
+            + '</div>'
+            + '<table><thead><tr><th>#</th><th>Student No.</th><th>Student Name</th><th>' + (isMidterm ? 'Midterm' : 'Final') + '</th>' + finalHeaders + '</tr></thead>'
+            + '<tbody>' + (rows || '<tr><td colspan="' + (isMidterm ? '4' : '7') + '">No students found.</td></tr>') + '</tbody></table>'
+            + '<div class="sign"><div class="line">Faculty Signature</div><div class="line">Dean / Authorized Signatory</div></div>'
+            + '<script>window.onload=function(){window.print();};<\/script>'
+            + '</body></html>';
+
+        var printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            swalWarning('Popup Blocked', 'Please allow popups to print the grade list.');
+            return;
+        }
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
     }
 
     // ─── Submit Grades (from detail view) ─────────────────────────────────────────
@@ -1201,6 +1286,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (postFinalBtn) {
         postFinalBtn.addEventListener('click', function () { submitGrades('final'); });
+    }
+    if (printMidtermBtn) {
+        printMidtermBtn.addEventListener('click', function () { printGradeList('midterm'); });
+    }
+    if (printFinalBtn) {
+        printFinalBtn.addEventListener('click', function () { printGradeList('final'); });
     }
 
     // Row edit modal controls

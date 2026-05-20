@@ -354,6 +354,12 @@
             <button type="button" class="gs-submit-grades-btn" id="gradingPostFinalBtn" style="display:none;">
                 Post Final
             </button>
+            <button type="button" class="gs-submit-grades-btn" id="gradingPrintMidtermBtn" style="display:none;">
+                Print Midterm
+            </button>
+            <button type="button" class="gs-submit-grades-btn" id="gradingPrintFinalBtn" style="display:none;">
+                Print Finals
+            </button>
         </div>
 
         <div class="fgs-subject-summary">
