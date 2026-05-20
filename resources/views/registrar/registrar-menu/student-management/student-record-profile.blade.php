@@ -57,15 +57,21 @@
 
 /* ── tab bar ────────────────────────────────────────────────── */
 .srp-tabs {
-    display:flex; gap:2px; padding:0 32px; margin-top:20px;
-    overflow-x:auto; scrollbar-width:none;
+    display:flex; gap:2px; padding:0 32px 8px; margin-top:20px;
+    overflow-x:auto; overflow-y:hidden; scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.55) rgba(255,255,255,.12);
+    max-width:100%;
+    -webkit-overflow-scrolling:touch;
 }
-.srp-tabs::-webkit-scrollbar { display:none; }
+.srp-tabs::-webkit-scrollbar { height:8px; }
+.srp-tabs::-webkit-scrollbar-track { background:rgba(255,255,255,.12); border-radius:999px; }
+.srp-tabs::-webkit-scrollbar-thumb { background:rgba(255,255,255,.55); border-radius:999px; }
 .srp-tab {
     padding:10px 18px; font-size:13px; font-weight:600;
     border-radius:10px 10px 0 0; cursor:pointer; border:none;
     background:rgba(255,255,255,.12); color:rgba(255,255,255,.8);
     display:flex; align-items:center; gap:6px; white-space:nowrap;
+    flex:0 0 auto;
     transition:background .15s;
 }
 .srp-tab:hover { background:rgba(255,255,255,.2); color:#fff; }
