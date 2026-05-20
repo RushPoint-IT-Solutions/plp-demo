@@ -242,7 +242,7 @@ class FacultyLoadsController extends Controller
         $loadingSearch = trim((string) $request->query('loading_q', ''));
 
         $assignedSubjectsBaseQuery = Subject::query()
-            ->with(['academicTerm', 'canonicalCourse'])
+            ->with(['academicTerm', 'canonicalCourse', 'students.canonicalCourse'])
             ->withCount('students')
             ->where('faculty_id', $faculty->id)
             ->when($selectedSchoolYear !== '', function ($q) use ($selectedSchoolYear) {

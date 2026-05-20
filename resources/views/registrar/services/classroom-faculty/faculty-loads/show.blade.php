@@ -386,6 +386,26 @@
     @endif
 
     @if ($tab === 'schedule')
+        <style>
+            .ffp-student-list-btn { background:#fff; border:1px solid #b9d6c5; border-radius:7px; color:#145c39; cursor:pointer; font-size:.78rem; font-weight:900; min-height:32px; padding:6px 10px; white-space:nowrap; }
+            .ffp-student-modal-backdrop { align-items:center; background:rgba(15, 23, 42, .45); display:none; inset:0; justify-content:center; padding:18px; position:fixed; z-index:1200; }
+            .ffp-student-modal-backdrop.is-open { display:flex; }
+            .ffp-student-modal { background:#fff; border-radius:8px; box-shadow:0 22px 70px rgba(15, 23, 42, .24); max-height:88vh; max-width:900px; overflow:auto; width:100%; }
+            .ffp-student-modal-head { align-items:flex-start; border-bottom:1px solid #e2e8f0; display:flex; gap:12px; justify-content:space-between; padding:18px 20px; }
+            .ffp-student-modal-title { color:#143521; font-size:1.08rem; font-weight:900; margin:0; }
+            .ffp-student-modal-subtitle { color:#64748b; font-size:.84rem; margin-top:3px; }
+            .ffp-student-modal-close { background:#f8fafc; border:1px solid #d8e0da; border-radius:7px; color:#334155; cursor:pointer; font-size:1rem; font-weight:900; height:34px; line-height:1; width:34px; }
+            .ffp-student-modal-body { padding:18px 20px 20px; }
+            .ffp-student-summary { display:grid; grid-template-columns:repeat(4, minmax(120px, 1fr)); gap:10px; margin-bottom:14px; }
+            .ffp-student-summary div { border:1px solid #e2e8f0; border-radius:8px; padding:9px 11px; }
+            .ffp-student-summary span { color:#64748b; display:block; font-size:.7rem; font-weight:900; text-transform:uppercase; }
+            .ffp-student-summary strong { color:#143521; display:block; font-size:.9rem; margin-top:3px; }
+            .ffp-student-table { width:100%; border-collapse:collapse; }
+            .ffp-student-table th, .ffp-student-table td { border-bottom:1px solid #edf3ef; padding:9px 10px; text-align:left; }
+            .ffp-student-table th { color:#607264; font-size:.74rem; font-weight:900; text-transform:uppercase; }
+            .ffp-student-empty { color:#64748b; padding:22px; text-align:center; }
+            @media (max-width:760px){ .ffp-student-summary { grid-template-columns:1fr 1fr; } }
+        </style>
         <div class="rfl-loading-header rfl-schedule-table-title">FACULTY SCHEDULE</div>
         <div class="app-table-wrap rfl-assigned-table">
             <table class="app-table" data-no-auto-pager="1">
@@ -398,6 +418,7 @@
                         <th>Room</th>
                         <th>Program</th>
                         <th>Students</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -420,7 +441,16 @@
                                     'section' => (string) $s->year_section,
                                     'room' => (string) $s->room,
                                     'program' => (string) optional($s->canonicalCourse)->code,
+                                    'program_name' => (string) (optional($s->canonicalCourse)->description ?: optional($s->canonicalCourse)->name ?: optional($s->canonicalCourse)->code),
                                     'students' => (int) ($s->students_count ?? 0),
+                                    'student_rows' => $s->students->map(function ($student) {
+                                        return [
+                                            'student_no' => (string) ($student->student_no ?: ''),
+                                            'name' => (string) ($student->name ?: ''),
+                                            'program' => (string) (optional($student->canonicalCourse)->code ?: $student->program ?: ''),
+                                            'year_level' => (string) ($student->year_level ?: ''),
+                                        ];
+                                    })->values()->all(),
                                 ];
                             });
                         })->sortBy(function ($item) {
@@ -428,7 +458,7 @@
                             return str_pad((string) ($weights[$item['day']] ?? 9), 2, '0', STR_PAD_LEFT) . '-' . str_pad((string) ($item['sort'] ?? 0), 6, '0', STR_PAD_LEFT);
                         })->values();
                     @endphp
-                    @forelse($scheduleItems as $item)
+                    @forelse($scheduleItems as $scheduleIndex => $item)
                         <tr>
                             <td>{{ $item['day'] }}</td>
                             <td>{{ $item['time'] ?: 'TBA' }}</td>
@@ -437,13 +467,136 @@
                             <td>{{ $item['room'] ?: 'TBA' }}</td>
                             <td>{{ $item['program'] ?: 'N/A' }}</td>
                             <td>{{ number_format($item['students']) }}</td>
+                            <td>
+                                <button type="button" class="ffp-student-list-btn" data-schedule-index="{{ (int) $scheduleIndex }}">View Students</button>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-muted py-4">No schedule found for the selected term.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">No schedule found for the selected term.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        <div class="ffp-student-modal-backdrop" id="ffpStudentListModal" aria-hidden="true">
+            <div class="ffp-student-modal" role="dialog" aria-modal="true" aria-labelledby="ffpStudentListTitle">
+                <div class="ffp-student-modal-head">
+                    <div>
+                        <h3 class="ffp-student-modal-title" id="ffpStudentListTitle">Student List</h3>
+                        <div class="ffp-student-modal-subtitle" id="ffpStudentListSubtitle"></div>
+                    </div>
+                    <button type="button" class="ffp-student-modal-close" id="ffpStudentListClose" aria-label="Close student list">&times;</button>
+                </div>
+                <div class="ffp-student-modal-body">
+                    <div class="ffp-student-summary" id="ffpStudentListSummary"></div>
+                    <div class="app-table-wrap">
+                        <table class="ffp-student-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student No.</th>
+                                    <th>Name</th>
+                                    <th>Program</th>
+                                    <th>Year Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ffpStudentListRows">
+                                <tr><td colspan="5" class="ffp-student-empty">No students enrolled.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                var scheduleItems = @json($scheduleItems->values());
+                var modal = document.getElementById('ffpStudentListModal');
+                var closeButton = document.getElementById('ffpStudentListClose');
+                var title = document.getElementById('ffpStudentListTitle');
+                var subtitle = document.getElementById('ffpStudentListSubtitle');
+                var summary = document.getElementById('ffpStudentListSummary');
+                var rows = document.getElementById('ffpStudentListRows');
+
+                function escapeHtml(value) {
+                    return String(value || '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
+
+                function summaryItem(label, value) {
+                    return '<div><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value || 'N/A') + '</strong></div>';
+                }
+
+                function openModal(data) {
+                    if (!modal || !title || !subtitle || !summary || !rows) {
+                        return;
+                    }
+
+                    title.textContent = data.subject || 'Student List';
+                    subtitle.textContent = [data.day, data.time, data.room].filter(Boolean).join(' | ');
+                    summary.innerHTML = [
+                        summaryItem('Section', data.section),
+                        summaryItem('Program', data.program_name || data.program),
+                        summaryItem('Schedule', [data.day, data.time].filter(Boolean).join(' ')),
+                        summaryItem('Students', data.students || 0)
+                    ].join('');
+
+                    var studentRows = Array.isArray(data.student_rows) ? data.student_rows : [];
+                    if (!studentRows.length) {
+                        rows.innerHTML = '<tr><td colspan="5" class="ffp-student-empty">No students enrolled.</td></tr>';
+                    } else {
+                        rows.innerHTML = studentRows.map(function (student, index) {
+                            return '<tr>' +
+                                '<td>' + (index + 1) + '</td>' +
+                                '<td>' + escapeHtml(student.student_no || '-') + '</td>' +
+                                '<td>' + escapeHtml(student.name || '-') + '</td>' +
+                                '<td>' + escapeHtml(student.program || '-') + '</td>' +
+                                '<td>' + escapeHtml(student.year_level || '-') + '</td>' +
+                            '</tr>';
+                        }).join('');
+                    }
+
+                    modal.classList.add('is-open');
+                    modal.setAttribute('aria-hidden', 'false');
+                }
+
+                function closeModal() {
+                    if (!modal) {
+                        return;
+                    }
+                    modal.classList.remove('is-open');
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+
+                document.addEventListener('click', function (event) {
+                    var button = event.target.closest('[data-schedule-index]');
+                    if (button) {
+                        var index = parseInt(button.getAttribute('data-schedule-index') || '0', 10);
+                        openModal(scheduleItems[index] || {});
+                        return;
+                    }
+
+                    if (event.target && event.target.id === 'ffpStudentListModal') {
+                        closeModal();
+                    }
+                });
+
+                if (closeButton) {
+                    closeButton.addEventListener('click', closeModal);
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeModal();
+                    }
+                });
+            }());
+        </script>
     @endif
 
     @if ($tab === 'load')
