@@ -78,9 +78,9 @@
 
     .cor-sheet {
         width: 816px;
-        height: 1056px;
+        height: 1344px;
         background: #fff;
-        padding: 100px 34px 18px;
+        padding: 205px 34px 18px;
         font-family: Arial, Helvetica, sans-serif;
         font-size: 8px;
         line-height: 1.08;
@@ -389,7 +389,7 @@
 
     @media print {
         @page {
-            size: letter portrait;
+            size: legal portrait;
             margin: 5mm;
         }
 
@@ -422,9 +422,9 @@
 
         .cor-sheet {
             width: 203.2mm;
-            height: 266.7mm;
+            height: 342.9mm;
             min-height: 0;
-            padding: 26mm 7mm 4mm;
+            padding: 54mm 7mm 4mm;
             box-shadow: none;
             border: 0;
             overflow: hidden;
