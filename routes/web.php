@@ -154,6 +154,8 @@ Route::prefix('parent')->name('parent.')->middleware(['auth', 'parent.user', 'fo
 */
 Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_password_reset', 'user.access'])->group(function () {
     Route::get('/dashboard', 'Registrar\RegistrarController@dashboard')->name('dashboard');
+    Route::get('/profile', 'Registrar\RegistrarController@profile')->name('profile');
+    Route::post('/profile/change-password', 'Registrar\RegistrarController@updatePassword')->name('profile.password.update')->middleware('throttle:10,1');
     Route::get('/messaging', 'Registrar\RegistrarController@messaging')->name('messaging');
     Route::post('/messaging', 'Registrar\RegistrarController@storeRegistrarMessage')->name('messaging.store')->middleware('throttle:30,1');
     Route::get('/communication/tickets', 'Registrar\RegistrarController@communicationTickets')->name('communication.tickets');

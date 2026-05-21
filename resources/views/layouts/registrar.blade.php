@@ -191,6 +191,49 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .registrar-profile-menu-wrap {
+            position: relative;
+        }
+        .registrar-profile-menu {
+            border: 1px solid #e6ece8;
+            border-radius: 8px;
+            box-shadow: 0 14px 32px rgba(20, 53, 33, 0.14);
+            min-width: 220px;
+            padding: 8px;
+        }
+        .registrar-profile-menu-header {
+            border-bottom: 1px solid #eef2ef;
+            margin-bottom: 6px;
+            padding: 8px 10px 10px;
+        }
+        .registrar-profile-menu-name {
+            color: #143521;
+            font-size: 0.9rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .registrar-profile-menu-email {
+            color: #6b7a70;
+            font-size: 0.76rem;
+            line-height: 1.25;
+            margin-top: 3px;
+            word-break: break-word;
+        }
+        .registrar-profile-menu .dropdown-item {
+            align-items: center;
+            border-radius: 6px;
+            color: #234131;
+            display: flex;
+            font-size: 0.84rem;
+            font-weight: 700;
+            gap: 8px;
+            padding: 9px 10px;
+        }
+        .registrar-profile-menu .dropdown-item:hover,
+        .registrar-profile-menu .dropdown-item:focus {
+            background: #edf7f0;
+            color: #0f5f36;
+        }
         @media (max-width: 640px) {
             .registrar-topbar-context {
                 padding-left: 4px;
@@ -271,14 +314,26 @@
                     </a>
 
                     {{-- Profile Avatar --}}
-                    <a href="#" class="topbar-user topbar-profile-trigger">
-                        <div class="topbar-avatar-placeholder topbar-avatar-placeholder--neutral">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
+                    <div class="dropdown registrar-profile-menu-wrap">
+                        <a href="#" class="topbar-user topbar-profile-trigger {{ request()->routeIs('registrar.profile') ? 'is-active' : '' }}" id="registrarProfileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Profile menu">
+                            <div class="topbar-avatar-placeholder topbar-avatar-placeholder--neutral">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end registrar-profile-menu" aria-labelledby="registrarProfileDropdown">
+                            <div class="registrar-profile-menu-header">
+                                <div class="registrar-profile-menu-name">{{ optional(auth()->user())->name ?: 'Registrar User' }}</div>
+                                <div class="registrar-profile-menu-email">{{ optional(auth()->user())->email ?: optional(auth()->user())->username }}</div>
+                            </div>
+                            <a class="dropdown-item" href="{{ route('registrar.profile') }}">
+                                <i class="bi bi-person-circle"></i>
+                                <span>My Profile</span>
+                            </a>
                         </div>
-                    </a>
+                    </div>
                 </div>
             </header>
 

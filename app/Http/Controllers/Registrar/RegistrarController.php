@@ -365,6 +365,64 @@ class RegistrarController extends Controller
     /**
      * Registrar Messaging
      */
+    public function profile()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        $user->loadMissing(['registrar', 'accountProfile', 'accountStatus']);
+
+        return view('registrar.profile', [
+            'user' => $user,
+            'registrar' => $user->registrar,
+            'accountProfile' => $user->accountProfile,
+            'accountStatus' => $user->accountStatus,
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string', 'max:255'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:64',
+                'different:current_password',
+                'confirmed',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+            ],
+        ], [
+            'password.regex' => 'New password must include uppercase, lowercase, and numeric characters.',
+        ]);
+
+        if (!Hash::check($validated['current_password'], (string) $user->password)) {
+            return redirect()
+                ->route('registrar.profile')
+                ->withErrors(['current_password' => 'Current password is incorrect.'])
+                ->withInput($request->except(['current_password', 'password', 'password_confirmation']))
+                ->with('open_change_password_modal', true);
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->force_password_reset = false;
+        $user->save();
+
+        return redirect()
+            ->route('registrar.profile')
+            ->with('status', 'Password updated successfully.');
+    }
+
     public function messaging()
     {
         $folder = strtolower(trim((string) request('folder', 'inbox')));
