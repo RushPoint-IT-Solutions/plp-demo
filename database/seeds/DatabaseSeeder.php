@@ -7,6 +7,8 @@ use App\Registrar;
 use App\Faculty;
 use App\Department;
 
+require_once __DIR__ . '/SampleUniversalTransmutationSeeder.php';
+
 class DatabaseSeeder extends Seeder
 {
     public function run()
