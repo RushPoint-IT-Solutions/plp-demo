@@ -13,6 +13,10 @@ class AddUniqueIndexToSubjectCodes extends Migration
             return;
         }
 
+        if ($this->hasDuplicateSubjectCodes()) {
+            return;
+        }
+
         if (!$this->indexExists('subjects', 'subjects_code_unique')) {
             Schema::table('subjects', function (Blueprint $table) {
                 $table->unique('code', 'subjects_code_unique');
@@ -38,5 +42,19 @@ class AddUniqueIndexToSubjectCodes extends Migration
         $rows = DB::select('SHOW INDEX FROM `' . $table . '` WHERE Key_name = ?', [$index]);
 
         return count($rows) > 0;
+    }
+
+    private function hasDuplicateSubjectCodes(): bool
+    {
+        $duplicate = DB::table('subjects')
+            ->select('code')
+            ->whereNotNull('code')
+            ->where('code', '<>', '')
+            ->groupBy('code')
+            ->havingRaw('COUNT(*) > 1')
+            ->limit(1)
+            ->first();
+
+        return $duplicate !== null;
     }
 }
