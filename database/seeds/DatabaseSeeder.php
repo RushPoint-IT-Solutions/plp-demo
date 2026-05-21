@@ -62,7 +62,6 @@ class DatabaseSeeder extends Seeder
             GradeRuleSeeder::class,
             TransmutationRuleSeeder::class,
             SampleUniversalTransmutationSeeder::class,
-            AdditionalSampleTransmutationTableSeeder::class,
             GradingPeriodSeeder::class,
             GradingComponentSeeder::class,
             StudentDeficiencySeeder::class,
