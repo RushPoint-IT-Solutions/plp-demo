@@ -180,7 +180,8 @@
                     <div class="sidebar-nested-menu">
                         <div class="sidebar-section-label">Term Process</div>
                         <a href="{{ route('registrar.registrar-menu.scheduling.academic-term-lifecycle') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-term-lifecycle*') ? 'active' : '' }}">1. Close / Open Term</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.academic-setup-automation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-setup-automation*') ? 'active' : '' }}">2. Generate Academic Setup</a>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.promotion-readiness') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.promotion-readiness*') ? 'active' : '' }}">2. Promotion Readiness</a>
+                        <a href="{{ route('registrar.registrar-menu.scheduling.academic-setup-automation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-setup-automation*') ? 'active' : '' }}">3. Generate Academic Setup</a>
 
                         <div class="sidebar-section-divider"></div>
                         <div class="sidebar-section-label">Rooms</div>
@@ -402,6 +403,12 @@
                         <a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>
                     </div>
                 </div>
+
+                @if(auth()->check() && strtolower(trim((string)(auth()->user()->module ?? ''))) === 'admin')
+                <a href="{{ route('registrar.admin-tools.grade-override.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.admin-tools.grade-override.*') ? 'active' : '' }}">
+                    Grade Override
+                </a>
+                @endif
 
                 <a href="{{ route('registrar.admin-tools.audit-trail') }}" class="sidebar-sublink {{ request()->routeIs('registrar.admin-tools.audit-trail') ? 'active' : '' }}">
                     Audit Trail

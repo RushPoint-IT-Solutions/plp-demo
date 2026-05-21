@@ -183,7 +183,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#ca8a04" stroke-width="1.5" viewBox="0 0 24 24"><path d="M2 2v19c0 1.66 1.34 3 3 3h17"/><path d="M5 17 9.59 11.64c.76-.88 2.11-.94 2.93-.11l.95.94c.82.83 2.17.77 2.93-.11L21 7"/></svg>
             </div>
             <div>
-                <div class="sr-stat-val">{{ $students->total() }}</div>
+                <div class="sr-stat-val">{{ $students->count() }}</div>
                 <div class="sr-stat-lbl">Matching Filter</div>
             </div>
         </div>
@@ -358,13 +358,6 @@
             </div>
         @endforelse
     </div>
-
-    {{-- Pagination --}}
-    @if($students->hasPages())
-    <div class="sr-pager">
-        {{ $students->links() }}
-    </div>
-    @endif
 
 </div>
 @endsection

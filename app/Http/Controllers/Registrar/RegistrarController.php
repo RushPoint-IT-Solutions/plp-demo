@@ -11021,7 +11021,6 @@ class RegistrarController extends Controller
                 'sections_created_count' => 0,
                 'class_offerings_generated_count' => 0,
                 'rooms_assigned_count' => 0,
-                'faculty_assigned_count' => 0,
                 'schedules_generated_count' => 0,
                 'student_loads_generated_count' => 0,
                 'pending_issue_count' => 0,
@@ -11241,7 +11240,6 @@ class RegistrarController extends Controller
             'sections_created_count' => 0,
             'class_offerings_generated_count' => 0,
             'rooms_assigned_count' => 0,
-            'faculty_assigned_count' => 0,
             'schedules_generated_count' => 0,
             'student_loads_generated_count' => 0,
         ];
@@ -11354,7 +11352,6 @@ class RegistrarController extends Controller
             ->whereIn('year_section', $sectionLabels->all())
             ->get();
 
-        $counts['faculty_assigned_count'] += $this->assignAcademicSetupFaculty($subjects);
         $schedule = $this->autoAssignSubjectRoomsAndSchedules($subjects, $autoCreateRooms, false);
         $counts['schedules_generated_count'] += (int) $schedule['updated_count'];
 
@@ -11502,6 +11499,110 @@ class RegistrarController extends Controller
         ));
     }
 
+    public function academicSetupMovementPreview(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'year_block_id' => 'required|integer|exists:year_blocks,id',
+            'max_students_per_section' => 'nullable|integer|min:1|max:300',
+        ]);
+
+        $courseId = (int) $validated['course_id'];
+        $yearBlockId = (int) $validated['year_block_id'];
+        $maxStudentsPerSection = (int) ($validated['max_students_per_section'] ?? 40);
+        $course = Course::query()->findOrFail($courseId);
+        $targetYearBlock = YearBlock::query()->findOrFail($yearBlockId);
+        $targetYearNumber = $this->academicSetupYearLevelNumber((string) $targetYearBlock->label);
+
+        if ($targetYearNumber < 1) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'Selected year level cannot be previewed.',
+                'summary' => [],
+                'students' => [],
+            ]);
+        }
+
+        $sourceYearNumber = $targetYearNumber > 1 ? $targetYearNumber - 1 : 1;
+        $sourceYearBlockId = $targetYearNumber > 1 ? $this->resolveSectionOfferingYearBlockId($sourceYearNumber) : $yearBlockId;
+        $studentColumns = ['id', 'student_no', 'name', 'course_id', 'year_block_id'];
+        foreach (['academic_term_id', 'year_level'] as $column) {
+            if (Schema::hasColumn('students', $column)) {
+                $studentColumns[] = $column;
+            }
+        }
+
+        $students = Student::query()
+            ->active()
+            ->where('course_id', $courseId)
+            ->where('year_block_id', $sourceYearBlockId ?: $yearBlockId)
+            ->orderBy('name')
+            ->orderBy('student_no')
+            ->get($studentColumns);
+
+        $targetPlan = $this->academicSetupSectionPlan(
+            (string) $course->code,
+            $targetYearNumber,
+            max(1, (int) ceil(max($students->count(), 1) / max($maxStudentsPerSection, 1)))
+        );
+        $targetSections = collect($targetPlan)->pluck('desired')->values();
+        $requiredSubjectCodes = $targetYearNumber > 1
+            ? $this->academicSetupRequiredSubjectCodes($courseId, (int) $sourceYearBlockId)
+            : [];
+
+        $rows = [];
+        foreach ($students->values() as $index => $student) {
+            $evaluation = $this->academicSetupMovementEvaluation($student, $requiredSubjectCodes);
+            $targetSection = (string) ($targetSections[(int) floor($index / max($maxStudentsPerSection, 1))] ?? $targetSections->last());
+            $currentSection = $this->latestStudentSectionLabel((int) $student->id);
+            if ($currentSection === '') {
+                $currentSection = $this->fallbackStudentSectionLabel((string) $course->code, $sourceYearNumber);
+            }
+
+            $rows[] = [
+                'student_no' => (string) $student->student_no,
+                'name' => (string) $student->name,
+                'from_year' => $targetYearNumber > 1 ? $this->ordinalYearLabel($sourceYearNumber) : (string) $targetYearBlock->label,
+                'to_year' => (string) $targetYearBlock->label,
+                'from_section' => $currentSection,
+                'to_section' => $targetSection,
+                'status' => $evaluation['status'],
+                'remarks' => $evaluation['remarks'],
+            ];
+        }
+
+        $summary = collect($rows)
+            ->groupBy(function ($row) {
+                return $row['from_section'] . '|' . $row['to_section'];
+            })
+            ->map(function ($group) {
+                $first = $group->first();
+
+                return [
+                    'from_section' => $first['from_section'],
+                    'to_section' => $first['to_section'],
+                    'student_count' => $group->count(),
+                    'eligible_count' => $group->where('status', 'Eligible')->count(),
+                    'pending_count' => $group->where('status', 'Pending Review')->count(),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json([
+            'ok' => true,
+            'message' => $targetYearNumber > 1
+                ? 'Preview loaded for students moving from ' . $this->ordinalYearLabel($sourceYearNumber) . ' to ' . (string) $targetYearBlock->label . '.'
+                : 'Preview loaded for students currently tagged as ' . (string) $targetYearBlock->label . '.',
+            'source_year' => $targetYearNumber > 1 ? $this->ordinalYearLabel($sourceYearNumber) : (string) $targetYearBlock->label,
+            'target_year' => (string) $targetYearBlock->label,
+            'requires_curriculum_check' => count($requiredSubjectCodes) > 0,
+            'required_subject_count' => count($requiredSubjectCodes),
+            'summary' => $summary,
+            'students' => $rows,
+        ]);
+    }
+
     public function generateAcademicSetupAutomation(Request $request): JsonResponse
     {
         if (!Schema::hasTable('academic_setup_generation_logs')
@@ -11568,7 +11669,6 @@ class RegistrarController extends Controller
             'students_assigned_count' => 0,
             'class_offerings_generated_count' => 0,
             'rooms_assigned_count' => 0,
-            'faculty_assigned_count' => 0,
             'schedules_generated_count' => 0,
             'student_loads_generated_count' => 0,
         ];
@@ -11701,6 +11801,14 @@ class RegistrarController extends Controller
                         continue;
                     }
 
+                    $promotionStatus = Schema::hasTable('student_promotions')
+                        ? (string) DB::table('student_promotions')
+                            ->where('student_id', (int) $student->id)
+                            ->where('to_academic_term_id', $academicTermId)
+                            ->value('promotion_status')
+                        : '';
+                    $needsAdviserReview = $promotionStatus === 'Needs Adviser Approval';
+
                     DB::table('student_section_assignments')->updateOrInsert([
                         'academic_term_id' => $academicTermId,
                         'student_id' => (int) $student->id,
@@ -11709,8 +11817,8 @@ class RegistrarController extends Controller
                         'year_block_id' => $yearBlockId,
                         'section' => $sectionLabel,
                         'status' => 'active',
-                        'approval_status' => 'auto_approved',
-                        'flags' => null,
+                        'approval_status' => $needsAdviserReview ? 'adviser_review' : 'auto_approved',
+                        'flags' => $needsAdviserReview ? 'Irregular student; adviser approval required' : null,
                         'updated_at' => now(),
                         'created_at' => now(),
                     ]);
@@ -11724,8 +11832,6 @@ class RegistrarController extends Controller
                     ->where('academic_term_id', $academicTermId)
                     ->whereIn('year_section', $allSectionLabels->all())
                     ->get();
-
-                $counts['faculty_assigned_count'] = $this->assignAcademicSetupFaculty($subjects);
 
                 $scheduleResult = $this->autoAssignSubjectRoomsAndSchedules($subjects, $autoCreateRooms, false);
                 $counts['schedules_generated_count'] = (int) $scheduleResult['updated_count'];
@@ -11817,6 +11923,14 @@ class RegistrarController extends Controller
             'status' => $status,
             'counts' => $counts + ['pending_issue_count' => $pendingIssues],
             'issues' => $this->academicSetupIssueRows($logId),
+            'details' => $this->academicSetupGenerationDetails(
+                $logId,
+                $courseId,
+                $academicTermId,
+                $yearBlockId,
+                $maxStudentsPerSection,
+                $pendingIssues
+            ),
         ]);
     }
 
@@ -11869,6 +11983,308 @@ class RegistrarController extends Controller
         ]);
     }
 
+    public function promotionReadiness(Request $request)
+    {
+        $programOptions = Course::query()
+            ->where(function ($query) {
+                $query->whereNull('program_file')
+                    ->orWhere('program_file', '')
+                    ->orWhereNotIn(DB::raw('LOWER(TRIM(program_file))'), ['inactive', 'closed', 'not offered this term', 'not_offered_this_term']);
+            })
+            ->orderBy('code')
+            ->orderBy('name')
+            ->get(['id', 'code', 'name'])
+            ->map(function (Course $course) {
+                return [
+                    'id' => (int) $course->id,
+                    'label' => trim((string) $course->code . ' - ' . (string) $course->name, ' -'),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return view('registrar.registrar-menu.scheduling.promotion-readiness', compact('programOptions'));
+    }
+
+    public function promotionReadinessData(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+        ]);
+
+        if (!Schema::hasTable('student_section_assignments')) {
+            return response()->json(['ok' => false, 'message' => 'Student section assignments table is not ready.'], 409);
+        }
+
+        $courseId = (int) $validated['course_id'];
+        $sections = DB::table('student_section_assignments as ssa')
+            ->join('academic_terms as at', 'at.id', '=', 'ssa.academic_term_id')
+            ->leftJoin('year_blocks as yb', 'yb.id', '=', 'ssa.year_block_id')
+            ->select([
+                'ssa.academic_term_id',
+                'ssa.course_id',
+                'ssa.year_block_id',
+                'ssa.section',
+                'at.school_year',
+                'at.term',
+                'at.status as term_status',
+                'yb.label as year_level_label',
+                DB::raw('COUNT(*) as student_count'),
+            ])
+            ->where('ssa.course_id', $courseId)
+            ->where('ssa.status', 'active')
+            ->whereNotIn(DB::raw("LOWER(TRIM(COALESCE(at.status, '')))"), ['closed', 'archived'])
+            ->groupBy('ssa.academic_term_id', 'ssa.course_id', 'ssa.year_block_id', 'ssa.section', 'at.school_year', 'at.term', 'at.status', 'yb.label')
+            ->orderByDesc('at.school_year')
+            ->orderByDesc('ssa.academic_term_id')
+            ->orderBy('yb.id')
+            ->orderBy('ssa.section')
+            ->get()
+            ->map(function ($section) {
+                $students = $this->promotionReadinessSectionStudents(
+                    (int) $section->academic_term_id,
+                    (int) $section->course_id,
+                    (int) $section->year_block_id,
+                    (string) $section->section
+                );
+
+                $next = $this->determineNextAcademicTerm((string) $section->school_year, (string) $section->term);
+                $nextYearBlockId = $this->nextYearBlockIdForPromotion((int) $section->year_block_id, (string) $section->term);
+                $nextYearLabel = $nextYearBlockId ? (string) YearBlock::query()->where('id', $nextYearBlockId)->value('label') : 'Graduation Evaluation';
+
+                // Lookup the next term (never auto-create here)
+                $nextTermAliases = array_map('strtolower', $this->slotMonitoringSemesterAliases($next['semester']));
+                $nextTermRow = DB::table('academic_terms')
+                    ->where('school_year', $next['school_year'])
+                    ->whereIn(DB::raw('LOWER(TRIM(term))'), $nextTermAliases)
+                    ->orderByDesc('id')
+                    ->first(['id', 'status']);
+
+                return [
+                    'academic_term_id' => (int) $section->academic_term_id,
+                    'course_id' => (int) $section->course_id,
+                    'year_block_id' => (int) $section->year_block_id,
+                    'section' => (string) $section->section,
+                    'school_year' => (string) $section->school_year,
+                    'semester' => (string) $section->term,
+                    'term_status' => (string) $section->term_status,
+                    'year_level' => (string) $section->year_level_label,
+                    'student_count' => (int) $section->student_count,
+                    'passed_count' => $students->where('readiness_status', 'Passed')->count(),
+                    'failed_count' => $students->where('readiness_status', 'Failed')->count(),
+                    'pending_count' => $students->where('readiness_status', 'Pending')->count(),
+                    'next_school_year' => $next['school_year'],
+                    'next_semester' => $next['semester'],
+                    'next_year_level' => $nextYearLabel,
+                    'next_term_id' => $nextTermRow ? (int) $nextTermRow->id : null,
+                    'next_term_status' => $nextTermRow ? (string) $nextTermRow->status : null,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json(['ok' => true, 'sections' => $sections]);
+    }
+
+    public function promotionReadinessSection(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'academic_term_id' => 'required|integer|exists:academic_terms,id',
+            'course_id' => 'required|integer|exists:courses,id',
+            'year_block_id' => 'required|integer|exists:year_blocks,id',
+            'section' => 'required|string|max:80',
+        ]);
+
+        $students = $this->promotionReadinessSectionStudents(
+            (int) $validated['academic_term_id'],
+            (int) $validated['course_id'],
+            (int) $validated['year_block_id'],
+            (string) $validated['section']
+        )->values()->all();
+
+        return response()->json(['ok' => true, 'students' => $students]);
+    }
+
+    public function promotionReadinessPreview(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'academic_term_id' => 'required|integer|exists:academic_terms,id',
+            'course_id'        => 'required|integer|exists:courses,id',
+            'year_block_id'    => 'required|integer|exists:year_blocks,id',
+            'section'          => 'required|string|max:80',
+        ]);
+
+        $currentTerm    = AcademicTerm::query()->findOrFail((int) $validated['academic_term_id']);
+        $next           = $this->determineNextAcademicTerm((string) $currentTerm->school_year, (string) $currentTerm->term);
+        $nextYearBlockId = $this->nextYearBlockIdForPromotion((int) $validated['year_block_id'], (string) $currentTerm->term);
+        $nextYearLabel  = $nextYearBlockId
+            ? (string) YearBlock::query()->where('id', $nextYearBlockId)->value('label')
+            : 'Graduation Evaluation';
+
+        $students = $this->promotionReadinessSectionStudents(
+            (int) $validated['academic_term_id'],
+            (int) $validated['course_id'],
+            (int) $validated['year_block_id'],
+            (string) $validated['section']
+        )->values()->all();
+
+        // Curriculum subjects for the next year level + semester
+        $curriculumSubjects = [];
+        if ($nextYearBlockId) {
+            $semesterIds = $this->resolveSemesterIdsForLabel($next['semester']);
+
+            $curriculumId = DB::table('course_curricula')
+                ->where('course_id', (int) $validated['course_id'])
+                ->where('is_active', 1)
+                ->orderByDesc('id')
+                ->value('id');
+
+            if ($curriculumId && count($semesterIds) > 0) {
+                $curriculumSubjects = DB::table('course_curriculum_subjects as ccs')
+                    ->join('subjects as s', 's.id', '=', 'ccs.subject_id')
+                    ->where('ccs.course_curriculum_id', $curriculumId)
+                    ->where('ccs.year_block_id', $nextYearBlockId)
+                    ->whereIn('ccs.semester_id', $semesterIds)
+                    ->select('s.code', 's.name', 'ccs.credited_units as units', 'ccs.display_order')
+                    ->orderBy('ccs.display_order')
+                    ->get()
+                    ->map(function ($s) {
+                        return [
+                            'code'  => (string) $s->code,
+                            'name'  => (string) $s->name,
+                            'units' => (float) $s->units,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+            }
+        }
+
+        return response()->json([
+            'ok'       => true,
+            'students' => $students,
+            'next'     => [
+                'school_year' => $next['school_year'],
+                'semester'    => $next['semester'],
+                'year_level'  => $nextYearLabel,
+            ],
+            'curriculum_subjects' => $curriculumSubjects,
+        ]);
+    }
+
+    public function generatePromotionReadinessMovement(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'academic_term_id' => 'required|integer|exists:academic_terms,id',
+            'course_id' => 'required|integer|exists:courses,id',
+            'year_block_id' => 'required|integer|exists:year_blocks,id',
+            'section' => 'required|string|max:80',
+        ]);
+
+        $currentTerm = AcademicTerm::query()->findOrFail((int) $validated['academic_term_id']);
+        $next = $this->determineNextAcademicTerm((string) $currentTerm->school_year, (string) $currentTerm->term);
+
+        // Require the next term to already exist — never auto-create during movement
+        $nextTermAliases = array_map('strtolower', $this->slotMonitoringSemesterAliases($next['semester']));
+        $nextTermId = DB::table('academic_terms')
+            ->where('school_year', $next['school_year'])
+            ->whereIn(DB::raw('LOWER(TRIM(term))'), $nextTermAliases)
+            ->orderByDesc('id')
+            ->value('id');
+
+        if (!$nextTermId) {
+            return response()->json([
+                'ok'      => false,
+                'message' => 'The next academic term (' . $next['school_year'] . ' — ' . $next['semester'] . ') has not been created yet. Please generate it via Term Lifecycle before proceeding.',
+            ], 422);
+        }
+
+        $nextTerm = AcademicTerm::query()->findOrFail((int) $nextTermId);
+
+        $nextYearBlockId = $this->nextYearBlockIdForPromotion((int) $validated['year_block_id'], (string) $currentTerm->term);
+        $students = $this->promotionReadinessSectionStudents(
+            (int) $validated['academic_term_id'],
+            (int) $validated['course_id'],
+            (int) $validated['year_block_id'],
+            (string) $validated['section']
+        );
+
+        $moved = 0;
+        $review = 0;
+        DB::transaction(function () use ($students, $currentTerm, $nextTerm, $nextTermId, $nextYearBlockId, $validated, &$moved, &$review) {
+            foreach ($students as $student) {
+                $isPassed = (string) $student['readiness_status'] === 'Passed';
+                $promotionStatus = $isPassed ? 'Promoted' : 'Needs Adviser Approval';
+                $targetSection = $this->promotionReadinessTargetSection((string) $validated['section'], (int) $validated['year_block_id'], $nextYearBlockId, (string) $currentTerm->term);
+
+                DB::table('student_promotions')->updateOrInsert([
+                    'student_id' => (int) $student['id'],
+                    'to_academic_term_id' => $nextTermId,
+                ], [
+                    'from_academic_term_id' => (int) $currentTerm->id,
+                    'from_year_block_id' => (int) $validated['year_block_id'],
+                    'to_year_block_id' => $nextYearBlockId,
+                    'promotion_status' => $promotionStatus,
+                    'remarks' => (string) $student['remarks'],
+                    'created_by' => auth()->id(),
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]);
+
+                if ($isPassed && $nextYearBlockId) {
+                    DB::table('students')->where('id', (int) $student['id'])->update(array_filter([
+                        'academic_term_id' => $nextTermId,
+                        'school_year' => Schema::hasColumn('students', 'school_year') ? (string) $nextTerm->school_year : null,
+                        'semester' => Schema::hasColumn('students', 'semester') ? (string) $nextTerm->term : null,
+                        'year_block_id' => $nextYearBlockId,
+                        'year_level' => Schema::hasColumn('students', 'year_level') ? (string) YearBlock::query()->where('id', $nextYearBlockId)->value('label') : null,
+                        'updated_at' => now(),
+                    ], function ($value) {
+                        return $value !== null;
+                    }));
+
+                    // Deactivate the old section assignment
+                    DB::table('student_section_assignments')
+                        ->where('student_id', (int) $student['id'])
+                        ->where('academic_term_id', (int) $currentTerm->id)
+                        ->where('status', 'active')
+                        ->update(['status' => 'promoted', 'updated_at' => now()]);
+
+                    DB::table('student_section_assignments')->updateOrInsert([
+                        'academic_term_id' => $nextTermId,
+                        'student_id' => (int) $student['id'],
+                    ], [
+                        'course_id' => (int) $validated['course_id'],
+                        'year_block_id' => $nextYearBlockId,
+                        'section' => $targetSection,
+                        'status' => 'active',
+                        'approval_status' => 'auto_approved',
+                        'flags' => null,
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]);
+                    $moved++;
+                } else {
+                    // Mark as for_review so the section no longer shows these students as active
+                    DB::table('student_section_assignments')
+                        ->where('student_id', (int) $student['id'])
+                        ->where('academic_term_id', (int) $currentTerm->id)
+                        ->where('status', 'active')
+                        ->update(['status' => 'for_review', 'updated_at' => now()]);
+                    $review++;
+                }
+            }
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Movement generated. Eligible students moved; failed or pending students were left for adviser review.',
+            'moved_count' => $moved,
+            'review_count' => $review,
+            'next_term' => (string) $nextTerm->school_year . ' / ' . (string) $nextTerm->term,
+        ]);
+    }
+
     private function academicSetupYearLevelNumber(string $label): int
     {
         $normalized = strtolower(trim($label));
@@ -11896,6 +12312,195 @@ class RegistrarController extends Controller
         }
 
         return 0;
+    }
+
+    private function academicSetupMovementEvaluation(Student $student, array $requiredSubjectCodes = []): array
+    {
+        $requiredSubjectCodes = array_values(array_unique(array_filter(array_map(function ($code) {
+            return strtoupper(trim((string) $code));
+        }, $requiredSubjectCodes))));
+
+        if (count($requiredSubjectCodes)) {
+            return $this->academicSetupMovementCurriculumEvaluation($student, $requiredSubjectCodes);
+        }
+
+        $termId = (int) ($student->academic_term_id ?? 0);
+        if ($termId > 0) {
+            $evaluation = $this->evaluateStudentPromotionStatus($student, $termId);
+
+            return [
+                'status' => $evaluation['is_irregular'] ? 'Pending Review' : 'Eligible',
+                'remarks' => count($evaluation['flags']) ? implode('; ', $evaluation['flags']) : 'Passed encoded subjects',
+            ];
+        }
+
+        $subjectIds = DB::table('student_subject')
+            ->where('student_id', (int) $student->id)
+            ->pluck('subject_id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->all();
+
+        if (!count($subjectIds)) {
+            return ['status' => 'Pending Review', 'remarks' => 'No finalized enrollment load found'];
+        }
+
+        $grades = StudentSubjectGrade::query()
+            ->where('student_id', (int) $student->id)
+            ->whereIn('subject_id', $subjectIds)
+            ->get(['final_average', 'remarks']);
+
+        if ($grades->count() < count($subjectIds)) {
+            return ['status' => 'Pending Review', 'remarks' => 'Missing encoded grades'];
+        }
+
+        $hasFailure = $grades->contains(function ($grade) {
+            $remarks = strtolower(trim((string) $grade->remarks));
+            return in_array($remarks, ['failed', 'fail', 'f'], true)
+                || $grade->final_average === null
+                || (float) $grade->final_average < 75.0;
+        });
+
+        return [
+            'status' => $hasFailure ? 'Pending Review' : 'Eligible',
+            'remarks' => $hasFailure ? 'Failed, incomplete, or missing final grade' : 'Passed encoded subjects',
+        ];
+    }
+
+    private function academicSetupMovementCurriculumEvaluation(Student $student, array $requiredSubjectCodes): array
+    {
+        $gradeRows = DB::table('student_subject as ss')
+            ->join('subjects as s', 's.id', '=', 'ss.subject_id')
+            ->leftJoin('student_subject_grades as g', function ($join) {
+                $join->on('g.student_id', '=', 'ss.student_id')
+                    ->on('g.subject_id', '=', 'ss.subject_id');
+            })
+            ->where('ss.student_id', (int) $student->id)
+            ->select('s.code', 's.name', 'g.final_average', 'g.remarks')
+            ->get()
+            ->groupBy(function ($row) {
+                return strtoupper(trim((string) $row->code));
+            });
+
+        if (!$gradeRows->count()) {
+            return [
+                'status' => 'Pending Review',
+                'remarks' => 'No enrolled subjects or grades found for required curriculum check',
+            ];
+        }
+
+        $missing = [];
+        $failed = [];
+        $incomplete = [];
+
+        foreach ($requiredSubjectCodes as $code) {
+            $rows = $gradeRows->get($code, collect());
+            if (!$rows->count()) {
+                $missing[] = $code;
+                continue;
+            }
+
+            $passed = $rows->contains(function ($row) {
+                $remarks = strtolower(trim((string) $row->remarks));
+                return !in_array($remarks, ['failed', 'fail', 'f', 'incomplete', 'inc'], true)
+                    && $row->final_average !== null
+                    && (float) $row->final_average >= 75.0;
+            });
+
+            if ($passed) {
+                continue;
+            }
+
+            $hasIncomplete = $rows->contains(function ($row) {
+                $remarks = strtolower(trim((string) $row->remarks));
+                return $row->final_average === null || in_array($remarks, ['incomplete', 'inc'], true);
+            });
+
+            if ($hasIncomplete) {
+                $incomplete[] = $code;
+            } else {
+                $failed[] = $code;
+            }
+        }
+
+        $issues = [];
+        if (count($missing)) {
+            $issues[] = 'Missing required subject grade: ' . implode(', ', array_slice($missing, 0, 5)) . (count($missing) > 5 ? ' +' . (count($missing) - 5) . ' more' : '');
+        }
+        if (count($failed)) {
+            $issues[] = 'Failed/back subject: ' . implode(', ', array_slice($failed, 0, 5)) . (count($failed) > 5 ? ' +' . (count($failed) - 5) . ' more' : '');
+        }
+        if (count($incomplete)) {
+            $issues[] = 'Incomplete/missing final grade: ' . implode(', ', array_slice($incomplete, 0, 5)) . (count($incomplete) > 5 ? ' +' . (count($incomplete) - 5) . ' more' : '');
+        }
+
+        return [
+            'status' => count($issues) ? 'Pending Review' : 'Eligible',
+            'remarks' => count($issues) ? implode('; ', $issues) : 'Passed all required curriculum subjects',
+        ];
+    }
+
+    private function academicSetupRequiredSubjectCodes(int $courseId, int $yearBlockId): array
+    {
+        if ($yearBlockId <= 0 || !Schema::hasTable('course_curriculum_subjects')) {
+            return [];
+        }
+
+        $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
+        if (!$curriculum) {
+            return [];
+        }
+
+        return CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->where('year_block_id', $yearBlockId)
+            ->get()
+            ->map(function (CourseCurriculumSubject $assignment) {
+                return strtoupper(trim((string) optional($assignment->subject)->code));
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function latestStudentSectionLabel(int $studentId): string
+    {
+        if (!Schema::hasTable('student_section_assignments')) {
+            return '';
+        }
+
+        return trim((string) DB::table('student_section_assignments')
+            ->where('student_id', $studentId)
+            ->orderByDesc('academic_term_id')
+            ->orderByDesc('id')
+            ->value('section'));
+    }
+
+    private function fallbackStudentSectionLabel(string $programCode, int $yearNumber): string
+    {
+        $programCode = strtoupper(preg_replace('/[^A-Z0-9]/', '', trim($programCode)));
+        if ($programCode === '') {
+            $programCode = 'PROGRAM';
+        }
+
+        return $programCode . '-' . $yearNumber . 'A';
+    }
+
+    private function ordinalYearLabel(int $yearNumber): string
+    {
+        $map = [
+            1 => '1st Year',
+            2 => '2nd Year',
+            3 => '3rd Year',
+            4 => '4th Year',
+            5 => '5th Year',
+            6 => '6th Year',
+        ];
+
+        return $map[$yearNumber] ?? ((string) $yearNumber . 'th Year');
     }
 
     private function academicSetupSectionPlan(string $programCode, int $yearNumber, int $count): array
@@ -12016,11 +12621,6 @@ class RegistrarController extends Controller
         return count($rows);
     }
 
-    private function assignAcademicSetupFaculty($subjects): int
-    {
-        return 0;
-    }
-
     private function validateAcademicSetupGeneration(
         int $logId,
         int $courseId,
@@ -12046,18 +12646,6 @@ class RegistrarController extends Controller
                     $label,
                     'This class offering does not have an assigned room.',
                     'Add an active room with enough capacity or rerun with automatic room creation enabled.'
-                );
-            }
-
-            if (empty($subject->faculty_id)) {
-                $this->recordAcademicSetupIssue(
-                    $logId,
-                    'Classes without faculty',
-                    'Subject',
-                    (int) $subject->id,
-                    $label,
-                    'This class offering does not have an assigned faculty member.',
-                    'Assign faculty in Faculty Loads or configure faculty qualification data.'
                 );
             }
 
@@ -12194,6 +12782,604 @@ class RegistrarController extends Controller
                 ];
             })
             ->all();
+    }
+
+    private function academicSetupGenerationDetails(
+        int $logId,
+        int $courseId,
+        int $academicTermId,
+        int $yearBlockId,
+        int $maxStudentsPerSection,
+        int $pendingIssues
+    ): array {
+        $sections = Subject::query()
+            ->where('course_id', $courseId)
+            ->where('academic_term_id', $academicTermId)
+            ->where('year_section', '<>', '')
+            ->whereNotNull('year_section')
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('is_subject_file_record')
+                        ->orWhere('is_subject_file_record', 0);
+                });
+            })
+            ->select('year_section')
+            ->distinct()
+            ->orderBy('year_section')
+            ->pluck('year_section')
+            ->map(function ($section) use ($academicTermId, $courseId) {
+                $section = trim((string) $section);
+                $subjectQuery = Subject::query()
+                    ->where('course_id', $courseId)
+                    ->where('academic_term_id', $academicTermId)
+                    ->where('year_section', $section);
+
+                $subjectIds = (clone $subjectQuery)->pluck('id')->map(function ($value) {
+                    return (int) $value;
+                })->all();
+
+                return [
+                    'section' => $section,
+                    'students' => Schema::hasTable('student_section_assignments')
+                        ? (int) DB::table('student_section_assignments')
+                            ->where('academic_term_id', $academicTermId)
+                            ->where('course_id', $courseId)
+                            ->where('section', $section)
+                            ->count()
+                        : 0,
+                    'subjects' => count($subjectIds),
+                    'loads' => count($subjectIds)
+                        ? (int) DB::table('student_subject')->whereIn('subject_id', $subjectIds)->count()
+                        : 0,
+                    'rooms_assigned' => (clone $subjectQuery)->whereRaw("TRIM(COALESCE(room, '')) <> ''")->count(),
+                    'schedules_ready' => (clone $subjectQuery)
+                        ->whereRaw("TRIM(COALESCE(days, '')) <> ''")
+                        ->whereRaw("TRIM(COALESCE(time_start, '')) <> ''")
+                        ->whereRaw("TRIM(COALESCE(time_end, '')) <> ''")
+                        ->count(),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $approvalRows = [];
+        if (Schema::hasTable('student_section_assignments')) {
+            $approvalRows = DB::table('student_section_assignments')
+                ->select('approval_status', DB::raw('COUNT(*) as total'))
+                ->where('academic_term_id', $academicTermId)
+                ->where('course_id', $courseId)
+                ->where('year_block_id', $yearBlockId)
+                ->groupBy('approval_status')
+                ->orderBy('approval_status')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'status' => (string) ($row->approval_status ?: 'unclassified'),
+                        'total' => (int) $row->total,
+                    ];
+                })
+                ->all();
+        }
+
+        $issueTypes = [];
+        if (Schema::hasTable('academic_setup_pending_issues')) {
+            $issueTypes = DB::table('academic_setup_pending_issues')
+                ->select('issue_type', DB::raw('COUNT(*) as total'))
+                ->where('generation_log_id', $logId)
+                ->where('status', 'open')
+                ->groupBy('issue_type')
+                ->orderBy('issue_type')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'type' => (string) $row->issue_type,
+                        'total' => (int) $row->total,
+                    ];
+                })
+                ->all();
+        }
+
+        $nextActions = [];
+        if ($pendingIssues > 0) {
+            $nextActions[] = 'Resolve the pending issues shown below before publishing this setup.';
+        } else {
+            $nextActions[] = 'Publish this setup when the preview matches the registrar-approved movement.';
+        }
+
+        $hasAdviserReview = collect($approvalRows)->contains(function ($row) {
+            return (string) $row['status'] === 'adviser_review' && (int) $row['total'] > 0;
+        });
+        if ($hasAdviserReview) {
+            $nextActions[] = 'Review adviser_review students before treating them as regular block students.';
+        }
+
+        $missingRooms = collect($sections)->sum(function ($section) {
+            return max(0, (int) $section['subjects'] - (int) $section['rooms_assigned']);
+        });
+        if ($missingRooms > 0) {
+            $nextActions[] = 'Complete room or schedule assignment for classes without rooms or times.';
+        }
+
+        $nextActions[] = 'Run teacher generation after rooms and schedules are ready.';
+
+        return [
+            'max_students_per_section' => $maxStudentsPerSection,
+            'sections' => $sections,
+            'approval_statuses' => $approvalRows,
+            'issue_types' => $issueTypes,
+            'next_actions' => array_values(array_unique($nextActions)),
+        ];
+    }
+
+    private function promotionReadinessSectionStudents(int $academicTermId, int $courseId, int $yearBlockId, string $section)
+    {
+        $students = DB::table('student_section_assignments as ssa')
+            ->join('students as st', 'st.id', '=', 'ssa.student_id')
+            ->select('st.id', 'st.student_no', 'st.name', 'ssa.approval_status', 'ssa.flags')
+            ->where('ssa.academic_term_id', $academicTermId)
+            ->where('ssa.course_id', $courseId)
+            ->where('ssa.year_block_id', $yearBlockId)
+            ->where('ssa.section', $section)
+            ->where('ssa.status', 'active')
+            ->orderBy('st.name')
+            ->orderBy('st.student_no')
+            ->get();
+
+        $subjectIds = Subject::query()
+            ->where('academic_term_id', $academicTermId)
+            ->where('course_id', $courseId)
+            ->where('year_section', $section)
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                $query->where(function ($builder) {
+                    $builder->whereNull('is_subject_file_record')
+                        ->orWhere('is_subject_file_record', 0);
+                });
+            })
+            ->pluck('id')
+            ->map(function ($value) {
+                return (int) $value;
+            })
+            ->all();
+
+        $transmutationRules = [];
+        if (Schema::hasTable('transmutation_rules')) {
+            $transmutationRules = DB::table('transmutation_rules')
+                ->where('academic_term_id', $academicTermId)
+                ->orderByDesc(DB::raw('CASE WHEN course_id IS NOT NULL THEN 1 ELSE 0 END'))
+                ->orderBy('initial_from')
+                ->get()
+                ->toArray();
+        }
+
+        // When no subject offerings exist yet, fall back to the active curriculum
+        $curriculumFallback = [];
+        if (empty($subjectIds) && Schema::hasTable('course_curricula') && Schema::hasTable('course_curriculum_subjects')) {
+            $termSem = (string) DB::table('academic_terms')->where('id', $academicTermId)->value('term');
+            $semesterIds = $this->resolveSemesterIdsForLabel($termSem);
+            $curriculumId = DB::table('course_curricula')
+                ->where('course_id', $courseId)
+                ->where('is_active', 1)
+                ->orderByDesc('id')
+                ->value('id');
+            if ($curriculumId && count($semesterIds) > 0) {
+                $curriculumFallback = DB::table('course_curriculum_subjects as ccs')
+                    ->join('subjects as s', 's.id', '=', 'ccs.subject_id')
+                    ->where('ccs.course_curriculum_id', $curriculumId)
+                    ->where('ccs.year_block_id', $yearBlockId)
+                    ->whereIn('ccs.semester_id', $semesterIds)
+                    ->select('s.code', 's.name', 'ccs.credited_units as units', 'ccs.display_order')
+                    ->orderBy('ccs.display_order')
+                    ->get()
+                    ->toArray();
+            }
+        }
+
+        // Batch-load all grades in one query grouped by student_id to avoid N+1
+        $allStudentIds = $students->pluck('id')->map(function ($v) { return (int) $v; })->all();
+        $gradesGrouped = collect();
+        if (!empty($allStudentIds) && !empty($subjectIds)) {
+            $gradesGrouped = DB::table('student_subject as ss')
+                ->join('subjects as s', 's.id', '=', 'ss.subject_id')
+                ->leftJoin('student_subject_grades as g', function ($join) {
+                    $join->on('g.student_id', '=', 'ss.student_id')
+                        ->on('g.subject_id', '=', 'ss.subject_id');
+                })
+                ->leftJoin('faculties as f', 'f.id', '=', 's.faculty_id')
+                ->whereIn('ss.student_id', $allStudentIds)
+                ->whereIn('ss.subject_id', $subjectIds)
+                ->select('ss.student_id', 's.code', 's.name', 's.units', 's.days', 's.time_start', 's.time_end', 's.room', 'f.name as teacher_name', 'g.midterm', 'g.final', 'g.final_average', 'g.remarks')
+                ->orderBy('s.code')
+                ->get()
+                ->groupBy('student_id');
+        }
+
+        return $students->map(function ($student) use ($subjectIds, $courseId, $transmutationRules, $curriculumFallback, $gradesGrouped) {
+            // If no subject offerings exist yet, return curriculum placeholder rows
+            if (empty($subjectIds) && count($curriculumFallback) > 0) {
+                $placeholderGrades = array_map(function ($s) {
+                    return [
+                        'code'          => (string) $s->code,
+                        'name'          => (string) $s->name,
+                        'units'         => (float) $s->units,
+                        'days'          => '',
+                        'time_start'    => '',
+                        'time_end'      => '',
+                        'room'          => '',
+                        'teacher'       => '',
+                        'midterm'       => null,
+                        'final'         => null,
+                        'final_average' => null,
+                        'eq_grade'      => null,
+                        'remarks'       => '',
+                    ];
+                }, $curriculumFallback);
+                return [
+                    'id'              => (int) $student->id,
+                    'student_no'      => (string) $student->student_no,
+                    'name'            => (string) $student->name,
+                    'readiness_status' => 'Pending',
+                    'remarks'         => 'No grades yet — grading not set up for this term.',
+                    'approval_status' => (string) ($student->approval_status ?: ''),
+                    'flags'           => (string) ($student->flags ?: ''),
+                    'grades'          => $placeholderGrades,
+                ];
+            }
+
+            $grades = $gradesGrouped->get((int) $student->id, collect());
+
+            $status = 'Passed';
+            $remarks = [];
+            if (!count($subjectIds) || !$grades->count()) {
+                $status = 'Pending';
+                $remarks[] = 'No section subjects or grades found.';
+            } elseif ($grades->count() < count($subjectIds)) {
+                $status = 'Pending';
+                $remarks[] = 'Missing encoded grades.';
+            }
+
+            foreach ($grades as $grade) {
+                $gradeRemarks = strtolower(trim((string) $grade->remarks));
+                if ($grade->final_average === null || in_array($gradeRemarks, ['incomplete', 'inc'], true)) {
+                    $status = $status === 'Failed' ? 'Failed' : 'Pending';
+                    $remarks[] = trim((string) $grade->code) . ' incomplete/missing final grade';
+                    continue;
+                }
+
+                if ((float) $grade->final_average < 75.0 || in_array($gradeRemarks, ['failed', 'fail', 'f'], true)) {
+                    $status = 'Failed';
+                    $remarks[] = trim((string) $grade->code) . ' failed/back subject';
+                }
+            }
+
+            return [
+                'id' => (int) $student->id,
+                'student_no' => (string) $student->student_no,
+                'name' => (string) $student->name,
+                'readiness_status' => $status,
+                'remarks' => count($remarks) ? implode('; ', array_values(array_unique($remarks))) : 'All encoded final grades passed.',
+                'approval_status' => (string) ($student->approval_status ?: ''),
+                'flags' => (string) ($student->flags ?: ''),
+                'grades' => $grades->map(function ($grade) use ($courseId, $transmutationRules) {
+                    $eqGrade = null;
+                    if ($grade->final_average !== null && count($transmutationRules) > 0) {
+                        $raw = (float) $grade->final_average;
+                        foreach ($transmutationRules as $rule) {
+                            if (!empty($rule->course_id) && (int) $rule->course_id === $courseId
+                                && $raw >= (float) $rule->initial_from && $raw <= (float) $rule->initial_to) {
+                                $eqGrade = $rule->transmuted_grade;
+                                break;
+                            }
+                        }
+                        if ($eqGrade === null) {
+                            foreach ($transmutationRules as $rule) {
+                                if (empty($rule->course_id)
+                                    && $raw >= (float) $rule->initial_from && $raw <= (float) $rule->initial_to) {
+                                    $eqGrade = $rule->transmuted_grade;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    return [
+                        'code' => (string) $grade->code,
+                        'name' => (string) $grade->name,
+                        'units' => (float) $grade->units,
+                        'days' => (string) ($grade->days ?: ''),
+                        'time_start' => (string) ($grade->time_start ?: ''),
+                        'time_end' => (string) ($grade->time_end ?: ''),
+                        'room' => (string) ($grade->room ?: ''),
+                        'teacher' => (string) ($grade->teacher_name ?: ''),
+                        'midterm' => $grade->midterm === null ? null : (float) $grade->midterm,
+                        'final' => $grade->final === null ? null : (float) $grade->final,
+                        'final_average' => $grade->final_average === null ? null : (float) $grade->final_average,
+                        'eq_grade' => $eqGrade !== null ? (is_numeric($eqGrade) ? (float) $eqGrade : (string) $eqGrade) : null,
+                        'remarks' => (string) ($grade->remarks ?: ''),
+                    ];
+                })->values()->all(),
+            ];
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════
+     * Grade Override (Super-Admin)
+     * ═══════════════════════════════════════════════════ */
+
+    public function gradeOverrideIndex(): View
+    {
+        $programOptions = DB::table('courses')
+            ->where('is_active', 1)
+            ->orderBy('code')
+            ->get(['id', 'code', 'name'])
+            ->map(function ($c) {
+                return [
+                    'id'    => (int) $c->id,
+                    'label' => trim((string) $c->code . ' - ' . (string) $c->name, ' -'),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $isAdmin = strtolower(trim((string) (auth()->user()->module ?? ''))) === 'admin';
+
+        return view('registrar.registrar-menu.grade-override', compact('programOptions', 'isAdmin'));
+    }
+
+    public function gradeOverrideTerms(Request $request): JsonResponse
+    {
+        $courseId = (int) $request->query('course_id', 0);
+        if (!$courseId) {
+            return response()->json(['ok' => false, 'message' => 'course_id required.'], 422);
+        }
+
+        $terms = DB::table('academic_terms as at')
+            ->join('student_section_assignments as ssa', 'ssa.academic_term_id', '=', 'at.id')
+            ->where('ssa.course_id', $courseId)
+            ->select('at.id', 'at.school_year', 'at.term', 'at.status')
+            ->groupBy('at.id', 'at.school_year', 'at.term', 'at.status')
+            ->orderByDesc('at.school_year')
+            ->orderByDesc('at.id')
+            ->limit(20)
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id'     => (int) $t->id,
+                    'label'  => (string) $t->school_year . ' — ' . (string) $t->term,
+                    'status' => (string) $t->status,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json(['ok' => true, 'terms' => $terms]);
+    }
+
+    public function gradeOverrideSubjects(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'academic_term_id' => 'required|integer|exists:academic_terms,id',
+            'course_id'        => 'required|integer|exists:courses,id',
+        ]);
+
+        $subjects = DB::table('subjects as s')
+            ->leftJoin('faculties as f', 'f.id', '=', 's.faculty_id')
+            ->where('s.academic_term_id', (int) $validated['academic_term_id'])
+            ->where('s.course_id', (int) $validated['course_id'])
+            ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($q) {
+                $q->where(function ($b) {
+                    $b->whereNull('s.is_subject_file_record')
+                        ->orWhere('s.is_subject_file_record', 0);
+                });
+            })
+            ->select('s.id', 's.code', 's.name', 's.year_section', 'f.name as teacher_name')
+            ->orderBy('s.code')
+            ->orderBy('s.year_section')
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id'           => (int) $s->id,
+                    'code'         => (string) $s->code,
+                    'name'         => (string) $s->name,
+                    'year_section' => (string) ($s->year_section ?: ''),
+                    'teacher'      => (string) ($s->teacher_name ?: ''),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json(['ok' => true, 'subjects' => $subjects]);
+    }
+
+    public function gradeOverrideStudents(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'subject_id' => 'required|integer|exists:subjects,id',
+        ]);
+
+        $rows = DB::table('student_subject as ss')
+            ->join('students as st', 'st.id', '=', 'ss.student_id')
+            ->leftJoin('student_subject_grades as g', function ($join) {
+                $join->on('g.student_id', '=', 'ss.student_id')
+                    ->on('g.subject_id', '=', 'ss.subject_id');
+            })
+            ->where('ss.subject_id', (int) $validated['subject_id'])
+            ->select(
+                'st.id', 'st.student_no', 'st.name',
+                'g.id as grade_id', 'g.midterm', 'g.final', 'g.final_average', 'g.remarks',
+                'g.updated_at as grade_updated_at'
+            )
+            ->orderBy('st.name')
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'student_id'       => (int) $r->id,
+                    'student_no'       => (string) $r->student_no,
+                    'name'             => (string) $r->name,
+                    'grade_id'         => $r->grade_id ? (int) $r->grade_id : null,
+                    'midterm'          => $r->midterm !== null ? (float) $r->midterm : null,
+                    'final'            => $r->final !== null ? (float) $r->final : null,
+                    'final_average'    => $r->final_average !== null ? (float) $r->final_average : null,
+                    'remarks'          => (string) ($r->remarks ?: ''),
+                    'grade_updated_at' => $r->grade_updated_at ? (string) $r->grade_updated_at : null,
+                    'has_edits'        => false, // resolved client-side after log check
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json(['ok' => true, 'students' => $rows]);
+    }
+
+    public function gradeOverrideUpdate(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        if (strtolower(trim((string) ($user->module ?? ''))) !== 'admin') {
+            return response()->json(['ok' => false, 'message' => 'Unauthorized. Only administrators can override grades.'], 403);
+        }
+
+        $validated = $request->validate([
+            'student_id' => 'required|integer|exists:students,id',
+            'subject_id' => 'required|integer|exists:subjects,id',
+            'field'      => 'required|in:midterm,final,final_average,remarks',
+            'new_value'  => 'nullable|string|max:100',
+            'reason'     => 'required|string|min:5|max:500',
+        ]);
+
+        $studentId = (int) $validated['student_id'];
+        $subjectId = (int) $validated['subject_id'];
+        $field     = (string) $validated['field'];
+        $rawNew    = isset($validated['new_value']) && $validated['new_value'] !== '' ? $validated['new_value'] : null;
+        $reason    = (string) $validated['reason'];
+
+        $gradeRow  = DB::table('student_subject_grades')
+            ->where('student_id', $studentId)
+            ->where('subject_id', $subjectId)
+            ->first();
+        $oldValue  = $gradeRow ? (string) ($gradeRow->{$field} ?? '') : null;
+
+        // Validate and cast new value
+        $typedNew = null;
+        if ($field === 'remarks') {
+            $typedNew = $rawNew;
+        } elseif ($rawNew !== null) {
+            if (!is_numeric($rawNew)) {
+                return response()->json(['ok' => false, 'message' => 'Grade value must be numeric.'], 422);
+            }
+            $typedNew = round((float) $rawNew, 2);
+        }
+
+        DB::transaction(function () use ($studentId, $subjectId, $field, $typedNew, $oldValue, $reason, $user) {
+            $existing = DB::table('student_subject_grades')
+                ->where('student_id', $studentId)
+                ->where('subject_id', $subjectId)
+                ->exists();
+
+            if ($existing) {
+                DB::table('student_subject_grades')
+                    ->where('student_id', $studentId)
+                    ->where('subject_id', $subjectId)
+                    ->update([$field => $typedNew, 'updated_at' => now()]);
+            } else {
+                DB::table('student_subject_grades')->insert([
+                    'student_id' => $studentId,
+                    'subject_id' => $subjectId,
+                    $field       => $typedNew,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            if (Schema::hasTable('grade_edit_logs')) {
+                DB::table('grade_edit_logs')->insert([
+                    'student_id'     => $studentId,
+                    'subject_id'     => $subjectId,
+                    'field'          => $field,
+                    'old_value'      => ($oldValue !== null && $oldValue !== '') ? $oldValue : null,
+                    'new_value'      => $typedNew !== null ? (string) $typedNew : null,
+                    'reason'         => $reason,
+                    'edited_by'      => (int) $user->id,
+                    'edited_by_name' => (string) ($user->name ?? $user->email ?? ''),
+                    'edited_at'      => now(),
+                ]);
+            }
+        });
+
+        return response()->json(['ok' => true, 'message' => 'Grade updated.', 'new_value' => $typedNew]);
+    }
+
+    public function gradeOverrideLogs(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|integer|exists:students,id',
+            'subject_id' => 'required|integer|exists:subjects,id',
+        ]);
+
+        if (!Schema::hasTable('grade_edit_logs')) {
+            return response()->json(['ok' => true, 'logs' => []]);
+        }
+
+        $logs = DB::table('grade_edit_logs')
+            ->where('student_id', (int) $validated['student_id'])
+            ->where('subject_id', (int) $validated['subject_id'])
+            ->orderByDesc('edited_at')
+            ->limit(50)
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'id'             => (int) $log->id,
+                    'field'          => (string) $log->field,
+                    'old_value'      => $log->old_value !== null ? (string) $log->old_value : null,
+                    'new_value'      => $log->new_value !== null ? (string) $log->new_value : null,
+                    'reason'         => (string) ($log->reason ?: ''),
+                    'edited_by_name' => (string) ($log->edited_by_name ?: ''),
+                    'edited_at'      => (string) $log->edited_at,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return response()->json(['ok' => true, 'logs' => $logs]);
+    }
+
+    /* ═══════════════════════════════════════════════════ */
+
+    private function resolveSemesterIdsForLabel(string $semesterLabel): array
+    {
+        $sem = strtolower(trim($semesterLabel));
+        if (strpos($sem, 'first') !== false || strpos($sem, '1st') !== false) {
+            $semLike = ['%first%', '%1st%'];
+        } elseif (strpos($sem, 'second') !== false || strpos($sem, '2nd') !== false) {
+            $semLike = ['%second%', '%2nd%'];
+        } else {
+            $semLike = ['%summer%'];
+        }
+        return DB::table('semesters')
+            ->where(function ($q) use ($semLike) {
+                foreach ($semLike as $like) {
+                    $q->orWhereRaw('LOWER(name) LIKE ?', [$like]);
+                }
+            })
+            ->pluck('id')
+            ->toArray();
+    }
+
+    private function promotionReadinessTargetSection(string $section, int $currentYearBlockId, ?int $nextYearBlockId, string $currentTerm): string
+    {
+        if (!$nextYearBlockId || $nextYearBlockId === $currentYearBlockId) {
+            return $section;
+        }
+
+        $nextYear = $this->academicSetupYearLevelNumber((string) YearBlock::query()->where('id', $nextYearBlockId)->value('label'));
+        if ($nextYear < 1) {
+            return $section;
+        }
+
+        if (preg_match('/^(.*?)(\d+)([A-Z]+)$/i', trim($section), $matches) === 1) {
+            return $matches[1] . $nextYear . strtoupper($matches[3]);
+        }
+
+        $suffix = preg_match('/([A-Z]+)$/i', trim($section), $suffixMatch) === 1 ? strtoupper($suffixMatch[1]) : 'A';
+        $coursePrefix = preg_replace('/-\d+[A-Z]+$/i', '', trim($section));
+        return trim($coursePrefix, '-') . '-' . $nextYear . $suffix;
     }
 
     public function sectionOfferingData(Request $request): JsonResponse
@@ -16057,7 +17243,7 @@ class RegistrarController extends Controller
             $query->whereIn('academic_term_id', $termIds);
         }
 
-        $students = $query->paginate(24)->appends($request->query());
+        $students = $query->get();
 
         $courses = Course::orderBy('code')->get(['id', 'code', 'name']);
 

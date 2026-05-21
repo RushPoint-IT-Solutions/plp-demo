@@ -202,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ['Sections', counts.sections_created_count || 0],
             ['Offerings', counts.class_offerings_generated_count || 0],
             ['Rooms', counts.rooms_assigned_count || 0],
-            ['Faculty', counts.faculty_assigned_count || 0],
             ['Schedules', counts.schedules_generated_count || 0],
             ['Loads', counts.student_loads_generated_count || 0],
             ['Issues', counts.pending_issue_count || 0]

@@ -275,7 +275,13 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/academic-term-lifecycle/close', 'Registrar\RegistrarController@closeCurrentSemester')->name('academic-term-lifecycle.close')->middleware('throttle:10,1');
             Route::post('/academic-term-lifecycle/open', 'Registrar\RegistrarController@openNewAcademicTerm')->name('academic-term-lifecycle.open')->middleware('throttle:10,1');
             Route::post('/academic-term-lifecycle/{academicTerm}/publish', 'Registrar\RegistrarController@publishNewAcademicTerm')->name('academic-term-lifecycle.publish')->middleware('throttle:10,1');
+            Route::get('/promotion-readiness', 'Registrar\RegistrarController@promotionReadiness')->name('promotion-readiness');
+            Route::get('/promotion-readiness/data', 'Registrar\RegistrarController@promotionReadinessData')->name('promotion-readiness.data')->middleware('throttle:60,1');
+            Route::get('/promotion-readiness/section', 'Registrar\RegistrarController@promotionReadinessSection')->name('promotion-readiness.section')->middleware('throttle:60,1');
+            Route::get('/promotion-readiness/preview', 'Registrar\RegistrarController@promotionReadinessPreview')->name('promotion-readiness.preview')->middleware('throttle:60,1');
+            Route::post('/promotion-readiness/move', 'Registrar\RegistrarController@generatePromotionReadinessMovement')->name('promotion-readiness.move')->middleware('throttle:20,1');
             Route::get('/academic-setup-automation', 'Registrar\RegistrarController@academicSetupAutomation')->name('academic-setup-automation');
+            Route::get('/academic-setup-automation/movement-preview', 'Registrar\RegistrarController@academicSetupMovementPreview')->name('academic-setup-automation.movement-preview')->middleware('throttle:60,1');
             Route::post('/academic-setup-automation/generate', 'Registrar\RegistrarController@generateAcademicSetupAutomation')->name('academic-setup-automation.generate')->middleware('throttle:20,1');
             Route::post('/academic-setup-automation/{generationLog}/publish', 'Registrar\RegistrarController@publishAcademicSetupAutomation')->name('academic-setup-automation.publish')->middleware('throttle:20,1');
             Route::get('/section-offering', 'Registrar\RegistrarController@sectionOffering')->name('section-offering');
@@ -562,6 +568,15 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         });
 
         Route::get('/audit-trail', 'Registrar\Services\AdminToolsController@auditTrail')->name('audit-trail');
+
+        Route::prefix('grade-override')->name('grade-override.')->group(function () {
+            Route::get('/', 'Registrar\RegistrarController@gradeOverrideIndex')->name('index');
+            Route::get('/terms', 'Registrar\RegistrarController@gradeOverrideTerms')->name('terms')->middleware('throttle:60,1');
+            Route::get('/subjects', 'Registrar\RegistrarController@gradeOverrideSubjects')->name('subjects')->middleware('throttle:60,1');
+            Route::get('/students', 'Registrar\RegistrarController@gradeOverrideStudents')->name('students')->middleware('throttle:60,1');
+            Route::post('/update', 'Registrar\RegistrarController@gradeOverrideUpdate')->name('update')->middleware('throttle:30,1');
+            Route::get('/logs', 'Registrar\RegistrarController@gradeOverrideLogs')->name('logs')->middleware('throttle:60,1');
+        });
     });
 });
 
