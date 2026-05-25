@@ -11,6 +11,11 @@ class StudentRequirementStatus extends Model
         'registrar_requirement_policy_id',
         'is_submitted',
         'remarks',
+        'uploaded_original_name',
+        'uploaded_path',
+        'uploaded_mime',
+        'uploaded_size',
+        'uploaded_at',
         'date_verified',
         'verified_by_user_id',
     ];
@@ -18,6 +23,7 @@ class StudentRequirementStatus extends Model
     protected $casts = [
         'is_submitted' => 'boolean',
         'date_verified' => 'date',
+        'uploaded_at' => 'datetime',
     ];
 
     public function student()

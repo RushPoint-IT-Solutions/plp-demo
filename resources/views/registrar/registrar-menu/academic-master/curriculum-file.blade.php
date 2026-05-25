@@ -22,10 +22,172 @@
         font-size: .82rem;
         line-height: 1.45;
     }
+    .cf-masterlist-print {
+        display: none;
+    }
+    @media print {
+        @page {
+            size: legal portrait;
+            margin: 0.35in;
+        }
+        body * {
+            visibility: hidden !important;
+        }
+        .cf-masterlist-print,
+        .cf-masterlist-print * {
+            visibility: visible !important;
+        }
+        .cf-masterlist-print {
+            display: block !important;
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            color: #111;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 9px;
+            line-height: 1.12;
+        }
+        .cf-masterlist-print-page {
+            width: 100%;
+        }
+        .cf-masterlist-head {
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            align-items: center;
+            width: 6.1in;
+            margin: 0 auto 8px;
+        }
+        .cf-masterlist-logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            justify-self: center;
+        }
+        .cf-masterlist-school {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: .03em;
+        }
+        .cf-masterlist-address,
+        .cf-masterlist-phone {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        .cf-masterlist-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 16px;
+            margin: 3px 0;
+            letter-spacing: .02em;
+        }
+        .cf-masterlist-program {
+            text-align: center;
+            font-weight: 800;
+            font-size: 17px;
+            margin: 2px 0 8px;
+            text-transform: uppercase;
+        }
+        .cf-masterlist-year-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 13px;
+            margin: 6px 0 3px;
+        }
+        .cf-masterlist-term-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-bottom: 5px;
+            break-inside: avoid;
+        }
+        .cf-masterlist-term-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+        .cf-masterlist-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .cf-masterlist-table th,
+        .cf-masterlist-table td {
+            border: 1px solid #333;
+            padding: 1px 3px;
+            vertical-align: top;
+        }
+        .cf-masterlist-table th {
+            text-align: center;
+            font-weight: 800;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+        .cf-masterlist-table td {
+            font-size: 8px;
+        }
+        .cf-masterlist-table .num,
+        .cf-masterlist-table .pre {
+            text-align: center;
+        }
+        .cf-masterlist-table tfoot td {
+            border: 0;
+            font-weight: 800;
+            text-align: center;
+            padding-top: 2px;
+        }
+        .cf-masterlist-signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.1in;
+            margin-top: 24px;
+            padding: 0 6px;
+            break-inside: avoid;
+        }
+        .cf-masterlist-sign-block {
+            min-height: 82px;
+            font-size: 11px;
+        }
+        .cf-masterlist-sign-block strong {
+            display: block;
+            margin-top: 30px;
+            font-weight: 800;
+        }
+        .cf-masterlist-sign-block span {
+            display: block;
+        }
+        .cf-masterlist-approved {
+            margin-top: 18px;
+        }
+    }
 </style>
 @endpush
 
 @section('content')
+@php
+    $curriculumMasterlist = $curriculumSummary['masterlist'] ?? ['curriculum_year' => '', 'program_name' => 'PROGRAM', 'years' => []];
+    $formatCfNumber = function ($value) {
+        $number = (float) $value;
+        return abs($number - round($number)) < 0.01 ? (string) (int) round($number) : number_format($number, 1);
+    };
+    $formatCfYear = function ($label) {
+        $text = strtolower((string) $label);
+        if (strpos($text, '1') !== false || strpos($text, 'first') !== false) return 'FIRST YEAR';
+        if (strpos($text, '2') !== false || strpos($text, 'second') !== false) return 'SECOND YEAR';
+        if (strpos($text, '3') !== false || strpos($text, 'third') !== false) return 'THIRD YEAR';
+        if (strpos($text, '4') !== false || strpos($text, 'fourth') !== false) return 'FOURTH YEAR';
+        return strtoupper((string) $label);
+    };
+    $formatCfTerm = function ($label) {
+        $text = strtolower((string) $label);
+        if (strpos($text, '1') !== false || strpos($text, 'first') !== false) return 'FIRST SEMESTER';
+        if (strpos($text, '2') !== false || strpos($text, 'second') !== false) return 'SECOND SEMESTER';
+        if (strpos($text, 'summer') !== false) return 'SUMMER';
+        return strtoupper((string) $label);
+    };
+@endphp
 <div class="pf-page">
     @if(session('curriculum_file_success'))
         <div class="alert alert-success mb-3" role="alert">
@@ -85,6 +247,7 @@
                 </div>
                 <div class="cf-toolbar-action">
                     <button type="button" class="pf-btn-new" id="cfViewListBtn">View List</button>
+                    <button type="button" class="pf-btn-new" onclick="window.print()" {{ empty($curriculumMasterlist['years']) ? 'disabled' : '' }}>Print Masterlist</button>
                     <button type="button" class="pf-btn-new" id="cfOpenPrerequisitesBtn">Open Pre-Requisites</button>
                 </div>
             </div>
@@ -306,6 +469,103 @@
         </section>
     </div>
 </div>
+
+<section class="cf-masterlist-print" aria-label="Curriculum Masterlist">
+    <div class="cf-masterlist-print-page">
+        <header class="cf-masterlist-head">
+            <img class="cf-masterlist-logo" src="{{ asset('img/logobg.png') }}" alt="PLP Logo">
+            <div>
+                <div class="cf-masterlist-school">PAMANTASAN NG LUNGSOD NG PASIG</div>
+                <div class="cf-masterlist-address">Alkalde Jose St. Kapasigan, Pasig City, Philippines 1600</div>
+                <div class="cf-masterlist-phone">8628-1014</div>
+            </div>
+        </header>
+
+        <div class="cf-masterlist-title">A.Y. {{ $curriculumMasterlist['curriculum_year'] ?: $selectedCurriculumYear }} CURRICULUM</div>
+        <div class="cf-masterlist-program">{{ $curriculumMasterlist['program_name'] ?? 'PROGRAM' }}</div>
+
+        @forelse($curriculumMasterlist['years'] as $year)
+            <div class="cf-masterlist-year-title">{{ $formatCfYear($year['label'] ?? '') }}</div>
+            <div class="cf-masterlist-term-grid">
+                @foreach(($year['semesters'] ?? []) as $semester)
+                    <div class="cf-masterlist-term">
+                        <div class="cf-masterlist-term-title">{{ $formatCfTerm($semester['label'] ?? '') }}</div>
+                        <table class="cf-masterlist-table">
+                            <colgroup>
+                                <col style="width: 14%;">
+                                <col style="width: 46%;">
+                                <col style="width: 12%;">
+                                <col style="width: 7%;">
+                                <col style="width: 7%;">
+                                <col style="width: 7%;">
+                                <col style="width: 7%;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>COURSES</th>
+                                    <th>SUBJECT DESCRIPTION</th>
+                                    <th>PREREQ</th>
+                                    <th>LEC.</th>
+                                    <th>LAB.</th>
+                                    <th>UNITS</th>
+                                    <th>HRS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse(($semester['subjects'] ?? []) as $subject)
+                                    <tr>
+                                        <td>{{ $subject['code'] ?: '-' }}</td>
+                                        <td>{{ $subject['title'] ?: '-' }}</td>
+                                        <td class="pre">{{ $subject['prereq'] ?: 'None' }}</td>
+                                        <td class="num">{{ $formatCfNumber($subject['lec'] ?? 0) }}</td>
+                                        <td class="num">{{ $formatCfNumber($subject['lab'] ?? 0) }}</td>
+                                        <td class="num">{{ $formatCfNumber($subject['units'] ?? 0) }}</td>
+                                        <td class="num">{{ $formatCfNumber($subject['hours'] ?? 0) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="num">No courses assigned.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td>{{ $formatCfNumber($semester['totals']['lec'] ?? 0) }}</td>
+                                    <td>{{ $formatCfNumber($semester['totals']['lab'] ?? 0) }}</td>
+                                    <td>{{ $formatCfNumber($semester['totals']['units'] ?? 0) }}</td>
+                                    <td>{{ $formatCfNumber($semester['totals']['hours'] ?? 0) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                @endforeach
+            </div>
+        @empty
+            <p style="text-align:center;">No curriculum subjects available for printing.</p>
+        @endforelse
+
+        <div class="cf-masterlist-signatures">
+            <div>
+                <div class="cf-masterlist-sign-block">
+                    <span>Prepared by:</span>
+                    <strong>MAILA N. UNSAY, Ph.D</strong>
+                    <span>Dean, College of Education</span>
+                </div>
+                <div class="cf-masterlist-sign-block cf-masterlist-approved">
+                    <span>Approved by:</span>
+                    <strong>GLICERIO M. MANINGAS, Ph.D</strong>
+                    <span>University President</span>
+                </div>
+            </div>
+            <div class="cf-masterlist-sign-block">
+                <span>Noted by:</span>
+                <strong>JIMMY C. CATANES, Ph.D., CESE</strong>
+                <span>Director IV, CHED-NCR</span>
+            </div>
+        </div>
+    </div>
+</section>
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

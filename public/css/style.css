@@ -3653,6 +3653,55 @@ select:hover {
   color: #777777;
 }
 
+.msg-action-col {
+  width: 118px;
+  text-align: center;
+}
+
+.msg-action-cell {
+  text-align: center;
+}
+
+.msg-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.msg-action-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #cfd9d2;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #17633a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.msg-action-btn:hover,
+.msg-action-btn:focus {
+  background: #eef7f1;
+  border-color: #0a813c;
+  color: #0a813c;
+  outline: none;
+}
+
+.msg-action-btn--danger {
+  color: #b42318;
+}
+
+.msg-action-btn--danger:hover,
+.msg-action-btn--danger:focus {
+  background: #fee2e2;
+  border-color: #ef9a9a;
+  color: #991b1b;
+}
+
 .msg-empty {
   text-align: center;
   color: #888888;
@@ -3904,6 +3953,49 @@ select:hover {
   gap: 8px;
 }
 
+.msg-view-modal-box {
+  max-width: 620px;
+}
+
+.msg-view-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.msg-view-grid > div {
+  border: 1px solid #e6eaee;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fbfcfd;
+}
+
+.msg-view-grid span {
+  display: block;
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.msg-view-grid strong {
+  color: #143521;
+  font-size: 0.9rem;
+}
+
+.msg-view-full {
+  grid-column: 1 / -1;
+}
+
+.msg-view-full p {
+  margin: 0;
+  color: #334155;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
 @media (max-width: 768px) {
   .msg-toolbar {
     flex-direction: column;
@@ -3957,6 +4049,10 @@ select:hover {
   .pf-modal-actions.msg-compose-modal-actions button {
     width: 100%;
     justify-content: center;
+  }
+
+  .msg-view-grid {
+    grid-template-columns: 1fr;
   }
 }
 

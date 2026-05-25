@@ -340,7 +340,7 @@
     .cor-notice-title {
         font-size: 8.5px;
         font-weight: 800;
-        text-decoration: underline;
+        text-decoration: none;
         margin: 0 0 12px;
     }
 
@@ -655,7 +655,7 @@
                             <p class="cor-signature-role">STUDENT SIGNATURE</p>
                         </div>
                         <div>
-                            <p class="cor-signature-name">FEDERICO G. NUEVA</p>
+                            <p class="cor-signature-name">MR. FEDERICO G. NUEVA</p>
                             <p class="cor-signature-role">UNIVERSITY REGISTRAR</p>
                         </div>
                     </div>

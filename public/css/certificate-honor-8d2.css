@@ -117,7 +117,7 @@
   width: 58mm;
   height: 1px;
   margin: 0 auto 10mm;
-  border-top: 1px solid #000;
+  border-top: 0;
 }
 
 .registrar-body .certificate-8d2__signatory-name {

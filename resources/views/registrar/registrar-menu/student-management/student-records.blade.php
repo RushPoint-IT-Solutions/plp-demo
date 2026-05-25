@@ -30,8 +30,13 @@
     padding:0 10px;
 }
 .sr-search-wrap { flex:1; min-width:200px; position:relative; }
-.sr-search-wrap input { width:100%; padding-left:38px; }
-.sr-search-wrap > svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; z-index:2; pointer-events:none; }
+.sr-search-wrap input { width:100%; }
+.sr-graduate-select {
+    width:230px;
+    min-width:230px;
+    padding-right:44px !important;
+    text-overflow:ellipsis;
+}
 .sr-filter-group { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
 .sr-btn-search {
     background:#004d27; color:#fff; border:none; border-radius:8px;
@@ -202,8 +207,7 @@
     <form method="GET" action="{{ route('registrar.registrar-menu.student-mgmt.student-records') }}">
         <div class="sr-toolbar">
             <div class="sr-search-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" name="q" class="form-control" placeholder="Search name or student no…" value="{{ $search }}">
+                <input type="text" name="q" class="form-control" placeholder="Enter name or student number" value="{{ $search }}">
             </div>
             <div class="sr-filter-group">
                 <select name="program" class="form-select" style="width:auto;">
@@ -230,7 +234,7 @@
                         <option value="{{ $so }}" {{ $sem === $so ? 'selected' : '' }}>{{ $so }}</option>
                     @endforeach
                 </select>
-                <select name="graduate" class="form-select" style="width:160px;">
+                <select name="graduate" class="form-select sr-graduate-select">
                     <option value="all" {{ ($graduate ?? 'all') === 'all' ? 'selected' : '' }}>All Graduation Status</option>
                     <option value="graduates" {{ ($graduate ?? 'all') === 'graduates' ? 'selected' : '' }}>Graduates</option>
                     <option value="non_graduates" {{ ($graduate ?? 'all') === 'non_graduates' ? 'selected' : '' }}>Non-Graduates</option>
@@ -249,14 +253,14 @@
         {{-- Status pills --}}
         <div class="sr-status-bar">
             @foreach([['all','All Students'],['active','Active'],['withdrawn','Withdrawn']] as [$val,$lbl])
-                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records', array_merge(request()->except('status','page'), ['status'=>$val])) }}"
+                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records', array_merge(request()->except('status','graduate','page'), ['status'=>$val, 'graduate'=>'all'])) }}"
                    class="sr-status-pill {{ $val }} {{ $status === $val ? 'selected' : '' }}">
                     {{ $lbl }}
                 </a>
             @endforeach
             @foreach([['graduates','Graduates'],['non_graduates','Non-Graduates']] as [$val,$lbl])
-                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records', array_merge(request()->except('graduate','page'), ['graduate'=>$val])) }}"
-                   class="sr-status-pill {{ $val }} {{ ($graduate ?? 'all') === $val ? 'selected' : '' }}">
+                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records', array_merge(request()->except('status','graduate','page'), ['status'=>'all', 'graduate'=>$val])) }}"
+                   class="sr-status-pill {{ $val }} {{ $status === 'all' && ($graduate ?? 'all') === $val ? 'selected' : '' }}">
                     {{ $lbl }}
                 </a>
             @endforeach

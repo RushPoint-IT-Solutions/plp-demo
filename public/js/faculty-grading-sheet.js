@@ -648,66 +648,127 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!activeSubject) return;
 
         var isMidterm = phase === 'midterm';
-        var title = isMidterm ? 'MIDTERM GRADES' : 'FINAL GRADES';
         var students = (activeSubject.students || []).slice();
+        var now = new Date();
+        var printedDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        var semesterLabel = formatReportSemester(activeSubject.semester);
+        var schoolYearTerm = [activeSubject.school_year || '-', semesterLabel].filter(Boolean).join(' / ');
+        var professorName = activeSubject.professor || '-';
+        var description = activeSubject.name || '-';
+
         var rows = students.map(function (student, index) {
-            var average = student.final_average || computeRawAverage(student.midterm, student.final);
-            var equivalent = computeEquivalentGrade(student.midterm, student.final);
-            var gradeCell = isMidterm
-                ? escapeHtml(student.midterm || '-')
-                : escapeHtml(student.final || '-');
-            var extraCells = isMidterm
-                ? ''
-                : '<td>' + escapeHtml(average || '-') + '</td>'
-                    + '<td>' + escapeHtml(equivalent || '-') + '</td>'
-                    + '<td>' + escapeHtml(student.remarks || student.status || '-') + '</td>';
+            var midterm = student.midterm || '';
+            var finalGrade = isMidterm ? '' : (student.final || '');
+            var average = isMidterm ? '' : (student.final_average || computeRawAverage(student.midterm, student.final));
+            var equivalent = isMidterm ? '' : computeEquivalentGrade(student.midterm, student.final);
+            var acadStat = reportAcadStat(student);
+            var remarks = reportRemarks(student, equivalent, average, isMidterm);
 
             return '<tr>'
-                + '<td>' + (index + 1) + '</td>'
-                + '<td>' + escapeHtml(student.student_no || '-') + '</td>'
-                + '<td>' + escapeHtml(student.name || '-') + '</td>'
-                + '<td>' + gradeCell + '</td>'
-                + extraCells
+                + '<td class="num">' + (index + 1) + '.</td>'
+                + '<td class="name">' + escapeHtml(student.name || '-') + '</td>'
+                + '<td>' + escapeHtml(activeSubject.section || '-') + '</td>'
+                + '<td>' + escapeHtml(acadStat) + '</td>'
+                + '<td>' + escapeHtml(midterm || '') + '</td>'
+                + '<td>' + escapeHtml(finalGrade || '') + '</td>'
+                + '<td>' + escapeHtml(average || '') + '</td>'
+                + '<td>' + escapeHtml(equivalent || '') + '</td>'
+                + '<td>' + escapeHtml(remarks || '') + '</td>'
                 + '</tr>';
         }).join('');
 
-        var finalHeaders = isMidterm
-            ? ''
-            : '<th>Average</th><th>Eq. Grade</th><th>Remarks</th>';
+        var gradeLegendRows = [
+            ['97.5 - 100', '1.00', 'PASSED'],
+            ['94.5 - 97.4', '1.25', 'PASSED'],
+            ['91.5-94.4', '1.50', 'PASSED'],
+            ['88.5 - 91.4', '1.75', 'PASSED'],
+            ['85.5 - 88.4', '2.00', 'PASSED'],
+            ['82.5 - 85.4', '2.25', 'PASSED'],
+            ['79.5 - 82.4', '2.50', 'PASSED'],
+            ['76.5 - 79.4', '2.75', 'PASSED'],
+            ['74.5 76.4', '3.00', 'PASSED'],
+            ['BELOW 74.4', '5.00', 'FAILED']
+        ].map(function (row) {
+            return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';
+        }).join('');
 
-        var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escapeHtml(title) + '</title>'
+        var remarksLegendRows = [
+            ['INC', 'INCOMPLETE'],
+            ['UD', 'UNOFFICIALLY DROPPED'],
+            ['OD', 'OFFICIALLY DROPPED'],
+            ['NA', 'NOT ATTENDING'],
+            ['GNA', 'GRADE NOT AVAILABLE']
+        ].map(function (row) {
+            return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>';
+        }).join('');
+
+        var html = '<!doctype html><html><head><meta charset="utf-8"><title>Report of Grade</title>'
             + '<style>'
-            + '@page{size:letter;margin:0.45in;}'
-            + 'body{font-family:Arial,sans-serif;color:#111;margin:0;font-size:11px;}'
-            + '.head{text-align:center;margin-bottom:14px;}'
-            + '.school{font-size:15px;font-weight:700;text-transform:uppercase;}'
-            + '.office{font-size:12px;font-weight:700;margin-top:2px;}'
-            + '.title{font-size:14px;font-weight:800;margin-top:10px;text-decoration:underline;}'
-            + '.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin:12px 0;font-size:10px;}'
-            + '.meta div{border-bottom:1px solid #ddd;padding-bottom:2px;}'
-            + 'table{width:100%;border-collapse:collapse;margin-top:8px;}'
-            + 'th,td{border:1px solid #222;padding:4px 5px;text-align:left;vertical-align:top;}'
-            + 'th{font-size:10px;text-transform:uppercase;background:#f2f2f2;}'
-            + '.sign{display:flex;justify-content:space-between;margin-top:34px;gap:32px;}'
-            + '.line{flex:1;text-align:center;border-top:1px solid #111;padding-top:4px;font-size:10px;font-weight:700;}'
+            + '@page{size:letter portrait;margin:0.28in;}'
+            + '*{box-sizing:border-box;}'
+            + 'body{font-family:Arial,Helvetica,sans-serif;color:#000;margin:0;font-size:10px;line-height:1.18;}'
+            + '.rog-page{width:100%;}'
+            + '.rog-head{text-align:center;margin:0 0 28px;}'
+            + '.rog-school{font-size:14px;font-weight:800;text-transform:uppercase;margin-top:8px;}'
+            + '.rog-city{font-size:12px;font-weight:800;margin-top:5px;}'
+            + '.rog-address{font-size:10px;font-weight:700;margin-top:5px;}'
+            + '.rog-office{font-size:20px;font-weight:900;letter-spacing:.02em;margin-top:16px;}'
+            + '.rog-title{font-size:15px;font-weight:900;margin-top:6px;}'
+            + '.rog-meta{display:grid;grid-template-columns:1fr 1fr;column-gap:78px;row-gap:14px;margin-bottom:28px;}'
+            + '.rog-meta-row{display:grid;grid-template-columns:112px 1fr;align-items:start;font-size:11px;}'
+            + '.rog-meta-label{font-weight:800;}'
+            + '.rog-main{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.2px;}'
+            + '.rog-main th,.rog-main td{border:2px solid #000;padding:1px 5px;text-align:center;vertical-align:middle;}'
+            + '.rog-main th{height:29px;font-size:10px;font-weight:900;}'
+            + '.rog-main td{height:12px;}'
+            + '.rog-main .num{width:44px;text-align:left;}'
+            + '.rog-main .name{text-align:left;padding-left:8px;}'
+            + '.rog-bottom{display:grid;grid-template-columns:43% 28% 1fr;gap:2px 10px;margin-top:8px;align-items:start;}'
+            + '.rog-legend{width:100%;border-collapse:collapse;font-size:10px;}'
+            + '.rog-legend th,.rog-legend td{border:2px solid #000;padding:3px 7px;text-align:center;}'
+            + '.rog-legend th{font-size:11px;font-weight:900;}'
+            + '.rog-release{padding:22px 10px 0;font-size:10px;}'
+            + '.rog-release div{margin-bottom:16px;}'
+            + '.rog-release strong{display:block;margin-top:4px;}'
+            + '.rog-sign{padding-left:0;font-size:10px;text-align:center;}'
+            + '.rog-sign-line{border-top:2px solid #000;margin-top:22px;padding-top:7px;}'
+            + '.rog-sign-name{font-weight:900;margin-bottom:20px;}'
+            + '.rog-sign-date{font-weight:900;margin:20px 0 0;}'
+            + '.rog-page-no{margin:18px 0 32px;}'
+            + '.rog-chair{border-top:2px solid #000;padding-top:7px;}'
             + '@media print{button{display:none;}}'
             + '</style></head><body>'
-            + '<div class="head">'
-            + '<div class="school">Pamantasan ng Lungsod ng Pasig</div>'
-            + '<div class="office">Office of the Faculty</div>'
-            + '<div class="title">' + escapeHtml(title) + '</div>'
+            + '<div class="rog-page">'
+            + '<div class="rog-head">'
+            + '<div class="rog-school">PAMANTASAN NG LUNGSOD NG PASIG</div>'
+            + '<div class="rog-city">(University of Pasig City)</div>'
+            + '<div class="rog-address">Alcalde Jose Street, Kapasigan, Pasig City</div>'
+            + '<div class="rog-office">OFFICE OF THE REGISTRAR</div>'
+            + '<div class="rog-title">REPORT OF GRADE</div>'
             + '</div>'
-            + '<div class="meta">'
-            + '<div><strong>Subject:</strong> ' + escapeHtml((activeSubject.code || '') + ' - ' + (activeSubject.name || '')) + '</div>'
-            + '<div><strong>Professor:</strong> ' + escapeHtml(activeSubject.professor || '-') + '</div>'
-            + '<div><strong>Section:</strong> ' + escapeHtml(activeSubject.section || '-') + '</div>'
-            + '<div><strong>Schedule:</strong> ' + escapeHtml(activeSubject.schedule || activeSubject.days || '-') + (activeSubject.room ? ' | Room: ' + escapeHtml(activeSubject.room) : '') + '</div>'
-            + '<div><strong>School Year:</strong> ' + escapeHtml(activeSubject.school_year || '-') + '</div>'
-            + '<div><strong>Semester:</strong> ' + escapeHtml(activeSubject.semester || '-') + '</div>'
+            + '<div class="rog-meta">'
+            + '<div class="rog-meta-row"><span class="rog-meta-label">Prof. Name :</span><span>' + escapeHtml(professorName) + '</span></div>'
+            + '<div class="rog-meta-row"><span class="rog-meta-label">School Year:</span><span>' + escapeHtml(schoolYearTerm) + '</span></div>'
+            + '<div class="rog-meta-row"><span class="rog-meta-label">Subject Code:</span><span>' + escapeHtml(activeSubject.code || '-') + '</span></div>'
+            + '<div class="rog-meta-row"><span class="rog-meta-label">Course YrSec:</span><span>' + escapeHtml(activeSubject.section || '-') + '</span></div>'
+            + '<div class="rog-meta-row"><span class="rog-meta-label">Description Title:</span><span>' + escapeHtml(description) + '</span></div>'
+            + '<div class="rog-meta-row"><span class="rog-meta-label">Units:</span><span>' + escapeHtml(activeSubject.units || '-') + '</span></div>'
             + '</div>'
-            + '<table><thead><tr><th>#</th><th>Student No.</th><th>Student Name</th><th>' + (isMidterm ? 'Midterm' : 'Final') + '</th>' + finalHeaders + '</tr></thead>'
-            + '<tbody>' + (rows || '<tr><td colspan="' + (isMidterm ? '4' : '7') + '">No students found.</td></tr>') + '</tbody></table>'
-            + '<div class="sign"><div class="line">Faculty Signature</div><div class="line">Dean / Authorized Signatory</div></div>'
+            + '<table class="rog-main"><colgroup><col style="width:5.4%;"><col style="width:30.8%;"><col style="width:10%;"><col style="width:8.5%;"><col style="width:7.4%;"><col style="width:8.4%;"><col style="width:8.4%;"><col style="width:8.4%;"><col style="width:12.7%;"></colgroup>'
+            + '<thead><tr><th></th><th>Student Name</th><th>CYS</th><th>AcadStat</th><th>MidGrd</th><th>FinGrd</th><th>SemGrd</th><th>Pt Eqv</th><th>Remarks</th></tr></thead>'
+            + '<tbody>' + (rows || '<tr><td colspan="9">No students found.</td></tr>') + '</tbody></table>'
+            + '<div class="rog-bottom">'
+            + '<table class="rog-legend"><thead><tr><th>Grades</th><th>Pt. Equivalent</th><th>Remarks</th></tr></thead><tbody>' + gradeLegendRows + '</tbody></table>'
+            + '<div><table class="rog-legend"><thead><tr><th>REMARKS</th><th>DESCRIPTION</th></tr></thead><tbody>' + remarksLegendRows + '</tbody></table>'
+            + '<div class="rog-release"><div>Released By:</div><div><strong>Date Printed:</strong></div><strong>Ms. Jay Anne I. Santos</strong></div></div>'
+            + '<div class="rog-sign">'
+            + '<div class="rog-sign-line rog-sign-name">' + escapeHtml(professorName) + '</div>'
+            + '<div>Prof./Instructor</div>'
+            + '<div class="rog-sign-line rog-sign-date">' + escapeHtml(printedDate) + '</div>'
+            + '<div>Date Submitted:</div>'
+            + '<div class="rog-page-no">Page 1 of 1</div>'
+            + '<div class="rog-chair">Dean / Department Chair</div>'
+            + '</div></div></div>'
             + '<script>window.onload=function(){window.print();};<\/script>'
             + '</body></html>';
 
@@ -719,6 +780,36 @@ document.addEventListener('DOMContentLoaded', function () {
         printWindow.document.open();
         printWindow.document.write(html);
         printWindow.document.close();
+    }
+
+    function formatReportSemester(value) {
+        var text = String(value || '').trim();
+        var lower = text.toLowerCase();
+        if (lower.indexOf('first') !== -1 || lower.indexOf('1st') !== -1) return '1ST SEMESTER';
+        if (lower.indexOf('second') !== -1 || lower.indexOf('2nd') !== -1) return '2ND SEMESTER';
+        if (lower.indexOf('summer') !== -1) return 'SUMMER';
+        return text ? text.toUpperCase() : '';
+    }
+
+    function reportAcadStat(student) {
+        var code = String(student.grade_rule_code || '').toUpperCase();
+        if (['INC', 'UD', 'OD', 'NA', 'GNA'].indexOf(code) !== -1) return code;
+        var status = String(student.status || '').toUpperCase();
+        if (['INC', 'UD', 'OD', 'NA', 'GNA'].indexOf(status) !== -1) return status;
+        return '';
+    }
+
+    function reportRemarks(student, equivalent, average, isMidterm) {
+        if (isMidterm) return '';
+        var specialCode = reportAcadStat(student);
+        if (['INC', 'UD', 'OD', 'NA', 'GNA'].indexOf(specialCode) !== -1) return specialCode;
+        var explicit = String(student.remarks || '').trim();
+        if (explicit) return explicit.toUpperCase();
+        var equivalentNum = parseFloat(equivalent);
+        var averageNum = parseFloat(average);
+        if (!Number.isNaN(equivalentNum)) return equivalentNum <= 3 ? 'PASSED' : 'FAILED';
+        if (!Number.isNaN(averageNum)) return averageNum >= 74.5 ? 'PASSED' : 'FAILED';
+        return '';
     }
 
     // ─── Submit Grades (from detail view) ─────────────────────────────────────────

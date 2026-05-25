@@ -30,6 +30,11 @@
         $semesterText = trim((string) optional($studentModel->academicTerm)->term);
     }
     $semesterText = $semesterText !== '' ? $semesterText : '2nd Semester';
+    $semesterText = str_ireplace(
+        ['Second Semester', 'First Semester'],
+        ['2nd Semester', '1st semester'],
+        $semesterText
+    );
 
     $academicYearText = trim((string) optional($studentModel)->school_year);
     if ($academicYearText === '' && $studentModel && $studentModel->relationLoaded('academicTerm')) {

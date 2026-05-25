@@ -4,7 +4,12 @@
 @section('page-title', 'MESSAGING')
 
 @section('content')
-<div class="messaging-page msg-theme-lite" id="registrarMessagingPage" data-store-url="{{ route('registrar.messaging.store') }}" data-csrf="{{ csrf_token() }}">
+<div class="messaging-page msg-theme-lite" id="registrarMessagingPage"
+     data-store-url="{{ route('registrar.messaging.store') }}"
+     data-update-template="{{ route('registrar.messaging.update', ['registrarMessage' => '__ID__']) }}"
+     data-delete-template="{{ route('registrar.messaging.delete', ['registrarMessage' => '__ID__']) }}"
+     data-current-folder="{{ $folder }}"
+     data-csrf="{{ csrf_token() }}">
     <div class="messaging-shell">
         <aside class="msg-sidebar">
             <a href="{{ route('registrar.messaging', ['folder' => 'inbox']) }}" class="msg-nav-link {{ $folder === 'inbox' ? 'active' : '' }}">
@@ -71,11 +76,24 @@
                             <th>User Type</th>
                             <th>Subject</th>
                             <th>Date</th>
+                            <th class="msg-action-col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($messages as $msg)
-                            <tr>
+                            @php
+                                $messagePayload = [
+                                    'id' => (int) $msg->id,
+                                    'folder' => (string) $msg->folder,
+                                    'sender_name' => (string) $msg->sender_name,
+                                    'sender_type' => (string) $msg->sender_type,
+                                    'recipient' => (string) $msg->recipient,
+                                    'subject' => (string) $msg->subject,
+                                    'body' => (string) $msg->body,
+                                    'date' => optional($msg->created_at)->format('M d, Y h:i A'),
+                                ];
+                            @endphp
+                            <tr data-message='@json($messagePayload)'>
                                 <td>{{ $msg->sender_name }}</td>
                                 <td>{{ $msg->sender_type }}</td>
                                 <td>
@@ -85,10 +103,37 @@
                                     @endif
                                 </td>
                                 <td>{{ optional($msg->created_at)->format('M d, Y h:i A') }}</td>
+                                <td class="msg-action-cell">
+                                    <div class="msg-row-actions">
+                                        <button type="button" class="msg-action-btn" data-msg-action="view" title="View Message" aria-label="View Message">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </button>
+                                        @if($folder === 'drafts')
+                                            <button type="button" class="msg-action-btn" data-msg-action="edit" title="Edit Draft" aria-label="Edit Draft">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M12 20h9"/>
+                                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                                                </svg>
+                                            </button>
+                                        @endif
+                                        <button type="button" class="msg-action-btn msg-action-btn--danger" data-msg-action="delete" title="Delete" aria-label="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                                <path d="M10 11v6"/>
+                                                <path d="M14 11v6"/>
+                                                <path d="M9 6V4h6v2"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="msg-empty">No message(s) found.</td>
+                                <td colspan="5" class="msg-empty">No message(s) found.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -138,6 +183,30 @@
             <button type="button" class="pf-modal-btn-save msg-compose-send-btn" id="msgComposeDraftBtn">
                 Save Draft
             </button>
+        </div>
+    </div>
+</div>
+
+<div class="pf-modal-overlay faculty-gs-hidden" id="messageViewModal" aria-hidden="true">
+    <div class="pf-modal-box msg-view-modal-box">
+        <div class="msg-compose-modal-head">
+            <div class="pf-modal-title msg-compose-modal-title">View Message</div>
+            <button type="button" class="msg-compose-close" id="msgViewCloseBtn" aria-label="Close message view">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="msg-view-grid">
+            <div><span>From</span><strong id="msgViewSender"></strong></div>
+            <div><span>To</span><strong id="msgViewRecipient"></strong></div>
+            <div><span>Date</span><strong id="msgViewDate"></strong></div>
+            <div class="msg-view-full"><span>Subject</span><strong id="msgViewSubject"></strong></div>
+            <div class="msg-view-full">
+                <span>Message</span>
+                <p id="msgViewBody"></p>
+            </div>
         </div>
     </div>
 </div>

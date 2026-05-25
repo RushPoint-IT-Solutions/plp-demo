@@ -733,6 +733,8 @@
                     <th>Status</th>
                     <th>Date Verified</th>
                     <th>Verified By</th>
+                    <th>File</th>
+                    <th>Upload</th>
                     <th>Remarks</th>
                 </tr>
             </thead>
@@ -749,7 +751,24 @@
                     @endif
                 </td>
                 <td>{{ $req->date_verified?->format('M j, Y') ?? '—' }}</td>
-                <td>{{ optional($req->verifiedBy)->name ?? '—' }}</td>
+                <td>{{ optional($req->verifier)->name ?? '—' }}</td>
+                <td>
+                    @if(!empty($req->uploaded_path))
+                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($req->uploaded_path) }}" target="_blank" style="color:#2563eb;font-weight:700;">
+                            {{ $req->uploaded_original_name ?: 'View file' }}
+                        </a>
+                    @else
+                        —
+                    @endif
+                </td>
+                <td>
+                    <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.requirements.upload', ['student' => $student->id, 'requirement' => $req->id]) }}" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center;min-width:260px;">
+                        @csrf
+                        <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required style="font-size:11px;max-width:155px;">
+                        <input type="hidden" name="remarks" value="{{ $req->remarks }}">
+                        <button type="submit" class="btn-primary" style="padding:5px 9px;font-size:11px;">Upload</button>
+                    </form>
+                </td>
                 <td>{{ $req->remarks ?: '—' }}</td>
             </tr>
             @endforeach

@@ -515,7 +515,7 @@
 .registrar-body .cor-registrar-notice__title {
   margin: 0 0 8px;
   font-weight: 700;
-  text-decoration: underline;
+  text-decoration: none;
   text-align: left;
 }
 
@@ -783,7 +783,7 @@
 .cor-registrar-notice__title {
   margin: 0 0 8px !important;
   font-weight: 700 !important;
-  text-decoration: underline !important;
+  text-decoration: none !important;
   text-align: left !important;
 }
 

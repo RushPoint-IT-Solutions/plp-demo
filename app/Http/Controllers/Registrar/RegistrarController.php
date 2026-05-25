@@ -475,6 +475,66 @@ class RegistrarController extends Controller
         ], 201);
     }
 
+    public function updateRegistrarMessage(Request $request, RegistrarMessage $registrarMessage): JsonResponse
+    {
+        if ((string) $registrarMessage->folder !== 'drafts') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Only draft messages can be edited.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'recipient' => 'nullable|string|max:190',
+            'subject' => 'nullable|string|max:190',
+            'body' => 'nullable|string|max:5000',
+            'folder' => 'nullable|in:sent,drafts',
+        ]);
+
+        $folder = (string) ($validated['folder'] ?? 'drafts');
+        if ($folder === 'sent' && (
+            trim((string) ($validated['recipient'] ?? '')) === ''
+            || trim((string) ($validated['subject'] ?? '')) === ''
+            || trim((string) ($validated['body'] ?? '')) === ''
+        )) {
+            throw ValidationException::withMessages([
+                'message' => 'Please fill in all fields before sending.',
+            ]);
+        }
+
+        $registrarMessage->recipient = trim((string) ($validated['recipient'] ?? ''));
+        $registrarMessage->subject = trim((string) ($validated['subject'] ?? 'Untitled draft'));
+        $registrarMessage->body = trim((string) ($validated['body'] ?? ''));
+        $registrarMessage->folder = $folder;
+        $registrarMessage->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => $folder === 'drafts' ? 'Draft updated successfully.' : 'Draft sent successfully.',
+            'id' => (int) $registrarMessage->id,
+        ]);
+    }
+
+    public function deleteRegistrarMessage(RegistrarMessage $registrarMessage): JsonResponse
+    {
+        if ((string) $registrarMessage->folder === 'trash') {
+            $registrarMessage->delete();
+
+            return response()->json([
+                'ok' => true,
+                'message' => 'Message deleted permanently.',
+            ]);
+        }
+
+        $registrarMessage->folder = 'trash';
+        $registrarMessage->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Message moved to trash.',
+        ]);
+    }
+
     public function communicationTickets(Request $request)
     {
         $status = trim((string) $request->query('status', ''));
@@ -6357,13 +6417,18 @@ class RegistrarController extends Controller
             'program_total_units' => 0,
             'expected_total_units' => 0,
             'issues' => ['No curriculum selected yet.'],
+            'masterlist' => [
+                'curriculum_year' => '',
+                'program_name' => 'PROGRAM',
+                'years' => [],
+            ],
         ];
     }
 
     private function buildCurriculumSummaryPayload(CourseCurriculum $curriculum): array
     {
         $assignments = CourseCurriculumSubject::query()
-            ->with(['subject', 'yearBlock', 'semester'])
+            ->with(['subject', 'yearBlock', 'semester', 'requisites.requisiteSubject'])
             ->where('course_curriculum_id', (int) $curriculum->id)
             ->orderBy('year_block_id')
             ->orderBy('semester_id')
@@ -6393,6 +6458,60 @@ class RegistrarController extends Controller
                 $issues[] = ($subjectCode !== '' ? $subjectCode : 'A course') . ' has missing credited units.';
             }
         }
+
+        $masterlistYears = [];
+        foreach ($assignments as $assignment) {
+            $subject = $assignment->subject;
+            $yearLabel = (string) (optional($assignment->yearBlock)->label ?: 'Unassigned Year');
+            $termLabel = (string) (optional($assignment->semester)->name ?: 'Unassigned Term');
+            $lec = (float) optional($subject)->lec;
+            $lab = (float) optional($subject)->lab;
+            $units = (float) ($assignment->credited_units ?: optional($subject)->units ?: ($lec + $lab));
+            $hours = (float) (optional($subject)->hours ?: $units);
+            $requisites = $assignment->requisites
+                ->map(function ($requisite) {
+                    return trim((string) optional($requisite->requisiteSubject)->code);
+                })
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if (!isset($masterlistYears[$yearLabel])) {
+                $masterlistYears[$yearLabel] = [
+                    'label' => $yearLabel,
+                    'semesters' => [],
+                ];
+            }
+
+            if (!isset($masterlistYears[$yearLabel]['semesters'][$termLabel])) {
+                $masterlistYears[$yearLabel]['semesters'][$termLabel] = [
+                    'label' => $termLabel,
+                    'subjects' => [],
+                    'totals' => ['lec' => 0, 'lab' => 0, 'units' => 0, 'hours' => 0],
+                ];
+            }
+
+            $masterlistYears[$yearLabel]['semesters'][$termLabel]['subjects'][] = [
+                'code' => trim((string) optional($subject)->code),
+                'title' => trim((string) optional($subject)->name),
+                'prereq' => count($requisites) ? implode(', ', $requisites) : 'None',
+                'lec' => $lec,
+                'lab' => $lab,
+                'units' => $units,
+                'hours' => $hours,
+            ];
+
+            $masterlistYears[$yearLabel]['semesters'][$termLabel]['totals']['lec'] += $lec;
+            $masterlistYears[$yearLabel]['semesters'][$termLabel]['totals']['lab'] += $lab;
+            $masterlistYears[$yearLabel]['semesters'][$termLabel]['totals']['units'] += $units;
+            $masterlistYears[$yearLabel]['semesters'][$termLabel]['totals']['hours'] += $hours;
+        }
+
+        $masterlistYears = collect($masterlistYears)->map(function ($year) {
+            $year['semesters'] = collect($year['semesters'])->values()->all();
+            return $year;
+        })->values()->all();
 
         foreach ($subjectCounts as $subjectId => $count) {
             if ($count <= 1) {
@@ -6445,6 +6564,11 @@ class RegistrarController extends Controller
             'program_total_units' => $programTotalUnits,
             'expected_total_units' => $expectedTotalUnits,
             'issues' => array_values(array_unique($issues)),
+            'masterlist' => [
+                'curriculum_year' => (string) ($curriculum->curriculum_year_code ?: ''),
+                'program_name' => (string) (optional($curriculum->course)->name ?: optional($curriculum->course)->description ?: optional($curriculum)->title ?: 'PROGRAM'),
+                'years' => $masterlistYears,
+            ],
         ];
     }
 
@@ -17251,7 +17375,13 @@ class RegistrarController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('student_no', 'like', '%' . $search . '%')
-                  ->orWhere('name', 'like', '%' . $search . '%');
+                  ->orWhere('name', 'like', '%' . $search . '%')
+                  ->orWhereHas('profile', function ($profileQuery) use ($search) {
+                      $profileQuery->where('student_no', 'like', '%' . $search . '%')
+                          ->orWhere('first_name', 'like', '%' . $search . '%')
+                          ->orWhere('middle_name', 'like', '%' . $search . '%')
+                          ->orWhere('last_name', 'like', '%' . $search . '%');
+                  });
             });
         }
         if ($program !== '') {
@@ -17434,6 +17564,8 @@ class RegistrarController extends Controller
         // Requirements / Documents
         $requirements = collect([]);
         if (Schema::hasTable('student_requirement_statuses')) {
+            $this->ensureDefaultStudentDocumentRequirementStatuses($student);
+
             $requirements = StudentRequirementStatus::where('student_id', $student->id)
                 ->with(['requirementPolicy.definition', 'requirementPolicy.definition.type', 'verifier'])
                 ->get();
@@ -17544,6 +17676,223 @@ class RegistrarController extends Controller
         $row = DB::table('student_scholastic_comments')->where('id', $id)->first();
 
         return response()->json(['success' => true, 'comment' => $row]);
+    }
+
+    public function studentRequirementUpload(Request $request, Student $student, StudentRequirementStatus $requirement)
+    {
+        if ((int) $requirement->student_id !== (int) $student->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'document_file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'remarks' => 'nullable|string|max:500',
+        ]);
+
+        $uploadedFile = $request->file('document_file');
+        $oldPath = (string) ($requirement->uploaded_path ?: '');
+        if ($oldPath !== '' && Storage::disk('public')->exists($oldPath)) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $path = $uploadedFile->store('student-requirements/' . $student->id, 'public');
+
+        $requirement->fill([
+            'is_submitted' => true,
+            'remarks' => trim((string) ($validated['remarks'] ?? '')) ?: $requirement->remarks,
+            'uploaded_original_name' => $uploadedFile->getClientOriginalName(),
+            'uploaded_path' => $path,
+            'uploaded_mime' => $uploadedFile->getClientMimeType(),
+            'uploaded_size' => $uploadedFile->getSize(),
+            'uploaded_at' => now(),
+            'date_verified' => now()->toDateString(),
+            'verified_by_user_id' => optional(auth()->user())->id,
+        ])->save();
+
+        return back()->with('success', 'Document uploaded successfully.');
+    }
+
+    public function studentRequirementStore(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'requirement_name' => ['required', 'string', 'max:190'],
+            'requirement_type' => ['nullable', 'string', 'max:60'],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if (!Schema::hasTable('student_requirement_statuses')
+            || !Schema::hasTable('registrar_requirement_types')
+            || !Schema::hasTable('registrar_requirement_definitions')
+            || !Schema::hasTable('registrar_requirement_policies')) {
+            return back()->withErrors(['requirement_name' => 'Student requirement tables are not ready.']);
+        }
+
+        $name = trim((string) $validated['requirement_name']);
+        $typeLabel = trim((string) ($validated['requirement_type'] ?? 'Document')) ?: 'Document';
+        $typeCode = strtoupper(preg_replace('/[^A-Za-z0-9]+/', '_', $typeLabel));
+        $typeCode = trim($typeCode, '_') ?: 'DOCUMENT';
+        $remarks = trim((string) ($validated['remarks'] ?? ''));
+
+        $type = RegistrarRequirementType::query()->firstOrCreate(
+            ['code' => $typeCode],
+            ['name' => $typeLabel]
+        );
+
+        $definition = RegistrarRequirementDefinition::query()->firstOrCreate(
+            [
+                'requirement_name' => $name,
+                'registrar_requirement_type_id' => (int) $type->id,
+                'non_filipino_only' => false,
+            ],
+            [
+                'created_by_user_id' => optional(auth()->user())->id,
+            ]
+        );
+
+        $policy = RegistrarRequirementPolicy::query()->firstOrCreate(
+            [
+                'registrar_requirement_definition_id' => (int) $definition->id,
+                'system_school_semester_id' => $this->resolveActiveRequirementSystemSemesterId(),
+                'year_block_id' => null,
+            ],
+            [
+                'created_by_user_id' => optional(auth()->user())->id,
+            ]
+        );
+
+        if (Schema::hasTable('registrar_requirements')) {
+            RegistrarRequirement::query()->firstOrCreate(
+                ['registrar_requirement_policy_id' => (int) $policy->id],
+                [
+                    'year_block_id' => null,
+                    'applies_to_all_year_levels' => true,
+                    'requirement_name' => $name,
+                    'requirement_type' => $typeLabel,
+                    'non_filipino' => false,
+                    'created_by_user_id' => optional(auth()->user())->id,
+                ]
+            );
+        }
+
+        $existingStatus = StudentRequirementStatus::query()
+            ->where('student_id', (int) $student->id)
+            ->where('registrar_requirement_policy_id', (int) $policy->id)
+            ->first();
+
+        if ($existingStatus) {
+            return back()->with('error', 'This requirement is already assigned to the student.');
+        }
+
+        StudentRequirementStatus::query()->create([
+            'student_id' => (int) $student->id,
+            'registrar_requirement_policy_id' => (int) $policy->id,
+            'is_submitted' => false,
+            'remarks' => $remarks !== '' ? $remarks : 'Added by registrar for this student.',
+        ]);
+
+        return back()->with('success', 'Document requirement added successfully.');
+    }
+
+    private function ensureDefaultStudentDocumentRequirementStatuses(Student $student = null): void
+    {
+        if (!Schema::hasTable('student_requirement_statuses')
+            || !Schema::hasTable('registrar_requirement_types')
+            || !Schema::hasTable('registrar_requirement_definitions')
+            || !Schema::hasTable('registrar_requirement_policies')
+            || !Schema::hasTable('registrar_requirements')
+            || !Schema::hasTable('students')) {
+            return;
+        }
+
+        $now = Carbon::now();
+
+        $typeId = DB::table('registrar_requirement_types')->where('code', 'DOCUMENT')->value('id');
+        if (!$typeId) {
+            $typeId = DB::table('registrar_requirement_types')->insertGetId([
+                'code' => 'DOCUMENT',
+                'name' => 'Document',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $definitionId = DB::table('registrar_requirement_definitions')
+            ->where('requirement_name', 'Sample Document Upload')
+            ->where('registrar_requirement_type_id', $typeId)
+            ->where('non_filipino_only', 0)
+            ->value('id');
+
+        if (!$definitionId) {
+            $definitionId = DB::table('registrar_requirement_definitions')->insertGetId([
+                'requirement_name' => 'Sample Document Upload',
+                'registrar_requirement_type_id' => $typeId,
+                'non_filipino_only' => 0,
+                'created_by_user_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $semesterId = $this->resolveActiveRequirementSystemSemesterId();
+        $policyId = DB::table('registrar_requirement_policies')
+            ->where('registrar_requirement_definition_id', $definitionId)
+            ->where('system_school_semester_id', $semesterId)
+            ->whereNull('year_block_id')
+            ->value('id');
+
+        if (!$policyId) {
+            $policyId = DB::table('registrar_requirement_policies')->insertGetId([
+                'registrar_requirement_definition_id' => $definitionId,
+                'system_school_semester_id' => $semesterId,
+                'year_block_id' => null,
+                'created_by_user_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $legacyRequirementExists = DB::table('registrar_requirements')
+            ->where('registrar_requirement_policy_id', $policyId)
+            ->exists();
+
+        if (!$legacyRequirementExists) {
+            DB::table('registrar_requirements')->insert([
+                'registrar_requirement_policy_id' => $policyId,
+                'year_block_id' => null,
+                'applies_to_all_year_levels' => true,
+                'requirement_name' => 'Sample Document Upload',
+                'requirement_type' => 'Document',
+                'non_filipino' => false,
+                'created_by_user_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        $query = DB::table('students')->select('id')->orderBy('id');
+        if ($student) {
+            $query->where('id', (int) $student->id);
+        }
+
+        $query->chunkById(500, function ($students) use ($policyId, $now) {
+            foreach ($students as $row) {
+                $exists = DB::table('student_requirement_statuses')
+                    ->where('student_id', (int) $row->id)
+                    ->where('registrar_requirement_policy_id', (int) $policyId)
+                    ->exists();
+
+                if (!$exists) {
+                    DB::table('student_requirement_statuses')->insert([
+                        'student_id' => (int) $row->id,
+                        'registrar_requirement_policy_id' => (int) $policyId,
+                        'is_submitted' => false,
+                        'remarks' => 'Default requirement for student document upload.',
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+            }
+        });
     }
 
     public function studentRecordMedicalSave(Request $request, Student $student)
@@ -17761,6 +18110,8 @@ class RegistrarController extends Controller
         // Requirement / document statuses
         $requirements = collect([]);
         if (Schema::hasTable('student_requirement_statuses')) {
+            $this->ensureDefaultStudentDocumentRequirementStatuses($student);
+
             $requirements = StudentRequirementStatus::where('student_id', $student->id)
                 ->with(['requirementPolicy.definition', 'requirementPolicy.definition.type', 'verifier'])
                 ->get();

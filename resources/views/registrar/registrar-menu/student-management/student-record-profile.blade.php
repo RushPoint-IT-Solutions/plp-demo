@@ -197,6 +197,7 @@
 .curr-group-head td { font-size:12px; font-weight:700; color:#065f46; padding:8px 12px; }
 .curr-check { width:18px;height:18px;border-radius:4px;border:2px solid #d1d5db;display:inline-flex;align-items:center;justify-content:center; }
 .curr-check.done { background:#004d27; border-color:#004d27; }
+.curr-check:not(.done) { display:none; }
 
 /* ── schedule badge ─────────────────────────────────────────── */
 .sched-pill { display:inline-block; background:#f0fdf4; color:#065f46; border-radius:6px; padding:2px 8px; font-size:11px; font-weight:600; margin-right:3px; }
@@ -220,6 +221,93 @@
     padding:8px 14px; font-size:12.5px; font-weight:700; color:#004d27;
     margin-bottom:0;
 }
+
+.enr-summary-strip { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+.enr-summary-card {
+    min-width:170px; background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+    padding:16px; box-shadow:0 1px 5px rgba(15,23,42,.07);
+    display:flex; align-items:center; gap:13px; flex:0 1 220px;
+}
+.enr-summary-icon {
+    width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.enr-summary-card--subjects .enr-summary-icon { background:#dbeafe; color:#2563eb; }
+.enr-summary-card--units .enr-summary-icon { background:#dcfce7; color:#16a34a; }
+.enr-summary-card--passed .enr-summary-icon { background:#fef9c3; color:#ca8a04; }
+.enr-summary-value { color:#0f172a; font-size:26px; font-weight:900; line-height:1; }
+.enr-summary-label { color:#64748b; font-size:11px; font-weight:800; margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+.enr-term-card {
+    background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+    box-shadow:0 1px 5px rgba(15,23,42,.07); margin-bottom:18px; overflow:hidden;
+}
+.enr-term-headline {
+    background:linear-gradient(135deg,#f0fdf4 0%,#ffffff 70%);
+    border-bottom:1px solid #e2e8f0; padding:14px 16px;
+    display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.enr-term-title { display:flex; align-items:center; gap:9px; color:#064e3b; font-size:14px; font-weight:800; }
+.enr-term-icon {
+    width:32px; height:32px; border-radius:8px; background:#dcfce7; color:#047857;
+    display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.enr-term-meta { display:flex; gap:6px; flex-wrap:wrap; }
+.enr-subject-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+    gap:12px; padding:14px; background:#f8fafc;
+}
+.enr-subject-card {
+    background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+    padding:14px; display:flex; flex-direction:column; gap:12px;
+    box-shadow:0 1px 3px rgba(15,23,42,.05);
+}
+.enr-subject-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.enr-subject-code { color:#004d27; font-size:12px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
+.enr-subject-name { color:#0f172a; font-size:14px; font-weight:800; line-height:1.35; margin-top:3px; }
+.enr-units-pill {
+    background:#eff6ff; color:#1d4ed8; border-radius:999px;
+    padding:4px 10px; font-size:11px; font-weight:800; white-space:nowrap;
+}
+.enr-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.enr-detail { background:#f8fafc; border-radius:8px; padding:9px 10px; min-width:0; }
+.enr-detail.full { grid-column:1/-1; }
+.enr-detail-label { display:block; color:#64748b; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+.enr-detail-value { color:#334155; font-size:12.5px; font-weight:650; line-height:1.35; }
+.enr-grade-row {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:6px;
+    padding-top:10px; border-top:1px solid #eef2f7;
+}
+.enr-grade-box { background:#fbfcfd; border:1px solid #eef2f7; border-radius:8px; padding:8px 6px; text-align:center; }
+.enr-grade-label { display:block; color:#64748b; font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; }
+.enr-grade-value { color:#0f172a; font-size:12px; font-weight:800; }
+.enr-remarks {
+    display:inline-flex; align-items:center; justify-content:center;
+    border-radius:999px; padding:4px 10px; font-size:11px; font-weight:800;
+}
+.enr-remarks.pass { background:#dcfce7; color:#166534; }
+.enr-remarks.fail { background:#fee2e2; color:#991b1b; }
+.enr-remarks.neutral { background:#f1f5f9; color:#475569; }
+@media(max-width:720px) {
+    .enr-subject-grid { grid-template-columns:1fr; padding:10px; }
+    .enr-detail-grid, .enr-grade-row { grid-template-columns:1fr 1fr; }
+}
+.docreq-add-btn {
+    margin-left:auto; background:#004d27; color:#fff; border:none; border-radius:8px;
+    padding:7px 12px; font-size:12px; font-weight:800; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+}
+.docreq-add-btn:hover { background:#006837; }
+.docreq-count { font-size:12px;color:#64748b;font-weight:400; }
+.docreq-add-panel {
+    display:none; padding:14px 18px; border-bottom:1px solid #e2e8f0; background:#f8fafc;
+}
+.docreq-add-panel.open { display:block; }
+.docreq-add-form { display:grid; grid-template-columns:1.3fr 180px 1.4fr auto; gap:10px; align-items:end; }
+.docreq-field label { display:block; color:#64748b; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+.docreq-field input, .docreq-field select {
+    width:100%; height:36px; border:1px solid #dbe4df; border-radius:8px; padding:0 10px; font-size:13px; color:#1e293b; background:#fff;
+}
+.docreq-submit { height:36px; white-space:nowrap; }
+@media(max-width:900px) { .docreq-add-form { grid-template-columns:1fr; } .docreq-submit { width:100%; } }
 </style>
 @endpush
 
@@ -563,28 +651,45 @@
                 </div>
             @else
                 {{-- Summary strip --}}
-                <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-                    @php
-                        $totalSubjects = $enrolledSubjects->count();
-                        $totalUnits    = $enrolledSubjects->sum('units');
-                        $passedCount   = $subjectGrades->filter(function($g) { return !empty($g->final_average) && (float)$g->final_average >= 75.0; })->count();
-                    @endphp
-                    @foreach([
-                        ['Subjects Enrolled', $totalSubjects, '#eff6ff','#2563eb'],
-                        ['Total Units',       $totalUnits,   '#f0fdf4','#16a34a'],
-                        ['Subjects Passed',   $passedCount,  '#fef9c3','#ca8a04'],
-                    ] as [$l,$v,$bg,$c])
-                    <div class="srp-stat" style="flex:0;min-width:140px;background:{{ $bg }};">
-                        <div><div class="sr-stat-val" style="color:{{ $c }};">{{ $v }}</div><div class="sr-stat-lbl">{{ $l }}</div></div>
+                @php
+                    $totalSubjects = $enrolledSubjects->count();
+                    $totalUnits    = $enrolledSubjects->sum('units');
+                    $passedCount   = $subjectGrades->filter(function($g) { return !empty($g->final_average) && (float)$g->final_average >= 75.0; })->count();
+                @endphp
+                <div class="enr-summary-strip">
+                    <div class="enr-summary-card enr-summary-card--subjects">
+                        <div class="enr-summary-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>
+                        </div>
+                        <div>
+                            <div class="enr-summary-value">{{ $totalSubjects }}</div>
+                            <div class="enr-summary-label">Subjects Enrolled</div>
+                        </div>
                     </div>
-                    @endforeach
+                    <div class="enr-summary-card enr-summary-card--units">
+                        <div class="enr-summary-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
+                        </div>
+                        <div>
+                            <div class="enr-summary-value">{{ $totalUnits }}</div>
+                            <div class="enr-summary-label">Total Units</div>
+                        </div>
+                    </div>
+                    <div class="enr-summary-card enr-summary-card--passed">
+                        <div class="enr-summary-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                        </div>
+                        <div>
+                            <div class="enr-summary-value">{{ $passedCount }}</div>
+                            <div class="enr-summary-label">Subjects Passed</div>
+                        </div>
+                    </div>
                 </div>
-
                 @foreach($enrolledBySyTerm as $syTerm => $subjects)
                     @php [$sy2,$sem2] = explode('|||', $syTerm, 2); @endphp
                     <div class="srp-card" style="margin-bottom:18px;">
                         <div class="srp-card-head" style="background:#f0fdf4;">
-                            SY {{ $sy2 }} · {{ $sem2 }}
+                            SY {{ $sy2 }} &middot; {{ $sem2 }}
                             <span class="badge-blue" style="margin-left:8px;">{{ $subjects->count() }} subjects</span>
                             <span class="badge-green" style="margin-left:4px;">{{ $subjects->sum('units') }} units</span>
                         </div>
@@ -617,25 +722,25 @@
                                                 <span class="sched-pill">{{ $sub->days }}</span>
                                             @endif
                                             @if($sub->time_start && $sub->time_end)
-                                                <span style="font-size:12px;color:#374151;">{{ $sub->time_start }}–{{ $sub->time_end }}</span>
+                                                <span style="font-size:12px;color:#374151;">{{ $sub->time_start }}-{{ $sub->time_end }}</span>
                                             @else
-                                                <span style="color:#94a3b8;">—</span>
+                                                <span style="color:#94a3b8;">-</span>
                                             @endif
                                         </td>
-                                        <td>{{ $sub->room ?: '—' }}</td>
-                                        <td>{{ optional($sub->facultyModel)->name ?: ($sub->faculty_id ? '—' : '—') }}</td>
-                                        <td style="text-align:center;">{{ $grade ? $grade->prelim : '—' }}</td>
-                                        <td style="text-align:center;">{{ $grade ? $grade->midterm : '—' }}</td>
-                                        <td style="text-align:center;">{{ $grade ? $grade->final : '—' }}</td>
+                                        <td>{{ $sub->room ?: '-' }}</td>
+                                        <td>{{ optional($sub->facultyModel)->name ?: ($sub->faculty_id ? '-' : '-') }}</td>
+                                        <td style="text-align:center;">{{ $grade ? $grade->prelim : '-' }}</td>
+                                        <td style="text-align:center;">{{ $grade ? $grade->midterm : '-' }}</td>
+                                        <td style="text-align:center;">{{ $grade ? $grade->final : '-' }}</td>
                                         <td style="text-align:center;">
                                             @if($grade && $grade->final_average)
                                                 @php $avg = (float)$grade->final_average; @endphp
                                                 <span class="{{ $avg <= 3.0 ? 'badge-green' : 'badge-red' }}">{{ number_format($avg,2) }}</span>
                                             @else
-                                                —
+                                                -
                                             @endif
                                         </td>
-                                        <td>{{ $grade ? $grade->remarks : '—' }}</td>
+                                        <td>{{ $grade ? $grade->remarks : '-' }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -661,8 +766,18 @@
             @else
                 @php
                     $enrolledIds = $enrolledSubjects->pluck('id')->merge($subjectGrades->keys())->unique();
+                    $gradeRecordsByCode = ($gradeRecords ?? collect())->keyBy(function($record) {
+                        return strtoupper(trim((string) $record->subject_code));
+                    });
                     $totalCurrSubj = $curriculum->curriculumSubjects->count();
-                    $completedCurr = $curriculum->curriculumSubjects->filter(function($cs) use ($enrolledIds) { return $enrolledIds->contains($cs->subject_id); })->count();
+                    $completedCurr = $curriculum->curriculumSubjects->filter(function($cs) use ($subjectGrades, $gradeRecordsByCode) {
+                        $subjectCode = strtoupper(trim((string) optional($cs->subject)->code));
+                        $grade = $subjectGrades->get($cs->subject_id);
+                        $record = $subjectCode !== '' ? $gradeRecordsByCode->get($subjectCode) : null;
+
+                        return ($record && ($record->inc || $record->final_grade !== null))
+                            || ($grade && ($grade->final_average !== null || $grade->final !== null || $grade->midterm !== null));
+                    })->count();
                 @endphp
                 <div class="srp-card" style="margin-bottom:18px;">
                     <div class="srp-card-head">
@@ -692,7 +807,7 @@
                             <table class="srp-tbl">
                                 <thead>
                                     <tr>
-                                        <th style="width:36px;text-align:center;">✓</th>
+                                        <th style="width:70px;text-align:center;">Status</th>
                                         <th>Subject Code</th>
                                         <th>Subject Name</th>
                                         <th style="text-align:center;">Units</th>
@@ -707,7 +822,26 @@
                                             <td colspan="6">{{ $yr ?: 'N/A' }} · {{ $sem ?: 'N/A' }}</td>
                                         </tr>
                                         @foreach($csItems as $cs)
-                                        @php $taken = $enrolledIds->contains($cs->subject_id); @endphp
+                                        @php
+                                            $subjectCode = strtoupper(trim((string) optional($cs->subject)->code));
+                                            $grade = $subjectGrades->get($cs->subject_id);
+                                            $gradeRecord = $subjectCode !== '' ? $gradeRecordsByCode->get($subjectCode) : null;
+                                            $gradeValue = null;
+                                            $isInc = false;
+
+                                            if ($gradeRecord && ($gradeRecord->inc || $gradeRecord->final_grade !== null)) {
+                                                $isInc = (bool) $gradeRecord->inc;
+                                                $gradeValue = $isInc ? 'INC' : $gradeRecord->final_grade;
+                                            } elseif ($grade && $grade->final_average !== null) {
+                                                $gradeValue = number_format((float) $grade->final_average, 2);
+                                            } elseif ($grade && $grade->final !== null) {
+                                                $gradeValue = number_format((float) $grade->final, 2);
+                                            } elseif ($grade && $grade->midterm !== null) {
+                                                $gradeValue = number_format((float) $grade->midterm, 2);
+                                            }
+
+                                            $taken = $gradeValue !== null;
+                                        @endphp
                                         <tr>
                                             <td style="text-align:center;">
                                                 <div class="curr-check {{ $taken ? 'done' : '' }}">
@@ -719,8 +853,8 @@
                                             <td><strong>{{ optional($cs->subject)->code ?? '—' }}</strong></td>
                                             <td>{{ optional($cs->subject)->name ?? '—' }}</td>
                                             <td style="text-align:center;">{{ $cs->credited_units ?? optional($cs->subject)->units ?? '—' }}</td>
-                                            <td>{{ optional($cs->yearBlock)->block_name ?? '—' }}</td>
-                                            <td>{{ optional($cs->semester)->name ?? '—' }}</td>
+                                            <td>{{ optional($cs->yearBlock)->label ?? optional($cs->yearBlock)->block_name ?? '�' }}</td>
+                                            <td>{{ optional($cs->semester)->name ?? '�' }}</td>
                                         </tr>
                                         @endforeach
                                     @endforeach
@@ -907,9 +1041,35 @@
                 <div class="srp-card-head">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     Submitted Documents &amp; Requirements
-                    <span style="margin-left:auto;font-size:12px;color:#64748b;font-weight:400;">
+                    <button type="button" class="docreq-add-btn" onclick="srpToggleDocumentRequirementForm()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        Add Requirement
+                    </button>
+                    <span class="docreq-count">
                         {{ $requirements->where('is_submitted', true)->count() }} / {{ $requirements->count() }} submitted
                     </span>
+                </div>
+                <div class="docreq-add-panel" id="docRequirementAddPanel">
+                    <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.requirements.store', ['student' => $student->id]) }}" class="docreq-add-form">
+                        @csrf
+                        <div class="docreq-field">
+                            <label>Requirement Name</label>
+                            <input type="text" name="requirement_name" placeholder="e.g. Good Moral Certificate" required>
+                        </div>
+                        <div class="docreq-field">
+                            <label>Type</label>
+                            <select name="requirement_type">
+                                <option value="Document">Document</option>
+                                <option value="Medical">Medical</option>
+                                <option value="Clearance">Clearance</option>
+                            </select>
+                        </div>
+                        <div class="docreq-field">
+                            <label>Remarks</label>
+                            <input type="text" name="remarks" placeholder="Optional note for this student">
+                        </div>
+                        <button type="submit" class="pf-btn-new docreq-submit">Save Requirement</button>
+                    </form>
                 </div>
                 @if($requirements->isEmpty())
                     <div class="srp-card-body" style="text-align:center;padding:40px;color:#94a3b8;">
@@ -925,6 +1085,8 @@
                                     <th style="text-align:center;">Status</th>
                                     <th>Date Submitted</th>
                                     <th>Verified By</th>
+                                    <th>File</th>
+                                    <th>Upload</th>
                                     <th>Remarks</th>
                                 </tr>
                             </thead>
@@ -948,6 +1110,23 @@
                                     </td>
                                     <td>{{ $req->date_verified ? $req->date_verified->format('M j, Y') : '—' }}</td>
                                     <td>{{ $verifier }}</td>
+                                    <td>
+                                        @if(!empty($req->uploaded_path))
+                                            <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($req->uploaded_path) }}" target="_blank" style="color:#2563eb;font-weight:700;">
+                                                {{ $req->uploaded_original_name ?: 'View file' }}
+                                            </a>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.requirements.upload', ['student' => $student->id, 'requirement' => $req->id]) }}" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center;min-width:260px;">
+                                            @csrf
+                                            <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required style="font-size:11px;max-width:155px;">
+                                            <input type="hidden" name="remarks" value="{{ $req->remarks }}">
+                                            <button type="submit" class="pf-btn-new" style="padding:5px 9px;font-size:11px;">Upload</button>
+                                        </form>
+                                    </td>
                                     <td>{{ $req->remarks ?? '—' }}</td>
                                 </tr>
                                 @endforeach
@@ -1846,6 +2025,11 @@ async function saveMedical() {
     } catch (e) {
         srpToast('Network error — check connection.', 'error');
     }
+}
+
+function srpToggleDocumentRequirementForm() {
+    var panel = document.getElementById('docRequirementAddPanel');
+    if (panel) panel.classList.toggle('open');
 }
 
 // ── Clinic visit modal ─────────────────────────────────────

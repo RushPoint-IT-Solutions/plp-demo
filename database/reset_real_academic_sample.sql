@@ -15,6 +15,7 @@ DELETE FROM student_discipline_students;
 DELETE FROM student_promotions;
 DELETE FROM student_section_assignments;
 DELETE FROM student_scholastic_comments;
+DELETE FROM faculty_evaluations;
 DELETE FROM parent_student_links;
 DELETE FROM parent_contact_requests;
 DELETE FROM cancellation_waivers;
@@ -34,7 +35,7 @@ DELETE FROM applicant_onboarding_acknowledgements;
 DELETE FROM applicant_application_preferences;
 DELETE FROM applicant_educational_backgrounds;
 DELETE FROM applicant_family_backgrounds;
-DELETE FROM users WHERE module IN ('student', 'applicant') OR student_id IS NOT NULL OR applicant_id IS NOT NULL;
+DELETE FROM users WHERE module IN ('student', 'applicant', 'faculty') OR student_id IS NOT NULL OR applicant_id IS NOT NULL OR faculty_id IS NOT NULL;
 DELETE FROM students;
 DELETE FROM applicants;
 
@@ -42,18 +43,25 @@ DELETE FROM curriculum_subject_requisites;
 DELETE FROM course_curriculum_subjects;
 DELETE FROM course_curricula;
 DELETE FROM curriculum_years;
+DELETE FROM room_allowed_subjects;
+DELETE FROM teacher_allowed_subjects;
+DELETE FROM teacher_availability;
 DELETE FROM class_room_assignments;
 DELETE FROM academic_setup_generation_logs;
 DELETE FROM academic_setup_pending_issues;
 DELETE FROM academic_term_lifecycle_logs;
 DELETE FROM program_term_offerings;
 DELETE FROM room_course_assignments;
+DELETE FROM rooms;
+DELETE FROM room_hallways;
+DELETE FROM room_buildings;
 DELETE FROM section_merging_operations;
 DELETE FROM slot_monitorings;
 DELETE FROM subjects;
 DELETE FROM transmutation_rules;
 DELETE FROM system_curriculum_display_settings;
 DELETE FROM courses;
+DELETE FROM faculties;
 DELETE FROM departments;
 
 ALTER TABLE students AUTO_INCREMENT = 1;
@@ -62,6 +70,7 @@ ALTER TABLE student_subject_grades AUTO_INCREMENT = 1;
 ALTER TABLE student_grade_records AUTO_INCREMENT = 1;
 ALTER TABLE student_requirement_statuses AUTO_INCREMENT = 1;
 ALTER TABLE student_section_assignments AUTO_INCREMENT = 1;
+ALTER TABLE faculties AUTO_INCREMENT = 1;
 ALTER TABLE users AUTO_INCREMENT = 1;
 ALTER TABLE applicants AUTO_INCREMENT = 1;
 ALTER TABLE applicant_application_preferences AUTO_INCREMENT = 1;
@@ -75,12 +84,38 @@ ALTER TABLE curriculum_years AUTO_INCREMENT = 1;
 ALTER TABLE subjects AUTO_INCREMENT = 1;
 ALTER TABLE courses AUTO_INCREMENT = 1;
 ALTER TABLE departments AUTO_INCREMENT = 1;
+ALTER TABLE room_buildings AUTO_INCREMENT = 1;
+ALTER TABLE room_hallways AUTO_INCREMENT = 1;
+ALTER TABLE rooms AUTO_INCREMENT = 1;
 
 INSERT INTO departments (code, description, created_at, updated_at) VALUES
 ('CCS', 'College of Computer Studies', NOW(), NOW()),
 ('CBA', 'College of Business and Accountancy', NOW(), NOW()),
 ('COE', 'College of Education', NOW(), NOW()),
 ('CON', 'College of Nursing', NOW(), NOW());
+
+INSERT INTO faculties
+(code, name, department, employment_type, max_load_units, department_id, created_at, updated_at)
+VALUES
+('FAC-CS-001', 'AMOR A. SANDE', 'College of Computer Studies', 'Full-time Teacher', 24.00, 1, NOW(), NOW()),
+('FAC-CS-002', 'MARIA LOURDES P. DELA CRUZ', 'College of Computer Studies', 'Full-time Teacher', 24.00, 1, NOW(), NOW()),
+('FAC-BA-001', 'ROBERTO M. LIM', 'College of Business and Accountancy', 'Full-time Teacher', 24.00, 2, NOW(), NOW()),
+('FAC-ED-001', 'MAILA N. UNSAY', 'College of Education', 'Full-time Teacher', 24.00, 3, NOW(), NOW()),
+('FAC-NUR-001', 'ELENA P. VALDEZ', 'College of Nursing', 'Full-time Teacher', 24.00, 4, NOW(), NOW());
+
+INSERT INTO users
+(name, username, email, password, module, force_password_reset, faculty_id, created_at, updated_at)
+SELECT
+    f.name,
+    LOWER(REPLACE(f.code, '-', '.')),
+    CONCAT(LOWER(REPLACE(f.code, '-', '.')), '@plp.edu.ph'),
+    '$2y$10$G0Dmp0FgF7zyBlF1ySx3re4/JBO1BFTa9A6yYsKdHHYR3d08v3jBG',
+    'faculty',
+    0,
+    f.id,
+    NOW(),
+    NOW()
+FROM faculties f;
 
 INSERT INTO courses
 (code, name, program_type, college_id, department_id, description, total_units, academic_year, slots, track_category, non_filipino, program_file, created_at, updated_at)
@@ -90,6 +125,37 @@ VALUES
 ('BSA', 'Bachelor of Science in Accountancy', 'College', 6, 2, 'Bachelor of Science in Accountancy', 174.00, '2026-2027', 100, 'Academic', 0, 'Approved', NOW(), NOW()),
 ('BSED-ENG', 'Bachelor of Secondary Education Major in English', 'College', 7, 3, 'Bachelor of Secondary Education Major in English', 150.00, '2026-2027', 80, 'Academic', 0, 'Approved', NOW(), NOW()),
 ('BSN', 'Bachelor of Science in Nursing', 'College', 1, 4, 'Bachelor of Science in Nursing', 176.00, '2026-2027', 120, 'Academic', 0, 'Approved', NOW(), NOW());
+
+INSERT INTO room_buildings (name, created_at, updated_at) VALUES
+('Main Academic Building', NOW(), NOW()),
+('Health Sciences Building', NOW(), NOW());
+
+INSERT INTO room_hallways (room_building_id, name, created_at, updated_at) VALUES
+(1, 'First Floor', NOW(), NOW()),
+(1, 'Second Floor', NOW(), NOW()),
+(1, 'Third Floor', NOW(), NOW()),
+(2, 'Laboratory Wing', NOW(), NOW());
+
+INSERT INTO rooms
+(room_code, room_name, room_hallway_id, room_number, floor_number, capacity, room_type, available_days, available_start_time, available_end_time, status, updated_by_user_id, created_at, updated_at)
+VALUES
+('MAB-101', 'Room 101', 1, 101, 1, 45, 'Lecture Room', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('MAB-102', 'Room 102', 1, 102, 1, 45, 'Lecture Room', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('MAB-201', 'Room 201', 2, 201, 2, 50, 'Lecture Room', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('MAB-202', 'Room 202', 2, 202, 2, 50, 'Lecture Room', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('MAB-301', 'Computer Laboratory 301', 3, 301, 3, 40, 'Computer Laboratory', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('MAB-302', 'Computer Laboratory 302', 3, 302, 3, 40, 'Computer Laboratory', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('HSB-101', 'Science Laboratory 101', 4, 101, 1, 35, 'Science Laboratory', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW()),
+('GYM-001', 'PE Area', 1, 103, 1, 60, 'PE Area', 'MTWTHFS', '07:00:00', '21:00:00', 'Active', NULL, NOW(), NOW());
+
+INSERT INTO room_course_assignments (room_id, course_id, assigned_by_user_id, created_at, updated_at)
+SELECT r.id, c.id, NULL, NOW(), NOW()
+FROM rooms r
+JOIN courses c ON (
+    (r.room_type = 'Computer Laboratory' AND c.code IN ('BSCS', 'BSIT'))
+    OR (r.room_type = 'Science Laboratory' AND c.code = 'BSN')
+    OR (r.room_type IN ('Lecture Room', 'PE Area'))
+);
 
 INSERT INTO curriculum_years (code, label, is_active, created_at, updated_at) VALUES
 ('2026', 'Curriculum Year 2026', 1, NOW(), NOW());
@@ -158,6 +224,108 @@ VALUES
 ('NCM302', 'Community Health Nursing', 1, 5.0, 8.00, 'Major', 'Lecture Room', 'Science Laboratory', 'Pending', 3, 2, 0, 0, 1, NOW(), NOW()),
 ('NCM401', 'Nursing Leadership and Management', 1, 3.0, 3.00, 'Major', 'Lecture Room', NULL, 'Pending', 3, 0, 0, 0, 1, NOW(), NOW()),
 ('NCM402', 'Intensive Nursing Practicum', 1, 8.0, 12.00, 'Major', 'Lecture Room', 'Science Laboratory', 'Pending', 4, 4, 0, 0, 1, NOW(), NOW());
+
+UPDATE subjects s
+LEFT JOIN courses c ON c.code = CASE
+    WHEN s.code LIKE 'CS%' THEN 'BSCS'
+    WHEN s.code LIKE 'IT%' THEN 'BSIT'
+    WHEN s.code LIKE 'ACC%' THEN 'BSA'
+    WHEN s.code LIKE 'ED%' OR s.code LIKE 'ENG%' THEN 'BSED-ENG'
+    WHEN s.code LIKE 'NCM%' THEN 'BSN'
+    ELSE NULL
+END
+LEFT JOIN faculties f ON f.code = CASE
+    WHEN s.code LIKE 'CS%' THEN 'FAC-CS-001'
+    WHEN s.code LIKE 'IT%' THEN 'FAC-CS-002'
+    WHEN s.code LIKE 'ACC%' THEN 'FAC-BA-001'
+    WHEN s.code LIKE 'ED%' OR s.code LIKE 'ENG%' THEN 'FAC-ED-001'
+    WHEN s.code LIKE 'NCM%' THEN 'FAC-NUR-001'
+    WHEN s.code IN ('PE101', 'PE102') THEN 'FAC-ED-001'
+    ELSE 'FAC-CS-001'
+END
+SET
+    s.course_id = c.id,
+    s.academic_term_id = CASE
+        WHEN s.code IN ('GE104', 'GE105', 'GE106', 'NSTP102', 'PE102', 'CS203', 'CS303', 'CS402', 'IT203', 'IT302', 'IT402', 'ACC202', 'ACC302', 'ACC402', 'ENG201', 'ENG301', 'NCM202', 'NCM302', 'NCM402') THEN 2
+        ELSE 1
+    END,
+    s.faculty_id = f.id,
+    s.year_section = CASE
+        WHEN s.code REGEXP '^[A-Z]+4' THEN '4A'
+        WHEN s.code REGEXP '^[A-Z]+3' THEN '3A'
+        WHEN s.code REGEXP '^[A-Z]+2' THEN '2A'
+        ELSE '1A'
+    END,
+    s.days = CASE
+        WHEN s.code IN ('PE101', 'PE102') THEN 'SAT'
+        WHEN s.code LIKE 'ACC%' OR s.code LIKE 'NCM%' THEN 'TTH'
+        ELSE 'MWF'
+    END,
+    s.time_start = CASE
+        WHEN s.code IN ('PE101', 'PE102') THEN '08:00AM'
+        WHEN s.code LIKE 'ACC%' OR s.code LIKE 'NCM%' THEN '10:30AM'
+        ELSE '08:00AM'
+    END,
+    s.time_end = CASE
+        WHEN s.code IN ('PE101', 'PE102') THEN '10:00AM'
+        WHEN s.code LIKE 'ACC%' OR s.code LIKE 'NCM%' THEN '12:00PM'
+        ELSE '09:30AM'
+    END,
+    s.room = CASE
+        WHEN s.required_laboratory_room_type = 'Computer Laboratory' THEN 'MAB-301'
+        WHEN s.required_laboratory_room_type = 'Science Laboratory' THEN 'HSB-101'
+        WHEN s.required_lecture_room_type = 'PE Area' THEN 'GYM-001'
+        WHEN s.code LIKE 'ACC%' THEN 'MAB-202'
+        WHEN s.code LIKE 'ED%' OR s.code LIKE 'ENG%' THEN 'MAB-201'
+        ELSE 'MAB-101'
+    END,
+    s.room_requirement_status = 'Assigned',
+    s.max_class_size = 45;
+
+INSERT INTO teacher_allowed_subjects (faculty_id, subject_id, assigned_by_user_id, created_at, updated_at)
+SELECT s.faculty_id, s.id, NULL, NOW(), NOW()
+FROM subjects s
+WHERE s.faculty_id IS NOT NULL;
+
+INSERT INTO teacher_availability (faculty_id, day, start_time, end_time, is_available, created_at, updated_at)
+SELECT f.id, d.day_name, '07:00:00', '17:00:00', 1, NOW(), NOW()
+FROM faculties f
+JOIN (
+    SELECT 'Monday' day_name UNION ALL
+    SELECT 'Tuesday' UNION ALL
+    SELECT 'Wednesday' UNION ALL
+    SELECT 'Thursday' UNION ALL
+    SELECT 'Friday'
+) d;
+
+INSERT INTO room_allowed_subjects (room_id, subject_id, assigned_by_user_id, created_at, updated_at)
+SELECT r.id, s.id, NULL, NOW(), NOW()
+FROM subjects s
+JOIN rooms r ON r.room_code = s.room;
+
+INSERT INTO class_room_assignments
+(class_offering_id, course_code, section_id, room_id, room_type_required, schedule_component_type, academic_year, semester, day, start_time, end_time, assignment_status, remarks, created_by, created_at, updated_at)
+SELECT
+    s.id,
+    COALESCE(c.code, 'GE'),
+    TRIM(CONCAT(COALESCE(c.code, 'GE'), ' ', s.year_section)),
+    r.id,
+    COALESCE(s.required_laboratory_room_type, s.required_lecture_room_type, s.required_room_type, 'Lecture Room'),
+    'Lecture',
+    at.school_year,
+    at.term,
+    s.days,
+    STR_TO_DATE(s.time_start, '%h:%i%p'),
+    STR_TO_DATE(s.time_end, '%h:%i%p'),
+    'Assigned',
+    CONCAT('Assigned to ', r.room_code, ' for ', COALESCE(c.code, 'GE'), ' ', s.year_section),
+    NULL,
+    NOW(),
+    NOW()
+FROM subjects s
+LEFT JOIN courses c ON c.id = s.course_id
+LEFT JOIN academic_terms at ON at.id = s.academic_term_id
+JOIN rooms r ON r.room_code = s.room;
 
 INSERT INTO course_curricula
 (course_id, curriculum_year_id, curriculum_year_code, date_from, title, approval_status, is_published, published_at, is_active, created_at, updated_at)
@@ -326,7 +494,22 @@ VALUES
 ('2026-000002', 'Miguel Santos', 'Male', 19, 'College of Computer Studies', 2, '2026', 1, 0, 'None', 'REG-2026-000002', 1, NOW(), NOW()),
 ('2026-000003', 'Bianca Cruz', 'Female', 18, 'College of Business and Accountancy', 3, '2026', 1, 0, 'Academic', 'REG-2026-000003', 1, NOW(), NOW()),
 ('2026-000004', 'Carlo Mendoza', 'Male', 20, 'College of Education', 4, '2026', 1, 0, 'None', 'REG-2026-000004', 1, NOW(), NOW()),
-('2026-000005', 'Elena Garcia', 'Female', 19, 'College of Nursing', 5, '2026', 1, 0, 'None', 'REG-2026-000005', 1, NOW(), NOW());
+('2026-000005', 'Elena Garcia', 'Female', 19, 'College of Nursing', 5, '2026', 1, 0, 'None', 'REG-2026-000005', 1, NOW(), NOW()),
+('2026-000006', 'Andre Bautista', 'Male', 19, 'College of Computer Studies', 1, '2026', 2, 0, 'None', 'REG-2026-000006', 1, NOW(), NOW()),
+('2026-000007', 'Janelle Aquino', 'Female', 20, 'College of Computer Studies', 1, '2026', 3, 0, 'Academic', 'REG-2026-000007', 1, NOW(), NOW()),
+('2026-000008', 'Paolo Rivera', 'Male', 21, 'College of Computer Studies', 1, '2026', 4, 0, 'None', 'REG-2026-000008', 1, NOW(), NOW()),
+('2026-000009', 'Mikaela Tan', 'Female', 19, 'College of Computer Studies', 2, '2026', 2, 0, 'None', 'REG-2026-000009', 1, NOW(), NOW()),
+('2026-000010', 'Rafael Cruz', 'Male', 20, 'College of Computer Studies', 2, '2026', 3, 0, 'None', 'REG-2026-000010', 1, NOW(), NOW()),
+('2026-000011', 'Leah Domingo', 'Female', 21, 'College of Computer Studies', 2, '2026', 4, 0, 'Academic', 'REG-2026-000011', 1, NOW(), NOW()),
+('2026-000012', 'Nico Flores', 'Male', 19, 'College of Business and Accountancy', 3, '2026', 2, 0, 'None', 'REG-2026-000012', 1, NOW(), NOW()),
+('2026-000013', 'Alyssa Navarro', 'Female', 20, 'College of Business and Accountancy', 3, '2026', 3, 0, 'None', 'REG-2026-000013', 1, NOW(), NOW()),
+('2026-000014', 'Joshua Villanueva', 'Male', 21, 'College of Business and Accountancy', 3, '2026', 4, 0, 'None', 'REG-2026-000014', 1, NOW(), NOW()),
+('2026-000015', 'Patricia Lopez', 'Female', 19, 'College of Education', 4, '2026', 2, 0, 'Academic', 'REG-2026-000015', 1, NOW(), NOW()),
+('2026-000016', 'Gabriel Mercado', 'Male', 20, 'College of Education', 4, '2026', 3, 0, 'None', 'REG-2026-000016', 1, NOW(), NOW()),
+('2026-000017', 'Katrina Ong', 'Female', 21, 'College of Education', 4, '2026', 4, 0, 'None', 'REG-2026-000017', 1, NOW(), NOW()),
+('2026-000018', 'Daniel Sy', 'Male', 19, 'College of Nursing', 5, '2026', 2, 0, 'None', 'REG-2026-000018', 1, NOW(), NOW()),
+('2026-000019', 'Samantha Chua', 'Female', 20, 'College of Nursing', 5, '2026', 3, 0, 'Academic', 'REG-2026-000019', 1, NOW(), NOW()),
+('2026-000020', 'Marco Reyes', 'Male', 21, 'College of Nursing', 5, '2026', 4, 0, 'None', 'REG-2026-000020', 1, NOW(), NOW());
 
 INSERT INTO student_profiles
 (student_id, student_no, first_name, last_name, middle_name, gender, nationality, religion, date_of_birth, civil_status, mobile_number, student_email, present_street, present_barangay, present_zipcode, present_municipality, present_province, present_region, same_as_present, junior_school, senior_school, shs_track_strand, lrn, profile_complete, created_at, updated_at)
@@ -339,14 +522,91 @@ VALUES
 
 INSERT INTO users
 (name, username, email, password, module, force_password_reset, student_id, created_at, updated_at)
-SELECT name, student_no, CONCAT(LOWER(REPLACE(name, ' ', '.')), '@plp.edu.ph'), '$2y$10$k9lgxVpt9SaJ4TF7Ik7AZuFz0S7QxPJHW2OmxFU31c/BLIq5BRHq6', 'student', 1, id, NOW(), NOW()
+SELECT name, student_no, CONCAT(LOWER(REPLACE(name, ' ', '.')), '@plp.edu.ph'), '$2y$10$G0Dmp0FgF7zyBlF1ySx3re4/JBO1BFTa9A6yYsKdHHYR3d08v3jBG', 'student', 1, id, NOW(), NOW()
 FROM students;
+
+INSERT INTO registrar_requirement_types (code, name, created_at, updated_at)
+SELECT 'DOCUMENT', 'Document', NOW(), NOW()
+WHERE NOT EXISTS (
+    SELECT 1 FROM registrar_requirement_types WHERE code = 'DOCUMENT'
+);
+
+SET @student_document_type_id = (
+    SELECT id FROM registrar_requirement_types WHERE code = 'DOCUMENT' LIMIT 1
+);
+
+INSERT INTO registrar_requirement_definitions
+(requirement_name, registrar_requirement_type_id, non_filipino_only, created_by_user_id, created_at, updated_at)
+SELECT 'Sample Document Upload', @student_document_type_id, 0, NULL, NOW(), NOW()
+WHERE @student_document_type_id IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM registrar_requirement_definitions
+      WHERE requirement_name = 'Sample Document Upload'
+        AND registrar_requirement_type_id = @student_document_type_id
+        AND non_filipino_only = 0
+  );
+
+SET @student_document_definition_id = (
+    SELECT id
+    FROM registrar_requirement_definitions
+    WHERE requirement_name = 'Sample Document Upload'
+      AND registrar_requirement_type_id = @student_document_type_id
+      AND non_filipino_only = 0
+    LIMIT 1
+);
+
+SET @student_document_semester_id = (
+    SELECT id FROM system_school_semesters ORDER BY id DESC LIMIT 1
+);
+
+INSERT INTO registrar_requirement_policies
+(registrar_requirement_definition_id, system_school_semester_id, year_block_id, created_by_user_id, created_at, updated_at)
+SELECT @student_document_definition_id, @student_document_semester_id, NULL, NULL, NOW(), NOW()
+WHERE @student_document_definition_id IS NOT NULL
+  AND @student_document_semester_id IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM registrar_requirement_policies
+      WHERE registrar_requirement_definition_id = @student_document_definition_id
+        AND system_school_semester_id = @student_document_semester_id
+        AND year_block_id IS NULL
+  );
+
+SET @student_document_policy_id = (
+    SELECT id
+    FROM registrar_requirement_policies
+    WHERE registrar_requirement_definition_id = @student_document_definition_id
+      AND system_school_semester_id = @student_document_semester_id
+      AND year_block_id IS NULL
+    LIMIT 1
+);
+
+INSERT INTO registrar_requirements
+(registrar_requirement_policy_id, year_block_id, applies_to_all_year_levels, requirement_name, requirement_type, non_filipino, created_by_user_id, created_at, updated_at)
+SELECT @student_document_policy_id, NULL, 1, 'Sample Document Upload', 'Document', 0, NULL, NOW(), NOW()
+WHERE @student_document_policy_id IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1 FROM registrar_requirements WHERE registrar_requirement_policy_id = @student_document_policy_id
+  );
+
+INSERT INTO student_requirement_statuses
+(student_id, registrar_requirement_policy_id, is_submitted, remarks, created_at, updated_at)
+SELECT s.id, @student_document_policy_id, 0, 'Default requirement for student document upload.', NOW(), NOW()
+FROM students s
+WHERE @student_document_policy_id IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM student_requirement_statuses existing
+      WHERE existing.student_id = s.id
+        AND existing.registrar_requirement_policy_id = @student_document_policy_id
+  );
 
 INSERT INTO student_subject (student_id, subject_id, created_at, updated_at)
 SELECT st.id, ccs.subject_id, NOW(), NOW()
 FROM students st
 JOIN course_curricula cc ON cc.course_id = st.course_id AND cc.curriculum_year_code = st.curriculum
-JOIN course_curriculum_subjects ccs ON ccs.course_curriculum_id = cc.id AND ccs.year_block_id = st.year_block_id AND ccs.semester_id = 1;
+JOIN course_curriculum_subjects ccs ON ccs.course_curriculum_id = cc.id AND ccs.year_block_id = st.year_block_id;
 
 INSERT INTO student_subject_grades
 (student_id, subject_id, prelim, midterm, final, final_average, remarks, created_at, updated_at)

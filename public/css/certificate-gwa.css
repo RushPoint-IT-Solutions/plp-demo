@@ -93,7 +93,7 @@
 .registrar-body .certificate-gwa__emphasis {
   font-weight: 700;
   text-transform: uppercase;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .registrar-body .certificate-gwa__gwa {
@@ -131,7 +131,7 @@
   width: 58mm;
   height: 1px;
   margin: 0 auto 10mm;
-  border-top: 1px solid #000;
+  border-top: 0;
 }
 
 .registrar-body .certificate-gwa__signatory-name {
