@@ -424,6 +424,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
     // Services sub-pages
     Route::prefix('services')->name('services.')->group(function () {
+        Route::get('/section-list', 'Registrar\Services\SectionListController@index')->name('section-list');
+
         Route::prefix('classroom-faculty')->name('classroom-faculty.')->group(function () {
             Route::get('/class-list', 'Registrar\Services\ClassListController@index')->name('class-list');
             Route::get('/class-list/export/{format}', 'Registrar\Services\ClassListController@export')->name('class-list.export');

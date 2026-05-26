@@ -83,7 +83,9 @@
         @php
             $studentRecordsActive = request()->routeIs('registrar.registrar-menu.student-mgmt.*')
                                  || request()->routeIs('registrar.services.student-account.*')
-                                 || request()->routeIs('registrar.registrar-menu.alumni.*');
+                                 || request()->routeIs('registrar.registrar-menu.alumni.*')
+                                 || request()->routeIs('registrar.services.classroom-faculty.class-list')
+                                 || request()->routeIs('registrar.services.section-list');
         @endphp
         <div class="sidebar-dropdown {{ $studentRecordsActive ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ $studentRecordsActive ? 'active' : '' }}">
@@ -100,6 +102,8 @@
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Student Database</div>
                 <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-records*') ? 'active' : '' }}">Student List</a>
+                <a href="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.classroom-faculty.class-list') ? 'active' : '' }}">Class List</a>
+                <a href="{{ route('registrar.services.section-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.section-list') ? 'active' : '' }}">Section List</a>
                 <a href="{{ route('registrar.registrar-menu.alumni.tracker') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.alumni.tracker') ? 'active' : '' }}">Alumni Tracker</a>
                 <a href="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-enrollment') ? 'active' : '' }}">Enrollment List</a>
                 <a href="{{ route('registrar.registrar-menu.student-mgmt.clinic-record') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.clinic-record') ? 'active' : '' }}">Clinic Records</a>
