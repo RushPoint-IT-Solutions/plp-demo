@@ -69,6 +69,7 @@ use App\PortalNotification;
 use App\Subject;
 use App\Support\AuditTrailRecorder;
 use App\Support\HelpCenterTicketService;
+use App\Support\RegistrarEmailNotifier;
 use App\Support\SystemConfigSchoolTermOptions;
 use App\SystemSchoolSemester;
 use App\YearBlock;
@@ -468,9 +469,13 @@ class RegistrarController extends Controller
             'created_by_user_id' => $user ? (int) $user->id : null,
         ]);
 
+        if ($folder === 'sent') {
+            RegistrarEmailNotifier::sendRegistrarMessage($message);
+        }
+
         return response()->json([
             'ok' => true,
-            'message' => $folder === 'drafts' ? 'Draft saved successfully.' : 'Message saved to database.',
+            'message' => $folder === 'drafts' ? 'Draft saved successfully.' : 'Message sent successfully.',
             'id' => (int) $message->id,
         ], 201);
     }
@@ -507,6 +512,10 @@ class RegistrarController extends Controller
         $registrarMessage->body = trim((string) ($validated['body'] ?? ''));
         $registrarMessage->folder = $folder;
         $registrarMessage->save();
+
+        if ($folder === 'sent') {
+            RegistrarEmailNotifier::sendRegistrarMessage($registrarMessage);
+        }
 
         return response()->json([
             'ok' => true,
@@ -618,6 +627,8 @@ class RegistrarController extends Controller
             'created_by_user_id' => auth()->id(),
         ]);
 
+        RegistrarEmailNotifier::sendTicketCreated($ticket);
+
         return response()->json([
             'ok' => true,
             'message' => 'Ticket submitted successfully.',
@@ -633,6 +644,9 @@ class RegistrarController extends Controller
             'message' => 'nullable|string|max:5000',
         ]);
 
+        $oldStatus = (string) $supportTicket->status;
+        $oldPriority = (string) $supportTicket->priority;
+
         $supportTicket->status = $validated['status'];
         $supportTicket->priority = $validated['priority'];
         if (array_key_exists('message', $validated)) {
@@ -641,6 +655,8 @@ class RegistrarController extends Controller
         $supportTicket->assigned_to_user_id = auth()->id();
         $supportTicket->resolved_at = in_array($validated['status'], ['Resolved', 'Closed'], true) ? now() : null;
         $supportTicket->save();
+
+        RegistrarEmailNotifier::sendTicketUpdated($supportTicket, $oldStatus, $oldPriority);
 
         return response()->json([
             'ok' => true,

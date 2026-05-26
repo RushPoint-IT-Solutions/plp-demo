@@ -35,6 +35,7 @@ class HelpCenterTicketService
         ]);
 
         self::createRegistrarInboxMessage($ticket, $user);
+        RegistrarEmailNotifier::sendTicketCreated($ticket);
 
         return $ticket;
     }
