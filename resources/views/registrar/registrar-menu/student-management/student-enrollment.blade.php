@@ -160,7 +160,7 @@
                 <div><span class="se-meta-label">Year Level:</span> <span id="seMetaYearLevel">Fourth Year</span></div>
                 <div><span class="se-meta-label">Status:</span> OLD (Regular) 3 Unit(s) Allowed (CY2223)</div>
                 <div><span class="se-meta-label">Section:</span> A</div>
-                <div><span class="se-meta-label">School Year:</span> 2025-2026</div>
+                <div><span class="se-meta-label">Academic Year:</span> 2025-2026</div>
                 <div><span class="se-meta-label">Term:</span> First</div>
             </div>
         </div>

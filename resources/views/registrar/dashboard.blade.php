@@ -228,7 +228,7 @@
 
 /* ── Chart Cards ─────────────────────────── */
 .rda-charts-main   { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-.rda-charts-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rda-charts-bottom { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .rda-card {
     background: #fff;
     border-radius: 14px;
@@ -264,6 +264,16 @@
 
 /* ── Donut ───────────────────────────────── */
 .rda-donut-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+.rda-sex-chart-box {
+    width: 170px;
+    height: 170px;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+}
+.rda-sex-chart-box canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
 .rda-donut-label { position: absolute; text-align: center; pointer-events: none; }
 .rda-donut-lv { font-size: 1.3rem; font-weight: 800; color: #0f172a; line-height: 1; }
 .rda-donut-ls { font-size: 0.61rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; }
@@ -282,6 +292,8 @@
 .rda-pill-lbl { font-size: 0.62rem; color: #94a3b8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
 
 /* ── Legend ──────────────────────────────── */
+.rda-enroll-chart-wrap { height: 285px; position: relative; }
+
 .rda-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; justify-content: center; }
 .rda-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #475569; }
 .rda-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
@@ -352,11 +364,14 @@
 @section('content')
 @php
     $d              = $dashboardData ?? [];
+    $activeTermLabel = trim((string) ($d['activeTermLabel'] ?? ''));
     $studentCount   = (int)   ($d['studentCount']   ?? 0);
     $maleCount      = (int)   ($d['maleCount']      ?? 0);
     $femaleCount    = (int)   ($d['femaleCount']     ?? 0);
     $applicantCount = (int)   ($d['applicantCount']  ?? 0);
     $facultyCount   = (int)   ($d['facultyCount']    ?? 0);
+    $facultyFullTimeCount = (int) ($d['facultyFullTimeCount'] ?? 0);
+    $facultyPartTimeCount = (int) ($d['facultyPartTimeCount'] ?? 0);
     $departmentCount= (int)   ($d['departmentCount'] ?? 0);
     $graduateCount  = (int)   ($d['graduateCount']   ?? 0);
     $examPassed     = (int)   ($d['examPassed']      ?? 0);
@@ -369,6 +384,10 @@
     $trendArrow     = $trendPercent >= 0 ? '↑' : '↓';
     $trendValues    = $d['trendValues']  ?? [42, 48, 53, 59, 64, 68];
     $monthLabels    = $d['monthLabels']  ?? ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
+    $enrollmentMatrix = is_array($d['enrollmentProgramSemesterMatrix'] ?? null) ? $d['enrollmentProgramSemesterMatrix'] : [];
+    $enrollmentSemesters = array_values((array) ($enrollmentMatrix['semesters'] ?? []));
+    $enrollmentRows = array_values((array) ($enrollmentMatrix['rows'] ?? []));
+    $enrollmentMax = max(1, (int) ($enrollmentMatrix['max'] ?? 1));
     $passRate       = $applicantCount > 0 ? round(($examPassed / $applicantCount) * 100, 1) : 0;
     $dashAnn        = is_array($dashboardAnnouncements ?? null) ? $dashboardAnnouncements : [];
 
@@ -416,7 +435,7 @@
                 <div class="rda-kpi-icon" style="--kc:#006837;">
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <div class="rda-kpi-label">Total Students</div>
+                <div class="rda-kpi-label">Total Students{{ $activeTermLabel !== '' ? ': ' . $activeTermLabel : '' }}</div>
                 <div class="rda-kpi-value">{{ number_format($studentCount) }}</div>
                 <div class="rda-kpi-meta">{{ number_format($maleCount) }} Male &bull; {{ number_format($femaleCount) }} Female</div>
                 <div class="rda-kpi-tag {{ $trendClass }}">{{ $trendArrow }} {{ $trendText }} vs last month</div>
@@ -465,7 +484,7 @@
                 </div>
                 <div class="rda-kpi-label">Faculty</div>
                 <div class="rda-kpi-value">{{ number_format($facultyCount) }}</div>
-                <div class="rda-kpi-meta">Active instructors</div>
+                <div class="rda-kpi-meta">{{ number_format($facultyFullTimeCount) }} FULL-TIME &bull; {{ number_format($facultyPartTimeCount) }} PART-TIME</div>
                 <div class="rda-kpi-bar" style="--kc:#d97706;"></div>
             </div>
 
@@ -565,22 +584,27 @@
             <div class="rda-card-hd">
                 <div class="rda-card-title">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#006837" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    Student Enrollment Trend
+                    Student Enrollment Per Program
                 </div>
-                <div class="rda-card-badge">Last 6 months</div>
+                <div class="rda-card-badge">{{ $activeTermLabel !== '' ? $activeTermLabel : 'Per semester' }}</div>
             </div>
-            <canvas id="rdaEnrollChart" height="86"></canvas>
+            <div class="rda-enroll-chart-wrap" role="img" aria-label="Student enrollment graph by program and semester">
+                <canvas id="rdaEnrollProgramChart"></canvas>
+            </div>
         </div>
 
         <div class="rda-card" style="display:flex; flex-direction:column;">
             <div class="rda-card-hd">
                 <div class="rda-card-title">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#006837" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    Gender Breakdown
+                    SEX BREAKDOWN
                 </div>
+                <div class="rda-card-badge">{{ $activeTermLabel !== '' ? $activeTermLabel : 'Current semester' }}</div>
             </div>
             <div class="rda-donut-wrap" style="flex:1; justify-content:center; padding:10px 0;">
-                <canvas id="rdaGenderChart" width="158" height="158" style="max-width:158px;"></canvas>
+                <div class="rda-sex-chart-box">
+                    <canvas id="rdaGenderChart" width="170" height="170"></canvas>
+                </div>
                 <div class="rda-donut-label">
                     <div class="rda-donut-lv">{{ number_format($studentCount) }}</div>
                     <div class="rda-donut-ls">Total</div>
@@ -600,44 +624,8 @@
 
     </div>
 
-    {{-- ══ EXAM RESULTS + ANNOUNCEMENTS ════════════════ --}}
+    {{-- Announcements --}}
     <div class="rda-charts-bottom">
-
-        {{-- Exam Results --}}
-        <div class="rda-card" style="display:flex; flex-direction:column;">
-            <div class="rda-card-hd">
-                <div class="rda-card-title">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#006837" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6"/><path d="M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                    Applicant Exam Results
-                </div>
-            </div>
-            <div class="rda-pills">
-                <div class="rda-pill">
-                    <div class="rda-pill-val" style="color:#006837;">{{ number_format($examPassed) }}</div>
-                    <div class="rda-pill-lbl">Passed</div>
-                </div>
-                <div class="rda-pill">
-                    <div class="rda-pill-val" style="color:#ef4444;">{{ number_format($examFailed) }}</div>
-                    <div class="rda-pill-lbl">Failed</div>
-                </div>
-                <div class="rda-pill">
-                    <div class="rda-pill-val" style="color:#64748b;">{{ number_format($examPending) }}</div>
-                    <div class="rda-pill-lbl">Pending</div>
-                </div>
-            </div>
-            <div class="rda-donut-wrap" style="flex:1; justify-content:center; padding:4px 0;">
-                <canvas id="rdaExamChart" width="138" height="138" style="max-width:138px;"></canvas>
-                <div class="rda-donut-label">
-                    <div class="rda-donut-lv">{{ $passRate }}%</div>
-                    <div class="rda-donut-ls">Pass Rate</div>
-                </div>
-            </div>
-            <div class="rda-legend">
-                <div class="rda-legend-item"><div class="rda-legend-dot" style="background:#006837;"></div><span>Passed</span></div>
-                <div class="rda-legend-item"><div class="rda-legend-dot" style="background:#ef4444;"></div><span>Failed</span></div>
-                <div class="rda-legend-item"><div class="rda-legend-dot" style="background:#cbd5e1;"></div><span>Pending</span></div>
-            </div>
-        </div>
 
         {{-- Announcements --}}
         <div class="rda-card" style="display:flex; flex-direction:column;">
@@ -685,43 +673,63 @@
     var G2 = '#4ade80';
     var TOOLTIP = { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8, titleColor: '#94a3b8', bodyColor: '#f1f5f9' };
 
-    /* ── 1. Enrollment Trend Bar ── */
-    var enrollLabels = {!! json_encode($monthLabels) !!};
-    var enrollData   = {!! json_encode(array_values($trendValues)) !!};
-    var last         = enrollData.length - 1;
+    /* Enrollment Per Program Bar Graph */
+    var enrollPrograms = {!! json_encode(array_values(array_map(function ($row) { return (string) ($row['program'] ?? 'Program'); }, $enrollmentRows))) !!};
+    var enrollSemesters = {!! json_encode($enrollmentSemesters) !!};
+    var enrollRows = {!! json_encode($enrollmentRows) !!};
+    var enrollPalette = ['#006837', '#2563eb', '#d97706', '#7c3aed', '#0891b2'];
+    var enrollDatasets = enrollSemesters.map(function (semester, index) {
+        return {
+            label: semester,
+            data: enrollRows.map(function (row) {
+                return Number((row.values || {})[semester] || 0);
+            }),
+            backgroundColor: enrollPalette[index % enrollPalette.length],
+            borderRadius: 7,
+            borderSkipped: false,
+            barPercentage: 0.72,
+            categoryPercentage: 0.68
+        };
+    });
 
-    new Chart(document.getElementById('rdaEnrollChart'), {
+    new Chart(document.getElementById('rdaEnrollProgramChart'), {
         type: 'bar',
         data: {
-            labels: enrollLabels,
-            datasets: [{
-                label: 'Students',
-                data: enrollData,
-                backgroundColor: enrollData.map(function (_, i) {
-                    return i === last ? G : 'rgba(0,104,55,0.13)';
-                }),
-                borderRadius: 8,
-                borderSkipped: false,
-                hoverBackgroundColor: G,
-            }]
+            labels: enrollPrograms,
+            datasets: enrollDatasets
         },
         options: {
+            indexAxis: 'y',
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'rectRounded' }
+                },
                 tooltip: Object.assign({}, TOOLTIP, {
-                    callbacks: { label: function (c) { return '  ' + c.parsed.y + ' students'; } }
+                    callbacks: {
+                        label: function (context) {
+                            return '  ' + context.dataset.label + ': ' + context.parsed.x + ' students';
+                        }
+                    }
                 })
             },
             scales: {
-                y: { grid: { color: '#f1f5f9' }, beginAtZero: false, ticks: { precision: 0 } },
-                x: { grid: { display: false } }
+                x: {
+                    grid: { color: '#eef3f0' },
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { autoSkip: false }
+                }
             }
         }
     });
 
-    /* ── 2. Gender Doughnut ── */
+    /* Gender Doughnut */
     new Chart(document.getElementById('rdaGenderChart'), {
         type: 'doughnut',
         data: {
@@ -744,30 +752,7 @@
         }
     });
 
-    /* ── 3. Exam Results Doughnut ── */
-    new Chart(document.getElementById('rdaExamChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Passed', 'Failed', 'Pending'],
-            datasets: [{ data: [{{ $examPassed }}, {{ $examFailed }}, {{ $examPending }}], backgroundColor: [G, '#ef4444', '#cbd5e1'], borderWidth: 0, hoverOffset: 6 }]
-        },
-        options: {
-            cutout: '72%',
-            plugins: {
-                legend: { display: false },
-                tooltip: Object.assign({}, TOOLTIP, {
-                    callbacks: {
-                        label: function (c) {
-                            var t = c.dataset.data.reduce(function (a, b) { return a + b; }, 0);
-                            return '  ' + c.label + ': ' + c.parsed + ' (' + (t > 0 ? Math.round(c.parsed / t * 100) : 0) + '%)';
-                        }
-                    }
-                })
-            }
-        }
-    });
-
-    /* ── Announcement dismiss ── */
+    /* Announcement dismiss */
     var feed = document.getElementById('rdaAnnFeed');
     if (feed) {
         feed.addEventListener('click', function (e) {

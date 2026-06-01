@@ -343,7 +343,7 @@
                     <span class="srp-hero-pill">{{ $student->student_no }}</span>
                     <span class="srp-hero-pill">{{ $course }}</span>
                     <span class="srp-hero-pill">{{ $student->year_level ?: 'N/A' }}</span>
-                    <span class="srp-hero-pill">SY {{ $student->school_year ?: 'N/A' }} · {{ $student->semester ?: 'N/A' }}</span>
+                    <span class="srp-hero-pill">AY {{ $student->school_year ?: 'N/A' }} · {{ $student->semester ?: 'N/A' }}</span>
                     @if($isWD) <span class="srp-hero-pill warn">Withdrawn</span> @endif
                 </div>
                 <div class="srp-hero-contact">
@@ -373,7 +373,7 @@
             </button>
             <button class="srp-tab" data-tab="subjects">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Enrolled Subjects
+                ENROLLED COURSES
                 @if($enrolledSubjects->count())<span class="srp-tab-badge blue">{{ $enrolledSubjects->count() }}</span>@endif
             </button>
             <button class="srp-tab" data-tab="curriculum">
@@ -434,7 +434,7 @@
                                 ['Student No.',  $student->student_no],
                                 ['Program',      $course],
                                 ['Year Level',   $student->year_level],
-                                ['School Year',  $student->school_year ? 'SY '.$student->school_year : null],
+                                ['Academic Year',  $student->school_year ? 'AY '.$student->school_year : null],
                                 ['Semester',     $student->semester],
                                 ['Section',      optional($student->yearBlock)->block_name],
                                 ['Curriculum',   $student->curriculum],
@@ -570,8 +570,11 @@
                                 <option value="1" {{ !empty($prof->no_k12) ? 'selected' : '' }}>Yes (No K-12)</option>
                             </select>
                         </div>
-                        <div class="srp-field"><label>Junior High School</label><input id="bg_junior_school" value="{{ $prof->junior_school ?? '' }}"></div>
-                        <div class="srp-field"><label>Senior High School</label><input id="bg_senior_school" value="{{ $prof->senior_school ?? '' }}"></div>
+                        <div class="srp-field"><label>Elementary</label><input id="bg_elementary_school" value="{{ $prof->elementary_school ?? '' }}" placeholder="School name and location"></div>
+                        <div class="srp-field"><label>High School</label><input id="bg_high_school" value="{{ $prof->high_school ?? '' }}" placeholder="School name and location"></div>
+                        <div class="srp-field"><label>School Last Attended</label><input id="bg_school_last_attended" value="{{ $prof->school_last_attended ?? '' }}" placeholder="For transferee; N/A if not applicable"></div>
+                        <div class="srp-field"><label>Junior High School</label><input id="bg_junior_school" value="{{ $prof->junior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
+                        <div class="srp-field"><label>Senior High School</label><input id="bg_senior_school" value="{{ $prof->senior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
                     </div>
                 </div>
             </div>
@@ -638,15 +641,15 @@
         </div>
 
         {{-- ─────────────────────────────────────────────────── --}}
-        {{-- TAB 3 · ENROLLED SUBJECTS                          --}}
+        {{-- TAB 3 · ENROLLED COURSES                          --}}
         {{-- ─────────────────────────────────────────────────── --}}
         <div class="srp-panel" id="srp-tab-subjects">
             @if($enrolledSubjects->isEmpty())
                 <div class="srp-card">
                     <div class="srp-card-body" style="text-align:center;padding:50px;color:#94a3b8;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" style="margin-bottom:12px;opacity:.5;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        <div style="font-size:15px;color:#64748b;font-weight:600;margin-bottom:4px;">No enrolled subjects found</div>
-                        <div style="font-size:13px;">Subjects enrolled via the Class List will appear here.</div>
+                        <div style="font-size:15px;color:#64748b;font-weight:600;margin-bottom:4px;">No enrolled courses found</div>
+                        <div style="font-size:13px;">Courses enrolled via the Class List will appear here.</div>
                     </div>
                 </div>
             @else
@@ -663,7 +666,7 @@
                         </div>
                         <div>
                             <div class="enr-summary-value">{{ $totalSubjects }}</div>
-                            <div class="enr-summary-label">Subjects Enrolled</div>
+                            <div class="enr-summary-label">Courses Enrolled</div>
                         </div>
                     </div>
                     <div class="enr-summary-card enr-summary-card--units">
@@ -681,7 +684,7 @@
                         </div>
                         <div>
                             <div class="enr-summary-value">{{ $passedCount }}</div>
-                            <div class="enr-summary-label">Subjects Passed</div>
+                            <div class="enr-summary-label">Courses Passed</div>
                         </div>
                     </div>
                 </div>
@@ -689,8 +692,8 @@
                     @php [$sy2,$sem2] = explode('|||', $syTerm, 2); @endphp
                     <div class="srp-card" style="margin-bottom:18px;">
                         <div class="srp-card-head" style="background:#f0fdf4;">
-                            SY {{ $sy2 }} &middot; {{ $sem2 }}
-                            <span class="badge-blue" style="margin-left:8px;">{{ $subjects->count() }} subjects</span>
+                            AY {{ $sy2 }} &middot; {{ $sem2 }}
+                            <span class="badge-blue" style="margin-left:8px;">{{ $subjects->count() }} courses</span>
                             <span class="badge-green" style="margin-left:4px;">{{ $subjects->sum('units') }} units</span>
                         </div>
                         <div style="overflow-x:auto;">
@@ -893,7 +896,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="srp-field"><label>School Year</label><input name="school_year" value="{{ $student->school_year }}"></div>
+                                <div class="srp-field"><label>Academic Year</label><input name="school_year" value="{{ $student->school_year }}"></div>
                                 <div class="srp-field"><label>Semester</label><input name="semester" value="{{ $student->semester }}"></div>
                                 <div class="srp-field"><label>Application Status</label><select name="application_status"><option>Tagged</option><option>Applied</option><option>For Evaluation</option><option>Complete</option></select></div>
                                 <div class="srp-field"><label>Evaluation Status</label><select name="evaluation_status"><option value="">Not set</option><option>Pending</option><option>Qualified</option><option>Not Qualified</option></select></div>
@@ -942,7 +945,7 @@
                                             <strong>{{ optional($tag->program)->name ?: 'Scholarship #' . $tag->scholarship_program_id }}</strong><br>
                                             <small>{{ optional($tag->program)->category }}</small>
                                         </td>
-                                        <td>SY {{ $tag->school_year ?: 'N/A' }}<br>{{ $tag->semester ?: 'N/A' }}</td>
+                                        <td>AY {{ $tag->school_year ?: 'N/A' }}<br>{{ $tag->semester ?: 'N/A' }}</td>
                                         <td>
                                             <span class="badge-blue">{{ $tag->award_status }}</span><br>
                                             <small>Approval: {{ $tag->approval_status ?: 'N/A' }} | Monitoring: {{ $tag->monitoring_status ?: 'N/A' }}</small>
@@ -1006,7 +1009,7 @@
                         <table class="srp-tbl">
                             <thead>
                                 <tr>
-                                    <th>School Year</th>
+                                    <th>Academic Year</th>
                                     <th>Semester</th>
                                     <th>Comment / Remark</th>
                                     <th>Date Issued</th>
@@ -1632,7 +1635,7 @@
         <div class="med-modal-body">
             <input type="hidden" id="sc_id">
             <div class="med-grid">
-                <div class="med-field"><label>School Year</label><input type="text" id="sc_school_year" value="{{ $student->school_year ?: '' }}" placeholder="e.g. 2025-2026"></div>
+                <div class="med-field"><label>Academic Year</label><input type="text" id="sc_school_year" value="{{ $student->school_year ?: '' }}" placeholder="e.g. 2025-2026"></div>
                 <div class="med-field"><label>Semester</label><input type="text" id="sc_semester" value="{{ $student->semester ?: '' }}" placeholder="First / Second"></div>
                 <div class="med-field"><label>Date Issued</label><input type="date" id="sc_date_issued" value="{{ now()->toDateString() }}"></div>
                 <div class="med-field"><label>Issued By</label><input type="text" id="sc_issued_by" value="{{ optional(auth()->user())->name ?: 'Registrar' }}"></div>
@@ -1856,6 +1859,8 @@ function buildBgPayload() {
     return {
         lrn: g('bg_lrn'), shs_track_strand: g('bg_shs_track'),
         no_k12: g('bg_no_k12'),
+        elementary_school: g('bg_elementary_school'), high_school: g('bg_high_school'),
+        school_last_attended: g('bg_school_last_attended'),
         junior_school: g('bg_junior_school'), senior_school: g('bg_senior_school'),
         mother_firstname: g('bg_mfn'), mother_lastname: g('bg_mln'),
         mother_contact: g('bg_mc'), mother_occupation: g('bg_mo'),

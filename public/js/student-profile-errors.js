@@ -25,7 +25,7 @@
             'father_firstname','father_middlename','father_lastname','father_contact','father_occupation',
             'guardian_firstname','guardian_middlename','guardian_lastname','guardian_contact','guardian_occupation','guardian_address',
             'parent_marital_status','monthly_family_income','number_of_siblings','household_members','dependents'],
-        3: ['junior_school','senior_school','shs_track_strand','lrn'],
+        3: ['elementary_school','high_school','junior_school','senior_school','shs_track_strand','lrn','school_last_attended'],
         4: ['family_income_source','living_situation','working_student','has_scholarship','first_in_family_college',
             'internet_access','it_tools_access','devices','lms_used','lms_preferred','lms_reasons',
             'preferred_class_time','evening_classes']

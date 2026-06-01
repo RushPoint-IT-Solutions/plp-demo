@@ -9,6 +9,109 @@
     <script src="{{ asset('js/registrar-class-list.js') }}?v={{ file_exists(public_path('js/registrar-class-list.js')) ? filemtime(public_path('js/registrar-class-list.js')) : time() }}"></script>
 @endpush
 
+@push('styles')
+<style>
+    .cl-print-preview {
+        display: flex;
+        justify-content: center;
+        padding: 18px 0 28px;
+        background: #f3f4f6;
+        overflow-x: auto;
+    }
+    .cl-print-sheet {
+        width: 8.5in;
+        min-height: 11in;
+        background: #fff;
+        color: #111;
+        border: 2px solid #111;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, .18);
+        padding: .14in .2in .2in;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12px;
+        line-height: 1.05;
+    }
+    .cl-print-school {
+        text-align: center;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        margin-top: 4px;
+    }
+    .cl-print-address {
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 1px;
+    }
+    .cl-print-title {
+        text-align: center;
+        font-size: 17px;
+        font-weight: 700;
+        margin: 7px 0 3px;
+    }
+    .cl-print-meta {
+        width: 100%;
+        border-collapse: collapse;
+        border-top: 2px solid #222;
+        margin-bottom: 7px;
+    }
+    .cl-print-meta td {
+        border: 0;
+        padding: 2px 5px 1px;
+        vertical-align: top;
+        font-size: 12px;
+    }
+    .cl-print-meta .label {
+        width: 90px;
+        font-weight: 700;
+    }
+    .cl-print-meta .value {
+        font-weight: 700;
+    }
+    .cl-print-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .cl-print-table th,
+    .cl-print-table td {
+        border: 1px solid #222;
+        padding: 2px 5px;
+        font-size: 12px;
+        line-height: 1.0;
+    }
+    .cl-print-table th {
+        text-align: center;
+        font-weight: 700;
+    }
+    .cl-print-no { width: 44px; text-align: left; }
+    .cl-print-student-no { width: 108px; text-align: center; }
+    .cl-print-name { width: auto; }
+    .cl-print-course { width: 114px; text-align: center; }
+    .cl-print-year { width: 66px; text-align: center; }
+    .cl-print-sex { width: 54px; text-align: center; }
+    @media print {
+        body { background: #fff; }
+        body * { visibility: hidden; }
+        .cl-print-preview, .cl-print-preview * { visibility: visible; }
+        .cl-print-preview {
+            position: absolute;
+            inset: 0;
+            display: block;
+            padding: 0;
+            background: #fff;
+        }
+        .cl-print-sheet {
+            width: auto;
+            min-height: auto;
+            box-shadow: none;
+            border: 2px solid #111;
+            margin: 0;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="pf-page cl-page" id="classListPage">
     @if (session('status'))
@@ -145,46 +248,8 @@
             </div>
         </div>
 
-        <div class="student-table-wrapper table-responsive">
-            <table class="student-table registrar-table svc-table" id="clSectionStudentsTable" data-no-auto-pager="1">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Student No.</th>
-                        <th>Name</th>
-                        <th>Course</th>
-                        <th>Year Level</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($sectionStudents as $index => $student)
-                        <tr>
-                            <td>{{ ($sectionStudents->firstItem() ?? 0) + $index }}</td>
-                            <td>{{ $student->student_no }}</td>
-                            <td>{{ $student->name }}</td>
-                            <td>{{ optional($student->canonicalCourse)->name ?: (optional($student->canonicalCourse)->code ?: 'N/A') }}</td>
-                            <td>{{ optional($student->yearBlock)->label ?: 'N/A' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No students found for this section.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-                <tfoot class="svc-table-tfoot">
-                    <tr>
-                        <td colspan="5">
-                            <div class="svc-table-stats">
-                                Total Students: <strong>{{ $sectionStudents ? $sectionStudents->total() : 0 }}</strong>
-                            </div>
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div class="app-table-pager cl-pagination">
-            {{ $sectionStudents->links() }}
+        <div class="cl-print-preview">
+            @include('registrar.services.classroom-faculty.partials.class-list-print-sheet')
         </div>
     @else
         <div class="student-table-wrapper table-responsive">

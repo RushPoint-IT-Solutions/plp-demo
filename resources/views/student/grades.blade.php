@@ -18,7 +18,7 @@
                     $sem = $parts[1] ?? '';
                 @endphp
                 <option value="{{ $option }}" {{ ($selectedSemester === $option) ? 'selected' : '' }}>
-                    SY {{ $sy }} {{ $sem }}
+                    AY {{ $sy }} {{ $sem }}
                 </option>
             @endforeach
         </select>

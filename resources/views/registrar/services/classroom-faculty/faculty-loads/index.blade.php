@@ -133,6 +133,8 @@
     @php
         $dashboard = $loadDashboard ?? [
             'total_faculty' => $faculties->total(),
+            'full_time_count' => 0,
+            'part_time_count' => 0,
             'underload_count' => 0,
             'full_load_count' => 0,
             'overload_count' => 0,
@@ -143,9 +145,9 @@
 
     <div class="fl-dashboard">
         <div class="fl-card fl-card-total">
-            <span>Total Faculty</span>
+            <span>Total Faculty{{ $loadTermLabel ? ': ' . $loadTermLabel : '' }}</span>
             <strong>{{ number_format((int) ($dashboard['total_faculty'] ?? 0)) }}</strong>
-            <small>{{ $loadTermLabel ?: 'Current load term' }}</small>
+            <small>{{ number_format((int) ($dashboard['full_time_count'] ?? 0)) }} FULL-TIME &bull; {{ number_format((int) ($dashboard['part_time_count'] ?? 0)) }} PART-TIME</small>
         </div>
         <div class="fl-card fl-card-underload">
             <span>Underload</span>

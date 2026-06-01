@@ -223,9 +223,9 @@
                     @endforeach
                 </select>
                 <select name="sy" class="form-select" style="width:130px;">
-                    <option value="">All SY</option>
+                    <option value="">All AY</option>
                     @foreach($schoolYears as $s)
-                        <option value="{{ $s }}" {{ $sy === $s ? 'selected' : '' }}>SY {{ $s }}</option>
+                        <option value="{{ $s }}" {{ $sy === $s ? 'selected' : '' }}>AY {{ $s }}</option>
                     @endforeach
                 </select>
                 <select name="sem" class="form-select" style="width:160px;">
@@ -322,8 +322,8 @@
                     <div class="sr-card-row">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                         <div>
-                            <div class="sr-card-row-val">SY {{ $s->school_year ?: '—' }} · {{ $s->semester ?: '—' }}</div>
-                            <div class="sr-card-row-lbl">School Year &amp; Semester</div>
+                            <div class="sr-card-row-val">AY {{ $s->school_year ?: '—' }} · {{ $s->semester ?: '—' }}</div>
+                            <div class="sr-card-row-lbl">Academic Year &amp; Semester</div>
                         </div>
                     </div>
                     @if($prof && ($prof->mobile_number || $prof->student_email))

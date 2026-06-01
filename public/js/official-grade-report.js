@@ -129,7 +129,7 @@ function ogrBuildTemplate(data, subjects, meta) {
     '</div>' +
     '<div class="ogr-registrar-sig" style="text-align:right; margin-top:28px; margin-right:30px;">' +
         '<div style="display:inline-block; text-align:center;">' +
-            '<div class="ogr-sig-name" style="font-weight:700; font-size:0.85rem; border-bottom:1px solid #000; padding-bottom:2px; margin-bottom:2px; white-space:nowrap; text-decoration:none;">MR. FEDERICO G. NUEVA</div>' +
+            '<div class="ogr-sig-name" style="font-weight:700; font-size:0.85rem; border-bottom:1px solid #000; padding-bottom:2px; margin-bottom:2px; white-space:nowrap; text-decoration:none;">FEDERICO G. NUEVA MT</div>' +
             '<div class="ogr-sig-title" style="font-size:0.65rem; white-space:nowrap;">PLP-UNIVERSITY REGISTRAR</div>' +
         '</div>' +
     '</div>';

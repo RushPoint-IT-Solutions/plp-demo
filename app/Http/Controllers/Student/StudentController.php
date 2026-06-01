@@ -424,11 +424,14 @@ class StudentController extends Controller
             'dependents'            => 'required|integer|min:0',
 
             // Step 3 — Educational
-            'junior_school'     => 'required|string|max:255',
-            'senior_school'     => 'required|string|max:255',
-            'shs_track_strand'  => 'required|string|max:255',
-            'no_k12'            => 'sometimes|boolean',
-            'lrn'               => 'nullable|string|max:12',
+            'elementary_school'     => 'nullable|string|max:255',
+            'high_school'           => 'nullable|string|max:255',
+            'junior_school'         => 'required|string|max:255',
+            'senior_school'         => 'required|string|max:255',
+            'shs_track_strand'      => 'required|string|max:255',
+            'no_k12'                => 'sometimes|boolean',
+            'lrn'                   => 'nullable|string|max:12',
+            'school_last_attended'  => 'nullable|string|max:255',
 
             // Step 4 — Other
             'family_income_source'       => 'required|string|max:255',
@@ -541,11 +544,14 @@ class StudentController extends Controller
         $profile->dependents            = $data['dependents'];
 
         // Education
-        $profile->junior_school    = $data['junior_school'];
-        $profile->senior_school    = $data['senior_school'];
-        $profile->shs_track_strand = $data['shs_track_strand'];
-        $profile->no_k12           = (bool) $request->input('no_k12', false);
-        $profile->lrn              = $data['lrn'] ?? null;
+        $profile->elementary_school    = $data['elementary_school'] ?? null;
+        $profile->high_school          = $data['high_school'] ?? null;
+        $profile->junior_school        = $data['junior_school'];
+        $profile->senior_school        = $data['senior_school'];
+        $profile->shs_track_strand     = $data['shs_track_strand'];
+        $profile->no_k12               = (bool) $request->input('no_k12', false);
+        $profile->lrn                  = $data['lrn'] ?? null;
+        $profile->school_last_attended = $data['school_last_attended'] ?? null;
 
         // Other
         $profile->family_income_source       = $data['family_income_source'];

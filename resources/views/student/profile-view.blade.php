@@ -293,6 +293,16 @@
             <div class="pv-panel" id="pv-educational">
               <div class="pv-panel-card">
                 <div class="pv-row">
+                    <span class="pv-label">ELEMENTARY</span>
+                    <span class="pv-sep">:</span>
+                    <span class="pv-value">{{ $profile->elementary_school ?? '—' }}</span>
+                </div>
+                <div class="pv-row">
+                    <span class="pv-label">HIGH SCHOOL</span>
+                    <span class="pv-sep">:</span>
+                    <span class="pv-value">{{ $profile->high_school ?? '—' }}</span>
+                </div>
+                <div class="pv-row">
                     <span class="pv-label">JUNIOR HIGH SCHOOL</span>
                     <span class="pv-sep">:</span>
                     <span class="pv-value">{{ $profile->junior_school ?? 'â€”' }}</span>
@@ -310,6 +320,12 @@
                     <span class="pv-value">{{ $profile->shs_track_strand ?? 'â€”' }}</span>
                 </div>
                 @endif
+
+                <div class="pv-row">
+                    <span class="pv-label">SCHOOL LAST ATTENDED</span>
+                    <span class="pv-sep">:</span>
+                    <span class="pv-value">{{ $profile->school_last_attended ?? '—' }}</span>
+                </div>
 
                 <hr class="pv-section-rule">
                 <div class="pv-sub-heading">Technology &amp; LMS Access</div>

@@ -81,7 +81,7 @@
         <footer class="deans-honors__footer">
             <div class="deans-honors__registrar">
                 <img class="deans-honors__signature" src="{{ asset('img/deans-honors-signature.png') }}" alt="Registrar Signature">
-                <strong>MR. FEDERICO G. NUEVA</strong>
+                <strong>FEDERICO G. NUEVA MT</strong>
                 <span>University Registrar</span>
             </div>
         </footer>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Registrar\Services;
 
 use App\College;
+use App\AcademicTerm;
 use App\Department;
 use App\Faculty;
 use App\Http\Controllers\Controller;
@@ -94,6 +95,8 @@ class FacultyLoadsController extends Controller
 
         $loadDashboard = [
             'total_faculty' => (int) $dashboardFaculties->count(),
+            'full_time_count' => 0,
+            'part_time_count' => 0,
             'underload_count' => 0,
             'full_load_count' => 0,
             'overload_count' => 0,
@@ -102,6 +105,15 @@ class FacultyLoadsController extends Controller
         ];
 
         foreach ($dashboardFaculties as $facultyRow) {
+            $employmentType = Schema::hasColumn('faculties', 'employment_type')
+                ? strtolower(trim((string) ($facultyRow->employment_type ?? '')))
+                : '';
+            if (strpos($employmentType, 'part') !== false) {
+                $loadDashboard['part_time_count']++;
+            } elseif (strpos($employmentType, 'full') !== false) {
+                $loadDashboard['full_time_count']++;
+            }
+
             $summary = $loadSummaries->get((int) $facultyRow->id, ['current_load' => 0, 'subject_count' => 0]);
             $computedLoad = $this->computedFacultyLoadSummary(
                 (int) $facultyRow->id,
@@ -124,7 +136,7 @@ class FacultyLoadsController extends Controller
             $loadSummaries->put((int) $facultyRow->id, $computedLoad);
         }
 
-        $loadTermLabel = trim(($currentSemester !== '' ? ($currentSemester . ' Semester') : '') . ($currentSchoolYear !== '' ? (' SY ' . $currentSchoolYear) : ''));
+        $loadTermLabel = $this->facultyLoadTermDisplayLabel($currentSchoolYear, $currentSemester);
 
         $colleges = College::query()
             ->orderBy('sort_order')
@@ -952,10 +964,32 @@ class FacultyLoadsController extends Controller
         return '';
     }
 
+    private function facultyLoadTermDisplayLabel(string $schoolYear, string $semester): string
+    {
+        $schoolYear = trim($schoolYear);
+        $semester = trim($semester);
+
+        if ($semester !== '' && stripos($semester, 'semester') === false) {
+            $semester .= ' Semester';
+        }
+
+        return trim($schoolYear . ' ' . $semester);
+    }
+
     private function defaultFacultyLoadTermFilters(): array
     {
         if (!Schema::hasTable('academic_terms')) {
             return ['', ''];
+        }
+
+        $activeTerm = $this->activeAcademicTermForFacultyLoads();
+        if ($activeTerm) {
+            $schoolYear = trim((string) ($activeTerm->school_year ?? ''));
+            $semester = $this->normalizeSemesterLabel((string) ($activeTerm->term ?? ''));
+
+            if ($schoolYear !== '' && $semester !== '') {
+                return [$schoolYear, $semester];
+            }
         }
 
         $assignedTerms = Subject::query()
@@ -1044,6 +1078,29 @@ class FacultyLoadsController extends Controller
         }
 
         return [$schoolYear, (string) ($terms->first() ?: '')];
+    }
+
+    private function activeAcademicTermForFacultyLoads()
+    {
+        $query = AcademicTerm::query();
+
+        if (Schema::hasColumn('academic_terms', 'status')) {
+            $query->orderByRaw("
+                CASE
+                    WHEN status = 'Open for Enrollment' THEN 1
+                    WHEN status = 'Open' THEN 2
+                    WHEN status = 'Draft' THEN 3
+                    WHEN status = 'Closed' THEN 5
+                    WHEN status = 'Archived' THEN 6
+                    ELSE 4
+                END
+            ");
+        }
+
+        return $query
+            ->orderByDesc('school_year')
+            ->orderByDesc('id')
+            ->first();
     }
 
     private function semesterAliases(string $canonicalLabel): array

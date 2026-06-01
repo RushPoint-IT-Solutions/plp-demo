@@ -1,80 +1,105 @@
+@if($selectedSubject)
 <table border="1">
     <thead>
         <tr>
-            <th colspan="5" style="font-size: 16pt; font-weight: bold; text-align: center;">PAMANTASAN NG LUNGSOD NG PASIG</th>
+            <th colspan="6" style="font-size: 14pt; font-weight: bold; text-align: center;">PAMANTASAN NG LUNGSOD NG PASIG</th>
         </tr>
         <tr>
-            <th colspan="5" style="font-size: 12pt; font-weight: bold; text-align: center;">OFFICE OF THE UNIVERSITY REGISTRAR</th>
+            <th colspan="6" style="font-size: 10pt; font-weight: bold; text-align: center;">Alcalde Jose Street, Kapasigan, Pasig City</th>
         </tr>
         <tr>
-            <th colspan="5" style="font-size: 14pt; font-weight: bold; text-align: center;">STUDENT CLASS LIST REPORT</th>
+            <th colspan="6" style="font-size: 16pt; font-weight: bold; text-align: center;">CLASS LIST</th>
         </tr>
-        <tr><th colspan="5"></th></tr>
-        @if($selectedSubject)
-            <tr>
-                <th colspan="2" style="font-weight: bold;">SECTION:</th>
-                <td colspan="3">{{ $controller->sectionLabel($selectedSubject) }}</td>
-            </tr>
-            <tr>
-                <th colspan="2" style="font-weight: bold;">SUBJECT:</th>
-                <td colspan="3">{{ $selectedSubject->code }} - {{ $selectedSubject->name }}</td>
-            </tr>
-            <tr>
-                <th colspan="2" style="font-weight: bold;">PROFESSOR:</th>
-                <td colspan="3">{{ (string) optional($selectedSubject->facultyModel)->name ?: 'TBA' }}</td>
-            </tr>
-            <tr>
-                <th colspan="2" style="font-weight: bold;">TOTAL STUDENTS:</th>
-                <td colspan="3">{{ $sectionStudents->count() }}</td>
-            </tr>
-            <tr><th colspan="5"></th></tr>
-            <tr>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">#</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">STUDENT NO.</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">NAME</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">COURSE / PROGRAM</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">YEAR LEVEL</th>
-            </tr>
-        @else
-            <tr>
-                <th colspan="2" style="font-weight: bold;">SCHOOL YEAR:</th>
-                <td colspan="3">{{ $state['selected_school_year'] ?: 'ALL YEARS' }}</td>
-            </tr>
-            <tr>
-                <th colspan="2" style="font-weight: bold;">SEMESTER:</th>
-                <td colspan="3">{{ strtoupper($state['selected_semester'] ?: 'ALL SEMESTERS') }}</td>
-            </tr>
-            <tr><th colspan="5"></th></tr>
-            <tr>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">#</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">SECTION</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">CODE</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">SUBJECT DESCRIPTION</th>
-                <th style="background-color: #006837; color: #ffffff; font-weight: bold;">SCHEDULE</th>
-            </tr>
-        @endif
+        <tr>
+            <th>Professor:</th>
+            <td colspan="2">{{ $controller->professorLabel($selectedSubject) }}</td>
+            <th>Lab Professor:</th>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <th>Subject:</th>
+            <td colspan="2">{{ $controller->subjectLine($selectedSubject) }}</td>
+            <th>Department:</th>
+            <td colspan="2">{{ strtoupper($controller->departmentLabel($selectedSubject) ?: 'N/A') }}</td>
+        </tr>
+        <tr>
+            <th>SY Year/Sem:</th>
+            <td colspan="2">{{ $controller->schoolYearSemesterLabel($selectedSubject) ?: 'N/A' }}</td>
+            <th>Total Students:</th>
+            <td colspan="2">{{ $sectionStudents->count() }}</td>
+        </tr>
+        <tr>
+            <th>Schedule ID:</th>
+            <td colspan="2">{{ $selectedSubject->id }}</td>
+            <th>Block Section:</th>
+            <td colspan="2">{{ $controller->blockSectionLabel($selectedSubject) ?: 'N/A' }}</td>
+        </tr>
+        <tr>
+            <th>Day &amp; Time:</th>
+            <td colspan="2">{{ $controller->dayTimeLabel($selectedSubject) ?: 'TBA' }}</td>
+            <th>Lab Day &amp; Time:</th>
+            <td colspan="2">{{ (int) $selectedSubject->lab > 0 ? ($controller->dayTimeLabel($selectedSubject) ?: 'TBA') : '' }}</td>
+        </tr>
+        <tr>
+            <th>Room:</th>
+            <td colspan="2">{{ $controller->roomLabel($selectedSubject) ?: 'TBA' }}</td>
+            <th>Lab Room:</th>
+            <td colspan="2">{{ (int) $selectedSubject->lab > 0 ? ($controller->roomLabel($selectedSubject) ?: 'TBA') : '' }}</td>
+        </tr>
+        <tr>
+            <th style="font-weight: bold;">No.</th>
+            <th style="font-weight: bold;">Student No.</th>
+            <th style="font-weight: bold;">Student Name</th>
+            <th style="font-weight: bold;">Course</th>
+            <th style="font-weight: bold;">Year Level</th>
+            <th style="font-weight: bold;">Sex</th>
+        </tr>
     </thead>
     <tbody>
-        @if($selectedSubject)
-            @foreach($sectionStudents->values() as $index => $student)
-                <tr>
-                    <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td>{{ $student->student_no }}</td>
-                    <td>{{ strtoupper($student->name) }}</td>
-                    <td>{{ optional($student->canonicalCourse)->name }}</td>
-                    <td style="text-align: center;">{{ optional($student->yearBlock)->label }}</td>
-                </tr>
-            @endforeach
-        @else
-            @foreach($subjects->values() as $index => $subject)
-                <tr>
-                    <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td>{{ $controller->sectionLabel($subject) }}</td>
-                    <td>{{ $subject->code }}</td>
-                    <td>{{ strtoupper($subject->name) }}</td>
-                    <td>{{ $controller->scheduleLabel($subject) }}</td>
-                </tr>
-            @endforeach
-        @endif
+        @forelse($sectionStudents->values() as $index => $student)
+            <tr>
+                <td>{{ $index + 1 }})</td>
+                <td>{{ $student->student_no }}</td>
+                <td>{{ strtoupper($student->name) }}</td>
+                <td>{{ $controller->studentCourseLabel($student) ?: 'N/A' }}</td>
+                <td>{{ $controller->studentYearLevelLabel($student) ?: 'N/A' }}</td>
+                <td>{{ $controller->studentSexLabel($student) ?: 'N/A' }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="6" style="text-align:center;">No students found for this section.</td>
+            </tr>
+        @endforelse
     </tbody>
 </table>
+@else
+<table border="1">
+    <thead>
+        <tr>
+            <th colspan="5" style="font-size: 14pt; font-weight: bold; text-align: center;">CLASS LIST SUMMARY</th>
+        </tr>
+        <tr>
+            <th>#</th>
+            <th>Section</th>
+            <th>Subject Code</th>
+            <th>Description</th>
+            <th>Schedule</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($subjects->values() as $index => $subject)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $controller->sectionLabel($subject) }}</td>
+                <td>{{ $subject->code }}</td>
+                <td>{{ strtoupper($subject->name) }}</td>
+                <td>{{ $controller->scheduleLabel($subject) }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="5" style="text-align:center;">No class list data found.</td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
+@endif

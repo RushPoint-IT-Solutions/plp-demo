@@ -54,7 +54,7 @@
                     >
                @endif
 
-                <div class="certificate-gwa__signatory-name">MR. FEDERICO G. NUEVA</div>
+                <div class="certificate-gwa__signatory-name">FEDERICO G. NUEVA MT</div>
                 <div class="certificate-gwa__signatory-title">University Registrar</div>
             </div>
 

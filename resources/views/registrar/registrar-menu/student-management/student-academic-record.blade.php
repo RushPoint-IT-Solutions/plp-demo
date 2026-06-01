@@ -308,7 +308,7 @@
             </span>
             <span class="hm-pill">{{ $student->year_level ?: 'Year N/A' }}</span>
             @if($student->school_year)
-            <span class="hm-pill">SY {{ $student->school_year }} — {{ $student->semester }}</span>
+            <span class="hm-pill">AY {{ $student->school_year }} — {{ $student->semester }}</span>
             @endif
             @if($student->is_withdrawn)
             <span class="hm-pill" style="background:rgba(220,38,38,.25);color:#fca5a5;font-weight:800;">⚠ WITHDRAWN</span>
@@ -460,8 +460,11 @@
                     'Place of Birth'  => $profile?->place_of_birth ?? '—',
                     'LRN'             => $profile?->lrn ?? '—',
                     'SHS Track'       => $profile?->shs_track_strand ?? '—',
+                    'Elementary'      => $profile?->elementary_school ?? '�',
+                    'High School'     => $profile?->high_school ?? '�',
                     'Junior HS'       => $profile?->junior_school ?? '—',
                     'Senior HS'       => $profile?->senior_school ?? '—',
+                    'School Last Attended' => $profile?->school_last_attended ?? '�',
                     'Address'         => collect([$profile?->present_barangay,$profile?->present_municipality,$profile?->present_province])->filter()->join(', ') ?: '—',
                     'Official Email'  => $profile?->student_email ?? '—',
                     'Mobile'          => $profile?->mobile_number ?? '—',
@@ -487,7 +490,7 @@
             <div class="sar-field"><label>Full Name</label><div class="ro-val">{{ $student->name }}</div></div>
             <div class="sar-field"><label>Program</label><div class="ro-val">{{ $program }}</div></div>
             <div class="sar-field"><label>Year Level</label><div class="ro-val">{{ $student->year_level ?: '—' }}</div></div>
-            <div class="sar-field"><label>School Year</label><div class="ro-val">{{ $student->school_year ?: '—' }}</div></div>
+            <div class="sar-field"><label>Academic Year</label><div class="ro-val">{{ $student->school_year ?: '—' }}</div></div>
             <div class="sar-field"><label>Semester</label><div class="ro-val">{{ $student->semester ?: '—' }}</div></div>
             <div class="sar-field"><label>Section</label><div class="ro-val">{{ $student->yearBlock?->block ?? '—' }}</div></div>
             <div class="sar-field"><label>Status</label>
@@ -552,8 +555,11 @@
         <div class="sar-grid sar-grid-3">
             <div class="sar-field"><label>LRN (Learner Reference No.)</label><input type="text" id="bg_lrn" value="{{ $profile?->lrn ?? '' }}" placeholder="12-digit LRN"></div>
             <div class="sar-field sar-col-span-2"><label>SHS Track / Strand</label><input type="text" id="bg_shs_track_strand" value="{{ $profile?->shs_track_strand ?? '' }}" placeholder="e.g. STEM, ABM, HUMSS"></div>
-            <div class="sar-field sar-col-span-3"><label>Junior High School</label><input type="text" id="bg_junior_school" value="{{ $profile?->junior_school ?? '' }}" placeholder="School name and location"></div>
-            <div class="sar-field sar-col-span-3"><label>Senior High School</label><input type="text" id="bg_senior_school" value="{{ $profile?->senior_school ?? '' }}" placeholder="School name and location"></div>
+            <div class="sar-field"><label>Elementary</label><input type="text" id="bg_elementary_school" value="{{ $profile?->elementary_school ?? '' }}" placeholder="School name and location"></div>
+            <div class="sar-field"><label>High School</label><input type="text" id="bg_high_school" value="{{ $profile?->high_school ?? '' }}" placeholder="School name and location"></div>
+            <div class="sar-field"><label>School Last Attended</label><input type="text" id="bg_school_last_attended" value="{{ $profile?->school_last_attended ?? '' }}" placeholder="For transferee; N/A if not applicable"></div>
+            <div class="sar-field sar-col-span-3"><label>Junior High School</label><input type="text" id="bg_junior_school" value="{{ $profile?->junior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
+            <div class="sar-field sar-col-span-3"><label>Senior High School</label><input type="text" id="bg_senior_school" value="{{ $profile?->senior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
         </div>
     </div>
 
@@ -608,9 +614,9 @@
     <div class="sar-card">
         <div class="sar-g-toolbar">
             <div class="sar-g-filter">
-                <label for="sarSyFilter" style="font-size:0.81rem;color:#475569;">Filter by School Year:</label>
+                <label for="sarSyFilter" style="font-size:0.81rem;color:#475569;">Filter by Academic Year:</label>
                 <select id="sarSyFilter" onchange="sarFilterGrades()">
-                    <option value="">All School Years</option>
+                    <option value="">All Academic Years</option>
                     @foreach($schoolYears as $sy)<option value="{{ $sy }}">{{ $sy }}</option>@endforeach
                 </select>
             </div>
@@ -967,7 +973,7 @@
     <div class="sar-modal">
         <div class="sar-modal-title" id="sarGradeModalTitle">Add Grade Record</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>School Year *</label><input type="text" id="gm_sy" placeholder="e.g. 2025-2026"></div>
+            <div class="sar-field"><label>Academic Year *</label><input type="text" id="gm_sy" placeholder="e.g. 2025-2026"></div>
             <div class="sar-field"><label>Term *</label><select id="gm_term"><option value="">— Select —</option><option>First</option><option>Second</option><option>Summer</option></select></div>
             <div class="sar-field"><label>Subject Code *</label><input type="text" id="gm_code" placeholder="e.g. IT101"></div>
             <div class="sar-field"><label>Equiv. Code</label><input type="text" id="gm_equiv"></div>
@@ -1014,7 +1020,7 @@ document.querySelectorAll('.sar-tab').forEach(function(btn){
     });
 });
 
-/* ── SY Filter ─────────────────────────────── */
+/* Academic year filter */
 function sarFilterGrades(){
     var sy = document.getElementById('sarSyFilter').value;
     document.querySelectorAll('.sar-term-block').forEach(function(b){
@@ -1048,7 +1054,7 @@ function sarCloseGradeModal(){
 }
 function sarSaveGrade(){
     var sy=document.getElementById('gm_sy').value.trim(), trm=document.getElementById('gm_term').value, sc=document.getElementById('gm_code').value.trim();
-    if(!sy||!trm||!sc){ sarToast('School Year, Term, and Subject Code are required.','warning'); return; }
+    if(!sy||!trm||!sc){ sarToast('Academic Year, Term, and Subject Code are required.','warning'); return; }
     var payload = {
         school_year:sy, term:trm, subject_code:sc,
         equiv_subject_code:document.getElementById('gm_equiv').value.trim()||null,
@@ -1115,6 +1121,8 @@ function buildBgPayload(){
     var g=function(id){ var e=document.getElementById(id); return e?e.value.trim()||null:null; };
     return {
         lrn:g('bg_lrn'), shs_track_strand:g('bg_shs_track_strand'),
+        elementary_school:g('bg_elementary_school'), high_school:g('bg_high_school'),
+        school_last_attended:g('bg_school_last_attended'),
         junior_school:g('bg_junior_school'), senior_school:g('bg_senior_school'),
         mother_firstname:g('bg_mother_firstname'), mother_middlename:g('bg_mother_middlename'),
         mother_lastname:g('bg_mother_lastname'), mother_contact:g('bg_mother_contact'), mother_occupation:g('bg_mother_occupation'),

@@ -13,14 +13,14 @@
             <span><strong>NAME:</strong> {{ optional($student)->name ?: 'Student' }}</span>
             <span><strong>SECTION:</strong> {{ optional($student)->year_level ?: 'N/A' }}</span>
         </div>
-        <div class="sched-print-head-right" id="schedPrintMetaTop">School Year: 2025-2026 | Semester: Second Semester | Generated: 04/10/2026</div>
+        <div class="sched-print-head-right" id="schedPrintMetaTop">Academic Year: 2025-2026 | Semester: Second Semester | Generated: 04/10/2026</div>
     </div>
 
     <div class="sched-filter-bar">
         <div class="sched-filter-row-main d-flex align-items-end justify-content-between w-100">
             <div class="sched-filter-controls d-flex align-items-end">
                 <div class="sched-filter-group mr-3">
-                    <label class="app-filter-label" for="schedSchoolYear">School Year</label>
+                    <label class="app-filter-label" for="schedSchoolYear">Academic Year</label>
                     <select id="schedSchoolYear" class="app-filter-select">
                         <option value="2025-2026">2025-2026</option>
                         <option value="2024-2025">2024-2025</option>
@@ -75,7 +75,7 @@
     <div class="so-weekly">
         <h2 class="so-weekly-title">My Weekly Schedule</h2>
 
-        <div class="sched-print-meta" id="schedPrintMeta">School Year: 2025-2026 | Semester: Second Semester | Generated: 04/10/2026</div>
+        <div class="sched-print-meta" id="schedPrintMeta">Academic Year: 2025-2026 | Semester: Second Semester | Generated: 04/10/2026</div>
 
         <div class="so-weekly-scroll">
         <div class="so-weekly-grid" id="schedWeeklyGrid">

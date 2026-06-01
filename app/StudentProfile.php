@@ -36,6 +36,7 @@ class StudentProfile extends Model
         'number_of_siblings', 'household_members', 'dependents',
 
         'junior_school', 'senior_school', 'shs_track_strand', 'no_k12', 'lrn',
+        'elementary_school', 'high_school', 'school_last_attended',
 
         'family_income_source', 'family_income_source_other',
         'living_situation', 'living_situation_other',

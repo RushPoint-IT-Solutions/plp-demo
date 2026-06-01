@@ -28,7 +28,7 @@ class ClassListController extends Controller
 
         if ($state['subject_id'] > 0) {
             $selectedSubject = Subject::query()
-                ->with(['academicTerm', 'canonicalCourse', 'facultyModel'])
+                ->with(['academicTerm', 'canonicalCourse.department', 'facultyModel'])
                 ->find($state['subject_id']);
 
             if ($selectedSubject && $state['has_term_filter']) {
@@ -40,8 +40,7 @@ class ClassListController extends Controller
 
             if ($selectedSubject) {
                 $sectionStudents = $this->buildSectionStudentsQuery((int) $selectedSubject->id, $state['search'])
-                    ->paginate(10, ['*'], 'detail_page')
-                    ->appends($request->except('detail_page'));
+                    ->get();
             }
         }
 
@@ -62,6 +61,7 @@ class ClassListController extends Controller
             'semesterOptions' => $state['semester_options'],
             'semesterMap' => $state['semester_map'],
             'queryBase' => $queryBase,
+            'controller' => $this,
         ]);
     }
 
@@ -81,7 +81,7 @@ class ClassListController extends Controller
 
         if ($state['subject_id'] > 0) {
             $selectedSubject = Subject::query()
-                ->with(['academicTerm', 'canonicalCourse', 'facultyModel'])
+                ->with(['academicTerm', 'canonicalCourse.department', 'facultyModel'])
                 ->find($state['subject_id']);
 
             if ($selectedSubject && $state['has_term_filter']) {
@@ -112,7 +112,7 @@ class ClassListController extends Controller
             'controller' => $this,
         ])->render();
 
-        return $this->makePdfDownloadResponse($html, $filename, 'L');
+        return $this->makePdfDownloadResponse($html, $filename, $selectedSubject ? 'P' : 'L');
     }
 
     public function sectionLabel(Subject $subject)
@@ -145,6 +145,105 @@ class ClassListController extends Controller
         }
 
         return count($parts) ? implode(' | ', $parts) : 'TBA';
+    }
+
+    public function professorLabel(?Subject $subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        $name = trim((string) optional($subject->facultyModel)->name);
+        return $name !== '' ? $name : trim((string) $subject->faculty);
+    }
+
+    public function subjectLine(?Subject $subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        return trim((string) $subject->code . ' - ' . (string) $subject->name);
+    }
+
+    public function departmentLabel(?Subject $subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        $department = optional(optional($subject->canonicalCourse)->department);
+        $label = trim((string) ($department->description ?: $department->code));
+
+        return $label !== '' ? $label : trim((string) optional($subject->facultyModel)->department);
+    }
+
+    public function schoolYearSemesterLabel(?Subject $subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        $schoolYear = trim((string) (optional($subject->academicTerm)->school_year ?: $subject->school_year));
+        $semester = $this->semesterPrintLabel(optional($subject->academicTerm)->term ?: $subject->semester);
+
+        return trim($schoolYear . ($semester !== '' ? ' / ' . $semester : ''));
+    }
+
+    public function dayTimeLabel(?Subject $subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        $days = strtoupper(str_replace(',', '/', trim((string) $subject->days)));
+        $time = trim((string) $subject->formatted_time);
+
+        return trim($days . ($days !== '' && $time !== '' ? ' ' : '') . $time);
+    }
+
+    public function roomLabel(?Subject $subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        return trim((string) $subject->room);
+    }
+
+    public function blockSectionLabel(?Subject $subject): string
+    {
+        return $subject ? trim((string) optional($subject->canonicalCourse)->code . '-' . (string) $subject->year_section, ' -') : '';
+    }
+
+    public function studentCourseLabel(Student $student): string
+    {
+        $courseCode = trim((string) optional($student->canonicalCourse)->code);
+        if ($courseCode !== '') {
+            return $courseCode;
+        }
+
+        return trim((string) $student->program);
+    }
+
+    public function studentYearLevelLabel(Student $student): string
+    {
+        $value = trim((string) $student->year_level);
+        if ($value === '') {
+            $value = trim((string) optional($student->yearBlock)->label);
+        }
+
+        if (preg_match('/\d+/', $value, $matches)) {
+            return $matches[0];
+        }
+
+        return $value;
+    }
+
+    public function studentSexLabel(Student $student): string
+    {
+        $sex = trim((string) $student->sex);
+        return $sex !== '' ? strtoupper(substr($sex, 0, 1)) : '';
     }
 
     private function resolveState(Request $request)
@@ -435,6 +534,26 @@ class ClassListController extends Controller
         }
 
         return '';
+    }
+
+    private function semesterPrintLabel($value): string
+    {
+        $normalized = $this->normalizeSemesterValue($value);
+
+        if ($normalized === 'First') {
+            return '1ST SEMESTER';
+        }
+
+        if ($normalized === 'Second') {
+            return '2ND SEMESTER';
+        }
+
+        if ($normalized === 'Summer') {
+            return 'SUMMER';
+        }
+
+        $raw = trim((string) $value);
+        return $raw !== '' ? strtoupper($raw) : '';
     }
 
     private function semesterWeight($semester)

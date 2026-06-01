@@ -126,7 +126,7 @@ function torBuildPages(data) {
             '<div style="border-top:1px solid #111; text-align:center; padding:6px 8px 8px;">' +
                 '<div style="font-weight:700; margin-bottom:16px;">Certified True and Correct:</div>' +
                 '<div style="height:20px;"></div>' +
-                '<div style="display:inline-block; min-width:260px; font-weight:700;">MR. FEDERICO G. NUEVA, MT</div>' +
+                '<div style="display:inline-block; min-width:260px; font-weight:700;">FEDERICO G. NUEVA MT, MT</div>' +
                 '<div style="font-style:italic;">University Registrar</div>' +
             '</div>' +
         '</div>' +

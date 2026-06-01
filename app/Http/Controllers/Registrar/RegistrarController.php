@@ -161,9 +161,12 @@ class RegistrarController extends Controller
      */
     public function dashboard()
     {
+        $activeAcademicTerm = $this->dashboardActiveAcademicTerm();
+        $activeTermLabel = $this->dashboardAcademicTermLabel($activeAcademicTerm);
         $studentCount = Student::count();
         $applicantCount = Applicant::count();
         $facultyCount = Faculty::count();
+        $facultyEmploymentCounts = $this->dashboardFacultyEmploymentCounts();
         $departmentCount = Department::count();
         $daySeed = (int) Carbon::now()->format('z') + 1;
         $useDemoDashboard = ($studentCount <= 20);
@@ -230,6 +233,10 @@ class RegistrarController extends Controller
             $studentCount  = 230 + ($daySeed % 22);
             $applicantCount = 82 + ($daySeed % 17);
             $facultyCount  = 18 + ($daySeed % 6);
+            if ($facultyEmploymentCounts['full_time'] + $facultyEmploymentCounts['part_time'] === 0) {
+                $facultyEmploymentCounts['full_time'] = max(0, $facultyCount - 4);
+                $facultyEmploymentCounts['part_time'] = min(4, $facultyCount);
+            }
             $departmentCount = max($departmentCount, 4);
             $graduateCount = max($graduateCount, 47 + ($daySeed % 12));
             $examPassed    = 35 + ($daySeed % 8);
@@ -253,6 +260,8 @@ class RegistrarController extends Controller
             $femaleCount = max($studentCount - $maleCount, 0);
         }
 
+        $enrollmentProgramSemesterMatrix = $this->dashboardEnrollmentProgramSemesterMatrix($activeAcademicTerm, $useDemoDashboard, $daySeed);
+
         // Enrollment trend
         $trendValues = $this->buildMonthlyCounts('students', 6);
         $nonZeroTrendPoints = count(array_filter($trendValues, function ($value) {
@@ -274,11 +283,14 @@ class RegistrarController extends Controller
 
         return view('registrar.dashboard', [
             'dashboardData' => [
+                'activeTermLabel' => $activeTermLabel,
                 'studentCount'   => $studentCount,
                 'maleCount'      => $maleCount,
                 'femaleCount'    => $femaleCount,
                 'applicantCount' => $applicantCount,
                 'facultyCount'   => $facultyCount,
+                'facultyFullTimeCount' => $facultyEmploymentCounts['full_time'],
+                'facultyPartTimeCount' => $facultyEmploymentCounts['part_time'],
                 'departmentCount' => $departmentCount,
                 'graduateCount'  => $graduateCount,
                 'examPassed'     => $examPassed,
@@ -287,6 +299,7 @@ class RegistrarController extends Controller
                 'trendPercent'   => $trendPercent,
                 'trendValues'    => array_values($trendValues),
                 'monthLabels'    => $monthLabels,
+                'enrollmentProgramSemesterMatrix' => $enrollmentProgramSemesterMatrix,
                 'yearLevelData'  => $yearLevelMap,
                 'sparklinePath'      => $sparklinePaths['line'],
                 'sparklineAreaPath'  => $sparklinePaths['area'],
@@ -328,6 +341,299 @@ class RegistrarController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    private function dashboardActiveAcademicTerm()
+    {
+        if (!Schema::hasTable('academic_terms')) {
+            return null;
+        }
+
+        $query = AcademicTerm::query();
+
+        if (Schema::hasColumn('academic_terms', 'status')) {
+            $query->orderByRaw("
+                CASE
+                    WHEN status = 'Open for Enrollment' THEN 1
+                    WHEN status = 'Open' THEN 2
+                    WHEN status = 'Draft' THEN 3
+                    WHEN status = 'Closed' THEN 5
+                    WHEN status = 'Archived' THEN 6
+                    ELSE 4
+                END
+            ");
+        }
+
+        return $query
+            ->orderByDesc('school_year')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    private function dashboardAcademicTermLabel($term): string
+    {
+        if (!$term) {
+            return '';
+        }
+
+        $schoolYear = trim((string) ($term->school_year ?? ''));
+        $semester = $this->dashboardSemesterDisplayLabel((string) ($term->term ?? ''));
+
+        return trim($schoolYear . ' ' . $semester);
+    }
+
+    private function dashboardSemesterDisplayLabel(string $semester): string
+    {
+        $semester = trim($semester);
+        if ($semester === '') {
+            return '';
+        }
+
+        $normalized = strtolower($semester);
+        if (strpos($normalized, 'semester') !== false) {
+            return $semester;
+        }
+
+        if (in_array($normalized, ['first', '1st', '1'], true)) {
+            return 'First Semester';
+        }
+
+        if (in_array($normalized, ['second', '2nd', '2'], true)) {
+            return 'Second Semester';
+        }
+
+        if ($normalized === 'summer') {
+            return 'Summer Semester';
+        }
+
+        return $semester;
+    }
+
+    private function dashboardSemesterFilterAliases(string $semester): array
+    {
+        $displayLabel = strtolower(trim($this->dashboardSemesterDisplayLabel($semester)));
+
+        if ($displayLabel === 'first semester') {
+            return ['first', 'first semester', '1st', '1st semester', '1'];
+        }
+
+        if ($displayLabel === 'second semester') {
+            return ['second', 'second semester', '2nd', '2nd semester', '2'];
+        }
+
+        if ($displayLabel === 'summer semester') {
+            return ['summer', 'summer semester'];
+        }
+
+        return [$displayLabel];
+    }
+
+    private function dashboardFacultyEmploymentCounts(): array
+    {
+        $counts = [
+            'full_time' => 0,
+            'part_time' => 0,
+        ];
+
+        if (!Schema::hasTable('faculties') || !Schema::hasColumn('faculties', 'employment_type')) {
+            return $counts;
+        }
+
+        Faculty::query()
+            ->selectRaw("LOWER(TRIM(COALESCE(employment_type, ''))) as employment_value, COUNT(*) as total")
+            ->groupBy('employment_value')
+            ->get()
+            ->each(function ($row) use (&$counts) {
+                $employment = (string) ($row->employment_value ?? '');
+                $total = (int) ($row->total ?? 0);
+
+                if (strpos($employment, 'part') !== false) {
+                    $counts['part_time'] += $total;
+                } elseif (strpos($employment, 'full') !== false) {
+                    $counts['full_time'] += $total;
+                }
+            });
+
+        return $counts;
+    }
+
+    private function dashboardEnrollmentProgramSemesterMatrix($activeAcademicTerm, bool $useDemoDashboard, int $daySeed): array
+    {
+        $activeSemesterLabel = $this->dashboardSemesterDisplayLabel((string) ($activeAcademicTerm ? ($activeAcademicTerm->term ?? '') : ''));
+        $semesterLabels = [$activeSemesterLabel !== '' ? $activeSemesterLabel : 'Current Semester'];
+        $schoolYear = trim((string) ($activeAcademicTerm ? ($activeAcademicTerm->school_year ?? '') : ''));
+
+        if ($useDemoDashboard || !Schema::hasTable('students')) {
+            return $this->dashboardDemoEnrollmentProgramSemesterMatrix($semesterLabels, $daySeed);
+        }
+
+        if ($schoolYear === '' && Schema::hasColumn('students', 'school_year')) {
+            $schoolYear = (string) DB::table('students')
+                ->whereNotNull('school_year')
+                ->where('school_year', '<>', '')
+                ->orderByDesc('school_year')
+                ->value('school_year');
+        }
+
+        $hasCourses = Schema::hasTable('courses');
+        $hasCourseId = Schema::hasColumn('students', 'course_id');
+        $hasProgram = Schema::hasColumn('students', 'program');
+        $hasStudentSchoolYear = Schema::hasColumn('students', 'school_year');
+        $hasStudentSemester = Schema::hasColumn('students', 'semester');
+        $hasAcademicTermId = Schema::hasColumn('students', 'academic_term_id') && Schema::hasTable('academic_terms');
+
+        $programExpressionParts = [];
+        if ($hasCourses && $hasCourseId) {
+            if (Schema::hasColumn('courses', 'code')) {
+                $programExpressionParts[] = "NULLIF(c.code, '')";
+            }
+            if (Schema::hasColumn('courses', 'name')) {
+                $programExpressionParts[] = "NULLIF(c.name, '')";
+            }
+        }
+        if ($hasProgram) {
+            $programExpressionParts[] = "NULLIF(s.program, '')";
+        }
+        $programExpressionParts[] = "'Unassigned Program'";
+        $programExpression = 'COALESCE(' . implode(', ', $programExpressionParts) . ')';
+
+        $semesterExpressionParts = [];
+        if ($hasAcademicTermId) {
+            $semesterExpressionParts[] = "NULLIF(at.term, '')";
+        }
+        if ($hasStudentSemester) {
+            $semesterExpressionParts[] = "NULLIF(s.semester, '')";
+        }
+        $semesterExpressionParts[] = "''";
+        $semesterExpression = 'COALESCE(' . implode(', ', $semesterExpressionParts) . ')';
+
+        $query = DB::table('students as s');
+        if ($hasCourses && $hasCourseId) {
+            $query->leftJoin('courses as c', 'c.id', '=', 's.course_id');
+        }
+        if ($hasAcademicTermId) {
+            $query->leftJoin('academic_terms as at', 'at.id', '=', 's.academic_term_id');
+        }
+
+        if ($schoolYear !== '' && ($hasStudentSchoolYear || $hasAcademicTermId)) {
+            $query->where(function ($yearQuery) use ($schoolYear, $hasStudentSchoolYear, $hasAcademicTermId) {
+                if ($hasStudentSchoolYear) {
+                    $yearQuery->where('s.school_year', $schoolYear);
+                }
+
+                if ($hasAcademicTermId) {
+                    $method = $hasStudentSchoolYear ? 'orWhere' : 'where';
+                    $yearQuery->{$method}('at.school_year', $schoolYear);
+                }
+            });
+        }
+
+        if ($activeSemesterLabel !== '' && ($hasStudentSemester || $hasAcademicTermId)) {
+            $semesterAliases = $this->dashboardSemesterFilterAliases($activeSemesterLabel);
+            $query->where(function ($semesterQuery) use ($semesterAliases, $hasStudentSemester, $hasAcademicTermId) {
+                if ($hasStudentSemester) {
+                    $semesterQuery->whereIn(DB::raw('LOWER(TRIM(COALESCE(s.semester, "")))'), $semesterAliases);
+                }
+
+                if ($hasAcademicTermId) {
+                    $method = $hasStudentSemester ? 'orWhereIn' : 'whereIn';
+                    $semesterQuery->{$method}(DB::raw('LOWER(TRIM(COALESCE(at.term, "")))'), $semesterAliases);
+                }
+            });
+        }
+
+        $rows = $query
+            ->selectRaw($programExpression . ' as program_label')
+            ->selectRaw($semesterExpression . ' as semester_label')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy(DB::raw($programExpression), DB::raw($semesterExpression))
+            ->orderBy('program_label')
+            ->get();
+
+        $programRows = [];
+        foreach ($rows as $row) {
+            $program = trim((string) ($row->program_label ?? ''));
+            $semester = $this->dashboardSemesterDisplayLabel((string) ($row->semester_label ?? ''));
+            if ($program === '' || $semester === '') {
+                continue;
+            }
+
+            if (!isset($programRows[$program])) {
+                $programRows[$program] = array_fill_keys($semesterLabels, 0);
+            }
+
+            foreach ($semesterLabels as $semesterLabel) {
+                if (!array_key_exists($semesterLabel, $programRows[$program])) {
+                    $programRows[$program][$semesterLabel] = 0;
+                }
+            }
+
+            $programRows[$program][$semester] = (int) ($row->total ?? 0);
+        }
+
+        if (!count($programRows)) {
+            return $this->dashboardDemoEnrollmentProgramSemesterMatrix($semesterLabels, $daySeed);
+        }
+
+        $matrixMax = 1;
+        $matrixRows = collect($programRows)
+            ->map(function ($counts, $program) use ($semesterLabels) {
+                $values = [];
+                foreach ($semesterLabels as $semesterLabel) {
+                    $values[$semesterLabel] = (int) ($counts[$semesterLabel] ?? 0);
+                }
+
+                return [
+                    'program' => (string) $program,
+                    'values' => $values,
+                    'total' => array_sum($values),
+                ];
+            })
+            ->sortByDesc('total')
+            ->values()
+            ->all();
+
+        foreach ($matrixRows as $matrixRow) {
+            foreach ((array) ($matrixRow['values'] ?? []) as $cellValue) {
+                $matrixMax = max($matrixMax, (int) $cellValue);
+            }
+        }
+
+        return [
+            'schoolYear' => $schoolYear,
+            'semesters' => $semesterLabels,
+            'rows' => $matrixRows,
+            'max' => $matrixMax,
+        ];
+    }
+
+    private function dashboardDemoEnrollmentProgramSemesterMatrix(array $semesterLabels, int $daySeed): array
+    {
+        $programs = ['BSCS', 'BSIT', 'BSBA', 'BSED', 'BSN'];
+        $rows = [];
+        $maxCell = 1;
+
+        foreach ($programs as $index => $program) {
+            $values = [];
+            foreach ($semesterLabels as $semesterIndex => $semesterLabel) {
+                $value = 18 + (($daySeed + ($index * 7) + ($semesterIndex * 5)) % 28);
+                $values[$semesterLabel] = $value;
+                $maxCell = max($maxCell, $value);
+            }
+
+            $rows[] = [
+                'program' => $program,
+                'values' => $values,
+                'total' => array_sum($values),
+            ];
+        }
+
+        return [
+            'schoolYear' => '',
+            'semesters' => $semesterLabels,
+            'rows' => $rows,
+            'max' => $maxCell,
+        ];
     }
 
     private function formatAnnouncementDateRange(SystemAnnouncement $announcement): string
@@ -18183,9 +18489,12 @@ class RegistrarController extends Controller
             'mobile_number'        => 'nullable|string|max:20',
             'student_email'        => 'nullable|email|max:150',
             'lrn'                  => 'nullable|string|max:30',
+            'elementary_school'    => 'nullable|string|max:200',
+            'high_school'          => 'nullable|string|max:200',
             'junior_school'        => 'nullable|string|max:200',
             'senior_school'        => 'nullable|string|max:200',
             'shs_track_strand'     => 'nullable|string|max:100',
+            'school_last_attended' => 'nullable|string|max:200',
             'present_street'       => 'nullable|string|max:200',
             'present_barangay'     => 'nullable|string|max:100',
             'present_municipality' => 'nullable|string|max:100',
@@ -19374,6 +19683,20 @@ class RegistrarController extends Controller
      */
     public function formsHonorableDismissal(?Student $student = null)
     {
+        if (!Schema::hasTable('honorable_dismissal_records')) {
+            $honorableDismissalRows = collect();
+            $honorableDismissalCandidates = collect();
+            $selectedStudentId = null;
+            $hdRecordsUnavailable = true;
+
+            return view('registrar.forms.honorable-dismissal', compact(
+                'honorableDismissalRows',
+                'honorableDismissalCandidates',
+                'selectedStudentId',
+                'hdRecordsUnavailable'
+            ));
+        }
+
         if (!$student && request()->filled('student_id')) {
             $student = Student::find(request()->query('student_id'));
         }
@@ -19385,18 +19708,107 @@ class RegistrarController extends Controller
             }
         }
 
-        $honorableDismissalRows = Student::query()
+        $honorableDismissalCandidates = Student::query()
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
-            ->when($student, function ($query) use ($student) {
-                $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
+            ->whereNotIn('id', function ($query) {
+                $query->select('student_id')->from('honorable_dismissal_records');
             })
             ->orderBy('name')
             ->limit(100)
             ->get($studentColumns);
 
-        $selectedStudentId = $student ? (int) $student->id : null;
+        $honorableDismissalRows = Student::query()
+            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->join('honorable_dismissal_records as hdr', 'hdr.student_id', '=', 'students.id')
+            ->when($student, function ($query) use ($student) {
+                $query->orderByRaw('CASE WHEN students.id = ? THEN 0 ELSE 1 END', [$student->id]);
+            })
+            ->orderByDesc('hdr.created_at')
+            ->orderBy('students.name')
+            ->limit(100)
+            ->get(array_merge(array_map(function ($column) {
+                return 'students.' . $column;
+            }, $studentColumns), [
+                'hdr.hd_no as hd_no',
+                'hdr.status as hd_status',
+                'hdr.tagged_at as hd_tagged_at',
+                'hdr.issued_at as hd_issued_at',
+            ]));
 
-        return view('registrar.forms.honorable-dismissal', compact('honorableDismissalRows', 'selectedStudentId'));
+        $selectedStudentId = null;
+        if ($student && $honorableDismissalRows->contains('id', (int) $student->id)) {
+            $selectedStudentId = (int) $student->id;
+        }
+        $hdRecordsUnavailable = false;
+
+        return view('registrar.forms.honorable-dismissal', compact(
+            'honorableDismissalRows',
+            'honorableDismissalCandidates',
+            'selectedStudentId',
+            'hdRecordsUnavailable'
+        ));
+    }
+
+    public function formsHonorableDismissalTag(Request $request, Student $student): JsonResponse
+    {
+        if (!Schema::hasTable('honorable_dismissal_records')) {
+            return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
+        }
+
+        $now = now();
+        $hdNo = $this->nextHonorableDismissalNumber($student);
+
+        DB::table('honorable_dismissal_records')->updateOrInsert(
+            ['student_id' => (int) $student->id],
+            [
+                'hd_no' => $hdNo,
+                'status' => 'for_dismissal',
+                'tagged_at' => $now->toDateString(),
+                'tagged_by' => optional(auth()->user())->id,
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Student tagged for Honorable Dismissal.']);
+    }
+
+    public function formsHonorableDismissalIssue(Request $request, Student $student): JsonResponse
+    {
+        if (!Schema::hasTable('honorable_dismissal_records')) {
+            return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
+        }
+
+        $record = DB::table('honorable_dismissal_records')->where('student_id', (int) $student->id)->first();
+        if (!$record) {
+            return response()->json(['success' => false, 'message' => 'Student must be tagged For Dismissal before printing HD.'], 422);
+        }
+
+        DB::table('honorable_dismissal_records')
+            ->where('student_id', (int) $student->id)
+            ->update([
+                'status' => 'issued',
+                'issued_at' => now()->toDateString(),
+                'issued_by' => optional(auth()->user())->id,
+                'updated_at' => now(),
+            ]);
+
+        return response()->json(['success' => true, 'message' => 'Honorable Dismissal marked as issued.']);
+    }
+
+    private function nextHonorableDismissalNumber(Student $student): string
+    {
+        $base = 'HD-' . ($student->student_no ?: str_pad((string) $student->id, 5, '0', STR_PAD_LEFT));
+        if (!Schema::hasTable('honorable_dismissal_records')) {
+            return $base;
+        }
+
+        $existing = DB::table('honorable_dismissal_records')
+            ->where('hd_no', $base)
+            ->where('student_id', '<>', (int) $student->id)
+            ->exists();
+
+        return $existing ? $base . '-' . now()->format('Ymd') : $base;
     }
 
     /**

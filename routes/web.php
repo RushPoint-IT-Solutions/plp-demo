@@ -382,6 +382,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/clearance-2', 'Registrar\RegistrarController@formsClearance2')->name('clearance-2');
             Route::get('/honorable-dismissal/{student}', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal.show');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
+            Route::post('/honorable-dismissal/{student}/tag', 'Registrar\RegistrarController@formsHonorableDismissalTag')->name('honorable-dismissal.tag');
+            Route::post('/honorable-dismissal/{student}/issue', 'Registrar\RegistrarController@formsHonorableDismissalIssue')->name('honorable-dismissal.issue');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');

@@ -57,7 +57,7 @@
 
         <div class="rf137a-signature-block">
             <p class="rf137a-signature-intro">Very truly yours,</p>
-            <p class="rf137a-signatory-name">MR. FEDERICO G. NUEVA</p>
+            <p class="rf137a-signatory-name">FEDERICO G. NUEVA MT</p>
             <p class="rf137a-signatory-role">University Registrar</p>
         </div>
 

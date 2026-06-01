@@ -118,7 +118,7 @@ function pceBuildTemplate(data) {
 
         '<div class="pce-sign-wrap">' +
             '<div class="pce-respect">Respectfully yours,</div>' +
-            '<div class="pce-sign-name">MR. FEDERICO G. NUEVA</div>' +
+            '<div class="pce-sign-name">FEDERICO G. NUEVA MT</div>' +
             '<div class="pce-sign-title">University Registrar</div>' +
         '</div>' +
 

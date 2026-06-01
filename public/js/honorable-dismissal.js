@@ -3,6 +3,23 @@
 var hdCurrentRowId = null;
 var hdCurrentPreviewName = 'honorable-dismissal';
 
+function hdCsrf() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
+function hdPost(url) {
+    return fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': hdCsrf()
+        }
+    }).then(function(response) { return response.json(); });
+}
+
 function hdEsc(v) {
     return String(v || '').replace(/[&<>"']/g, function(c) {
         return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
@@ -14,86 +31,21 @@ function hdBuildTemplate(data, meta) {
     var dateStr = meta.hdDate || (now.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }));
     var hdNo = meta.hdNo || '';
 
-    /* Space for pre-printed header on yellow paper */
-    var headerSpace = '<div class="hd-header-space"></div>';
-
-    /* HD NO / Date */
-    var hdInfo = '<div class="hd-info-right">' +
-        '<div class="hd-info-row"><span class="hd-info-label">HD NO:</span><span class="hd-info-val-borderless">' + hdEsc(hdNo) + '</span></div>' +
-        '<div class="hd-info-row"><span class="hd-info-label">Date:</span><span class="hd-info-val-borderless">' + hdEsc(dateStr) + '</span></div>' +
-    '</div>';
-
-    /* Body */
-    var body = '<div class="hd-body">' +
-        '<p class="hd-concern">TO WHOM IT MAY CONCERN:</p>' +
-        '<div class="hd-flex-line" style="margin-top:14px;"><span style="margin-left: 40px; margin-right: 10px;">This certifies that</span><span class="hd-fill">' + hdEsc(meta.studentName) + '</span></div>' +
-        '<div class="hd-flex-line"><span style="margin-right: 10px;">a student at the program of</span><span class="hd-fill">' + hdEsc(meta.program) + '</span></div>' +
-        '<div class="hd-flex-line">is hereby granted permission to transfer from this university.</div>' +
-        '<div class="hd-flex-line" style="margin-top:18px;"><span style="margin-left: 40px;">Official Transcript of Record shall be forwarded upon receipt of the Request Slip below.</span></div>' +
-    '</div>';
-
-    /* Registrar signature */
-    var sig = '<div class="hd-registrar-sig">' +
-        '<div class="hd-sig-name">MR. FEDERICO G. NUEVA</div>' +
-        '<div class="hd-sig-title">University Registrar</div>' +
-    '</div>';
-
-    /* Dashed cut line */
-    var cutLine = '<div class="hd-cut-line">' +
-        '<span>(To be accomplished by the requesting school. Cut here and send the lower part to PLP)</span>' +
-    '</div>';
-
-    /* Bottom section: Request for Official Transcript of Records */
-    var bottom = '<div class="hd-request-section">' +
-        '<div class="hd-request-title">REQUEST FOR OFFICIAL TRANSCRIPT OF RECORDS</div>' +
-        '<div class="hd-request-hdno">' +
-            '<div class="hd-info-right">' +
-                '<div class="hd-info-row"><span class="hd-info-label">HD NO:</span><span style="min-width:140px; text-align:left;">' + hdEsc(hdNo) + '</span></div>' +
-                '<div class="hd-info-row"><span class="hd-info-label">Date:</span><span class="hd-info-val">' + hdEsc(dateStr) + '</span></div>' +
-            '</div>' +
+    return '<div class="hd-simple-form">' +
+        '<div class="hd-simple-top">' +
+            '<div><span>HD No.</span><strong>' + hdEsc(hdNo) + '</strong></div>' +
+            '<div><span>Date</span><strong>' + hdEsc(dateStr) + '</strong></div>' +
         '</div>' +
-        '<div class="hd-request-body">' +
-            '<div style="margin-bottom:8px;">' +
-                '<div style="display:inline-block;">' +
-                    '<div style="font-weight:700;">THE REGISTRAR</div>' +
-                    '<div style="border-bottom:1px solid #333; margin-top:2px; min-width:300px;"></div>' +
-                '</div>' +
-            '</div>' +
-            '<div style="margin-bottom:8px;">' +
-                '<div style="display:inline-block;">' +
-                    '<div>Pamantasan ng Lungsod ng Pasig</div>' +
-                    '<div style="border-bottom:1px solid #333; margin-top:2px; min-width:300px;"></div>' +
-                '</div>' +
-            '</div>' +
-            '<div style="margin-bottom:8px;">' +
-                '<div style="display:inline-block;">' +
-                    '<div>Alkalde Jose St. Kapasigan, Pasig City</div>' +
-                    '<div style="border-bottom:1px solid #333; margin-top:2px; min-width:300px;"></div>' +
-                '</div>' +
-            '</div>' +
-            '<p style="margin-top:14px;">Dear Sir/Madam:</p>' +
-            '<div class="hd-flex-line" style="margin-top:10px;"><span style="margin-left: 40px; margin-right: 10px;">Please send us the Official Transcript of Records of the student</span><span class="hd-fill">' + hdEsc(meta.studentName) + '</span></div>' +
-            '<p style="margin-top:6px; margin-bottom:0;">whose conforming signature appears below.</p>' +
+        '<div class="hd-simple-grid">' +
+            '<div><span>Name of Student</span><strong>' + hdEsc(meta.studentName) + '</strong></div>' +
+            '<div><span>Program</span><strong>' + hdEsc(meta.program) + '</strong></div>' +
+            '<div><span>Student No.</span><strong>' + hdEsc(meta.studentNo) + '</strong></div>' +
         '</div>' +
-        '<div style="margin-top:30px; text-align:right; font-size:0.75rem;">' +
-            '<div style="border-bottom:1px solid #333; width:280px; display:inline-block; margin-bottom:4px;"></div><br>' +
-            'Signature over Printed Name and Position of School Official' +
-        '</div>' +
-        '<div class="hd-request-fields" style="padding-right:20%;">' +
-            '<div class="hd-field-row"><span class="hd-field-label">Student\'s Signature</span><span class="hd-field-line"></span></div>' +
-            '<div class="hd-field-row"><span class="hd-field-label">Student Number</span><span class="hd-field-val">' + hdEsc(meta.studentNo) + '</span></div>' +
-            '<div class="hd-field-row"><span class="hd-field-label">Program</span><span class="hd-field-val">' + hdEsc(meta.program) + '</span></div>' +
-            '<div class="hd-field-row"><span class="hd-field-label">School Requesting</span><span class="hd-field-line"></span></div>' +
-            '<div class="hd-field-row"><span class="hd-field-label">Mailing Address</span><span class="hd-field-line"></span></div>' +
-            '<div class="hd-field-row"><span class="hd-field-label">School Contact Nos.</span><span class="hd-field-line"></span></div>' +
-        '</div>' +
-        '<div class="hd-mail-options">' +
-            '<div>( &nbsp; ) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mail</div>' +
-            '<div>( &nbsp; ) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Entrust to bearer <span style="float:right; font-size:0.8rem;">Not Valid Without University Seal</span></div>' +
+        '<div class="hd-simple-signature">' +
+            '<strong>FEDERICO G. NUEVA</strong>' +
+            '<span>University Registrar</span>' +
         '</div>' +
     '</div>';
-
-    return headerSpace + hdInfo + body + sig + cutLine + bottom;
 }
 
 function hdGetRowData(rowId) {
@@ -107,10 +59,11 @@ function hdGetRowData(rowId) {
         studentNo: (cells[1] ? cells[1].textContent : '').trim(),
         studentName: studentName,
         program: program,
-        year: (cells[4] ? cells[4].textContent : '').trim(),
-        section: (cells[5] ? cells[5].textContent : '').trim(),
+        year: '',
+        section: '',
         hdNo: (row.getAttribute('data-hd-no') || '').trim(),
         hdDate: (row.getAttribute('data-hd-date') || '').trim(),
+        hdStatus: (row.getAttribute('data-hd-status') || '').trim(),
         schoolYear: (row.getAttribute('data-school-year') || '').trim(),
         semester: (row.getAttribute('data-semester') || '').trim()
     };
@@ -119,6 +72,10 @@ function hdGetRowData(rowId) {
 function hdOpenPreview(rowId) {
     var data = hdGetRowData(rowId);
     if (!data) return;
+    if (!data.hdNo) {
+        alert('Student must be tagged For Dismissal before previewing HD.');
+        return;
+    }
     var meta = {
         studentNo: data.studentNo,
         studentName: data.studentName.toUpperCase(),
@@ -129,6 +86,7 @@ function hdOpenPreview(rowId) {
     var sheet = document.getElementById('hdPreviewSheet');
     if (!sheet) return;
     sheet.innerHTML = hdBuildTemplate(data, meta);
+    hdCurrentRowId = rowId;
     hdCurrentPreviewName = hdFileName(data);
     document.getElementById('hdPreviewModal').style.display = 'flex';
     document.body.classList.add('hd-preview-open');
@@ -143,7 +101,9 @@ function hdClosePreview() {
 function hdPrintPreview() {
     var sheet = document.getElementById('hdPreviewSheet');
     if (!sheet) return;
-    hdPrintSheets([sheet.innerHTML]);
+    hdIssueRows([hdCurrentRowId]).then(function(ok) {
+        if (ok) hdPrintSheets([sheet.innerHTML]);
+    });
 }
 
 function hdPrintSheets(list) {
@@ -197,6 +157,7 @@ function hdDownloadPreview() {
 function hdDownloadRow(rowId) {
     var data = hdGetRowData(rowId);
     if (!data) return;
+    if (!data.hdNo) { alert('Student must be tagged For Dismissal before downloading HD.'); return; }
     var meta = {
         studentNo: data.studentNo,
         studentName: data.studentName.toUpperCase(),
@@ -210,6 +171,10 @@ function hdDownloadRow(rowId) {
 function hdPrintSelected() {
     var sel = Array.from(document.querySelectorAll('#hdTableBody .hd-row-select:checked'));
     if (!sel.length) { alert('Select at least one record to print.'); return; }
+    var rowIds = sel.map(function(cb) {
+        var row = cb.closest('tr');
+        return row ? row.getAttribute('data-row-id') : null;
+    }).filter(Boolean);
     var sheets = sel.map(function(cb) {
         var row = cb.closest('tr');
         var rid = row ? row.getAttribute('data-row-id') : null;
@@ -224,7 +189,9 @@ function hdPrintSelected() {
         } : {};
         return data ? hdBuildTemplate(data, meta) : '';
     }).filter(Boolean);
-    hdPrintSheets(sheets);
+    hdIssueRows(rowIds).then(function(ok) {
+        if (ok) hdPrintSheets(sheets);
+    });
 }
 
 function hdOpenPreviewFromSelection() {
@@ -236,17 +203,42 @@ function hdOpenPreviewFromSelection() {
 }
 
 function hdOpenBlankPreview() {
-    var sheet = document.getElementById('hdPreviewSheet');
-    if (!sheet) return;
+    alert('Select a student tagged For Dismissal to preview HD.');
+}
 
-    sheet.innerHTML = hdBuildTemplate(
-        { studentNo:'', studentName:'', program:'', year:'', section:'' },
-        { studentNo:'', studentName:'', program:'', hdNo:'', hdDate:'' }
-    );
-    hdCurrentPreviewName = 'honorable-dismissal-blank.html';
+function hdTagForDismissal(studentId) {
+    var url = String(window.hdTagUrlTemplate || '').replace('__STUDENT__', studentId);
+    if (!url) return;
+    hdPost(url).then(function(data) {
+        if (!data || !data.success) {
+            alert((data && data.message) || 'Unable to tag student for dismissal.');
+            return;
+        }
+        window.location.reload();
+    }).catch(function() {
+        alert('Network error while tagging student.');
+    });
+}
 
-    document.getElementById('hdPreviewModal').style.display = 'flex';
-    document.body.classList.add('hd-preview-open');
+function hdIssueRows(rowIds) {
+    rowIds = (rowIds || []).filter(Boolean);
+    if (!rowIds.length) return Promise.resolve(false);
+    var template = String(window.hdIssueUrlTemplate || '');
+    if (!template) return Promise.resolve(false);
+
+    return Promise.all(rowIds.map(function(rowId) {
+        return hdPost(template.replace('__STUDENT__', rowId));
+    })).then(function(results) {
+        var failed = results.find(function(result) { return !result || !result.success; });
+        if (failed) {
+            alert(failed.message || 'Student must be tagged For Dismissal before printing HD.');
+            return false;
+        }
+        return true;
+    }).catch(function() {
+        alert('Network error while marking HD as issued.');
+        return false;
+    });
 }
 
 function hdFilterTable(query) {

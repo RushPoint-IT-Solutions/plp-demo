@@ -13,8 +13,17 @@
 @endpush
 
 @section('content')
+@php
+    $hdTagUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => '__STUDENT__']);
+    $hdIssueUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.issue', ['student' => '__STUDENT__']);
+@endphp
 <div class="pf-page">
     <div class="ga-page">
+        @if(!empty($hdRecordsUnavailable))
+            <div class="alert alert-warning" role="alert">
+                Honorable Dismissal monitoring is not available yet. Please run the latest migrations.
+            </div>
+        @endif
         <div class="app-filter-bar">
             <div class="app-filter-row" style="align-items: flex-end;">
                 <div class="app-filter-group" style="flex:1;">
@@ -72,6 +81,41 @@
             </div>
         </div>
 
+        <h3 style="margin: 4px 0 10px; color:#006837; font-size:1rem; font-weight:800;">TAG STUDENT FOR DISMISSAL</h3>
+        <div class="ga-table-wrap app-table-wrap" style="margin-bottom:24px;">
+            <table class="ga-table app-table" style="min-width: 760px;">
+                <thead>
+                    <tr>
+                        <th>Student Number</th>
+                        <th>Student Name</th>
+                        <th>Program</th>
+                        <th>Year</th>
+                        <th style="text-align: center; width: 150px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($honorableDismissalCandidates as $student)
+                        @php
+                            $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
+                            $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
+                        @endphp
+                        <tr>
+                            <td>{{ $student->student_no ?: '-' }}</td>
+                            <td>{{ $student->name ?: '-' }}</td>
+                            <td>{{ $program ?: '-' }}</td>
+                            <td>{{ $yearLevel ?: '-' }}</td>
+                            <td style="text-align:center;">
+                                <button type="button" class="req-btn-save" style="min-width:130px;" onclick="hdTagForDismissal({{ $student->id }})">For Dismissal</button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" style="text-align:center; color:#666;">No untagged student records found.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <h3 style="margin: 4px 0 10px; color:#006837; font-size:1rem; font-weight:800;">HONORABLE DISMISSAL MONITORING</h3>
         <div class="ga-table-controls" style="margin-bottom: 12px; display:flex; font-size: 0.85rem; font-weight: 600; color: #006837; align-items: center; gap: 8px;">
             <span style="letter-spacing: 0.05em;">SHOW</span>
             <select class="app-filter-select" style="width: auto; padding: 4px 28px 4px 12px; height: 32px; font-size: 0.85rem;">
@@ -92,8 +136,9 @@
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
-                        <th>Year</th>
-                        <th>Section</th>
+                        <th>HD No.</th>
+                        <th>Status</th>
+                        <th>Date Issued</th>
                         <th style="text-align: center; width: 70px;">Action</th>
                     </tr>
                 </thead>
@@ -104,19 +149,23 @@
                         $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
                         $schoolYear = trim((string) ($student->school_year ?: optional($student->academicTerm)->school_year));
                         $semester = trim((string) ($student->semester ?: optional($student->academicTerm)->term));
-                        $section = trim((string) ($program ?: 'PROGRAM') . ' ' . (string) ($yearLevel ?: 'YEAR'));
+                        $hdStatus = trim((string) ($student->hd_status ?? 'for_dismissal'));
+                        $hdStatusLabel = $hdStatus === 'issued' ? 'Issued' : 'For Dismissal';
+                        $hdIssuedAt = $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : '-';
                     @endphp
                     <tr data-row-id="{{ $student->id }}"
                         data-school-year="{{ $schoolYear }}"
                         data-semester="{{ $semester }}"
-                        data-hd-no="{{ $student->student_no ? 'HD-' . $student->student_no : '' }}"
-                        data-hd-date="{{ now()->format('F d, Y') }}">
+                        data-hd-no="{{ $student->hd_no ?: ($student->student_no ? 'HD-' . $student->student_no : '') }}"
+                        data-hd-date="{{ $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : now()->format('F d, Y') }}"
+                        data-hd-status="{{ $hdStatus }}">
                         <td style="text-align: center;"><input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()"></td>
                         <td>{{ $student->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
                         <td>{{ $program ?: '-' }}</td>
-                        <td>{{ $yearLevel ?: '-' }}</td>
-                        <td>{{ $section }}</td>
+                        <td>{{ $student->hd_no ?: '-' }}</td>
+                        <td>{{ $hdStatusLabel }}</td>
+                        <td>{{ $hdIssuedAt }}</td>
                         <td style="text-align:center;">
                             <div class="apst-action-btn" data-hd-menu-toggle="hdMenu-{{ $student->id }}" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
                             <div class="apst-dropdown" id="hdMenu-{{ $student->id }}">
@@ -212,5 +261,9 @@
 @endsection
 
 @push('scripts')
+<script>
+window.hdTagUrlTemplate = @json($hdTagUrlTemplate);
+window.hdIssueUrlTemplate = @json($hdIssueUrlTemplate);
+</script>
 <script src="{{ asset('js/honorable-dismissal.js') }}?v={{ time() }}"></script>
 @endpush

@@ -501,16 +501,30 @@
 
             <div class="setup-row">
                 <div class="setup-col" style="flex:1;">
+                    <label class="setup-label">Elementary</label>
+                    <input type="text" class="setup-input" placeholder="Elementary school" name="elementary_school">
+                </div>
+            </div>
+
+            <div class="setup-row">
+                <div class="setup-col" style="flex:1;">
+                    <label class="setup-label">High School</label>
+                    <input type="text" class="setup-input" placeholder="High school" name="high_school">
+                </div>
+            </div>
+
+            <div class="setup-row">
+                <div class="setup-col" style="flex:1;">
                     <label class="setup-label">Junior School <span class="req">*</span></label>
-                    <input type="text" class="setup-input" placeholder="Junior High" name="junior_school">
+                    <input type="text" class="setup-input" placeholder="Junior High or N/A" name="junior_school">
                 </div>
             </div>
 
             <div class="setup-row">
                 <div class="setup-col" style="flex:1;">
                     <label class="setup-label">Senior School <span class="req">*</span></label>
-                    <input type="text" class="setup-input" placeholder="Senior High" name="senior_school">
-                    <span class="setup-helper">If not applicable, use the same information as Junior High School</span>
+                    <input type="text" class="setup-input" placeholder="Senior High or N/A" name="senior_school">
+                    <span class="setup-helper">If not applicable, enter N/A.</span>
                 </div>
             </div>
 
@@ -533,6 +547,13 @@
                 <div class="setup-col" style="flex:0 0 50%;">
                     <label class="setup-label">Learner's Reference Number (LRN)</label>
                     <input type="text" class="setup-input" placeholder="Must be exactly 12 digits (e.g., 123456789012)" name="lrn" maxlength="12">
+                </div>
+            </div>
+
+            <div class="setup-row">
+                <div class="setup-col" style="flex:1;">
+                    <label class="setup-label">School Last Attended</label>
+                    <input type="text" class="setup-input" placeholder="For transferee; enter N/A if not applicable" name="school_last_attended">
                 </div>
             </div>
         </div>
@@ -802,10 +823,13 @@ window.savedProfile = {
     "household_members":      {{ json_encode($s ? (string)$s->household_members  : '') }},
     "dependents":             {{ json_encode($s ? (string)$s->dependents          : '') }},
 
-    "junior_school":          {{ json_encode($s ? $s->junior_school    : '') }},
-    "senior_school":          {{ json_encode($s ? $s->senior_school    : '') }},
-    "shs_track_strand":       {{ json_encode($s ? $s->shs_track_strand : '') }},
-    "lrn":                    {{ json_encode($s ? $s->lrn              : '') }},
+    "elementary_school":      {{ json_encode($s ? $s->elementary_school      : '') }},
+    "high_school":            {{ json_encode($s ? $s->high_school            : '') }},
+    "junior_school":          {{ json_encode($s ? $s->junior_school          : '') }},
+    "senior_school":          {{ json_encode($s ? $s->senior_school          : '') }},
+    "shs_track_strand":       {{ json_encode($s ? $s->shs_track_strand       : '') }},
+    "lrn":                    {{ json_encode($s ? $s->lrn                    : '') }},
+    "school_last_attended":   {{ json_encode($s ? $s->school_last_attended   : '') }},
 
     "family_income_source":       {{ json_encode($s ? $s->family_income_source       : '') }},
     "family_income_source_other": {{ json_encode($s ? $s->family_income_source_other : '') }},

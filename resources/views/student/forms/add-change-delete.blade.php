@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="acd-right-meta">
-                    <div class="acd-line-row"><span>Semester &amp; Academic Year:</span><input type="text" class="acd-line acd-inline-input" value="{{ optional($student)->semester }} {{ optional($student)->school_year ? ' / SY ' . $student->school_year : '' }}"></div>
+                    <div class="acd-line-row"><span>Semester &amp; Academic Year:</span><input type="text" class="acd-line acd-inline-input" value="{{ optional($student)->semester }} {{ optional($student)->school_year ? ' / AY ' . $student->school_year : '' }}"></div>
                     <div class="acd-line-row"><span>Student Number:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displayStudentNo }}"></div>
                     <div class="acd-line-row"><span>Student Name:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displayName ?: optional($student)->name }}"></div>
                     <div class="acd-line-row"><span>Course:</span><input type="text" class="acd-line acd-inline-input" value="{{ $displayCourse }}"></div>

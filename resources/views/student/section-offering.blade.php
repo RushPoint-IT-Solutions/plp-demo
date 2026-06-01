@@ -73,7 +73,7 @@
                 <div class="cor-info-col">
                     <div class="cor-info-line"><span class="cor-info-label">Enrollment Date:</span><span class="cor-info-value">{{ optional($student)->enrollment_date }}</span></div>
                     <div class="cor-info-line"><span class="cor-info-label">Curriculum:</span><span class="cor-info-value">{{ optional($student)->curriculum }}</span></div>
-                    <div class="cor-info-line"><span class="cor-info-label">School Year:</span><span class="cor-info-value">{{ optional($student)->school_year_label }}</span></div>
+                    <div class="cor-info-line"><span class="cor-info-label">Academic Year:</span><span class="cor-info-value">{{ optional($student)->school_year_label }}</span></div>
                 </div>
                 <div class="cor-info-col">
                     <div class="cor-info-line"><span class="cor-info-label">Year Level:</span><span class="cor-info-value">{{ optional($student)->year_level }}</span></div>

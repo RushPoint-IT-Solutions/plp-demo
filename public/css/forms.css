@@ -1206,6 +1206,70 @@ body.wce-preview-open {
     line-height: 1.8;
 }
 
+.hd-simple-form {
+    min-height: 980px;
+    padding: 120px 70px 50px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111;
+}
+.hd-simple-top {
+    display: flex;
+    justify-content: flex-end;
+    gap: 36px;
+    margin-bottom: 120px;
+    font-size: 0.95rem;
+}
+.hd-simple-top span,
+.hd-simple-grid span {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #333;
+    margin-bottom: 4px;
+}
+.hd-simple-top strong,
+.hd-simple-grid strong {
+    display: block;
+    min-width: 170px;
+    border-bottom: 1px solid #222;
+    padding: 0 6px 4px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+}
+.hd-simple-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 42px 32px;
+    max-width: 720px;
+    margin: 0 auto;
+}
+.hd-simple-grid > div:first-child {
+    grid-column: 1 / -1;
+}
+.hd-simple-grid > div:first-child strong {
+    min-width: 100%;
+    font-size: 1.1rem;
+}
+.hd-simple-signature {
+    margin: 220px 70px 0 auto;
+    width: 280px;
+    text-align: center;
+}
+.hd-simple-signature strong {
+    display: block;
+    border-bottom: 1px solid #222;
+    padding-bottom: 4px;
+    font-size: 0.98rem;
+}
+.hd-simple-signature span {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.82rem;
+}
+
 /* Hidden print container */
 #hdPrintContainer {
     display: none;
@@ -1227,7 +1291,7 @@ body.wce-preview-open {
         width: 100%;
         max-width: 100%;
         background: #fff;
-        padding: 0 20px 20px;
+        padding: 0;
         margin: 0;
         box-shadow: none;
         border: none;
