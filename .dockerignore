@@ -1,0 +1,15 @@
+.git
+.github
+.vscode
+node_modules
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+test-results
+*.log
+n.log
+error.log
+sass-build.log
+.env
