@@ -48,7 +48,7 @@ class SeedTrashGradingSheetSubjects extends Migration
                 $studentNo = 'TR-' . str_pad((string) $i, 5, '0', STR_PAD_LEFT);
                 DB::table('students')->updateOrInsert(
                     ['student_no' => $studentNo],
-                    [
+                    $this->filterColumns('students', [
                         'name' => 'Trash Student ' . str_pad((string) $i, 2, '0', STR_PAD_LEFT),
                         'sex' => $i % 2 === 0 ? 'Female' : 'Male',
                         'age' => 20,
@@ -60,7 +60,7 @@ class SeedTrashGradingSheetSubjects extends Migration
                         'semester' => 'First Semester',
                         'updated_at' => $now,
                         'created_at' => $now,
-                    ]
+                    ])
                 );
             }
 
