@@ -70,12 +70,41 @@ class AddSampleStudentDocumentUploadRequirement extends Migration
         $semesterId = DB::table('system_school_semesters')->orderByDesc('id')->value('id');
         if (!$semesterId && Schema::hasTable('system_school_semesters')) {
             $year = (int) $now->format('Y');
-            $semesterId = DB::table('system_school_semesters')->insertGetId([
-                'school_year' => $year . '-' . ($year + 1),
-                'semester' => 'First Semester',
+            $schoolYear = $year . '-' . ($year + 1);
+            $semester = 'First Semester';
+            $payload = [
                 'created_at' => $now,
                 'updated_at' => $now,
-            ]);
+            ];
+
+            if (Schema::hasColumn('system_school_semesters', 'school_year')) {
+                $payload['school_year'] = $schoolYear;
+            }
+
+            if (Schema::hasColumn('system_school_semesters', 'semester')) {
+                $payload['semester'] = $semester;
+            }
+
+            if (Schema::hasColumn('system_school_semesters', 'academic_term_id') && Schema::hasTable('academic_terms')) {
+                $canonicalKey = strtolower($schoolYear . '|' . $semester);
+                $academicTermId = DB::table('academic_terms')->where('canonical_key', $canonicalKey)->value('id');
+
+                if (!$academicTermId) {
+                    $academicTermId = DB::table('academic_terms')->insertGetId([
+                        'school_year' => $schoolYear,
+                        'term' => $semester,
+                        'canonical_key' => $canonicalKey,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+
+                $payload['academic_term_id'] = $academicTermId;
+            }
+
+            if (count($payload) > 2) {
+                $semesterId = DB::table('system_school_semesters')->insertGetId($payload);
+            }
         }
 
         if (!$semesterId) {
