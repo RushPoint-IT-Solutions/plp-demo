@@ -1020,6 +1020,8 @@ body.tor-preview-open {
     overflow: auto;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    position: relative;
 }
 
 body.hd-preview-open,
@@ -1032,18 +1034,105 @@ body.wce-preview-open {
    HONORABLE DISMISSAL – sheet (screen + print)
    ============================================================ */
 .hd-sheet {
-    width: 900px;
-    min-height: 1140px;
+    width: 794px;
+    height: 1123px;
     margin: 0 auto;
     background: #ffffff;
     border: 1px solid #d4ded7;
     box-shadow: 0 8px 20px rgba(10, 45, 28, 0.12);
-    padding: 0 40px 30px;
+    padding: 0;
     color: #191919;
     font-family: 'Arial', 'Helvetica Neue', sans-serif;
     font-size: 0.88rem;
     line-height: 1.5;
     position: relative;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.hd-template-canvas {
+    cursor: default;
+}
+
+.hd-template-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    font-weight: 700;
+}
+
+.hd-template-element {
+    position: absolute;
+    min-height: 18px;
+    padding: 2px 4px;
+    border: 1px dashed transparent;
+    color: #111111;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    cursor: move;
+    outline: none;
+    background: transparent;
+}
+
+.hd-template-element:hover,
+.hd-template-element.is-selected {
+    border-color: #198754;
+    background: rgba(25, 135, 84, 0.05);
+}
+
+.hd-editor-toolbar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    align-self: flex-start;
+    margin-right: 12px;
+    width: 210px;
+    padding: 10px;
+    border: 1px solid #cbd5d1;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 8px 18px rgba(15, 81, 50, 0.14);
+    gap: 7px;
+}
+
+.hd-editor-toolbar.is-visible {
+    display: grid;
+}
+
+.hd-editor-toolbar select,
+.hd-editor-toolbar input,
+.hd-editor-toolbar button {
+    height: 32px;
+    border: 1px solid #cbd5d1;
+    border-radius: 5px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 0.82rem;
+}
+
+.hd-editor-toolbar button {
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.hd-editor-toolbar button.is-active {
+    background: #198754;
+    border-color: #198754;
+    color: #ffffff;
+}
+
+.hd-editor-toolbar label {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    align-items: center;
+    gap: 6px;
+    color: #374151;
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
 /* Space at top for pre-printed yellow paper header */
@@ -1279,22 +1368,48 @@ body.wce-preview-open {
    HONORABLE DISMISSAL – print
    ============================================================ */
 @media print {
+    @page { size: A4 portrait; margin: 0; }
+
+    body.hd-printing > *:not(#hdPrintContainer),
     body.hd-printing .pf-page,
-    body.hd-printing .req-modal-overlay { display: none !important; }
+    body.hd-printing .main-sidebar,
+    body.hd-printing .sidebar,
+    body.hd-printing .registrar-sidebar,
+    body.hd-printing .req-modal-overlay,
+    body.hd-printing .modal-backdrop,
+    body.hd-printing .hd-editor-toolbar,
+    body.hd-printing .req-modal-actions,
+    body.hd-printing button {
+        display: none !important;
+    }
 
     body.hd-printing #hdPrintContainer {
         display: block;
-        position: static;
+        position: static !important;
         background: #fff;
+        width: 210mm;
+        margin: 0;
+        padding: 0;
     }
     body.hd-printing #hdPrintContainer .hd-sheet {
-        width: 100%;
-        max-width: 100%;
+        width: 210mm;
+        height: 297mm;
+        max-width: none;
         background: #fff;
         padding: 0;
         margin: 0;
         box-shadow: none;
         border: none;
+        overflow: hidden;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    body.hd-printing #hdPrintContainer .hd-template-element {
+        border: 0 !important;
+        background: transparent !important;
+        cursor: default;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
     body.hd-printing #hdPrintContainer .hd-print-page-break {
         page-break-after: always;

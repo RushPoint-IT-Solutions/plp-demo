@@ -16,6 +16,9 @@
 @php
     $hdTagUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => '__STUDENT__']);
     $hdIssueUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.issue', ['student' => '__STUDENT__']);
+    $hdLayoutUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout', ['student' => '__STUDENT__']);
+    $hdBlankLayoutUrl = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout');
+    $hdTemplateSaveUrl = route('registrar.registrar-menu.forms.honorable-dismissal.template.save');
 @endphp
 <div class="pf-page">
     <div class="ga-page">
@@ -247,10 +250,32 @@
             <h3>HONORABLE DISMISSAL PREVIEW</h3>
         </div>
         <div class="hd-preview-wrap">
+            <div class="hd-editor-toolbar" id="hdEditorToolbar" aria-hidden="true">
+                <select id="hdFontFamily" title="Font family">
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                </select>
+                <input type="number" id="hdFontSize" title="Font size" min="6" max="96" step="1">
+                <button type="button" data-hd-style="bold" title="Bold">B</button>
+                <button type="button" data-hd-style="italic" title="Italic"><em>I</em></button>
+                <button type="button" data-hd-style="underline" title="Underline"><u>U</u></button>
+                <select id="hdTextAlign" title="Text alignment">
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                    <option value="justify">Justify</option>
+                </select>
+                <label>Top <input type="number" id="hdTopPercent" min="0" max="100" step="0.1"></label>
+                <label>Left <input type="number" id="hdLeftPercent" min="0" max="100" step="0.1"></label>
+                <button type="button" id="hdDeleteElement" title="Delete selected element">Delete Element</button>
+            </div>
             <div class="hd-sheet" id="hdPreviewSheet"></div>
         </div>
         <div class="req-modal-actions" style="padding: 0 18px 18px; justify-content:center;">
             <button type="button" class="req-btn-cancel" onclick="hdClosePreview()">Close</button>
+            <button type="button" class="req-btn-save" data-hd-save-layout style="min-width: 180px;" onclick="hdSaveLayoutTemplate()">Save Layout Template</button>
             <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="hdDownloadPreview()">Download Form</button>
             <button type="button" class="req-btn-save" style="min-width: 150px;" onclick="hdPrintPreview()">Print Form</button>
         </div>
@@ -264,6 +289,9 @@
 <script>
 window.hdTagUrlTemplate = @json($hdTagUrlTemplate);
 window.hdIssueUrlTemplate = @json($hdIssueUrlTemplate);
+window.hdLayoutUrlTemplate = @json($hdLayoutUrlTemplate);
+window.hdBlankLayoutUrl = @json($hdBlankLayoutUrl);
+window.hdTemplateSaveUrl = @json($hdTemplateSaveUrl);
 </script>
 <script src="{{ asset('js/honorable-dismissal.js') }}?v={{ time() }}"></script>
 @endpush
