@@ -68,7 +68,7 @@
                         <p>Approved by:</p>
                         <p class="ce-line"><input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center" value=""></p>
                         <p><em>Dean</em></p>
-                        <p class="ce-line"><input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center" value="FEDERICO G. NUEVA MT, MT"></p>
+                        <p class="ce-line"><input type="text" class="acd-inline-input acd-inline-input--xl acd-inline-input--center" value="FEDERICO G. NUEVA, MT"></p>
                         <p><em>Registrar</em></p>
                     </div>
                     <div>

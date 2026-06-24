@@ -123,7 +123,7 @@
                             <p class="cor-signature-role">STUDENT SIGNATURE</p>
                         </div>
                         <div class="cor-signature-right">
-                            <p class="cor-signature-name">FEDERICO G. NUEVA MT</p>
+                            <p class="cor-signature-name">FEDERICO G. NUEVA, MT</p>
                             <p class="cor-signature-role">UNIVERSITY REGISTRAR</p>
                         </div>
                     </div>

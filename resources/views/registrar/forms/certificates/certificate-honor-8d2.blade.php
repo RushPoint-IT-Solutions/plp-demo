@@ -72,7 +72,7 @@
                     >
                @endif
 
-                <div class="certificate-8d2__signatory-name">FEDERICO G. NUEVA MT</div>
+                <div class="certificate-8d2__signatory-name">FEDERICO G. NUEVA, MT</div>
                 <div class="certificate-8d2__signatory-title">University Registrar</div>
             </div>
 
