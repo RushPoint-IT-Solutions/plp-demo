@@ -11059,21 +11059,6 @@ class RegistrarController extends Controller
             ->values()
             ->all();
 
-        $subjectIds = $room->allowedSubjects
-            ? $room->allowedSubjects->pluck('id')->map(function ($subjectId) {
-                return (int) $subjectId;
-            })->values()->all()
-            : [];
-
-        $subjectLabels = $room->allowedSubjects
-            ? $room->allowedSubjects->map(function (Subject $subject) {
-                $code = trim((string) $subject->code);
-                return $code !== '' ? $code : (string) $subject->name;
-            })->filter(function ($value) {
-                return $value !== '';
-            })->values()->all()
-            : [];
-
         return view('registrar.registrar-menu.scheduling.section-offering', compact(
             'schoolYearOptions',
             'semesterOptions',
