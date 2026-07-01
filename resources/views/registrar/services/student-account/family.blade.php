@@ -77,6 +77,7 @@
                     <th>Family Code</th>
                     <th>Student No.</th>
                     <th>Name</th>
+                    <th>Parent Name</th>
                     <th>Eldest</th>
                     <th>Status</th>
                     <th style="width: 70px;">Action</th>
@@ -88,6 +89,7 @@
                         <td>{{ $row->family_code }}</td>
                         <td>{{ $row->student_no ?: 'N/A' }}</td>
                         <td>{{ $row->display_name }}</td>
+                        <td>{{ $row->parent_name }}</td>
                         <td>{{ $row->eldest_label }}</td>
                         <td>
                             @if($row->status_label === 'Active')
@@ -109,7 +111,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No family records found.</td>
+                        <td colspan="7" class="text-center text-muted py-4">No family records found.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -136,6 +138,10 @@
                 <div class="req-modal-field-group">
                     <label class="req-modal-label">NAME</label>
                     <input class="req-modal-input" id="famEditName">
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">PARENT NAME</label>
+                    <input class="req-modal-input" id="famEditParentName" disabled style="background:#f5f5f5;">
                 </div>
                 <div class="req-modal-field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
@@ -194,6 +200,10 @@
                     <input class="req-modal-input" placeholder="Student Name">
                 </div>
                 <div class="req-modal-field-group">
+                    <label class="req-modal-label">PARENT NAME</label>
+                    <input class="req-modal-input" placeholder="Parent / Guardian Name">
+                </div>
+                <div class="req-modal-field-group">
                     <label class="req-modal-label">ELDEST</label>
                     <select class="req-modal-input" style="width: 100%;">
                         <option value="Yes">Yes</option>
@@ -232,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
         code: document.getElementById('famEditCode'),
         studentNo: document.getElementById('famEditStudentNo'),
         name: document.getElementById('famEditName'),
+        parentName: document.getElementById('famEditParentName'),
         eldest: document.getElementById('famEditEldest'),
         status: document.getElementById('famEditStatus')
     };
@@ -271,26 +282,27 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fillInputsFromRow(row) {
-        if (!row || row.cells.length < 5) return;
+        if (!row || row.cells.length < 6) return;
         if (famInputs.code) famInputs.code.value = (row.cells[0].textContent || '').trim();
         if (famInputs.studentNo) famInputs.studentNo.value = (row.cells[1].textContent || '').trim();
         if (famInputs.name) famInputs.name.value = (row.cells[2].textContent || '').trim();
-        if (famInputs.eldest) famInputs.eldest.value = (row.cells[3].textContent || '').trim();
-        if (famInputs.status) famInputs.status.value = (row.cells[4].textContent || '').trim();
+        if (famInputs.parentName) famInputs.parentName.value = (row.cells[3].textContent || '').trim();
+        if (famInputs.eldest) famInputs.eldest.value = (row.cells[4].textContent || '').trim();
+        if (famInputs.status) famInputs.status.value = (row.cells[5].textContent || '').trim();
     }
     
     function saveInputsToRow(row) {
-        if (!row || row.cells.length < 5) return;
+        if (!row || row.cells.length < 6) return;
         row.cells[0].textContent = famInputs.code && famInputs.code.value ? famInputs.code.value.trim() : row.cells[0].textContent;
         row.cells[1].textContent = famInputs.studentNo && famInputs.studentNo.value ? famInputs.studentNo.value.trim() : row.cells[1].textContent;
         row.cells[2].textContent = famInputs.name && famInputs.name.value ? famInputs.name.value.trim() : row.cells[2].textContent;
-        row.cells[3].textContent = famInputs.eldest && famInputs.eldest.value ? famInputs.eldest.value.trim() : row.cells[3].textContent;
+        row.cells[4].textContent = famInputs.eldest && famInputs.eldest.value ? famInputs.eldest.value.trim() : row.cells[4].textContent;
         
         var statusVal = famInputs.status && famInputs.status.value ? famInputs.status.value.trim() : 'Active';
         if (statusVal === 'Active') {
-            row.cells[4].innerHTML = '<span style="background-color: #e8f5e9; color: #006837; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Active</span>';
+            row.cells[5].innerHTML = '<span style="background-color: #e8f5e9; color: #006837; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Active</span>';
         } else {
-            row.cells[4].innerHTML = '<span style="background-color: #fff3e0; color: #e65100; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Inactive</span>';
+            row.cells[5].innerHTML = '<span style="background-color: #fff3e0; color: #e65100; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">Inactive</span>';
         }
     }
 

@@ -1,6 +1,7 @@
 /* Grading Sheet Page – Midterm & Final only */
 
 var GS_SECTIONS = [];
+var GS_ALL_SECTIONS = [];
 var GS_ACTIVE_SECTION_ID = null;
 var GS_GRADE_MODAL_STATE = {
     phase: 'midterm',
@@ -36,6 +37,10 @@ function gsSeedSections(serverSections) {
                 courseCode: sec.courseCode || '-',
                 description: sec.description || '-',
                 faculty: sec.faculty || '-',
+                department: sec.department || '',
+                schoolYear: sec.schoolYear || '',
+                term: sec.term || '',
+                program: sec.program || '',
                 midterm: sec.midterm || '-',
                 final: sec.final || '-',
                 approvedBy: sec.approvedBy || '-',
@@ -46,6 +51,7 @@ function gsSeedSections(serverSections) {
                 students: students
             };
         });
+        GS_ALL_SECTIONS = GS_SECTIONS.slice();
         return;
     }
 
@@ -75,25 +81,135 @@ function gsSeedSections(serverSections) {
         {
             id: 1, section: 'BSIM 3-A1 P19', courseCode: 'BMT2', description: 'STRATEGIC MANAGEMENT',
             faculty: 'GORDANCE, AIRA TOLET', midterm: '02/21/2026', final: '-',
+            department: 'College of Information Technology',
+            schoolYear: '2025-2026',
+            term: 'Second',
+            program: 'BSIM',
             approvedBy: 'Registrar', courseFull: 'STRATEGIC MANAGEMENT', schedule: 'Room No. : BLDG. 3-102',
-            status: 'Submitted',
+            status: 'Submitted for Dean Review',
             students: dummyStudents
         },
         {
             id: 2, section: 'BSIT 4-A', courseCode: 'CAP102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
             faculty: 'DIAZ, JONNEL MARK', midterm: '02/21/2025', final: '02/21/2026',
+            department: 'College of Information Technology',
+            schoolYear: '2025-2026',
+            term: 'First',
+            program: 'BSIT',
             approvedBy: 'Admin 1', courseFull: 'CAPSTONE PROJECT AND RESEARCH 2', schedule: 'Room No. : TBA',
-            status: 'Submitted',
+            status: 'Submitted for Dean Review',
             students: dummyStudents.slice(0, 8)
         },
         {
             id: 3, section: 'BSCS 4-A', courseCode: 'CAP102', description: 'CAPSTONE PROJECT AND RESEARCH 2',
             faculty: 'DIAZ, JONNEL MARK', midterm: '02/21/2026', final: '02/21/2026',
+            department: 'College of Computer Science',
+            schoolYear: '2024-2025',
+            term: 'Second',
+            program: 'BSCS',
             approvedBy: 'Admin 1', courseFull: 'CAPSTONE PROJECT AND RESEARCH 2', schedule: 'Room No. : TBA',
-            status: 'Submitted',
+            status: 'Submitted for Dean Review',
             students: dummyStudents.slice(0, 5)
         }
     ];
+    GS_ALL_SECTIONS = GS_SECTIONS.slice();
+}
+
+function gsNormalizeFilterValue(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function gsSetSelectOptions(elementId, values, placeholder) {
+    var select = document.getElementById(elementId);
+    if (!select) return;
+
+    var unique = [];
+    var seen = {};
+    for (var i = 0; i < values.length; i++) {
+        var value = String(values[i] || '').trim();
+        if (!value || seen[gsNormalizeFilterValue(value)]) continue;
+        seen[gsNormalizeFilterValue(value)] = true;
+        unique.push(value);
+    }
+    unique.sort(function (a, b) { return a.localeCompare(b); });
+
+    var current = select.value;
+    var keepAll = '';
+    if (select.options && select.options.length && select.options[0] && select.options[0].value === '') {
+        keepAll = select.options[0].text;
+    }
+    var html = '<option value="">' + keepAll + '</option>';
+
+    for (var j = 0; j < unique.length; j++) {
+        var optionValue = unique[j];
+        html += '<option value="' + gsEscapeHtml(optionValue) + '">' + gsEscapeHtml(optionValue) + '</option>';
+    }
+
+    select.innerHTML = html;
+    if (current && seen[gsNormalizeFilterValue(current)]) {
+        select.value = current;
+    }
+}
+
+function gsApplySectionFilters() {
+    var deptSelect = document.getElementById('gsDept');
+    var aySelect = document.getElementById('gsAY');
+    var termSelect = document.getElementById('gsTerm');
+    var facultySelect = document.getElementById('gsFaculty');
+    var sectionSelect = document.getElementById('gsSection');
+    var programSelect = document.getElementById('gsProgram');
+    var statusSelect = document.getElementById('gsStatus');
+
+    var dept = gsNormalizeFilterValue(deptSelect ? deptSelect.value : '');
+    var ay = gsNormalizeFilterValue(aySelect ? aySelect.value : '');
+    var term = gsNormalizeFilterValue(termSelect ? termSelect.value : '');
+    var faculty = gsNormalizeFilterValue(facultySelect ? facultySelect.value : '');
+    var section = gsNormalizeFilterValue(sectionSelect ? sectionSelect.value : '');
+    var program = gsNormalizeFilterValue(programSelect ? programSelect.value : '');
+    var status = gsNormalizeFilterValue(statusSelect ? statusSelect.value : '');
+
+    GS_SECTIONS = GS_ALL_SECTIONS.filter(function (sectionObj) {
+        if (dept && gsNormalizeFilterValue(sectionObj.department) !== dept) return false;
+        if (ay && gsNormalizeFilterValue(sectionObj.schoolYear) !== ay) return false;
+        if (term && gsNormalizeFilterValue(sectionObj.term) !== term) return false;
+        if (faculty && gsNormalizeFilterValue(sectionObj.faculty) !== faculty) return false;
+        if (section && gsNormalizeFilterValue(sectionObj.section) !== section) return false;
+        if (program && gsNormalizeFilterValue(sectionObj.program) !== program) return false;
+        if (status && gsNormalizeFilterValue(sectionObj.status) !== status) return false;
+        return true;
+    });
+    GS_ACTIVE_SECTION_ID = null;
+    return GS_SECTIONS;
+}
+
+function gsPopulateFilterOptions() {
+    gsSetSelectOptions('gsDept', GS_ALL_SECTIONS.map(function (sec) { return sec.department || ''; }), 'Department');
+    gsSetSelectOptions('gsAY', GS_ALL_SECTIONS.map(function (sec) { return sec.schoolYear || ''; }), 'Academic Year');
+    gsSetSelectOptions('gsTerm', GS_ALL_SECTIONS.map(function (sec) { return sec.term || ''; }), 'Term');
+    gsSetSelectOptions('gsProgram', GS_ALL_SECTIONS.map(function (sec) { return sec.program || ''; }), '* Leave this blank to view all program');
+
+    if (document.getElementById('gsFaculty')) {
+        var selected = document.getElementById('gsFaculty').value;
+        gsSetSelectOptions('gsFaculty', GS_ALL_SECTIONS.map(function (sec) { return sec.faculty || ''; }), 'Faculty');
+        if (selected && selected !== '') {
+            document.getElementById('gsFaculty').value = selected;
+        }
+    }
+
+    if (document.getElementById('gsSection')) {
+        var current = document.getElementById('gsSection').value;
+        gsSetSelectOptions('gsSection', GS_ALL_SECTIONS.map(function (sec) { return sec.section || ''; }), '* Leave this blank to view all sections');
+        if (current) {
+            document.getElementById('gsSection').value = current;
+        }
+    }
+
+    gsSetSelectOptions('gsStatus', [
+        'Submitted for Dean Review',
+        'Dean Approved',
+        'Registrar Finalized',
+        'Returned for Revision'
+    ], 'Status');
 }
 
 function findSectionById(id) {
@@ -259,6 +375,7 @@ function showListView() {
 }
 
 function handleViewList() {
+    gsApplySectionFilters();
     renderSectionList();
     showListView();
 }
@@ -497,6 +614,15 @@ function gsPostAction(subjectId, action, remarks, name, section, btn) {
             });
         }
 
+        if (GS_ALL_SECTIONS && GS_ALL_SECTIONS.length) {
+            GS_ALL_SECTIONS.forEach(function (s) {
+                if (String(s.id) === String(subjectId)) {
+                    s.statusCode = String(data.status || '').toUpperCase();
+                    s.status = data.label || s.status;
+                }
+            });
+        }
+
         // Re-render the list
         renderSectionList();
 
@@ -566,6 +692,8 @@ function bindListBodyActions(listBody) {
 function initGradingSheetPage() {
     var serverData = window.GS_SERVER_SECTIONS || null;
     gsSeedSections(serverData);
+    gsPopulateFilterOptions();
+    gsApplySectionFilters();
     renderSectionList();
     bindGradeModalEvents();
 

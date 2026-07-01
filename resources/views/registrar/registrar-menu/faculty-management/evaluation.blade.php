@@ -5,6 +5,12 @@
 
 @section('content')
 <div class="pf-page">
+    <div id="evalPageData"
+         data-library='@json($evaluationLibrary)'
+         data-store-url="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation.store') }}"
+         data-publish-url-template="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation.publish', ['evaluationForm' => '__ID__']) }}"
+         data-csrf="{{ csrf_token() }}">
+    </div>
 
     {{-- Search Bar --}}
     <div style="margin-bottom:18px;">

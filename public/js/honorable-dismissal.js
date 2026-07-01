@@ -377,14 +377,25 @@ function hdDownloadRow(rowId) {
 
 function hdPrintSelected() {
     var sel = Array.from(document.querySelectorAll('#hdTableBody .hd-row-select:checked'));
-    if (!sel.length) { alert('Select at least one record to print.'); return; }
+    var candidateSel = Array.from(document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select:checked'));
+    if (!sel.length && !candidateSel.length) { alert('Select at least one record to print.'); return; }
 
     var rowIds = sel.map(function(cb) {
         var row = cb.closest('tr');
         return row ? row.getAttribute('data-row-id') : null;
     }).filter(Boolean);
+    var candidateIds = candidateSel.map(function(cb) {
+        var row = cb.closest('tr');
+        return row ? row.getAttribute('data-candidate-id') : null;
+    }).filter(Boolean);
 
-    Promise.all(rowIds.map(function(rowId) {
+    hdTagRows(candidateIds).then(function(tagged) {
+        if (!tagged) return;
+        var printIds = rowIds.concat(candidateIds).filter(function(rowId, index, list) {
+            return rowId && list.indexOf(rowId) === index;
+        });
+
+        return Promise.all(printIds.map(function(rowId) {
         return hdLoadTemplate(rowId).then(function(layout) {
             var sheet = document.createElement('div');
             sheet.className = 'hd-sheet';
@@ -397,9 +408,11 @@ function hdPrintSelected() {
             });
             return sheet.outerHTML;
         });
-    })).then(function(sheets) {
-        hdIssueRows(rowIds).then(function(ok) {
+        })).then(function(sheets) {
+            return hdIssueRows(printIds).then(function(ok) {
             if (ok) hdPrintSheets(sheets);
+            return ok;
+        });
         });
     }).catch(function(error) {
         alert((error && error.message) || 'Unable to prepare selected records.');
@@ -449,13 +462,35 @@ function hdIssueRows(rowIds) {
     });
 }
 
+function hdTagRows(rowIds) {
+    rowIds = (rowIds || []).filter(Boolean);
+    if (!rowIds.length) return Promise.resolve(true);
+    var template = String(window.hdTagUrlTemplate || '');
+    if (!template) return Promise.resolve(false);
+
+    return Promise.all(rowIds.map(function(rowId) {
+        return hdPost(template.replace('__STUDENT__', rowId));
+    })).then(function(results) {
+        var failed = results.find(function(result) { return !result || !result.success; });
+        if (failed) {
+            alert(failed.message || 'Unable to tag selected student for dismissal.');
+            return false;
+        }
+        return true;
+    }).catch(function() {
+        alert('Network error while tagging selected students.');
+        return false;
+    });
+}
+
 function hdFilterTable(query) {
     var q = String(query || '').toLowerCase().trim();
-    document.querySelectorAll('#hdTableBody tr').forEach(function(row) {
+    document.querySelectorAll('#hdCandidateTableBody tr, #hdTableBody tr').forEach(function(row) {
         var text = (row.textContent || '').toLowerCase();
         row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
     });
     hdSyncSelectAll();
+    hdSyncCandidateSelectAll();
 }
 
 function hdGetRowData(rowId) {
@@ -482,6 +517,11 @@ function hdGetRowData(rowId) {
 function hdToggleSelectAll(s) { document.querySelectorAll('#hdTableBody .hd-row-select').forEach(function(c){c.checked=!!s.checked});hdSyncSelectAll(); }
 function hdSyncSelectAll() {
     var h=document.getElementById('hdSelectAll'),items=document.querySelectorAll('#hdTableBody .hd-row-select');if(!h)return;
+    var t=items.length,c=0;items.forEach(function(x){if(x.checked)c++});h.checked=t>0&&c===t;h.indeterminate=c>0&&c<t;
+}
+function hdToggleCandidateSelectAll(s) { document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select').forEach(function(c){c.checked=!!s.checked});hdSyncCandidateSelectAll(); }
+function hdSyncCandidateSelectAll() {
+    var h=document.getElementById('hdCandidateSelectAll'),items=document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select');if(!h)return;
     var t=items.length,c=0;items.forEach(function(x){if(x.checked)c++});h.checked=t>0&&c===t;h.indeterminate=c>0&&c<t;
 }
 function hdCloseMenus(){document.querySelectorAll('.apst-dropdown.open').forEach(function(m){m.classList.remove('open','drop-up');m.style.top='';m.style.left='';m.style.right='';m.style.bottom=''});}

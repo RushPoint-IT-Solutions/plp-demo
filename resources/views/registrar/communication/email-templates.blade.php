@@ -60,17 +60,7 @@
     </div>
 
     <script type="application/json" id="emailTemplatePayload">
-        @json($templates->map(function ($template) {
-            return [
-                'id' => $template->id,
-                'code' => $template->code,
-                'name' => $template->name,
-                'audience' => $template->audience,
-                'subject' => $template->subject,
-                'body' => $template->body,
-                'is_active' => (bool) $template->is_active,
-            ];
-        })->values())
+        {!! json_encode($templatePayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
     </script>
 </div>
 <script>

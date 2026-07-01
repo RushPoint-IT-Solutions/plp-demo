@@ -7,14 +7,14 @@
 @section('content')
 @php
     $profile  = $student->profile;
-    $initials = collect(explode(' ', trim($student->name)))->map(fn($w) => mb_strtoupper(mb_substr($w,0,1)))->take(2)->join('');
-    $program  = $student->canonicalCourse->name ?? $student->program ?? 'N/A';
+    $initials = collect(explode(' ', trim($student->name)))->map(function ($w) { return mb_strtoupper(mb_substr($w, 0, 1)); })->take(2)->join('');
+    $program  = optional($student->canonicalCourse)->name ?: ($student->program ?: 'N/A');
 
     $termGwa = function(\Illuminate\Support\Collection $rows): ?float {
-        $valid = $rows->filter(fn($r) => !$r->inc && is_numeric($r->final_grade) && (float)$r->final_grade > 0 && (float)$r->units > 0);
+        $valid = $rows->filter(function ($r) { return !$r->inc && is_numeric($r->final_grade) && (float) $r->final_grade > 0 && (float) $r->units > 0; });
         if ($valid->isEmpty()) return null;
-        $tw = $valid->sum(fn($r) => (float)$r->final_grade * (float)$r->units);
-        $tu = $valid->sum(fn($r) => (float)$r->units);
+        $tw = $valid->sum(function ($r) { return (float) $r->final_grade * (float) $r->units; });
+        $tu = $valid->sum(function ($r) { return (float) $r->units; });
         return $tu > 0 ? round($tw / $tu, 4) : null;
     };
 
@@ -315,8 +315,8 @@
             @endif
         </div>
         <div class="sar-hcontact">
-            @if($profile?->student_email)<span>✉ {{ $profile->student_email }}</span>@endif
-            @if($profile?->mobile_number)<span>📱 {{ $profile->mobile_number }}</span>@endif
+            @if(optional($profile)->student_email)<span>✉ {{ $profile->student_email }}</span>@endif
+            @if(optional($profile)->mobile_number)<span>📱 {{ $profile->mobile_number }}</span>@endif
             @if($student->user)<span style="color:rgba(134,239,172,.9);">● Portal Account Active</span>@endif
         </div>
     </div>
@@ -454,21 +454,21 @@
         <div class="sar-grid sar-grid-4">
             @php
                 $snap = [
-                    'Date of Birth'   => $profile?->date_of_birth?->format('M j, Y') ?? '—',
-                    'Gender'          => $profile?->gender ?? '—',
-                    'Civil Status'    => $profile?->civil_status ?? '—',
-                    'Place of Birth'  => $profile?->place_of_birth ?? '—',
-                    'LRN'             => $profile?->lrn ?? '—',
-                    'SHS Track'       => $profile?->shs_track_strand ?? '—',
-                    'Elementary'      => $profile?->elementary_school ?? '�',
-                    'High School'     => $profile?->high_school ?? '�',
-                    'Junior HS'       => $profile?->junior_school ?? '—',
-                    'Senior HS'       => $profile?->senior_school ?? '—',
-                    'School Last Attended' => $profile?->school_last_attended ?? '�',
-                    'Address'         => collect([$profile?->present_barangay,$profile?->present_municipality,$profile?->present_province])->filter()->join(', ') ?: '—',
-                    'Official Email'  => $profile?->student_email ?? '—',
-                    'Mobile'          => $profile?->mobile_number ?? '—',
-                    'Profile Status'  => ($profile?->profile_complete ? '✓ Complete' : '⚠ Incomplete'),
+                    'Date of Birth'   => optional(optional($profile)->date_of_birth)->format('M j, Y') ?? '—',
+                    'Gender'          => optional($profile)->gender ?? '—',
+                    'Civil Status'    => optional($profile)->civil_status ?? '—',
+                    'Place of Birth'  => optional($profile)->place_of_birth ?? '—',
+                    'LRN'             => optional($profile)->lrn ?? '—',
+                    'SHS Track'       => optional($profile)->shs_track_strand ?? '—',
+                    'Elementary'      => optional($profile)->elementary_school ?? '�',
+                    'High School'     => optional($profile)->high_school ?? '�',
+                    'Junior HS'       => optional($profile)->junior_school ?? '—',
+                    'Senior HS'       => optional($profile)->senior_school ?? '—',
+                    'School Last Attended' => optional($profile)->school_last_attended ?? '�',
+                    'Address'         => collect([optional($profile)->present_barangay,optional($profile)->present_municipality,optional($profile)->present_province])->filter()->join(', ') ?: '—',
+                    'Official Email'  => optional($profile)->student_email ?? '—',
+                    'Mobile'          => optional($profile)->mobile_number ?? '—',
+                    'Profile Status'  => (optional($profile)->profile_complete ? '✓ Complete' : '⚠ Incomplete'),
                 ];
             @endphp
             @foreach($snap as $lbl => $val)
@@ -492,7 +492,7 @@
             <div class="sar-field"><label>Year Level</label><div class="ro-val">{{ $student->year_level ?: '—' }}</div></div>
             <div class="sar-field"><label>Academic Year</label><div class="ro-val">{{ $student->school_year ?: '—' }}</div></div>
             <div class="sar-field"><label>Semester</label><div class="ro-val">{{ $student->semester ?: '—' }}</div></div>
-            <div class="sar-field"><label>Section</label><div class="ro-val">{{ $student->yearBlock?->block ?? '—' }}</div></div>
+            <div class="sar-field"><label>Section</label><div class="ro-val">{{ optional($student->yearBlock)->label ?? '—' }}</div></div>
             <div class="sar-field"><label>Status</label>
                 <div class="ro-val" style="{{ $student->is_withdrawn ? 'color:#dc2626;font-weight:700;' : '' }}">
                     {{ $student->is_withdrawn ? '⚠ Withdrawn' : 'Active' }}
@@ -507,40 +507,40 @@
     <div class="sar-card">
         <div class="sar-section-title">Personal Information</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>First Name</label><input type="text" id="pf_first_name" value="{{ $profile?->first_name ?? '' }}" placeholder="First name"></div>
-            <div class="sar-field"><label>Middle Name</label><input type="text" id="pf_middle_name" value="{{ $profile?->middle_name ?? '' }}" placeholder="Middle name"></div>
-            <div class="sar-field"><label>Last Name</label><input type="text" id="pf_last_name" value="{{ $profile?->last_name ?? '' }}" placeholder="Last name"></div>
-            <div class="sar-field"><label>Suffix</label><input type="text" id="pf_suffix" value="{{ $profile?->suffix ?? '' }}" placeholder="Jr., III…"></div>
-            <div class="sar-field"><label>Nickname</label><input type="text" id="pf_nickname" value="{{ $profile?->nickname ?? '' }}" placeholder="Preferred name"></div>
+            <div class="sar-field"><label>First Name</label><input type="text" id="pf_first_name" value="{{ optional($profile)->first_name ?? '' }}" placeholder="First name"></div>
+            <div class="sar-field"><label>Middle Name</label><input type="text" id="pf_middle_name" value="{{ optional($profile)->middle_name ?? '' }}" placeholder="Middle name"></div>
+            <div class="sar-field"><label>Last Name</label><input type="text" id="pf_last_name" value="{{ optional($profile)->last_name ?? '' }}" placeholder="Last name"></div>
+            <div class="sar-field"><label>Suffix</label><input type="text" id="pf_suffix" value="{{ optional($profile)->suffix ?? '' }}" placeholder="Jr., III…"></div>
+            <div class="sar-field"><label>Nickname</label><input type="text" id="pf_nickname" value="{{ optional($profile)->nickname ?? '' }}" placeholder="Preferred name"></div>
             <div class="sar-field"><label>Gender</label>
-                <select id="pf_gender"><option value="">— Select —</option>@foreach(['Male','Female','Non-binary','Prefer not to say'] as $g)<option value="{{ $g }}" {{ ($profile?->gender??'')===$g?'selected':'' }}>{{ $g }}</option>@endforeach</select>
+                <select id="pf_gender"><option value="">— Select —</option>@foreach(['Male','Female','Non-binary','Prefer not to say'] as $g)<option value="{{ $g }}" {{ (optional($profile)->gender??'')===$g?'selected':'' }}>{{ $g }}</option>@endforeach</select>
             </div>
-            <div class="sar-field"><label>Date of Birth</label><input type="date" id="pf_date_of_birth" value="{{ $profile?->date_of_birth?->format('Y-m-d') ?? '' }}"></div>
+            <div class="sar-field"><label>Date of Birth</label><input type="date" id="pf_date_of_birth" value="{{ optional(optional($profile)->date_of_birth)->format('Y-m-d') ?? '' }}"></div>
             <div class="sar-field"><label>Civil Status</label>
-                <select id="pf_civil_status"><option value="">— Select —</option>@foreach(['Single','Married','Widowed','Separated'] as $cs)<option value="{{ $cs }}" {{ ($profile?->civil_status??'')===$cs?'selected':'' }}>{{ $cs }}</option>@endforeach</select>
+                <select id="pf_civil_status"><option value="">— Select —</option>@foreach(['Single','Married','Widowed','Separated'] as $cs)<option value="{{ $cs }}" {{ (optional($profile)->civil_status??'')===$cs?'selected':'' }}>{{ $cs }}</option>@endforeach</select>
             </div>
-            <div class="sar-field"><label>Nationality</label><input type="text" id="pf_nationality" value="{{ $profile?->nationality ?? '' }}" placeholder="Filipino"></div>
-            <div class="sar-field sar-col-span-3"><label>Place of Birth</label><input type="text" id="pf_place_of_birth" value="{{ $profile?->place_of_birth ?? '' }}" placeholder="City / Province, Country"></div>
+            <div class="sar-field"><label>Nationality</label><input type="text" id="pf_nationality" value="{{ optional($profile)->nationality ?? '' }}" placeholder="Filipino"></div>
+            <div class="sar-field sar-col-span-3"><label>Place of Birth</label><input type="text" id="pf_place_of_birth" value="{{ optional($profile)->place_of_birth ?? '' }}" placeholder="City / Province, Country"></div>
         </div>
     </div>
 
     <div class="sar-card">
         <div class="sar-section-title">Contact & Official Email</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>Mobile Number</label><input type="text" id="pf_mobile_number" value="{{ $profile?->mobile_number ?? '' }}" placeholder="09XXXXXXXXX"></div>
-            <div class="sar-field sar-col-span-2"><label>Official PLP Email</label><input type="email" id="pf_student_email" value="{{ $profile?->student_email ?? '' }}" placeholder="firstname.lastname@plp.edu.ph"></div>
+            <div class="sar-field"><label>Mobile Number</label><input type="text" id="pf_mobile_number" value="{{ optional($profile)->mobile_number ?? '' }}" placeholder="09XXXXXXXXX"></div>
+            <div class="sar-field sar-col-span-2"><label>Official PLP Email</label><input type="email" id="pf_student_email" value="{{ optional($profile)->student_email ?? '' }}" placeholder="firstname.lastname@plp.edu.ph"></div>
         </div>
     </div>
 
     <div class="sar-card">
         <div class="sar-section-title">Present Address</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field sar-col-span-3"><label>Street / House No.</label><input type="text" id="pf_present_street" value="{{ $profile?->present_street ?? '' }}" placeholder="Street address"></div>
-            <div class="sar-field"><label>Barangay</label><input type="text" id="pf_present_barangay" value="{{ $profile?->present_barangay ?? '' }}"></div>
-            <div class="sar-field"><label>Municipality / City</label><input type="text" id="pf_present_municipality" value="{{ $profile?->present_municipality ?? '' }}"></div>
-            <div class="sar-field"><label>Province</label><input type="text" id="pf_present_province" value="{{ $profile?->present_province ?? '' }}"></div>
-            <div class="sar-field"><label>Region</label><input type="text" id="pf_present_region" value="{{ $profile?->present_region ?? '' }}"></div>
-            <div class="sar-field"><label>ZIP Code</label><input type="text" id="pf_present_zipcode" value="{{ $profile?->present_zipcode ?? '' }}" placeholder="1234"></div>
+            <div class="sar-field sar-col-span-3"><label>Street / House No.</label><input type="text" id="pf_present_street" value="{{ optional($profile)->present_street ?? '' }}" placeholder="Street address"></div>
+            <div class="sar-field"><label>Barangay</label><input type="text" id="pf_present_barangay" value="{{ optional($profile)->present_barangay ?? '' }}"></div>
+            <div class="sar-field"><label>Municipality / City</label><input type="text" id="pf_present_municipality" value="{{ optional($profile)->present_municipality ?? '' }}"></div>
+            <div class="sar-field"><label>Province</label><input type="text" id="pf_present_province" value="{{ optional($profile)->present_province ?? '' }}"></div>
+            <div class="sar-field"><label>Region</label><input type="text" id="pf_present_region" value="{{ optional($profile)->present_region ?? '' }}"></div>
+            <div class="sar-field"><label>ZIP Code</label><input type="text" id="pf_present_zipcode" value="{{ optional($profile)->present_zipcode ?? '' }}" placeholder="1234"></div>
         </div>
         <div class="sar-save-row">
             <button type="button" id="sarSaveProfileBtn" class="btn-primary">Save Personal Info</button>
@@ -553,55 +553,55 @@
     <div class="sar-card">
         <div class="sar-section-title">Educational Background</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>LRN (Learner Reference No.)</label><input type="text" id="bg_lrn" value="{{ $profile?->lrn ?? '' }}" placeholder="12-digit LRN"></div>
-            <div class="sar-field sar-col-span-2"><label>SHS Track / Strand</label><input type="text" id="bg_shs_track_strand" value="{{ $profile?->shs_track_strand ?? '' }}" placeholder="e.g. STEM, ABM, HUMSS"></div>
-            <div class="sar-field"><label>Elementary</label><input type="text" id="bg_elementary_school" value="{{ $profile?->elementary_school ?? '' }}" placeholder="School name and location"></div>
-            <div class="sar-field"><label>High School</label><input type="text" id="bg_high_school" value="{{ $profile?->high_school ?? '' }}" placeholder="School name and location"></div>
-            <div class="sar-field"><label>School Last Attended</label><input type="text" id="bg_school_last_attended" value="{{ $profile?->school_last_attended ?? '' }}" placeholder="For transferee; N/A if not applicable"></div>
-            <div class="sar-field sar-col-span-3"><label>Junior High School</label><input type="text" id="bg_junior_school" value="{{ $profile?->junior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
-            <div class="sar-field sar-col-span-3"><label>Senior High School</label><input type="text" id="bg_senior_school" value="{{ $profile?->senior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
+            <div class="sar-field"><label>LRN (Learner Reference No.)</label><input type="text" id="bg_lrn" value="{{ optional($profile)->lrn ?? '' }}" placeholder="12-digit LRN"></div>
+            <div class="sar-field sar-col-span-2"><label>SHS Track / Strand</label><input type="text" id="bg_shs_track_strand" value="{{ optional($profile)->shs_track_strand ?? '' }}" placeholder="e.g. STEM, ABM, HUMSS"></div>
+            <div class="sar-field"><label>Elementary</label><input type="text" id="bg_elementary_school" value="{{ optional($profile)->elementary_school ?? '' }}" placeholder="School name and location"></div>
+            <div class="sar-field"><label>High School</label><input type="text" id="bg_high_school" value="{{ optional($profile)->high_school ?? '' }}" placeholder="School name and location"></div>
+            <div class="sar-field"><label>School Last Attended</label><input type="text" id="bg_school_last_attended" value="{{ optional($profile)->school_last_attended ?? '' }}" placeholder="For transferee; N/A if not applicable"></div>
+            <div class="sar-field sar-col-span-3"><label>Junior High School</label><input type="text" id="bg_junior_school" value="{{ optional($profile)->junior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
+            <div class="sar-field sar-col-span-3"><label>Senior High School</label><input type="text" id="bg_senior_school" value="{{ optional($profile)->senior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
         </div>
     </div>
 
     <div class="sar-card">
         <div class="sar-section-title">Mother's Information</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>First Name</label><input type="text" id="bg_mother_firstname" value="{{ $profile?->mother_firstname ?? '' }}"></div>
-            <div class="sar-field"><label>Middle Name</label><input type="text" id="bg_mother_middlename" value="{{ $profile?->mother_middlename ?? '' }}"></div>
-            <div class="sar-field"><label>Last Name</label><input type="text" id="bg_mother_lastname" value="{{ $profile?->mother_lastname ?? '' }}"></div>
-            <div class="sar-field"><label>Contact No.</label><input type="text" id="bg_mother_contact" value="{{ $profile?->mother_contact ?? '' }}"></div>
-            <div class="sar-field"><label>Occupation</label><input type="text" id="bg_mother_occupation" value="{{ $profile?->mother_occupation ?? '' }}"></div>
+            <div class="sar-field"><label>First Name</label><input type="text" id="bg_mother_firstname" value="{{ optional($profile)->mother_firstname ?? '' }}"></div>
+            <div class="sar-field"><label>Middle Name</label><input type="text" id="bg_mother_middlename" value="{{ optional($profile)->mother_middlename ?? '' }}"></div>
+            <div class="sar-field"><label>Last Name</label><input type="text" id="bg_mother_lastname" value="{{ optional($profile)->mother_lastname ?? '' }}"></div>
+            <div class="sar-field"><label>Contact No.</label><input type="text" id="bg_mother_contact" value="{{ optional($profile)->mother_contact ?? '' }}"></div>
+            <div class="sar-field"><label>Occupation</label><input type="text" id="bg_mother_occupation" value="{{ optional($profile)->mother_occupation ?? '' }}"></div>
         </div>
     </div>
 
     <div class="sar-card">
         <div class="sar-section-title">Father's Information</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>First Name</label><input type="text" id="bg_father_firstname" value="{{ $profile?->father_firstname ?? '' }}"></div>
-            <div class="sar-field"><label>Middle Name</label><input type="text" id="bg_father_middlename" value="{{ $profile?->father_middlename ?? '' }}"></div>
-            <div class="sar-field"><label>Last Name</label><input type="text" id="bg_father_lastname" value="{{ $profile?->father_lastname ?? '' }}"></div>
-            <div class="sar-field"><label>Contact No.</label><input type="text" id="bg_father_contact" value="{{ $profile?->father_contact ?? '' }}"></div>
-            <div class="sar-field"><label>Occupation</label><input type="text" id="bg_father_occupation" value="{{ $profile?->father_occupation ?? '' }}"></div>
+            <div class="sar-field"><label>First Name</label><input type="text" id="bg_father_firstname" value="{{ optional($profile)->father_firstname ?? '' }}"></div>
+            <div class="sar-field"><label>Middle Name</label><input type="text" id="bg_father_middlename" value="{{ optional($profile)->father_middlename ?? '' }}"></div>
+            <div class="sar-field"><label>Last Name</label><input type="text" id="bg_father_lastname" value="{{ optional($profile)->father_lastname ?? '' }}"></div>
+            <div class="sar-field"><label>Contact No.</label><input type="text" id="bg_father_contact" value="{{ optional($profile)->father_contact ?? '' }}"></div>
+            <div class="sar-field"><label>Occupation</label><input type="text" id="bg_father_occupation" value="{{ optional($profile)->father_occupation ?? '' }}"></div>
         </div>
     </div>
 
     <div class="sar-card">
         <div class="sar-section-title">Guardian (if applicable)</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>First Name</label><input type="text" id="bg_guardian_firstname" value="{{ $profile?->guardian_firstname ?? '' }}"></div>
-            <div class="sar-field"><label>Middle Name</label><input type="text" id="bg_guardian_middlename" value="{{ $profile?->guardian_middlename ?? '' }}"></div>
-            <div class="sar-field"><label>Last Name</label><input type="text" id="bg_guardian_lastname" value="{{ $profile?->guardian_lastname ?? '' }}"></div>
-            <div class="sar-field"><label>Contact No.</label><input type="text" id="bg_guardian_contact" value="{{ $profile?->guardian_contact ?? '' }}"></div>
-            <div class="sar-field"><label>Occupation</label><input type="text" id="bg_guardian_occupation" value="{{ $profile?->guardian_occupation ?? '' }}"></div>
+            <div class="sar-field"><label>First Name</label><input type="text" id="bg_guardian_firstname" value="{{ optional($profile)->guardian_firstname ?? '' }}"></div>
+            <div class="sar-field"><label>Middle Name</label><input type="text" id="bg_guardian_middlename" value="{{ optional($profile)->guardian_middlename ?? '' }}"></div>
+            <div class="sar-field"><label>Last Name</label><input type="text" id="bg_guardian_lastname" value="{{ optional($profile)->guardian_lastname ?? '' }}"></div>
+            <div class="sar-field"><label>Contact No.</label><input type="text" id="bg_guardian_contact" value="{{ optional($profile)->guardian_contact ?? '' }}"></div>
+            <div class="sar-field"><label>Occupation</label><input type="text" id="bg_guardian_occupation" value="{{ optional($profile)->guardian_occupation ?? '' }}"></div>
         </div>
     </div>
 
     <div class="sar-card">
         <div class="sar-section-title">Socioeconomic Background</div>
         <div class="sar-grid sar-grid-3">
-            <div class="sar-field"><label>Monthly Family Income</label><input type="text" id="bg_monthly_income" value="{{ $profile?->monthly_family_income ?? '' }}" placeholder="e.g. 10,000–20,000"></div>
-            <div class="sar-field"><label>Family Income Source</label><input type="text" id="bg_income_source" value="{{ $profile?->family_income_source ?? '' }}" placeholder="e.g. Employment, Business"></div>
-            <div class="sar-field"><label>Living Situation</label><input type="text" id="bg_living_situation" value="{{ $profile?->living_situation ?? '' }}" placeholder="With parents, Boarding, etc."></div>
+            <div class="sar-field"><label>Monthly Family Income</label><input type="text" id="bg_monthly_income" value="{{ optional($profile)->monthly_family_income ?? '' }}" placeholder="e.g. 10,000–20,000"></div>
+            <div class="sar-field"><label>Family Income Source</label><input type="text" id="bg_income_source" value="{{ optional($profile)->family_income_source ?? '' }}" placeholder="e.g. Employment, Business"></div>
+            <div class="sar-field"><label>Living Situation</label><input type="text" id="bg_living_situation" value="{{ optional($profile)->living_situation ?? '' }}" placeholder="With parents, Boarding, etc."></div>
         </div>
         <div class="sar-save-row">
             <button type="button" id="sarSaveBgBtn" class="btn-primary">Save Background Info</button>
@@ -624,7 +624,7 @@
         </div>
 
         @forelse($gradesBySyTerm as $termKey => $termRows)
-        @php [$sy,$term] = explode('|||',$termKey.'|||'); $tgwa = $termGwa($termRows); $tunits = $termRows->filter(fn($r)=>!$r->inc&&is_numeric($r->final_grade)&&(float)$r->final_grade>0&&(float)$r->units>0)->sum(fn($r)=>(float)$r->units); @endphp
+        @php [$sy,$term] = explode('|||',$termKey.'|||'); $tgwa = $termGwa($termRows); $tunits = $termRows->filter(function ($r) { return !$r->inc && is_numeric($r->final_grade) && (float) $r->final_grade > 0 && (float) $r->units > 0; })->sum(function ($r) { return (float) $r->units; }); @endphp
         <div class="sar-term-block" data-sy="{{ $sy }}" data-term="{{ $term }}">
             <div class="sar-term-head">
                 <span class="sar-term-label">{{ $sy }} — {{ $term }} Semester</span>
@@ -756,7 +756,7 @@
                     <span class="sar-badge sar-badge-yellow">⏳ Pending</span>
                     @endif
                 </td>
-                <td>{{ $req->date_verified?->format('M j, Y') ?? '—' }}</td>
+                <td>{{ optional($req->date_verified)->format('M j, Y') ?? '—' }}</td>
                 <td>{{ optional($req->verifier)->name ?? '—' }}</td>
                 <td>
                     @if(!empty($req->uploaded_path))

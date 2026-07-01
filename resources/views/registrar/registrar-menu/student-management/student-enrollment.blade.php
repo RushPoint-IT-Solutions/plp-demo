@@ -90,6 +90,14 @@
                     ])
                 </div>
                 </form>
+            <div class="se-view-toggle" role="group" aria-label="Student enrollment view">
+                <button type="button" id="seViewListBtn" class="se-view-toggle-btn is-active" onclick="setEnrollmentViewMode('list')" title="List View" aria-pressed="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+                <button type="button" id="seViewCardBtn" class="se-view-toggle-btn" onclick="setEnrollmentViewMode('card')" title="Card View" aria-pressed="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </button>
+            </div>
             <div class="se-toolbar-right">
                 <button type="button" class="pf-btn-new" onclick="openImportCsvModal()">Import CSV</button>
                 <button type="button" class="pf-btn-new" onclick="openAddStudentModal()">+Add Student</button>
@@ -118,9 +126,9 @@
                             <td>{{ $student->year_level ?: 'N/A' }}</td>
                             <td>
                                 <div class="se-row-actions">
-                                    <a href="{{ route('registrar.registrar-menu.student-mgmt.academic-record.show', $student->id) }}" class="doclist-action-btn" title="Academic Record" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#004d27;background:#d1fae5;border-radius:5px;width:28px;height:28px;">
+                                    <button type="button" class="doclist-action-btn" onclick='openEnrollmentDetail(@json($student->student_no), @json($student->name))' title="View Enrollment" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#004d27;background:#d1fae5;border-radius:5px;width:28px;height:28px;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                                    </a>
+                                    </button>
                                     <button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal('{{ $student->id }}')" title="Edit">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                     </button>
@@ -140,6 +148,36 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="se-card-view" id="seCardView" style="display:none;">
+            <div class="se-card-grid" id="seCardGrid">
+                @forelse($studentRows as $student)
+                    <article class="se-student-mini-card" data-student-card-id="{{ $student->student_no }}" data-student-card-row-id="{{ $student->id }}">
+                        <div class="se-card-main">
+                            <button type="button" class="se-card-name" onclick='openEnrollmentDetail(@json($student->student_no), @json($student->name))'>{{ $student->name }}</button>
+                            <div class="se-card-id">{{ $student->student_no ?: 'N/A' }}</div>
+                        </div>
+                        <div class="se-card-meta">
+                            <div><span>Program</span><strong>{{ trim((string) (optional($student->canonicalCourse)->name ?: $student->program ?: 'N/A')) }}</strong></div>
+                            <div><span>Year Level</span><strong>{{ $student->year_level ?: 'N/A' }}</strong></div>
+                        </div>
+                        <div class="se-card-actions">
+                            <button type="button" class="doclist-action-btn" onclick='openEnrollmentDetail(@json($student->student_no), @json($student->name))' title="View Enrollment" style="color:#004d27;background:#d1fae5;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            </button>
+                            <button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal('{{ $student->id }}')" title="Edit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                            </button>
+                            <button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal('{{ $student->id }}')" title="Delete">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </article>
+                @empty
+                    <div class="se-card-empty">No students found.</div>
+                @endforelse
+            </div>
         </div>
 
         <div class="app-table-pager se-pagination">
@@ -522,6 +560,135 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+.page-student-enrollment .se-view-toggle {
+    display:inline-flex;
+    align-items:center;
+    gap:2px;
+    padding:3px;
+    border:1px solid #c8e6c9;
+    border-radius:7px;
+    background:#f8fafc;
+}
+.page-student-enrollment .se-view-toggle-btn {
+    width:32px;
+    height:30px;
+    border:0;
+    border-radius:5px;
+    background:transparent;
+    color:#64748b;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+}
+.page-student-enrollment .se-view-toggle-btn:hover {
+    color:#004d27;
+    background:#eef8ef;
+}
+.page-student-enrollment .se-view-toggle-btn.is-active {
+    color:#fff;
+    background:#004d27;
+}
+.page-student-enrollment .se-card-view {
+    margin-top:14px;
+}
+.page-student-enrollment .se-card-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+    gap:12px;
+}
+.page-student-enrollment .se-student-mini-card {
+    border:1px solid #dfe8e3;
+    border-radius:8px;
+    background:#fff;
+    padding:14px;
+    display:grid;
+    gap:12px;
+    min-height:178px;
+}
+.page-student-enrollment .se-card-main {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    min-width:0;
+}
+.page-student-enrollment .se-card-name {
+    border:0;
+    background:transparent;
+    padding:0;
+    text-align:left;
+    color:#004d27;
+    font-weight:800;
+    font-size:0.94rem;
+    line-height:1.25;
+    cursor:pointer;
+}
+.page-student-enrollment .se-card-name:hover {
+    text-decoration:underline;
+}
+.page-student-enrollment .se-card-id {
+    color:#64748b;
+    font-size:0.8rem;
+    font-weight:700;
+}
+.page-student-enrollment .se-card-meta {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+.page-student-enrollment .se-card-meta div {
+    min-width:0;
+    border:1px solid #eef2f0;
+    border-radius:6px;
+    background:#f8fafc;
+    padding:8px;
+}
+.page-student-enrollment .se-card-meta span {
+    display:block;
+    color:#7b8b84;
+    font-size:0.68rem;
+    font-weight:800;
+    text-transform:uppercase;
+    margin-bottom:3px;
+}
+.page-student-enrollment .se-card-meta strong {
+    display:block;
+    color:#17211b;
+    font-size:0.82rem;
+    line-height:1.25;
+    overflow-wrap:anywhere;
+}
+.page-student-enrollment .se-card-actions {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:6px;
+}
+.page-student-enrollment .se-card-empty {
+    grid-column:1/-1;
+    border:1px dashed #cbd5e1;
+    border-radius:8px;
+    padding:24px;
+    text-align:center;
+    color:#64748b;
+    background:#f8fafc;
+}
+@media (max-width: 720px) {
+    .page-student-enrollment .se-toolbar {
+        align-items:stretch;
+    }
+    .page-student-enrollment .se-view-toggle {
+        align-self:flex-start;
+    }
+    .page-student-enrollment .se-card-grid {
+        grid-template-columns:1fr;
+    }
+}
+</style>
+@endpush
+
 @push('scripts')
 <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
 <script>
@@ -544,6 +711,41 @@ function getRegistrarCsrfToken() {
 
 function buildStudentEndpoint(template, studentRef) {
     return String(template || '').replace('__STUDENT__', encodeURIComponent(String(studentRef || '').trim()));
+}
+
+function getEnrollmentViewMode() {
+    try {
+        return localStorage.getItem('studentEnrollmentViewMode') === 'card' ? 'card' : 'list';
+    } catch (err) {
+        return 'list';
+    }
+}
+
+function setEnrollmentViewMode(mode) {
+    var selectedMode = mode === 'card' ? 'card' : 'list';
+    var tableWrap = document.querySelector('#seListView .student-table-wrapper');
+    var cardView = document.getElementById('seCardView');
+    var listBtn = document.getElementById('seViewListBtn');
+    var cardBtn = document.getElementById('seViewCardBtn');
+
+    if (tableWrap) {
+        tableWrap.style.display = selectedMode === 'card' ? 'none' : '';
+    }
+    if (cardView) {
+        cardView.style.display = selectedMode === 'card' ? 'block' : 'none';
+    }
+    if (listBtn) {
+        listBtn.classList.toggle('is-active', selectedMode === 'list');
+        listBtn.setAttribute('aria-pressed', selectedMode === 'list' ? 'true' : 'false');
+    }
+    if (cardBtn) {
+        cardBtn.classList.toggle('is-active', selectedMode === 'card');
+        cardBtn.setAttribute('aria-pressed', selectedMode === 'card' ? 'true' : 'false');
+    }
+
+    try {
+        localStorage.setItem('studentEnrollmentViewMode', selectedMode);
+    } catch (err) {}
 }
 
 function refreshListboxSelect(selectEl) {
@@ -760,23 +962,39 @@ function replaceStudentRow(row, studentData, fallbackRowRef) {
     var replacementRow = createEnrollmentRow(studentNo, studentName, programLabel, yearLevel, rowRef, programValue);
 
     row.parentNode.replaceChild(replacementRow, row);
+    replaceStudentCard(studentNo, studentName, programLabel, yearLevel, rowRef);
 }
 
 function openEnrollmentDetail(studentId, studentName) {
     var row = getStudentRowById(studentId);
+    var metaId = document.getElementById('seMetaId');
+    var metaName = document.getElementById('seMetaName');
+    var metaProgram = document.getElementById('seMetaProgram');
+    var metaYearLevel = document.getElementById('seMetaYearLevel');
+    var listView = document.getElementById('seListView');
+    var detailView = document.getElementById('seDetailView');
 
-    document.getElementById('seMetaId').textContent = studentId;
-    document.getElementById('seMetaName').textContent = studentName;
-
-    if (row) {
-        document.getElementById('seMetaId').textContent = String(row.getAttribute('data-student-id') || studentId || '');
-        document.getElementById('seMetaName').textContent = row.children[2] ? String(row.children[2].innerText || '').trim().toUpperCase() : studentName;
-        document.getElementById('seMetaProgram').textContent = row.children[3] ? String(row.children[3].innerText || '').trim() : 'N/A';
-        document.getElementById('seMetaYearLevel').textContent = row.children[4] ? String(row.children[4].innerText || '').trim() : 'N/A';
+    if (!metaId || !metaName || !metaProgram || !metaYearLevel || !listView || !detailView) {
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast('Enrollment details are not available on this page.', 'error');
+        }
+        return;
     }
 
-    document.getElementById('seListView').style.display = 'none';
-    document.getElementById('seDetailView').style.display = 'block';
+    metaId.textContent = studentId || 'N/A';
+    metaName.textContent = studentName || 'N/A';
+    metaProgram.textContent = 'N/A';
+    metaYearLevel.textContent = 'N/A';
+
+    if (row) {
+        metaId.textContent = String(row.getAttribute('data-student-id') || studentId || 'N/A');
+        metaName.textContent = row.children[2] ? String(row.children[2].innerText || '').trim().toUpperCase() : (studentName || 'N/A');
+        metaProgram.textContent = row.children[3] ? String(row.children[3].innerText || '').trim() : 'N/A';
+        metaYearLevel.textContent = row.children[4] ? String(row.children[4].innerText || '').trim() : 'N/A';
+    }
+
+    listView.style.display = 'none';
+    detailView.style.display = 'block';
     updateCurrentUnitsTotal();
 }
 
@@ -910,6 +1128,11 @@ function confirmDeleteStudent() {
     var previousStudentNo = String(row.getAttribute('data-student-id') || '').trim();
 
     var finalizeDelete = function (successMessage) {
+        var card = getStudentCardById(studentRowId) || getStudentCardById(previousStudentNo);
+        if (card && card.parentNode) {
+            card.parentNode.removeChild(card);
+        }
+
         if (row.parentNode) {
             row.parentNode.removeChild(row);
         }
@@ -952,8 +1175,72 @@ function confirmDeleteStudent() {
 function buildRowActionCell(studentId) {
     var tdAction = document.createElement('td');
     var actionRef = String(studentId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    tdAction.innerHTML = '<div class="se-row-actions"><button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal(\'' + actionRef + '\')" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal(\'' + actionRef + '\')" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>';
+    tdAction.innerHTML = '<div class="se-row-actions"><button type="button" class="doclist-action-btn" onclick="openEnrollmentDetail(\'' + actionRef + '\', \'\')" title="View Enrollment" style="color:#004d27;background:#d1fae5;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button><button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal(\'' + actionRef + '\')" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal(\'' + actionRef + '\')" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>';
     return tdAction;
+}
+
+function getStudentCardById(studentId) {
+    var lookup = String(studentId || '').trim();
+    if (!lookup) return null;
+
+    var cards = document.querySelectorAll('#seCardGrid .se-student-mini-card');
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        if (String(card.getAttribute('data-student-card-row-id') || '').trim() === lookup || String(card.getAttribute('data-student-card-id') || '').trim() === lookup) {
+            return card;
+        }
+    }
+
+    return null;
+}
+
+function createEnrollmentCard(studentId, studentName, program, yearLevel, studentRowId) {
+    var card = document.createElement('article');
+    var actionRef = String(studentRowId || studentId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var detailRef = String(studentId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var nameRef = String(studentName || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+    card.className = 'se-student-mini-card';
+    card.setAttribute('data-student-card-id', studentId || '');
+    if (studentRowId) {
+        card.setAttribute('data-student-card-row-id', studentRowId);
+    }
+
+    card.innerHTML =
+        '<div class="se-card-main">' +
+            '<button type="button" class="se-card-name" onclick="openEnrollmentDetail(\'' + detailRef + '\', \'' + nameRef + '\')">' + escapeHtml(studentName || 'N/A') + '</button>' +
+            '<div class="se-card-id">' + escapeHtml(studentId || 'N/A') + '</div>' +
+        '</div>' +
+        '<div class="se-card-meta">' +
+            '<div><span>Program</span><strong>' + escapeHtml(program || 'N/A') + '</strong></div>' +
+            '<div><span>Year Level</span><strong>' + escapeHtml(yearLevel || 'N/A') + '</strong></div>' +
+        '</div>' +
+        '<div class="se-card-actions">' +
+            '<button type="button" class="doclist-action-btn" onclick="openEnrollmentDetail(\'' + detailRef + '\', \'' + nameRef + '\')" title="View Enrollment" style="color:#004d27;background:#d1fae5;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>' +
+            '<button type="button" class="doclist-action-btn doclist-edit-btn" onclick="openEditStudentModal(\'' + actionRef + '\')" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+            '<button type="button" class="doclist-action-btn doclist-delete-btn" onclick="openDeleteStudentModal(\'' + actionRef + '\')" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+        '</div>';
+
+    return card;
+}
+
+function replaceStudentCard(studentId, studentName, program, yearLevel, studentRowId) {
+    var grid = document.getElementById('seCardGrid');
+    if (!grid) return;
+
+    var empty = grid.querySelector('.se-card-empty');
+    if (empty && empty.parentNode) {
+        empty.parentNode.removeChild(empty);
+    }
+
+    var existing = getStudentCardById(studentRowId) || getStudentCardById(studentId);
+    var card = createEnrollmentCard(studentId, studentName, program, yearLevel, studentRowId);
+
+    if (existing && existing.parentNode) {
+        existing.parentNode.replaceChild(card, existing);
+    } else {
+        grid.appendChild(card);
+    }
 }
 
 function withdrawEnrollment() {
@@ -1013,6 +1300,7 @@ function saveAddedStudent() {
     var totalRow = tbody.querySelector('.se-total-row');
     var row = createEnrollmentRow(studentId, studentName, program, yearLevel);
     tbody.insertBefore(row, totalRow);
+    replaceStudentCard(studentId, studentName, program, yearLevel);
     renumberEnrollmentRows();
     adjustEnrollmentTotal(1);
 
@@ -1187,6 +1475,7 @@ function importEnrollmentCsv(csvText) {
 
         var newRow = createEnrollmentRow(studentId, studentName, program, yearLevel);
         tbody.insertBefore(newRow, totalRow);
+        replaceStudentCard(studentId, studentName, program, yearLevel);
         imported++;
     }
 
@@ -1817,6 +2106,7 @@ function adjustEnrollmentTotal(delta) {
 }
 
 updateEnrollmentTotal();
+setEnrollmentViewMode(getEnrollmentViewMode());
 filterCatalogRows();
 updateSubjectActionStates();
 updateEnrolledSectionBanner();

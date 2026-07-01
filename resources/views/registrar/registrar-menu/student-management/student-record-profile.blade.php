@@ -76,6 +76,7 @@
 }
 .srp-tab:hover { background:rgba(255,255,255,.2); color:#fff; }
 .srp-tab.active { background:#fff; color:#004d27; }
+.srp-tab-title-case { text-transform:none; }
 .srp-tab-badge {
     background:#ef4444; color:#fff; border-radius:9px;
     padding:1px 6px; font-size:10px; font-weight:700; line-height:14px;
@@ -136,6 +137,68 @@
     display:inline-flex; align-items:center; gap:6px;
 }
 .srp-btn-primary:hover { opacity:.88; }
+
+#srp-tab-scholarships .srp-sch-form-section {
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    background:#fbfcfd;
+    padding:14px;
+    margin-bottom:14px;
+}
+#srp-tab-scholarships .srp-sch-section-title {
+    color:#004d27;
+    font-size:12px;
+    font-weight:800;
+    margin-bottom:12px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+#srp-tab-scholarships .srp-sch-section-title::before {
+    content:'';
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#004d27;
+}
+#srp-tab-scholarships .srp-sch-grid {
+    display:grid;
+    grid-template-columns:repeat(12,minmax(0,1fr));
+    gap:12px 14px;
+    align-items:start;
+}
+#srp-tab-scholarships .srp-sch-grid .srp-field { grid-column:span 4; min-width:0; }
+#srp-tab-scholarships .srp-sch-grid .srp-field.wide { grid-column:span 6; }
+#srp-tab-scholarships .srp-sch-grid .srp-field.full { grid-column:1/-1; }
+#srp-tab-scholarships .srp-field select,
+#srp-tab-scholarships .srp-field input,
+#srp-tab-scholarships .srp-field textarea { box-sizing:border-box; }
+#srp-tab-scholarships .srp-sch-table-wrap { overflow-x:auto; }
+#srp-tab-scholarships .srp-sch-table { min-width:980px; }
+#srp-tab-scholarships .srp-sch-edit-cell { width:320px; }
+#srp-tab-scholarships .srp-sch-edit-panel {
+    border:1px solid #dbe7df;
+    border-radius:8px;
+    background:#f8fafc;
+    padding:10px;
+    margin-top:8px;
+}
+#srp-tab-scholarships .srp-sch-edit-panel .srp-field { margin-bottom:8px; }
+#srp-tab-scholarships .srp-sch-edit-actions {
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-top:8px;
+}
+@media(max-width:900px) {
+    #srp-tab-scholarships .srp-sch-grid .srp-field,
+    #srp-tab-scholarships .srp-sch-grid .srp-field.wide { grid-column:span 6; }
+}
+@media(max-width:640px) {
+    #srp-tab-scholarships .srp-sch-grid .srp-field,
+    #srp-tab-scholarships .srp-sch-grid .srp-field.wide { grid-column:1/-1; }
+}
 
 /* ── medical modal ──────────────────────────────────────────── */
 .med-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9000; align-items:center; justify-content:center; }
@@ -371,9 +434,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Background
             </button>
-            <button class="srp-tab" data-tab="subjects">
+            <button class="srp-tab srp-tab-title-case" data-tab="subjects">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                ENROLLED COURSES
+                Enrollment Courses
                 @if($enrolledSubjects->count())<span class="srp-tab-badge blue">{{ $enrolledSubjects->count() }}</span>@endif
             </button>
             <button class="srp-tab" data-tab="curriculum">
@@ -887,32 +950,47 @@
                     @else
                         <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.scholarships.save', $student->id) }}">
                             @csrf
-                            <div class="srp-fields cols3">
-                                <div class="srp-field">
-                                    <label>Scholarship Program</label>
-                                    <select name="scholarship_program_id" required>
-                                        @foreach($scholarshipPrograms as $program)
-                                            <option value="{{ $program->id }}">{{ $program->name }} - {{ $program->category }}</option>
-                                        @endforeach
-                                    </select>
+                            <div class="srp-sch-form-section">
+                                <div class="srp-sch-section-title">Scholarship and Term</div>
+                                <div class="srp-sch-grid">
+                                    <div class="srp-field wide">
+                                        <label>Scholarship Program</label>
+                                        <select name="scholarship_program_id" required>
+                                            @foreach($scholarshipPrograms as $program)
+                                                <option value="{{ $program->id }}">{{ $program->name }} - {{ $program->category }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="srp-field"><label>Academic Year</label><input name="school_year" value="{{ $student->school_year }}"></div>
+                                    <div class="srp-field"><label>Semester</label><input name="semester" value="{{ $student->semester }}"></div>
                                 </div>
-                                <div class="srp-field"><label>Academic Year</label><input name="school_year" value="{{ $student->school_year }}"></div>
-                                <div class="srp-field"><label>Semester</label><input name="semester" value="{{ $student->semester }}"></div>
-                                <div class="srp-field"><label>Application Status</label><select name="application_status"><option>Tagged</option><option>Applied</option><option>For Evaluation</option><option>Complete</option></select></div>
-                                <div class="srp-field"><label>Evaluation Status</label><select name="evaluation_status"><option value="">Not set</option><option>Pending</option><option>Qualified</option><option>Not Qualified</option></select></div>
-                                <div class="srp-field"><label>Approval Status</label><select name="approval_status"><option value="">Not set</option><option>Pending</option><option>Approved</option><option>Disapproved</option></select></div>
-                                <div class="srp-field"><label>Award Status</label><select name="award_status"><option>Active</option><option>For Renewal</option><option>Renewed</option><option>Suspended</option><option>Ended</option></select></div>
-                                <div class="srp-field"><label>Renewal Status</label><select name="renewal_status"><option value="">Not set</option><option>Not Due</option><option>For Renewal</option><option>Renewed</option><option>Not Renewed</option></select></div>
-                                <div class="srp-field"><label>Monitoring Status</label><select name="monitoring_status"><option value="">Not set</option><option>Compliant</option><option>For Review</option><option>Below Maintaining Grade</option></select></div>
-                                <div class="srp-field"><label>Financial Posting</label><select name="financial_posting_status"><option>Pending</option><option>Posted</option><option>For Adjustment</option><option>Cancelled</option></select></div>
-                                <div class="srp-field"><label>Posted Amount</label><input type="number" step="0.01" min="0" name="posted_amount"></div>
-                                <div class="srp-field"><label>Discount Percent</label><input type="number" step="0.01" min="0" max="100" name="discount_percent"></div>
-                                <div class="srp-field"><label>Current GWA</label><input type="number" step="0.01" min="1" max="5" name="current_gwa" value="{{ $gwa }}"></div>
-                                <div class="srp-field"><label>Application Date</label><input type="date" name="application_date"></div>
-                                <div class="srp-field"><label>Approval Date</label><input type="date" name="approval_date"></div>
-                                <div class="srp-field"><label>Renewal Due Date</label><input type="date" name="renewal_due_date"></div>
                             </div>
-                            <div class="srp-field" style="margin-top:14px;"><label>Remarks</label><textarea name="remarks" rows="3"></textarea></div>
+
+                            <div class="srp-sch-form-section">
+                                <div class="srp-sch-section-title">Application Workflow</div>
+                                <div class="srp-sch-grid">
+                                    <div class="srp-field"><label>Application Status</label><select name="application_status"><option>Tagged</option><option>Applied</option><option>For Evaluation</option><option>Complete</option></select></div>
+                                    <div class="srp-field"><label>Evaluation Status</label><select name="evaluation_status"><option value="">Not set</option><option>Pending</option><option>Qualified</option><option>Not Qualified</option></select></div>
+                                    <div class="srp-field"><label>Approval Status</label><select name="approval_status"><option value="">Not set</option><option>Pending</option><option>Approved</option><option>Disapproved</option></select></div>
+                                    <div class="srp-field"><label>Award Status</label><select name="award_status"><option>Active</option><option>For Renewal</option><option>Renewed</option><option>Suspended</option><option>Ended</option></select></div>
+                                    <div class="srp-field"><label>Renewal Status</label><select name="renewal_status"><option value="">Not set</option><option>Not Due</option><option>For Renewal</option><option>Renewed</option><option>Not Renewed</option></select></div>
+                                    <div class="srp-field"><label>Monitoring Status</label><select name="monitoring_status"><option value="">Not set</option><option>Compliant</option><option>For Review</option><option>Below Maintaining Grade</option></select></div>
+                                </div>
+                            </div>
+
+                            <div class="srp-sch-form-section">
+                                <div class="srp-sch-section-title">Financial and Academic Details</div>
+                                <div class="srp-sch-grid">
+                                    <div class="srp-field"><label>Financial Posting</label><select name="financial_posting_status"><option>Pending</option><option>Posted</option><option>For Adjustment</option><option>Cancelled</option></select></div>
+                                    <div class="srp-field"><label>Posted Amount</label><input type="number" step="0.01" min="0" name="posted_amount"></div>
+                                    <div class="srp-field"><label>Discount Percent</label><input type="number" step="0.01" min="0" max="100" name="discount_percent"></div>
+                                    <div class="srp-field"><label>Current GWA</label><input type="number" step="0.01" min="1" max="5" name="current_gwa" value="{{ $gwa }}"></div>
+                                    <div class="srp-field"><label>Application Date</label><input type="date" name="application_date"></div>
+                                    <div class="srp-field"><label>Approval Date</label><input type="date" name="approval_date"></div>
+                                    <div class="srp-field"><label>Renewal Due Date</label><input type="date" name="renewal_due_date"></div>
+                                    <div class="srp-field full"><label>Remarks</label><textarea name="remarks" rows="3"></textarea></div>
+                                </div>
+                            </div>
                             <div class="srp-save-bar"><button class="srp-btn-save" type="submit">Save Scholarship Tag</button></div>
                         </form>
                     @endif
@@ -927,15 +1005,15 @@
                 @if(($studentScholarships ?? collect())->isEmpty())
                     <div class="srp-card-body" style="text-align:center;color:#94a3b8;padding:30px;">No scholarship tags for this student yet.</div>
                 @else
-                    <div style="overflow-x:auto;">
-                        <table class="srp-tbl">
+                    <div class="srp-sch-table-wrap">
+                        <table class="srp-tbl srp-sch-table">
                             <thead>
                                 <tr>
                                     <th>Scholarship</th>
                                     <th>Term</th>
                                     <th>Process Status</th>
                                     <th>Financial</th>
-                                    <th style="width:260px;">Update</th>
+                                    <th class="srp-sch-edit-cell">Update</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -954,10 +1032,10 @@
                                             <span class="badge-gray">{{ $tag->financial_posting_status }}</span><br>
                                             <small>{{ $tag->posted_amount ? number_format((float) $tag->posted_amount, 2) : 'No amount posted' }}</small>
                                         </td>
-                                        <td>
+                                        <td class="srp-sch-edit-cell">
                                             <details>
                                                 <summary style="cursor:pointer;color:#004d27;font-weight:700;">Edit tag</summary>
-                                                <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.scholarships.save', $student->id) }}" style="margin-top:10px;">
+                                                <form class="srp-sch-edit-panel" method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.scholarships.save', $student->id) }}">
                                                     @csrf
                                                     <input type="hidden" name="id" value="{{ $tag->id }}">
                                                     <input type="hidden" name="scholarship_program_id" value="{{ $tag->scholarship_program_id }}">
@@ -977,7 +1055,7 @@
                                                     <div class="srp-field"><label>Award Status</label><select name="award_status">@foreach(['Active','For Renewal','Renewed','Suspended','Ended'] as $item)<option {{ $tag->award_status === $item ? 'selected' : '' }}>{{ $item }}</option>@endforeach</select></div>
                                                     <div class="srp-field"><label>Monitoring</label><select name="monitoring_status"><option value="">Not set</option>@foreach(['Compliant','For Review','Below Maintaining Grade'] as $item)<option {{ $tag->monitoring_status === $item ? 'selected' : '' }}>{{ $item }}</option>@endforeach</select></div>
                                                     <div class="srp-field"><label>Financial Posting</label><select name="financial_posting_status">@foreach(['Pending','Posted','For Adjustment','Cancelled'] as $item)<option {{ $tag->financial_posting_status === $item ? 'selected' : '' }}>{{ $item }}</option>@endforeach</select></div>
-                                                    <button type="submit" class="srp-btn-save" style="padding:6px 12px;margin-top:8px;">Update</button>
+                                                    <div class="srp-sch-edit-actions"><button type="submit" class="srp-btn-save" style="padding:6px 12px;">Update</button></div>
                                                 </form>
                                                 <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.scholarships.delete', [$student->id, $tag->id]) }}" onsubmit="return confirm('Remove this scholarship tag?');" style="margin-top:8px;">
                                                     @csrf

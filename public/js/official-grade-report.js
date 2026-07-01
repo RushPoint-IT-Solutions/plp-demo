@@ -1,6 +1,7 @@
 /* official-grade-report.js — Official Grade Report form page logic */
 
 var ogrCurrentRowId = null;
+var ogrFilterInFlight = false;
 
 function ogrEsc(v) {
     return String(v || '').replace(/[&<>"']/g, function(c) {
@@ -60,6 +61,110 @@ function ogrResolveCurriculum(meta) {
     }
 
     return String(new Date().getFullYear());
+}
+
+function ogrGetFilterValue(selector) {
+    var el = document.getElementById(selector);
+    if (!el) return '';
+    var value = String(el.value || '').trim();
+    if (value === '' || value.toLowerCase() === 'all' || value.indexOf('Select') !== -1 || value.indexOf('ALL') === 0) {
+        return '';
+    }
+    return value;
+}
+
+function ogrBuildFilterPayload() {
+    return {
+        school_year: ogrGetFilterValue('ogrSchoolYear'),
+        semester: ogrGetFilterValue('ogrSemester'),
+        program: ogrGetFilterValue('ogrProgram'),
+        year_level: ogrGetFilterValue('ogrYearLevel'),
+        section: ogrGetFilterValue('ogrSection'),
+    };
+}
+
+function ogrApplyFilters() {
+    var baseUrl = window.ogrFilterUrl;
+    if (!baseUrl || ogrFilterInFlight) return;
+
+    var payload = ogrBuildFilterPayload();
+    var query = [];
+    var keys = Object.keys(payload);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (payload[key] !== '') {
+            query.push(encodeURIComponent(key) + '=' + encodeURIComponent(payload[key]));
+        }
+    }
+
+    ogrFilterInFlight = true;
+    fetch(baseUrl + (query.length ? ('?' + query.join('&')) : ''), {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+    })
+    .then(function (response) {
+        if (!response.ok) {
+            throw new Error('Unable to fetch grade report rows.');
+        }
+        return response.json();
+    })
+    .then(function (data) {
+        if (!data || !data.ok) {
+            throw new Error((data && data.message) ? data.message : 'Unable to fetch grade report rows.');
+        }
+        ogrDemoSubjects = data.subjectsByRow || {};
+        ogrDemoMeta = data.metaByRow || {};
+        ogrRenderRows(Array.isArray(data.rows) ? data.rows : []);
+    })
+    .catch(function (err) {
+        alert(err && err.message ? err.message : 'Unable to update filters. Please try again.');
+    })
+    .finally(function () {
+        ogrFilterInFlight = false;
+    });
+}
+
+function ogrRenderRows(rows) {
+    var tbody = document.getElementById('ogrTableBody');
+    if (!tbody) return;
+
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">No students available.</td></tr>';
+        ogrSyncSelectAll();
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i] || {};
+        var rowId = (row.row_id || (i + 1));
+        html += '<tr data-row-id="' + rowId + '" data-student-id="' + (row.student_id || '') + '">' +
+            '<td style="text-align: center;"><input type="checkbox" class="ogr-row-select" onchange="ogrSyncSelectAll()"></td>' +
+            '<td>' + ogrEsc(row.student_no || '-') + '</td>' +
+            '<td><button type="button" class="doc-link-btn" onclick="ogrOpenPreview(\'' + rowId + '\')">' + ogrEsc(row.student_name || '-') + '</button></td>' +
+            '<td>' + ogrEsc(row.program || '-') + '</td>' +
+            '<td>' + ogrEsc(row.year || '-') + '</td>' +
+            '<td>' + ogrEsc(row.section || '-') + '</td>' +
+            '<td style="text-align:center;">' +
+                '<div class="apst-action-btn" data-ogr-menu-toggle="ogrMenu-' + rowId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
+                '<div class="apst-dropdown" id="ogrMenu-' + rowId + '">' +
+                    '<button type="button" onclick="ogrOpenEdit(\'' + rowId + '\')">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>' +
+                        'Edit' +
+                    '</button>' +
+                    '<button type="button" class="apst-del-btn" onclick="ogrOpenDelete(\'' + rowId + '\')">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+                        'Delete' +
+                    '</button>' +
+                '</div>' +
+            '</td>' +
+        '</tr>';
+    }
+    tbody.innerHTML = html;
+    ogrSyncSelectAll();
 }
 
 function ogrBuildTemplate(data, subjects, meta) {
@@ -153,8 +258,46 @@ function ogrGetRowData(rowId) {
 function ogrOpenPreview(rowId) {
     var data = ogrGetRowData(rowId);
     if (!data) return;
+
     var subjects = ogrDemoSubjects[String(rowId)] || ogrDemoSubjects['1'];
     var meta = ogrDemoMeta[String(rowId)] || ogrDemoMeta['1'];
+
+    var row = ogrGetRow(rowId);
+    var studentId = row ? row.getAttribute('data-student-id') : '';
+    if ((!subjects || !meta) && studentId) {
+        fetch('/registrar/forms/official-grade-report/' + encodeURIComponent(studentId) + '/data', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            credentials: 'same-origin',
+        })
+        .then(function (response) { return response.json(); })
+        .then(function (payload) {
+            if (payload && payload.ok && payload.subjects && payload.subjects.length) {
+                var mapKey = String(rowId);
+                ogrDemoSubjects[mapKey] = payload.subjects;
+                subjects = payload.subjects;
+                meta = ogrDemoMeta[mapKey] || ogrDemoMeta['1'] || {
+                    address:'-', birthday:'-', section:data.section || '-', course:'-', schoolYear:'', curriculum:'CURRENT',
+                    studentType:'REGULAR', yearLevel:data.year || '-', residency:'PR', cwa:'-'
+                };
+                meta.studentNo = data.studentNo || '';
+                meta.studentName = data.studentName || '';
+                meta.course = (payload.student ? (payload.student.program || '-') : '-') + ' : ' + (payload.student ? (payload.student.program || '-') : '-');
+            }
+            var sheet = document.getElementById('ogrPreviewSheet');
+            if (!sheet) return;
+            sheet.innerHTML = ogrBuildTemplate(data, subjects || [], meta || {});
+            document.getElementById('ogrPreviewModal').style.display = 'flex';
+        })
+        .catch(function () {
+            var sheet = document.getElementById('ogrPreviewSheet');
+            if (!sheet) return;
+            sheet.innerHTML = ogrBuildTemplate(data, subjects || [], meta || {});
+            document.getElementById('ogrPreviewModal').style.display = 'flex';
+        });
+        return;
+    }
+
     var sheet = document.getElementById('ogrPreviewSheet');
     if (!sheet) return;
     sheet.innerHTML = ogrBuildTemplate(data, subjects, meta);
@@ -218,6 +361,13 @@ function ogrOpenBlankPreview() {
 
     sheet.innerHTML = ogrBuildTemplate(blankData, [], blankMeta);
     document.getElementById('ogrPreviewModal').style.display = 'flex';
+}
+
+function ogrClearRowsToDemo() {
+    if (Object.keys(window.ogrSubjectsByRow || {}).length === 0 && Object.keys(window.ogrMetaByRow || {}).length === 0) {
+        window.ogrSubjectsByRow = ogrDemoSubjects;
+        window.ogrMetaByRow = ogrDemoMeta;
+    }
 }
 
 function ogrFilterTable(query) {

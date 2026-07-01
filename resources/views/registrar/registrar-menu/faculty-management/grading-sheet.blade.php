@@ -36,6 +36,9 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .gs-status-header {
+            text-align: center;
+        }
         @media print {
             body.page-registrar-grading-sheet .student-page-header,
             body.page-registrar-grading-sheet .registrar-sidebar,
@@ -96,28 +99,25 @@
             <div class="gs-filter-group gs-filter-even">
                 <span class="gs-filter-label">DEPARTMENT</span>
                 <select class="gs-filter-select" id="gsDept">
-                    <option value="College">College</option>
+                    <option value="">Department</option>
                 </select>
             </div>
             <div class="gs-filter-group gs-filter-even">
                 <span class="gs-filter-label">ACADEMIC YEAR</span>
                 <select class="gs-filter-select" id="gsAY">
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2024-2025">2024-2025</option>
-                    <option value="2023-2024">2023-2024</option>
+                    <option value="">Academic Year</option>
                 </select>
             </div>
             <div class="gs-filter-group gs-filter-even">
                 <span class="gs-filter-label">TERM</span>
                 <select class="gs-filter-select" id="gsTerm">
-                    <option value="First">First</option>
-                    <option value="Second" selected>Second</option>
+                    <option value="">Term</option>
                 </select>
             </div>
             <div class="gs-filter-group gs-filter-even">
                 <span class="gs-filter-label">STATUS</span>
                 <select class="gs-filter-select" id="gsStatus">
-                    <option value="Status">Status</option>
+                    <option value="">Status</option>
                     <option value="Submitted for Dean Review">Submitted for Dean Review</option>
                     <option value="Dean Approved">Dean Approved</option>
                     <option value="Registrar Finalized">Registrar Finalized</option>
@@ -129,7 +129,7 @@
             <div class="gs-filter-group gs-filter-even">
                 <span class="gs-filter-label">FACULTY</span>
                 <select class="gs-filter-select" id="gsFaculty">
-                    <option value="">faculty</option>
+                    <option value="">Faculty</option>
                     @if(isset($faculties))
                         @foreach($faculties as $f)
                         <option value="{{ $f }}">{{ $f }}</option>
@@ -169,7 +169,7 @@
                         <th rowspan="2">Faculty</th>
                         <th colspan="2" class="gs-date-group-header">Date Posted</th>
                         <th rowspan="2">Current Owner</th>
-                        <th rowspan="2">Status</th>
+                    <th rowspan="2" class="gs-status-header">Status</th>
                         <th rowspan="2">Action</th>
                     </tr>
                     <tr class="gs-thead-sub">
@@ -250,7 +250,7 @@
                             <span class="gs-grade-head-hint">Click to open</span>
                         </th>
                         <th>Final Result</th>
-                        <th>Status</th>
+                        <th class="gs-status-header">Status</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>

@@ -593,10 +593,13 @@ class StudentAccountController extends Controller
                 'student_profiles.first_in_family_college',
                 'student_profiles.profile_complete',
                 'student_profiles.mother_firstname',
+                'student_profiles.mother_middlename',
                 'student_profiles.mother_lastname',
                 'student_profiles.father_firstname',
+                'student_profiles.father_middlename',
                 'student_profiles.father_lastname',
                 'student_profiles.guardian_firstname',
+                'student_profiles.guardian_middlename',
                 'student_profiles.guardian_lastname',
                 'year_blocks.label as year_level'
             )
@@ -610,10 +613,13 @@ class StudentAccountController extends Controller
             ->when($parent !== '', function ($query) use ($parent) {
                 $query->where(function ($inner) use ($parent) {
                     $inner->where('student_profiles.mother_firstname', 'like', '%' . $parent . '%')
+                        ->orWhere('student_profiles.mother_middlename', 'like', '%' . $parent . '%')
                         ->orWhere('student_profiles.mother_lastname', 'like', '%' . $parent . '%')
                         ->orWhere('student_profiles.father_firstname', 'like', '%' . $parent . '%')
+                        ->orWhere('student_profiles.father_middlename', 'like', '%' . $parent . '%')
                         ->orWhere('student_profiles.father_lastname', 'like', '%' . $parent . '%')
                         ->orWhere('student_profiles.guardian_firstname', 'like', '%' . $parent . '%')
+                        ->orWhere('student_profiles.guardian_middlename', 'like', '%' . $parent . '%')
                         ->orWhere('student_profiles.guardian_lastname', 'like', '%' . $parent . '%');
                 });
             })
@@ -641,6 +647,25 @@ class StudentAccountController extends Controller
                 $row->display_name = 'N/A';
             }
 
+            $parentNames = [];
+            $motherName = $this->formatFamilyPersonName($row->mother_firstname, $row->mother_middlename, $row->mother_lastname);
+            $fatherName = $this->formatFamilyPersonName($row->father_firstname, $row->father_middlename, $row->father_lastname);
+            $guardianName = $this->formatFamilyPersonName($row->guardian_firstname, $row->guardian_middlename, $row->guardian_lastname);
+
+            if ($motherName !== '') {
+                $parentNames[] = 'Mother: ' . $motherName;
+            }
+
+            if ($fatherName !== '') {
+                $parentNames[] = 'Father: ' . $fatherName;
+            }
+
+            if ($guardianName !== '') {
+                $parentNames[] = 'Guardian: ' . $guardianName;
+            }
+
+            $row->parent_name = count($parentNames) ? implode('; ', $parentNames) : 'N/A';
+
             $familyKey = trim(implode('|', array_filter(array(
                 trim((string) $row->mother_lastname),
                 trim((string) $row->mother_firstname),
@@ -660,6 +685,19 @@ class StudentAccountController extends Controller
         }
 
         return view('registrar.services.student-account.family', compact('familyRows', 'search', 'parent', 'yearLevel', 'withSiblings'));
+    }
+
+    private function formatFamilyPersonName($firstName, $middleName, $lastName): string
+    {
+        $parts = array_filter([
+            trim((string) $firstName),
+            trim((string) $middleName),
+            trim((string) $lastName),
+        ], function ($part) {
+            return $part !== '';
+        });
+
+        return trim(implode(' ', $parts));
     }
 
     public function changePassword()

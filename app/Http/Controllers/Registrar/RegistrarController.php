@@ -67,6 +67,7 @@ use App\RegistrarMessage;
 use App\NotificationDelivery;
 use App\NotificationType;
 use App\PortalNotification;
+use App\RegistrarEvaluationForm;
 use App\Subject;
 use App\Support\AuditTrailRecorder;
 use App\Support\HelpCenterTicketService;
@@ -999,7 +1000,19 @@ class RegistrarController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('registrar.communication.email-templates', compact('templates'));
+        $templatePayload = $templates->map(function (RegistrarEmailTemplate $template) {
+            return [
+                'id' => $template->id,
+                'code' => $template->code,
+                'name' => $template->name,
+                'audience' => $template->audience,
+                'subject' => $template->subject,
+                'body' => $template->body,
+                'is_active' => (bool) $template->is_active,
+            ];
+        })->values();
+
+        return view('registrar.communication.email-templates', compact('templates', 'templatePayload'));
     }
 
     public function storeEmailNotificationTemplate(Request $request): JsonResponse
@@ -18788,6 +18801,8 @@ class RegistrarController extends Controller
                 },
                 'studentGrades',
                 'facultyModel:id,name',
+                'canonicalCourse:id,code,name,department_id',
+                'canonicalCourse.department:id,description',
                 'gradingStatusLookup',
             ])
             ->whereHas('gradingStatusLookup', function ($query) {
@@ -18840,6 +18855,13 @@ class RegistrarController extends Controller
 
             return [
                 'id' => (int) $subject->id,
+                'department' => trim((string) (
+                    optional($subject->canonicalCourse->department ?? null)->description
+                )),
+                'program' => (string) (
+                    optional($subject->canonicalCourse)->code
+                    ?: (optional($subject->canonicalCourse)->name ?: ($subject->course ?: ($subject->code ?: '-')))
+                ),
                 'section' => trim((string) ($subject->year_section ?: '-')),
                 'courseCode' => (string) ($subject->code ?: '-'),
                 'description' => (string) ($subject->name ?: '-'),
@@ -19137,7 +19159,118 @@ class RegistrarController extends Controller
      */
     public function evaluation()
     {
-        return view('registrar.registrar-menu.faculty-management.evaluation');
+        $evaluationLibrary = Schema::hasTable('registrar_evaluation_forms')
+            ? RegistrarEvaluationForm::query()
+                ->orderByDesc('updated_at')
+                ->orderByDesc('id')
+                ->get()
+                ->map(function (RegistrarEvaluationForm $evaluation) {
+                    return $this->formatRegistrarEvaluationForm($evaluation);
+                })
+                ->values()
+            : collect();
+
+        return view('registrar.registrar-menu.faculty-management.evaluation', compact('evaluationLibrary'));
+    }
+
+    public function storeEvaluationForm(Request $request): JsonResponse
+    {
+        $data = $this->validateRegistrarEvaluationForm($request);
+        $status = $request->input('status') === 'Published' ? 'Published' : 'Draft';
+        $id = (int) $request->input('id');
+
+        $evaluation = $id > 0
+            ? RegistrarEvaluationForm::query()->find($id)
+            : null;
+
+        if (!$evaluation) {
+            $evaluation = new RegistrarEvaluationForm();
+            $evaluation->responses = 0;
+        }
+
+        $evaluation->fill($data);
+        $evaluation->status = $status;
+        $evaluation->responses = (int) $request->input('responses', $evaluation->responses ?: 0);
+
+        if ($status === 'Published' && !$evaluation->published_at) {
+            $evaluation->published_at = now();
+        }
+
+        $evaluation->save();
+
+        return response()->json([
+            'message' => $status === 'Published' ? 'Evaluation published successfully.' : 'Evaluation form saved as Draft.',
+            'evaluation' => $this->formatRegistrarEvaluationForm($evaluation),
+        ]);
+    }
+
+    public function publishEvaluationForm(RegistrarEvaluationForm $evaluationForm): JsonResponse
+    {
+        $evaluationForm->status = 'Published';
+
+        if (!$evaluationForm->published_at) {
+            $evaluationForm->published_at = now();
+        }
+
+        $evaluationForm->save();
+
+        return response()->json([
+            'message' => $evaluationForm->name . ' published successfully.',
+            'evaluation' => $this->formatRegistrarEvaluationForm($evaluationForm),
+        ]);
+    }
+
+    private function validateRegistrarEvaluationForm(Request $request): array
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'academicYear' => 'nullable|string|max:40',
+            'program' => 'nullable|string|max:80',
+            'subjectCode' => 'nullable|string|max:80',
+            'subjectName' => 'nullable|string|max:255',
+            'faculty' => 'required|string|max:255',
+            'periodFrom' => 'nullable|date',
+            'periodTo' => 'nullable|date|after_or_equal:periodFrom',
+            'targetRespondents' => 'nullable|string|max:120',
+            'blocks' => 'required|array|min:1',
+            'blocks.*.title' => 'required|string|max:255',
+            'blocks.*.questions' => 'required|array|min:1',
+            'blocks.*.questions.*.text' => 'required|string|max:1000',
+            'responses' => 'nullable|integer|min:0',
+            'status' => 'nullable|in:Draft,Published,Closed',
+        ]);
+
+        return [
+            'name' => $validated['name'],
+            'academic_year' => $validated['academicYear'] ?? null,
+            'program' => $validated['program'] ?? null,
+            'subject_code' => $validated['subjectCode'] ?? null,
+            'subject_name' => $validated['subjectName'] ?? $validated['name'],
+            'faculty_name' => $validated['faculty'],
+            'period_from' => $validated['periodFrom'] ?? null,
+            'period_to' => $validated['periodTo'] ?? null,
+            'target_respondents' => $validated['targetRespondents'] ?? null,
+            'blocks' => $validated['blocks'],
+        ];
+    }
+
+    private function formatRegistrarEvaluationForm(RegistrarEvaluationForm $evaluation): array
+    {
+        return [
+            'id' => (int) $evaluation->id,
+            'name' => $evaluation->name,
+            'faculty' => $evaluation->faculty_name,
+            'program' => $evaluation->program,
+            'academicYear' => $evaluation->academic_year,
+            'subjectCode' => $evaluation->subject_code,
+            'subjectName' => $evaluation->subject_name,
+            'periodFrom' => optional($evaluation->period_from)->format('Y-m-d'),
+            'periodTo' => optional($evaluation->period_to)->format('Y-m-d'),
+            'targetRespondents' => $evaluation->target_respondents,
+            'status' => $evaluation->status ?: 'Draft',
+            'responses' => (int) $evaluation->responses,
+            'blocks' => $evaluation->blocks ?: [],
+        ];
     }
 
     /**
@@ -19479,6 +19612,130 @@ class RegistrarController extends Controller
         return view('registrar.forms.tor');
     }
 
+    private function documentFormsSeniorYearLevelValues(): array
+    {
+        return [
+            'Fourth',
+            'Fourth Year',
+            '4',
+            '4th',
+            '4th Year',
+            'Fifth',
+            'Fifth Year',
+            '5',
+            '5th',
+            '5th Year',
+        ];
+    }
+
+    private function documentFormsSeniorYearBlockIds(): array
+    {
+        static $ids = null;
+
+        if ($ids !== null) {
+            return $ids;
+        }
+
+        if (!Schema::hasTable('year_blocks')) {
+            return $ids = [];
+        }
+
+        $ids = YearBlock::query()
+            ->get(['id', 'label'])
+            ->filter(function (YearBlock $yearBlock) {
+                return $this->isDocumentFormsSeniorYearLevel((string) $yearBlock->label);
+            })
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
+
+        return $ids;
+    }
+
+    private function isDocumentFormsSeniorYearLevel(string $yearLevel): bool
+    {
+        $normalized = strtolower(trim($yearLevel));
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+
+        return in_array($normalized, [
+            'fourth',
+            'fourth year',
+            '4',
+            '4th',
+            '4th year',
+            'fifth',
+            'fifth year',
+            '5',
+            '5th',
+            '5th year',
+        ], true);
+    }
+
+    private function isDocumentFormsSeniorStudent(Student $student): bool
+    {
+        if ($this->isDocumentFormsSeniorYearLevel((string) $student->year_level)) {
+            return true;
+        }
+
+        if ($student->relationLoaded('yearBlock') && $student->yearBlock) {
+            return $this->isDocumentFormsSeniorYearLevel((string) $student->yearBlock->label);
+        }
+
+        $yearBlockId = (int) ($student->year_block_id ?? 0);
+
+        return $yearBlockId > 0 && in_array($yearBlockId, $this->documentFormsSeniorYearBlockIds(), true);
+    }
+
+    private function applyDocumentFormsSeniorStudentScope($query, string $table = 'students')
+    {
+        $yearValues = $this->documentFormsSeniorYearLevelValues();
+        $yearBlockIds = $this->documentFormsSeniorYearBlockIds();
+        $hasYearColumn = Schema::hasColumn('students', 'year_level');
+        $hasYearBlockColumn = Schema::hasColumn('students', 'year_block_id') && count($yearBlockIds) > 0;
+
+        if (!$hasYearColumn && !$hasYearBlockColumn) {
+            return $query;
+        }
+
+        return $query->where(function ($scope) use ($table, $yearValues, $yearBlockIds, $hasYearColumn, $hasYearBlockColumn) {
+            if ($hasYearColumn) {
+                $scope->whereIn($table . '.year_level', $yearValues);
+            }
+
+            if ($hasYearBlockColumn) {
+                $method = $hasYearColumn ? 'orWhereIn' : 'whereIn';
+                $scope->{$method}($table . '.year_block_id', $yearBlockIds);
+            }
+        });
+    }
+
+    private function applyDocumentFormsSeniorRecordScope($query, string $table, string $studentRelation = 'student')
+    {
+        $yearValues = $this->documentFormsSeniorYearLevelValues();
+        $yearBlockIds = $this->documentFormsSeniorYearBlockIds();
+        $hasYearColumn = Schema::hasColumn($table, 'year_level');
+        $hasYearBlockColumn = Schema::hasColumn($table, 'year_block_id') && count($yearBlockIds) > 0;
+
+        return $query->where(function ($scope) use ($table, $studentRelation, $yearValues, $yearBlockIds, $hasYearColumn, $hasYearBlockColumn) {
+            if ($hasYearColumn) {
+                $scope->whereIn($table . '.year_level', $yearValues);
+            }
+
+            if ($hasYearBlockColumn) {
+                $method = $hasYearColumn ? 'orWhereIn' : 'whereIn';
+                $scope->{$method}($table . '.year_block_id', $yearBlockIds);
+            }
+
+            $method = ($hasYearColumn || $hasYearBlockColumn) ? 'orWhereHas' : 'whereHas';
+            $scope->{$method}($studentRelation, function ($studentQuery) {
+                $this->applyDocumentFormsSeniorStudentScope($studentQuery);
+            });
+        });
+    }
+
     /**
      * Registrar > Forms > Application for Leave of Absence - Enrolled
      */
@@ -19486,6 +19743,13 @@ class RegistrarController extends Controller
     {
         if (!$student && $request->filled('student_id')) {
             $student = Student::find($request->query('student_id'));
+        }
+
+        if ($student) {
+            $student->loadMissing('yearBlock:id,label');
+            if (!$this->isDocumentFormsSeniorStudent($student)) {
+                abort(404);
+            }
         }
 
         $studentColumns = ['id', 'student_no', 'name'];
@@ -19497,6 +19761,9 @@ class RegistrarController extends Controller
 
         $students = Student::query()
             ->with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
             ->when($student, function ($query) use ($student) {
                 $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
             })
@@ -19572,9 +19839,13 @@ class RegistrarController extends Controller
     public function formsDiploma(Request $request)
     {
         if ($request->filled('student_id')) {
-            $student = Student::with(['profile', 'canonicalCourse'])->find($request->query('student_id'));
+            $student = Student::with(['profile', 'canonicalCourse', 'yearBlock:id,label'])->find($request->query('student_id'));
 
             if ($student) {
+                if (!$this->isDocumentFormsSeniorStudent($student)) {
+                    abort(404);
+                }
+
                 $graduateTagging = null;
                 if (Schema::hasTable('graduate_taggings')) {
                     $graduateTagging = GraduateTagging::where('student_id', $student->id)->first();
@@ -19616,6 +19887,13 @@ class RegistrarController extends Controller
             $student = Student::find(request()->query('student_id'));
         }
 
+        if ($student) {
+            $student->loadMissing('yearBlock:id,label');
+            if (!$this->isDocumentFormsSeniorStudent($student)) {
+                abort(404);
+            }
+        }
+
         $studentColumns = ['id', 'student_no', 'name'];
         foreach (['college', 'course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester'] as $column) {
             if (Schema::hasColumn('students', $column)) {
@@ -19625,6 +19903,9 @@ class RegistrarController extends Controller
 
         $graduationClearanceRows = Student::query()
             ->with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
             ->when($student, function ($query) use ($student) {
                 $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
             })
@@ -19653,10 +19934,17 @@ class RegistrarController extends Controller
                 'yearBlock:id,label',
                 'academicTerm:id,school_year,term',
             ]);
+
+            if (!$this->isDocumentFormsSeniorStudent($student)) {
+                abort(404);
+            }
         }
 
         $studentOptions = Student::query()
             ->with(['canonicalCourse:id,code,name'])
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
             ->orderBy('name')
             ->limit(200)
             ->get(['id', 'student_no', 'name', 'course_id']);
@@ -19687,6 +19975,13 @@ class RegistrarController extends Controller
             $student = Student::find(request()->query('student_id'));
         }
 
+        if ($student) {
+            $student->loadMissing('yearBlock:id,label');
+            if (!$this->isDocumentFormsSeniorStudent($student)) {
+                abort(404);
+            }
+        }
+
         $studentColumns = ['id', 'student_no', 'name'];
         foreach (['course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester'] as $column) {
             if (Schema::hasColumn('students', $column)) {
@@ -19696,6 +19991,9 @@ class RegistrarController extends Controller
 
         $honorableDismissalCandidates = Student::query()
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
             ->whereNotIn('id', function ($query) {
                 $query->select('student_id')->from('honorable_dismissal_records');
             })
@@ -19706,6 +20004,9 @@ class RegistrarController extends Controller
         $honorableDismissalRows = Student::query()
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
             ->join('honorable_dismissal_records as hdr', 'hdr.student_id', '=', 'students.id')
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
             ->when($student, function ($query) use ($student) {
                 $query->orderByRaw('CASE WHEN students.id = ? THEN 0 ELSE 1 END', [$student->id]);
             })
@@ -19741,6 +20042,11 @@ class RegistrarController extends Controller
             return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
         }
 
+        $student->loadMissing('yearBlock:id,label');
+        if (!$this->isDocumentFormsSeniorStudent($student)) {
+            return response()->json(['success' => false, 'message' => 'Only Fourth and Fifth year students are applicable for Honorable Dismissal.'], 422);
+        }
+
         $now = now();
         $hdNo = $this->nextHonorableDismissalNumber($student);
 
@@ -19763,6 +20069,11 @@ class RegistrarController extends Controller
     {
         if (!Schema::hasTable('honorable_dismissal_records')) {
             return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
+        }
+
+        $student->loadMissing('yearBlock:id,label');
+        if (!$this->isDocumentFormsSeniorStudent($student)) {
+            return response()->json(['success' => false, 'message' => 'Only Fourth and Fifth year students are applicable for Honorable Dismissal.'], 422);
         }
 
         $record = DB::table('honorable_dismissal_records')->where('student_id', (int) $student->id)->first();
@@ -19796,6 +20107,11 @@ class RegistrarController extends Controller
         $student = $studentId ? Student::with(['canonicalCourse:id,code,name'])->find($studentId) : null;
 
         if ($student) {
+            $student->loadMissing('yearBlock:id,label');
+            if (!$this->isDocumentFormsSeniorStudent($student)) {
+                return response()->json(['success' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 404);
+            }
+
             $layout = $this->resolveHonorableDismissalTokens($layout, $student);
         }
 
@@ -19955,13 +20271,158 @@ JSON
     /**
      * Registrar > Forms > Official Grade Report
      */
-    public function formsOfficialGradeReport()
+    public function formsOfficialGradeReport(Request $request)
     {
-        $students = Student::query()
-            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
-            ->orderBy('name')
-            ->limit(200)
-            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id', 'academic_term_id']);
+        $students = $this->queryOfficialGradeReportStudents($request)->take(200)->get();
+        $students = $this->filterOfficialGradeReportBySection($students, trim((string) $request->query('section', '')));
+        $result = $this->buildOfficialGradeReportRows($students);
+
+        return view('registrar.forms.official-grade-report', [
+            'gradeReportRows' => $result['rows'],
+            'subjectsByRow' => $result['subjectsByRow'],
+            'metaByRow' => $result['metaByRow'],
+        ]);
+    }
+
+    public function formsOfficialGradeReportList(Request $request): JsonResponse
+    {
+        $limit = (int) $request->query('limit', 200);
+        if ($limit <= 0 || $limit > 500) {
+            $limit = 200;
+        }
+
+        $students = $this->queryOfficialGradeReportStudents($request)->take($limit)->get();
+        $students = $this->filterOfficialGradeReportBySection($students, trim((string) $request->query('section', '')));
+        $result = $this->buildOfficialGradeReportRows($students);
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $result['rows'],
+            'subjectsByRow' => $result['subjectsByRow'],
+            'metaByRow' => $result['metaByRow'],
+            'total' => count($result['rows']),
+            'filters' => [
+                'school_year' => trim((string) $request->query('school_year', '')),
+                'semester' => trim((string) $request->query('semester', '')),
+                'program' => trim((string) $request->query('program', '')),
+                'year_level' => trim((string) $request->query('year_level', '')),
+                'section' => trim((string) $request->query('section', '')),
+            ],
+        ]);
+    }
+
+    private function queryOfficialGradeReportStudents(Request $request)
+    {
+        $studentColumns = ['id', 'student_no', 'name'];
+        foreach (['program', 'year_level', 'school_year', 'semester', 'course_id', 'year_block_id', 'academic_term_id'] as $column) {
+            if (Schema::hasColumn('students', $column)) {
+                $studentColumns[] = $column;
+            }
+        }
+
+        $query = Student::query()
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            });
+
+        $schoolYear = trim((string) $request->query('school_year', ''));
+        $semester = trim((string) $request->query('semester', ''));
+        $program = trim((string) $request->query('program', ''));
+        $yearLevel = trim((string) $request->query('year_level', ''));
+        $hasSchoolYearColumn = Schema::hasColumn('students', 'school_year');
+        $hasSemesterColumn = Schema::hasColumn('students', 'semester');
+        $hasAcademicTermColumn = Schema::hasColumn('students', 'academic_term_id');
+
+        if ($schoolYear !== '') {
+            $query->when($hasSchoolYearColumn || $hasAcademicTermColumn, function ($q) use ($schoolYear, $hasSchoolYearColumn, $hasAcademicTermColumn) {
+                $q->where(function ($studentQuery) use ($schoolYear, $hasSchoolYearColumn, $hasAcademicTermColumn) {
+                    if ($hasSchoolYearColumn) {
+                        $studentQuery->where('students.school_year', $schoolYear);
+                    }
+
+                    if ($hasAcademicTermColumn) {
+                        if ($hasSchoolYearColumn) {
+                            $studentQuery->orWhereHas('academicTerm', function ($academicTermQuery) use ($schoolYear) {
+                                $academicTermQuery->where('school_year', $schoolYear);
+                            });
+                        } else {
+                            $studentQuery->whereHas('academicTerm', function ($academicTermQuery) use ($schoolYear) {
+                                $academicTermQuery->where('school_year', $schoolYear);
+                            });
+                        }
+                    }
+                });
+            });
+        }
+
+        if ($semester !== '') {
+            $query->when($hasSemesterColumn, function ($q) use ($semester, $hasAcademicTermColumn) {
+                $q->where(function ($studentQuery) use ($semester) {
+                    $studentQuery->where('students.semester', $semester)
+                        ->when($hasAcademicTermColumn, function ($academicTermScope) use ($semester) {
+                            $academicTermScope->orWhereHas('academicTerm', function ($academicTermQuery) use ($semester) {
+                                $academicTermQuery->where('term', $semester);
+                            });
+                        });
+                });
+            })->when(!$hasSemesterColumn, function ($q) use ($semester, $hasAcademicTermColumn) {
+                if ($hasAcademicTermColumn) {
+                    $q->whereHas('academicTerm', function ($academicTermQuery) use ($semester) {
+                        $academicTermQuery->where('term', $semester);
+                    });
+                }
+            });
+        }
+
+        if ($program !== '') {
+            $query->when(Schema::hasColumn('students', 'program'), function ($q) use ($program) {
+                $q->where(function ($query) use ($program) {
+                    $query->where('students.program', $program);
+                    $query->orWhereHas('canonicalCourse', function ($courseQuery) use ($program) {
+                        $courseQuery->where('code', $program)
+                            ->orWhere('name', $program);
+                    });
+                });
+            });
+        }
+
+        if ($yearLevel !== '') {
+            $query->when(Schema::hasColumn('students', 'year_level'), function ($q) use ($yearLevel) {
+                $q->where('students.year_level', $yearLevel);
+            });
+        }
+
+        return $query->orderBy('name')->with($this->officialGradeReportStudentDefaults())
+            ->addSelect($studentColumns);
+    }
+
+    private function officialGradeReportStudentDefaults()
+    {
+        return ['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'];
+    }
+
+    private function filterOfficialGradeReportBySection($students, $section)
+    {
+        $targetSection = strtolower(preg_replace('/\s+/', ' ', trim((string) $section)));
+        if ($targetSection === '') {
+            return $students instanceof \Illuminate\Support\Collection ? $students->values() : collect($students)->values();
+        }
+
+        $filtered = collect($students)->filter(function ($student) use ($targetSection) {
+            $program = trim((string) (
+                $student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name ?: ''
+            ));
+            $year = trim((string) ($student->year_level ?: ($student->yearBlock ? $student->yearBlock->label : '')));
+            $section = strtolower(preg_replace('/\s+/', ' ', trim($program . ' ' . $year)));
+            return $section === $targetSection;
+        });
+
+        return $filtered->values();
+    }
+
+    private function buildOfficialGradeReportRows($students)
+    {
+        $students = $students instanceof \Illuminate\Support\Collection ? $students->values() : collect($students);
 
         $gradesByStudent = StudentSubjectGrade::query()
             ->with('subject')
@@ -19976,15 +20437,26 @@ JSON
         $metaByRow = [];
 
         foreach ($students as $index => $student) {
+            $program = trim((string) ($student->program ?: 'PROGRAM'));
+            $yearLevel = trim((string) ($student->year_level ?: '-'));
+            if ($program === '') {
+                $program = trim((string) ($student->canonicalCourse->code ?? $student->canonicalCourse->name ?? '-'));
+            }
+
+            if ($program === '') {
+                $program = '-';
+            }
+
+            $section = trim($program . ' ' . $yearLevel);
             $rowId = (string) ($index + 1);
-            $section = trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR'));
+
             $gradeReportRows[] = [
                 'row_id' => $rowId,
-                'student_id' => $student->id,
-                'student_no' => $student->student_no,
-                'student_name' => $student->name,
-                'program' => $student->program ?: '-',
-                'year' => $student->year_level ?: '-',
+                'student_id' => (int) $student->id,
+                'student_no' => (string) $student->student_no,
+                'student_name' => (string) $student->name,
+                'program' => $program,
+                'year' => $yearLevel,
                 'section' => $section,
             ];
 
@@ -20002,28 +20474,40 @@ JSON
                 ];
             })->values()->all();
 
+            $schoolYear = (string) ($student->school_year ?: (optional($student->academicTerm)->school_year ?: '2025-2026'));
+            $semester = (string) ($student->semester ?: (optional($student->academicTerm)->term ?: 'First'));
+
             $subjectsByRow[$rowId] = $subjects;
             $metaByRow[$rowId] = [
-                'studentNo' => $student->student_no,
+                'studentNo' => (string) $student->student_no,
                 'studentName' => strtoupper((string) $student->name),
                 'address' => '-',
                 'birthday' => '-',
                 'section' => $section,
-                'course' => ($student->program ?: 'PROGRAM') . ' : ' . ($student->program ?: 'Program'),
-                'schoolYear' => (string) ($student->school_year ?: '2025-2026') . ' / ' . strtoupper((string) ($student->semester ?: 'First')),
+                'course' => $program . ' : ' . $program,
+                'schoolYear' => $schoolYear . ' / ' . strtoupper($semester),
                 'curriculum' => 'CURRENT',
                 'studentType' => 'REGULAR',
-                'yearLevel' => $student->year_level ?: '-',
+                'yearLevel' => $yearLevel,
                 'residency' => 'PR',
                 'cwa' => '-',
             ];
         }
 
-        return view('registrar.forms.official-grade-report', compact('gradeReportRows', 'subjectsByRow', 'metaByRow'));
+        return [
+            'rows' => $gradeReportRows,
+            'subjectsByRow' => $subjectsByRow,
+            'metaByRow' => $metaByRow,
+        ];
     }
 
     public function formsOfficialGradeReportData(Student $student): JsonResponse
     {
+        $student->loadMissing('yearBlock:id,label');
+        if (!$this->isDocumentFormsSeniorStudent($student)) {
+            return response()->json(['ok' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 404);
+        }
+
         $records = StudentSubjectGrade::query()
             ->with('subject')
             ->where('student_id', $student->id)
@@ -20066,6 +20550,9 @@ JSON
 
         $crossEnrollRows = CrossEnrollmentRequest::query()
             ->with('student.subjects')
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorRecordScope($query, (new CrossEnrollmentRequest())->getTable());
+            })
             ->orderByDesc('id')
             ->get();
 
@@ -20079,6 +20566,10 @@ JSON
         ]);
 
         $student = Student::findOrFail($validated['student_id']);
+        $student->loadMissing('yearBlock:id,label');
+        if (!$this->isDocumentFormsSeniorStudent($student)) {
+            return response()->json(['ok' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 422);
+        }
 
         $record = CrossEnrollmentRequest::create([
             'student_id' => $student->id,
@@ -20099,7 +20590,7 @@ JSON
             'student_no' => 'required|string|max:40',
             'name' => 'required|string|max:120',
             'program' => 'nullable|string|max:80',
-            'year_level' => 'nullable|string|max:40',
+            'year_level' => ['nullable', 'string', Rule::in($this->documentFormsSeniorYearLevelValues())],
         ]);
 
         $student = $crossEnrollmentRequest->student;
@@ -20134,6 +20625,9 @@ JSON
 
         $waiverRows = CancellationWaiver::query()
             ->with('student')
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorRecordScope($query, (new CancellationWaiver())->getTable());
+            })
             ->orderByDesc('id')
             ->get();
 
@@ -20147,6 +20641,10 @@ JSON
         ]);
 
         $student = Student::findOrFail($validated['student_id']);
+        $student->loadMissing('yearBlock:id,label');
+        if (!$this->isDocumentFormsSeniorStudent($student)) {
+            return response()->json(['ok' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 422);
+        }
 
         $record = CancellationWaiver::create([
             'student_id' => $student->id,
@@ -20167,7 +20665,7 @@ JSON
             'student_no' => 'required|string|max:40',
             'name' => 'required|string|max:120',
             'program' => 'nullable|string|max:80',
-            'year_level' => 'nullable|string|max:40',
+            'year_level' => ['nullable', 'string', Rule::in($this->documentFormsSeniorYearLevelValues())],
         ]);
 
         $student = $cancellationWaiver->student;

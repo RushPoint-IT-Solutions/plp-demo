@@ -58,10 +58,7 @@
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Year Level</label>
                     <select class="app-filter-select">
-                        <option>First</option>
-                        <option>Second</option>
-                        <option>Third</option>
-                        <option>Fourth</option>
+                        @include('registrar.forms.partials.fourth-fifth-year-options')
                     </select>
                 </div>
                 <div class="app-filter-group" style="flex:1;">
@@ -86,9 +83,12 @@
 
         <h3 style="margin: 4px 0 10px; color:#006837; font-size:1rem; font-weight:800;">TAG STUDENT FOR DISMISSAL</h3>
         <div class="ga-table-wrap app-table-wrap" style="margin-bottom:24px;">
-            <table class="ga-table app-table" style="min-width: 760px;">
+            <table class="ga-table app-table" id="hdCandidateTable" style="min-width: 820px;">
                 <thead>
                     <tr>
+                        <th style="width: 54px; text-align: center;">
+                            <input type="checkbox" id="hdCandidateSelectAll" onchange="hdToggleCandidateSelectAll(this)">
+                        </th>
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
@@ -96,13 +96,14 @@
                         <th style="text-align: center; width: 150px;">Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="hdCandidateTableBody">
                     @forelse($honorableDismissalCandidates as $student)
                         @php
                             $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
                             $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
                         @endphp
-                        <tr>
+                        <tr data-candidate-id="{{ $student->id }}">
+                            <td style="text-align: center;"><input type="checkbox" class="hd-candidate-row-select" onchange="hdSyncCandidateSelectAll()"></td>
                             <td>{{ $student->student_no ?: '-' }}</td>
                             <td>{{ $student->name ?: '-' }}</td>
                             <td>{{ $program ?: '-' }}</td>
@@ -112,7 +113,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" style="text-align:center; color:#666;">No untagged student records found.</td></tr>
+                        <tr><td colspan="6" style="text-align:center; color:#666;">No untagged student records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -19,14 +19,16 @@
             <div class="app-filter-row" style="align-items: flex-end;">
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">School Year:</label>
-                    <select class="app-filter-select">
+                    <select class="app-filter-select" id="ogrSchoolYear">
+                        <option value="">All</option>
                         <option>2025-2026</option>
                         <option>2024-2025</option>
                     </select>
                 </div>
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Semester</label>
-                    <select class="app-filter-select">
+                    <select class="app-filter-select" id="ogrSemester">
+                        <option value="">All</option>
                         <option>First</option>
                         <option>Second</option>
                         <option>Summer</option>
@@ -34,7 +36,8 @@
                 </div>
                 <div class="app-filter-group" style="flex:2;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Program</label>
-                    <select class="app-filter-select">
+                    <select class="app-filter-select" id="ogrProgram">
+                        <option value="">All</option>
                         <option>-Select Program-</option>
                         <option>BSCS</option>
                         <option>BSIT</option>
@@ -45,16 +48,15 @@
                 </div>
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Year Level</label>
-                    <select class="app-filter-select">
-                        <option>First</option>
-                        <option>Second</option>
-                        <option>Third</option>
-                        <option>Fourth</option>
+                    <select class="app-filter-select" id="ogrYearLevel">
+                        <option value="">All</option>
+                        @include('registrar.forms.partials.fourth-fifth-year-options')
                     </select>
                 </div>
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Section</label>
-                    <select class="app-filter-select">
+                    <select class="app-filter-select" id="ogrSection">
+                        <option value="">All</option>
                         <option>-Select Section-</option>
                         <option>BSIT 1B</option>
                         <option>BSN 1-BENNER</option>
@@ -68,7 +70,7 @@
                 </div>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="ogrOpenBlankPreview()">Preview Form</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="ogrPrintSelected()">Print Selected</button>
-                <button type="button" class="req-btn-save frm-action-btn">Set</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="ogrApplyFilters()">Set</button>
             </div>
         </div>
 
@@ -195,6 +197,7 @@
 <script>
 window.ogrSubjectsByRow = @json($subjectsByRow ?? []);
 window.ogrMetaByRow = @json($metaByRow ?? []);
+window.ogrFilterUrl = "{{ route('registrar.registrar-menu.forms.official-grade-report.filter') }}";
 </script>
 <script src="{{ asset('js/official-grade-report.js') }}?v={{ time() }}"></script>
 @endpush

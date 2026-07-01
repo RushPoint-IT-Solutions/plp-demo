@@ -361,6 +361,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/grading-sheet/action', 'Registrar\RegistrarController@gradingSheetAction')->name('grading-sheet.action');
             Route::post('/grading-sheet/update-phase', 'Registrar\RegistrarController@gradingSheetUpdatePhase')->name('grading-sheet.update-phase')->middleware('throttle:60,1');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
+            Route::post('/evaluation', 'Registrar\RegistrarController@storeEvaluationForm')->name('evaluation.store')->middleware('throttle:30,1');
+            Route::post('/evaluation/{evaluationForm}/publish', 'Registrar\RegistrarController@publishEvaluationForm')->name('evaluation.publish')->middleware('throttle:30,1');
         });
 
         // Alumni Tracker
@@ -387,6 +389,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/honorable-dismissal/{student}/tag', 'Registrar\RegistrarController@formsHonorableDismissalTag')->name('honorable-dismissal.tag');
             Route::post('/honorable-dismissal/{student}/issue', 'Registrar\RegistrarController@formsHonorableDismissalIssue')->name('honorable-dismissal.issue');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
+            Route::get('/official-grade-report/filter', 'Registrar\RegistrarController@formsOfficialGradeReportList')->name('official-grade-report.filter');
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
             Route::get('/citizens-charter', 'Registrar\RegistrarController@formsCitizensCharter')->name('citizens-charter');

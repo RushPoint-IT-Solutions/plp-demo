@@ -5,6 +5,7 @@ var EVAL_DEFINE_DONE = false;
 var EVAL_BUILD_DONE = false;
 var EVAL_SAVED = false;
 var EVAL_PREVIEW_DONE = false;
+var EVAL_ACTIVE_ID = null;
 
 /* ── Sample blocks for the builder ── */
 var EVAL_BLOCKS = [
@@ -29,11 +30,17 @@ var EVAL_NEXT_BLOCK_ID = 3;
 
 /* ── Library / Dashboard data ── */
 var EVAL_LIBRARY = [
-    { id: 1, name: 'SAM 125', status: 'Published', responses: 10 },
-    { id: 2, name: 'OOP 113', status: 'Draft', responses: 0 },
-    { id: 3, name: 'SPI 128', status: 'Closed', responses: 50 },
-    { id: 4, name: 'UTS 12', status: 'Closed', responses: 50 }
+    { id: 1, name: 'SAM 125', faculty: 'Diaz, Jonnel Mark', program: 'BSIT', status: 'Published', responses: 10, blocks: cloneEvalBlocks(EVAL_BLOCKS) },
+    { id: 2, name: 'OOP 113', faculty: 'Santos, Maria', program: 'BSCS', status: 'Draft', responses: 0, blocks: cloneEvalBlocks(EVAL_BLOCKS) },
+    { id: 3, name: 'SPI 128', faculty: 'Reyes, Carlo', program: 'BSED', status: 'Closed', responses: 50, blocks: cloneEvalBlocks(EVAL_BLOCKS) },
+    { id: 4, name: 'UTS 12', faculty: 'Diaz, Jonnel Mark', program: 'BSN', status: 'Closed', responses: 50, blocks: cloneEvalBlocks(EVAL_BLOCKS) }
 ];
+
+var EVAL_CONFIG = {
+    storeUrl: '',
+    publishUrlTemplate: '',
+    csrf: ''
+};
 
 /* ════════════════════════════════════
    STEP NAVIGATION
@@ -327,9 +334,206 @@ function renderPreview() {
     container.innerHTML = html;
 
     /* Show/hide buttons based on saved state */
+    document.getElementById('evalPreviewActions').style.display = 'flex';
     document.getElementById('evalSaveBtn').style.display = EVAL_SAVED ? 'none' : 'inline-flex';
     document.getElementById('evalPublishBtn').style.display = EVAL_SAVED ? 'inline-flex' : 'none';
     document.getElementById('evalEditBtn').textContent = EVAL_SAVED ? 'Edit' : 'Edit';
+}
+
+function escapeEvalHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function(ch) {
+        var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return map[ch];
+    });
+}
+
+function cloneEvalBlocks(blocks) {
+    return JSON.parse(JSON.stringify(blocks || []));
+}
+
+function getSelectedText(selectId) {
+    var select = document.getElementById(selectId);
+    if (!select || !select.options[select.selectedIndex]) return '';
+    return select.options[select.selectedIndex].text || select.value || '';
+}
+
+function getCurrentEvaluationSnapshot(status, responses) {
+    var subject = document.getElementById('evalSubject');
+    var subjectValue = subject ? subject.value : '';
+    var subjectText = getSelectedText('evalSubject') || subjectValue || 'Evaluation';
+
+    return {
+        id: EVAL_ACTIVE_ID,
+        name: subjectText,
+        faculty: getSelectedText('evalFaculty'),
+        program: document.getElementById('evalProgram').value || '',
+        academicYear: document.getElementById('evalAY').value || '',
+        subjectCode: subjectValue,
+        subjectName: subjectText,
+        periodFrom: document.getElementById('evalPeriodFrom').value || '',
+        periodTo: document.getElementById('evalPeriodTo').value || '',
+        targetRespondents: document.getElementById('evalRespondents').value || '',
+        status: status || 'Draft',
+        responses: responses || 0,
+        blocks: cloneEvalBlocks(EVAL_BLOCKS)
+    };
+}
+
+function normalizeEvaluationItem(item) {
+    item = item || {};
+    return {
+        id: item.id,
+        name: item.name || item.subjectName || 'Evaluation',
+        faculty: item.faculty || '',
+        program: item.program || '',
+        academicYear: item.academicYear || '',
+        subjectCode: item.subjectCode || '',
+        subjectName: item.subjectName || item.name || '',
+        periodFrom: item.periodFrom || '',
+        periodTo: item.periodTo || '',
+        targetRespondents: item.targetRespondents || '',
+        status: item.status || 'Draft',
+        responses: Number(item.responses || 0),
+        blocks: cloneEvalBlocks(item.blocks && item.blocks.length ? item.blocks : EVAL_BLOCKS)
+    };
+}
+
+function nextLocalEvaluationId() {
+    var maxId = 0;
+    EVAL_LIBRARY.forEach(function(item) {
+        var id = parseInt(item.id || 0, 10) || 0;
+        if (id > maxId) maxId = id;
+    });
+    return maxId + 1;
+}
+
+function upsertLibraryItem(item) {
+    var normalized = normalizeEvaluationItem(item);
+    var index = EVAL_LIBRARY.findIndex(function(existing) {
+        return String(existing.id || '') === String(normalized.id || '');
+    });
+
+    if (index === -1) {
+        index = EVAL_LIBRARY.findIndex(function(existing) {
+            return existing.name === normalized.name && existing.faculty === normalized.faculty;
+        });
+    }
+
+    if (index === -1) {
+        EVAL_LIBRARY.unshift(normalized);
+    } else {
+        EVAL_LIBRARY[index] = normalized;
+    }
+
+    EVAL_ACTIVE_ID = normalized.id;
+    return normalized;
+}
+
+function getPayloadErrorMessage(payload, fallback) {
+    if (payload && payload.errors) {
+        var firstKey = Object.keys(payload.errors)[0];
+        if (firstKey && payload.errors[firstKey] && payload.errors[firstKey][0]) {
+            return payload.errors[firstKey][0];
+        }
+    }
+
+    return payload && payload.message ? payload.message : fallback;
+}
+
+function persistEvaluation(snapshot) {
+    if (!EVAL_CONFIG.storeUrl) {
+        if (!snapshot.id) snapshot.id = nextLocalEvaluationId();
+        return Promise.resolve({ evaluation: normalizeEvaluationItem(snapshot) });
+    }
+
+    return fetch(EVAL_CONFIG.storeUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': EVAL_CONFIG.csrf
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(snapshot)
+    }).then(function(response) {
+        return response.json().then(function(payload) {
+            if (!response.ok) throw payload;
+            return payload;
+        });
+    });
+}
+
+function publishEvaluation(item) {
+    if (!item || !item.id || !EVAL_CONFIG.publishUrlTemplate) {
+        item.status = 'Published';
+        return Promise.resolve({ evaluation: normalizeEvaluationItem(item) });
+    }
+
+    return fetch(EVAL_CONFIG.publishUrlTemplate.replace('__ID__', encodeURIComponent(item.id)), {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': EVAL_CONFIG.csrf
+        },
+        credentials: 'same-origin'
+    }).then(function(response) {
+        return response.json().then(function(payload) {
+            if (!response.ok) throw payload;
+            return payload;
+        });
+    });
+}
+
+function showPreviewPanelForLibraryView() {
+    document.getElementById('stepDefine').style.display = 'none';
+    document.getElementById('stepBuild').style.display = 'none';
+    document.getElementById('stepPreview').style.display = 'block';
+
+    ['stepDefineTab', 'stepBuildTab', 'stepPreviewTab'].forEach(function(id) {
+        var tab = document.getElementById(id);
+        if (tab) {
+            tab.classList.remove('active');
+            tab.classList.remove('completed');
+        }
+    });
+
+    document.getElementById('stepPreviewTab').classList.add('active');
+    updateStepCheckmarks();
+}
+
+function renderLibraryItemView(item) {
+    var blocks = cloneEvalBlocks(item.blocks && item.blocks.length ? item.blocks : EVAL_BLOCKS);
+    var infoParts = [item.program, item.name, item.faculty ? 'Prof. ' + item.faculty : ''];
+    var meta = ''
+        + '<div class="eval-view-meta" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin:0 0 14px;">'
+        + '  <div><strong>Status</strong><br><span class="eval-status-badge eval-status-' + escapeEvalHtml(String(item.status || 'Draft').toLowerCase()) + '">' + escapeEvalHtml(item.status || 'Draft') + '</span></div>'
+        + '  <div><strong>Responses</strong><br>' + Number(item.responses || 0) + '</div>'
+        + '  <div><strong>Academic Year</strong><br>' + escapeEvalHtml(item.academicYear || '2025-2026') + '</div>'
+        + '  <div><strong>Target</strong><br>' + escapeEvalHtml(item.targetRespondents || item.program || 'All Courses') + '</div>'
+        + '</div>';
+    var html = meta;
+
+    blocks.forEach(function(block) {
+        html += '<div class="eval-block eval-block-preview">';
+        html += '<div class="eval-block-header"><span class="eval-block-title">' + escapeEvalHtml(block.letter || '') + '. ' + escapeEvalHtml(block.title || 'Evaluation Block') + '</span></div>';
+
+        (block.questions || []).forEach(function(question, index) {
+            html += '<div class="eval-question"><span class="eval-q-text">' + (index + 1) + '. ' + escapeEvalHtml(question.text || '') + '</span></div>';
+            html += '<div class="eval-likert">';
+            ['5 Strongly Agree', '4 Agree', '3 Neutral', '2 Disagree', '1 Strongly Disagree'].forEach(function(label) {
+                var parts = label.split(' ');
+                html += '<div class="eval-likert-item" aria-disabled="true"><span class="eval-likert-num">' + parts[0] + '</span><span class="eval-likert-label">' + escapeEvalHtml(parts.slice(1).join(' ')) + '</span></div>';
+            });
+            html += '</div>';
+        });
+
+        html += '</div>';
+    });
+
+    document.getElementById('evalPreviewInfo').textContent = infoParts.filter(Boolean).join(' | ');
+    document.getElementById('evalPreviewContainer').innerHTML = html;
+    document.getElementById('evalPreviewActions').style.display = 'none';
+    showPreviewPanelForLibraryView();
 }
 
 /* ════════════════════════════════════
@@ -338,28 +542,39 @@ function renderPreview() {
 function handleSaveEval() {
     EVAL_SAVED = true;
     EVAL_PREVIEW_DONE = true;
-    var subj = document.getElementById('evalSubject');
-    var subjText = subj.options[subj.selectedIndex] ? subj.options[subj.selectedIndex].text : 'Evaluation';
+    var snapshot = getCurrentEvaluationSnapshot('Draft', 0);
 
-    /* Add to library as Draft */
-    var exists = EVAL_LIBRARY.find(function(e) { return e.name === subjText; });
-    if (!exists) {
-        EVAL_LIBRARY.unshift({ id: EVAL_LIBRARY.length + 1, name: subjText, status: 'Draft', responses: 0 });
-    }
-    renderLibrary();
-    renderPreview();
-    updateStepCheckmarks();
-    showEvalSuccessModal('Evaluation form saved as Draft.');
+    persistEvaluation(snapshot).then(function(payload) {
+        upsertLibraryItem(payload.evaluation || snapshot);
+        renderLibrary();
+        renderPreview();
+        updateStepCheckmarks();
+        showEvalSuccessModal(payload.message || 'Evaluation form saved as Draft.');
+    }).catch(function(payload) {
+        EVAL_SAVED = false;
+        EVAL_PREVIEW_DONE = false;
+        updateStepCheckmarks();
+        showRegistrarToast(getPayloadErrorMessage(payload, 'Unable to save evaluation form.'), 'error');
+    });
 }
 
 function handlePublishEval() {
     EVAL_PREVIEW_DONE = true;
-    var subj = document.getElementById('evalSubject');
-    var subjText = subj.options[subj.selectedIndex] ? subj.options[subj.selectedIndex].text : 'Evaluation';
-    var item = EVAL_LIBRARY.find(function(e) { return e.name === subjText; });
-    if (item) item.status = 'Published';
-    renderLibrary();
-    showEvalSuccessModal('Evaluation published successfully!');
+    var snapshot = getCurrentEvaluationSnapshot('Published', 0);
+
+    persistEvaluation(snapshot).then(function(payload) {
+        var item = upsertLibraryItem(payload.evaluation || snapshot);
+        return item.status === 'Published'
+            ? payload
+            : publishEvaluation(item);
+    }).then(function(payload) {
+        upsertLibraryItem(payload.evaluation || snapshot);
+        renderLibrary();
+        updateStepCheckmarks();
+        showEvalSuccessModal(payload.message || 'Evaluation published successfully!');
+    }).catch(function(payload) {
+        showRegistrarToast(getPayloadErrorMessage(payload, 'Unable to publish evaluation.'), 'error');
+    });
 }
 
 /* ════════════════════════════════════
@@ -399,17 +614,33 @@ function toggleLibMenu(id, e) {
 }
 
 function viewLibraryItem(id) {
+    var item = EVAL_LIBRARY.find(function(e) { return e.id === id; });
     document.querySelectorAll('.eval-lib-dropdown').forEach(function(d) { d.classList.remove('open'); });
-    showRegistrarToast('Viewing evaluation details...', 'success');
+    if (!item) {
+        showRegistrarToast('Evaluation record was not found.', 'error');
+        return;
+    }
+
+    renderLibraryItemView(item);
+    showRegistrarToast(item.name + ' evaluation loaded.', 'success');
 }
 
 function publishLibraryItem(id) {
     var item = EVAL_LIBRARY.find(function(e) { return e.id === id; });
-    if (item) item.status = 'Published';
     document.querySelectorAll('.eval-lib-dropdown').forEach(function(d) { d.classList.remove('open'); });
-    renderLibrary();
-    updateStepCheckmarks();
-    showEvalSuccessModal(item.name + ' published successfully!');
+    if (!item) {
+        showRegistrarToast('Evaluation record was not found.', 'error');
+        return;
+    }
+
+    publishEvaluation(item).then(function(payload) {
+        var updated = upsertLibraryItem(payload.evaluation || item);
+        renderLibrary();
+        updateStepCheckmarks();
+        showEvalSuccessModal(payload.message || updated.name + ' published successfully!');
+    }).catch(function(payload) {
+        showRegistrarToast(getPayloadErrorMessage(payload, 'Unable to publish evaluation.'), 'error');
+    });
 }
 
 function closeLibraryItem(id) {
@@ -444,6 +675,25 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+function initEvaluationPageData() {
+    var dataNode = document.getElementById('evalPageData');
+    if (!dataNode) return;
+
+    EVAL_CONFIG.storeUrl = dataNode.getAttribute('data-store-url') || '';
+    EVAL_CONFIG.publishUrlTemplate = dataNode.getAttribute('data-publish-url-template') || '';
+    EVAL_CONFIG.csrf = dataNode.getAttribute('data-csrf') || '';
+
+    try {
+        var serverLibrary = JSON.parse(dataNode.getAttribute('data-library') || '[]');
+        if (Array.isArray(serverLibrary) && serverLibrary.length) {
+            EVAL_LIBRARY = serverLibrary.map(normalizeEvaluationItem);
+        }
+    } catch (error) {
+        /* Keep demo fallback data when server payload is unavailable. */
+    }
+}
+
 /* ── Init ── */
+initEvaluationPageData();
 renderBlocks();
 renderLibrary();
