@@ -15,12 +15,18 @@
 
     .student-topbar,
     .student-topbar *,
-    .student-page-header,
     .registrar-header,
     .registrar-header * {
         background: #fff !important;
         color: #000 !important;
         background-image: none !important;
+    }
+
+    .student-page-header {
+        background: #006837 !important;
+        background-color: #006837 !important;
+        background-image: none !important;
+        color: #fff !important;
     }
 
     .cor-toolbar {
