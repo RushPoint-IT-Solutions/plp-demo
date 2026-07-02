@@ -558,7 +558,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     var paged = pagedSlice('signatures');
     var rows = paged.rows.map(function (row, idx) {
       var index = paged.start + idx;
-      var signatureCell = row.signatureUrl ? '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>' : '<span class="cfg-muted">No file</span>';
+      var signatureCell = row.signatureUrl ? '<span class="cfg-signature-actions">' + '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>' + '<button type="button" class="apst-del-btn cfg-link-btn" data-cfg-action="delete-signature-file" data-cfg-index="' + index + '">Delete</button>' + '</span>' : '<span class="cfg-muted">No file</span>';
       var programsHtml = '';
       if (row.programs && Array.isArray(row.programs) && row.programs.length > 0) {
         programsHtml = row.programs.map(function (p) {
@@ -1464,34 +1464,27 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     openModal('cfgDeleteModal');
   }
   function confirmDelete() {
-    if (state.deleteBusy) {
-      return;
-    }
-    var confirmButton = document.querySelector('[data-cfg-action="confirm-delete"]');
-    state.deleteBusy = true;
-    if (confirmButton) {
-      confirmButton.disabled = true;
-    }
-    return _confirmDelete.apply(this, arguments)["finally"](function () {
-      state.deleteBusy = false;
-      if (confirmButton) {
-        confirmButton.disabled = false;
-      }
-    });
+    return _confirmDelete.apply(this, arguments);
   }
   function _confirmDelete() {
     _confirmDelete = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
-      var group, id, endpoint, _t12;
+      var group, id, endpoint, confirmButton, _t12;
       return _regenerator().w(function (_context12) {
         while (1) switch (_context12.p = _context12.n) {
           case 0:
-            if (!(!state.deleteTarget || !state.deleteTarget.id)) {
+            if (!state.deleteBusy) {
               _context12.n = 1;
+              break;
+            }
+            return _context12.a(2);
+          case 1:
+            if (!(!state.deleteTarget || !state.deleteTarget.id)) {
+              _context12.n = 2;
               break;
             }
             closeModal('cfgDeleteModal');
             return _context12.a(2);
-          case 1:
+          case 2:
             group = state.deleteTarget.group;
             id = state.deleteTarget.id;
             endpoint = '';
@@ -1507,16 +1500,21 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               endpoint = routeFromTemplate(routes.curriculumDisplayDeleteTemplate, id);
             }
             if (endpoint) {
-              _context12.n = 2;
+              _context12.n = 3;
               break;
             }
             closeModal('cfgDeleteModal');
             return _context12.a(2);
-          case 2:
-            _context12.p = 2;
-            _context12.n = 3;
-            return requestJson(endpoint, 'DELETE');
           case 3:
+            confirmButton = document.querySelector('[data-cfg-action="confirm-delete"]');
+            state.deleteBusy = true;
+            if (confirmButton) {
+              confirmButton.disabled = true;
+            }
+            _context12.p = 4;
+            _context12.n = 5;
+            return requestJson(endpoint, 'DELETE');
+          case 5:
             if (group === 'cutoffDate' || group === 'sectionCutoff' || group === 'cutoffConfig') {
               removeRow(state.cutoffDate, id);
               removeRow(state.sectionCutoff, id);
@@ -1531,18 +1529,74 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             state.deleteTarget = null;
             closeModal('cfgDeleteModal');
             showMessage('Record deleted.', 'success');
-            _context12.n = 5;
+            _context12.n = 7;
             break;
-          case 4:
-            _context12.p = 4;
+          case 6:
+            _context12.p = 6;
             _t12 = _context12.v;
             showMessage(_t12.message || 'Unable to delete record.', 'error');
-          case 5:
+          case 7:
+            _context12.p = 7;
+            state.deleteBusy = false;
+            if (confirmButton) {
+              confirmButton.disabled = false;
+            }
+            return _context12.f(7);
+          case 8:
             return _context12.a(2);
         }
-      }, _callee12, null, [[2, 4]]);
+      }, _callee12, null, [[4, 6, 7, 8]]);
     }));
     return _confirmDelete.apply(this, arguments);
+  }
+  function deleteSignatureFile(_x14) {
+    return _deleteSignatureFile.apply(this, arguments);
+  }
+  function _deleteSignatureFile() {
+    _deleteSignatureFile = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(index) {
+      var row, response, _t13;
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.p = _context13.n) {
+          case 0:
+            row = state.signatures[index];
+            if (!(!row || !row.signatureDeleteUrl)) {
+              _context13.n = 1;
+              break;
+            }
+            showMessage('No signature file is available to delete.', 'error');
+            return _context13.a(2);
+          case 1:
+            if (window.confirm('Delete the uploaded signature file?')) {
+              _context13.n = 2;
+              break;
+            }
+            return _context13.a(2);
+          case 2:
+            _context13.p = 2;
+            _context13.n = 3;
+            return requestJson(row.signatureDeleteUrl, 'DELETE');
+          case 3:
+            response = _context13.v;
+            if (response && response.row) {
+              upsertRow(state.signatures, response.row);
+            } else {
+              row.signaturePath = '';
+              row.signatureUrl = '';
+            }
+            renderSignatures();
+            showMessage(response && response.message || 'Signature file deleted.', 'success');
+            _context13.n = 5;
+            break;
+          case 4:
+            _context13.p = 4;
+            _t13 = _context13.v;
+            showMessage(_t13.message || 'Unable to delete signature file.', 'error');
+          case 5:
+            return _context13.a(2);
+        }
+      }, _callee13, null, [[2, 4]]);
+    }));
+    return _deleteSignatureFile.apply(this, arguments);
   }
   function editRow(group, index) {
     var row = listFor(group)[index];
@@ -1729,6 +1783,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         var deleteIndex = parseInt(deleteButton.getAttribute('data-cfg-index'), 10) || 0;
         closeActionMenus();
         openDeleteModal(deleteGroup, deleteIndex);
+        return;
+      }
+      var deleteSignatureFileButton = event.target.closest('[data-cfg-action="delete-signature-file"]');
+      if (deleteSignatureFileButton) {
+        var signatureIndex = parseInt(deleteSignatureFileButton.getAttribute('data-cfg-index'), 10) || 0;
+        deleteSignatureFile(signatureIndex);
         return;
       }
       var confirmDeleteButton = event.target.closest('[data-cfg-action="confirm-delete"]');

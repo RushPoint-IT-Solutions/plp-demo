@@ -735,9 +735,9 @@
     overflow: visible !important;
   }
 
-.registrar-body .cor-registrar-page {
-  margin: 0 !important;
-  padding: 0.35in 0.45in 0 0.45in !important;
+  .registrar-body .cor-registrar-page {
+    margin: 0 !important;
+    padding: 0.35in 0.45in 0 0.45in !important;
     gap: 0 !important;
     width: 100% !important;
     max-width: none !important;
@@ -754,8 +754,8 @@
     line-height: 1.2 !important;
   }
 
-.registrar-body .cor-registrar-sheet {
-  width: 100% !important;
+  .registrar-body .cor-registrar-sheet {
+    width: 100% !important;
     min-height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -763,29 +763,29 @@
     box-shadow: none !important;
     background: #fff !important;
     zoom: 1 !important;
-  transform: none !important;
-}
+    transform: none !important;
+  }
 
-.registrar-body .cor-registrar-header__school p,
-.registrar-body .cor-registrar-header__term,
-.registrar-body .cor-registrar-header__term * {
-  font-size: 7.5pt !important;
-}
+  .registrar-body .cor-registrar-header__school p,
+  .registrar-body .cor-registrar-header__term,
+  .registrar-body .cor-registrar-header__term * {
+    font-size: 7.5pt !important;
+  }
 
-.registrar-body .cor-registrar-header__school h1 {
-  font-size: 11pt !important;
-}
+  .registrar-body .cor-registrar-header__school h1 {
+    font-size: 11pt !important;
+  }
 
-.registrar-body .cor-registrar-header__school h2 {
-  font-size: 9pt !important;
-}
+  .registrar-body .cor-registrar-header__school h2 {
+    font-size: 9pt !important;
+  }
 
-.cor-registrar-notice__title {
-  margin: 0 0 8px !important;
-  font-weight: 700 !important;
-  text-decoration: none !important;
-  text-align: left !important;
-}
+  .cor-registrar-notice__title {
+    margin: 0 0 8px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    text-align: left !important;
+  }
 
   .registrar-body .cor-registrar-info-grid {
     grid-template-columns: 1.2fr 1fr 0.8fr !important;

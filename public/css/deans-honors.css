@@ -1,21 +1,32 @@
+:root {
+  --plp-green: #006837;
+  --plp-green-dark: #005028;
+  --plp-yellow: #ffd100;
+  --plp-white: #ffffff;
+  --plp-gray: #f5f5f5;
+  --plp-border: #cccccc;
+}
+
 @page {
   size: legal portrait;
   margin: 0;
 }
+
 @font-face {
   font-family: "Old Towne";
-  src: url("../fonts/EnglishTowne.ttf") format("truetype");
+  src: url(/fonts/EnglishTowne.ttf?ae9884edd20cb03f3f840417c58073db) format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
 .registrar-body .deans-honors {
   position: relative;
   width: 7in;
   min-height: 4.25in;
   margin: 0 auto;
   padding: 0.36in 0.575in 0.36in;
-  background: #fff url("../img/deans-honors-border.png") center/100% 100% no-repeat;
+  background: #fff url(/images/deans-honors-border.png?b7cd2ebd496763cab319b5d954a0aaa6) center/100% 100% no-repeat;
   color: #1f1609;
   font-family: Georgia, "Times New Roman", serif;
   text-align: center;
@@ -24,6 +35,7 @@
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+
 @media screen and (max-width: 760px) {
   .registrar-body .deans-honors {
     transform: scale(0.9);
@@ -31,12 +43,14 @@
     margin-bottom: -0.42in;
   }
 }
+
 @media screen and (max-width: 560px) {
   .registrar-body .deans-honors {
     transform: scale(0.72);
     margin-bottom: -1.2in;
   }
 }
+
 @media print {
   .registrar-body .deans-honors {
     width: 7in;
@@ -45,13 +59,15 @@
     padding: 0.36in 0.575in 0.36in;
     box-shadow: none;
     page-break-inside: avoid;
-    break-inside: avoid;
+    -moz-column-break-inside: avoid;
+         break-inside: avoid;
     position: absolute;
     top: 0;
     left: 0;
     transform: none !important;
   }
 }
+
 .registrar-body .deans-honors__seal {
   position: absolute;
   top: 0.525in;
@@ -62,27 +78,32 @@
      object-fit: contain;
   transform: translateX(-50%);
 }
+
 .registrar-body .deans-honors__header {
   margin-top: 0.62in;
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.15;
   color: #111;
 }
+
 .registrar-body .deans-honors__header p {
   margin: 0;
   font-size: 5.5pt;
 }
+
 .registrar-body .deans-honors__header h2 {
   margin: 0.015in 0 0;
   font-size: 8pt;
   font-weight: 700;
   letter-spacing: 0;
 }
+
 .registrar-body .deans-honors__body {
   width: 4.3in;
   margin: 0.17in auto 0;
   line-height: 1.12;
 }
+
 .registrar-body .deans-honors__kicker,
 .registrar-body .deans-honors__recognition,
 .registrar-body .deans-honors__term,
@@ -92,6 +113,7 @@
   font-size: 8pt;
   color: #1b1b1b;
 }
+
 .registrar-body .deans-honors h1 {
   margin: 0.025in 0 0.04in;
   color: #4b2d06;
@@ -101,16 +123,20 @@
   line-height: 1;
   letter-spacing: 0;
 }
+
 .registrar-body .deans-honors__term {
   margin-top: 0.07in;
   line-height: 1.25;
 }
+
 .registrar-body .deans-honors__term span {
   font-weight: 700;
 }
+
 .registrar-body .deans-honors__of {
   margin-top: 0.05in;
 }
+
 .registrar-body .deans-honors__student {
   margin: 0.03in auto 0;
   color: #111;
@@ -119,6 +145,7 @@
   line-height: 1.12;
   text-transform: uppercase;
 }
+
 .registrar-body .deans-honors__program {
   margin: 0.01in auto 0;
   color: #111;
@@ -126,14 +153,17 @@
   font-style: italic;
   line-height: 1.2;
 }
+
 .registrar-body .deans-honors__date {
   margin-top: 0.14in;
   font-size: 7pt;
 }
+
 .registrar-body .deans-honors__date sup {
   font-size: 4pt;
   line-height: 0;
 }
+
 .registrar-body .deans-honors__footer {
   position: absolute;
   left: 50%;
@@ -142,6 +172,7 @@
   text-align: center;
   transform: translateX(-50%);
 }
+
 .registrar-body .deans-honors__registrar {
   display: flex;
   flex-direction: column;
@@ -150,14 +181,17 @@
   color: #111;
   font-family: Arial, Helvetica, sans-serif;
 }
+
 .registrar-body .deans-honors__registrar strong {
   font-size: 6pt;
   line-height: 1.05;
 }
+
 .registrar-body .deans-honors__registrar span {
   font-size: 5.5pt;
   line-height: 1.05;
 }
+
 .registrar-body .deans-honors__signature {
   display: block;
   width: 0.775in;
@@ -175,8 +209,10 @@
     margin: 0 !important;
     padding: 0 !important;
   }
+
   .registrar-body .pf-page {
     margin: 0 !important;
     padding: 0 !important;
   }
 }
+

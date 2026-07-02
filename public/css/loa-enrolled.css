@@ -53,21 +53,6 @@
   flex-wrap: nowrap;
 }
 
-.registrar-body .loae-toolbar > .form-row {
-  display: grid;
-  grid-template-columns: auto minmax(260px, 1fr) auto;
-  align-items: end;
-  gap: 10px;
-  width: 100%;
-  margin: 0;
-}
-
-.registrar-body .loae-toolbar > .form-row > [class*="col"] {
-  padding-left: 0;
-  padding-right: 0;
-  margin-bottom: 0 !important;
-}
-
 .registrar-body .loae-toolbar,
 .registrar-body .loae-toolbar * {
   font-size: 10pt !important;
@@ -144,7 +129,7 @@
 
 .registrar-body .loae-toolbar__button {
   height: 38px;
-  min-width: 110px;
+  min-width: 80px;
   padding: 0 12px;
   background: #006837;
   border: 1px solid #006837;
@@ -180,11 +165,6 @@
   .registrar-body .loae-toolbar {
     flex-wrap: wrap;
     gap: 8px;
-  }
-
-  .registrar-body .loae-toolbar > .form-row {
-    grid-template-columns: 1fr;
-    align-items: stretch;
   }
 
   .registrar-body .student-page-header {
@@ -313,7 +293,8 @@
 .registrar-body .loae-document-logo {
   width: 70px;
   height: 70px;
-  object-fit: contain;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 
 .registrar-body .loae-document-heading {

@@ -489,7 +489,10 @@
         var rows = paged.rows.map(function (row, idx) {
             var index = paged.start + idx;
             var signatureCell = row.signatureUrl
-                ? '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>'
+                ? '<span class="cfg-signature-actions">' +
+                    '<a href="' + escapeHtml(row.signatureUrl) + '" target="_blank" rel="noopener">View</a>' +
+                    '<button type="button" class="apst-del-btn cfg-link-btn" data-cfg-action="delete-signature-file" data-cfg-index="' + index + '">Delete</button>' +
+                '</span>'
                 : '<span class="cfg-muted">No file</span>';
 
             var programsHtml = '';
@@ -1314,6 +1317,32 @@
         }
     }
 
+    async function deleteSignatureFile(index) {
+        var row = state.signatures[index];
+        if (!row || !row.signatureDeleteUrl) {
+            showMessage('No signature file is available to delete.', 'error');
+            return;
+        }
+
+        if (!window.confirm('Delete the uploaded signature file?')) {
+            return;
+        }
+
+        try {
+            var response = await requestJson(row.signatureDeleteUrl, 'DELETE');
+            if (response && response.row) {
+                upsertRow(state.signatures, response.row);
+            } else {
+                row.signaturePath = '';
+                row.signatureUrl = '';
+            }
+            renderSignatures();
+            showMessage((response && response.message) || 'Signature file deleted.', 'success');
+        } catch (error) {
+            showMessage(error.message || 'Unable to delete signature file.', 'error');
+        }
+    }
+
     function editRow(group, index) {
         var row = listFor(group)[index];
         if (!row) {
@@ -1525,6 +1554,13 @@
                 var deleteIndex = parseInt(deleteButton.getAttribute('data-cfg-index'), 10) || 0;
                 closeActionMenus();
                 openDeleteModal(deleteGroup, deleteIndex);
+                return;
+            }
+
+            var deleteSignatureFileButton = event.target.closest('[data-cfg-action="delete-signature-file"]');
+            if (deleteSignatureFileButton) {
+                var signatureIndex = parseInt(deleteSignatureFileButton.getAttribute('data-cfg-index'), 10) || 0;
+                deleteSignatureFile(signatureIndex);
                 return;
             }
 

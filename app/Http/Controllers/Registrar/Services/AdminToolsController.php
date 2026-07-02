@@ -1012,16 +1012,53 @@ class AdminToolsController extends Controller
         ]);
     }
 
+    public function configurationSignatureFile(SystemConfigNameSignature $systemConfigNameSignature)
+    {
+        $path = trim((string) $systemConfigNameSignature->signature_path);
+
+        if ($path === '' || !Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $mimeType = Storage::disk('public')->mimeType($path) ?: 'application/octet-stream';
+        $fileName = basename($path);
+
+        return response(Storage::disk('public')->get($path), 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . str_replace('"', '', $fileName) . '"',
+        ]);
+    }
+
+    public function configurationSignatureFileDestroy(SystemConfigNameSignature $systemConfigNameSignature): JsonResponse
+    {
+        $path = trim((string) $systemConfigNameSignature->signature_path);
+
+        if ($path !== '' && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+
+        $systemConfigNameSignature->signature_path = null;
+        $systemConfigNameSignature->save();
+        $systemConfigNameSignature->load('designation');
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Signature file deleted.',
+            'row' => $this->mapSignatureRow($systemConfigNameSignature),
+        ]);
+    }
+
     public function configurationSignatureDestroy(SystemConfigNameSignature $systemConfigNameSignature): JsonResponse
     {
         try {
+            $signaturePath = trim((string) $systemConfigNameSignature->signature_path);
             $systemConfigNameSignature->delete();
         } catch (QueryException $exception) {
             return $this->configurationDeleteConflictResponse($exception);
         }
 
-        if (!empty($systemConfigNameSignature->signature_path)) {
-            Storage::disk('public')->delete($systemConfigNameSignature->signature_path);
+        if ($signaturePath !== '' && Storage::disk('public')->exists($signaturePath)) {
+            Storage::disk('public')->delete($signaturePath);
         }
 
         return response()->json(['ok' => true]);
@@ -3140,7 +3177,9 @@ class AdminToolsController extends Controller
 
         $signatureUrl = '';
         if (!empty($row->signature_path)) {
-            $signatureUrl = asset('storage/' . ltrim((string) $row->signature_path, '/'));
+            $signatureUrl = route('registrar.admin-tools.system-config.configuration.signature.file', [
+                'systemConfigNameSignature' => $row->id,
+            ]);
         }
 
         return [
@@ -3150,6 +3189,9 @@ class AdminToolsController extends Controller
             'name' => (string) $row->signer_name,
             'signaturePath' => (string) ($row->signature_path ?: ''),
             'signatureUrl' => $signatureUrl,
+            'signatureDeleteUrl' => route('registrar.admin-tools.system-config.configuration.signature.file.destroy', [
+                'systemConfigNameSignature' => $row->id,
+            ]),
             'programs' => [], // Reset to empty as before
         ];
     }

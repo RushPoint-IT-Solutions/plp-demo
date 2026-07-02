@@ -519,6 +519,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::put('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingUpdate')->name('configuration.grade-posting.update');
             Route::delete('/configuration/grade-posting/{systemGradePosting}', 'Registrar\Services\AdminToolsController@configurationGradePostingDestroy')->name('configuration.grade-posting.destroy');
             Route::post('/configuration/signature', 'Registrar\Services\AdminToolsController@configurationSignatureStore')->name('configuration.signature.store');
+            Route::get('/configuration/signature/{systemConfigNameSignature}/file', 'Registrar\Services\AdminToolsController@configurationSignatureFile')->name('configuration.signature.file');
+            Route::delete('/configuration/signature/{systemConfigNameSignature}/file', 'Registrar\Services\AdminToolsController@configurationSignatureFileDestroy')->name('configuration.signature.file.destroy');
             Route::put('/configuration/signature/{systemConfigNameSignature}', 'Registrar\Services\AdminToolsController@configurationSignatureUpdate')->name('configuration.signature.update');
             Route::delete('/configuration/signature/{systemConfigNameSignature}', 'Registrar\Services\AdminToolsController@configurationSignatureDestroy')->name('configuration.signature.destroy');
             Route::post('/configuration/cutoff', 'Registrar\Services\AdminToolsController@configurationCutoffStore')->name('configuration.cutoff.store');

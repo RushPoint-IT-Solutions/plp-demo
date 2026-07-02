@@ -49454,6 +49454,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var soModalSlots = document.getElementById('soModalSlots');
   var soModalAdviser = document.getElementById('soModalAdviser');
   var soModalDescription = document.getElementById('soModalDescription');
+  var soModalAutoSchedule = document.getElementById('soModalAutoSchedule');
   var soCurriculumAvailable = document.getElementById('soCurriculumAvailable');
   var soCurriculumIncluded = document.getElementById('soCurriculumIncluded');
   var soCurriculumAdd = document.getElementById('soCurriculumAdd');
@@ -49883,13 +49884,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var sectionLabel = getSectionLabel(section);
     var rows = section.subjects || [];
     if (!rows.length) {
-      soBody.innerHTML = '<tr><td colspan="11" class="so-empty-row">No subjects are assigned to this section yet.</td></tr>';
+      soBody.innerHTML = '<tr><td colspan="12" class="so-empty-row">No subjects are assigned to this section yet.</td></tr>';
     } else {
       soBody.innerHTML = rows.map(function (item, index) {
         var scheduleLines = (item.schedules || []).map(function (line) {
           return '<div class="so-schedule-line">' + escapeHtml(line) + '</div>';
         }).join('');
-        return '' + '<tr class="so-subject-row" data-so-subject-index="' + index + '">' + '<td>' + escapeHtml(item.code || '-') + '</td>' + '<td>' + escapeHtml(item.description || '-') + '</td>' + '<td>' + escapeHtml(item.lec || 0) + '</td>' + '<td>' + escapeHtml(item.lab || 0) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits || 0) + '</td>' + '<td>' + escapeHtml(item.creditUnits || 0) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room || 'TBA') + '</td>' + '<td>' + escapeHtml(item.professor || 'TBA') + '</td>' + '<td>' + escapeHtml(item.slots || 0) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
+        return '' + '<tr class="so-subject-row" data-so-subject-index="' + index + '">' + '<td>' + escapeHtml(item.code || '-') + '</td>' + '<td>' + escapeHtml(item.description || '-') + '</td>' + '<td>' + escapeHtml(item.lec || 0) + '</td>' + '<td>' + escapeHtml(item.lab || 0) + '</td>' + '<td>' + escapeHtml(item.hours || 0) + '</td>' + '<td>' + escapeHtml(item.tuitionUnits || 0) + '</td>' + '<td>' + escapeHtml(item.creditUnits || 0) + '</td>' + '<td>' + escapeHtml(sectionLabel) + '</td>' + '<td>' + escapeHtml(item.room || 'TBA') + '</td>' + '<td>' + escapeHtml(item.professor || 'TBA') + '</td>' + '<td>' + escapeHtml(item.slots || 0) + '</td>' + '<td class="so-schedule-cell">' + (scheduleLines || '<div class="so-schedule-line">-</div>') + '</td>' + '</tr>';
       }).join('');
     }
     if (soPageText) {
@@ -50212,14 +50213,14 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     if (!state.sections.length) {
-      soSectionListBody.innerHTML = '<tr><td colspan="8" class="so-empty-row">No sections found for the selected filters.</td></tr>';
+      soSectionListBody.innerHTML = '<tr><td colspan="9" class="so-empty-row">No sections found for the selected filters.</td></tr>';
       return;
     }
     soSectionListBody.innerHTML = state.sections.map(function (entry) {
       var isActive = String(state.selectedSectionId) === String(entry.id);
       var rowClass = isActive ? 'so-section-row is-active' : 'so-section-row';
       var subjectCount = Number(entry.subjectCount || (entry.subjects || []).length || 0);
-      return '' + '<tr class="' + rowClass + '" data-section-id="' + escapeHtml(entry.id) + '">' + '<td>' + escapeHtml(entry.program || '-') + '</td>' + '<td>' + escapeHtml(entry.section || '-') + '</td>' + '<td>' + escapeHtml(entry.schoolYear || '-') + '</td>' + '<td>' + escapeHtml(entry.semester || '-') + '</td>' + '<td>' + escapeHtml(entry.yearLevel || '-') + '</td>' + '<td>' + escapeHtml(entry.slots || 0) + '</td>' + '<td>' + escapeHtml(entry.adviser || 'TBA') + '</td>' + '<td>' + escapeHtml(subjectCount) + '</td>' + '</tr>';
+      return '' + '<tr class="' + rowClass + '" data-section-id="' + escapeHtml(entry.id) + '">' + '<td>' + escapeHtml(entry.program || '-') + '</td>' + '<td>' + escapeHtml(entry.section || '-') + '</td>' + '<td>' + escapeHtml(entry.schoolYear || '-') + '</td>' + '<td>' + escapeHtml(entry.semester || '-') + '</td>' + '<td>' + escapeHtml(entry.yearLevel || '-') + '</td>' + '<td>' + escapeHtml(entry.slots || 0) + '</td>' + '<td>' + escapeHtml(entry.adviser || 'TBA') + '</td>' + '<td>' + escapeHtml(subjectCount) + '</td>' + '<td><button type="button" class="so-section-view-btn" data-so-view-section="' + escapeHtml(entry.id) + '">View</button></td>' + '</tr>';
     }).join('');
   }
   function getPaginationWindow(pageNumber, maxPage) {
@@ -50282,7 +50283,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function setDirectoryLoading(loading, message) {
     state.isLoading = !!loading;
     if (loading && soSectionListBody) {
-      soSectionListBody.innerHTML = '<tr><td colspan="8" class="so-empty-row">' + escapeHtml(message || 'Loading sections...') + '</td></tr>';
+      soSectionListBody.innerHTML = '<tr><td colspan="9" class="so-empty-row">' + escapeHtml(message || 'Loading sections...') + '</td></tr>';
     }
     renderPagination();
     updateDirectorySummary();
@@ -50355,7 +50356,7 @@ document.addEventListener('DOMContentLoaded', function () {
       updateDirectorySummary();
       renderPagination();
       if (soSectionListBody) {
-        soSectionListBody.innerHTML = '<tr><td colspan="8" class="so-empty-row">Unable to load section data right now.</td></tr>';
+        soSectionListBody.innerHTML = '<tr><td colspan="9" class="so-empty-row">Unable to load section data right now.</td></tr>';
       }
       showMessage(getPayloadErrorMessage(errorPayload, 'Unable to load Section Offering data.'), 'warning');
     })["finally"](function () {
@@ -50412,18 +50413,20 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     var count = state.curriculumIncludedIds.length;
-    soCurriculumSummary.textContent = count + ' subject' + (count === 1 ? '' : 's') + ' selected';
+    soCurriculumSummary.textContent = count + ' course' + (count === 1 ? '' : 's') + ' selected';
   }
   function buildCurriculumOptionLabel(row) {
     var code = normalizeText(row.code);
     var description = normalizeText(row.description);
+    var hours = Number(row.hours || 0);
+    var hourLabel = hours > 0 ? ' (' + hours + ' hrs)' : '';
     if (code !== '' && description !== '') {
-      return code + ' - ' + description;
+      return code + ' - ' + description + hourLabel;
     }
     if (code !== '') {
-      return code;
+      return code + hourLabel;
     }
-    return description !== '' ? description : 'Untitled Subject';
+    return (description !== '' ? description : 'Untitled Subject') + hourLabel;
   }
   function sortRowsByLabel(rows) {
     return rows.sort(function (left, right) {
@@ -50560,7 +50563,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       renderCurriculumLists();
       if (!rows.length) {
-        setModalFeedback('No curriculum subjects found for this program/year/term.', false);
+        setModalFeedback('No published curriculum courses found for this program, year level, and term. Publish the curriculum first in Curriculum File.', false);
         return;
       }
       setModalFeedback('', false);
@@ -50647,6 +50650,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (soModalSlots && normalizeText(soModalSlots.value) === '') {
       soModalSlots.value = '30';
     }
+    if (soModalAutoSchedule) {
+      soModalAutoSchedule.checked = true;
+    }
   }
   function openAddSectionModal() {
     if (!soAddSectionModal) {
@@ -50686,6 +50692,8 @@ document.addEventListener('DOMContentLoaded', function () {
       slots: toInt(soModalSlots ? soModalSlots.value : '', 0),
       adviser: normalizeText(soModalAdviser ? soModalAdviser.value : ''),
       description: normalizeText(soModalDescription ? soModalDescription.value : ''),
+      auto_schedule: !!(soModalAutoSchedule && soModalAutoSchedule.checked),
+      auto_create_rooms: true,
       curriculum_subject_ids: state.curriculumIncludedIds.slice()
     };
   }
@@ -50767,6 +50775,12 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   if (soSectionListBody) {
     soSectionListBody.addEventListener('click', function (event) {
+      var viewButton = event.target.closest('[data-so-view-section]');
+      if (viewButton) {
+        event.stopPropagation();
+        selectSection(viewButton.getAttribute('data-so-view-section'));
+        return;
+      }
       var row = event.target.closest('tr[data-section-id]');
       if (!row) {
         return;
@@ -51057,6 +51071,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /***/ }),
 
+/***/ "./resources/sass/deans-honors.scss":
+/*!******************************************!*\
+  !*** ./resources/sass/deans-honors.scss ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ "./resources/sass/faculty-notifications.scss":
 /*!***************************************************!*\
   !*** ./resources/sass/faculty-notifications.scss ***!
@@ -51113,9 +51138,9 @@ document.addEventListener('DOMContentLoaded', function () {
 /***/ }),
 
 /***/ 0:
-/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/faculty-notifications.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/loa-enrolled.scss ./resources/sass/citizens-charter.scss ./resources/sass/request-form-f-137a.scss ./resources/sass/registrar-faculty-loads.scss ***!
-  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** multi ./resources/js/app.js ./resources/sass/app.scss ./resources/sass/style.scss ./resources/sass/faculty-notifications.scss ./resources/sass/certificate-gwa.scss ./resources/sass/certificate-graduation-8c2.scss ./resources/sass/certificate-honor-8d2.scss ./resources/sass/deans-honors.scss ./resources/sass/cog-copy-of-grades.scss ./resources/sass/cor-certificate-of-registration.scss ./resources/sass/loa-enrolled.scss ./resources/sass/citizens-charter.scss ./resources/sass/request-form-f-137a.scss ./resources/sass/registrar-faculty-loads.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -51126,6 +51151,7 @@ __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\faculty-notifica
 __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\certificate-gwa.scss */"./resources/sass/certificate-gwa.scss");
 __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\certificate-graduation-8c2.scss */"./resources/sass/certificate-graduation-8c2.scss");
 __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\certificate-honor-8d2.scss */"./resources/sass/certificate-honor-8d2.scss");
+__webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\deans-honors.scss */"./resources/sass/deans-honors.scss");
 __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\cog-copy-of-grades.scss */"./resources/sass/cog-copy-of-grades.scss");
 __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\cor-certificate-of-registration.scss */"./resources/sass/cor-certificate-of-registration.scss");
 __webpack_require__(/*! C:\xampp\htdocs\plp-demo\resources\sass\loa-enrolled.scss */"./resources/sass/loa-enrolled.scss");

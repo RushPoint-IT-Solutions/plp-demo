@@ -134,10 +134,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var soModalTerm = document.getElementById('soModalTerm');
   var soModalYearLevel = document.getElementById('soModalYearLevel');
   var soModalSection = document.getElementById('soModalSection');
-    var soModalSlots = document.getElementById('soModalSlots');
-    var soModalAdviser = document.getElementById('soModalAdviser');
-    var soModalDescription = document.getElementById('soModalDescription');
-    var soModalAutoSchedule = document.getElementById('soModalAutoSchedule');
+  var soModalSlots = document.getElementById('soModalSlots');
+  var soModalAdviser = document.getElementById('soModalAdviser');
+  var soModalDescription = document.getElementById('soModalDescription');
+  var soModalAutoSchedule = document.getElementById('soModalAutoSchedule');
   var soCurriculumAvailable = document.getElementById('soCurriculumAvailable');
   var soCurriculumIncluded = document.getElementById('soCurriculumIncluded');
   var soCurriculumAdd = document.getElementById('soCurriculumAdd');
@@ -1330,14 +1330,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (soModalSection && soSection) {
       soModalSection.value = normalizeModalSectionInput(soSection.value);
     }
-        if (soModalSlots && normalizeText(soModalSlots.value) === '') {
-            soModalSlots.value = '30';
-        }
-
-        if (soModalAutoSchedule) {
-            soModalAutoSchedule.checked = true;
-        }
+    if (soModalSlots && normalizeText(soModalSlots.value) === '') {
+      soModalSlots.value = '30';
     }
+    if (soModalAutoSchedule) {
+      soModalAutoSchedule.checked = true;
+    }
+  }
   function openAddSectionModal() {
     if (!soAddSectionModal) {
       return;
@@ -1373,14 +1372,14 @@ document.addEventListener('DOMContentLoaded', function () {
       semester: normalizeText(soModalTerm ? soModalTerm.value : ''),
       year_level: normalizeText(soModalYearLevel ? soModalYearLevel.value : ''),
       section: normalizeModalSectionInput(soModalSection ? soModalSection.value : ''),
-            slots: toInt(soModalSlots ? soModalSlots.value : '', 0),
-            adviser: normalizeText(soModalAdviser ? soModalAdviser.value : ''),
-            description: normalizeText(soModalDescription ? soModalDescription.value : ''),
-            auto_schedule: !!(soModalAutoSchedule && soModalAutoSchedule.checked),
-            auto_create_rooms: true,
-            curriculum_subject_ids: state.curriculumIncludedIds.slice()
-        };
-    }
+      slots: toInt(soModalSlots ? soModalSlots.value : '', 0),
+      adviser: normalizeText(soModalAdviser ? soModalAdviser.value : ''),
+      description: normalizeText(soModalDescription ? soModalDescription.value : ''),
+      auto_schedule: !!(soModalAutoSchedule && soModalAutoSchedule.checked),
+      auto_create_rooms: true,
+      curriculum_subject_ids: state.curriculumIncludedIds.slice()
+    };
+  }
   function validateStorePayload(payload) {
     if (!payload.course_id || payload.course_id < 1) {
       return 'Please select a course.';

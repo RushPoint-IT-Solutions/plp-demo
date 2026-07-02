@@ -8408,6 +8408,33 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
     margin: 0 auto;
 }
 
+.cfg-signature-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cfg-signature-actions a,
+.cfg-link-btn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: #2554c7;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.cfg-link-btn {
+    color: #b42318;
+}
+
+.cfg-signature-actions a:hover,
+.cfg-link-btn:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 980px) {
     .cf-toolbar-grid,
     .cf-grid-two,
