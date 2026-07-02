@@ -558,6 +558,9 @@ class ReportsAdminController extends Controller
             'so_date' => 'nullable|date',
             'suspend_account' => 'nullable|boolean',
             'suspend_remarks' => 'nullable|string|max:255|required_if:suspend_account,1',
+        ], [], [
+            'so_number' => 'BOR Number',
+            'so_date' => 'BOR Date',
         ]);
 
         GraduateTagging::updateOrCreate(

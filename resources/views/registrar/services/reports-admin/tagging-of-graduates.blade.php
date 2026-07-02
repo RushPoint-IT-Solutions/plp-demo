@@ -58,7 +58,7 @@
     <div class="tog-head">
         <div>
             <h1 class="tog-title">Tagging of Graduates</h1>
-            <p class="tog-subtitle">Tag graduating students, encode graduation date and SO details, and control alumni account access.</p>
+            <p class="tog-subtitle">Tag graduating students, encode graduation date and BOR details, and control alumni account access.</p>
         </div>
         <div class="tog-head-actions">
             <a class="tog-link-btn" href="{{ route('registrar.registrar-menu.alumni.tracker') }}">Alumni Tracker</a>
@@ -141,8 +141,8 @@
                         <th>Status</th>
                         <th style="text-align: center;">Graduate</th>
                         <th style="text-align: center;">Date Graduated</th>
-                        <th style="text-align: center;">SO Number</th>
-                        <th style="text-align: center;">SO Date</th>
+                        <th style="text-align: center;">BOR Number</th>
+                        <th style="text-align: center;">BOR Date</th>
                         <th style="text-align: center;">Suspend</th>
                         <th style="text-align: center;">Save</th>
                     </tr>
@@ -182,7 +182,7 @@
                         </td>
                         <td style="text-align: center; white-space: nowrap;"><input type="checkbox" class="tog-check" data-tag-is-graduate style="vertical-align: middle;" {{ $tag && $tag->is_graduate ? 'checked' : '' }}></td>
                         <td style="text-align: center;"><input type="date" class="tog-input tog-input-date" data-tag-date-graduated value="{{ $tag && $tag->date_graduated ? $tag->date_graduated->format('Y-m-d') : '' }}"></td>
-                        <td style="text-align: center;"><input type="text" class="tog-input tog-input-so" data-tag-so-number value="{{ $tag ? $tag->so_number : '' }}" placeholder="SO Number"></td>
+                        <td style="text-align: center;"><input type="text" class="tog-input tog-input-so" data-tag-so-number value="{{ $tag ? $tag->so_number : '' }}" placeholder="BOR Number"></td>
                         <td style="text-align: center;"><input type="date" class="tog-input tog-input-date" data-tag-so-date value="{{ $tag && $tag->so_date ? $tag->so_date->format('Y-m-d') : '' }}"></td>
                         <td style="text-align: center; white-space: nowrap;"><input type="checkbox" class="tog-check" data-tag-suspend style="vertical-align: middle;" {{ $tag && $tag->suspend_account ? 'checked' : '' }}></td>
                         <td style="text-align: center;"><button type="button" class="req-btn-save tog-save-btn" data-tag-save>Save</button></td>

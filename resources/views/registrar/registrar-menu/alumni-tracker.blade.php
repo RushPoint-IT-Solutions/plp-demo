@@ -62,7 +62,7 @@
     <div class="at-hero">
         <div>
             <h1 class="at-title">Graduate Student Alumni Tracker</h1>
-            <p class="at-subtitle">Monitor tagged graduates, graduation details, SO records, and account status.</p>
+            <p class="at-subtitle">Monitor tagged graduates, graduation details, BOR records, and account status.</p>
         </div>
         <div class="at-actions">
             <a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}" class="at-btn">
@@ -94,7 +94,7 @@
                 <div class="at-filter-grid">
                     <div class="at-field">
                         <label for="atSearchInput">Search</label>
-                        <input id="atSearchInput" type="search" class="at-input" placeholder="Student no, name, SO number, contact">
+                        <input id="atSearchInput" type="search" class="at-input" placeholder="Student no, name, BOR number, contact">
                     </div>
                     <div class="at-field">
                         <label for="atProgram">Program</label>
@@ -151,7 +151,7 @@
                             <th>Program</th>
                             <th>Graduated</th>
                             <th>School Year / Term</th>
-                            <th>SO Details</th>
+                            <th>BOR Details</th>
                             <th>Contact</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -234,7 +234,7 @@ function atRenderTable() {
         var statusText = row.isSuspended ? 'Suspended' : 'Active';
         var soText = row.soNumber || row.soDate
             ? atEscapeHtml(row.soNumber || '-') + '<div class="at-muted">' + atEscapeHtml(row.soDate || '') + '</div>'
-            : '<span class="at-muted">No SO details</span>';
+            : '<span class="at-muted">No BOR details</span>';
 
         return '' +
             '<tr>' +
@@ -257,7 +257,7 @@ function atExportCsv() {
         return;
     }
 
-    var csvRows = [['Student No', 'Student Name', 'Program', 'Program Name', 'Date Graduated', 'Graduation Year', 'School Year', 'Term', 'SO Number', 'SO Date', 'Contact', 'Status']];
+    var csvRows = [['Student No', 'Student Name', 'Program', 'Program Name', 'Date Graduated', 'Graduation Year', 'School Year', 'Term', 'BOR Number', 'BOR Date', 'Contact', 'Status']];
     rows.forEach(function(row) {
         csvRows.push([
             row.studentNo || '', row.studentName || '', row.program || '', row.programName || '',

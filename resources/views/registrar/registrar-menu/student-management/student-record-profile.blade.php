@@ -1293,7 +1293,7 @@
                             <span>Date Graduated: <strong>{{ $graduateTagging->date_graduated->format('F j, Y') }}</strong></span>
                         @endif
                         @if($graduateTagging->so_number)
-                            <span>S.O. No.: <strong>{{ $graduateTagging->so_number }}</strong></span>
+                            <span>BOR No.: <strong>{{ $graduateTagging->so_number }}</strong></span>
                         @endif
                     </div>
                     @endif
