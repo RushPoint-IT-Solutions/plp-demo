@@ -77,6 +77,7 @@
                 </div>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdOpenBlankPreview()">Preview Form</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdPrintSelected()">Print Selected</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="hdDismissAllSelected()">Dismiss All</button>
                 <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
         </div>
@@ -93,6 +94,7 @@
                         <th>Student Name</th>
                         <th>Program</th>
                         <th>Year</th>
+                        <th>Status</th>
                         <th style="text-align: center; width: 150px;">Action</th>
                     </tr>
                 </thead>
@@ -101,6 +103,9 @@
                         @php
                             $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
                             $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
+                            $isGraduateCandidate = $student->relationLoaded('graduateTagging') && $student->graduateTagging && $student->graduateTagging->is_graduate;
+                            $isTransferredCandidate = (bool) ($student->is_withdrawn ?? false);
+                            $candidateStatus = $isGraduateCandidate ? 'Graduated' : ($isTransferredCandidate ? 'Transferred' : 'Eligible');
                         @endphp
                         <tr data-candidate-id="{{ $student->id }}">
                             <td style="text-align: center;"><input type="checkbox" class="hd-candidate-row-select" onchange="hdSyncCandidateSelectAll()"></td>
@@ -108,12 +113,13 @@
                             <td>{{ $student->name ?: '-' }}</td>
                             <td>{{ $program ?: '-' }}</td>
                             <td>{{ $yearLevel ?: '-' }}</td>
+                            <td>{{ $candidateStatus }}</td>
                             <td style="text-align:center;">
                                 <button type="button" class="req-btn-save" style="min-width:130px;" onclick="hdTagForDismissal({{ $student->id }})">For Dismissal</button>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" style="text-align:center; color:#666;">No untagged student records found.</td></tr>
+                        <tr><td colspan="7" style="text-align:center; color:#666;">No graduated or transferred students pending dismissal tagging.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -154,7 +160,7 @@
                         $schoolYear = trim((string) ($student->school_year ?: optional($student->academicTerm)->school_year));
                         $semester = trim((string) ($student->semester ?: optional($student->academicTerm)->term));
                         $hdStatus = trim((string) ($student->hd_status ?? 'for_dismissal'));
-                        $hdStatusLabel = $hdStatus === 'issued' ? 'Issued' : 'For Dismissal';
+                        $hdStatusLabel = $hdStatus === 'issued' ? 'Issued' : 'Pending for Dismissal';
                         $hdIssuedAt = $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : '-';
                     @endphp
                     <tr data-row-id="{{ $student->id }}"
@@ -193,7 +199,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" style="text-align:center; color:#666;">No student records found.</td></tr>
+                    <tr><td colspan="8" style="text-align:center; color:#666;">No student records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

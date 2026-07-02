@@ -19989,10 +19989,31 @@ class RegistrarController extends Controller
             }
         }
 
+        $hasGraduateTaggings = Schema::hasTable('graduate_taggings');
+        $hasStudentWithdrawn = Schema::hasColumn('students', 'is_withdrawn');
+        $candidateRelations = ['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'];
+        if ($hasGraduateTaggings) {
+            $candidateRelations[] = 'graduateTagging';
+        }
+
         $honorableDismissalCandidates = Student::query()
-            ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->with($candidateRelations)
             ->when(true, function ($query) {
                 return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
+            ->when($hasGraduateTaggings || $hasStudentWithdrawn, function ($query) use ($hasGraduateTaggings, $hasStudentWithdrawn) {
+                $query->where(function ($scope) use ($hasGraduateTaggings, $hasStudentWithdrawn) {
+                    if ($hasGraduateTaggings) {
+                        $scope->whereHas('graduateTagging', function ($tagQuery) {
+                            $tagQuery->where('is_graduate', true);
+                        });
+                    }
+
+                    if ($hasStudentWithdrawn) {
+                        $method = $hasGraduateTaggings ? 'orWhere' : 'where';
+                        $scope->{$method}('students.is_withdrawn', true);
+                    }
+                });
             })
             ->whereNotIn('id', function ($query) {
                 $query->select('student_id')->from('honorable_dismissal_records');

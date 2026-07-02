@@ -419,6 +419,53 @@ function hdPrintSelected() {
     });
 }
 
+function hdDismissAllSelected() {
+    var candidateRows = Array.from(document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select:checked'))
+        .map(function(cb) { return cb.closest('tr[data-candidate-id]'); })
+        .filter(Boolean);
+    var pendingRows = Array.from(document.querySelectorAll('#hdTableBody .hd-row-select:checked'))
+        .map(function(cb) { return cb.closest('tr[data-row-id]'); })
+        .filter(function(row) {
+            return row && (row.getAttribute('data-hd-status') || 'for_dismissal') === 'for_dismissal';
+        });
+
+    if (!candidateRows.length && !pendingRows.length) {
+        alert('Select at least one eligible student or Pending for Dismissal record.');
+        return;
+    }
+
+    var message = 'Process selected dismissal records?';
+    if (candidateRows.length && pendingRows.length) {
+        message = 'Tag ' + candidateRows.length + ' selected student(s) and process ' + pendingRows.length + ' Pending for Dismissal record(s)?';
+    } else if (candidateRows.length) {
+        message = 'Tag ' + candidateRows.length + ' selected student(s) for dismissal?';
+    } else if (pendingRows.length) {
+        message = 'Process ' + pendingRows.length + ' selected Pending for Dismissal student(s)?';
+    }
+
+    if (!confirm(message)) {
+        return;
+    }
+
+    var candidateIds = candidateRows.map(function(row) {
+        return row.getAttribute('data-candidate-id');
+    }).filter(Boolean);
+    var pendingIds = pendingRows.map(function(row) {
+        return row.getAttribute('data-row-id');
+    }).filter(Boolean);
+
+    hdTagRows(candidateIds).then(function(tagged) {
+        if (!tagged) return false;
+        if (!pendingIds.length) return true;
+        return hdIssueRows(pendingIds);
+    }).then(function(ok) {
+        if (ok) {
+            alert('Selected dismissal records have been processed.');
+            window.location.reload();
+        }
+    });
+}
+
 function hdOpenPreviewFromSelection() {
     var checked = document.querySelector('#hdTableBody .hd-row-select:checked');
     var row = checked ? checked.closest('tr') : document.querySelector('#hdTableBody tr[data-row-id]');
