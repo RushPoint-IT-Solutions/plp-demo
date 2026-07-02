@@ -424,6 +424,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
             // Certificate of Registration (COR)
             Route::prefix('cor')->name('cor.')->group(function () {
+                Route::get('/students/search', 'Registrar\\RegistrarController@formsCorStudentSearch')->name('students.search');
                 Route::get('/certificate-of-registration', 'Registrar\\RegistrarController@formsCertificateOfRegistration')->name('certificate-of-registration');
             });
         });

@@ -20902,6 +20902,48 @@ JSON
         ]);
     }
 
+    public function formsCorStudentSearch(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+        $limit = max(1, min((int) $request->query('limit', 25), 50));
+
+        $students = Student::query()
+            ->select(['id', 'student_no', 'name'])
+            ->when($search !== '', function ($query) use ($search) {
+                $terms = array_values(array_filter(
+                    preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [],
+                    function ($term) {
+                        return trim((string) $term, " \t\n\r\0\x0B-") !== '';
+                    }
+                ));
+
+                foreach ($terms as $term) {
+                    $query->where(function ($inner) use ($term) {
+                        $inner->where('student_no', 'like', '%' . $term . '%')
+                            ->orWhere('name', 'like', '%' . $term . '%');
+                    });
+                }
+            })
+            ->orderBy('name')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'results' => $students->map(function (Student $student) {
+                $studentNo = trim((string) $student->student_no);
+                $name = trim((string) $student->name);
+                $label = trim($studentNo . ' - ' . $name, ' -');
+
+                return [
+                    'id' => (int) $student->id,
+                    'student_no' => $studentNo,
+                    'name' => $name,
+                    'label' => $label !== '' ? $label : 'Student #' . $student->id,
+                ];
+            })->values(),
+        ]);
+    }
+
     /**
      * Registrar > Forms > Citizen's Charter
      */

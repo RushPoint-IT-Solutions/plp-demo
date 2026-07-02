@@ -17,12 +17,30 @@
 .sch-card-head { padding:14px 16px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; gap:12px; align-items:center; }
 .sch-card-head h2 { margin:0; font-size:15px; font-weight:800; color:#1e293b; }
 .sch-card-body { padding:16px; }
-.sch-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.sch-form { display:flex; flex-direction:column; gap:14px; }
+.sch-form-section {
+    border:1px solid #e2e8f0;
+    border-radius:8px;
+    background:#fbfdfc;
+    padding:14px;
+}
+.sch-form-section-title {
+    margin:0 0 12px;
+    color:#143521;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+.sch-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px 14px; align-items:start; }
 .sch-field label { display:block; font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px; }
-.sch-field input,.sch-field select,.sch-field textarea { width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:13px; color:#1e293b; background:#fff; }
-.sch-field textarea { min-height:72px; resize:vertical; }
+.sch-field input,.sch-field select,.sch-field textarea { width:100%; min-height:38px; border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:13px; color:#1e293b; background:#fff; }
+.sch-field textarea { min-height:88px; resize:vertical; line-height:1.45; }
+.sch-field select[multiple] { min-height:126px; padding:7px 10px; }
 .sch-field.wide { grid-column:span 2; }
 .sch-field.full { grid-column:1 / -1; }
+.sch-field.compact { max-width:240px; }
+.sch-help { color:#64748b; font-size:11px; line-height:1.35; margin-top:5px; }
 .sch-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
 .sch-btn { border:0; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
 .sch-btn.primary { background:#004d27; color:#fff; }
@@ -40,10 +58,14 @@
 .sch-program-name { font-weight:800; color:#0f172a; }
 .sch-program-meta { color:#64748b; font-size:12px; margin-top:2px; }
 details.sch-edit summary { cursor:pointer; color:#004d27; font-weight:800; font-size:12px; }
+details.sch-edit[open] { min-width:760px; }
+.sch-edit-panel { margin-top:12px; padding:12px; border:1px solid #dbe7df; border-radius:8px; background:#f8faf9; }
+.sch-edit-panel .sch-form-section { background:#fff; }
+.sch-edit-panel .sch-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .sch-alert { padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:13px; font-weight:700; }
 .sch-alert.success { background:#dcfce7; color:#166534; }
 .sch-alert.error { background:#fee2e2; color:#991b1b; }
-@media(max-width:900px){ .sch-stats,.sch-grid { grid-template-columns:1fr 1fr; } .sch-field.wide { grid-column:1 / -1; } }
+@media(max-width:900px){ .sch-stats,.sch-grid,.sch-edit-panel .sch-grid { grid-template-columns:1fr 1fr; } .sch-field.wide { grid-column:1 / -1; } details.sch-edit[open] { min-width:640px; } }
 @media(max-width:640px){ .sch-page { padding:16px; } .sch-stats,.sch-grid { grid-template-columns:1fr; } }
 </style>
 @endpush
@@ -123,7 +145,7 @@ details.sch-edit summary { cursor:pointer; color:#004d27; font-weight:800; font-
                                 <td>
                                     <details class="sch-edit">
                                         <summary>Edit</summary>
-                                        <form method="POST" action="{{ route('registrar.registrar-menu.scholarships.update', $program->id) }}" style="margin-top:10px;">
+                                        <form method="POST" action="{{ route('registrar.registrar-menu.scholarships.update', $program->id) }}" class="sch-edit-panel">
                                             @csrf
                                             @method('PUT')
                                             @include('registrar.scholarships.partials.program-form', ['program' => $program])

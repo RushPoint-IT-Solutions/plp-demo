@@ -69,6 +69,24 @@
 .sr-status-pill.graduates.selected{ background:#0f766e; border-color:#0f766e; }
 .sr-status-pill.non_graduates.selected{ background:#7c3aed; border-color:#7c3aed; }
 
+.sr-view-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.sr-view-toggle {
+    display:inline-flex; align-items:center; gap:4px; padding:3px;
+    border:1px solid #d8e2dc; border-radius:8px; background:#fff;
+    box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.sr-view-toggle-btn {
+    min-width:34px; height:30px; border:0; border-radius:6px;
+    padding:0 10px;
+    display:inline-flex; align-items:center; justify-content:center;
+    gap:6px;
+    color:#64748b; background:transparent; cursor:pointer;
+    font-size:12px; font-weight:800;
+}
+.sr-view-toggle-btn:hover { background:#f1f5f9; color:#0f5132; }
+.sr-view-toggle-btn.is-active { background:#004d27; color:#fff; }
+.sr-view-panel.is-hidden { display:none !important; }
+
 /* ── student card grid ───────────────────────────────────────── */
 .sr-grid {
     display:grid;
@@ -132,6 +150,35 @@
 .sr-empty svg { margin-bottom:14px; opacity:.5; }
 .sr-empty h4  { font-size:18px; color:#64748b; margin-bottom:6px; }
 
+.sr-table-wrap {
+    overflow-x:auto; background:#fff; border:1px solid #e2e8f0; border-radius:10px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.sr-table { width:100%; min-width:1180px; border-collapse:collapse; }
+.sr-table th {
+    background:#f8fafc; color:#334155; font-size:11px; font-weight:800;
+    text-align:left; text-transform:uppercase; letter-spacing:.03em;
+    border-bottom:1px solid #e2e8f0; padding:10px 12px; white-space:nowrap;
+}
+.sr-table td {
+    color:#1f2937; font-size:12.5px; font-weight:600;
+    border-bottom:1px solid #edf2f7; padding:10px 12px; vertical-align:middle;
+}
+.sr-table tbody tr:hover { background:#f8fbf9; }
+.sr-table tbody tr:last-child td { border-bottom:0; }
+.sr-table-name { color:#0f5132; font-weight:800; text-decoration:none; }
+.sr-table-name:hover { color:#006837; text-decoration:underline; }
+.sr-table-muted { color:#64748b; font-size:11.5px; margin-top:2px; }
+.sr-table-status {
+    display:inline-flex; align-items:center; border-radius:999px; padding:3px 9px;
+    font-size:11px; font-weight:800; white-space:nowrap;
+}
+.sr-table-status.active { background:#dcfce7; color:#166534; }
+.sr-table-status.withdrawn { background:#fee2e2; color:#991b1b; }
+.sr-table-status.graduate { background:#ccfbf1; color:#115e59; }
+.sr-table-actions { display:flex; align-items:center; gap:7px; justify-content:flex-end; white-space:nowrap; }
+.sr-table-empty { text-align:center; color:#64748b; padding:36px 12px !important; }
+
 /* ── pagination ─────────────────────────────────────────────── */
 .sr-pager { margin-top:24px; display:flex; justify-content:center; }
 .sr-pager .pagination { gap:4px; }
@@ -151,6 +198,18 @@
         <div>
             <h4 style="font-size:20px;font-weight:700;color:#1e293b;margin:0;">Student Records</h4>
             <p style="font-size:13px;color:#64748b;margin:2px 0 0;">Complete student database — search, filter, and view full profiles</p>
+        </div>
+        <div class="sr-view-controls">
+            <div class="sr-view-toggle" role="group" aria-label="Student records view">
+                <button type="button" id="srCardViewBtn" class="sr-view-toggle-btn is-active" data-sr-view-button="card" title="Card View" aria-pressed="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>Card</span>
+                </button>
+                <button type="button" id="srTableViewBtn" class="sr-view-toggle-btn" data-sr-view-button="table" title="List View" aria-pressed="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span>List</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -271,7 +330,7 @@
     </form>
 
     {{-- Grid --}}
-    <div class="sr-grid">
+    <div class="sr-grid sr-view-panel" id="srCardView">
         @forelse($students as $s)
             @php
                 $prof    = $s->profile;
@@ -363,5 +422,129 @@
         @endforelse
     </div>
 
+    <div class="sr-table-wrap sr-view-panel is-hidden" id="srTableView">
+        <table class="sr-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Program</th>
+                    <th>Year Level</th>
+                    <th>Academic Term</th>
+                    <th>Status</th>
+                    <th>Graduation</th>
+                    <th>Contact</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($students as $index => $s)
+                    @php
+                        $prof = $s->profile;
+                        $isWD = $s->is_withdrawn ?? false;
+                        $name = $prof ? trim($prof->first_name . ' ' . $prof->last_name) : $s->name;
+                        $name = $name ?: $s->name;
+                        $isGraduate = $s->relationLoaded('graduateTagging') && $s->graduateTagging && $s->graduateTagging->is_graduate;
+                        $course = optional($s->canonicalCourse)->name ?: $s->program ?: 'N/A';
+                        $courseCode = optional($s->canonicalCourse)->code ?: $s->program;
+                        $schoolYearText = $s->school_year ?: optional($s->academicTerm)->school_year;
+                        $semesterText = $s->semester ?: optional($s->academicTerm)->term;
+                        $contactText = $prof ? ($prof->mobile_number ?: $prof->student_email) : '';
+                    @endphp
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.profile', $s->id) }}" class="sr-table-name">{{ $name ?: '-' }}</a>
+                            <div class="sr-table-muted">{{ $s->student_no ?: '-' }}</div>
+                        </td>
+                        <td>
+                            {{ $course }}
+                            @if($courseCode && $courseCode !== $course)
+                                <div class="sr-table-muted">{{ $courseCode }}</div>
+                            @endif
+                        </td>
+                        <td>{{ $s->year_level ?: optional($s->yearBlock)->label ?: '-' }}</td>
+                        <td>
+                            AY {{ $schoolYearText ?: '-' }}
+                            <div class="sr-table-muted">{{ $semesterText ?: '-' }}</div>
+                        </td>
+                        <td>
+                            <span class="sr-table-status {{ $isWD ? 'withdrawn' : 'active' }}">{{ $isWD ? 'Withdrawn' : 'Active' }}</span>
+                        </td>
+                        <td>
+                            @if($isGraduate)
+                                <span class="sr-table-status graduate">Graduate</span>
+                                <div class="sr-table-muted">{{ optional($s->graduateTagging->date_graduated)->format('M j, Y') ?: 'Tagged as alumni' }}</div>
+                            @else
+                                <span class="sr-table-muted">Non-Graduate</span>
+                            @endif
+                        </td>
+                        <td>{{ $contactText ?: '-' }}</td>
+                        <td>
+                            <div class="sr-table-actions">
+                                @if($isGraduate)
+                                    <a href="{{ route('registrar.registrar-menu.alumni.tracker') }}?q={{ urlencode($s->student_no) }}" class="sr-alumni-btn">Alumni</a>
+                                @else
+                                    <a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}?student={{ $s->id }}" class="sr-alumni-btn">Tag Graduate</a>
+                                @endif
+                                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.profile', $s->id) }}" class="sr-view-btn">View Profile</a>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="9" class="sr-table-empty">No students found. Try adjusting your search or filters.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var storageKey = 'registrarStudentRecordsViewMode';
+    var cardView = document.getElementById('srCardView');
+    var tableView = document.getElementById('srTableView');
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('[data-sr-view-button]'));
+
+    function setStudentRecordsView(mode) {
+        mode = mode === 'table' ? 'table' : 'card';
+
+        if (cardView) {
+            cardView.classList.toggle('is-hidden', mode !== 'card');
+        }
+
+        if (tableView) {
+            tableView.classList.toggle('is-hidden', mode !== 'table');
+        }
+
+        buttons.forEach(function (button) {
+            var isActive = button.getAttribute('data-sr-view-button') === mode;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        try {
+            window.localStorage.setItem(storageKey, mode);
+        } catch (error) {}
+    }
+
+    buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            setStudentRecordsView(button.getAttribute('data-sr-view-button'));
+        });
+    });
+
+    var savedMode = 'card';
+    try {
+        savedMode = window.localStorage.getItem(storageKey) || 'card';
+    } catch (error) {}
+
+    setStudentRecordsView(savedMode);
+});
+</script>
+@endpush

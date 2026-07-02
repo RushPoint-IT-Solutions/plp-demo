@@ -127,11 +127,27 @@ class ReportsAdminController extends Controller
                     'gwa' => $gwa,
                 ];
             })
-            ->sortBy([
-                ['school_year', 'desc'],
-                ['semester', 'asc'],
-                ['student_name', 'asc'],
-            ])
+            ->sort(function ($left, $right) {
+                $leftSchoolYear = (string) ($left['school_year'] ?? '');
+                $rightSchoolYear = (string) ($right['school_year'] ?? '');
+                $schoolYearOrder = strcmp($rightSchoolYear, $leftSchoolYear);
+
+                if ($schoolYearOrder !== 0) {
+                    return $schoolYearOrder;
+                }
+
+                $leftSemesterWeight = $this->gwaSemesterSortWeight($left['semester'] ?? '');
+                $rightSemesterWeight = $this->gwaSemesterSortWeight($right['semester'] ?? '');
+
+                if ($leftSemesterWeight !== $rightSemesterWeight) {
+                    return $leftSemesterWeight <=> $rightSemesterWeight;
+                }
+
+                return strcasecmp(
+                    (string) ($left['student_name'] ?? ''),
+                    (string) ($right['student_name'] ?? '')
+                );
+            })
             ->values();
 
         $schoolYears = StudentSubjectGrade::query()
@@ -181,6 +197,25 @@ class ReportsAdminController extends Controller
         $systemConfig = $this->reportSystemConfig($request);
 
         return view('registrar.services.reports-admin.guidance-reports', compact('systemConfig'));
+    }
+
+    private function gwaSemesterSortWeight($semester): int
+    {
+        $normalized = strtolower(trim((string) $semester));
+
+        if (in_array($normalized, ['first', '1st', '1st semester', 'first semester'], true)) {
+            return 1;
+        }
+
+        if (in_array($normalized, ['second', '2nd', '2nd semester', 'second semester'], true)) {
+            return 2;
+        }
+
+        if (in_array($normalized, ['summer', 'summer semester'], true)) {
+            return 3;
+        }
+
+        return 99;
     }
 
     public function certifications(Request $request)

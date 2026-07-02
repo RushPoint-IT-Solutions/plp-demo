@@ -56,6 +56,81 @@
         font-size: 13px;
     }
 
+    .cor-student-search {
+        position: relative;
+        flex: 1;
+        max-width: 560px;
+    }
+
+    .cor-student-search input[type="text"] {
+        width: 100%;
+        height: 36px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 0 12px;
+        font-size: 13px;
+        color: #0f172a;
+    }
+
+    .cor-student-search input[type="text"]:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .14);
+        outline: none;
+    }
+
+    .cor-student-results {
+        position: absolute;
+        z-index: 20;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        display: none;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 4px;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        box-shadow: 0 14px 28px rgba(15, 23, 42, .16);
+    }
+
+    .cor-student-search.is-open .cor-student-results {
+        display: block;
+    }
+
+    .cor-student-option,
+    .cor-student-empty {
+        width: 100%;
+        min-height: 34px;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        padding: 7px 9px;
+        color: #0f172a;
+        font-size: 13px;
+        line-height: 1.25;
+        text-align: left;
+    }
+
+    .cor-student-option {
+        cursor: pointer;
+    }
+
+    .cor-student-option.is-active,
+    .cor-student-option:hover {
+        background: #e0f2fe;
+    }
+
+    .cor-student-option strong {
+        display: block;
+        font-size: 12px;
+        color: #1d4ed8;
+    }
+
+    .cor-student-empty {
+        color: #64748b;
+    }
+
     .cor-print-btn {
         height: 36px;
         border: 1px solid #94a3b8;
@@ -488,6 +563,7 @@
 
     $studentDisplayName = strtoupper(trim((string) optional($student)->name));
     $studentDisplayName = $studentDisplayName !== '' ? $studentDisplayName : '-';
+    $selectedStudentLabel = trim((string) optional($student)->student_no . ' - ' . (string) optional($student)->name, ' -');
 
     $tuitionUnits = number_format((float) $assessment['tuition_units'], 2);
     $nstpUnits = number_format((float) $assessment['nstp_units'], 2);
@@ -505,15 +581,21 @@
     <div class="cor-toolbar d-print-none">
         <form method="GET" action="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}">
             <label for="cor-student-id">Student</label>
-            <select name="student_id" id="cor-student-id" class="form-select" onchange="this.form.submit()">
-                @forelse($students as $optionStudent)
-                    <option value="{{ $optionStudent->id }}" {{ (int) $selectedStudentId === (int) $optionStudent->id ? 'selected' : '' }}>
-                        {{ $optionStudent->student_no }} - {{ $optionStudent->name }}
-                    </option>
-                @empty
-                    <option value="">No student records found</option>
-                @endforelse
-            </select>
+            <div class="cor-student-search" data-cor-student-search data-search-url="{{ route('registrar.registrar-menu.forms.cor.students.search') }}">
+                <input type="hidden" name="student_id" id="cor-student-id" value="{{ $selectedStudentId > 0 ? $selectedStudentId : '' }}">
+                <input
+                    type="text"
+                    id="cor-student-search-input"
+                    value="{{ $selectedStudentLabel }}"
+                    placeholder="Search student number or name"
+                    autocomplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="cor-student-results"
+                >
+                <div class="cor-student-results" id="cor-student-results" role="listbox"></div>
+            </div>
         </form>
 
         <button type="button" id="cor-registrar-print" class="cor-print-btn">Print</button>
