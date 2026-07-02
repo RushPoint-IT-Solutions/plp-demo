@@ -186,6 +186,8 @@
         csrfToken: @json(csrf_token()),
         issueUrl: @json(route('registrar.services.reports-admin.certifications.issue'))
     };
+    var repPendingIssuePayload = null;
+    var repIssueInProgress = false;
 
     function repRefreshListbox(selectElement) {
         if (!selectElement) {
@@ -423,21 +425,29 @@
         var dateIssued = document.getElementById('repDate').value || new Date().toISOString().slice(0, 10);
 
         document.getElementById('repPreviewSheet').innerHTML = buildDocumentTemplate(title, student, purpose, dateIssued);
+        repPendingIssuePayload = studentId ? {
+            student_id: studentId,
+            certificate_type: title,
+            purpose: purpose,
+            date_issued: dateIssued
+        } : null;
         closeReportModal();
         document.getElementById('repPreviewModal').style.display = 'flex';
+    }
 
-        if (studentId) {
-            requestJson(repIssueConfig.issueUrl, 'POST', {
-                student_id: studentId,
-                certificate_type: title,
-                purpose: purpose,
-                date_issued: dateIssued
-            }).then(function() {
-                window.location.reload();
-            }).catch(function(error) {
-                alert(error.message || 'Unable to log issued certification.');
-            });
+    function repCompleteCertificationPrint() {
+        if (!repPendingIssuePayload || repIssueInProgress) {
+            return;
         }
+
+        repIssueInProgress = true;
+        requestJson(repIssueConfig.issueUrl, 'POST', repPendingIssuePayload).then(function() {
+            repPendingIssuePayload = null;
+            window.location.reload();
+        }).catch(function(error) {
+            repIssueInProgress = false;
+            alert(error.message || 'Unable to log issued certification.');
+        });
     }
 
     function printPreviewDocument() {
@@ -452,15 +462,14 @@
         var doc = '' +
             '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escHtml(title) + '</title>' +
             '<style>body{font-family:Poppins,sans-serif;background:#f1f5f3;padding:20px;} .rep-doc-sheet{max-width:780px;margin:0 auto;background:#fff;border:1px solid #cfd8d2;padding:38px 44px;color:#1f2937;} .rep-doc-header{text-align:center;border-bottom:1px solid #d7e2da;padding-bottom:12px;margin-bottom:18px;} .rep-doc-school{font-size:.95rem;font-weight:700;color:#006837;letter-spacing:.03em;text-transform:uppercase;} .rep-doc-meta{margin-top:5px;font-size:.78rem;color:#4b5563;} .rep-doc-title{margin:18px 0 14px;text-align:center;font-size:1.02rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#1f2937;} .rep-doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-bottom:14px;font-size:.84rem;} .rep-doc-line{border-top:1px solid #cfd8d2;margin:14px 0;} .rep-doc-p{font-size:.88rem;line-height:1.65;color:#374151;margin-bottom:10px;text-align:justify;} .rep-doc-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.8rem;} .rep-doc-table th,.rep-doc-table td{border:1px solid #d7e2da;padding:8px 10px;text-align:left;} .rep-doc-table th{background:#f5fbf7;color:#0f5132;font-weight:700;} .rep-doc-sign{margin-top:28px;display:flex;justify-content:flex-end;} .rep-doc-sign-box{width:280px;text-align:center;} .rep-doc-sign-line{border-top:1px solid #374151;margin-top:24px;padding-top:6px;font-size:.8rem;font-weight:600;} @media print{body{background:#fff;padding:0;} .rep-doc-sheet{border:none;box-shadow:none;}}</style>' +
-            '</head><body><div class="rep-doc-sheet">' + bodyHtml + '</div></body></html>';
+            '</head><body><div class="rep-doc-sheet">' + bodyHtml + '</div>' +
+            '<script>(function(){var done=false;function notify(){if(done){return;}done=true;if(window.opener&&!window.opener.closed&&typeof window.opener.repCompleteCertificationPrint==="function"){window.opener.repCompleteCertificationPrint();}}window.addEventListener("afterprint",notify);window.onload=function(){setTimeout(function(){window.focus();window.print();},250);};})();<\/script>' +
+            '</body></html>';
 
         printWindow.document.open();
         printWindow.document.write(doc);
         printWindow.document.close();
         printWindow.focus();
-        setTimeout(function() {
-            printWindow.print();
-        }, 250);
     }
 
     window.addEventListener('click', function(event) {

@@ -39,13 +39,17 @@ class ReportsAdminController extends Controller
 
     public function gwaReport(Request $request)
     {
-        $search = trim((string) $request->query('q', ''));
-        $schoolYear = trim((string) $request->query('school_year', ''));
-        $semester = trim((string) $request->query('semester', ''));
-        $program = trim((string) $request->query('program', ''));
+        $search = $this->gwaQueryString($request, 'q');
+        $schoolYear = $this->gwaQueryString($request, 'school_year');
+        $semester = $this->gwaQueryString($request, 'semester');
+        $program = $this->gwaQueryString($request, 'program');
+        $hasSubjectSchoolYear = Schema::hasColumn('subjects', 'school_year');
+        $hasSubjectSemester = Schema::hasColumn('subjects', 'semester');
+        $hasSubjectTerm = Schema::hasColumn('subjects', 'term');
+        $hasSubjectAcademicTerm = Schema::hasColumn('subjects', 'academic_term_id') && Schema::hasTable('academic_terms');
 
         $gradeQuery = StudentSubjectGrade::query()
-            ->with(['student', 'subject'])
+            ->with(['student', 'subject.academicTerm'])
             ->whereNotNull('final_average')
             ->whereHas('student')
             ->whereHas('subject');
@@ -55,14 +59,28 @@ class ReportsAdminController extends Controller
         }
 
         if ($schoolYear !== '') {
-            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($schoolYear) {
-                $subjectQuery->where('school_year', $schoolYear);
+            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($schoolYear, $hasSubjectSchoolYear, $hasSubjectAcademicTerm) {
+                if ($hasSubjectSchoolYear) {
+                    $subjectQuery->where('school_year', $schoolYear);
+                } elseif ($hasSubjectAcademicTerm) {
+                    $subjectQuery->whereHas('academicTerm', function ($termQuery) use ($schoolYear) {
+                        $termQuery->where('school_year', $schoolYear);
+                    });
+                }
             });
         }
 
         if ($semester !== '') {
-            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($semester) {
-                $subjectQuery->where('semester', $semester);
+            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($semester, $hasSubjectSemester, $hasSubjectTerm, $hasSubjectAcademicTerm) {
+                if ($hasSubjectSemester) {
+                    $subjectQuery->where('semester', $semester);
+                } elseif ($hasSubjectTerm) {
+                    $subjectQuery->where('term', $semester);
+                } elseif ($hasSubjectAcademicTerm) {
+                    $subjectQuery->whereHas('academicTerm', function ($termQuery) use ($semester) {
+                        $termQuery->where('term', $semester);
+                    });
+                }
             });
         }
 
@@ -87,17 +105,19 @@ class ReportsAdminController extends Controller
 
         $rows = $gradeRows
             ->groupBy(function ($grade) {
+                $subject = $grade->subject;
+
                 return implode('|', [
                     $grade->student_id,
-                    (string) optional($grade->subject)->school_year,
-                    (string) optional($grade->subject)->semester,
+                    $this->gwaSubjectSchoolYear($subject),
+                    $this->gwaSubjectSemester($subject),
                 ]);
             })
             ->map(function ($grades) {
                 $first = $grades->first();
                 $student = $first->student;
-                $schoolYear = (string) optional($first->subject)->school_year;
-                $semester = (string) optional($first->subject)->semester;
+                $schoolYear = $this->gwaSubjectSchoolYear($first->subject);
+                $semester = $this->gwaSubjectSemester($first->subject);
 
                 $totalUnits = 0.0;
                 $weightedTotal = 0.0;
@@ -150,21 +170,8 @@ class ReportsAdminController extends Controller
             })
             ->values();
 
-        $schoolYears = StudentSubjectGrade::query()
-            ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
-            ->whereNotNull('subjects.school_year')
-            ->where('subjects.school_year', '<>', '')
-            ->distinct()
-            ->orderByDesc('subjects.school_year')
-            ->pluck('subjects.school_year');
-
-        $semesters = StudentSubjectGrade::query()
-            ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
-            ->whereNotNull('subjects.semester')
-            ->where('subjects.semester', '<>', '')
-            ->distinct()
-            ->orderBy('subjects.semester')
-            ->pluck('subjects.semester');
+        $schoolYears = $this->gwaSchoolYearOptions($hasSubjectSchoolYear, $hasSubjectAcademicTerm);
+        $semesters = $this->gwaSemesterOptions($hasSubjectSemester, $hasSubjectTerm, $hasSubjectAcademicTerm);
 
         $programs = collect()
             ->merge(Schema::hasColumn('students', 'program') ? Student::query()->whereNotNull('program')->where('program', '<>', '')->distinct()->orderBy('program')->pluck('program') : collect())
@@ -176,7 +183,9 @@ class ReportsAdminController extends Controller
         $summary = [
             'students' => $rows->pluck('student_id')->filter()->unique()->count(),
             'records' => $rows->count(),
-            'average_gwa' => $rows->whereNotNull('gwa')->avg('gwa'),
+            'average_gwa' => $rows->filter(function ($row) {
+                return is_array($row) && ($row['gwa'] ?? null) !== null;
+            })->avg('gwa'),
         ];
 
         return view('registrar.services.reports-admin.gwa-report', compact(
@@ -216,6 +225,108 @@ class ReportsAdminController extends Controller
         }
 
         return 99;
+    }
+
+    private function gwaQueryString(Request $request, string $key): string
+    {
+        $value = $request->query($key, '');
+
+        return is_string($value) || is_numeric($value) ? trim((string) $value) : '';
+    }
+
+    private function gwaSubjectSchoolYear($subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        $schoolYear = trim((string) ($subject->getAttribute('school_year') ?? ''));
+        if ($schoolYear !== '') {
+            return $schoolYear;
+        }
+
+        return trim((string) optional($subject->academicTerm)->school_year);
+    }
+
+    private function gwaSubjectSemester($subject): string
+    {
+        if (!$subject) {
+            return '';
+        }
+
+        $semester = trim((string) ($subject->getAttribute('semester') ?? ''));
+        if ($semester !== '') {
+            return $semester;
+        }
+
+        $term = trim((string) ($subject->getAttribute('term') ?? ''));
+        if ($term !== '') {
+            return $term;
+        }
+
+        return trim((string) optional($subject->academicTerm)->term);
+    }
+
+    private function gwaSchoolYearOptions(bool $hasSubjectSchoolYear, bool $hasSubjectAcademicTerm)
+    {
+        if ($hasSubjectSchoolYear) {
+            return StudentSubjectGrade::query()
+                ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+                ->whereNotNull('subjects.school_year')
+                ->where('subjects.school_year', '<>', '')
+                ->distinct()
+                ->orderByDesc('subjects.school_year')
+                ->pluck('subjects.school_year');
+        }
+
+        if ($hasSubjectAcademicTerm) {
+            return StudentSubjectGrade::query()
+                ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+                ->join('academic_terms', 'academic_terms.id', '=', 'subjects.academic_term_id')
+                ->whereNotNull('academic_terms.school_year')
+                ->where('academic_terms.school_year', '<>', '')
+                ->distinct()
+                ->orderByDesc('academic_terms.school_year')
+                ->pluck('academic_terms.school_year');
+        }
+
+        return collect();
+    }
+
+    private function gwaSemesterOptions(bool $hasSubjectSemester, bool $hasSubjectTerm, bool $hasSubjectAcademicTerm)
+    {
+        if ($hasSubjectSemester) {
+            return StudentSubjectGrade::query()
+                ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+                ->whereNotNull('subjects.semester')
+                ->where('subjects.semester', '<>', '')
+                ->distinct()
+                ->orderBy('subjects.semester')
+                ->pluck('subjects.semester');
+        }
+
+        if ($hasSubjectTerm) {
+            return StudentSubjectGrade::query()
+                ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+                ->whereNotNull('subjects.term')
+                ->where('subjects.term', '<>', '')
+                ->distinct()
+                ->orderBy('subjects.term')
+                ->pluck('subjects.term');
+        }
+
+        if ($hasSubjectAcademicTerm) {
+            return StudentSubjectGrade::query()
+                ->join('subjects', 'subjects.id', '=', 'student_subject_grades.subject_id')
+                ->join('academic_terms', 'academic_terms.id', '=', 'subjects.academic_term_id')
+                ->whereNotNull('academic_terms.term')
+                ->where('academic_terms.term', '<>', '')
+                ->distinct()
+                ->orderBy('academic_terms.term')
+                ->pluck('academic_terms.term');
+        }
+
+        return collect();
     }
 
     public function certifications(Request $request)

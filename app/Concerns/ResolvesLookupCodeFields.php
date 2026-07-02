@@ -10,6 +10,11 @@ trait ResolvesLookupCodeFields
 
     protected function hasLookupCodeFieldColumn($column)
     {
+        if (!is_string($column) && !is_int($column)) {
+            return false;
+        }
+
+        $column = (string) $column;
         $tableName = $this->getTable();
 
         if (!isset(self::$lookupCodeFieldColumnCache[$tableName])) {
