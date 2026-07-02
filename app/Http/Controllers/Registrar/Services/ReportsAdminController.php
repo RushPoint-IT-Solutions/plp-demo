@@ -10,9 +10,11 @@ use App\Http\Controllers\Controller;
 use App\Support\SystemConfigSchoolTermOptions;
 use App\Student;
 use App\StudentSubjectGrade;
+use App\Subject;
 use App\YearBlock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class ReportsAdminController extends Controller
@@ -254,6 +256,116 @@ class ReportsAdminController extends Controller
             'semester',
             'program'
         ));
+    }
+
+    public function gwaReportCreateTest(Request $request)
+    {
+        $studentNo = 'VERIFY-GWA-001';
+        $studentName = 'GWA Verification Student';
+        $program = 'GWA-TEST';
+        $yearLevel = '1st Year';
+        $schoolYear = '2025-2026';
+        $semester = 'First';
+        $subjectCode = 'GWA-VERIFY-001';
+        $subjectName = 'GWA Verification Subject';
+        $gwa = 1.75;
+        $units = 3.0;
+
+        DB::transaction(function () use ($studentNo, $studentName, $program, $yearLevel, $schoolYear, $semester, $subjectCode, $subjectName, $gwa, $units) {
+            $academicTermId = null;
+            if (Schema::hasTable('academic_terms')) {
+                $academicTerm = AcademicTerm::query()->firstOrCreate(
+                    ['canonical_key' => strtolower($schoolYear . '|' . $semester)],
+                    ['school_year' => $schoolYear, 'term' => $semester]
+                );
+                $academicTermId = $academicTerm->id;
+            }
+
+            $studentPayload = [
+                'name' => $studentName,
+                'program' => $program,
+                'year_level' => $yearLevel,
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+            ];
+
+            if (Schema::hasColumn('students', 'academic_term_id')) {
+                $studentPayload['academic_term_id'] = $academicTermId;
+            }
+
+            $student = Student::query()->updateOrCreate(
+                ['student_no' => $studentNo],
+                $studentPayload
+            );
+
+            $subjectPayload = [
+                'name' => $subjectName,
+                'units' => $units,
+                'course' => $program,
+            ];
+
+            if (Schema::hasColumn('subjects', 'school_year')) {
+                $subjectPayload['school_year'] = $schoolYear;
+            }
+
+            if (Schema::hasColumn('subjects', 'semester')) {
+                $subjectPayload['semester'] = $semester;
+            }
+
+            if (Schema::hasColumn('subjects', 'term')) {
+                $subjectPayload['term'] = $semester;
+            }
+
+            if (Schema::hasColumn('subjects', 'academic_term_id')) {
+                $subjectPayload['academic_term_id'] = $academicTermId;
+            }
+
+            if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+                $subjectPayload['is_subject_file_record'] = false;
+            }
+
+            $subject = Subject::query()->updateOrCreate(
+                ['code' => $subjectCode],
+                $subjectPayload
+            );
+
+            if (Schema::hasTable('student_subject')) {
+                DB::table('student_subject')->updateOrInsert(
+                    ['student_id' => $student->id, 'subject_id' => $subject->id],
+                    ['updated_at' => now(), 'created_at' => now()]
+                );
+            }
+
+            $gradePayload = [
+                'prelim' => $gwa,
+                'midterm' => $gwa,
+                'final' => $gwa,
+                'final_average' => $gwa,
+                'remarks' => 'Verification test record for GWA Report.',
+            ];
+
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $gradePayload['status'] = 'Final Posted';
+            }
+
+            if (Schema::hasColumn('student_subject_grades', 'final_posted_at')) {
+                $gradePayload['final_posted_at'] = now();
+            }
+
+            StudentSubjectGrade::query()->updateOrCreate(
+                ['student_id' => $student->id, 'subject_id' => $subject->id],
+                $gradePayload
+            );
+        });
+
+        return redirect()
+            ->route('registrar.services.reports-admin.gwa-report', [
+                'q' => $studentNo,
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+                'program' => $program,
+            ])
+            ->with('success', 'GWA verification record created and displayed below.');
     }
 
     public function guidanceReports(Request $request)
