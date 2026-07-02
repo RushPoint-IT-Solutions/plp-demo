@@ -312,7 +312,8 @@
             cutoffConfig: { page: 1, size: 5 },
             curriculumDisplay: { page: 1, size: 5 }
         },
-        deleteTarget: null
+        deleteTarget: null,
+        deleteBusy: false
     };
 
     var requestLocks = {
@@ -1240,11 +1241,19 @@
             id: row.id
         };
 
-        byId('cfgDeleteMessage').textContent = 'Are you sure you want to delete this record?';
+        var detail = byId('cfgDeleteDetail');
+        if (detail) {
+            detail.textContent = row.name || row.designation || row.sy || row.type || '';
+        }
+
         openModal('cfgDeleteModal');
     }
 
     async function confirmDelete() {
+        if (state.deleteBusy) {
+            return;
+        }
+
         if (!state.deleteTarget || !state.deleteTarget.id) {
             closeModal('cfgDeleteModal');
             return;
@@ -1271,6 +1280,12 @@
             return;
         }
 
+        var confirmButton = document.querySelector('[data-cfg-action="confirm-delete"]');
+        state.deleteBusy = true;
+        if (confirmButton) {
+            confirmButton.disabled = true;
+        }
+
         try {
             await requestJson(endpoint, 'DELETE');
 
@@ -1291,6 +1306,11 @@
             showMessage('Record deleted.', 'success');
         } catch (error) {
             showMessage(error.message || 'Unable to delete record.', 'error');
+        } finally {
+            state.deleteBusy = false;
+            if (confirmButton) {
+                confirmButton.disabled = false;
+            }
         }
     }
 

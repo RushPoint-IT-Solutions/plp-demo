@@ -43,6 +43,7 @@ use App\UserAccountStatus;
 use App\YearBlock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -822,7 +823,11 @@ class AdminToolsController extends Controller
 
     public function configurationSchoolSemDestroy(SystemSchoolSemester $systemSchoolSemester): JsonResponse
     {
-        $systemSchoolSemester->delete();
+        try {
+            $systemSchoolSemester->delete();
+        } catch (QueryException $exception) {
+            return $this->configurationDeleteConflictResponse($exception);
+        }
 
         return response()->json(['ok' => true]);
     }
@@ -885,7 +890,11 @@ class AdminToolsController extends Controller
 
     public function configurationGradePostingDestroy(SystemGradePosting $systemGradePosting): JsonResponse
     {
-        $systemGradePosting->delete();
+        try {
+            $systemGradePosting->delete();
+        } catch (QueryException $exception) {
+            return $this->configurationDeleteConflictResponse($exception);
+        }
 
         return response()->json(['ok' => true]);
     }
@@ -1005,11 +1014,15 @@ class AdminToolsController extends Controller
 
     public function configurationSignatureDestroy(SystemConfigNameSignature $systemConfigNameSignature): JsonResponse
     {
+        try {
+            $systemConfigNameSignature->delete();
+        } catch (QueryException $exception) {
+            return $this->configurationDeleteConflictResponse($exception);
+        }
+
         if (!empty($systemConfigNameSignature->signature_path)) {
             Storage::disk('public')->delete($systemConfigNameSignature->signature_path);
         }
-
-        $systemConfigNameSignature->delete();
 
         return response()->json(['ok' => true]);
     }
@@ -1095,7 +1108,11 @@ class AdminToolsController extends Controller
 
     public function configurationCutoffDestroy(SystemCutoffEntry $systemCutoffEntry): JsonResponse
     {
-        $systemCutoffEntry->delete();
+        try {
+            $systemCutoffEntry->delete();
+        } catch (QueryException $exception) {
+            return $this->configurationDeleteConflictResponse($exception);
+        }
 
         return response()->json(['ok' => true]);
     }
@@ -1150,9 +1167,27 @@ class AdminToolsController extends Controller
 
     public function configurationCurriculumDisplayDestroy(SystemCurriculumDisplaySetting $systemCurriculumDisplaySetting): JsonResponse
     {
-        $systemCurriculumDisplaySetting->delete();
+        try {
+            $systemCurriculumDisplaySetting->delete();
+        } catch (QueryException $exception) {
+            return $this->configurationDeleteConflictResponse($exception);
+        }
 
         return response()->json(['ok' => true]);
+    }
+
+    private function configurationDeleteConflictResponse(QueryException $exception): JsonResponse
+    {
+        $sqlState = (string) ($exception->errorInfo[0] ?? $exception->getCode());
+        $status = $sqlState === '23000' ? 409 : 500;
+        $message = $status === 409
+            ? 'This configuration record is already in use and cannot be deleted.'
+            : 'Unable to delete configuration record.';
+
+        return response()->json([
+            'ok' => false,
+            'message' => $message,
+        ], $status);
     }
 
     public function configurationReportDetailsSave(Request $request): JsonResponse

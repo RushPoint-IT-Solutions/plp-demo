@@ -423,7 +423,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         size: 5
       }
     },
-    deleteTarget: null
+    deleteTarget: null,
+    deleteBusy: false
   };
   var requestLocks = {
     schoolSem: false
@@ -1456,11 +1457,27 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
       group: group,
       id: row.id
     };
-    byId('cfgDeleteMessage').textContent = 'Are you sure you want to delete this record?';
+    var detail = byId('cfgDeleteDetail');
+    if (detail) {
+      detail.textContent = row.name || row.designation || row.sy || row.type || '';
+    }
     openModal('cfgDeleteModal');
   }
   function confirmDelete() {
-    return _confirmDelete.apply(this, arguments);
+    if (state.deleteBusy) {
+      return;
+    }
+    var confirmButton = document.querySelector('[data-cfg-action="confirm-delete"]');
+    state.deleteBusy = true;
+    if (confirmButton) {
+      confirmButton.disabled = true;
+    }
+    return _confirmDelete.apply(this, arguments)["finally"](function () {
+      state.deleteBusy = false;
+      if (confirmButton) {
+        confirmButton.disabled = false;
+      }
+    });
   }
   function _confirmDelete() {
     _confirmDelete = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
