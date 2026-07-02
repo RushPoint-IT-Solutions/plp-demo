@@ -169,7 +169,9 @@
                         data-hd-no="{{ $student->hd_no ?: ($student->student_no ? 'HD-' . $student->student_no : '') }}"
                         data-hd-date="{{ $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : now()->format('F d, Y') }}"
                         data-hd-status="{{ $hdStatus }}">
-                        <td style="text-align: center;"><input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()"></td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()" @if($hdStatus === 'issued') disabled title="Already issued" @endif>
+                        </td>
                         <td>{{ $student->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
                         <td>{{ $program ?: '-' }}</td>
