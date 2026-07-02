@@ -87,7 +87,13 @@
         <div class="req-modal-fields" style="display:flex; flex-direction:column; gap:12px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Student ID / Name</label>
-                <input type="text" class="req-modal-input" id="repStudent" placeholder="Enter student...">
+                <div class="rsa-wrap">
+                    <input type="hidden" id="repStudentId">
+                    <input type="text" class="req-modal-input" id="repStudent" placeholder="Type student no. or name"
+                        data-student-autocomplete="reports"
+                        data-student-id-target="repStudentId"
+                        data-student-search-url="{{ route('registrar.services.reports-admin.students.search') }}">
+                </div>
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Purpose of Request</label>
@@ -124,6 +130,7 @@
 
 @push('scripts')
 <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+<script src="{{ asset('js/reports-student-autocomplete.js') }}?v={{ file_exists(public_path('js/reports-student-autocomplete.js')) ? filemtime(public_path('js/reports-student-autocomplete.js')) : time() }}"></script>
 <script>
     function escHtml(value) {
         return String(value || '').replace(/[&<>"']/g, function(ch) {

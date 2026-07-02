@@ -17,6 +17,61 @@ use Illuminate\Support\Facades\Schema;
 
 class ReportsAdminController extends Controller
 {
+    public function studentSearch(Request $request): JsonResponse
+    {
+        $rawSearch = $request->query('q', '');
+        $search = is_string($rawSearch) || is_numeric($rawSearch) ? trim((string) $rawSearch) : '';
+
+        $query = Student::query()
+            ->select('students.id', 'students.student_no', 'students.name')
+            ->orderBy('students.name')
+            ->limit(20);
+
+        $hasProfiles = Schema::hasTable('student_profiles');
+        if ($hasProfiles) {
+            if (Schema::hasColumn('student_profiles', 'student_id')) {
+                $query->leftJoin('student_profiles as sp', 'sp.student_id', '=', 'students.id');
+            } else {
+                $query->leftJoin('student_profiles as sp', 'sp.student_no', '=', 'students.student_no');
+            }
+
+            $query->addSelect('sp.first_name', 'sp.middle_name', 'sp.last_name');
+        }
+
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query->where(function ($builder) use ($like, $hasProfiles) {
+                $builder->where('students.student_no', 'like', $like)
+                    ->orWhere('students.name', 'like', $like);
+
+                if ($hasProfiles) {
+                    $builder->orWhere('sp.first_name', 'like', $like)
+                        ->orWhere('sp.middle_name', 'like', $like)
+                        ->orWhere('sp.last_name', 'like', $like);
+                }
+            });
+        }
+
+        $students = $query->get()->map(function ($student) {
+            $profileName = trim(implode(' ', array_filter([
+                trim((string) ($student->first_name ?? '')),
+                trim((string) ($student->middle_name ?? '')),
+                trim((string) ($student->last_name ?? '')),
+            ])));
+            $name = trim((string) ($student->name ?: $profileName));
+            $studentNo = trim((string) $student->student_no);
+
+            return [
+                'id' => (int) $student->id,
+                'student_no' => $studentNo,
+                'name' => $name,
+                'label' => trim($studentNo . ' - ' . $name, ' -'),
+            ];
+        });
+
+        return response()->json(['results' => $students]);
+    }
+
     public function academicReports(Request $request)
     {
         $totalStudents = Student::query()->count();

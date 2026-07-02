@@ -201,7 +201,12 @@
     <form method="GET" action="{{ route('registrar.services.reports-admin.gwa-report') }}" class="gwa-card gwa-filter">
         <div class="gwa-field">
             <label for="gwaSearch">Search Student</label>
-            <input id="gwaSearch" class="gwa-input" type="text" name="q" value="{{ $search }}" placeholder="Student no. or name">
+            <div class="rsa-wrap">
+                <input id="gwaSearch" class="gwa-input" type="text" name="q" value="{{ $search }}" placeholder="Type student no. or name"
+                    data-student-autocomplete="reports"
+                    data-student-fill-key="student_no"
+                    data-student-search-url="{{ route('registrar.services.reports-admin.students.search') }}">
+            </div>
         </div>
         <div class="gwa-field">
             <label for="gwaSchoolYear">School Year</label>
@@ -284,3 +289,7 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/reports-student-autocomplete.js') }}?v={{ file_exists(public_path('js/reports-student-autocomplete.js')) ? filemtime(public_path('js/reports-student-autocomplete.js')) : time() }}"></script>
+@endpush

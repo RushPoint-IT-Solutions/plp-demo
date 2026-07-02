@@ -484,6 +484,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/gwa-report', 'Registrar\Services\ReportsAdminController@gwaReport')->name('gwa-report');
             Route::post('/academic-reports/issue', 'Registrar\Services\ReportsAdminController@issueAcademicReport')->name('academic-reports.issue');
             Route::get('/guidance-reports', 'Registrar\Services\ReportsAdminController@guidanceReports')->name('guidance-reports');
+            Route::get('/students/search', 'Registrar\Services\ReportsAdminController@studentSearch')->name('students.search');
             Route::get('/certifications', 'Registrar\Services\ReportsAdminController@certifications')->name('certifications');
             Route::post('/certifications/issue', 'Registrar\Services\ReportsAdminController@issueCertification')->name('certifications.issue');
             Route::get('/tagging-of-graduates', 'Registrar\Services\ReportsAdminController@taggingOfGraduates')->name('tagging-of-graduates');

@@ -106,12 +106,13 @@
         <div class="req-modal-fields" style="display:flex; flex-direction:column; gap:12px;">
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Student ID / Name</label>
-                <select class="req-modal-input" id="repStudentId">
-                    <option value="">Select student...</option>
-                    @foreach(($students ?? collect()) as $student)
-                    <option value="{{ $student->id }}">{{ $student->student_no }} - {{ $student->name }}</option>
-                    @endforeach
-                </select>
+                <div class="rsa-wrap">
+                    <input type="hidden" id="repStudentId">
+                    <input type="text" class="req-modal-input" id="repStudentSearch" placeholder="Type student no. or name"
+                        data-student-autocomplete="reports"
+                        data-student-id-target="repStudentId"
+                        data-student-search-url="{{ route('registrar.services.reports-admin.students.search') }}">
+                </div>
             </div>
             <div class="req-modal-field-group">
                 <label class="req-modal-label">Purpose of Request</label>
@@ -148,6 +149,7 @@
 
 @push('scripts')
 <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+<script src="{{ asset('js/reports-student-autocomplete.js') }}?v={{ file_exists(public_path('js/reports-student-autocomplete.js')) ? filemtime(public_path('js/reports-student-autocomplete.js')) : time() }}"></script>
 <script>
     var repIssueConfig = {
         csrfToken: @json(csrf_token()),
@@ -380,9 +382,10 @@
 
     function generateReport() {
         var title = document.getElementById('repModalTitle').dataset.rawTitle || document.getElementById('repModalTitle').innerText;
-        var studentSelect = document.getElementById('repStudentId');
-        var studentId = studentSelect ? studentSelect.value : '';
-        var student = studentSelect && studentSelect.options[studentSelect.selectedIndex] ? studentSelect.options[studentSelect.selectedIndex].text : '';
+        var studentInput = document.getElementById('repStudentSearch');
+        var studentIdInput = document.getElementById('repStudentId');
+        var studentId = studentIdInput ? studentIdInput.value : '';
+        var student = studentInput ? studentInput.value.trim() : '';
         if (!student) {
             student = 'Juan Dela Cruz (2022-00123)';
         }
