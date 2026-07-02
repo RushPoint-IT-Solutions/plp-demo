@@ -3,6 +3,35 @@
 @section('title', 'PLP - Certifications')
 @section('page-title', 'CERTIFICATIONS')
 
+@push('styles')
+<style>
+    @media print {
+        body.rep-cert-printing * {
+            visibility: hidden !important;
+        }
+
+        body.rep-cert-printing #repPreviewSheet,
+        body.rep-cert-printing #repPreviewSheet * {
+            visibility: visible !important;
+        }
+
+        body.rep-cert-printing #repPreviewSheet {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            min-height: auto !important;
+            margin: 0 !important;
+            padding: 36px 42px !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            background: #fff !important;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 @php
     $repSchoolYearOptions = collect($systemConfig['schoolYearOptions'] ?? [])->values()->all();
@@ -188,6 +217,7 @@
     };
     var repPendingIssuePayload = null;
     var repIssueInProgress = false;
+    var repPrintRequested = false;
 
     function repRefreshListbox(selectElement) {
         if (!selectElement) {
@@ -451,26 +481,24 @@
     }
 
     function printPreviewDocument() {
-        var title = document.getElementById('repModalTitle').dataset.rawTitle || 'Document';
-        var bodyHtml = document.getElementById('repPreviewSheet').innerHTML;
-        var printWindow = window.open('', '_blank', 'width=900,height=700');
-
-        if (!printWindow) {
+        if (!document.getElementById('repPreviewSheet').innerHTML.trim()) {
             return;
         }
 
-        var doc = '' +
-            '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escHtml(title) + '</title>' +
-            '<style>body{font-family:Poppins,sans-serif;background:#f1f5f3;padding:20px;} .rep-doc-sheet{max-width:780px;margin:0 auto;background:#fff;border:1px solid #cfd8d2;padding:38px 44px;color:#1f2937;} .rep-doc-header{text-align:center;border-bottom:1px solid #d7e2da;padding-bottom:12px;margin-bottom:18px;} .rep-doc-school{font-size:.95rem;font-weight:700;color:#006837;letter-spacing:.03em;text-transform:uppercase;} .rep-doc-meta{margin-top:5px;font-size:.78rem;color:#4b5563;} .rep-doc-title{margin:18px 0 14px;text-align:center;font-size:1.02rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#1f2937;} .rep-doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-bottom:14px;font-size:.84rem;} .rep-doc-line{border-top:1px solid #cfd8d2;margin:14px 0;} .rep-doc-p{font-size:.88rem;line-height:1.65;color:#374151;margin-bottom:10px;text-align:justify;} .rep-doc-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.8rem;} .rep-doc-table th,.rep-doc-table td{border:1px solid #d7e2da;padding:8px 10px;text-align:left;} .rep-doc-table th{background:#f5fbf7;color:#0f5132;font-weight:700;} .rep-doc-sign{margin-top:28px;display:flex;justify-content:flex-end;} .rep-doc-sign-box{width:280px;text-align:center;} .rep-doc-sign-line{border-top:1px solid #374151;margin-top:24px;padding-top:6px;font-size:.8rem;font-weight:600;} @media print{body{background:#fff;padding:0;} .rep-doc-sheet{border:none;box-shadow:none;}}</style>' +
-            '</head><body><div class="rep-doc-sheet">' + bodyHtml + '</div>' +
-            '<script>(function(){var done=false;function notify(){if(done){return;}done=true;if(window.opener&&!window.opener.closed&&typeof window.opener.repCompleteCertificationPrint==="function"){window.opener.repCompleteCertificationPrint();}}window.addEventListener("afterprint",notify);window.onload=function(){setTimeout(function(){window.focus();window.print();},250);};})();<\/script>' +
-            '</body></html>';
-
-        printWindow.document.open();
-        printWindow.document.write(doc);
-        printWindow.document.close();
-        printWindow.focus();
+        repPrintRequested = true;
+        document.body.classList.add('rep-cert-printing');
+        window.print();
     }
+
+    window.addEventListener('afterprint', function() {
+        if (!repPrintRequested) {
+            return;
+        }
+
+        repPrintRequested = false;
+        document.body.classList.remove('rep-cert-printing');
+        repCompleteCertificationPrint();
+    });
 
     window.addEventListener('click', function(event) {
         if (event.target && event.target.id === 'repPrintModal') {
