@@ -17,6 +17,14 @@
         margin-bottom: 14px;
     }
 
+    .gwa-head-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
     .gwa-title {
         margin: 0;
         color: #143521;
@@ -117,6 +125,52 @@
         color: #374151;
     }
 
+    .gwa-test-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(15, 23, 42, 0.42);
+    }
+
+    .gwa-test-modal.is-open {
+        display: flex;
+    }
+
+    .gwa-test-box {
+        width: min(420px, 100%);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+        overflow: hidden;
+    }
+
+    .gwa-test-box__head {
+        padding: 14px 16px;
+        background: #006837;
+        color: #fff;
+        font-size: 0.96rem;
+        font-weight: 900;
+    }
+
+    .gwa-test-box__body {
+        padding: 16px;
+        color: #374151;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.45;
+    }
+
+    .gwa-test-box__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 0 16px 16px;
+    }
+
     .gwa-table-wrap {
         overflow-x: auto;
         padding: 0 14px 14px;
@@ -169,6 +223,10 @@
         .gwa-summary {
             grid-template-columns: 1fr;
         }
+
+        .gwa-head {
+            flex-direction: column;
+        }
     }
 </style>
 @endpush
@@ -180,7 +238,10 @@
             <h1 class="gwa-title">General Weighted Average Report</h1>
             <p class="gwa-lead">Computes every student GWA per school year and semester using final grade weighted by subject units.</p>
         </div>
-        <button type="button" class="gwa-btn soft" onclick="window.print()">Print</button>
+        <div class="gwa-head-actions">
+            <button type="button" class="gwa-btn" id="gwaCreateTestBtn">Create</button>
+            <button type="button" class="gwa-btn soft" onclick="window.print()">Print</button>
+        </div>
     </div>
 
     <div class="gwa-summary">
@@ -287,9 +348,56 @@
             </table>
         </div>
     </div>
+
+    <div class="gwa-test-modal" id="gwaCreateTestModal" aria-hidden="true">
+        <div class="gwa-test-box" role="dialog" aria-modal="true" aria-labelledby="gwaCreateTestTitle">
+            <div class="gwa-test-box__head" id="gwaCreateTestTitle">Create Test</div>
+            <div class="gwa-test-box__body">
+                The Create button is working. This is a test action only and no GWA report record was saved.
+            </div>
+            <div class="gwa-test-box__actions">
+                <button type="button" class="gwa-btn soft" id="gwaCreateTestClose">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script src="{{ asset('js/reports-student-autocomplete.js') }}?v={{ file_exists(public_path('js/reports-student-autocomplete.js')) ? filemtime(public_path('js/reports-student-autocomplete.js')) : time() }}"></script>
+<script>
+    (function () {
+        var openButton = document.getElementById('gwaCreateTestBtn');
+        var modal = document.getElementById('gwaCreateTestModal');
+        var closeButton = document.getElementById('gwaCreateTestClose');
+
+        function closeModal() {
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        if (openButton && modal) {
+            openButton.addEventListener('click', function () {
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+            });
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+        }
+
+        if (modal) {
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+    })();
+</script>
 @endpush
