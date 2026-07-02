@@ -104,6 +104,8 @@ class ReportsAdminController extends Controller
         $hasSubjectSemester = Schema::hasColumn('subjects', 'semester');
         $hasSubjectTerm = Schema::hasColumn('subjects', 'term');
         $hasSubjectAcademicTerm = Schema::hasColumn('subjects', 'academic_term_id') && Schema::hasTable('academic_terms');
+        $hasStudentProgram = Schema::hasColumn('students', 'program');
+        $hasSubjectCourse = Schema::hasColumn('subjects', 'course');
 
         $gradeQuery = StudentSubjectGrade::query()
             ->with(['student', 'subject.academicTerm'])
@@ -141,13 +143,20 @@ class ReportsAdminController extends Controller
             });
         }
 
-        if ($program !== '') {
-            $gradeQuery->where(function ($query) use ($program) {
-                $query->whereHas('student', function ($studentQuery) use ($program) {
-                    $studentQuery->where('program', $program);
-                })->orWhereHas('subject', function ($subjectQuery) use ($program) {
-                    $subjectQuery->where('course', $program);
-                });
+        if ($program !== '' && ($hasStudentProgram || $hasSubjectCourse)) {
+            $gradeQuery->where(function ($query) use ($program, $hasStudentProgram, $hasSubjectCourse) {
+                if ($hasStudentProgram) {
+                    $query->whereHas('student', function ($studentQuery) use ($program) {
+                        $studentQuery->where('program', $program);
+                    });
+                }
+
+                if ($hasSubjectCourse) {
+                    $method = $hasStudentProgram ? 'orWhereHas' : 'whereHas';
+                    $query->{$method}('subject', function ($subjectQuery) use ($program) {
+                        $subjectQuery->where('course', $program);
+                    });
+                }
             });
         }
 
@@ -283,11 +292,17 @@ class ReportsAdminController extends Controller
 
             $studentPayload = [
                 'name' => $studentName,
-                'program' => $program,
-                'year_level' => $yearLevel,
                 'school_year' => $schoolYear,
                 'semester' => $semester,
             ];
+
+            if (Schema::hasColumn('students', 'program')) {
+                $studentPayload['program'] = $program;
+            }
+
+            if (Schema::hasColumn('students', 'year_level')) {
+                $studentPayload['year_level'] = $yearLevel;
+            }
 
             if (Schema::hasColumn('students', 'academic_term_id')) {
                 $studentPayload['academic_term_id'] = $academicTermId;
@@ -301,8 +316,11 @@ class ReportsAdminController extends Controller
             $subjectPayload = [
                 'name' => $subjectName,
                 'units' => $units,
-                'course' => $program,
             ];
+
+            if (Schema::hasColumn('subjects', 'course')) {
+                $subjectPayload['course'] = $program;
+            }
 
             if (Schema::hasColumn('subjects', 'school_year')) {
                 $subjectPayload['school_year'] = $schoolYear;
