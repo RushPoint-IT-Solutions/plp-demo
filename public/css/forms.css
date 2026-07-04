@@ -1450,7 +1450,16 @@ body.wce-preview-open {
     place-content: center;
     vertical-align: middle;
     cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
     transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#hdTable th:first-child,
+#hdTable td:first-child {
+    cursor: pointer;
+    user-select: none;
 }
 
 #hdTable input[type="checkbox"]:hover,
