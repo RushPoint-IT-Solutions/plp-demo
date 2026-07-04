@@ -6,8 +6,64 @@
 @push('styles')
 <style>
     @media print {
+        @page {
+            size: A4 portrait;
+            margin: 12mm;
+        }
+
+        html,
+        body.rep-cert-printing {
+            width: auto !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+
         body.rep-cert-printing * {
             visibility: hidden !important;
+        }
+
+        body.rep-cert-printing .pf-page,
+        body.rep-cert-printing .main-sidebar,
+        body.rep-cert-printing .sidebar,
+        body.rep-cert-printing .registrar-sidebar,
+        body.rep-cert-printing .sidebar-overlay,
+        body.rep-cert-printing .navbar,
+        body.rep-cert-printing .dashboard-header,
+        body.rep-cert-printing .student-topbar,
+        body.rep-cert-printing .student-page-header,
+        body.rep-cert-printing footer,
+        body.rep-cert-printing #registrar-toast,
+        body.rep-cert-printing .rep-preview-head,
+        body.rep-cert-printing .rep-modal-close-x,
+        body.rep-cert-printing .req-modal-actions {
+            display: none !important;
+        }
+
+        body.rep-cert-printing .student-layout,
+        body.rep-cert-printing .student-main-wrapper,
+        body.rep-cert-printing .content-footer-wrap,
+        body.rep-cert-printing .student-content {
+            display: block !important;
+            width: auto !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            overflow: visible !important;
+        }
+
+        body.rep-cert-printing #repPreviewModal {
+            position: static !important;
+            display: block !important;
+            width: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            overflow: visible !important;
         }
 
         body.rep-cert-printing #repPreviewSheet,
@@ -16,17 +72,84 @@
         }
 
         body.rep-cert-printing #repPreviewSheet {
-            position: absolute !important;
+            position: fixed !important;
             top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            box-sizing: border-box !important;
+            width: 186mm !important;
             max-width: none !important;
-            min-height: auto !important;
+            min-height: 0 !important;
+            height: auto !important;
             margin: 0 !important;
-            padding: 36px 42px !important;
+            padding: 14mm 16mm !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #fff !important;
+            color: #1f2937 !important;
+            overflow: visible !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body.rep-cert-printing .rep-preview-modal-box,
+        body.rep-cert-printing .rep-preview-doc-wrap {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+            background: #fff !important;
+        }
+
+        body.rep-cert-printing .rep-doc-header {
+            padding-bottom: 8mm !important;
+            margin-bottom: 7mm !important;
+        }
+
+        body.rep-cert-printing .rep-doc-title {
+            margin: 7mm 0 6mm !important;
+            font-size: 12pt !important;
+            line-height: 1.25 !important;
+        }
+
+        body.rep-cert-printing .rep-doc-grid {
+            gap: 3mm 8mm !important;
+            margin-bottom: 6mm !important;
+            font-size: 9.5pt !important;
+        }
+
+        body.rep-cert-printing .rep-doc-line {
+            margin: 6mm 0 !important;
+        }
+
+        body.rep-cert-printing .rep-doc-p {
+            margin: 0 0 4mm !important;
+            font-size: 10pt !important;
+            line-height: 1.55 !important;
+        }
+
+        body.rep-cert-printing .rep-doc-table {
+            margin: 5mm 0 !important;
+            font-size: 9pt !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        body.rep-cert-printing .rep-doc-table th,
+        body.rep-cert-printing .rep-doc-table td {
+            padding: 2.5mm 3mm !important;
+        }
+
+        body.rep-cert-printing .rep-doc-sign {
+            margin-top: 10mm !important;
+        }
+
+        body.rep-cert-printing .rep-doc-sign-line {
+            margin-top: 9mm !important;
+            font-size: 9pt !important;
         }
     }
 </style>
