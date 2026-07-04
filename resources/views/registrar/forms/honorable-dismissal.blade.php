@@ -16,6 +16,7 @@
 @php
     $hdTagUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => '__STUDENT__']);
     $hdIssueUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.issue', ['student' => '__STUDENT__']);
+    $hdBulkIssueUrl = route('registrar.registrar-menu.forms.honorable-dismissal.bulk-issue');
     $hdLayoutUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout', ['student' => '__STUDENT__']);
     $hdBlankLayoutUrl = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout');
     $hdTemplateSaveUrl = route('registrar.registrar-menu.forms.honorable-dismissal.template.save');
@@ -298,6 +299,7 @@
 <script>
 window.hdTagUrlTemplate = @json($hdTagUrlTemplate);
 window.hdIssueUrlTemplate = @json($hdIssueUrlTemplate);
+window.hdBulkIssueUrl = @json($hdBulkIssueUrl);
 window.hdLayoutUrlTemplate = @json($hdLayoutUrlTemplate);
 window.hdBlankLayoutUrl = @json($hdBlankLayoutUrl);
 window.hdTemplateSaveUrl = @json($hdTemplateSaveUrl);

@@ -388,6 +388,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');
             Route::post('/honorable-dismissal/{student}/tag', 'Registrar\RegistrarController@formsHonorableDismissalTag')->name('honorable-dismissal.tag');
             Route::post('/honorable-dismissal/{student}/issue', 'Registrar\RegistrarController@formsHonorableDismissalIssue')->name('honorable-dismissal.issue');
+            Route::post('/honorable-dismissal/bulk-issue', 'Registrar\RegistrarController@formsHonorableDismissalBulkIssue')->name('honorable-dismissal.bulk-issue');
             Route::get('/official-grade-report', 'Registrar\RegistrarController@formsOfficialGradeReport')->name('official-grade-report');
             Route::get('/official-grade-report/filter', 'Registrar\RegistrarController@formsOfficialGradeReportList')->name('official-grade-report.filter');
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');

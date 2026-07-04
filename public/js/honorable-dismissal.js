@@ -36,6 +36,17 @@ function hdPost(url) {
     });
 }
 
+function hdPostJson(url, payload) {
+    return hdJson(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': hdCsrf()
+        },
+        body: JSON.stringify(payload || {})
+    });
+}
+
 function hdEsc(v) {
     return String(v || '').replace(/[&<>"']/g, function(c) {
         return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
@@ -308,9 +319,10 @@ function hdPrintPreview() {
 function hdPrintSheets(list) {
     var pc = document.getElementById('hdPrintContainer');
     if (!pc || !list || !list.length) return;
+    pc.setAttribute('data-hd-print-count', String(list.length));
     pc.innerHTML = list.map(function(h, i) {
         var cls = i < list.length - 1 ? ' hd-print-page-break' : '';
-        return '<div class="hd-print-shell' + cls + '">' + h + '</div>';
+        return '<div class="hd-print-shell' + cls + '" data-hd-print-index="' + i + '">' + h + '</div>';
     }).join('');
     document.body.classList.add('hd-printing');
     setTimeout(function() { window.print(); }, 120);
@@ -376,21 +388,9 @@ function hdDownloadRow(rowId) {
 }
 
 function hdPrintSelected() {
-    var sel = Array.from(document.querySelectorAll('#hdTableBody .hd-row-select:checked')).filter(function(cb) {
-        var row = cb.closest('tr[data-row-id]');
-        return hdIsMonitoringRowPrintable(row);
-    });
-    var candidateSel = Array.from(document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select:checked'));
-    if (!sel.length && !candidateSel.length) { alert('Select at least one record to print.'); return; }
-
-    var rowIds = sel.map(function(cb) {
-        var row = cb.closest('tr');
-        return row ? row.getAttribute('data-row-id') : null;
-    }).filter(Boolean);
-    var candidateIds = candidateSel.map(function(cb) {
-        var row = cb.closest('tr');
-        return row ? row.getAttribute('data-candidate-id') : null;
-    }).filter(Boolean);
+    var rowIds = hdSelectedMonitoringRowIds();
+    var candidateIds = hdSelectedCandidateRowIds();
+    if (!rowIds.length && !candidateIds.length) { alert('Select at least one record to print.'); return; }
 
     hdTagRows(candidateIds).then(function(tagged) {
         if (!tagged) return;
@@ -398,24 +398,15 @@ function hdPrintSelected() {
             return rowId && list.indexOf(rowId) === index;
         });
 
-        return Promise.all(printIds.map(function(rowId) {
-        return hdLoadTemplate(rowId).then(function(layout) {
-            var sheet = document.createElement('div');
-            sheet.className = 'hd-sheet';
-            (layout.elements || []).forEach(function(item) {
-                var el = document.createElement('div');
-                el.className = 'hd-template-element';
-                el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
-                hdApplyElementStyle(el, item);
-                sheet.appendChild(el);
+        return hdIssueRows(printIds).then(function(ok) {
+            if (!ok) return false;
+
+            return Promise.all(printIds.map(function(rowId) {
+                return hdPrintableSheetForRow(rowId);
+            })).then(function(sheets) {
+                hdPrintSheets(sheets);
+                return true;
             });
-            return sheet.outerHTML;
-        });
-        })).then(function(sheets) {
-            return hdIssueRows(printIds).then(function(ok) {
-            if (ok) hdPrintSheets(sheets);
-            return ok;
-        });
         });
     }).catch(function(error) {
         alert((error && error.message) || 'Unable to prepare selected records.');
@@ -423,49 +414,35 @@ function hdPrintSelected() {
 }
 
 function hdDismissAllSelected() {
-    var candidateRows = Array.from(document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select:checked'))
-        .map(function(cb) { return cb.closest('tr[data-candidate-id]'); })
-        .filter(Boolean);
-    var pendingRows = Array.from(document.querySelectorAll('#hdTableBody .hd-row-select:checked'))
-        .map(function(cb) { return cb.closest('tr[data-row-id]'); })
-        .filter(function(row) {
-            return hdIsMonitoringRowPrintable(row);
-        });
+    var candidateIds = hdSelectedCandidateRowIds();
+    var pendingIds = hdSelectedMonitoringRowIds();
 
-    if (!candidateRows.length && !pendingRows.length) {
+    if (!candidateIds.length && !pendingIds.length) {
         alert('Select at least one eligible student or Pending for Dismissal record.');
         return;
     }
 
     var message = 'Process selected dismissal records?';
-    if (candidateRows.length && pendingRows.length) {
-        message = 'Tag ' + candidateRows.length + ' selected student(s) and process ' + pendingRows.length + ' Pending for Dismissal record(s)?';
-    } else if (candidateRows.length) {
-        message = 'Tag ' + candidateRows.length + ' selected student(s) for dismissal?';
-    } else if (pendingRows.length) {
-        message = 'Process ' + pendingRows.length + ' selected Pending for Dismissal student(s)?';
+    if (candidateIds.length && pendingIds.length) {
+        message = 'Tag ' + candidateIds.length + ' selected student(s) and process ' + pendingIds.length + ' Pending for Dismissal record(s)?';
+    } else if (candidateIds.length) {
+        message = 'Process ' + candidateIds.length + ' selected student(s) for dismissal?';
+    } else if (pendingIds.length) {
+        message = 'Process ' + pendingIds.length + ' selected Pending for Dismissal student(s)?';
     }
 
     if (!confirm(message)) {
         return;
     }
 
-    var candidateIds = candidateRows.map(function(row) {
-        return row.getAttribute('data-candidate-id');
-    }).filter(Boolean);
-    var pendingIds = pendingRows.map(function(row) {
-        return row.getAttribute('data-row-id');
-    }).filter(Boolean);
+    var allIds = candidateIds.concat(pendingIds).filter(function(rowId, index, list) {
+        return rowId && list.indexOf(rowId) === index;
+    });
 
-    hdTagRows(candidateIds).then(function(tagged) {
-        if (!tagged) return false;
-        if (!pendingIds.length) return true;
-        return hdIssueRows(pendingIds);
-    }).then(function(ok) {
-        if (ok) {
-            alert('Selected dismissal records have been processed.');
-            window.location.reload();
-        }
+    hdBulkIssueRows(allIds).then(function(ok) {
+        if (!ok) return;
+        alert('Selected dismissal records have been processed.');
+        window.location.reload();
     });
 }
 
@@ -508,6 +485,64 @@ function hdIssueRows(rowIds) {
         return true;
     }).catch(function() {
         alert('Network error while marking HD as issued.');
+        return false;
+    });
+}
+
+function hdPrintableSheetForRow(rowId) {
+    return hdLoadTemplate(rowId).then(function(layout) {
+        var sheet = document.createElement('div');
+        sheet.className = 'hd-sheet';
+        (layout.elements || []).forEach(function(item) {
+            var el = document.createElement('div');
+            el.className = 'hd-template-element';
+            el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
+            hdApplyElementStyle(el, item);
+            sheet.appendChild(el);
+        });
+        return sheet.outerHTML;
+    });
+}
+
+function hdSelectedMonitoringRows() {
+    return Array.from(document.querySelectorAll('#hdTableBody tr[data-row-id]')).filter(function(row) {
+        var checkbox = row.querySelector('.hd-row-select');
+        return !!checkbox && checkbox.checked && hdIsMonitoringRowPrintable(row) && !checkbox.disabled;
+    });
+}
+
+function hdSelectedMonitoringRowIds() {
+    return hdSelectedMonitoringRows().map(function(row) {
+        return row.getAttribute('data-row-id');
+    }).filter(Boolean);
+}
+
+function hdSelectedCandidateRowIds() {
+    return Array.from(document.querySelectorAll('#hdCandidateTableBody tr[data-candidate-id]')).filter(function(row) {
+        var checkbox = row.querySelector('.hd-candidate-row-select');
+        return !!checkbox && checkbox.checked && hdIsVisibleRow(row);
+    }).map(function(row) {
+        return row.getAttribute('data-candidate-id');
+    }).filter(Boolean);
+}
+
+function hdBulkIssueRows(rowIds) {
+    rowIds = (rowIds || []).filter(Boolean);
+    if (!rowIds.length) return Promise.resolve(false);
+    var url = String(window.hdBulkIssueUrl || '');
+    if (!url) return Promise.resolve(false);
+
+    return hdPostJson(url, { student_ids: rowIds }).then(function(result) {
+        if (!result || !result.success) {
+            alert((result && result.message) || 'Unable to process selected dismissal records.');
+            return false;
+        }
+        return true;
+    }).catch(function(error) {
+        var detail = error && error.errors ? Object.keys(error.errors).map(function(key) {
+            return error.errors[key].join(' ');
+        }).join('\n') : '';
+        alert(detail || (error && error.message) || 'Network error while processing selected dismissal records.');
         return false;
     });
 }

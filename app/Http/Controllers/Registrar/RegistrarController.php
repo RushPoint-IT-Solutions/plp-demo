@@ -19894,6 +19894,8 @@ class RegistrarController extends Controller
             }
         }
 
+        $this->syncHonorableDismissalEligibleStudents();
+
         $studentColumns = ['id', 'student_no', 'name'];
         foreach (['college', 'course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester'] as $column) {
             if (Schema::hasColumn('students', $column)) {
@@ -20114,6 +20116,114 @@ class RegistrarController extends Controller
         return response()->json(['success' => true, 'message' => 'Honorable Dismissal marked as issued.']);
     }
 
+    public function formsHonorableDismissalBulkIssue(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('honorable_dismissal_records')) {
+            return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
+        }
+
+        $payload = $request->validate([
+            'student_ids' => 'required|array|min:1',
+            'student_ids.*' => 'integer',
+        ]);
+
+        $studentIds = collect($payload['student_ids'])
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($studentIds->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Select at least one Pending for Dismissal student.'], 422);
+        }
+
+        $studentRelations = ['yearBlock:id,label'];
+        if (Schema::hasTable('graduate_taggings')) {
+            $studentRelations[] = 'graduateTagging';
+        }
+
+        $existingRecordIds = DB::table('honorable_dismissal_records')
+            ->whereIn('student_id', $studentIds->all())
+            ->pluck('student_id')
+            ->map(function ($id) {
+                return (int) $id;
+            });
+
+        $pendingRecordIds = DB::table('honorable_dismissal_records')
+            ->whereIn('student_id', $studentIds->all())
+            ->where('status', 'for_dismissal')
+            ->pluck('student_id')
+            ->map(function ($id) {
+                return (int) $id;
+            });
+
+        $students = Student::query()
+            ->with($studentRelations)
+            ->whereIn('id', $studentIds)
+            ->get();
+
+        $validStudentIds = $students
+            ->filter(function (Student $student) use ($existingRecordIds, $pendingRecordIds) {
+                $studentId = (int) $student->id;
+
+                return $this->isDocumentFormsSeniorStudent($student)
+                    && ($pendingRecordIds->contains($studentId)
+                        || (!$existingRecordIds->contains($studentId) && $this->isHonorableDismissalSourceEligible($student)));
+            })
+            ->pluck('id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values();
+
+        if ($validStudentIds->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No eligible Pending for Dismissal students were selected.'], 422);
+        }
+
+        DB::transaction(function () use ($students, $validStudentIds) {
+            $now = now();
+
+            $students->whereIn('id', $validStudentIds->all())->each(function (Student $student) use ($now) {
+                if (DB::table('honorable_dismissal_records')->where('student_id', (int) $student->id)->exists()) {
+                    return;
+                }
+
+                DB::table('honorable_dismissal_records')->insert([
+                    'student_id' => (int) $student->id,
+                    'hd_no' => $this->nextHonorableDismissalNumber($student),
+                    'status' => 'for_dismissal',
+                    'tagged_at' => $now->toDateString(),
+                    'tagged_by' => optional(auth()->user())->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            });
+
+            DB::table('honorable_dismissal_records')
+                ->whereIn('student_id', $validStudentIds->all())
+                ->where('status', 'for_dismissal')
+                ->update([
+                    'status' => 'issued',
+                    'issued_at' => $now->toDateString(),
+                    'issued_by' => optional(auth()->user())->id,
+                    'updated_at' => $now,
+                ]);
+        });
+
+        $processedCount = DB::table('honorable_dismissal_records')
+            ->whereIn('student_id', $validStudentIds->all())
+            ->where('status', 'issued')
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => $processedCount . ' dismissal record(s) processed.',
+            'processed_count' => $processedCount,
+        ]);
+    }
+
     public function getTemplateLayoutData($studentId = null): JsonResponse
     {
         if (!Schema::hasTable('document_templates')) {
@@ -20205,6 +20315,72 @@ class RegistrarController extends Controller
             ->exists();
 
         return $existing ? $base . '-' . now()->format('Ymd') : $base;
+    }
+
+    private function syncHonorableDismissalEligibleStudents(): void
+    {
+        if (!Schema::hasTable('honorable_dismissal_records')) {
+            return;
+        }
+
+        $hasGraduateTaggings = Schema::hasTable('graduate_taggings');
+        $hasStudentWithdrawn = Schema::hasColumn('students', 'is_withdrawn');
+        if (!$hasGraduateTaggings && !$hasStudentWithdrawn) {
+            return;
+        }
+
+        $students = Student::query()
+            ->with('yearBlock:id,label')
+            ->when(true, function ($query) {
+                return $this->applyDocumentFormsSeniorStudentScope($query);
+            })
+            ->where(function ($scope) use ($hasGraduateTaggings, $hasStudentWithdrawn) {
+                if ($hasGraduateTaggings) {
+                    $scope->whereHas('graduateTagging', function ($tagQuery) {
+                        $tagQuery->where('is_graduate', true);
+                    });
+                }
+
+                if ($hasStudentWithdrawn) {
+                    $method = $hasGraduateTaggings ? 'orWhere' : 'where';
+                    $scope->{$method}('students.is_withdrawn', true);
+                }
+            })
+            ->whereNotIn('id', function ($query) {
+                $query->select('student_id')->from('honorable_dismissal_records');
+            })
+            ->orderBy('id')
+            ->limit(500)
+            ->get(['id', 'student_no', 'year_level', 'year_block_id']);
+
+        if ($students->isEmpty()) {
+            return;
+        }
+
+        $now = now();
+        foreach ($students as $student) {
+            DB::table('honorable_dismissal_records')->insert([
+                'student_id' => (int) $student->id,
+                'hd_no' => $this->nextHonorableDismissalNumber($student),
+                'status' => 'for_dismissal',
+                'tagged_at' => $now->toDateString(),
+                'tagged_by' => optional(auth()->user())->id,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+    }
+
+    private function isHonorableDismissalSourceEligible(Student $student): bool
+    {
+        $isGraduate = $student->relationLoaded('graduateTagging')
+            && $student->graduateTagging
+            && (bool) $student->graduateTagging->is_graduate;
+
+        $isTransferred = Schema::hasColumn('students', 'is_withdrawn')
+            && (bool) ($student->is_withdrawn ?? false);
+
+        return $isGraduate || $isTransferred;
     }
 
     private function honorableDismissalTemplate(): DocumentTemplate
