@@ -399,10 +399,10 @@ function hdPrintSelected() {
 
     if (!printIds.length) {
         alert('Select at least one Pending for Dismissal record to print.');
-        return;
+        return false;
     }
 
-    hdBulkIssueRows(printIds).then(function(ok) {
+    return hdBulkIssueRows(printIds).then(function(ok) {
         if (!ok) return false;
 
         return Promise.all(printIds.map(function(rowId) {
@@ -839,16 +839,29 @@ function hdBindEditor() {
 
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('hd-printing');
-    if (hdPendingPrintedRowIds.length) {
-        hdMarkMonitoringRowsPrinted(hdPendingPrintedRowIds);
-        hdPendingPrintedRowIds = [];
-    }
+
+    var printedIds = hdPendingPrintedRowIds;
+    hdPendingPrintedRowIds = [];
+
     var pc = document.getElementById('hdPrintContainer');
     if (pc) {
         pc.innerHTML = '';
         pc.removeAttribute('data-hd-print-count');
         pc.removeAttribute('data-hd-print-row-ids');
     }
+
+    if (!printedIds.length) return;
+
+    var includesNewlyTaggedCandidate = printedIds.some(function(rowId) {
+        return !!document.querySelector('#hdCandidateTableBody tr[data-candidate-id="' + rowId + '"]');
+    });
+
+    if (includesNewlyTaggedCandidate) {
+        window.location.reload();
+        return;
+    }
+
+    hdMarkMonitoringRowsPrinted(printedIds);
 });
 
 document.addEventListener('click',function(e){var t=e.target.closest('[data-hd-menu-toggle]');if(t){e.stopPropagation();hdToggleMenu(t.getAttribute('data-hd-menu-toggle'),t);return;}if(!e.target.closest('.apst-dropdown'))hdCloseMenus();});
