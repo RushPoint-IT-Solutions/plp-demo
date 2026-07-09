@@ -598,6 +598,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         });
 
         Route::get('/audit-trail', 'Registrar\Services\AdminToolsController@auditTrail')->name('audit-trail');
+        Route::get('/audit-trail/data', 'Registrar\Services\AdminToolsController@auditTrailData')->name('audit-trail.data');
 
         Route::prefix('grade-override')->name('grade-override.')->group(function () {
             Route::get('/', 'Registrar\RegistrarController@gradeOverrideIndex')->name('index');

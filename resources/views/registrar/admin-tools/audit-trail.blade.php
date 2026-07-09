@@ -4,38 +4,42 @@
 @section('page-title', 'AUDIT TRAIL')
 
 @section('content')
-<div class="app-process-page">
+<div class="app-process-page" id="auditTrailRoot" data-data-endpoint="{{ $auditTrailDataUrl }}">
     <div class="app-filter-bar" style="margin-bottom: 15px; padding: 12px 16px;">
         <div class="app-filter-row audit-filter-row">
             <div class="app-filter-group search-group">
                 <label class="app-filter-label">Search Activity</label>
-                <input type="text" class="app-filter-input w-100" placeholder="Search action or details...">
+                <input type="text" id="auditSearchInput" class="app-filter-input w-100" placeholder="Search user, module, action, or details...">
             </div>
             <div class="app-filter-group user-group">
                 <label class="app-filter-label">User</label>
-                <select class="app-filter-select w-100">
+                <select id="auditUserFilter" class="app-filter-select w-100">
                     <option value="">All Users</option>
-                    <option value="Admin User">Admin User</option>
-                    <option value="Registrar Staff">Registrar Staff</option>
-                    <option value="System">System</option>
+                    @foreach($userOptions ?? [] as $user)
+                        <option value="{{ $user['id'] }}">{{ $user['label'] }}</option>
+                    @endforeach
                 </select>
             </div>
             <div class="app-filter-group module-group">
                 <label class="app-filter-label">Module</label>
-                <select class="app-filter-select w-100">
+                <select id="auditModuleFilter" class="app-filter-select w-100">
                     <option value="">All Modules</option>
-                    <option value="medical">Medical Clearance</option>
-                    <option value="application">Application List</option>
-                    <option value="academic">Academic Master</option>
-                    <option value="access">Access Management</option>
+                    @foreach($moduleOptions ?? [] as $module)
+                        <option value="{{ $module['code'] }}">{{ $module['label'] }}</option>
+                    @endforeach
                 </select>
             </div>
             <div class="app-filter-group date-group">
-                <label class="app-filter-label">Date Range</label>
-                <input type="date" class="app-filter-input w-100">
+                <label class="app-filter-label">From Date</label>
+                <input type="date" id="auditDateFrom" class="app-filter-input w-100">
+            </div>
+            <div class="app-filter-group date-group">
+                <label class="app-filter-label">To Date</label>
+                <input type="date" id="auditDateTo" class="app-filter-input w-100">
             </div>
             <div class="app-filter-group btn-group">
-                <button type="button" class="apst-new-btn search-btn">Search</button>
+                <button type="button" id="auditSearchBtn" class="apst-new-btn search-btn">Search</button>
+                <button type="button" id="auditClearBtn" class="apst-new-btn search-btn" style="background:#6c757d;">Clear</button>
             </div>
         </div>
     </div>
@@ -51,40 +55,13 @@
                     <th style="width: 20%;">Details</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($auditLogs as $log)
-                <tr>
-                    <td><span class="text-muted">{{ $log['timestamp'] }}</span></td>
-                    <td><strong>{{ $log['user'] }}</strong></td>
-                    <td><span class="badge badge-soft-info">{{ $log['module'] }}</span></td>
-                    <td>{{ $log['action'] }}</td>
-                    <td><small class="text-muted">{{ $log['details'] }}</small></td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="text-center">No audit logs found.</td>
-                </tr>
-                @endforelse
+            <tbody id="auditTrailBody">
+                <tr><td colspan="5" class="text-center">Loading audit logs...</td></tr>
             </tbody>
         </table>
     </div>
 
-    {{-- Simulated Pagination --}}
-    <div class="app-table-pager" style="margin-top: 15px;">
-        <div class="rtp-pagination">
-            <nav class="rtp-nav" aria-label="Audit Trail pagination">
-                <div class="rtp-list" role="group" aria-label="Page controls">
-                    <button type="button" class="rtp-page-btn" disabled>&lt;</button>
-                    <div class="rtp-pages">
-                        <button type="button" class="rtp-page-num active">1</button>
-                        <button type="button" class="rtp-page-num">2</button>
-                        <button type="button" class="rtp-page-num">3</button>
-                    </div>
-                    <button type="button" class="rtp-page-btn">&gt;</button>
-                </div>
-            </nav>
-        </div>
-    </div>
+    <div class="app-table-pager" id="auditTrailPager" style="margin-top: 15px;"></div>
 </div>
 
 <style>
@@ -97,8 +74,8 @@
     .audit-filter-row .search-group { flex: 2; min-width: 200px; }
     .audit-filter-row .user-group { flex: 1; min-width: 150px; }
     .audit-filter-row .module-group { flex: 1; min-width: 150px; }
-    .audit-filter-row .date-group { flex: 1; min-width: 150px; }
-    .audit-filter-row .btn-group { flex: 0 0 auto; }
+    .audit-filter-row .date-group { flex: 1; min-width: 130px; }
+    .audit-filter-row .btn-group { flex: 0 0 auto; display: flex; gap: 8px; }
     .audit-filter-row .search-btn { height: 38px; min-width: 100px; }
 
     @media (max-width: 900px) {
@@ -132,3 +109,7 @@
     }
 </style>
 @endsection
+
+@push('scripts')
+<script src="{{ mix('js/registrar-audit-trail.js') }}"></script>
+@endpush

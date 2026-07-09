@@ -324,6 +324,7 @@ class UserAccessGate
             'registrar.admin-tools.student-maintenance.student-update.' => 'system_student_update',
             'registrar.admin-tools.student-maintenance.bed-student-status' => 'system_student_update',
             'registrar.admin-tools.student-maintenance.bed-days' => 'system_student_update',
+            'registrar.admin-tools.audit-trail.' => 'system_audit_trail',
             'student.forms.' => 'student_portal_forms',
             'student.profile.' => 'student_portal_profile',
             'student.notifications.' => 'student_portal_dashboard',

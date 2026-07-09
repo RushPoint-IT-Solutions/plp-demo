@@ -669,80 +669,218 @@ class AdminToolsController extends Controller
 
     public function auditTrail()
     {
-        $auditLogs = collect([
-            [
-                'user' => 'Admin User',
-                'timestamp' => now()->format('M d, Y h:i A'),
-                'action' => 'Updated Medical Certificate for Applicant #2024-0001',
-                'module' => 'Medical Clearance',
-                'details' => 'Status changed from Pending to Approved'
-            ],
-            [
-                'user' => 'Registrar Staff',
-                'timestamp' => now()->subMinutes(15)->format('M d, Y h:i A'),
-                'action' => 'Uploaded Chest X-ray for Applicant #2024-0005',
-                'module' => 'Medical Clearance',
-                'details' => 'File: chest_xray_v1.pdf'
-            ],
-            [
-                'user' => 'System',
-                'timestamp' => now()->subHour()->format('M d, Y h:i A'),
-                'action' => 'Auto-archived application #2023-9999',
-                'module' => 'Application List',
-                'details' => 'Reason: Inactivity for 30 days'
-            ],
-            [
-                'user' => 'Registrar Staff',
-                'timestamp' => now()->subHours(2)->format('M d, Y h:i A'),
-                'action' => 'Modified Program File: BSIT',
-                'module' => 'Academic Master',
-                'details' => 'Updated curriculum year from 2022 to 2024'
-            ],
-            [
-                'user' => 'Admin User',
-                'timestamp' => now()->subDays(1)->format('M d, Y h:i A'),
-                'action' => 'Created New User Account: faculty_user_1',
-                'module' => 'Access Management',
-                'details' => 'Assigned role: Faculty'
-            ],
-            [
-                'user' => 'Registrar Staff',
-                'timestamp' => now()->subDays(1)->subHours(2)->format('M d, Y h:i A'),
-                'action' => 'Generated Official Grade Report',
-                'module' => 'Forms',
-                'details' => 'Student: Juan Dela Cruz (#2021-1234)'
-            ],
-            [
-                'user' => 'System',
-                'timestamp' => now()->subDays(2)->format('M d, Y h:i A'),
-                'action' => 'Updated Academic Calendar',
-                'module' => 'System Config',
-                'details' => 'Added Final Examination schedule'
-            ],
-            [
-                'user' => 'Admin User',
-                'timestamp' => now()->subDays(2)->subHours(5)->format('M d, Y h:i A'),
-                'action' => 'Modified Room Capacity',
-                'module' => 'Scheduling',
-                'details' => 'Room 402: 40 to 50 slots'
-            ],
-            [
-                'user' => 'Registrar Staff',
-                'timestamp' => now()->subDays(3)->format('M d, Y h:i A'),
-                'action' => 'Approved Application #2024-0012',
-                'module' => 'Process',
-                'details' => 'Moved to Accepted status'
-            ],
-            [
-                'user' => 'System',
-                'timestamp' => now()->subDays(3)->subHours(12)->format('M d, Y h:i A'),
-                'action' => 'Sent Notification Blast',
-                'module' => 'Announcements',
-                'details' => 'Target: All Enrolled Students'
-            ]
+        $userOptions = [];
+        $moduleOptions = [];
+
+        if (Schema::hasTable('audit_events')) {
+            $userOptions = DB::table('audit_events as ae')
+                ->join('users as u', 'u.id', '=', 'ae.actor_user_id')
+                ->select('u.id', DB::raw('COALESCE(u.name, u.username) as label'))
+                ->distinct()
+                ->orderBy('label')
+                ->get()
+                ->map(function ($row) {
+                    return ['id' => (int) $row->id, 'label' => (string) $row->label];
+                })
+                ->values()
+                ->all();
+        }
+
+        if (Schema::hasTable('audit_event_subjects')) {
+            $moduleOptions = DB::table('audit_event_subjects')
+                ->select('subject_type')
+                ->distinct()
+                ->orderBy('subject_type')
+                ->pluck('subject_type')
+                ->map(function ($type) {
+                    return ['code' => (string) $type, 'label' => $this->humanizeAuditLabel((string) $type)];
+                })
+                ->values()
+                ->all();
+        }
+
+        return view('registrar.admin-tools.audit-trail', [
+            'auditTrailDataUrl' => route('registrar.admin-tools.audit-trail.data'),
+            'userOptions' => $userOptions,
+            'moduleOptions' => $moduleOptions,
+        ]);
+    }
+
+    public function auditTrailData(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('audit_events')) {
+            return response()->json([
+                'ok' => true,
+                'rows' => [],
+                'meta' => ['currentPage' => 1, 'lastPage' => 1, 'perPage' => 20, 'total' => 0, 'from' => 0],
+            ]);
+        }
+
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:190',
+            'user_id' => 'nullable|integer',
+            'module' => 'nullable|string|max:190',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        return view('registrar.admin-tools.audit-trail', compact('auditLogs'));
+        $search = trim((string) ($validated['search'] ?? ''));
+        $page = (int) ($validated['page'] ?? 1);
+        $perPage = (int) ($validated['per_page'] ?? 20);
+
+        $query = DB::table('audit_events as ae')
+            ->leftJoin('users as u', 'u.id', '=', 'ae.actor_user_id')
+            ->select([
+                'ae.id',
+                'ae.event_code',
+                'ae.source_module',
+                'ae.source_action',
+                'ae.created_at',
+                DB::raw('COALESCE(u.name, u.username, \'System\') as user_label'),
+            ]);
+
+        if (!empty($validated['user_id'])) {
+            $query->where('ae.actor_user_id', (int) $validated['user_id']);
+        }
+
+        if (!empty($validated['module'])) {
+            $moduleValue = (string) $validated['module'];
+            $query->whereExists(function ($sub) use ($moduleValue) {
+                $sub->select(DB::raw(1))
+                    ->from('audit_event_subjects as aes')
+                    ->whereColumn('aes.audit_event_id', 'ae.id')
+                    ->where('aes.subject_type', $moduleValue);
+            });
+        }
+
+        if (!empty($validated['date_from'])) {
+            $query->whereDate('ae.created_at', '>=', $validated['date_from']);
+        }
+
+        if (!empty($validated['date_to'])) {
+            $query->whereDate('ae.created_at', '<=', $validated['date_to']);
+        }
+
+        if ($search !== '') {
+            $needle = '%' . $search . '%';
+            $query->where(function ($outer) use ($needle) {
+                $outer->where('u.name', 'like', $needle)
+                    ->orWhere('u.username', 'like', $needle)
+                    ->orWhere('ae.event_code', 'like', $needle)
+                    ->orWhere('ae.source_module', 'like', $needle)
+                    ->orWhere('ae.source_action', 'like', $needle)
+                    ->orWhereExists(function ($sub) use ($needle) {
+                        $sub->select(DB::raw(1))
+                            ->from('audit_event_subjects as aes')
+                            ->whereColumn('aes.audit_event_id', 'ae.id')
+                            ->where(function ($inner) use ($needle) {
+                                $inner->where('aes.subject_type', 'like', $needle)
+                                    ->orWhere('aes.subject_label', 'like', $needle);
+                            });
+                    })
+                    ->orWhereExists(function ($sub) use ($needle) {
+                        $sub->select(DB::raw(1))
+                            ->from('audit_event_changes as aec')
+                            ->join('audit_event_subjects as aes2', 'aes2.id', '=', 'aec.audit_event_subject_id')
+                            ->whereColumn('aes2.audit_event_id', 'ae.id')
+                            ->where(function ($inner) use ($needle) {
+                                $inner->where('aec.field_name', 'like', $needle)
+                                    ->orWhere('aec.old_value', 'like', $needle)
+                                    ->orWhere('aec.new_value', 'like', $needle);
+                            });
+                    });
+            });
+        }
+
+        $paginator = $query
+            ->orderByDesc('ae.created_at')
+            ->orderByDesc('ae.id')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $eventIds = collect($paginator->items())->pluck('id')->all();
+
+        $subjectsByEvent = collect();
+        $changesBySubject = collect();
+
+        if (!empty($eventIds)) {
+            $subjects = DB::table('audit_event_subjects')
+                ->whereIn('audit_event_id', $eventIds)
+                ->get(['id', 'audit_event_id', 'subject_type', 'subject_label']);
+
+            $subjectsByEvent = $subjects->groupBy('audit_event_id');
+
+            $subjectIds = $subjects->pluck('id')->all();
+            if (!empty($subjectIds)) {
+                $changesBySubject = DB::table('audit_event_changes')
+                    ->whereIn('audit_event_subject_id', $subjectIds)
+                    ->get(['audit_event_subject_id', 'field_name', 'old_value', 'new_value'])
+                    ->groupBy('audit_event_subject_id');
+            }
+        }
+
+        $rows = collect($paginator->items())->map(function ($row) use ($subjectsByEvent, $changesBySubject) {
+            $subjects = $subjectsByEvent->get($row->id, collect());
+            $firstSubject = $subjects->first();
+
+            $moduleLabel = $firstSubject
+                ? $this->humanizeAuditLabel((string) $firstSubject->subject_type)
+                : $this->humanizeAuditLabel((string) ($row->source_module ?: 'General'));
+
+            $detailParts = $subjects->map(function ($subject) use ($changesBySubject) {
+                $label = trim((string) ($subject->subject_label ?: ''));
+                $changes = $changesBySubject->get($subject->id, collect());
+                $changeSummary = $changes->map(function ($change) {
+                    $field = str_replace('_', ' ', (string) $change->field_name);
+                    return trim($field . ': ' . ($change->old_value ?? '-') . " \u{2192} " . ($change->new_value ?? '-'));
+                })->implode('; ');
+
+                if ($label !== '' && $changeSummary !== '') {
+                    return $label . ' (' . $changeSummary . ')';
+                }
+
+                return $label !== '' ? $label : $changeSummary;
+            })->filter()->implode(', ');
+
+            return [
+                'id' => (int) $row->id,
+                'timestamp' => \Carbon\Carbon::parse($row->created_at)->format('M d, Y h:i A'),
+                'user' => (string) $row->user_label,
+                'module' => $moduleLabel,
+                'action' => $this->humanizeAuditLabel((string) ($row->source_action ?: $row->event_code)),
+                'details' => $detailParts !== '' ? $detailParts : '-',
+            ];
+        })->values()->all();
+
+        return response()->json([
+            'ok' => true,
+            'rows' => $rows,
+            'meta' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'from' => $paginator->firstItem(),
+            ],
+        ]);
+    }
+
+    private function humanizeAuditLabel(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '-';
+        }
+
+        // Split camelCase/PascalCase boundaries, then normalize underscores/dashes to spaces.
+        $spaced = preg_replace('/(?<!^)([A-Z])/', ' $1', $value);
+        $spaced = str_replace(['_', '-'], ' ', $spaced);
+        $words = array_filter(explode(' ', $spaced), function ($word) {
+            return $word !== '';
+        });
+
+        return implode(' ', array_map('ucfirst', array_map('strtolower', $words)));
     }
 
     public function configurationSchoolSemStore(Request $request): JsonResponse
