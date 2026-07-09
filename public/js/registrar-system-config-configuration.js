@@ -253,12 +253,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _requestJson.apply(this, arguments);
   }
   function _requestJson() {
-    _requestJson = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(url, method, payload) {
-      var response, data, _t;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.p = _context.n) {
+    _requestJson = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(url, method, payload) {
+      var response, data, _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.p = _context2.n) {
           case 0:
-            _context.n = 1;
+            _context2.n = 1;
             return fetch(url, {
               method: method,
               headers: {
@@ -267,57 +267,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
                 'X-CSRF-TOKEN': csrfToken()
               },
               body: payload ? JSON.stringify(payload) : null
-            });
-          case 1:
-            response = _context.v;
-            data = {};
-            _context.p = 2;
-            _context.n = 3;
-            return response.json();
-          case 3:
-            data = _context.v;
-            _context.n = 5;
-            break;
-          case 4:
-            _context.p = 4;
-            _t = _context.v;
-            data = {};
-          case 5:
-            if (!(!response.ok || data.ok === false)) {
-              _context.n = 6;
-              break;
-            }
-            throw new Error(resolveErrorMessage(data, 'Unable to process request.'));
-          case 6:
-            return _context.a(2, data);
-        }
-      }, _callee, null, [[2, 4]]);
-    }));
-    return _requestJson.apply(this, arguments);
-  }
-  function requestForm(_x4, _x5, _x6) {
-    return _requestForm.apply(this, arguments);
-  }
-  function _requestForm() {
-    _requestForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(url, method, formData) {
-      var transportMethod, body, response, data, _t2;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.p = _context2.n) {
-          case 0:
-            transportMethod = method;
-            body = formData;
-            if (method !== 'POST') {
-              transportMethod = 'POST';
-              body.append('_method', method);
-            }
-            _context2.n = 1;
-            return fetch(url, {
-              method: transportMethod,
-              headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken()
-              },
-              body: body
             });
           case 1:
             response = _context2.v;
@@ -343,6 +292,57 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             return _context2.a(2, data);
         }
       }, _callee2, null, [[2, 4]]);
+    }));
+    return _requestJson.apply(this, arguments);
+  }
+  function requestForm(_x4, _x5, _x6) {
+    return _requestForm.apply(this, arguments);
+  }
+  function _requestForm() {
+    _requestForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(url, method, formData) {
+      var transportMethod, body, response, data, _t3;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
+          case 0:
+            transportMethod = method;
+            body = formData;
+            if (method !== 'POST') {
+              transportMethod = 'POST';
+              body.append('_method', method);
+            }
+            _context3.n = 1;
+            return fetch(url, {
+              method: transportMethod,
+              headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken()
+              },
+              body: body
+            });
+          case 1:
+            response = _context3.v;
+            data = {};
+            _context3.p = 2;
+            _context3.n = 3;
+            return response.json();
+          case 3:
+            data = _context3.v;
+            _context3.n = 5;
+            break;
+          case 4:
+            _context3.p = 4;
+            _t3 = _context3.v;
+            data = {};
+          case 5:
+            if (!(!response.ok || data.ok === false)) {
+              _context3.n = 6;
+              break;
+            }
+            throw new Error(resolveErrorMessage(data, 'Unable to process request.'));
+          case 6:
+            return _context3.a(2, data);
+        }
+      }, _callee3, null, [[2, 4]]);
     }));
     return _requestForm.apply(this, arguments);
   }
@@ -798,27 +798,27 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _saveSchoolSem.apply(this, arguments);
   }
   function _saveSchoolSem() {
-    _saveSchoolSem = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var schoolYear, semester, editId, saveButton, payload, response, _t3;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.p = _context3.n) {
+    _saveSchoolSem = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var schoolYear, semester, editId, saveButton, payload, response, _t4;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.p = _context4.n) {
           case 0:
             if (!requestLocks.schoolSem) {
-              _context3.n = 1;
+              _context4.n = 1;
               break;
             }
-            return _context3.a(2);
+            return _context4.a(2);
           case 1:
             schoolYear = (byId('cfgSSYear').value || '').trim();
             semester = byId('cfgSSSemester').value;
             editId = byId('cfgSSEditId').value;
             saveButton = byId('cfgSSSaveBtn');
             if (!(!schoolYear || !semester)) {
-              _context3.n = 2;
+              _context4.n = 2;
               break;
             }
             showMessage('Please complete School Year and Semester.', 'error');
-            return _context3.a(2);
+            return _context4.a(2);
           case 2:
             payload = {
               school_year: schoolYear,
@@ -828,22 +828,22 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             if (saveButton) {
               saveButton.disabled = true;
             }
-            _context3.p = 3;
+            _context4.p = 3;
             if (!editId) {
-              _context3.n = 5;
+              _context4.n = 5;
               break;
             }
-            _context3.n = 4;
+            _context4.n = 4;
             return requestJson(routeFromTemplate(routes.schoolSemUpdateTemplate, editId), 'PUT', payload);
           case 4:
-            response = _context3.v;
-            _context3.n = 7;
+            response = _context4.v;
+            _context4.n = 7;
             break;
           case 5:
-            _context3.n = 6;
+            _context4.n = 6;
             return requestJson(routes.schoolSemStore, 'POST', payload);
           case 6:
-            response = _context3.v;
+            response = _context4.v;
           case 7:
             if (response.row) {
               upsertRow(state.schoolSem, response.row);
@@ -853,23 +853,23 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             closeModal('cfgSchoolSemModal');
             resetSchoolSemModal();
             showMessage('School year and semester saved.', 'success');
-            _context3.n = 9;
+            _context4.n = 9;
             break;
           case 8:
-            _context3.p = 8;
-            _t3 = _context3.v;
-            showMessage(_t3.message || 'Unable to save school year and semester.', 'error');
+            _context4.p = 8;
+            _t4 = _context4.v;
+            showMessage(_t4.message || 'Unable to save school year and semester.', 'error');
           case 9:
-            _context3.p = 9;
+            _context4.p = 9;
             requestLocks.schoolSem = false;
             if (saveButton) {
               saveButton.disabled = false;
             }
-            return _context3.f(9);
+            return _context4.f(9);
           case 10:
-            return _context3.a(2);
+            return _context4.a(2);
         }
-      }, _callee3, null, [[3, 8, 9, 10]]);
+      }, _callee4, null, [[3, 8, 9, 10]]);
     }));
     return _saveSchoolSem.apply(this, arguments);
   }
@@ -877,10 +877,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _saveGradePosting.apply(this, arguments);
   }
   function _saveGradePosting() {
-    _saveGradePosting = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-      var schoolYear, semester, period, dateFrom, editId, payload, response, _t4;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.p = _context4.n) {
+    _saveGradePosting = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      var schoolYear, semester, period, dateFrom, editId, payload, response, _t5;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
           case 0:
             schoolYear = (byId('cfgGPYear').value || '').trim();
             semester = byId('cfgGPSemester').value;
@@ -888,11 +888,11 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             dateFrom = byId('cfgGPDateFrom').value;
             editId = byId('cfgGPEditId').value;
             if (!(!schoolYear || !semester || !period || !dateFrom)) {
-              _context4.n = 1;
+              _context5.n = 1;
               break;
             }
             showMessage('Please complete all Grade Posting fields.', 'error');
-            return _context4.a(2);
+            return _context5.a(2);
           case 1:
             payload = {
               school_year: schoolYear,
@@ -900,22 +900,22 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               period: period,
               date_from: dateFrom
             };
-            _context4.p = 2;
+            _context5.p = 2;
             if (!editId) {
-              _context4.n = 4;
+              _context5.n = 4;
               break;
             }
-            _context4.n = 3;
+            _context5.n = 3;
             return requestJson(routeFromTemplate(routes.gradePostingUpdateTemplate, editId), 'PUT', payload);
           case 3:
-            response = _context4.v;
-            _context4.n = 6;
+            response = _context5.v;
+            _context5.n = 6;
             break;
           case 4:
-            _context4.n = 5;
+            _context5.n = 5;
             return requestJson(routes.gradePostingStore, 'POST', payload);
           case 5:
-            response = _context4.v;
+            response = _context5.v;
           case 6:
             if (response.row) {
               upsertRow(state.gradePosting, response.row);
@@ -925,16 +925,16 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             closeModal('cfgGradePostingModal');
             resetGradePostingModal();
             showMessage('Grade posting saved.', 'success');
-            _context4.n = 8;
+            _context5.n = 8;
             break;
           case 7:
-            _context4.p = 7;
-            _t4 = _context4.v;
-            showMessage(_t4.message || 'Unable to save grade posting.', 'error');
+            _context5.p = 7;
+            _t5 = _context5.v;
+            showMessage(_t5.message || 'Unable to save grade posting.', 'error');
           case 8:
-            return _context4.a(2);
+            return _context5.a(2);
         }
-      }, _callee4, null, [[2, 7]]);
+      }, _callee5, null, [[2, 7]]);
     }));
     return _saveGradePosting.apply(this, arguments);
   }
@@ -942,10 +942,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitSignatureForm.apply(this, arguments);
   }
   function _submitSignatureForm() {
-    _submitSignatureForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(event) {
-      var designationId, signerName, fileInput, editId, formData, response, _t5;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.p = _context5.n) {
+    _submitSignatureForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(event) {
+      var designationId, signerName, fileInput, editId, formData, response, _t6;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.p = _context6.n) {
           case 0:
             event.preventDefault();
             designationId = byId('cfgSignatureDesignation').value;
@@ -953,12 +953,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             fileInput = byId('cfgSignatureFile');
             editId = byId('cfgSignatureEditId').value;
             if (!(!designationId || !signerName)) {
-              _context5.n = 1;
+              _context6.n = 1;
               break;
             }
             setInlineMessage('cfgSignatureModalMessage', 'Please complete designation and name for signature.', true);
             showMessage('Please complete designation and name for signature.', 'error');
-            return _context5.a(2);
+            return _context6.a(2);
           case 1:
             formData = new FormData();
             formData.append('designation_id', designationId);
@@ -968,22 +968,22 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             }
             setInlineMessage('cfgSignatureModalMessage', 'Saving signature configuration...', false);
             setSignatureSaveButtonState(true);
-            _context5.p = 2;
+            _context6.p = 2;
             if (!editId) {
-              _context5.n = 4;
+              _context6.n = 4;
               break;
             }
-            _context5.n = 3;
+            _context6.n = 3;
             return requestForm(routeFromTemplate(routes.signatureUpdateTemplate, editId), 'PUT', formData);
           case 3:
-            response = _context5.v;
-            _context5.n = 6;
+            response = _context6.v;
+            _context6.n = 6;
             break;
           case 4:
-            _context5.n = 5;
+            _context6.n = 5;
             return requestForm(routes.signatureStore, 'POST', formData);
           case 5:
-            response = _context5.v;
+            response = _context6.v;
           case 6:
             if (response.row) {
               upsertRow(state.signatures, response.row);
@@ -993,21 +993,21 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             closeModal('cfgSignatureModal');
             resetSignatureForm();
             showMessage('Signature configuration saved.', 'success');
-            _context5.n = 8;
+            _context6.n = 8;
             break;
           case 7:
-            _context5.p = 7;
-            _t5 = _context5.v;
-            setInlineMessage('cfgSignatureModalMessage', _t5.message || 'Unable to save signature configuration.', true);
-            showMessage(_t5.message || 'Unable to save signature configuration.', 'error');
+            _context6.p = 7;
+            _t6 = _context6.v;
+            setInlineMessage('cfgSignatureModalMessage', _t6.message || 'Unable to save signature configuration.', true);
+            showMessage(_t6.message || 'Unable to save signature configuration.', 'error');
           case 8:
-            _context5.p = 8;
+            _context6.p = 8;
             setSignatureSaveButtonState(false);
-            return _context5.f(8);
+            return _context6.f(8);
           case 9:
-            return _context5.a(2);
+            return _context6.a(2);
         }
-      }, _callee5, null, [[2, 7, 8, 9]]);
+      }, _callee6, null, [[2, 7, 8, 9]]);
     }));
     return _submitSignatureForm.apply(this, arguments);
   }
@@ -1015,10 +1015,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitCutoffDateForm.apply(this, arguments);
   }
   function _submitCutoffDateForm() {
-    _submitCutoffDateForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(event) {
-      var typeCode, schoolYear, semester, cutoffDate, editId, payload, response, _t6;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.p = _context6.n) {
+    _submitCutoffDateForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(event) {
+      var typeCode, schoolYear, semester, cutoffDate, editId, payload, response, _t7;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.p = _context7.n) {
           case 0:
             event.preventDefault();
             typeCode = byId('cfgCutoffType').value;
@@ -1027,78 +1027,14 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             cutoffDate = byId('cfgCutoffDate').value;
             editId = byId('cfgCutoffDateEditId').value;
             if (!(!typeCode || !schoolYear || !semester || !cutoffDate)) {
-              _context6.n = 1;
-              break;
-            }
-            showMessage('Please complete all Cut Off Date fields.', 'error');
-            return _context6.a(2);
-          case 1:
-            payload = {
-              type_code: typeCode,
-              school_year: schoolYear,
-              semester: semester,
-              cutoff_date: cutoffDate
-            };
-            _context6.p = 2;
-            if (!editId) {
-              _context6.n = 4;
-              break;
-            }
-            _context6.n = 3;
-            return requestJson(routeFromTemplate(routes.cutoffUpdateTemplate, editId), 'PUT', payload);
-          case 3:
-            response = _context6.v;
-            _context6.n = 6;
-            break;
-          case 4:
-            _context6.n = 5;
-            return requestJson(routes.cutoffStore, 'POST', payload);
-          case 5:
-            response = _context6.v;
-          case 6:
-            if (response.row) {
-              upsertRow(state.cutoffDate, response.row);
-            }
-            state.pager.cutoffDate.page = 1;
-            renderCutoffDate();
-            resetCutoffDateForm();
-            showMessage('Cut-off date saved.', 'success');
-            _context6.n = 8;
-            break;
-          case 7:
-            _context6.p = 7;
-            _t6 = _context6.v;
-            showMessage(_t6.message || 'Unable to save cut-off date.', 'error');
-          case 8:
-            return _context6.a(2);
-        }
-      }, _callee6, null, [[2, 7]]);
-    }));
-    return _submitCutoffDateForm.apply(this, arguments);
-  }
-  function submitSectionCutoffForm(_x9) {
-    return _submitSectionCutoffForm.apply(this, arguments);
-  }
-  function _submitSectionCutoffForm() {
-    _submitSectionCutoffForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(event) {
-      var schoolYear, semester, cutoffDate, editId, payload, response, _t7;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.p = _context7.n) {
-          case 0:
-            event.preventDefault();
-            schoolYear = (byId('cfgSectionCutoffSy').value || '').trim();
-            semester = byId('cfgSectionCutoffSemester').value;
-            cutoffDate = byId('cfgSectionCutoffDate').value;
-            editId = byId('cfgSectionCutoffEditId').value;
-            if (!(!schoolYear || !semester || !cutoffDate)) {
               _context7.n = 1;
               break;
             }
-            showMessage('Please complete all Section Offering Cut Off fields.', 'error');
+            showMessage('Please complete all Cut Off Date fields.', 'error');
             return _context7.a(2);
           case 1:
             payload = {
-              type_code: 'SECTION_OFFERING',
+              type_code: typeCode,
               school_year: schoolYear,
               semester: semester,
               cutoff_date: cutoffDate
@@ -1121,48 +1057,48 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             response = _context7.v;
           case 6:
             if (response.row) {
-              upsertRow(state.sectionCutoff, response.row);
+              upsertRow(state.cutoffDate, response.row);
             }
-            state.pager.sectionCutoff.page = 1;
-            renderSectionCutoff();
-            resetSectionCutoffForm();
-            showMessage('Section offering cut-off saved.', 'success');
+            state.pager.cutoffDate.page = 1;
+            renderCutoffDate();
+            resetCutoffDateForm();
+            showMessage('Cut-off date saved.', 'success');
             _context7.n = 8;
             break;
           case 7:
             _context7.p = 7;
             _t7 = _context7.v;
-            showMessage(_t7.message || 'Unable to save section offering cut-off.', 'error');
+            showMessage(_t7.message || 'Unable to save cut-off date.', 'error');
           case 8:
             return _context7.a(2);
         }
       }, _callee7, null, [[2, 7]]);
     }));
+    return _submitCutoffDateForm.apply(this, arguments);
+  }
+  function submitSectionCutoffForm(_x9) {
     return _submitSectionCutoffForm.apply(this, arguments);
   }
-  function submitCutoffConfigForm(_x0) {
-    return _submitCutoffConfigForm.apply(this, arguments);
-  }
-  function _submitCutoffConfigForm() {
-    _submitCutoffConfigForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(event) {
+  function _submitSectionCutoffForm() {
+    _submitSectionCutoffForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(event) {
       var schoolYear, semester, cutoffDate, editId, payload, response, _t8;
       return _regenerator().w(function (_context8) {
         while (1) switch (_context8.p = _context8.n) {
           case 0:
             event.preventDefault();
-            schoolYear = (byId('cfgCutoffConfigSy').value || '').trim();
-            semester = byId('cfgCutoffConfigSemester').value;
-            cutoffDate = byId('cfgCutoffConfigDate').value;
-            editId = byId('cfgCutoffConfigEditId').value;
+            schoolYear = (byId('cfgSectionCutoffSy').value || '').trim();
+            semester = byId('cfgSectionCutoffSemester').value;
+            cutoffDate = byId('cfgSectionCutoffDate').value;
+            editId = byId('cfgSectionCutoffEditId').value;
             if (!(!schoolYear || !semester || !cutoffDate)) {
               _context8.n = 1;
               break;
             }
-            showMessage('Please complete all Changing/Deleting/Adding Cut-off fields.', 'error');
+            showMessage('Please complete all Section Offering Cut Off fields.', 'error');
             return _context8.a(2);
           case 1:
             payload = {
-              type_code: 'CHANGING_DELETING_ADDING',
+              type_code: 'SECTION_OFFERING',
               school_year: schoolYear,
               semester: semester,
               cutoff_date: cutoffDate
@@ -1185,22 +1121,86 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             response = _context8.v;
           case 6:
             if (response.row) {
+              upsertRow(state.sectionCutoff, response.row);
+            }
+            state.pager.sectionCutoff.page = 1;
+            renderSectionCutoff();
+            resetSectionCutoffForm();
+            showMessage('Section offering cut-off saved.', 'success');
+            _context8.n = 8;
+            break;
+          case 7:
+            _context8.p = 7;
+            _t8 = _context8.v;
+            showMessage(_t8.message || 'Unable to save section offering cut-off.', 'error');
+          case 8:
+            return _context8.a(2);
+        }
+      }, _callee8, null, [[2, 7]]);
+    }));
+    return _submitSectionCutoffForm.apply(this, arguments);
+  }
+  function submitCutoffConfigForm(_x0) {
+    return _submitCutoffConfigForm.apply(this, arguments);
+  }
+  function _submitCutoffConfigForm() {
+    _submitCutoffConfigForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(event) {
+      var schoolYear, semester, cutoffDate, editId, payload, response, _t9;
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.p = _context9.n) {
+          case 0:
+            event.preventDefault();
+            schoolYear = (byId('cfgCutoffConfigSy').value || '').trim();
+            semester = byId('cfgCutoffConfigSemester').value;
+            cutoffDate = byId('cfgCutoffConfigDate').value;
+            editId = byId('cfgCutoffConfigEditId').value;
+            if (!(!schoolYear || !semester || !cutoffDate)) {
+              _context9.n = 1;
+              break;
+            }
+            showMessage('Please complete all Changing/Deleting/Adding Cut-off fields.', 'error');
+            return _context9.a(2);
+          case 1:
+            payload = {
+              type_code: 'CHANGING_DELETING_ADDING',
+              school_year: schoolYear,
+              semester: semester,
+              cutoff_date: cutoffDate
+            };
+            _context9.p = 2;
+            if (!editId) {
+              _context9.n = 4;
+              break;
+            }
+            _context9.n = 3;
+            return requestJson(routeFromTemplate(routes.cutoffUpdateTemplate, editId), 'PUT', payload);
+          case 3:
+            response = _context9.v;
+            _context9.n = 6;
+            break;
+          case 4:
+            _context9.n = 5;
+            return requestJson(routes.cutoffStore, 'POST', payload);
+          case 5:
+            response = _context9.v;
+          case 6:
+            if (response.row) {
               upsertRow(state.cutoffConfig, response.row);
             }
             state.pager.cutoffConfig.page = 1;
             renderCutoffConfig();
             resetCutoffConfigForm();
             showMessage('Cut-off configuration saved.', 'success');
-            _context8.n = 8;
+            _context9.n = 8;
             break;
           case 7:
-            _context8.p = 7;
-            _t8 = _context8.v;
-            showMessage(_t8.message || 'Unable to save cut-off configuration.', 'error');
+            _context9.p = 7;
+            _t9 = _context9.v;
+            showMessage(_t9.message || 'Unable to save cut-off configuration.', 'error');
           case 8:
-            return _context8.a(2);
+            return _context9.a(2);
         }
-      }, _callee8, null, [[2, 7]]);
+      }, _callee9, null, [[2, 7]]);
     }));
     return _submitCutoffConfigForm.apply(this, arguments);
   }
@@ -1208,10 +1208,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitCutoffRegistrationForm.apply(this, arguments);
   }
   function _submitCutoffRegistrationForm() {
-    _submitCutoffRegistrationForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(event) {
-      var schoolYear, semester, eventDate, cutoffDate, studentNo, payload, _t9;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.p = _context9.n) {
+    _submitCutoffRegistrationForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(event) {
+      var schoolYear, semester, eventDate, cutoffDate, studentNo, payload, _t0;
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.p = _context0.n) {
           case 0:
             event.preventDefault();
             schoolYear = (byId('cfgCutoffRegSy').value || '').trim();
@@ -1220,11 +1220,11 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             cutoffDate = byId('cfgCutoffRegCutoffDate').value;
             studentNo = (byId('cfgCutoffRegStudentNo').value || '').trim();
             if (!(!schoolYear || !semester || !eventDate || !cutoffDate || !studentNo)) {
-              _context9.n = 1;
+              _context0.n = 1;
               break;
             }
             setInlineMessage('cfgCutoffRegMessage', 'Please complete all Cut-off Registration fields.', true);
-            return _context9.a(2);
+            return _context0.a(2);
           case 1:
             payload = {
               type_code: 'CUT_OFF_REGISTRATION',
@@ -1234,24 +1234,24 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               cutoff_date: cutoffDate,
               student_no: studentNo
             };
-            _context9.p = 2;
-            _context9.n = 3;
+            _context0.p = 2;
+            _context0.n = 3;
             return requestJson(routes.cutoffStore, 'POST', payload);
           case 3:
             setInlineMessage('cfgCutoffRegMessage', 'Cut-off registration saved for student ' + studentNo + '.', false);
             setDateInputValue('cfgCutoffRegDate', '');
             setDateInputValue('cfgCutoffRegCutoffDate', '');
             byId('cfgCutoffRegStudentNo').value = '';
-            _context9.n = 5;
+            _context0.n = 5;
             break;
           case 4:
-            _context9.p = 4;
-            _t9 = _context9.v;
-            setInlineMessage('cfgCutoffRegMessage', _t9.message || 'Unable to save cut-off registration.', true);
+            _context0.p = 4;
+            _t0 = _context0.v;
+            setInlineMessage('cfgCutoffRegMessage', _t0.message || 'Unable to save cut-off registration.', true);
           case 5:
-            return _context9.a(2);
+            return _context0.a(2);
         }
-      }, _callee9, null, [[2, 4]]);
+      }, _callee0, null, [[2, 4]]);
     }));
     return _submitCutoffRegistrationForm.apply(this, arguments);
   }
@@ -1259,10 +1259,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitCurriculumForm.apply(this, arguments);
   }
   function _submitCurriculumForm() {
-    _submitCurriculumForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(event) {
-      var schoolYear, semester, status, editId, payload, response, _t0;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.p = _context0.n) {
+    _submitCurriculumForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(event) {
+      var schoolYear, semester, status, editId, payload, response, _t1;
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.p = _context1.n) {
           case 0:
             event.preventDefault();
             schoolYear = (byId('cfgCurriculumSy').value || '').trim();
@@ -1270,33 +1270,33 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             status = byId('cfgCurriculumStatus').value;
             editId = byId('cfgCurriculumEditId').value;
             if (!(!schoolYear || !semester || !status)) {
-              _context0.n = 1;
+              _context1.n = 1;
               break;
             }
             showMessage('Please complete all Curriculum Evaluation Display fields.', 'error');
-            return _context0.a(2);
+            return _context1.a(2);
           case 1:
             payload = {
               school_year: schoolYear,
               semester: semester,
               display_status: status
             };
-            _context0.p = 2;
+            _context1.p = 2;
             if (!editId) {
-              _context0.n = 4;
+              _context1.n = 4;
               break;
             }
-            _context0.n = 3;
+            _context1.n = 3;
             return requestJson(routeFromTemplate(routes.curriculumDisplayUpdateTemplate, editId), 'PUT', payload);
           case 3:
-            response = _context0.v;
-            _context0.n = 6;
+            response = _context1.v;
+            _context1.n = 6;
             break;
           case 4:
-            _context0.n = 5;
+            _context1.n = 5;
             return requestJson(routes.curriculumDisplayStore, 'POST', payload);
           case 5:
-            response = _context0.v;
+            response = _context1.v;
           case 6:
             if (response.row) {
               upsertRow(state.curriculumDisplay, response.row);
@@ -1305,16 +1305,16 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             renderCurriculumDisplay();
             resetCurriculumForm();
             showMessage('Curriculum display saved.', 'success');
-            _context0.n = 8;
+            _context1.n = 8;
             break;
           case 7:
-            _context0.p = 7;
-            _t0 = _context0.v;
-            showMessage(_t0.message || 'Unable to save curriculum display.', 'error');
+            _context1.p = 7;
+            _t1 = _context1.v;
+            showMessage(_t1.message || 'Unable to save curriculum display.', 'error');
           case 8:
-            return _context0.a(2);
+            return _context1.a(2);
         }
-      }, _callee0, null, [[2, 7]]);
+      }, _callee1, null, [[2, 7]]);
     }));
     return _submitCurriculumForm.apply(this, arguments);
   }
@@ -1322,10 +1322,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitReportDetailsForm.apply(this, arguments);
   }
   function _submitReportDetailsForm() {
-    _submitReportDetailsForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(event) {
-      var payload, _t1;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.p = _context1.n) {
+    _submitReportDetailsForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(event) {
+      var payload, _t10;
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.p = _context10.n) {
           case 0:
             event.preventDefault();
             payload = {
@@ -1336,27 +1336,27 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               contact_details: (byId('cfgReportContactDetails').value || '').trim()
             };
             if (!(!payload.region || !payload.division || !payload.school_id || !payload.school_name || !payload.contact_details)) {
-              _context1.n = 1;
+              _context10.n = 1;
               break;
             }
             showMessage('Please complete all Report Details fields.', 'error');
-            return _context1.a(2);
+            return _context10.a(2);
           case 1:
-            _context1.p = 1;
-            _context1.n = 2;
+            _context10.p = 1;
+            _context10.n = 2;
             return requestJson(routes.reportDetailsSave, 'POST', payload);
           case 2:
             showMessage('Report details saved.', 'success');
-            _context1.n = 4;
+            _context10.n = 4;
             break;
           case 3:
-            _context1.p = 3;
-            _t1 = _context1.v;
-            showMessage(_t1.message || 'Unable to save report details.', 'error');
+            _context10.p = 3;
+            _t10 = _context10.v;
+            showMessage(_t10.message || 'Unable to save report details.', 'error');
           case 4:
-            return _context1.a(2);
+            return _context10.a(2);
         }
-      }, _callee1, null, [[1, 3]]);
+      }, _callee10, null, [[1, 3]]);
     }));
     return _submitReportDetailsForm.apply(this, arguments);
   }
@@ -1364,10 +1364,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitEmailSenderForm.apply(this, arguments);
   }
   function _submitEmailSenderForm() {
-    _submitEmailSenderForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(event) {
-      var payload, response, _t10;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.p = _context10.n) {
+    _submitEmailSenderForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(event) {
+      var payload, response, _t11;
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.p = _context11.n) {
           case 0:
             event.preventDefault();
             payload = {
@@ -1375,32 +1375,32 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               password: (byId('cfgEmailSenderPassword').value || '').trim()
             };
             if (payload.email) {
-              _context10.n = 1;
+              _context11.n = 1;
               break;
             }
             showMessage('Please provide an email sender address.', 'error');
-            return _context10.a(2);
+            return _context11.a(2);
           case 1:
-            _context10.p = 1;
-            _context10.n = 2;
+            _context11.p = 1;
+            _context11.n = 2;
             return requestJson(routes.emailSenderSave, 'POST', payload);
           case 2:
-            response = _context10.v;
+            response = _context11.v;
             if (response.row && response.row.email) {
               byId('cfgEmailSenderAddress').value = response.row.email;
             }
             byId('cfgEmailSenderPassword').value = '';
             showMessage('Email sender saved.', 'success');
-            _context10.n = 4;
+            _context11.n = 4;
             break;
           case 3:
-            _context10.p = 3;
-            _t10 = _context10.v;
-            showMessage(_t10.message || 'Unable to save email sender.', 'error');
+            _context11.p = 3;
+            _t11 = _context11.v;
+            showMessage(_t11.message || 'Unable to save email sender.', 'error');
           case 4:
-            return _context10.a(2);
+            return _context11.a(2);
         }
-      }, _callee10, null, [[1, 3]]);
+      }, _callee11, null, [[1, 3]]);
     }));
     return _submitEmailSenderForm.apply(this, arguments);
   }
@@ -1408,10 +1408,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _submitOverdueIncForm.apply(this, arguments);
   }
   function _submitOverdueIncForm() {
-    _submitOverdueIncForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(event) {
-      var payload, response, message, _t11;
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.p = _context11.n) {
+    _submitOverdueIncForm = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(event) {
+      var payload, response, message, _t12;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.p = _context12.n) {
           case 0:
             event.preventDefault();
             payload = {
@@ -1419,32 +1419,32 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               semester: byId('cfgIncSemester').value
             };
             if (!(!payload.school_year || !payload.semester)) {
-              _context11.n = 1;
+              _context12.n = 1;
               break;
             }
             setInlineMessage('cfgIncProcessMessage', 'Please provide School Year and Semester to process.', true);
-            return _context11.a(2);
+            return _context12.a(2);
           case 1:
-            _context11.p = 1;
-            _context11.n = 2;
+            _context12.p = 1;
+            _context12.n = 2;
             return requestJson(routes.overdueIncProcess, 'POST', payload);
           case 2:
-            response = _context11.v;
+            response = _context12.v;
             message = response && response.message ? response.message : 'Processed ' + (response.processedCount || 0) + ' INC record(s).';
             setInlineMessage('cfgIncProcessMessage', message, false);
             if (response && response.run) {
               state.latestIncRun = response.run;
             }
-            _context11.n = 4;
+            _context12.n = 4;
             break;
           case 3:
-            _context11.p = 3;
-            _t11 = _context11.v;
-            setInlineMessage('cfgIncProcessMessage', _t11.message || 'Unable to process overdue INC records.', true);
+            _context12.p = 3;
+            _t12 = _context12.v;
+            setInlineMessage('cfgIncProcessMessage', _t12.message || 'Unable to process overdue INC records.', true);
           case 4:
-            return _context11.a(2);
+            return _context12.a(2);
         }
-      }, _callee11, null, [[1, 3]]);
+      }, _callee12, null, [[1, 3]]);
     }));
     return _submitOverdueIncForm.apply(this, arguments);
   }
@@ -1467,23 +1467,23 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _confirmDelete.apply(this, arguments);
   }
   function _confirmDelete() {
-    _confirmDelete = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
-      var group, id, endpoint, confirmButton, _t12;
-      return _regenerator().w(function (_context12) {
-        while (1) switch (_context12.p = _context12.n) {
+    _confirmDelete = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
+      var group, id, endpoint, confirmButton, _t13;
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.p = _context13.n) {
           case 0:
             if (!state.deleteBusy) {
-              _context12.n = 1;
+              _context13.n = 1;
               break;
             }
-            return _context12.a(2);
+            return _context13.a(2);
           case 1:
             if (!(!state.deleteTarget || !state.deleteTarget.id)) {
-              _context12.n = 2;
+              _context13.n = 2;
               break;
             }
             closeModal('cfgDeleteModal');
-            return _context12.a(2);
+            return _context13.a(2);
           case 2:
             group = state.deleteTarget.group;
             id = state.deleteTarget.id;
@@ -1500,19 +1500,19 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               endpoint = routeFromTemplate(routes.curriculumDisplayDeleteTemplate, id);
             }
             if (endpoint) {
-              _context12.n = 3;
+              _context13.n = 3;
               break;
             }
             closeModal('cfgDeleteModal');
-            return _context12.a(2);
+            return _context13.a(2);
           case 3:
             confirmButton = document.querySelector('[data-cfg-action="confirm-delete"]');
             state.deleteBusy = true;
             if (confirmButton) {
               confirmButton.disabled = true;
             }
-            _context12.p = 4;
-            _context12.n = 5;
+            _context13.p = 4;
+            _context13.n = 5;
             return requestJson(endpoint, 'DELETE');
           case 5:
             if (group === 'cutoffDate' || group === 'sectionCutoff' || group === 'cutoffConfig') {
@@ -1529,23 +1529,23 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             state.deleteTarget = null;
             closeModal('cfgDeleteModal');
             showMessage('Record deleted.', 'success');
-            _context12.n = 7;
+            _context13.n = 7;
             break;
           case 6:
-            _context12.p = 6;
-            _t12 = _context12.v;
-            showMessage(_t12.message || 'Unable to delete record.', 'error');
+            _context13.p = 6;
+            _t13 = _context13.v;
+            showMessage(_t13.message || 'Unable to delete record.', 'error');
           case 7:
-            _context12.p = 7;
+            _context13.p = 7;
             state.deleteBusy = false;
             if (confirmButton) {
               confirmButton.disabled = false;
             }
-            return _context12.f(7);
+            return _context13.f(7);
           case 8:
-            return _context12.a(2);
+            return _context13.a(2);
         }
-      }, _callee12, null, [[4, 6, 7, 8]]);
+      }, _callee13, null, [[4, 6, 7, 8]]);
     }));
     return _confirmDelete.apply(this, arguments);
   }
@@ -1553,30 +1553,30 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _deleteSignatureFile.apply(this, arguments);
   }
   function _deleteSignatureFile() {
-    _deleteSignatureFile = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(index) {
-      var row, response, _t13;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.p = _context13.n) {
+    _deleteSignatureFile = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(index) {
+      var row, response, _t14;
+      return _regenerator().w(function (_context14) {
+        while (1) switch (_context14.p = _context14.n) {
           case 0:
             row = state.signatures[index];
             if (!(!row || !row.signatureDeleteUrl)) {
-              _context13.n = 1;
+              _context14.n = 1;
               break;
             }
             showMessage('No signature file is available to delete.', 'error');
-            return _context13.a(2);
+            return _context14.a(2);
           case 1:
             if (window.confirm('Delete the uploaded signature file?')) {
-              _context13.n = 2;
+              _context14.n = 2;
               break;
             }
-            return _context13.a(2);
+            return _context14.a(2);
           case 2:
-            _context13.p = 2;
-            _context13.n = 3;
+            _context14.p = 2;
+            _context14.n = 3;
             return requestJson(row.signatureDeleteUrl, 'DELETE');
           case 3:
-            response = _context13.v;
+            response = _context14.v;
             if (response && response.row) {
               upsertRow(state.signatures, response.row);
             } else {
@@ -1585,16 +1585,16 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             }
             renderSignatures();
             showMessage(response && response.message || 'Signature file deleted.', 'success');
-            _context13.n = 5;
+            _context14.n = 5;
             break;
           case 4:
-            _context13.p = 4;
-            _t13 = _context13.v;
-            showMessage(_t13.message || 'Unable to delete signature file.', 'error');
+            _context14.p = 4;
+            _t14 = _context14.v;
+            showMessage(_t14.message || 'Unable to delete signature file.', 'error');
           case 5:
-            return _context13.a(2);
+            return _context14.a(2);
         }
-      }, _callee13, null, [[2, 4]]);
+      }, _callee14, null, [[2, 4]]);
     }));
     return _deleteSignatureFile.apply(this, arguments);
   }
@@ -1855,37 +1855,65 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     }
     var designationSaveBtn = byId('cfgDesignationSaveBtn');
     if (designationSaveBtn) {
-      designationSaveBtn.addEventListener('click', function () {
-        var name = (byId('newDesignationName').value || '').trim();
-        if (!name) {
-          showMessage('Please provide a designation name.', 'error');
-          return;
-        }
-        showMessage('New designation "' + name + '" created successfully.', 'success');
+      designationSaveBtn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var name, response, row, designationSelect, opt, _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              name = (byId('newDesignationName').value || '').trim();
+              if (name) {
+                _context.n = 1;
+                break;
+              }
+              showMessage('Please provide a designation name.', 'error');
+              return _context.a(2);
+            case 1:
+              designationSaveBtn.disabled = true;
+              _context.p = 2;
+              _context.n = 3;
+              return requestJson(routes.signatureDesignationStore, 'POST', {
+                name: name
+              });
+            case 3:
+              response = _context.v;
+              row = response.row || {}; // Add the newly persisted designation to the signatory dropdown
+              designationSelect = byId('cfgSignatureDesignation');
+              if (designationSelect && row.id) {
+                opt = document.createElement('option');
+                opt.value = String(row.id);
+                opt.textContent = row.name || name;
+                designationSelect.appendChild(opt);
 
-        // Add to signatory dropdown list (UI Preview)
-        var designationSelect = byId('cfgSignatureDesignation');
-        if (designationSelect) {
-          var opt = document.createElement('option');
-          opt.value = String(Date.now()); // Mock Integer ID
-          opt.textContent = name;
-          designationSelect.appendChild(opt);
-
-          // Force refresh all custom listboxes
-          if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
-            window.registrarListboxSelect.refreshAll();
+                // Force refresh all custom listboxes
+                if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
+                  window.registrarListboxSelect.refreshAll();
+                }
+              }
+              showMessage('New designation "' + (row.name || name) + '" created successfully.', 'success');
+              closeModal('cfgDesignationModal');
+              byId('newDesignationName').value = '';
+              if (progSearchInput) progSearchInput.value = '';
+              progItems.forEach(function (item) {
+                item.style.display = 'flex';
+              });
+              document.querySelectorAll('input[name="target_programs[]"]').forEach(function (cb) {
+                cb.checked = false;
+              });
+              _context.n = 5;
+              break;
+            case 4:
+              _context.p = 4;
+              _t = _context.v;
+              showMessage(_t.message || 'Unable to create designation.', 'error');
+            case 5:
+              _context.p = 5;
+              designationSaveBtn.disabled = false;
+              return _context.f(5);
+            case 6:
+              return _context.a(2);
           }
-        }
-        closeModal('cfgDesignationModal');
-        byId('newDesignationName').value = '';
-        if (progSearchInput) progSearchInput.value = '';
-        progItems.forEach(function (item) {
-          item.style.display = 'flex';
-        });
-        document.querySelectorAll('input[name="target_programs[]"]').forEach(function (cb) {
-          cb.checked = false;
-        });
-      });
+        }, _callee, null, [[2, 4, 5, 6]]);
+      })));
     }
     var desAllPrograms = byId('cfgDesignationAll');
     if (desAllPrograms) {

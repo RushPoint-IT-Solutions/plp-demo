@@ -50,6 +50,7 @@
         'gradePostingStore' => route('registrar.admin-tools.system-config.configuration.grade-posting.store'),
         'gradePostingUpdateTemplate' => route('registrar.admin-tools.system-config.configuration.grade-posting.update', ['systemGradePosting' => '__ID__']),
         'gradePostingDeleteTemplate' => route('registrar.admin-tools.system-config.configuration.grade-posting.destroy', ['systemGradePosting' => '__ID__']),
+        'signatureDesignationStore' => route('registrar.admin-tools.system-config.configuration.signature.designation.store'),
         'signatureStore' => route('registrar.admin-tools.system-config.configuration.signature.store'),
         'signatureUpdateTemplate' => route('registrar.admin-tools.system-config.configuration.signature.update', ['systemConfigNameSignature' => '__ID__']),
         'signatureDeleteTemplate' => route('registrar.admin-tools.system-config.configuration.signature.destroy', ['systemConfigNameSignature' => '__ID__']),

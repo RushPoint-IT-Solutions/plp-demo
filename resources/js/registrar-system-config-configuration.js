@@ -1644,33 +1644,45 @@
 
         var designationSaveBtn = byId('cfgDesignationSaveBtn');
         if (designationSaveBtn) {
-            designationSaveBtn.addEventListener('click', function() {
+            designationSaveBtn.addEventListener('click', async function() {
                 var name = (byId('newDesignationName').value || '').trim();
                 if (!name) {
                     showMessage('Please provide a designation name.', 'error');
                     return;
                 }
-                showMessage('New designation "' + name + '" created successfully.', 'success');
 
-                // Add to signatory dropdown list (UI Preview)
-                var designationSelect = byId('cfgSignatureDesignation');
-                if (designationSelect) {
-                    var opt = document.createElement('option');
-                    opt.value = String(Date.now()); // Mock Integer ID
-                    opt.textContent = name;
-                    designationSelect.appendChild(opt);
+                designationSaveBtn.disabled = true;
 
-                    // Force refresh all custom listboxes
-                    if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
-                        window.registrarListboxSelect.refreshAll();
+                try {
+                    var response = await requestJson(routes.signatureDesignationStore, 'POST', { name: name });
+                    var row = response.row || {};
+
+                    // Add the newly persisted designation to the signatory dropdown
+                    var designationSelect = byId('cfgSignatureDesignation');
+                    if (designationSelect && row.id) {
+                        var opt = document.createElement('option');
+                        opt.value = String(row.id);
+                        opt.textContent = row.name || name;
+                        designationSelect.appendChild(opt);
+
+                        // Force refresh all custom listboxes
+                        if (window.registrarListboxSelect && typeof window.registrarListboxSelect.refreshAll === 'function') {
+                            window.registrarListboxSelect.refreshAll();
+                        }
                     }
-                }
 
-                closeModal('cfgDesignationModal');
-                byId('newDesignationName').value = '';
-                if (progSearchInput) progSearchInput.value = '';
-                progItems.forEach(function(item) { item.style.display = 'flex'; });
-                document.querySelectorAll('input[name="target_programs[]"]').forEach(function(cb) { cb.checked = false; });
+                    showMessage('New designation "' + (row.name || name) + '" created successfully.', 'success');
+
+                    closeModal('cfgDesignationModal');
+                    byId('newDesignationName').value = '';
+                    if (progSearchInput) progSearchInput.value = '';
+                    progItems.forEach(function(item) { item.style.display = 'flex'; });
+                    document.querySelectorAll('input[name="target_programs[]"]').forEach(function(cb) { cb.checked = false; });
+                } catch (error) {
+                    showMessage(error.message || 'Unable to create designation.', 'error');
+                } finally {
+                    designationSaveBtn.disabled = false;
+                }
             });
         }
 

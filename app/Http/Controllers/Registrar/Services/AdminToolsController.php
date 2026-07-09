@@ -901,6 +901,60 @@ class AdminToolsController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function configurationSignatureDesignationStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:120|unique:system_config_signature_designations,name',
+        ]);
+
+        $name = trim((string) $validated['name']);
+
+        $designation = SystemConfigSignatureDesignation::create([
+            'code' => $this->slugifySignatureDesignationCode($name),
+            'name' => $name,
+            'sort_order' => ((int) SystemConfigSignatureDesignation::query()->max('sort_order')) + 10,
+        ]);
+
+        AuditTrailRecorder::record('SYSTEM_SIGNATURE_DESIGNATION_CREATED', [
+            [
+                'type' => 'SystemConfigSignatureDesignation',
+                'id' => $designation->id,
+                'label' => $designation->name,
+                'changes' => [
+                    ['field' => 'name', 'old' => null, 'new' => $designation->name],
+                ],
+            ],
+        ], [
+            'source_action' => 'Signature designation created',
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'id' => $designation->id,
+                'code' => (string) $designation->code,
+                'name' => (string) $designation->name,
+            ],
+        ]);
+    }
+
+    private function slugifySignatureDesignationCode(string $name): string
+    {
+        $base = strtoupper(trim($name));
+        $base = preg_replace('/[^A-Z0-9]+/', '_', $base);
+        $base = trim((string) $base, '_');
+        $base = $base !== '' ? $base : 'DESIGNATION';
+
+        $code = $base;
+        $suffix = 1;
+        while (SystemConfigSignatureDesignation::query()->where('code', $code)->exists()) {
+            $suffix++;
+            $code = $base . '_' . $suffix;
+        }
+
+        return $code;
+    }
+
     public function configurationSignatureStore(Request $request): JsonResponse
     {
         $validated = $request->validate([
