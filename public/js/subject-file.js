@@ -437,9 +437,19 @@ function toggleSubjectMenu(idx, event) {
     if (!isOpen) {
         var btn = menu.parentElement.querySelector('.apst-action-btn');
         var rect = btn.getBoundingClientRect();
+        var spacing = 4;
+        var menuWidth = menu.offsetWidth || 130;
         var spaceBelow = window.innerHeight - rect.bottom;
 
-        menu.style.left = (rect.right + 4) + 'px';
+        var left = rect.right + spacing;
+        if (left + menuWidth > window.innerWidth - spacing) {
+            left = rect.left - menuWidth - spacing;
+        }
+        if (left < spacing) {
+            left = spacing;
+        }
+        menu.style.left = left + 'px';
+
         if (spaceBelow < 120) {
             menu.classList.add('drop-up');
             menu.style.top = 'auto';

@@ -139,6 +139,6 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/subject-file.js') }}"></script>
+<script src="{{ asset('js/subject-file.js') }}?v={{ file_exists(public_path('js/subject-file.js')) ? filemtime(public_path('js/subject-file.js')) : time() }}"></script>
 @endpush
 @endsection
