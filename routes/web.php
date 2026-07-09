@@ -548,6 +548,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('access-management')->name('access-management.')->group(function () {
             Route::get('/user-accounts', 'Registrar\Services\AdminToolsController@userAccounts')->name('user-accounts');
             Route::get('/user-accounts/data', 'Registrar\Services\AdminToolsController@userAccountsData')->name('user-accounts.data');
+            Route::post('/user-accounts', 'Registrar\Services\AdminToolsController@userAccountsStore')->name('user-accounts.store')->middleware('throttle:60,1');
             Route::get('/user-accounts/access-control/modules', 'Registrar\Services\AdminToolsController@userAccountAccessControlModules')->name('user-accounts.access-control.modules');
             Route::get('/user-accounts/{user}/access-control', 'Registrar\Services\AdminToolsController@userAccountAccessControlShow')->name('user-accounts.access-control.show');
             Route::put('/user-accounts/{user}/access-control', 'Registrar\Services\AdminToolsController@userAccountAccessControlUpdate')->name('user-accounts.access-control.update')->middleware('throttle:60,1');
@@ -555,6 +556,13 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/user-accounts/{user}', 'Registrar\Services\AdminToolsController@userAccountsDestroy')->name('user-accounts.destroy');
             Route::get('/report-access', 'Registrar\Services\AdminToolsController@reportAccess')->name('report-access');
             Route::put('/report-access/{user}', 'Registrar\Services\AdminToolsController@reportAccessUpdate')->name('report-access.update');
+
+            Route::get('/roles', 'Registrar\Services\AdminToolsController@accessControlRolesData')->name('roles');
+            Route::post('/roles', 'Registrar\Services\AdminToolsController@accessControlRolesStore')->name('roles.store');
+            Route::put('/roles/{accessControlRole}', 'Registrar\Services\AdminToolsController@accessControlRolesUpdate')->name('roles.update');
+            Route::delete('/roles/{accessControlRole}', 'Registrar\Services\AdminToolsController@accessControlRolesDestroy')->name('roles.destroy');
+            Route::get('/roles/{accessControlRole}/access-control', 'Registrar\Services\AdminToolsController@accessControlRoleAccessControlShow')->name('roles.access-control.show');
+            Route::put('/roles/{accessControlRole}/access-control', 'Registrar\Services\AdminToolsController@accessControlRoleAccessControlUpdate')->name('roles.access-control.update')->middleware('throttle:60,1');
         });
 
         Route::prefix('master-files')->name('master-files.')->group(function () {

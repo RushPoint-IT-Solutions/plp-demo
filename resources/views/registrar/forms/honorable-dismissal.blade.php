@@ -77,8 +77,10 @@
                     <input type="text" class="app-filter-select frm-search-input" placeholder="Search student..." oninput="hdFilterTable(this.value)">
                 </div>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdOpenBlankPreview()">Preview Form</button>
+                @if(\App\Support\UserAccessGate::currentUserAllows('documents_forms_honorable_dismissal', 'print'))
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdPrintSelected()">Print Selected</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdDismissAllSelected()">Dismiss All</button>
+                @endif
                 <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
         </div>

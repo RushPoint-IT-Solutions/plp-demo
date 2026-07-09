@@ -460,11 +460,11 @@
                     'Place of Birth'  => optional($profile)->place_of_birth ?? '—',
                     'LRN'             => optional($profile)->lrn ?? '—',
                     'SHS Track'       => optional($profile)->shs_track_strand ?? '—',
-                    'Elementary'      => optional($profile)->elementary_school ?? '�',
-                    'High School'     => optional($profile)->high_school ?? '�',
+                    'Elementary'      => optional($profile)->elementary_school ?? '�',
+                    'High School'     => optional($profile)->high_school ?? '�',
                     'Junior HS'       => optional($profile)->junior_school ?? '—',
                     'Senior HS'       => optional($profile)->senior_school ?? '—',
-                    'School Last Attended' => optional($profile)->school_last_attended ?? '�',
+                    'School Last Attended' => optional($profile)->school_last_attended ?? '�',
                     'Address'         => collect([optional($profile)->present_barangay,optional($profile)->present_municipality,optional($profile)->present_province])->filter()->join(', ') ?: '—',
                     'Official Email'  => optional($profile)->student_email ?? '—',
                     'Mobile'          => optional($profile)->mobile_number ?? '—',
@@ -701,8 +701,12 @@
                             </div>
                             <div class="sar-review-actions">
                                 @if($req->status === 'pending')
-                                    <button type="button" class="btn-xs btn-xs-approve" onclick="sarReviewGradeRequest({{ $req->id }}, 'approve')">Approve</button>
-                                    <button type="button" class="btn-xs btn-xs-reject" onclick="sarReviewGradeRequest({{ $req->id }}, 'reject')">Reject</button>
+                                    @if(\App\Support\UserAccessGate::currentUserAllows('student_records_student_list', 'approve'))
+                                        <button type="button" class="btn-xs btn-xs-approve" onclick="sarReviewGradeRequest({{ $req->id }}, 'approve')">Approve</button>
+                                        <button type="button" class="btn-xs btn-xs-reject" onclick="sarReviewGradeRequest({{ $req->id }}, 'reject')">Reject</button>
+                                    @else
+                                        <span class="sar-review-status pending">Awaiting reviewer</span>
+                                    @endif
                                 @else
                                     <span class="sar-review-status {{ $req->status }}">{{ $req->status }}</span>
                                 @endif

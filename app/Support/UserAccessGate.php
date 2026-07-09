@@ -4,18 +4,31 @@ namespace App\Support;
 
 use App\AccessControlModule;
 use App\AccessControlPermissionType;
+use App\RoleAccessControl;
 use App\User;
 use App\UserAccessControl;
 use Illuminate\Support\Facades\Schema;
 
 class UserAccessGate
 {
+    private static array $resolvedCache = [];
+
     public static function allows(User $user = null, string $moduleCode = null, string $permissionCode = 'view'): bool
     {
         if (!$user || !$moduleCode) {
             return false;
         }
 
+        $cacheKey = $user->id . '|' . $moduleCode . '|' . ($permissionCode ?: 'view');
+        if (array_key_exists($cacheKey, self::$resolvedCache)) {
+            return self::$resolvedCache[$cacheKey];
+        }
+
+        return self::$resolvedCache[$cacheKey] = self::resolveAllows($user, $moduleCode, $permissionCode);
+    }
+
+    private static function resolveAllows(User $user, string $moduleCode, string $permissionCode): bool
+    {
         $normalizedRole = self::normalizeRole((string) ($user->module ?: ''));
         $moduleCode = trim((string) $moduleCode);
         $permissionCode = trim((string) ($permissionCode ?: 'view'));
@@ -45,21 +58,68 @@ class UserAccessGate
             ->where('user_id', (int) $user->id)
             ->exists();
 
-        if (!$hasExplicitRows) {
-            return self::defaultAllows($normalizedRole, $moduleCode, $permissionCode);
+        if ($hasExplicitRows) {
+            $allowed = UserAccessControl::query()
+                ->where('user_id', (int) $user->id)
+                ->where('access_control_module_id', (int) $module->id)
+                ->where('access_control_permission_type_id', (int) $permissionType->id)
+                ->value('is_allowed');
+
+            if ($allowed !== null) {
+                return self::truthy($allowed);
+            }
+
+            // Accounts configured before Create/Delete/Print/Approve existed only ever
+            // saved view/edit rows (edit used to gate every non-GET action). Fall back to
+            // their saved 'edit' value for this module so existing accounts aren't silently
+            // locked out of actions they already had access to.
+            if (in_array($permissionCode, ['create', 'delete', 'print', 'approve'], true)) {
+                $editType = AccessControlPermissionType::query()->where('code', 'edit')->first(['id']);
+                if ($editType) {
+                    $editAllowed = UserAccessControl::query()
+                        ->where('user_id', (int) $user->id)
+                        ->where('access_control_module_id', (int) $module->id)
+                        ->where('access_control_permission_type_id', (int) $editType->id)
+                        ->value('is_allowed');
+
+                    if ($editAllowed !== null) {
+                        return self::truthy($editAllowed);
+                    }
+                }
+            }
+
+            return false;
         }
 
-        $allowed = UserAccessControl::query()
-            ->where('user_id', (int) $user->id)
-            ->where('access_control_module_id', (int) $module->id)
-            ->where('access_control_permission_type_id', (int) $permissionType->id)
-            ->value('is_allowed');
+        $roleId = (int) ($user->access_control_role_id ?? 0);
+        if ($roleId > 0 && self::hasRoleTables()) {
+            $roleAllowed = RoleAccessControl::query()
+                ->where('role_id', $roleId)
+                ->where('access_control_module_id', (int) $module->id)
+                ->where('access_control_permission_type_id', (int) $permissionType->id)
+                ->value('is_allowed');
 
-        if ($permissionCode !== 'view' && self::truthy($allowed)) {
+            if ($roleAllowed !== null) {
+                return self::truthy($roleAllowed);
+            }
+        }
+
+        return self::defaultAllows($normalizedRole, $moduleCode, $permissionCode);
+    }
+
+    public static function currentUserAllows(string $moduleCode, string $permissionCode = 'view'): bool
+    {
+        return self::allows(auth()->user(), $moduleCode, $permissionCode);
+    }
+
+    public static function allowsRoute(?User $user, ?string $routeName, string $permissionCode = 'view'): bool
+    {
+        $moduleCode = self::routeModuleCode($routeName);
+        if (!$moduleCode) {
             return true;
         }
 
-        return self::truthy($allowed);
+        return self::allows($user, $moduleCode, $permissionCode);
     }
 
     public static function routeModuleCode(?string $routeName): ?string
@@ -145,6 +205,7 @@ class UserAccessGate
             'registrar.admin-tools.system-config.announcement' => 'system_announcements',
             'registrar.admin-tools.system-config.admission-config' => 'system_configuration',
             'registrar.admin-tools.access-management.user-accounts' => 'system_user_accounts',
+            'registrar.admin-tools.access-management.roles' => 'system_user_accounts',
             'registrar.admin-tools.access-management.report-access' => 'system_report_access',
             'registrar.admin-tools.master-files.faculty-file' => 'system_faculty_file',
             'registrar.admin-tools.master-files.student-profile' => 'system_student_profile',
@@ -255,6 +316,7 @@ class UserAccessGate
             'registrar.admin-tools.system-config.academic-calendar.' => 'system_academic_calendar',
             'registrar.admin-tools.system-config.announcement.' => 'system_announcements',
             'registrar.admin-tools.access-management.user-accounts.' => 'system_user_accounts',
+            'registrar.admin-tools.access-management.roles.' => 'system_user_accounts',
             'registrar.admin-tools.access-management.report-access.' => 'system_report_access',
             'registrar.admin-tools.master-files.faculty-file.' => 'system_faculty_file',
             'registrar.admin-tools.master-files.student-profile.' => 'system_student_profile',
@@ -288,7 +350,21 @@ class UserAccessGate
 
     public static function permissionForMethod(string $method): string
     {
-        return in_array(strtoupper($method), ['GET', 'HEAD', 'OPTIONS'], true) ? 'view' : 'edit';
+        $method = strtoupper($method);
+
+        if (in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
+            return 'view';
+        }
+
+        if ($method === 'POST') {
+            return 'create';
+        }
+
+        if ($method === 'DELETE') {
+            return 'delete';
+        }
+
+        return 'edit';
     }
 
     private static function defaultAllows(string $role, string $moduleCode, string $permissionCode): bool
@@ -318,6 +394,12 @@ class UserAccessGate
         return Schema::hasTable('access_control_modules')
             && Schema::hasTable('access_control_permission_types')
             && Schema::hasTable('user_access_controls');
+    }
+
+    private static function hasRoleTables(): bool
+    {
+        return Schema::hasTable('access_control_roles')
+            && Schema::hasTable('role_access_controls');
     }
 
     private static function normalizeRole(string $role): string

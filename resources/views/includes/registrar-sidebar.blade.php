@@ -11,9 +11,24 @@
         </div>
     </div>
 
+    @php
+        $authUser = auth()->user();
+        $canView = function (string $routeName) use ($authUser) {
+            return \App\Support\UserAccessGate::allowsRoute($authUser, $routeName);
+        };
+        $canViewAny = function (array $routeNames) use ($canView) {
+            foreach ($routeNames as $routeName) {
+                if ($canView($routeName)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+    @endphp
     <nav class="sidebar-nav">
 
         {{-- Dashboard --}}
+        @if($canView('registrar.dashboard'))
         <a href="{{ route('registrar.dashboard') }}" class="sidebar-link {{ request()->routeIs('registrar.dashboard') ? 'active' : '' }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M9.02 2.84004L3.63 7.04004C2.73 7.74004 2 9.23004 2 10.36V17.77C2 20.09 3.89 21.99 6.21 21.99H17.79C20.11 21.99 22 20.09 22 17.78V10.5C22 9.29004 21.19 7.74004 20.2 7.05004L14.02 2.72004C12.62 1.74004 10.37 1.79004 9.02 2.84004Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -21,9 +36,11 @@
             </svg>
             <span>Dashboard</span>
         </a>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- Communication --}}
+        @if($canViewAny(['registrar.communication.tickets', 'registrar.communication.stakeholders', 'registrar.messaging', 'registrar.communication.email-templates']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.communication.*') || request()->routeIs('registrar.messaging') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.communication.*') || request()->routeIs('registrar.messaging') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -35,15 +52,17 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <a href="{{ route('registrar.communication.tickets') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.tickets') ? 'active' : '' }}">Ticketing System</a>
-                <a href="{{ route('registrar.communication.stakeholders') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.stakeholders') ? 'active' : '' }}">Stakeholder Communication</a>
-                <a href="{{ route('registrar.messaging') }}" class="sidebar-sublink {{ request()->routeIs('registrar.messaging') ? 'active' : '' }}">Messages Module</a>
-                <a href="{{ route('registrar.communication.email-templates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.email-templates') ? 'active' : '' }}">Email Notifications & Templates</a>
+                @if($canView('registrar.communication.tickets'))<a href="{{ route('registrar.communication.tickets') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.tickets') ? 'active' : '' }}">Ticketing System</a>@endif
+                @if($canView('registrar.communication.stakeholders'))<a href="{{ route('registrar.communication.stakeholders') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.stakeholders') ? 'active' : '' }}">Stakeholder Communication</a>@endif
+                @if($canView('registrar.messaging'))<a href="{{ route('registrar.messaging') }}" class="sidebar-sublink {{ request()->routeIs('registrar.messaging') ? 'active' : '' }}">Messages Module</a>@endif
+                @if($canView('registrar.communication.email-templates'))<a href="{{ route('registrar.communication.email-templates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.email-templates') ? 'active' : '' }}">Email Notifications & Templates</a>@endif
             </div>
         </div>
+        @endif
 
         {{-- ADMISSIONS                             --}}
         {{-- ══════════════════════════════════════ --}}
+        @if($canViewAny(['registrar.process.application', 'registrar.process.document-list', 'registrar.process.approval-status', 'registrar.process.exam-list', 'registrar.process.exam-interview-scheduling', 'registrar.process.requirements', 'registrar.process.batch-upload', 'registrar.process.citizenship', 'registrar.process.religion.index', 'registrar.process.exam-category']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.process.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.process.*') ? 'active' : '' }}">
                 {{-- user-add icon --}}
@@ -61,21 +80,22 @@
             </a>
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Applications</div>
-                <a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application List</a>
-                <a href="{{ route('registrar.process.document-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.document-list') ? 'active' : '' }}">Document Submission</a>
-                <a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>
-                <a href="{{ route('registrar.process.exam-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-list') ? 'active' : '' }}">Exam Schedule</a>
-                <a href="{{ route('registrar.process.exam-interview-scheduling') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-interview-scheduling') ? 'active' : '' }}">Exam & Interview Scheduling</a>
-                <a href="{{ route('registrar.process.requirements') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.requirements') ? 'active' : '' }}">Requirements</a>
-                <a href="{{ route('registrar.process.batch-upload') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.batch-upload') ? 'active' : '' }}">Batch Upload Photos</a>
+                @if($canView('registrar.process.application'))<a href="{{ route('registrar.process.application') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.application') ? 'active' : '' }}">Application List</a>@endif
+                @if($canView('registrar.process.document-list'))<a href="{{ route('registrar.process.document-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.document-list') ? 'active' : '' }}">Document Submission</a>@endif
+                @if($canView('registrar.process.approval-status'))<a href="{{ route('registrar.process.approval-status') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.approval-status') ? 'active' : '' }}">Approval Status</a>@endif
+                @if($canView('registrar.process.exam-list'))<a href="{{ route('registrar.process.exam-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-list') ? 'active' : '' }}">Exam Schedule</a>@endif
+                @if($canView('registrar.process.exam-interview-scheduling'))<a href="{{ route('registrar.process.exam-interview-scheduling') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-interview-scheduling') ? 'active' : '' }}">Exam & Interview Scheduling</a>@endif
+                @if($canView('registrar.process.requirements'))<a href="{{ route('registrar.process.requirements') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.requirements') ? 'active' : '' }}">Requirements</a>@endif
+                @if($canView('registrar.process.batch-upload'))<a href="{{ route('registrar.process.batch-upload') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.batch-upload') ? 'active' : '' }}">Batch Upload Photos</a>@endif
 
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Lookups</div>
-                <a href="{{ route('registrar.process.citizenship') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.citizenship') ? 'active' : '' }}">Citizenship</a>
-                <a href="{{ route('registrar.process.religion.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion*') ? 'active' : '' }}">Religion</a>
-                <a href="{{ route('registrar.process.exam-category') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-category') ? 'active' : '' }}">Exam Category</a>
+                @if($canView('registrar.process.citizenship'))<a href="{{ route('registrar.process.citizenship') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.citizenship') ? 'active' : '' }}">Citizenship</a>@endif
+                @if($canView('registrar.process.religion.index'))<a href="{{ route('registrar.process.religion.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.religion*') ? 'active' : '' }}">Religion</a>@endif
+                @if($canView('registrar.process.exam-category'))<a href="{{ route('registrar.process.exam-category') }}" class="sidebar-sublink {{ request()->routeIs('registrar.process.exam-category') ? 'active' : '' }}">Exam Category</a>@endif
             </div>
         </div>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- STUDENT RECORDS                        --}}
@@ -87,6 +107,7 @@
                                 //  || request()->routeIs('registrar.services.classroom-faculty.class-list')
                                  || request()->routeIs('registrar.services.section-list');
         @endphp
+        @if($canViewAny(['registrar.registrar-menu.student-mgmt.student-records', 'registrar.services.section-list', 'registrar.registrar-menu.alumni.tracker', 'registrar.registrar-menu.student-mgmt.student-enrollment', 'registrar.registrar-menu.student-mgmt.clinic-record', 'registrar.services.student-account.student-discipline', 'registrar.services.student-account.family', 'registrar.services.student-account.change-password']))
         <div class="sidebar-dropdown {{ $studentRecordsActive ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ $studentRecordsActive ? 'active' : '' }}">
                 {{-- student icon --}}
@@ -101,25 +122,27 @@
             </a>
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Student Database</div>
-                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-records*') ? 'active' : '' }}">Student List</a>
+                @if($canView('registrar.registrar-menu.student-mgmt.student-records'))<a href="{{ route('registrar.registrar-menu.student-mgmt.student-records') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-records*') ? 'active' : '' }}">Student List</a>@endif
                 {{-- <a href="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.classroom-faculty.class-list') ? 'active' : '' }}">Class List</a> --}}
-                <a href="{{ route('registrar.services.section-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.section-list') ? 'active' : '' }}">Section List</a>
-                <a href="{{ route('registrar.registrar-menu.alumni.tracker') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.alumni.tracker') ? 'active' : '' }}">Alumni Tracker</a>
-                <a href="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-enrollment') ? 'active' : '' }}">Enrollment List</a>
-                <a href="{{ route('registrar.registrar-menu.student-mgmt.clinic-record') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.clinic-record') ? 'active' : '' }}">Clinic Records</a>
+                @if($canView('registrar.services.section-list'))<a href="{{ route('registrar.services.section-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.section-list') ? 'active' : '' }}">Section List</a>@endif
+                @if($canView('registrar.registrar-menu.alumni.tracker'))<a href="{{ route('registrar.registrar-menu.alumni.tracker') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.alumni.tracker') ? 'active' : '' }}">Alumni Tracker</a>@endif
+                @if($canView('registrar.registrar-menu.student-mgmt.student-enrollment'))<a href="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-enrollment') ? 'active' : '' }}">Enrollment List</a>@endif
+                @if($canView('registrar.registrar-menu.student-mgmt.clinic-record'))<a href="{{ route('registrar.registrar-menu.student-mgmt.clinic-record') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.clinic-record') ? 'active' : '' }}">Clinic Records</a>@endif
 
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Student Affairs</div>
-                <a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>
-                <a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Family Records</a>
-                <a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>
+                @if($canView('registrar.services.student-account.student-discipline'))<a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>@endif
+                @if($canView('registrar.services.student-account.family'))<a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Family Records</a>@endif
+                @if($canView('registrar.services.student-account.change-password'))<a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>@endif
             </div>
         </div>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- ACADEMICS                              --}}
         {{-- ══════════════════════════════════════ --}}
         {{-- SCHOLARSHIP MODULE                    --}}
+        @if($canViewAny(['registrar.registrar-menu.scholarships.index', 'registrar.registrar-menu.scholarships.report']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.scholarships.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.scholarships.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -133,10 +156,11 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <a href="{{ route('registrar.registrar-menu.scholarships.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.scholarships.index') ? 'active' : '' }}">Program Setup</a>
-                <a href="{{ route('registrar.registrar-menu.scholarships.report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.scholarships.report') ? 'active' : '' }}">Scholars by Type</a>
+                @if($canView('registrar.registrar-menu.scholarships.index'))<a href="{{ route('registrar.registrar-menu.scholarships.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.scholarships.index') ? 'active' : '' }}">Program Setup</a>@endif
+                @if($canView('registrar.registrar-menu.scholarships.report'))<a href="{{ route('registrar.registrar-menu.scholarships.report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.scholarships.report') ? 'active' : '' }}">Scholars by Type</a>@endif
             </div>
         </div>
+        @endif
 
         @php
             $academicsActive = request()->routeIs('registrar.registrar-menu.academic-master.*')
@@ -144,6 +168,13 @@
                             || request()->routeIs('registrar.services.classroom-faculty.*')
                             || request()->routeIs('registrar.services.grading-academic.*');
         @endphp
+        @php
+            $curriculumRoutes = ['registrar.registrar-menu.academic-master.program-file', 'registrar.registrar-menu.academic-master.subject-file', 'registrar.registrar-menu.academic-master.curriculum-file', 'registrar.registrar-menu.academic-master.curriculum-year-tracking', 'registrar.registrar-menu.academic-master.pre-requisites'];
+            $schedulingRoutes = ['registrar.registrar-menu.scheduling.academic-term-lifecycle', 'registrar.registrar-menu.scheduling.promotion-readiness', 'registrar.registrar-menu.scheduling.academic-setup-automation', 'registrar.registrar-menu.scheduling.room-file', 'registrar.registrar-menu.scheduling.room-generation-assignment', 'registrar.registrar-menu.scheduling.teacher-generation-assignment', 'registrar.registrar-menu.scheduling.room-section-offering-management', 'registrar.registrar-menu.scheduling.section-offering', 'registrar.registrar-menu.scheduling.class-schedule-preparation', 'registrar.registrar-menu.scheduling.slot-monitoring', 'registrar.registrar-menu.scheduling.section-merging', 'registrar.registrar-menu.scheduling.coordination-deans-faculty'];
+            $classroomRoutes = ['registrar.services.classroom-faculty.class-list', 'registrar.services.classroom-faculty.attendance', 'registrar.services.classroom-faculty.faculty-loads.index'];
+            $gradingSetupRoutes = ['registrar.services.grading-academic.grading-system', 'registrar.services.grading-academic.grading-periods', 'registrar.services.grading-academic.grading-components', 'registrar.services.grading-academic.transmutation', 'registrar.services.grading-academic.incomplete-failing', 'registrar.services.grading-academic.deficiency', 'registrar.services.grading-academic.scholastic-comments'];
+        @endphp
+        @if($canViewAny(array_merge($curriculumRoutes, $schedulingRoutes, $classroomRoutes, $gradingSetupRoutes)))
         <div class="sidebar-dropdown {{ $academicsActive ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ $academicsActive ? 'active' : '' }}">
                 {{-- book icon --}}
@@ -161,21 +192,24 @@
             <div class="sidebar-dropdown-menu">
 
                 {{-- Curriculum --}}
+                @if($canViewAny($curriculumRoutes))
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.academic-master.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.academic-master.*') ? 'active' : '' }}">
                         Curriculum
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.program-file') ? 'active' : '' }}">Program File</a>
-                        <a href="{{ route('registrar.registrar-menu.academic-master.subject-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.subject-file') ? 'active' : '' }}">Course File</a>
-                        <a href="{{ route('registrar.registrar-menu.academic-master.curriculum-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.curriculum-file') ? 'active' : '' }}">Curriculum File</a>
-                        <a href="{{ route('registrar.registrar-menu.academic-master.curriculum-year-tracking') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.curriculum-year-tracking') ? 'active' : '' }}">Curriculum Year Tracking</a>
-                        <a href="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.pre-requisites') ? 'active' : '' }}">Pre-requisites</a>
+                        @if($canView('registrar.registrar-menu.academic-master.program-file'))<a href="{{ route('registrar.registrar-menu.academic-master.program-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.program-file') ? 'active' : '' }}">Program File</a>@endif
+                        @if($canView('registrar.registrar-menu.academic-master.subject-file'))<a href="{{ route('registrar.registrar-menu.academic-master.subject-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.subject-file') ? 'active' : '' }}">Course File</a>@endif
+                        @if($canView('registrar.registrar-menu.academic-master.curriculum-file'))<a href="{{ route('registrar.registrar-menu.academic-master.curriculum-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.curriculum-file') ? 'active' : '' }}">Curriculum File</a>@endif
+                        @if($canView('registrar.registrar-menu.academic-master.curriculum-year-tracking'))<a href="{{ route('registrar.registrar-menu.academic-master.curriculum-year-tracking') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.curriculum-year-tracking') ? 'active' : '' }}">Curriculum Year Tracking</a>@endif
+                        @if($canView('registrar.registrar-menu.academic-master.pre-requisites'))<a href="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.academic-master.pre-requisites') ? 'active' : '' }}">Pre-requisites</a>@endif
                     </div>
                 </div>
+                @endif
 
                 {{-- Scheduling --}}
+                @if($canViewAny($schedulingRoutes))
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.scheduling.*') ? 'active' : '' }}">
                         Term Setup & Scheduling
@@ -183,70 +217,79 @@
                     </a>
                     <div class="sidebar-nested-menu">
                         <div class="sidebar-section-label">Term Process</div>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.academic-term-lifecycle') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-term-lifecycle*') ? 'active' : '' }}">1. Close / Open Term</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.promotion-readiness') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.promotion-readiness*') ? 'active' : '' }}">2. Promotion Readiness</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.academic-setup-automation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-setup-automation*') ? 'active' : '' }}">3. Generate Academic Setup</a>
+                        @if($canView('registrar.registrar-menu.scheduling.academic-term-lifecycle'))<a href="{{ route('registrar.registrar-menu.scheduling.academic-term-lifecycle') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-term-lifecycle*') ? 'active' : '' }}">1. Close / Open Term</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.promotion-readiness'))<a href="{{ route('registrar.registrar-menu.scheduling.promotion-readiness') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.promotion-readiness*') ? 'active' : '' }}">2. Promotion Readiness</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.academic-setup-automation'))<a href="{{ route('registrar.registrar-menu.scheduling.academic-setup-automation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.academic-setup-automation*') ? 'active' : '' }}">3. Generate Academic Setup</a>@endif
 
                         <div class="sidebar-section-divider"></div>
                         <div class="sidebar-section-label">Rooms</div>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.room-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-file') ? 'active' : '' }}">Room File</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-generation-assignment*') ? 'active' : '' }}">Generate & Assign Rooms</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.teacher-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.teacher-generation-assignment*') ? 'active' : '' }}">Generate & Assign Teachers</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.room-section-offering-management') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-section-offering-management') ? 'active' : '' }}">Room & Section Offering</a>
+                        @if($canView('registrar.registrar-menu.scheduling.room-file'))<a href="{{ route('registrar.registrar-menu.scheduling.room-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-file') ? 'active' : '' }}">Room File</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.room-generation-assignment'))<a href="{{ route('registrar.registrar-menu.scheduling.room-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-generation-assignment*') ? 'active' : '' }}">Generate & Assign Rooms</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.teacher-generation-assignment'))<a href="{{ route('registrar.registrar-menu.scheduling.teacher-generation-assignment') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.teacher-generation-assignment*') ? 'active' : '' }}">Generate & Assign Teachers</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.room-section-offering-management'))<a href="{{ route('registrar.registrar-menu.scheduling.room-section-offering-management') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.room-section-offering-management') ? 'active' : '' }}">Room & Section Offering</a>@endif
 
                         <div class="sidebar-section-divider"></div>
                         <div class="sidebar-section-label">Class Scheduling</div>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.section-offering') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.section-offering') ? 'active' : '' }}">Section Offering</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.class-schedule-preparation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.class-schedule-preparation') ? 'active' : '' }}">Class Schedule Preparation</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.slot-monitoring') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.slot-monitoring') ? 'active' : '' }}">Slot Monitoring & Editing</a>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.section-merging') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.section-merging') ? 'active' : '' }}">Section Merging</a>
+                        @if($canView('registrar.registrar-menu.scheduling.section-offering'))<a href="{{ route('registrar.registrar-menu.scheduling.section-offering') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.section-offering') ? 'active' : '' }}">Section Offering</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.class-schedule-preparation'))<a href="{{ route('registrar.registrar-menu.scheduling.class-schedule-preparation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.class-schedule-preparation') ? 'active' : '' }}">Class Schedule Preparation</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.slot-monitoring'))<a href="{{ route('registrar.registrar-menu.scheduling.slot-monitoring') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.slot-monitoring') ? 'active' : '' }}">Slot Monitoring & Editing</a>@endif
+                        @if($canView('registrar.registrar-menu.scheduling.section-merging'))<a href="{{ route('registrar.registrar-menu.scheduling.section-merging') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.section-merging') ? 'active' : '' }}">Section Merging</a>@endif
 
                         <div class="sidebar-section-divider"></div>
                         <div class="sidebar-section-label">Coordination</div>
-                        <a href="{{ route('registrar.registrar-menu.scheduling.coordination-deans-faculty') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.coordination-deans-faculty') ? 'active' : '' }}">Deans & Faculty Coordination</a>
+                        @if($canView('registrar.registrar-menu.scheduling.coordination-deans-faculty'))<a href="{{ route('registrar.registrar-menu.scheduling.coordination-deans-faculty') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.scheduling.coordination-deans-faculty') ? 'active' : '' }}">Deans & Faculty Coordination</a>@endif
                     </div>
                 </div>
+                @endif
 
                 {{-- Classroom --}}
+                @if($canViewAny($classroomRoutes))
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.classroom-faculty.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.classroom-faculty.*') ? 'active' : '' }}">
                         Classroom
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.class-list') ? 'active' : '' }}">Class List</a>
-                        <a href="{{ route('registrar.services.classroom-faculty.attendance') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.attendance') ? 'active' : '' }}">Attendance</a>
-                        <a href="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.faculty-loads.*') ? 'active' : '' }}">Faculty Loads</a>
+                        @if($canView('registrar.services.classroom-faculty.class-list'))<a href="{{ route('registrar.services.classroom-faculty.class-list') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.class-list') ? 'active' : '' }}">Class List</a>@endif
+                        @if($canView('registrar.services.classroom-faculty.attendance'))<a href="{{ route('registrar.services.classroom-faculty.attendance') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.attendance') ? 'active' : '' }}">Attendance</a>@endif
+                        @if($canView('registrar.services.classroom-faculty.faculty-loads.index'))<a href="{{ route('registrar.services.classroom-faculty.faculty-loads.index') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.classroom-faculty.faculty-loads.*') ? 'active' : '' }}">Faculty Loads</a>@endif
                     </div>
                 </div>
+                @endif
 
                 {{-- Grading Setup --}}
+                @if($canViewAny($gradingSetupRoutes))
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.services.grading-academic.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.services.grading-academic.*') ? 'active' : '' }}">
                         Grading Setup
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.services.grading-academic.grading-system') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-system') ? 'active' : '' }}">Grading System</a>
-                        <a href="{{ route('registrar.services.grading-academic.grading-periods') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-periods') ? 'active' : '' }}">Grading Periods</a>
-                        <a href="{{ route('registrar.services.grading-academic.grading-components') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-components') ? 'active' : '' }}">Grading Components</a>
-                        <a href="{{ route('registrar.services.grading-academic.transmutation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.transmutation') ? 'active' : '' }}">Transmutation Table</a>
+                        @if($canView('registrar.services.grading-academic.grading-system'))<a href="{{ route('registrar.services.grading-academic.grading-system') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-system') ? 'active' : '' }}">Grading System</a>@endif
+                        @if($canView('registrar.services.grading-academic.grading-periods'))<a href="{{ route('registrar.services.grading-academic.grading-periods') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-periods') ? 'active' : '' }}">Grading Periods</a>@endif
+                        @if($canView('registrar.services.grading-academic.grading-components'))<a href="{{ route('registrar.services.grading-academic.grading-components') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.grading-components') ? 'active' : '' }}">Grading Components</a>@endif
+                        @if($canView('registrar.services.grading-academic.transmutation'))<a href="{{ route('registrar.services.grading-academic.transmutation') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.transmutation') ? 'active' : '' }}">Transmutation Table</a>@endif
+                        @if($canView('registrar.services.grading-academic.incomplete-failing'))
                         @php $incompleteFailingBadge = \App\Http\Controllers\Registrar\Services\GradingAcademicController::incompleteFailingBadgeCount(); @endphp
                         <a href="{{ route('registrar.services.grading-academic.incomplete-failing') }}" class="sidebar-sublink sidebar-nested-sublink sidebar-sublink-with-badge {{ request()->routeIs('registrar.services.grading-academic.incomplete-failing') ? 'active' : '' }}">
                             <span>Incomplete &amp; Failing</span>
                             @if($incompleteFailingBadge > 0)<span class="sidebar-alert-badge">{{ $incompleteFailingBadge > 99 ? '99+' : $incompleteFailingBadge }}</span>@endif
                         </a>
-                        <a href="{{ route('registrar.services.grading-academic.deficiency') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.deficiency') ? 'active' : '' }}">Deficiency</a>
-                        <a href="{{ route('registrar.services.grading-academic.scholastic-comments') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.scholastic-comments') ? 'active' : '' }}">Scholastic Comments</a>
+                        @endif
+                        @if($canView('registrar.services.grading-academic.deficiency'))<a href="{{ route('registrar.services.grading-academic.deficiency') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.deficiency') ? 'active' : '' }}">Deficiency</a>@endif
+                        @if($canView('registrar.services.grading-academic.scholastic-comments'))<a href="{{ route('registrar.services.grading-academic.scholastic-comments') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.services.grading-academic.scholastic-comments') ? 'active' : '' }}">Scholastic Comments</a>@endif
                     </div>
                 </div>
+                @endif
 
             </div>
         </div>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- FACULTY                                --}}
         {{-- ══════════════════════════════════════ --}}
+        @if($canViewAny(['registrar.registrar-menu.faculty-mgmt.faculty-list', 'registrar.registrar-menu.faculty-mgmt.departments', 'registrar.registrar-menu.faculty-mgmt.faculty-create', 'registrar.registrar-menu.faculty-mgmt.grading-sheet', 'registrar.registrar-menu.faculty-mgmt.evaluation']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.*') ? 'active' : '' }}">
                 {{-- teacher icon --}}
@@ -261,17 +304,23 @@
                 </svg>
             </a>
             <div class="sidebar-dropdown-menu">
-                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-list*') ? 'active' : '' }}">Faculty Profiles</a>
-                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.departments') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.departments*') ? 'active' : '' }}">Departments</a>
-                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-create') ? 'active' : '' }}">Create Faculty</a>
-                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.grading-sheet') ? 'active' : '' }}">Grading Sheets</a>
-                <a href="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.evaluation') ? 'active' : '' }}">Faculty Evaluation</a>
+                @if($canView('registrar.registrar-menu.faculty-mgmt.faculty-list'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-list*') ? 'active' : '' }}">Faculty Profiles</a>@endif
+                @if($canView('registrar.registrar-menu.faculty-mgmt.departments'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.departments') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.departments*') ? 'active' : '' }}">Departments</a>@endif
+                @if($canView('registrar.registrar-menu.faculty-mgmt.faculty-create'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-create') ? 'active' : '' }}">Create Faculty</a>@endif
+                @if($canView('registrar.registrar-menu.faculty-mgmt.grading-sheet'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.grading-sheet') ? 'active' : '' }}">Grading Sheets</a>@endif
+                @if($canView('registrar.registrar-menu.faculty-mgmt.evaluation'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.evaluation') ? 'active' : '' }}">Faculty Evaluation</a>@endif
             </div>
         </div>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- DOCUMENTS & FORMS                      --}}
         {{-- ══════════════════════════════════════ --}}
+        @php
+            $certificateRoutes = ['registrar.registrar-menu.forms.certificates.certificate-gwa', 'registrar.registrar-menu.forms.certificates.deans-honors', 'registrar.registrar-menu.forms.certificates.presidents-honors', 'registrar.registrar-menu.forms.certificates.certificate-graduation-8c2', 'registrar.registrar-menu.forms.certificates.certificate-honor-8d2'];
+            $documentsFormsRoutes = array_merge(['registrar.registrar-menu.forms.diploma', 'registrar.registrar-menu.forms.cog.copy-of-grades', 'registrar.registrar-menu.forms.cor.certificate-of-registration', 'registrar.registrar-menu.forms.official-grade-report', 'registrar.registrar-menu.forms.honorable-dismissal', 'registrar.registrar-menu.forms.application-leave-of-absence-enrolled', 'registrar.registrar-menu.forms.permission-cross-enroll', 'registrar.registrar-menu.forms.request-form-f-137a', 'registrar.registrar-menu.forms.graduation-clearance', 'registrar.registrar-menu.forms.waiver-cancellation', 'registrar.registrar-menu.forms.citizens-charter'], $certificateRoutes);
+        @endphp
+        @if($canViewAny($documentsFormsRoutes))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.forms.*') ? 'active' : '' }}">
                 {{-- document-text icon --}}
@@ -288,13 +337,14 @@
             </a>
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Official Documents</div>
-                <a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>
-                <a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'active' : '' }}">Copy of Grades (COG)</a>
-                <a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cor.*') ? 'active' : '' }}">Certificate of Registration (COR)</a>
-                <a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.official-grade-report') ? 'active' : '' }}">Official Grade Report</a>
-                <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.honorable-dismissal') ? 'active' : '' }}">Honorable Dismissal</a>
+                @if($canView('registrar.registrar-menu.forms.diploma'))<a href="{{ route('registrar.registrar-menu.forms.diploma') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.diploma') ? 'active' : '' }}">Diploma</a>@endif
+                @if($canView('registrar.registrar-menu.forms.cog.copy-of-grades'))<a href="{{ route('registrar.registrar-menu.forms.cog.copy-of-grades') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cog.*') ? 'active' : '' }}">Copy of Grades (COG)</a>@endif
+                @if($canView('registrar.registrar-menu.forms.cor.certificate-of-registration'))<a href="{{ route('registrar.registrar-menu.forms.cor.certificate-of-registration') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.cor.*') ? 'active' : '' }}">Certificate of Registration (COR)</a>@endif
+                @if($canView('registrar.registrar-menu.forms.official-grade-report'))<a href="{{ route('registrar.registrar-menu.forms.official-grade-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.official-grade-report') ? 'active' : '' }}">Official Grade Report</a>@endif
+                @if($canView('registrar.registrar-menu.forms.honorable-dismissal'))<a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.honorable-dismissal') ? 'active' : '' }}">Honorable Dismissal</a>@endif
 
                 <div class="sidebar-section-divider"></div>
+                @if($canViewAny($certificateRoutes))
                 <div class="sidebar-section-label">Certificates</div>
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.registrar-menu.forms.certificates.*') ? 'active' : '' }}">
@@ -302,24 +352,26 @@
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-gwa') ? 'active' : '' }}">Certificate of GWA</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.certificates.deans-honors') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.deans-honors*') ? 'active' : '' }}">Dean's Honors</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.certificates.presidents-honors') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.presidents-honors*') ? 'active' : '' }}">President's Honors</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') ? 'active' : '' }}">Form 8C-2 (Graduation)</a>
-                        <a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') ? 'active' : '' }}">Form 8D-2 (Honor)</a>
+                        @if($canView('registrar.registrar-menu.forms.certificates.certificate-gwa'))<a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-gwa') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-gwa') ? 'active' : '' }}">Certificate of GWA</a>@endif
+                        @if($canView('registrar.registrar-menu.forms.certificates.deans-honors'))<a href="{{ route('registrar.registrar-menu.forms.certificates.deans-honors') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.deans-honors*') ? 'active' : '' }}">Dean's Honors</a>@endif
+                        @if($canView('registrar.registrar-menu.forms.certificates.presidents-honors'))<a href="{{ route('registrar.registrar-menu.forms.certificates.presidents-honors') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.presidents-honors*') ? 'active' : '' }}">President's Honors</a>@endif
+                        @if($canView('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2'))<a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2') ? 'active' : '' }}">Form 8C-2 (Graduation)</a>@endif
+                        @if($canView('registrar.registrar-menu.forms.certificates.certificate-honor-8d2'))<a href="{{ route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.registrar-menu.forms.certificates.certificate-honor-8d2') ? 'active' : '' }}">Form 8D-2 (Honor)</a>@endif
                     </div>
                 </div>
+                @endif
 
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Student Requests</div>
-                <a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') ? 'active' : '' }}">Leave of Absence</a>
-                <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>
-                <a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.request-form-f-137a') ? 'active' : '' }}">Request Form F137A</a>
-                <a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>
-                <a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver &amp; Cancellation</a>
-                <a href="{{ route('registrar.registrar-menu.forms.citizens-charter') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.citizens-charter') ? 'active' : '' }}">Citizen's Charter</a>
+                @if($canView('registrar.registrar-menu.forms.application-leave-of-absence-enrolled'))<a href="{{ route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.application-leave-of-absence-enrolled') ? 'active' : '' }}">Leave of Absence</a>@endif
+                @if($canView('registrar.registrar-menu.forms.permission-cross-enroll'))<a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>@endif
+                @if($canView('registrar.registrar-menu.forms.request-form-f-137a'))<a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.request-form-f-137a') ? 'active' : '' }}">Request Form F137A</a>@endif
+                @if($canView('registrar.registrar-menu.forms.graduation-clearance'))<a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>@endif
+                @if($canView('registrar.registrar-menu.forms.waiver-cancellation'))<a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver &amp; Cancellation</a>@endif
+                @if($canView('registrar.registrar-menu.forms.citizens-charter'))<a href="{{ route('registrar.registrar-menu.forms.citizens-charter') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.citizens-charter') ? 'active' : '' }}">Citizen's Charter</a>@endif
             </div>
         </div>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- REPORTS                                --}}
@@ -327,6 +379,7 @@
         @php
             $reportsActive = request()->routeIs('registrar.services.reports-admin.*');
         @endphp
+        @if($canViewAny(['registrar.services.reports-admin.academic-reports', 'registrar.services.reports-admin.gwa-report', 'registrar.services.reports-admin.certifications', 'registrar.services.reports-admin.tagging-of-graduates', 'registrar.services.reports-admin.guidance-reports']))
         <div class="sidebar-dropdown {{ $reportsActive ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ $reportsActive ? 'active' : '' }}">
                 {{-- chart / analytics icon --}}
@@ -341,20 +394,28 @@
             </a>
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Academic</div>
-                <a href="{{ route('registrar.services.reports-admin.academic-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.academic-reports') ? 'active' : '' }}">Academic Reports</a>
-                <a href="{{ route('registrar.services.reports-admin.gwa-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.gwa-report') ? 'active' : '' }}">GWA Report</a>
-                <a href="{{ route('registrar.services.reports-admin.certifications') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.certifications') ? 'active' : '' }}">Certifications</a>
-                <a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.tagging-of-graduates') ? 'active' : '' }}">Graduation Tagging</a>
+                @if($canView('registrar.services.reports-admin.academic-reports'))<a href="{{ route('registrar.services.reports-admin.academic-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.academic-reports') ? 'active' : '' }}">Academic Reports</a>@endif
+                @if($canView('registrar.services.reports-admin.gwa-report'))<a href="{{ route('registrar.services.reports-admin.gwa-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.gwa-report') ? 'active' : '' }}">GWA Report</a>@endif
+                @if($canView('registrar.services.reports-admin.certifications'))<a href="{{ route('registrar.services.reports-admin.certifications') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.certifications') ? 'active' : '' }}">Certifications</a>@endif
+                @if($canView('registrar.services.reports-admin.tagging-of-graduates'))<a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.tagging-of-graduates') ? 'active' : '' }}">Graduation Tagging</a>@endif
 
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Student Affairs</div>
-                <a href="{{ route('registrar.services.reports-admin.guidance-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.guidance-reports') ? 'active' : '' }}">Guidance Reports</a>
+                @if($canView('registrar.services.reports-admin.guidance-reports'))<a href="{{ route('registrar.services.reports-admin.guidance-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.guidance-reports') ? 'active' : '' }}">Guidance Reports</a>@endif
             </div>
         </div>
+        @endif
 
         {{-- ══════════════════════════════════════ --}}
         {{-- SYSTEM                                 --}}
         {{-- ══════════════════════════════════════ --}}
+        @php
+            $systemConfigRoutes = ['registrar.admin-tools.system-config.configuration', 'registrar.admin-tools.system-config.academic-calendar', 'registrar.admin-tools.system-config.announcement'];
+            $accessManagementRoutes = ['registrar.admin-tools.access-management.user-accounts', 'registrar.admin-tools.access-management.report-access'];
+            $masterFilesRoutes = ['registrar.admin-tools.master-files.faculty-file', 'registrar.admin-tools.master-files.student-profile', 'registrar.admin-tools.master-files.student-grade-file', 'registrar.admin-tools.student-maintenance.student-update'];
+            $systemRoutes = array_merge($systemConfigRoutes, $accessManagementRoutes, $masterFilesRoutes, ['registrar.admin-tools.audit-trail']);
+        @endphp
+        @if($canViewAny($systemRoutes) || (auth()->check() && strtolower(trim((string)(auth()->user()->module ?? ''))) === 'admin'))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.admin-tools.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.admin-tools.*') ? 'active' : '' }}">
                 {{-- settings/gear icon --}}
@@ -370,43 +431,49 @@
             <div class="sidebar-dropdown-menu">
 
                 {{-- System Config --}}
+                @if($canViewAny($systemConfigRoutes))
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.system-config.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.system-config.*') ? 'active' : '' }}">
                         System Config
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.admin-tools.system-config.configuration') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.configuration') ? 'active' : '' }}">Configuration</a>
-                        <a href="{{ route('registrar.admin-tools.system-config.academic-calendar') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.academic-calendar') ? 'active' : '' }}">Academic Calendar</a>
-                        <a href="{{ route('registrar.admin-tools.system-config.announcement') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.announcement') ? 'active' : '' }}">Announcements</a>
+                        @if($canView('registrar.admin-tools.system-config.configuration'))<a href="{{ route('registrar.admin-tools.system-config.configuration') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.configuration') ? 'active' : '' }}">Configuration</a>@endif
+                        @if($canView('registrar.admin-tools.system-config.academic-calendar'))<a href="{{ route('registrar.admin-tools.system-config.academic-calendar') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.academic-calendar') ? 'active' : '' }}">Academic Calendar</a>@endif
+                        @if($canView('registrar.admin-tools.system-config.announcement'))<a href="{{ route('registrar.admin-tools.system-config.announcement') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.announcement') ? 'active' : '' }}">Announcements</a>@endif
                     </div>
                 </div>
+                @endif
 
                 {{-- Access Management --}}
+                @if($canViewAny($accessManagementRoutes))
                 <div class="sidebar-nested-dropdown {{ request()->routeIs('registrar.admin-tools.access-management.*') ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ request()->routeIs('registrar.admin-tools.access-management.*') ? 'active' : '' }}">
                         Access Management
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.admin-tools.access-management.user-accounts') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.access-management.user-accounts') ? 'active' : '' }}">User Accounts</a>
-                        <a href="{{ route('registrar.admin-tools.access-management.report-access') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.access-management.report-access') ? 'active' : '' }}">Report Access</a>
+                        @if($canView('registrar.admin-tools.access-management.user-accounts'))<a href="{{ route('registrar.admin-tools.access-management.user-accounts') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.access-management.user-accounts') ? 'active' : '' }}">User Accounts</a>@endif
+                        @if($canView('registrar.admin-tools.access-management.report-access'))<a href="{{ route('registrar.admin-tools.access-management.report-access') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.access-management.report-access') ? 'active' : '' }}">Report Access</a>@endif
                     </div>
                 </div>
+                @endif
 
                 {{-- Master Files --}}
+                @if($canViewAny($masterFilesRoutes))
                 <div class="sidebar-nested-dropdown {{ (request()->routeIs('registrar.admin-tools.master-files.*') || request()->routeIs('registrar.admin-tools.student-maintenance.*')) ? 'open' : '' }}">
                     <a href="#" class="sidebar-sublink sidebar-nested-toggle {{ (request()->routeIs('registrar.admin-tools.master-files.*') || request()->routeIs('registrar.admin-tools.student-maintenance.*')) ? 'active' : '' }}">
                         Master Files
                         <svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </a>
                     <div class="sidebar-nested-menu">
-                        <a href="{{ route('registrar.admin-tools.master-files.faculty-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.faculty-file') ? 'active' : '' }}">Faculty File</a>
-                        <a href="{{ route('registrar.admin-tools.master-files.student-profile') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-profile') ? 'active' : '' }}">Student Profile</a>
-                        <a href="{{ route('registrar.admin-tools.master-files.student-grade-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-grade-file') ? 'active' : '' }}">Student Grade File</a>
-                        <a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>
+                        @if($canView('registrar.admin-tools.master-files.faculty-file'))<a href="{{ route('registrar.admin-tools.master-files.faculty-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.faculty-file') ? 'active' : '' }}">Faculty File</a>@endif
+                        @if($canView('registrar.admin-tools.master-files.student-profile'))<a href="{{ route('registrar.admin-tools.master-files.student-profile') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-profile') ? 'active' : '' }}">Student Profile</a>@endif
+                        @if($canView('registrar.admin-tools.master-files.student-grade-file'))<a href="{{ route('registrar.admin-tools.master-files.student-grade-file') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.master-files.student-grade-file') ? 'active' : '' }}">Student Grade File</a>@endif
+                        @if($canView('registrar.admin-tools.student-maintenance.student-update'))<a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>@endif
                     </div>
                 </div>
+                @endif
 
                 @if(auth()->check() && strtolower(trim((string)(auth()->user()->module ?? ''))) === 'admin')
                 <a href="{{ route('registrar.admin-tools.grade-override.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.admin-tools.grade-override.*') ? 'active' : '' }}">
@@ -414,12 +481,15 @@
                 </a>
                 @endif
 
+                @if($canView('registrar.admin-tools.audit-trail'))
                 <a href="{{ route('registrar.admin-tools.audit-trail') }}" class="sidebar-sublink {{ request()->routeIs('registrar.admin-tools.audit-trail') ? 'active' : '' }}">
                     Audit Trail
                 </a>
+                @endif
 
             </div>
         </div>
+        @endif
 
     </nav>
 

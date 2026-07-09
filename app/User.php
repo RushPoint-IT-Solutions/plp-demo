@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'username', 'email', 'password', 'module', 'force_password_reset', 'student_id', 'faculty_id', 'registrar_id', 'applicant_id', 'parent_id',
+        'name', 'username', 'email', 'password', 'module', 'force_password_reset', 'student_id', 'faculty_id', 'registrar_id', 'applicant_id', 'parent_id', 'access_control_role_id',
     ];
 
     /**
@@ -70,6 +70,11 @@ class User extends Authenticatable
     public function accountStatus()
     {
         return $this->hasOne(UserAccountStatus::class);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(AccessControlRole::class, 'access_control_role_id');
     }
 
     public function notificationDeliveries()

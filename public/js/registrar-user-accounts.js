@@ -104,11 +104,18 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return;
   }
   var dataEndpoint = root.getAttribute('data-data-endpoint') || '';
+  var storeEndpoint = root.getAttribute('data-store-endpoint') || '';
   var updateTemplate = root.getAttribute('data-update-template') || '';
   var deleteTemplate = root.getAttribute('data-delete-template') || '';
   var accessControlModulesEndpoint = root.getAttribute('data-access-modules-endpoint') || '';
   var accessControlShowTemplate = root.getAttribute('data-access-show-template') || '';
   var accessControlUpdateTemplate = root.getAttribute('data-access-update-template') || '';
+  var roleDataEndpoint = root.getAttribute('data-role-data-endpoint') || '';
+  var roleStoreEndpoint = root.getAttribute('data-role-store-endpoint') || '';
+  var roleUpdateTemplate = root.getAttribute('data-role-update-template') || '';
+  var roleDeleteTemplate = root.getAttribute('data-role-delete-template') || '';
+  var roleAccessShowTemplate = root.getAttribute('data-role-access-show-template') || '';
+  var roleAccessUpdateTemplate = root.getAttribute('data-role-access-update-template') || '';
   var csrfToken = root.getAttribute('data-csrf-token') || '';
   var state = {
     selectedUser: null,
@@ -120,7 +127,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     perPage: 5,
     total: 0,
     from: 0,
+    roles: [],
+    pendingDeleteRole: null,
+    editingRoleId: null,
     accessControl: {
+      targetKind: 'user',
+      targetId: null,
       targetUserId: null,
       targetUserLabel: '',
       source: 'explicit',
@@ -252,7 +264,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     formEmail: document.getElementById('uaFormEmail'),
     formPassword: document.getElementById('uaFormPassword'),
     formUserType: document.getElementById('uaFormUserType'),
+    formRole: document.getElementById('uaFormRole'),
     inactive: document.getElementById('uaInactive'),
+    formModeBadge: document.getElementById('uaFormModeBadge'),
+    newAccountBtn: document.getElementById('uaNewAccountBtn'),
     saveBtn: document.getElementById('uaSaveBtn'),
     cancelBtn: document.getElementById('uaCancelBtn'),
     passwordToggle: document.getElementById('uaPasswordToggle'),
@@ -262,6 +277,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     deleteConfirmBtn: document.getElementById('uaDeleteConfirmBtn'),
     accessModal: document.getElementById('uaAccessModal'),
     accessModalUserLabel: document.getElementById('uaAccessModalUserLabel'),
+    accessModalNote: document.getElementById('uaAccessModalNote'),
+    accessCopyRow: document.getElementById('uaAccessCopyRow'),
     accessTableHead: document.getElementById('uaAccessTableHead'),
     accessTableBody: document.getElementById('uaAccessTableBody'),
     accessFootnote: document.getElementById('uaAccessFootnote'),
@@ -271,7 +288,19 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     accessCopySelect: document.getElementById('uaCopyAccessFrom'),
     accessCopyBtn: document.getElementById('uaCopyAccessBtn'),
     quickAccessToggle: document.getElementById('uaQuickAccessToggle'),
-    quickAccessList: document.getElementById('uaAccessQuickList')
+    quickAccessList: document.getElementById('uaAccessQuickList'),
+    roleTableBody: document.getElementById('uaRoleTableBody'),
+    newRoleBtn: document.getElementById('uaNewRoleBtn'),
+    roleModal: document.getElementById('uaRoleModal'),
+    roleModalTitle: document.getElementById('uaRoleModalTitle'),
+    roleFormName: document.getElementById('uaRoleFormName'),
+    roleFormDescription: document.getElementById('uaRoleFormDescription'),
+    roleModalCancelBtn: document.getElementById('uaRoleModalCancelBtn'),
+    roleModalSaveBtn: document.getElementById('uaRoleModalSaveBtn'),
+    roleDeleteModal: document.getElementById('uaRoleDeleteModal'),
+    roleDeleteModalText: document.getElementById('uaRoleDeleteModalText'),
+    roleDeleteCancelBtn: document.getElementById('uaRoleDeleteCancelBtn'),
+    roleDeleteConfirmBtn: document.getElementById('uaRoleDeleteConfirmBtn')
   };
   function uaNormalize(value) {
     return String(value || '').trim().toLowerCase();
@@ -474,6 +503,18 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   function uaBuildAccessUpdateUrl(id) {
     return accessControlUpdateTemplate.replace('__ID__', String(id));
   }
+  function uaBuildRoleUpdateUrl(id) {
+    return roleUpdateTemplate.replace('__ID__', String(id));
+  }
+  function uaBuildRoleDeleteUrl(id) {
+    return roleDeleteTemplate.replace('__ID__', String(id));
+  }
+  function uaBuildRoleAccessShowUrl(id) {
+    return roleAccessShowTemplate.replace('__ID__', String(id));
+  }
+  function uaBuildRoleAccessUpdateUrl(id) {
+    return roleAccessUpdateTemplate.replace('__ID__', String(id));
+  }
   function uaGetFilters() {
     return {
       user_id: (els.studentId ? els.studentId.value : '').trim(),
@@ -601,11 +642,15 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     if (els.formUserType) {
       els.formUserType.value = '';
     }
+    if (els.formRole) {
+      els.formRole.value = '';
+    }
     if (els.inactive) {
       els.inactive.checked = false;
     }
     state.selectedUser = null;
     uaSetSelectedSummary(null);
+    uaSetFormMode('create');
   }
   function uaFillForm(user) {
     if (!user) {
@@ -635,11 +680,27 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     if (els.formUserType) {
       els.formUserType.value = user.userTypeCode || '';
     }
+    if (els.formRole) {
+      els.formRole.value = user.roleId ? String(user.roleId) : '';
+    }
     if (els.inactive) {
       els.inactive.checked = !!user.inactive;
     }
     uaSetSelectedSummary(user);
     uaHighlightSelectedRow();
+    uaSetFormMode('edit');
+  }
+  function uaSetFormMode(mode) {
+    if (!els.formModeBadge) {
+      return;
+    }
+    if (mode === 'create') {
+      els.formModeBadge.textContent = 'Creating new account';
+      els.formModeBadge.classList.add('is-create-mode');
+    } else {
+      els.formModeBadge.textContent = 'Editing selected account';
+      els.formModeBadge.classList.remove('is-create-mode');
+    }
   }
   function uaHighlightSelectedRow() {
     if (!els.tableBody) {
@@ -1243,6 +1304,217 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     }));
     return _uaConfirmDelete.apply(this, arguments);
   }
+  function uaPopulateRoleSelectOptions() {
+    if (!els.formRole) {
+      return;
+    }
+    var previousValue = els.formRole.value;
+    while (els.formRole.options.length > 0) {
+      els.formRole.remove(0);
+    }
+    els.formRole.add(new Option('- No role assigned -', ''));
+    (state.roles || []).forEach(function (role) {
+      els.formRole.add(new Option(role.name, String(role.id)));
+    });
+    var hasPrevious = Array.prototype.some.call(els.formRole.options, function (option) {
+      return option.value === previousValue;
+    });
+    els.formRole.value = hasPrevious ? previousValue : '';
+  }
+  function uaRenderRoleTable() {
+    if (!els.roleTableBody) {
+      return;
+    }
+    if (!state.roles.length) {
+      els.roleTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">No roles defined yet.</td></tr>';
+      return;
+    }
+    var html = state.roles.map(function (role) {
+      var deleteBtn = role.isSystem ? '' : '<button type="button" class="apst-del-btn" data-ua-role-delete="' + uaEscapeHtml(role.id) + '">Delete</button>';
+      return '' + '<tr data-ua-role-pk="' + uaEscapeHtml(role.id) + '">' + '<td>' + uaEscapeHtml(role.name) + (role.isSystem ? ' <span class="ua-status-badge ua-status-active">System</span>' : '') + '</td>' + '<td>' + uaEscapeHtml(role.description || '-') + '</td>' + '<td>' + uaEscapeHtml(role.memberCount) + '</td>' + '<td class="ua-col-action-cell">' + '<button type="button" class="req-btn-cancel" data-ua-role-permissions="' + uaEscapeHtml(role.id) + '" style="margin-right:6px;">Permissions</button>' + '<button type="button" class="req-btn-cancel" data-ua-role-edit="' + uaEscapeHtml(role.id) + '" style="margin-right:6px;">Rename</button>' + deleteBtn + '</td>' + '</tr>';
+    }).join('');
+    els.roleTableBody.innerHTML = html;
+  }
+  function uaFetchRoles() {
+    return _uaFetchRoles.apply(this, arguments);
+  }
+  function _uaFetchRoles() {
+    _uaFetchRoles = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      var json, _t6;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.p = _context5.n) {
+          case 0:
+            if (roleDataEndpoint) {
+              _context5.n = 1;
+              break;
+            }
+            return _context5.a(2);
+          case 1:
+            _context5.p = 1;
+            _context5.n = 2;
+            return uaApiRequest(roleDataEndpoint, 'GET', null);
+          case 2:
+            json = _context5.v;
+            state.roles = Array.isArray(json.roles) ? json.roles : [];
+            uaRenderRoleTable();
+            uaPopulateRoleSelectOptions();
+            _context5.n = 4;
+            break;
+          case 3:
+            _context5.p = 3;
+            _t6 = _context5.v;
+            if (els.roleTableBody) {
+              els.roleTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">Unable to load roles.</td></tr>';
+            }
+          case 4:
+            return _context5.a(2);
+        }
+      }, _callee5, null, [[1, 3]]);
+    }));
+    return _uaFetchRoles.apply(this, arguments);
+  }
+  function uaOpenRoleModal(roleId) {
+    if (!els.roleModal) {
+      return;
+    }
+    var role = roleId ? (state.roles || []).find(function (item) {
+      return String(item.id) === String(roleId);
+    }) : null;
+    state.editingRoleId = role ? role.id : null;
+    if (els.roleModalTitle) {
+      els.roleModalTitle.textContent = role ? 'RENAME ROLE' : 'ADD ROLE';
+    }
+    if (els.roleFormName) {
+      els.roleFormName.value = role ? role.name : '';
+    }
+    if (els.roleFormDescription) {
+      els.roleFormDescription.value = role ? role.description : '';
+    }
+    els.roleModal.classList.remove('doclist-modal-hidden');
+    els.roleModal.setAttribute('aria-hidden', 'false');
+  }
+  function uaCloseRoleModal() {
+    if (!els.roleModal) {
+      return;
+    }
+    state.editingRoleId = null;
+    els.roleModal.classList.add('doclist-modal-hidden');
+    els.roleModal.setAttribute('aria-hidden', 'true');
+  }
+  function uaSaveRoleModal() {
+    return _uaSaveRoleModal.apply(this, arguments);
+  }
+  function _uaSaveRoleModal() {
+    _uaSaveRoleModal = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      var name, payload, _t7;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.p = _context6.n) {
+          case 0:
+            name = (els.roleFormName ? els.roleFormName.value : '').trim();
+            if (name) {
+              _context6.n = 1;
+              break;
+            }
+            alert('Please enter a role name.');
+            return _context6.a(2);
+          case 1:
+            payload = {
+              name: name,
+              description: (els.roleFormDescription ? els.roleFormDescription.value : '').trim()
+            };
+            _context6.p = 2;
+            if (!state.editingRoleId) {
+              _context6.n = 4;
+              break;
+            }
+            _context6.n = 3;
+            return uaApiRequest(uaBuildRoleUpdateUrl(state.editingRoleId), 'PUT', payload);
+          case 3:
+            _context6.n = 5;
+            break;
+          case 4:
+            _context6.n = 5;
+            return uaApiRequest(roleStoreEndpoint, 'POST', payload);
+          case 5:
+            uaCloseRoleModal();
+            _context6.n = 6;
+            return uaFetchRoles();
+          case 6:
+            _context6.n = 8;
+            break;
+          case 7:
+            _context6.p = 7;
+            _t7 = _context6.v;
+            alert(_t7.message || 'Unable to save role.');
+          case 8:
+            return _context6.a(2);
+        }
+      }, _callee6, null, [[2, 7]]);
+    }));
+    return _uaSaveRoleModal.apply(this, arguments);
+  }
+  function uaOpenRoleDeleteModal(roleId) {
+    if (!els.roleDeleteModal) {
+      return;
+    }
+    var role = (state.roles || []).find(function (item) {
+      return String(item.id) === String(roleId);
+    }) || null;
+    if (!role) {
+      return;
+    }
+    state.pendingDeleteRole = role;
+    if (els.roleDeleteModalText) {
+      els.roleDeleteModalText.textContent = 'Are you sure you want to delete the "' + role.name + '" role?';
+    }
+    els.roleDeleteModal.classList.remove('doclist-modal-hidden');
+    els.roleDeleteModal.setAttribute('aria-hidden', 'false');
+  }
+  function uaCloseRoleDeleteModal() {
+    if (!els.roleDeleteModal) {
+      return;
+    }
+    state.pendingDeleteRole = null;
+    els.roleDeleteModal.classList.add('doclist-modal-hidden');
+    els.roleDeleteModal.setAttribute('aria-hidden', 'true');
+  }
+  function uaConfirmRoleDelete() {
+    return _uaConfirmRoleDelete.apply(this, arguments);
+  }
+  function _uaConfirmRoleDelete() {
+    _uaConfirmRoleDelete = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      var _t8;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.p = _context7.n) {
+          case 0:
+            if (state.pendingDeleteRole) {
+              _context7.n = 1;
+              break;
+            }
+            uaCloseRoleDeleteModal();
+            return _context7.a(2);
+          case 1:
+            _context7.p = 1;
+            _context7.n = 2;
+            return uaApiRequest(uaBuildRoleDeleteUrl(state.pendingDeleteRole.id), 'DELETE');
+          case 2:
+            uaCloseRoleDeleteModal();
+            _context7.n = 3;
+            return uaFetchRoles();
+          case 3:
+            _context7.n = 5;
+            break;
+          case 4:
+            _context7.p = 4;
+            _t8 = _context7.v;
+            alert(_t8.message || 'Unable to delete role.');
+          case 5:
+            return _context7.a(2);
+        }
+      }, _callee7, null, [[1, 4]]);
+    }));
+    return _uaConfirmRoleDelete.apply(this, arguments);
+  }
   function uaCloneAccessMatrix(matrix) {
     var cloned = {};
     Object.keys(matrix || {}).forEach(function (moduleCode) {
@@ -1541,6 +1813,8 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     if (!els.accessModal) {
       return;
     }
+    state.accessControl.targetKind = 'user';
+    state.accessControl.targetId = null;
     state.accessControl.targetUserId = null;
     state.accessControl.targetUserLabel = '';
     uaSetQuickAccessVisibility(false);
@@ -1551,25 +1825,25 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _uaFetchAccessControlPayload.apply(this, arguments);
   }
   function _uaFetchAccessControlPayload() {
-    _uaFetchAccessControlPayload = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(userId) {
+    _uaFetchAccessControlPayload = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(userId) {
       var numericId, json;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
           case 0:
             numericId = parseInt(userId, 10);
             if (numericId) {
-              _context5.n = 1;
+              _context8.n = 1;
               break;
             }
-            return _context5.a(2, null);
+            return _context8.a(2, null);
           case 1:
-            _context5.n = 2;
+            _context8.n = 2;
             return uaApiRequest(uaBuildAccessShowUrl(numericId), 'GET', null);
           case 2:
-            json = _context5.v;
-            return _context5.a(2, json && json.data ? json.data : null);
+            json = _context8.v;
+            return _context8.a(2, json && json.data ? json.data : null);
         }
-      }, _callee5);
+      }, _callee8);
     }));
     return _uaFetchAccessControlPayload.apply(this, arguments);
   }
@@ -1577,27 +1851,27 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _uaPrimeAccessControlMetadata.apply(this, arguments);
   }
   function _uaPrimeAccessControlMetadata() {
-    _uaPrimeAccessControlMetadata = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var json, baseModules, _t6;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.p = _context6.n) {
+    _uaPrimeAccessControlMetadata = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+      var json, baseModules, _t9;
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.p = _context9.n) {
           case 0:
             if (accessControlModulesEndpoint) {
-              _context6.n = 1;
+              _context9.n = 1;
               break;
             }
-            return _context6.a(2);
+            return _context9.a(2);
           case 1:
-            _context6.p = 1;
-            _context6.n = 2;
+            _context9.p = 1;
+            _context9.n = 2;
             return uaApiRequest(accessControlModulesEndpoint, 'GET', null);
           case 2:
-            json = _context6.v;
+            json = _context9.v;
             if (!(!json || json.ok === false)) {
-              _context6.n = 3;
+              _context9.n = 3;
               break;
             }
-            return _context6.a(2);
+            return _context9.a(2);
           case 3:
             if (Array.isArray(json.permissionTypes) && !state.accessControl.permissionTypes.length) {
               state.accessControl.permissionTypes = json.permissionTypes;
@@ -1620,15 +1894,15 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               state.accessControl.modules = uaBuildDisplayModules(baseModules);
               state.accessControl.matrix = uaEnsureAccessMatrix(state.accessControl.modules, state.accessControl.permissionTypes, {});
             }
-            _context6.n = 5;
+            _context9.n = 5;
             break;
           case 4:
-            _context6.p = 4;
-            _t6 = _context6.v;
+            _context9.p = 4;
+            _t9 = _context9.v;
           case 5:
-            return _context6.a(2);
+            return _context9.a(2);
         }
-      }, _callee6, null, [[1, 4]]);
+      }, _callee9, null, [[1, 4]]);
     }));
     return _uaPrimeAccessControlMetadata.apply(this, arguments);
   }
@@ -1636,17 +1910,11 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _uaOpenAccessModal.apply(this, arguments);
   }
   function _uaOpenAccessModal() {
-    _uaOpenAccessModal = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(userPk) {
-      var user, requestSequence, json, payload, payloadModules, matrix, _t7;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.p = _context7.n) {
+    _uaOpenAccessModal = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(userPk) {
+      var user, label;
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
-            if (!(!els.accessModal || !els.accessTableBody || !els.accessModalUserLabel)) {
-              _context7.n = 1;
-              break;
-            }
-            return _context7.a(2);
-          case 1:
             user = state.rows.find(function (row) {
               return String(row.pk) === String(userPk);
             }) || null;
@@ -1654,47 +1922,109 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               user = state.selectedUser;
             }
             if (user) {
-              _context7.n = 2;
+              _context0.n = 1;
               break;
             }
             alert('Unable to open access control for the selected user.');
-            return _context7.a(2);
+            return _context0.a(2);
+          case 1:
+            label = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+            _context0.n = 2;
+            return uaOpenAccessModalForTarget('user', user.pk, label);
           case 2:
+            return _context0.a(2);
+        }
+      }, _callee0);
+    }));
+    return _uaOpenAccessModal.apply(this, arguments);
+  }
+  function uaOpenAccessModalForRole(_x0) {
+    return _uaOpenAccessModalForRole.apply(this, arguments);
+  }
+  function _uaOpenAccessModalForRole() {
+    _uaOpenAccessModalForRole = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(rolePk) {
+      var role;
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
+          case 0:
+            role = (state.roles || []).find(function (item) {
+              return String(item.id) === String(rolePk);
+            }) || null;
+            if (role) {
+              _context1.n = 1;
+              break;
+            }
+            alert('Unable to open permissions for the selected role.');
+            return _context1.a(2);
+          case 1:
+            _context1.n = 2;
+            return uaOpenAccessModalForTarget('role', role.id, role.name + ' (Role)');
+          case 2:
+            return _context1.a(2);
+        }
+      }, _callee1);
+    }));
+    return _uaOpenAccessModalForRole.apply(this, arguments);
+  }
+  function uaOpenAccessModalForTarget(_x1, _x10, _x11) {
+    return _uaOpenAccessModalForTarget.apply(this, arguments);
+  }
+  function _uaOpenAccessModalForTarget() {
+    _uaOpenAccessModalForTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(kind, targetId, label) {
+      var requestSequence, showUrl, json, payload, payloadModules, matrix, _t0;
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.p = _context10.n) {
+          case 0:
+            if (!(!els.accessModal || !els.accessTableBody || !els.accessModalUserLabel)) {
+              _context10.n = 1;
+              break;
+            }
+            return _context10.a(2);
+          case 1:
             if (accessControlRequestState.controller) {
               accessControlRequestState.controller.abort();
             }
             accessControlRequestState.controller = new AbortController();
             accessControlRequestState.sequence += 1;
             requestSequence = accessControlRequestState.sequence;
-            state.accessControl.targetUserId = user.pk;
-            state.accessControl.targetUserLabel = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+            state.accessControl.targetKind = kind;
+            state.accessControl.targetId = targetId;
+            state.accessControl.targetUserId = kind === 'user' ? targetId : null;
+            state.accessControl.targetUserLabel = label;
             state.accessControl.quickOptionFallback = {};
-            els.accessModalUserLabel.textContent = state.accessControl.targetUserLabel;
+            els.accessModalUserLabel.textContent = label;
+            if (els.accessModalNote) {
+              els.accessModalNote.textContent = kind === 'role' ? 'These permissions apply to every account assigned this role, unless a specific account has its own access override.' : 'These settings override the role defaults for this user only. Toggles are pre-filled with the role’s current permissions.';
+            }
+            if (els.accessCopyRow) {
+              els.accessCopyRow.style.display = kind === 'role' ? 'none' : '';
+            }
             uaSetAccessFootnote('explicit');
             uaSetQuickAccessVisibility(false);
             uaOpenAccessModalShell();
             els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Loading access control...</td></tr>';
-            _context7.p = 3;
-            _context7.n = 4;
-            return uaApiRequest(uaBuildAccessShowUrl(user.pk), 'GET', null, {
+            showUrl = kind === 'role' ? uaBuildRoleAccessShowUrl(targetId) : uaBuildAccessShowUrl(targetId);
+            _context10.p = 2;
+            _context10.n = 3;
+            return uaApiRequest(showUrl, 'GET', null, {
               signal: accessControlRequestState.controller.signal,
               allowAbort: true
             });
-          case 4:
-            json = _context7.v;
+          case 3:
+            json = _context10.v;
             if (!(requestSequence !== accessControlRequestState.sequence)) {
-              _context7.n = 5;
+              _context10.n = 4;
               break;
             }
-            return _context7.a(2);
-          case 5:
+            return _context10.a(2);
+          case 4:
             payload = json && json.data ? json.data : null;
             if (payload) {
-              _context7.n = 6;
+              _context10.n = 5;
               break;
             }
             throw new Error('Unable to read access-control payload.');
-          case 6:
+          case 5:
             state.accessControl.source = String(payload.source || 'explicit');
             state.accessControl.permissionTypes = Array.isArray(payload.permissionTypes) ? payload.permissionTypes : [];
             payloadModules = Array.isArray(payload.modules) ? payload.modules : [];
@@ -1715,71 +2045,71 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               state.accessControl.expandedModules[moduleCode] = uaShouldDefaultExpandModule(moduleCode);
             });
             if (!(!state.accessControl.permissionTypes.length || !state.accessControl.modules.length)) {
-              _context7.n = 7;
+              _context10.n = 6;
               break;
             }
             throw new Error('Access-control schema is unavailable. Please run the access-control migration first.');
-          case 7:
+          case 6:
             uaRenderAccessControlTable();
             uaRenderQuickAccessOptions();
             uaPopulateAccessCopyOptions();
             uaSetAccessFootnote(state.accessControl.source);
-            _context7.n = 10;
+            _context10.n = 9;
             break;
-          case 8:
-            _context7.p = 8;
-            _t7 = _context7.v;
-            if (!(_t7 && _t7.name === 'AbortError')) {
-              _context7.n = 9;
+          case 7:
+            _context10.p = 7;
+            _t0 = _context10.v;
+            if (!(_t0 && _t0.name === 'AbortError')) {
+              _context10.n = 8;
               break;
             }
-            return _context7.a(2);
-          case 9:
+            return _context10.a(2);
+          case 8:
             uaCloseAccessModal();
-            alert(_t7.message || 'Unable to load access control.');
-          case 10:
-            _context7.p = 10;
+            alert(_t0.message || 'Unable to load access control.');
+          case 9:
+            _context10.p = 9;
             if (requestSequence === accessControlRequestState.sequence) {
               accessControlRequestState.controller = null;
             }
-            return _context7.f(10);
-          case 11:
-            return _context7.a(2);
+            return _context10.f(9);
+          case 10:
+            return _context10.a(2);
         }
-      }, _callee7, null, [[3, 8, 10, 11]]);
+      }, _callee10, null, [[2, 7, 9, 10]]);
     }));
-    return _uaOpenAccessModal.apply(this, arguments);
+    return _uaOpenAccessModalForTarget.apply(this, arguments);
   }
   function uaCopyAccessFromUser() {
     return _uaCopyAccessFromUser.apply(this, arguments);
   }
   function _uaCopyAccessFromUser() {
-    _uaCopyAccessFromUser = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-      var sourceUserId, payload, sourceModules, sourceMatrix, _t8;
-      return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.p = _context8.n) {
+    _uaCopyAccessFromUser = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+      var sourceUserId, payload, sourceModules, sourceMatrix, _t1;
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.p = _context11.n) {
           case 0:
             if (els.accessCopySelect) {
-              _context8.n = 1;
+              _context11.n = 1;
               break;
             }
-            return _context8.a(2);
+            return _context11.a(2);
           case 1:
             sourceUserId = parseInt(els.accessCopySelect.value, 10);
             if (sourceUserId) {
-              _context8.n = 2;
+              _context11.n = 2;
               break;
             }
             alert('Please select a user to copy access from.');
-            return _context8.a(2);
+            return _context11.a(2);
           case 2:
-            _context8.p = 2;
-            _context8.n = 3;
+            _context11.p = 2;
+            _context11.n = 3;
             return uaFetchAccessControlPayload(sourceUserId);
           case 3:
-            payload = _context8.v;
+            payload = _context11.v;
             if (payload) {
-              _context8.n = 4;
+              _context11.n = 4;
               break;
             }
             throw new Error('Unable to load the source user access settings.');
@@ -1792,16 +2122,16 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             if (els.accessFootnote) {
               els.accessFootnote.textContent = 'Copied access settings from the selected user. Click Save Access to persist changes.';
             }
-            _context8.n = 6;
+            _context11.n = 6;
             break;
           case 5:
-            _context8.p = 5;
-            _t8 = _context8.v;
-            alert(_t8.message || 'Unable to copy access settings.');
+            _context11.p = 5;
+            _t1 = _context11.v;
+            alert(_t1.message || 'Unable to copy access settings.');
           case 6:
-            return _context8.a(2);
+            return _context11.a(2);
         }
-      }, _callee8, null, [[2, 5]]);
+      }, _callee11, null, [[2, 5]]);
     }));
     return _uaCopyAccessFromUser.apply(this, arguments);
   }
@@ -1809,19 +2139,20 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _uaSaveAccessControl.apply(this, arguments);
   }
   function _uaSaveAccessControl() {
-    _uaSaveAccessControl = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-      var targetUserId, matrix, filteredMatrix, json, payload, _t9;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.p = _context9.n) {
+    _uaSaveAccessControl = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+      var targetId, isRole, matrix, filteredMatrix, updateUrl, json, payload, _t10;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.p = _context12.n) {
           case 0:
-            targetUserId = parseInt(state.accessControl.targetUserId, 10);
-            if (targetUserId) {
-              _context9.n = 1;
+            targetId = parseInt(state.accessControl.targetId, 10);
+            if (targetId) {
+              _context12.n = 1;
               break;
             }
-            alert('Select a user before saving access control.');
-            return _context9.a(2);
+            alert('Select a user or role before saving access control.');
+            return _context12.a(2);
           case 1:
+            isRole = state.accessControl.targetKind === 'role';
             matrix = uaCloneAccessMatrix(state.accessControl.matrix);
             filteredMatrix = {};
             if (Array.isArray(state.accessControl.persistableModuleCodes) && state.accessControl.persistableModuleCodes.length) {
@@ -1833,13 +2164,14 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             } else {
               filteredMatrix = matrix;
             }
-            _context9.p = 2;
-            _context9.n = 3;
-            return uaApiRequest(uaBuildAccessUpdateUrl(targetUserId), 'PUT', {
+            _context12.p = 2;
+            updateUrl = isRole ? uaBuildRoleAccessUpdateUrl(targetId) : uaBuildAccessUpdateUrl(targetId);
+            _context12.n = 3;
+            return uaApiRequest(updateUrl, 'PUT', {
               permissions: filteredMatrix
             });
           case 3:
-            json = _context9.v;
+            json = _context12.v;
             payload = json && json.data ? json.data : null;
             if (payload && Array.isArray(payload.modules) && Array.isArray(payload.permissionTypes)) {
               state.accessControl.source = String(payload.source || 'explicit');
@@ -1854,16 +2186,16 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
             }
             uaCloseAccessModal();
             uaShowSuccessToast('Access control updated successfully.');
-            _context9.n = 5;
+            _context12.n = 5;
             break;
           case 4:
-            _context9.p = 4;
-            _t9 = _context9.v;
-            alert(_t9.message || 'Unable to save access control.');
+            _context12.p = 4;
+            _t10 = _context12.v;
+            alert(_t10.message || 'Unable to save access control.');
           case 5:
-            return _context9.a(2);
+            return _context12.a(2);
         }
-      }, _callee9, null, [[2, 4]]);
+      }, _callee12, null, [[2, 4]]);
     }));
     return _uaSaveAccessControl.apply(this, arguments);
   }
@@ -1871,56 +2203,76 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     return _uaSaveSelected.apply(this, arguments);
   }
   function _uaSaveSelected() {
-    _uaSaveSelected = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-      var payload, json, _t0;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.p = _context0.n) {
+    _uaSaveSelected = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
+      var isCreating, payload, json, _t11, _t12;
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.p = _context13.n) {
           case 0:
-            if (!(!state.selectedUser || !state.selectedUser.pk)) {
-              _context0.n = 1;
-              break;
-            }
-            alert('Please select a user account first.');
-            return _context0.a(2);
-          case 1:
+            isCreating = !state.selectedUser || !state.selectedUser.pk;
             payload = {
               user_id: (els.formUserId ? els.formUserId.value : '').trim(),
               full_name: (els.formName ? els.formName.value : '').trim(),
               email: (els.formEmail ? els.formEmail.value : '').trim(),
               password: (els.formPassword ? els.formPassword.value : '').trim(),
               inactive: !!(els.inactive && els.inactive.checked),
-              user_type: (els.formUserType ? els.formUserType.value : '').trim()
+              access_control_role_id: (els.formRole ? els.formRole.value : '').trim()
             };
+            if (!isCreating) {
+              payload.user_type = (els.formUserType ? els.formUserType.value : '').trim();
+            }
             if (payload.user_id) {
-              _context0.n = 2;
+              _context13.n = 1;
               break;
             }
             alert('Please enter a User ID.');
-            return _context0.a(2);
+            return _context13.a(2);
+          case 1:
+            if (!(isCreating && !payload.password)) {
+              _context13.n = 2;
+              break;
+            }
+            alert('Please enter a password for the new account.');
+            return _context13.a(2);
           case 2:
-            _context0.p = 2;
-            _context0.n = 3;
-            return uaApiRequest(uaBuildUpdateUrl(state.selectedUser.pk), 'PUT', payload);
+            _context13.p = 2;
+            if (!isCreating) {
+              _context13.n = 4;
+              break;
+            }
+            _context13.n = 3;
+            return uaApiRequest(storeEndpoint, 'POST', payload);
           case 3:
-            json = _context0.v;
+            _t11 = _context13.v;
+            _context13.n = 6;
+            break;
+          case 4:
+            _context13.n = 5;
+            return uaApiRequest(uaBuildUpdateUrl(state.selectedUser.pk), 'PUT', payload);
+          case 5:
+            _t11 = _context13.v;
+          case 6:
+            json = _t11;
             if (json.row) {
               state.selectedUser = json.row;
               uaFillForm(json.row);
             }
-            _context0.n = 4;
+            _context13.n = 7;
             return uaFetchRows(state.currentPage);
-          case 4:
-            alert('Account credentials updated.');
-            _context0.n = 6;
+          case 7:
+            _context13.n = 8;
+            return uaFetchRoles();
+          case 8:
+            alert(isCreating ? 'Account created.' : 'Account credentials updated.');
+            _context13.n = 10;
             break;
-          case 5:
-            _context0.p = 5;
-            _t0 = _context0.v;
-            alert(_t0.message || 'Unable to update account credentials.');
-          case 6:
-            return _context0.a(2);
+          case 9:
+            _context13.p = 9;
+            _t12 = _context13.v;
+            alert(_t12.message || 'Unable to save account credentials.');
+          case 10:
+            return _context13.a(2);
         }
-      }, _callee0, null, [[2, 5]]);
+      }, _callee13, null, [[2, 9]]);
     }));
     return _uaSaveSelected.apply(this, arguments);
   }
@@ -2049,6 +2401,67 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
           uaFillForm(state.selectedUser);
         } else {
           uaClearForm();
+        }
+      });
+    }
+    if (els.newAccountBtn) {
+      els.newAccountBtn.addEventListener('click', function () {
+        uaCloseRowActionMenus();
+        uaClearForm();
+        if (els.formPassword) {
+          els.formPassword.readOnly = false;
+          els.formPassword.focus();
+        }
+      });
+    }
+    if (els.newRoleBtn) {
+      els.newRoleBtn.addEventListener('click', function () {
+        uaOpenRoleModal(null);
+      });
+    }
+    if (els.roleTableBody) {
+      els.roleTableBody.addEventListener('click', function (event) {
+        var permissionsBtn = event.target.closest('[data-ua-role-permissions]');
+        if (permissionsBtn) {
+          uaOpenAccessModalForRole(permissionsBtn.getAttribute('data-ua-role-permissions'));
+          return;
+        }
+        var editBtn = event.target.closest('[data-ua-role-edit]');
+        if (editBtn) {
+          uaOpenRoleModal(editBtn.getAttribute('data-ua-role-edit'));
+          return;
+        }
+        var deleteBtn = event.target.closest('[data-ua-role-delete]');
+        if (deleteBtn) {
+          uaOpenRoleDeleteModal(deleteBtn.getAttribute('data-ua-role-delete'));
+        }
+      });
+    }
+    if (els.roleModalCancelBtn) {
+      els.roleModalCancelBtn.addEventListener('click', uaCloseRoleModal);
+    }
+    if (els.roleModalSaveBtn) {
+      els.roleModalSaveBtn.addEventListener('click', function () {
+        uaSaveRoleModal();
+      });
+    }
+    if (els.roleModal) {
+      els.roleModal.addEventListener('click', function (event) {
+        if (event.target === els.roleModal) {
+          uaCloseRoleModal();
+        }
+      });
+    }
+    if (els.roleDeleteCancelBtn) {
+      els.roleDeleteCancelBtn.addEventListener('click', uaCloseRoleDeleteModal);
+    }
+    if (els.roleDeleteConfirmBtn) {
+      els.roleDeleteConfirmBtn.addEventListener('click', uaConfirmRoleDelete);
+    }
+    if (els.roleDeleteModal) {
+      els.roleDeleteModal.addEventListener('click', function (event) {
+        if (event.target === els.roleDeleteModal) {
+          uaCloseRoleDeleteModal();
         }
       });
     }
@@ -2232,7 +2645,9 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   uaWireEvents();
   uaPreventAutofillArtifacts();
   uaSetSelectedSummary(null);
+  uaSetFormMode('create');
   uaFetchRows(1);
+  uaFetchRoles();
   window.addEventListener('pageshow', function (event) {
     if (!event || !event.persisted) {
       return;

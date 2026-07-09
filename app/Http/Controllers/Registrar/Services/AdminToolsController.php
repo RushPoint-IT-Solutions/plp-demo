@@ -31,6 +31,8 @@ use App\SystemSchoolSemester;
 use App\ReportPermission;
 use App\AccessControlModule;
 use App\AccessControlPermissionType;
+use App\AccessControlRole;
+use App\RoleAccessControl;
 use App\UserAccessControl;
 use App\AcademicCalendarAudienceType;
 use App\AcademicCalendarEvent;
@@ -1394,11 +1396,18 @@ class AdminToolsController extends Controller
     {
         return view('registrar.admin-tools.access-management.user-accounts', [
             'userAccountDataUrl' => route('registrar.admin-tools.access-management.user-accounts.data'),
+            'userAccountStoreUrl' => route('registrar.admin-tools.access-management.user-accounts.store'),
             'userAccountUpdateTemplate' => route('registrar.admin-tools.access-management.user-accounts.update', ['user' => '__ID__']),
             'userAccountDeleteTemplate' => route('registrar.admin-tools.access-management.user-accounts.destroy', ['user' => '__ID__']),
             'userAccessControlModulesUrl' => route('registrar.admin-tools.access-management.user-accounts.access-control.modules'),
             'userAccessControlShowTemplate' => route('registrar.admin-tools.access-management.user-accounts.access-control.show', ['user' => '__ID__']),
             'userAccessControlUpdateTemplate' => route('registrar.admin-tools.access-management.user-accounts.access-control.update', ['user' => '__ID__']),
+            'accessControlRolesDataUrl' => route('registrar.admin-tools.access-management.roles'),
+            'accessControlRolesStoreUrl' => route('registrar.admin-tools.access-management.roles.store'),
+            'accessControlRoleUpdateTemplate' => route('registrar.admin-tools.access-management.roles.update', ['accessControlRole' => '__ID__']),
+            'accessControlRoleDeleteTemplate' => route('registrar.admin-tools.access-management.roles.destroy', ['accessControlRole' => '__ID__']),
+            'accessControlRoleAccessControlShowTemplate' => route('registrar.admin-tools.access-management.roles.access-control.show', ['accessControlRole' => '__ID__']),
+            'accessControlRoleAccessControlUpdateTemplate' => route('registrar.admin-tools.access-management.roles.access-control.update', ['accessControlRole' => '__ID__']),
         ]);
     }
 
@@ -1419,6 +1428,8 @@ class AdminToolsController extends Controller
         $hasNormalizedTables = $this->hasNormalizedUserAccountTables();
         $hasLegacyStatusTable = Schema::hasTable('user_account_statuses');
 
+        $hasRoleTable = Schema::hasTable('access_control_roles');
+
         $query = User::query()
             ->select([
                 'users.id',
@@ -1426,7 +1437,14 @@ class AdminToolsController extends Controller
                 'users.name',
                 'users.email',
                 'users.module',
+                'users.access_control_role_id',
             ]);
+
+        if ($hasRoleTable) {
+            $query
+                ->leftJoin('access_control_roles as acr', 'acr.id', '=', 'users.access_control_role_id')
+                ->addSelect(DB::raw("COALESCE(acr.name, '') as role_name"));
+        }
 
         if ($hasLegacyStatusTable) {
             $query
@@ -1522,6 +1540,8 @@ class AdminToolsController extends Controller
                     'email' => (string) ($row->email ?: ''),
                     'inactive' => $isInactive,
                     'isSample' => $hasNormalizedTables ? $this->parseBooleanInput($row->profile_is_sample) : false,
+                    'roleId' => property_exists($row, 'access_control_role_id') && $row->access_control_role_id ? (int) $row->access_control_role_id : null,
+                    'roleName' => property_exists($row, 'role_name') ? (string) $row->role_name : '',
                 ];
             })
             ->values()
@@ -1660,6 +1680,7 @@ class AdminToolsController extends Controller
             'password' => 'nullable|string|min:6|max:190',
             'inactive' => 'nullable',
             'user_type' => 'nullable|string|max:50',
+            'access_control_role_id' => 'nullable|integer|exists:access_control_roles,id',
         ]);
 
         $user->username = (string) $validated['user_id'];
@@ -1673,6 +1694,12 @@ class AdminToolsController extends Controller
 
         $typeCode = $this->normalizeModuleCode((string) ($validated['user_type'] ?? $user->module));
         $user->module = $typeCode;
+
+        if ($request->has('access_control_role_id')) {
+            $user->access_control_role_id = !empty($validated['access_control_role_id'])
+                ? (int) $validated['access_control_role_id']
+                : null;
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make((string) $validated['password']);
@@ -1716,6 +1743,8 @@ class AdminToolsController extends Controller
                 'userTypeCode' => $typeCode,
                 'email' => (string) ($user->email ?: ''),
                 'inactive' => $inactive,
+                'roleId' => $user->access_control_role_id ? (int) $user->access_control_role_id : null,
+                'roleName' => $user->access_control_role_id ? (string) optional($user->role)->name : '',
             ],
         ]);
     }
@@ -1732,6 +1761,331 @@ class AdminToolsController extends Controller
         $user->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    public function userAccountsStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|string|max:190|unique:users,username',
+            'full_name' => 'nullable|string|max:190',
+            'email' => 'nullable|email|max:190|unique:users,email',
+            'password' => 'required|string|min:6|max:190',
+            'access_control_role_id' => 'nullable|integer|exists:access_control_roles,id',
+            'inactive' => 'nullable',
+        ]);
+
+        $user = new User();
+        $user->username = (string) $validated['user_id'];
+        $user->name = (string) ($validated['full_name'] ?: $validated['user_id']);
+        $user->email = !empty($validated['email']) ? (string) $validated['email'] : null;
+        $user->module = 'registrar';
+        $user->password = Hash::make((string) $validated['password']);
+        $user->force_password_reset = true;
+        $user->access_control_role_id = !empty($validated['access_control_role_id'])
+            ? (int) $validated['access_control_role_id']
+            : null;
+        $user->save();
+
+        $inactive = $this->parseBooleanInput($request->input('inactive', false));
+
+        if (Schema::hasTable('user_account_statuses')) {
+            UserAccountStatus::updateOrCreate(
+                ['user_id' => $user->id],
+                ['is_inactive' => $inactive]
+            );
+        }
+
+        $this->syncUserAccountProfile($user, $inactive, 'registrar');
+
+        list($lastName, $firstName) = $this->splitUserName((string) ($user->name ?: $user->username));
+
+        return response()->json([
+            'ok' => true,
+            'row' => [
+                'pk' => $user->id,
+                'userId' => (string) $user->username,
+                'lastName' => $lastName,
+                'firstName' => $firstName,
+                'fullName' => (string) ($user->name ?: $user->username),
+                'userType' => 'Registrar',
+                'userTypeCode' => 'registrar',
+                'email' => (string) ($user->email ?: ''),
+                'inactive' => $inactive,
+                'roleId' => $user->access_control_role_id ? (int) $user->access_control_role_id : null,
+                'roleName' => $user->access_control_role_id ? (string) optional($user->role)->name : '',
+            ],
+        ]);
+    }
+
+    // Access Management — Roles
+    public function accessControlRolesData(): JsonResponse
+    {
+        $roles = AccessControlRole::query()
+            ->withCount('users')
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'description', 'is_system']);
+
+        return response()->json([
+            'ok' => true,
+            'roles' => $roles->map(function (AccessControlRole $role) {
+                return [
+                    'id' => (int) $role->id,
+                    'name' => (string) $role->name,
+                    'code' => (string) $role->code,
+                    'description' => (string) ($role->description ?: ''),
+                    'isSystem' => (bool) $role->is_system,
+                    'memberCount' => (int) $role->users_count,
+                ];
+            })->values()->all(),
+        ]);
+    }
+
+    public function accessControlRolesStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:120|unique:access_control_roles,name',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $role = AccessControlRole::create([
+            'name' => (string) $validated['name'],
+            'code' => $this->slugifyRoleCode((string) $validated['name']),
+            'description' => $validated['description'] ?? null,
+            'is_system' => false,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'role' => [
+                'id' => (int) $role->id,
+                'name' => (string) $role->name,
+                'code' => (string) $role->code,
+                'description' => (string) ($role->description ?: ''),
+                'isSystem' => false,
+                'memberCount' => 0,
+            ],
+        ]);
+    }
+
+    public function accessControlRolesUpdate(Request $request, AccessControlRole $accessControlRole): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:120|unique:access_control_roles,name,' . $accessControlRole->id,
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $accessControlRole->name = (string) $validated['name'];
+        $accessControlRole->description = $validated['description'] ?? null;
+        $accessControlRole->save();
+
+        return response()->json([
+            'ok' => true,
+            'role' => [
+                'id' => (int) $accessControlRole->id,
+                'name' => (string) $accessControlRole->name,
+                'code' => (string) $accessControlRole->code,
+                'description' => (string) ($accessControlRole->description ?: ''),
+                'isSystem' => (bool) $accessControlRole->is_system,
+                'memberCount' => (int) $accessControlRole->users()->count(),
+            ],
+        ]);
+    }
+
+    public function accessControlRolesDestroy(AccessControlRole $accessControlRole): JsonResponse
+    {
+        if ($accessControlRole->is_system) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This role is protected and cannot be deleted.',
+            ], 422);
+        }
+
+        if ($accessControlRole->users()->exists()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This role is still assigned to one or more accounts. Reassign those accounts before deleting it.',
+            ], 422);
+        }
+
+        $accessControlRole->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function accessControlRoleAccessControlShow(AccessControlRole $accessControlRole): JsonResponse
+    {
+        if (!$this->hasUserAccessControlTables()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Access control tables are unavailable. Please run the access-control migration first.',
+            ], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'data' => $this->buildRoleAccessControlPayload($accessControlRole),
+        ]);
+    }
+
+    public function accessControlRoleAccessControlUpdate(Request $request, AccessControlRole $accessControlRole): JsonResponse
+    {
+        if (!$this->hasUserAccessControlTables()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Access control tables are unavailable. Please run the access-control migration first.',
+            ], 422);
+        }
+
+        $permissionInput = $request->input('permissions');
+        if (!is_array($permissionInput) || empty($permissionInput)) {
+            throw ValidationException::withMessages([
+                'permissions' => ['Please provide module permissions before saving access control.'],
+            ]);
+        }
+
+        $metadata = $this->fetchAccessControlMetadata();
+        $moduleIdByCode = $metadata['moduleIdByCode'];
+        $permissionTypeIdByCode = $metadata['permissionTypeIdByCode'];
+
+        foreach ($permissionInput as $moduleCode => $actions) {
+            if (!array_key_exists($moduleCode, $moduleIdByCode)) {
+                throw ValidationException::withMessages([
+                    'permissions' => ['Unknown module code: ' . $moduleCode],
+                ]);
+            }
+
+            if (!is_array($actions)) {
+                throw ValidationException::withMessages([
+                    'permissions' => ['Invalid permission payload for module: ' . $moduleCode],
+                ]);
+            }
+
+            foreach ($actions as $permissionCode => $allowed) {
+                if (!array_key_exists($permissionCode, $permissionTypeIdByCode)) {
+                    throw ValidationException::withMessages([
+                        'permissions' => ['Unknown permission type: ' . $permissionCode],
+                    ]);
+                }
+            }
+        }
+
+        $rows = [];
+        $now = now();
+
+        foreach ($moduleIdByCode as $moduleCode => $moduleId) {
+            $moduleActions = [];
+            if (array_key_exists($moduleCode, $permissionInput) && is_array($permissionInput[$moduleCode])) {
+                $moduleActions = $permissionInput[$moduleCode];
+            }
+
+            foreach ($permissionTypeIdByCode as $permissionCode => $permissionTypeId) {
+                $rows[] = [
+                    'role_id' => $accessControlRole->id,
+                    'access_control_module_id' => $moduleId,
+                    'access_control_permission_type_id' => $permissionTypeId,
+                    'is_allowed' => $this->parseBooleanInput(array_key_exists($permissionCode, $moduleActions) ? $moduleActions[$permissionCode] : false),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        DB::transaction(function () use ($accessControlRole, $rows) {
+            RoleAccessControl::query()->where('role_id', $accessControlRole->id)->delete();
+            if (!empty($rows)) {
+                RoleAccessControl::query()->insert($rows);
+            }
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Role access control saved successfully.',
+            'data' => $this->buildRoleAccessControlPayload($accessControlRole),
+        ]);
+    }
+
+    private function buildRoleAccessControlPayload(AccessControlRole $role): array
+    {
+        $metadata = $this->fetchAccessControlMetadata();
+        $moduleRows = $metadata['moduleRows'];
+        $permissionTypeRows = $metadata['permissionTypeRows'];
+        $permissionTypes = $metadata['permissionTypes'];
+
+        $moduleIds = $moduleRows->pluck('id')->all();
+        $permissionTypeIds = $permissionTypeRows->pluck('id')->all();
+
+        $storedRows = RoleAccessControl::query()
+            ->where('role_id', $role->id)
+            ->whereIn('access_control_module_id', $moduleIds)
+            ->whereIn('access_control_permission_type_id', $permissionTypeIds)
+            ->get(['access_control_module_id', 'access_control_permission_type_id', 'is_allowed']);
+
+        $storedMap = [];
+        foreach ($storedRows as $row) {
+            $moduleId = (int) $row->access_control_module_id;
+            $permissionTypeId = (int) $row->access_control_permission_type_id;
+            if (!array_key_exists($moduleId, $storedMap)) {
+                $storedMap[$moduleId] = [];
+            }
+
+            $storedMap[$moduleId][$permissionTypeId] = $this->parseBooleanInput($row->is_allowed);
+        }
+
+        $modulePayload = $moduleRows->map(function ($module) use ($permissionTypeRows, $storedMap, $role) {
+            $moduleId = (int) $module->id;
+
+            $actions = [];
+            foreach ($permissionTypeRows as $permissionType) {
+                $permissionTypeId = (int) $permissionType->id;
+                $permissionCode = (string) $permissionType->code;
+
+                $allowed = false;
+                if (array_key_exists($moduleId, $storedMap) && array_key_exists($permissionTypeId, $storedMap[$moduleId])) {
+                    $allowed = $storedMap[$moduleId][$permissionTypeId];
+                } elseif ($role->is_system) {
+                    $allowed = true;
+                }
+
+                $actions[$permissionCode] = $allowed;
+            }
+
+            return [
+                'id' => $moduleId,
+                'code' => (string) $module->code,
+                'name' => (string) $module->name,
+                'parentId' => $module->parent_id ? (int) $module->parent_id : null,
+                'actions' => $actions,
+            ];
+        })->values()->all();
+
+        return [
+            'role' => [
+                'id' => (int) $role->id,
+                'name' => (string) $role->name,
+                'code' => (string) $role->code,
+                'isSystem' => (bool) $role->is_system,
+            ],
+            'permissionTypes' => $permissionTypes,
+            'modules' => $modulePayload,
+            'source' => $storedRows->isEmpty() ? 'default' : 'explicit',
+        ];
+    }
+
+    private function slugifyRoleCode(string $name): string
+    {
+        $base = strtolower(trim($name));
+        $base = preg_replace('/[^a-z0-9]+/', '_', $base);
+        $base = trim((string) $base, '_');
+        $base = $base !== '' ? $base : 'role';
+
+        $code = $base;
+        $suffix = 1;
+        while (AccessControlRole::query()->where('code', $code)->exists()) {
+            $suffix++;
+            $code = $base . '_' . $suffix;
+        }
+
+        return $code;
     }
 
     private function hasNormalizedUserAccountTables(): bool

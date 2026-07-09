@@ -10,11 +10,18 @@
         class="ua-page"
         id="uaPageRoot"
         data-data-endpoint="{{ $userAccountDataUrl }}"
+        data-store-endpoint="{{ $userAccountStoreUrl }}"
         data-update-template="{{ $userAccountUpdateTemplate }}"
         data-delete-template="{{ $userAccountDeleteTemplate }}"
         data-access-modules-endpoint="{{ $userAccessControlModulesUrl }}"
         data-access-show-template="{{ $userAccessControlShowTemplate }}"
         data-access-update-template="{{ $userAccessControlUpdateTemplate }}"
+        data-role-data-endpoint="{{ $accessControlRolesDataUrl }}"
+        data-role-store-endpoint="{{ $accessControlRolesStoreUrl }}"
+        data-role-update-template="{{ $accessControlRoleUpdateTemplate }}"
+        data-role-delete-template="{{ $accessControlRoleDeleteTemplate }}"
+        data-role-access-show-template="{{ $accessControlRoleAccessControlShowTemplate }}"
+        data-role-access-update-template="{{ $accessControlRoleAccessControlUpdateTemplate }}"
         data-csrf-token="{{ csrf_token() }}"
     >
         <section class="cfg-card ua-filter-card">
@@ -47,6 +54,7 @@
                         </div>
                         <button type="button" class="ua-clear-btn" id="uaClearBtn">Clear Entries</button>
                         <button type="button" class="pf-btn-new ua-search-btn" id="uaSearchBtn">Search</button>
+                        <button type="button" class="pf-btn-new" id="uaNewAccountBtn">Add Account</button>
                     </div>
                 </div>
             </div>
@@ -81,6 +89,7 @@
         <section class="cfg-card">
             <div class="cfg-card-head">
                 <h3>Account Credentials</h3>
+                <span class="ua-form-mode-badge" id="uaFormModeBadge">Editing selected account</span>
             </div>
 
             <div class="ua-selected-user">
@@ -143,12 +152,38 @@
                     Check if Inactive
                 </label>
                 <div></div>
-                <div></div>
+
+                <label class="ua-form-label" for="uaFormRole">Role</label>
+                <select id="uaFormRole" class="app-filter-select">
+                    <option value="">- No role assigned -</option>
+                </select>
+                <div class="ua-form-note">Determines which modules and actions this account can access. Per-account access overrides (Edit Access) still take priority over the role.</div>
             </div>
 
             <div class="ua-bottom-actions">
                 <button type="button" class="req-btn-cancel" id="uaCancelBtn">Cancel</button>
                 <button type="button" class="req-btn-save" id="uaSaveBtn">Save</button>
+            </div>
+        </section>
+
+        <section class="cfg-card">
+            <div class="cfg-card-head">
+                <h3>Registrar Staff Roles</h3>
+                <button type="button" class="pf-btn-new" id="uaNewRoleBtn">Add Role</button>
+            </div>
+            <p class="ua-form-note" style="margin: 0 0 10px;">Define reusable roles with their own module/action permissions, then assign a role to each staff account above. Per-account access overrides always take priority over the assigned role.</p>
+            <div class="app-table-wrap">
+                <table class="app-table cfg-table" id="uaRoleTable" data-no-auto-pager="1">
+                    <thead>
+                        <tr>
+                            <th>Role Name</th>
+                            <th>Description</th>
+                            <th>Accounts</th>
+                            <th class="ua-col-action">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="uaRoleTableBody"></tbody>
+                </table>
             </div>
         </section>
     </div>
@@ -165,6 +200,35 @@
     </div>
 </div>
 
+<div class="req-modal-overlay doclist-modal-hidden ua-role-modal" id="uaRoleModal" aria-hidden="true">
+    <div class="req-modal-box" style="width: 480px;" role="dialog" aria-modal="true" aria-labelledby="uaRoleModalTitle">
+        <h3 class="req-modal-title" id="uaRoleModalTitle">ADD ROLE</h3>
+        <div class="req-modal-field-group">
+            <label class="req-modal-label">Role Name</label>
+            <input type="text" id="uaRoleFormName" class="req-modal-input" placeholder="e.g. Admissions Clerk">
+        </div>
+        <div class="req-modal-field-group" style="margin-top:10px;">
+            <label class="req-modal-label">Description</label>
+            <input type="text" id="uaRoleFormDescription" class="req-modal-input" placeholder="Optional short description">
+        </div>
+        <div class="req-modal-actions" style="margin-top:14px;">
+            <button type="button" class="req-btn-cancel" id="uaRoleModalCancelBtn">Cancel</button>
+            <button type="button" class="req-btn-save" id="uaRoleModalSaveBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="req-modal-overlay doclist-modal-hidden ua-role-delete-modal" id="uaRoleDeleteModal" aria-hidden="true">
+    <div class="req-modal-box req-modal-success" role="dialog" aria-modal="true" aria-labelledby="uaRoleDeleteModalTitle">
+        <h3 class="req-modal-title" id="uaRoleDeleteModalTitle">DELETE ROLE</h3>
+        <p id="uaRoleDeleteModalText" class="ua-delete-modal-text">Are you sure you want to delete this role?</p>
+        <div class="req-modal-actions">
+            <button type="button" class="req-btn-cancel" id="uaRoleDeleteCancelBtn">Cancel</button>
+            <button type="button" class="req-btn-save" id="uaRoleDeleteConfirmBtn">Delete</button>
+        </div>
+    </div>
+</div>
+
 <div class="req-modal-overlay doclist-modal-hidden ua-access-modal" id="uaAccessModal" aria-hidden="true">
     <div class="req-modal-box ua-access-modal-box" role="dialog" aria-modal="true" aria-labelledby="uaAccessModalTitle">
         <div class="ua-access-modal-head">
@@ -172,9 +236,9 @@
             <button type="button" class="rep-modal-close-x" id="uaAccessCloseX" aria-label="Close access control">&times;</button>
         </div>
 
-        <p class="ua-access-modal-note">These settings override the role defaults for this user only. Toggles are pre-filled with the role&rsquo;s current permissions.</p>
+        <p class="ua-access-modal-note" id="uaAccessModalNote">These settings override the role defaults for this user only. Toggles are pre-filled with the role&rsquo;s current permissions.</p>
 
-        <div class="ua-access-meta">
+        <div class="ua-access-meta" id="uaAccessCopyRow">
             <div class="ua-access-copy-wrap">
                 <label class="app-filter-label" for="uaCopyAccessFrom">Copy Access From:</label>
                 <select id="uaCopyAccessFrom" class="app-filter-select">

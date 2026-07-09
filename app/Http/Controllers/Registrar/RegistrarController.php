@@ -18,6 +18,7 @@ use App\Course;
 use App\CourseCurriculum;
 use App\CourseCurriculumSubject;
 use App\CrossEnrollmentRequest;
+use App\Support\UserAccessGate;
 use App\CurriculumRequisiteType;
 use App\CurriculumSubjectRequisite;
 use App\Department;
@@ -18625,6 +18626,8 @@ class RegistrarController extends Controller
 
     public function approveGradeCorrectionRequest(Request $request, GradeCorrectionRequest $gradeCorrectionRequest): JsonResponse
     {
+        abort_unless(UserAccessGate::currentUserAllows('student_records_student_list', 'approve'), 403, 'You do not have permission to approve grade correction requests.');
+
         if ($gradeCorrectionRequest->status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'This request has already been reviewed.'], 422);
         }
@@ -18655,6 +18658,8 @@ class RegistrarController extends Controller
 
     public function rejectGradeCorrectionRequest(Request $request, GradeCorrectionRequest $gradeCorrectionRequest): JsonResponse
     {
+        abort_unless(UserAccessGate::currentUserAllows('student_records_student_list', 'approve'), 403, 'You do not have permission to review grade correction requests.');
+
         if ($gradeCorrectionRequest->status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'This request has already been reviewed.'], 422);
         }
@@ -20090,6 +20095,8 @@ class RegistrarController extends Controller
 
     public function formsHonorableDismissalIssue(Request $request, Student $student): JsonResponse
     {
+        abort_unless(UserAccessGate::currentUserAllows('documents_forms_honorable_dismissal', 'print'), 403, 'You do not have permission to print Honorable Dismissal records.');
+
         if (!Schema::hasTable('honorable_dismissal_records')) {
             return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
         }
@@ -20118,6 +20125,8 @@ class RegistrarController extends Controller
 
     public function formsHonorableDismissalBulkIssue(Request $request): JsonResponse
     {
+        abort_unless(UserAccessGate::currentUserAllows('documents_forms_honorable_dismissal', 'print'), 403, 'You do not have permission to print Honorable Dismissal records.');
+
         if (!Schema::hasTable('honorable_dismissal_records')) {
             return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
         }

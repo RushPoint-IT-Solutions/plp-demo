@@ -5,11 +5,18 @@
     }
 
     var dataEndpoint = root.getAttribute('data-data-endpoint') || '';
+    var storeEndpoint = root.getAttribute('data-store-endpoint') || '';
     var updateTemplate = root.getAttribute('data-update-template') || '';
     var deleteTemplate = root.getAttribute('data-delete-template') || '';
     var accessControlModulesEndpoint = root.getAttribute('data-access-modules-endpoint') || '';
     var accessControlShowTemplate = root.getAttribute('data-access-show-template') || '';
     var accessControlUpdateTemplate = root.getAttribute('data-access-update-template') || '';
+    var roleDataEndpoint = root.getAttribute('data-role-data-endpoint') || '';
+    var roleStoreEndpoint = root.getAttribute('data-role-store-endpoint') || '';
+    var roleUpdateTemplate = root.getAttribute('data-role-update-template') || '';
+    var roleDeleteTemplate = root.getAttribute('data-role-delete-template') || '';
+    var roleAccessShowTemplate = root.getAttribute('data-role-access-show-template') || '';
+    var roleAccessUpdateTemplate = root.getAttribute('data-role-access-update-template') || '';
     var csrfToken = root.getAttribute('data-csrf-token') || '';
 
     var state = {
@@ -22,7 +29,12 @@
         perPage: 5,
         total: 0,
         from: 0,
+        roles: [],
+        pendingDeleteRole: null,
+        editingRoleId: null,
         accessControl: {
+            targetKind: 'user',
+            targetId: null,
             targetUserId: null,
             targetUserLabel: '',
             source: 'explicit',
@@ -113,7 +125,10 @@
         formEmail: document.getElementById('uaFormEmail'),
         formPassword: document.getElementById('uaFormPassword'),
         formUserType: document.getElementById('uaFormUserType'),
+        formRole: document.getElementById('uaFormRole'),
         inactive: document.getElementById('uaInactive'),
+        formModeBadge: document.getElementById('uaFormModeBadge'),
+        newAccountBtn: document.getElementById('uaNewAccountBtn'),
 
         saveBtn: document.getElementById('uaSaveBtn'),
         cancelBtn: document.getElementById('uaCancelBtn'),
@@ -126,6 +141,8 @@
 
         accessModal: document.getElementById('uaAccessModal'),
         accessModalUserLabel: document.getElementById('uaAccessModalUserLabel'),
+        accessModalNote: document.getElementById('uaAccessModalNote'),
+        accessCopyRow: document.getElementById('uaAccessCopyRow'),
         accessTableHead: document.getElementById('uaAccessTableHead'),
         accessTableBody: document.getElementById('uaAccessTableBody'),
         accessFootnote: document.getElementById('uaAccessFootnote'),
@@ -136,6 +153,19 @@
         accessCopyBtn: document.getElementById('uaCopyAccessBtn'),
         quickAccessToggle: document.getElementById('uaQuickAccessToggle'),
         quickAccessList: document.getElementById('uaAccessQuickList'),
+
+        roleTableBody: document.getElementById('uaRoleTableBody'),
+        newRoleBtn: document.getElementById('uaNewRoleBtn'),
+        roleModal: document.getElementById('uaRoleModal'),
+        roleModalTitle: document.getElementById('uaRoleModalTitle'),
+        roleFormName: document.getElementById('uaRoleFormName'),
+        roleFormDescription: document.getElementById('uaRoleFormDescription'),
+        roleModalCancelBtn: document.getElementById('uaRoleModalCancelBtn'),
+        roleModalSaveBtn: document.getElementById('uaRoleModalSaveBtn'),
+        roleDeleteModal: document.getElementById('uaRoleDeleteModal'),
+        roleDeleteModalText: document.getElementById('uaRoleDeleteModalText'),
+        roleDeleteCancelBtn: document.getElementById('uaRoleDeleteCancelBtn'),
+        roleDeleteConfirmBtn: document.getElementById('uaRoleDeleteConfirmBtn'),
     };
 
     function uaNormalize(value) {
@@ -381,6 +411,22 @@
         return accessControlUpdateTemplate.replace('__ID__', String(id));
     }
 
+    function uaBuildRoleUpdateUrl(id) {
+        return roleUpdateTemplate.replace('__ID__', String(id));
+    }
+
+    function uaBuildRoleDeleteUrl(id) {
+        return roleDeleteTemplate.replace('__ID__', String(id));
+    }
+
+    function uaBuildRoleAccessShowUrl(id) {
+        return roleAccessShowTemplate.replace('__ID__', String(id));
+    }
+
+    function uaBuildRoleAccessUpdateUrl(id) {
+        return roleAccessUpdateTemplate.replace('__ID__', String(id));
+    }
+
     function uaGetFilters() {
         return {
             user_id: (els.studentId ? els.studentId.value : '').trim(),
@@ -490,12 +536,16 @@
         if (els.formUserType) {
             els.formUserType.value = '';
         }
+        if (els.formRole) {
+            els.formRole.value = '';
+        }
         if (els.inactive) {
             els.inactive.checked = false;
         }
 
         state.selectedUser = null;
         uaSetSelectedSummary(null);
+        uaSetFormMode('create');
     }
 
     function uaFillForm(user) {
@@ -529,12 +579,30 @@
         if (els.formUserType) {
             els.formUserType.value = user.userTypeCode || '';
         }
+        if (els.formRole) {
+            els.formRole.value = user.roleId ? String(user.roleId) : '';
+        }
         if (els.inactive) {
             els.inactive.checked = !!user.inactive;
         }
 
         uaSetSelectedSummary(user);
         uaHighlightSelectedRow();
+        uaSetFormMode('edit');
+    }
+
+    function uaSetFormMode(mode) {
+        if (!els.formModeBadge) {
+            return;
+        }
+
+        if (mode === 'create') {
+            els.formModeBadge.textContent = 'Creating new account';
+            els.formModeBadge.classList.add('is-create-mode');
+        } else {
+            els.formModeBadge.textContent = 'Editing selected account';
+            els.formModeBadge.classList.remove('is-create-mode');
+        }
     }
 
     function uaHighlightSelectedRow() {
@@ -1226,6 +1294,178 @@
         }
     }
 
+    function uaPopulateRoleSelectOptions() {
+        if (!els.formRole) {
+            return;
+        }
+
+        var previousValue = els.formRole.value;
+        while (els.formRole.options.length > 0) {
+            els.formRole.remove(0);
+        }
+
+        els.formRole.add(new Option('- No role assigned -', ''));
+
+        (state.roles || []).forEach(function (role) {
+            els.formRole.add(new Option(role.name, String(role.id)));
+        });
+
+        var hasPrevious = Array.prototype.some.call(els.formRole.options, function (option) {
+            return option.value === previousValue;
+        });
+        els.formRole.value = hasPrevious ? previousValue : '';
+    }
+
+    function uaRenderRoleTable() {
+        if (!els.roleTableBody) {
+            return;
+        }
+
+        if (!state.roles.length) {
+            els.roleTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">No roles defined yet.</td></tr>';
+            return;
+        }
+
+        var html = state.roles.map(function (role) {
+            var deleteBtn = role.isSystem
+                ? ''
+                : '<button type="button" class="apst-del-btn" data-ua-role-delete="' + uaEscapeHtml(role.id) + '">Delete</button>';
+
+            return '' +
+                '<tr data-ua-role-pk="' + uaEscapeHtml(role.id) + '">' +
+                    '<td>' + uaEscapeHtml(role.name) + (role.isSystem ? ' <span class="ua-status-badge ua-status-active">System</span>' : '') + '</td>' +
+                    '<td>' + uaEscapeHtml(role.description || '-') + '</td>' +
+                    '<td>' + uaEscapeHtml(role.memberCount) + '</td>' +
+                    '<td class="ua-col-action-cell">' +
+                        '<button type="button" class="req-btn-cancel" data-ua-role-permissions="' + uaEscapeHtml(role.id) + '" style="margin-right:6px;">Permissions</button>' +
+                        '<button type="button" class="req-btn-cancel" data-ua-role-edit="' + uaEscapeHtml(role.id) + '" style="margin-right:6px;">Rename</button>' +
+                        deleteBtn +
+                    '</td>' +
+                '</tr>';
+        }).join('');
+
+        els.roleTableBody.innerHTML = html;
+    }
+
+    async function uaFetchRoles() {
+        if (!roleDataEndpoint) {
+            return;
+        }
+
+        try {
+            var json = await uaApiRequest(roleDataEndpoint, 'GET', null);
+            state.roles = Array.isArray(json.roles) ? json.roles : [];
+            uaRenderRoleTable();
+            uaPopulateRoleSelectOptions();
+        } catch (error) {
+            if (els.roleTableBody) {
+                els.roleTableBody.innerHTML = '<tr><td colspan="4" class="sc-empty-row">Unable to load roles.</td></tr>';
+            }
+        }
+    }
+
+    function uaOpenRoleModal(roleId) {
+        if (!els.roleModal) {
+            return;
+        }
+
+        var role = roleId ? (state.roles || []).find(function (item) { return String(item.id) === String(roleId); }) : null;
+
+        state.editingRoleId = role ? role.id : null;
+        if (els.roleModalTitle) {
+            els.roleModalTitle.textContent = role ? 'RENAME ROLE' : 'ADD ROLE';
+        }
+        if (els.roleFormName) {
+            els.roleFormName.value = role ? role.name : '';
+        }
+        if (els.roleFormDescription) {
+            els.roleFormDescription.value = role ? role.description : '';
+        }
+
+        els.roleModal.classList.remove('doclist-modal-hidden');
+        els.roleModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function uaCloseRoleModal() {
+        if (!els.roleModal) {
+            return;
+        }
+
+        state.editingRoleId = null;
+        els.roleModal.classList.add('doclist-modal-hidden');
+        els.roleModal.setAttribute('aria-hidden', 'true');
+    }
+
+    async function uaSaveRoleModal() {
+        var name = (els.roleFormName ? els.roleFormName.value : '').trim();
+        if (!name) {
+            alert('Please enter a role name.');
+            return;
+        }
+
+        var payload = {
+            name: name,
+            description: (els.roleFormDescription ? els.roleFormDescription.value : '').trim(),
+        };
+
+        try {
+            if (state.editingRoleId) {
+                await uaApiRequest(uaBuildRoleUpdateUrl(state.editingRoleId), 'PUT', payload);
+            } else {
+                await uaApiRequest(roleStoreEndpoint, 'POST', payload);
+            }
+
+            uaCloseRoleModal();
+            await uaFetchRoles();
+        } catch (error) {
+            alert(error.message || 'Unable to save role.');
+        }
+    }
+
+    function uaOpenRoleDeleteModal(roleId) {
+        if (!els.roleDeleteModal) {
+            return;
+        }
+
+        var role = (state.roles || []).find(function (item) { return String(item.id) === String(roleId); }) || null;
+        if (!role) {
+            return;
+        }
+
+        state.pendingDeleteRole = role;
+        if (els.roleDeleteModalText) {
+            els.roleDeleteModalText.textContent = 'Are you sure you want to delete the "' + role.name + '" role?';
+        }
+
+        els.roleDeleteModal.classList.remove('doclist-modal-hidden');
+        els.roleDeleteModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function uaCloseRoleDeleteModal() {
+        if (!els.roleDeleteModal) {
+            return;
+        }
+
+        state.pendingDeleteRole = null;
+        els.roleDeleteModal.classList.add('doclist-modal-hidden');
+        els.roleDeleteModal.setAttribute('aria-hidden', 'true');
+    }
+
+    async function uaConfirmRoleDelete() {
+        if (!state.pendingDeleteRole) {
+            uaCloseRoleDeleteModal();
+            return;
+        }
+
+        try {
+            await uaApiRequest(uaBuildRoleDeleteUrl(state.pendingDeleteRole.id), 'DELETE');
+            uaCloseRoleDeleteModal();
+            await uaFetchRoles();
+        } catch (error) {
+            alert(error.message || 'Unable to delete role.');
+        }
+    }
+
     function uaCloneAccessMatrix(matrix) {
         var cloned = {};
 
@@ -1657,6 +1897,8 @@
             return;
         }
 
+        state.accessControl.targetKind = 'user';
+        state.accessControl.targetId = null;
         state.accessControl.targetUserId = null;
         state.accessControl.targetUserLabel = '';
         uaSetQuickAccessVisibility(false);
@@ -1721,10 +1963,6 @@
     }
 
     async function uaOpenAccessModal(userPk) {
-        if (!els.accessModal || !els.accessTableBody || !els.accessModalUserLabel) {
-            return;
-        }
-
         var user = state.rows.find(function (row) {
             return String(row.pk) === String(userPk);
         }) || null;
@@ -1738,6 +1976,25 @@
             return;
         }
 
+        var label = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+        await uaOpenAccessModalForTarget('user', user.pk, label);
+    }
+
+    async function uaOpenAccessModalForRole(rolePk) {
+        var role = (state.roles || []).find(function (item) { return String(item.id) === String(rolePk); }) || null;
+        if (!role) {
+            alert('Unable to open permissions for the selected role.');
+            return;
+        }
+
+        await uaOpenAccessModalForTarget('role', role.id, role.name + ' (Role)');
+    }
+
+    async function uaOpenAccessModalForTarget(kind, targetId, label) {
+        if (!els.accessModal || !els.accessTableBody || !els.accessModalUserLabel) {
+            return;
+        }
+
         if (accessControlRequestState.controller) {
             accessControlRequestState.controller.abort();
         }
@@ -1746,18 +2003,31 @@
         accessControlRequestState.sequence += 1;
         var requestSequence = accessControlRequestState.sequence;
 
-        state.accessControl.targetUserId = user.pk;
-        state.accessControl.targetUserLabel = (user.fullName || user.userId) + ' (' + (user.userType || 'User') + ')';
+        state.accessControl.targetKind = kind;
+        state.accessControl.targetId = targetId;
+        state.accessControl.targetUserId = kind === 'user' ? targetId : null;
+        state.accessControl.targetUserLabel = label;
         state.accessControl.quickOptionFallback = {};
 
-        els.accessModalUserLabel.textContent = state.accessControl.targetUserLabel;
+        els.accessModalUserLabel.textContent = label;
+        if (els.accessModalNote) {
+            els.accessModalNote.textContent = kind === 'role'
+                ? 'These permissions apply to every account assigned this role, unless a specific account has its own access override.'
+                : 'These settings override the role defaults for this user only. Toggles are pre-filled with the role’s current permissions.';
+        }
+        if (els.accessCopyRow) {
+            els.accessCopyRow.style.display = kind === 'role' ? 'none' : '';
+        }
+
         uaSetAccessFootnote('explicit');
         uaSetQuickAccessVisibility(false);
         uaOpenAccessModalShell();
         els.accessTableBody.innerHTML = '<tr><td colspan="3" class="sc-empty-row">Loading access control...</td></tr>';
 
+        var showUrl = kind === 'role' ? uaBuildRoleAccessShowUrl(targetId) : uaBuildAccessShowUrl(targetId);
+
         try {
-            var json = await uaApiRequest(uaBuildAccessShowUrl(user.pk), 'GET', null, {
+            var json = await uaApiRequest(showUrl, 'GET', null, {
                 signal: accessControlRequestState.controller.signal,
                 allowAbort: true,
             });
@@ -1857,11 +2127,13 @@
     }
 
     async function uaSaveAccessControl() {
-        var targetUserId = parseInt(state.accessControl.targetUserId, 10);
-        if (!targetUserId) {
-            alert('Select a user before saving access control.');
+        var targetId = parseInt(state.accessControl.targetId, 10);
+        if (!targetId) {
+            alert('Select a user or role before saving access control.');
             return;
         }
+
+        var isRole = state.accessControl.targetKind === 'role';
 
         var matrix = uaCloneAccessMatrix(state.accessControl.matrix);
         var filteredMatrix = {};
@@ -1876,7 +2148,8 @@
         }
 
         try {
-            var json = await uaApiRequest(uaBuildAccessUpdateUrl(targetUserId), 'PUT', {
+            var updateUrl = isRole ? uaBuildRoleAccessUpdateUrl(targetId) : uaBuildAccessUpdateUrl(targetId);
+            var json = await uaApiRequest(updateUrl, 'PUT', {
                 permissions: filteredMatrix,
             });
 
@@ -1905,10 +2178,7 @@
     }
 
     async function uaSaveSelected() {
-        if (!state.selectedUser || !state.selectedUser.pk) {
-            alert('Please select a user account first.');
-            return;
-        }
+        var isCreating = !state.selectedUser || !state.selectedUser.pk;
 
         var payload = {
             user_id: (els.formUserId ? els.formUserId.value : '').trim(),
@@ -1916,24 +2186,37 @@
             email: (els.formEmail ? els.formEmail.value : '').trim(),
             password: (els.formPassword ? els.formPassword.value : '').trim(),
             inactive: !!(els.inactive && els.inactive.checked),
-            user_type: (els.formUserType ? els.formUserType.value : '').trim(),
+            access_control_role_id: (els.formRole ? els.formRole.value : '').trim(),
         };
+
+        if (!isCreating) {
+            payload.user_type = (els.formUserType ? els.formUserType.value : '').trim();
+        }
 
         if (!payload.user_id) {
             alert('Please enter a User ID.');
             return;
         }
 
+        if (isCreating && !payload.password) {
+            alert('Please enter a password for the new account.');
+            return;
+        }
+
         try {
-            var json = await uaApiRequest(uaBuildUpdateUrl(state.selectedUser.pk), 'PUT', payload);
+            var json = isCreating
+                ? await uaApiRequest(storeEndpoint, 'POST', payload)
+                : await uaApiRequest(uaBuildUpdateUrl(state.selectedUser.pk), 'PUT', payload);
+
             if (json.row) {
                 state.selectedUser = json.row;
                 uaFillForm(json.row);
             }
             await uaFetchRows(state.currentPage);
-            alert('Account credentials updated.');
+            await uaFetchRoles();
+            alert(isCreating ? 'Account created.' : 'Account credentials updated.');
         } catch (error) {
-            alert(error.message || 'Unable to update account credentials.');
+            alert(error.message || 'Unable to save account credentials.');
         }
     }
 
@@ -2080,6 +2363,78 @@
                     uaFillForm(state.selectedUser);
                 } else {
                     uaClearForm();
+                }
+            });
+        }
+
+        if (els.newAccountBtn) {
+            els.newAccountBtn.addEventListener('click', function () {
+                uaCloseRowActionMenus();
+                uaClearForm();
+                if (els.formPassword) {
+                    els.formPassword.readOnly = false;
+                    els.formPassword.focus();
+                }
+            });
+        }
+
+        if (els.newRoleBtn) {
+            els.newRoleBtn.addEventListener('click', function () {
+                uaOpenRoleModal(null);
+            });
+        }
+
+        if (els.roleTableBody) {
+            els.roleTableBody.addEventListener('click', function (event) {
+                var permissionsBtn = event.target.closest('[data-ua-role-permissions]');
+                if (permissionsBtn) {
+                    uaOpenAccessModalForRole(permissionsBtn.getAttribute('data-ua-role-permissions'));
+                    return;
+                }
+
+                var editBtn = event.target.closest('[data-ua-role-edit]');
+                if (editBtn) {
+                    uaOpenRoleModal(editBtn.getAttribute('data-ua-role-edit'));
+                    return;
+                }
+
+                var deleteBtn = event.target.closest('[data-ua-role-delete]');
+                if (deleteBtn) {
+                    uaOpenRoleDeleteModal(deleteBtn.getAttribute('data-ua-role-delete'));
+                }
+            });
+        }
+
+        if (els.roleModalCancelBtn) {
+            els.roleModalCancelBtn.addEventListener('click', uaCloseRoleModal);
+        }
+
+        if (els.roleModalSaveBtn) {
+            els.roleModalSaveBtn.addEventListener('click', function () {
+                uaSaveRoleModal();
+            });
+        }
+
+        if (els.roleModal) {
+            els.roleModal.addEventListener('click', function (event) {
+                if (event.target === els.roleModal) {
+                    uaCloseRoleModal();
+                }
+            });
+        }
+
+        if (els.roleDeleteCancelBtn) {
+            els.roleDeleteCancelBtn.addEventListener('click', uaCloseRoleDeleteModal);
+        }
+
+        if (els.roleDeleteConfirmBtn) {
+            els.roleDeleteConfirmBtn.addEventListener('click', uaConfirmRoleDelete);
+        }
+
+        if (els.roleDeleteModal) {
+            els.roleDeleteModal.addEventListener('click', function (event) {
+                if (event.target === els.roleDeleteModal) {
+                    uaCloseRoleDeleteModal();
                 }
             });
         }
@@ -2292,7 +2647,9 @@
     uaWireEvents();
     uaPreventAutofillArtifacts();
     uaSetSelectedSummary(null);
+    uaSetFormMode('create');
     uaFetchRows(1);
+    uaFetchRoles();
 
     window.addEventListener('pageshow', function (event) {
         if (!event || !event.persisted) {
