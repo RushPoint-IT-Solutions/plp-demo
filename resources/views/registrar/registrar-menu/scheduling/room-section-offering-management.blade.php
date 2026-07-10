@@ -21,10 +21,13 @@
         .rsom-page .rsom-stat-label { color:#607264; display:block; font-size:.78rem; font-weight:800; text-transform:uppercase; }
         .rsom-page .rsom-stat-value { color:#123822; display:block; font-size:1.45rem; font-weight:900; margin-top:4px; }
         .rsom-page .rsom-filters { background:#fff; border:1px solid #dfe8e2; border-radius:8px; margin-bottom:16px; padding:14px; }
-        .rsom-page .rsom-filter-grid { display:grid; grid-template-columns:1fr 1fr 1.35fr 1fr 1.15fr 1.45fr auto auto; gap:12px; align-items:end; }
+        .rsom-page .rsom-filter-grid { display:grid; grid-template-columns:repeat(3, minmax(200px, 1fr)); gap:14px 16px; }
+        .rsom-page .rsom-field { display:flex; flex-direction:column; }
         .rsom-page .rsom-field label { color:#46564a; display:block; font-size:.78rem; font-weight:800; margin-bottom:5px; }
         .rsom-page .rsom-input, .rsom-page .rsom-select { background:#fff; border:1px solid #cfd9d2; border-radius:7px; color:#143521; min-height:38px; padding:8px 10px; width:100%; }
-        .rsom-page .rsom-filter-hint { color:#66756b; display:block; font-size:.72rem; line-height:1.35; margin-top:5px; }
+        .rsom-page .rsom-filter-actions { align-items:center; border-top:1px solid #edf3ef; display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; margin-top:16px; padding-top:14px; }
+        .rsom-page .rsom-filter-guidance { color:#66756b; display:block; font-size:.78rem; line-height:1.5; margin-top:12px; }
+        .rsom-page .rsom-filter-guidance span { display:block; margin-top:3px; }
         .rsom-page .rsom-section-title { color:#143521; font-size:1.02rem; font-weight:900; margin:18px 0 10px; }
         .rsom-page .rsom-muted { color:#66756b; font-size:.82rem; }
         .rsom-page .rsom-pill { background:#eef7f1; border-radius:999px; color:#17633a; display:inline-flex; font-size:.76rem; font-weight:800; margin:2px 4px 2px 0; padding:4px 8px; }
@@ -56,11 +59,13 @@
         .rsom-page .rsom-usage-head { background:#f8fafc; color:#475569; font-size:.72rem; font-weight:900; text-transform:uppercase; }
         @media (max-width:1180px) {
             .rsom-page .rsom-summary { grid-template-columns:repeat(2, minmax(130px, 1fr)); }
-            .rsom-page .rsom-filter-grid { grid-template-columns:1fr 1fr; }
+            .rsom-page .rsom-filter-grid { grid-template-columns:repeat(2, minmax(180px, 1fr)); }
         }
         @media (max-width:640px) {
             .rsom-page .rsom-summary, .rsom-page .rsom-filter-grid { grid-template-columns:1fr; }
             .rsom-page .rsom-detail-grid, .rsom-page .rsom-usage-row { grid-template-columns:1fr; }
+            .rsom-page .rsom-filter-actions { justify-content:stretch; }
+            .rsom-page .rsom-filter-actions .pf-btn-new, .rsom-page .rsom-filter-actions .rsom-action { flex:1 1 auto; justify-content:center; text-align:center; }
         }
     </style>
 
@@ -143,7 +148,6 @@
                         <option value="{{ $option['id'] }}" {{ $selectedCourseId === (int) $option['id'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
                     @endforeach
                 </select>
-                <span class="rsom-filter-hint">Choose a program to show rooms that allow subjects under that program.</span>
             </div>
             <div class="rsom-field">
                 <label for="rsomSection">Search by Section</label>
@@ -153,7 +157,6 @@
                         <option value="{{ $sectionOption }}"></option>
                     @endforeach
                 </datalist>
-                <span class="rsom-filter-hint">Type or pick a section to display its current course/subject list.</span>
             </div>
             <div class="rsom-field">
                 <label for="rsomSearch">Subject / Room / Faculty</label>
@@ -167,6 +170,14 @@
                     @endforeach
                 </select>
             </div>
+        </div>
+
+        <div class="rsom-filter-guidance">
+            <span>Choose a program to show rooms that allow subjects under that program.</span>
+            <span>Type or pick a section to display its current course/subject list.</span>
+        </div>
+
+        <div class="rsom-filter-actions">
             <button type="submit" class="pf-btn-new">Filter</button>
             <a class="rsom-action secondary" href="{{ route('registrar.registrar-menu.scheduling.room-section-offering-management') }}">Reset</a>
         </div>
