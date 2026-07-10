@@ -36,7 +36,6 @@
         <table class="student-table registrar-table" id="rfTable" data-no-auto-pager="1">
             <thead>
                 <tr>
-                    <th>Action</th>
                     <th aria-sort="none">
                         <button type="button" class="rf-sort-btn" data-sort="room_number">
                             <span class="rf-sort-label">Room #</span>
@@ -73,6 +72,7 @@
                             <span class="rf-sort-indicator">Sort</span>
                         </button>
                     </th>
+                    <th style="text-align:center; width:70px;">Action</th>
                 </tr>
             </thead>
             <tbody id="rfBody">

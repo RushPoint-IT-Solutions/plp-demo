@@ -355,7 +355,13 @@ function renderRoomTable() {
     ROOMS.forEach(function (room) {
         var tr = document.createElement('tr');
         tr.innerHTML =
-            '<td>' +
+            '<td>' + escapeHtml(room.room_number) + '</td>' +
+            '<td>' + escapeHtml(room.floor_number) + '</td>' +
+            '<td>' + escapeHtml(room.location_label || '-') + '</td>' +
+            '<td>' + escapeHtml(room.capacity) + '</td>' +
+            '<td>' + escapeHtml(room.subject_label || room.program_label || '-') + '</td>' +
+            '<td>' + escapeHtml(room.updated_by || '-') + '</td>' +
+            '<td style="text-align:center;">' +
                 '<div class="apst-action-btn" onclick="toggleRoomMenu(' + room.id + ', event)">' +
                     '<span></span><span></span><span></span>' +
                 '</div>' +
@@ -373,13 +379,7 @@ function renderRoomTable() {
                         ' Delete' +
                     '</button>' +
                 '</div>' +
-            '</td>' +
-            '<td>' + escapeHtml(room.room_number) + '</td>' +
-            '<td>' + escapeHtml(room.floor_number) + '</td>' +
-            '<td>' + escapeHtml(room.location_label || '-') + '</td>' +
-            '<td>' + escapeHtml(room.capacity) + '</td>' +
-            '<td>' + escapeHtml(room.subject_label || room.program_label || '-') + '</td>' +
-            '<td>' + escapeHtml(room.updated_by || '-') + '</td>';
+            '</td>';
 
         tbody.appendChild(tr);
     });
