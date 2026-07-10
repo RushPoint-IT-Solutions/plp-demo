@@ -8698,6 +8698,7 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .page-user-accounts {
     .ua-col-action-cell {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: center;
         gap: 8px;
@@ -8709,6 +8710,25 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+    }
+
+    // .apst-del-btn is normally only styled when nested inside a .apst-dropdown menu;
+    // the role table uses it as a standalone button, so it needs its own treatment here
+    // to avoid falling back to an unstyled default button border.
+    .ua-col-action-cell .apst-del-btn {
+        background: #fdecea;
+        color: #c0392b;
+        border: 1px solid #f3b7ae;
+        border-radius: 6px;
+        padding: 9px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .ua-col-action-cell .apst-del-btn:hover {
+        background: #f9d4cf;
     }
 
     .ua-access-btn {
