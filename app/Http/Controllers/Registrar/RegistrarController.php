@@ -19990,7 +19990,7 @@ class RegistrarController extends Controller
         }
 
         $studentColumns = ['id', 'student_no', 'name'];
-        foreach (['course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester'] as $column) {
+        foreach (['course_id', 'year_block_id', 'academic_term_id', 'program', 'year_level', 'school_year', 'semester', 'is_withdrawn'] as $column) {
             if (Schema::hasColumn('students', $column)) {
                 $studentColumns[] = $column;
             }
