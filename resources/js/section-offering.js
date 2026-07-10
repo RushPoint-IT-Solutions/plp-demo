@@ -1775,29 +1775,32 @@ document.addEventListener('DOMContentLoaded', function () {
             showMessage('Section created successfully.', 'success');
 
             var createdSection = responsePayload && responsePayload.section ? responsePayload.section : null;
+            var createdLabel = createdSection && normalizeText(createdSection.section) !== ''
+                ? normalizeText(createdSection.section)
+                : '';
 
             applyFilterValue(soSY, payload.school_year);
             applyFilterValue(soTerm, payload.semester);
             applyFilterValue(soYearLevel, payload.year_level);
             applyFilterValue(soProgram, String(payload.course_id));
 
-            if (soSectionSearch) {
-                soSectionSearch.value = '';
-                state.lastSearchValue = '';
-            }
-
+            // The section dropdown only lists sections from the previous page load, so the
+            // just-created section can never be one of its options; reset it instead of
+            // silently failing to select a non-existent value. Route through the free-text
+            // search filter so the reload query is narrowed directly to the new section
+            // (via buildFetchUrl's `search=` param) rather than relying on it having landed
+            // on page 1 of an unfiltered, alphabetically-sorted result set.
             if (soSection) {
-                var createdLabel = createdSection && normalizeText(createdSection.section) !== ''
-                    ? normalizeText(createdSection.section)
-                    : '';
-
-                soSection.value = createdLabel;
+                soSection.value = '';
                 emitListboxRefresh(soSection);
-                loadSections(1, createdLabel);
-                return;
             }
 
-            loadSections(1);
+            if (soSectionSearch) {
+                soSectionSearch.value = createdLabel;
+                state.lastSearchValue = createdLabel;
+            }
+
+            loadSections(1, createdLabel);
         }).catch(function (errorPayload) {
             console.error(errorPayload);
             setModalFeedback(getPayloadErrorMessage(errorPayload, 'Unable to save section right now.'), true);
