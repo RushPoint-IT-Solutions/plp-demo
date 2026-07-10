@@ -402,13 +402,40 @@ function hdPrintSelected() {
         return false;
     }
 
+    if (!confirm('Print ' + printIds.length + ' selected Honorable Dismissal record(s)? This will mark them as Issued.')) {
+        return false;
+    }
+
     return hdBulkIssueRows(printIds).then(function(ok) {
         if (!ok) return false;
 
+        // Use allSettled instead of all: one record failing to load its layout
+        // (e.g. a stale/removed template) must not silently discard every other
+        // record that was already bulk-issued and successfully prepared.
         return Promise.all(printIds.map(function(rowId) {
-            return hdPrintableSheetForRow(rowId);
-        })).then(function(sheets) {
-            hdPrintSheets(sheets, printIds);
+            return hdPrintableSheetForRow(rowId).then(function(sheet) {
+                return { rowId: rowId, sheet: sheet, ok: true };
+            }).catch(function(error) {
+                return { rowId: rowId, error: error, ok: false };
+            });
+        })).then(function(results) {
+            var succeeded = results.filter(function(result) { return result.ok; });
+            var failed = results.filter(function(result) { return !result.ok; });
+
+            if (!succeeded.length) {
+                alert('Unable to prepare any of the selected records for printing.');
+                return false;
+            }
+
+            hdPrintSheets(
+                succeeded.map(function(result) { return result.sheet; }),
+                succeeded.map(function(result) { return result.rowId; })
+            );
+
+            if (failed.length) {
+                alert(failed.length + ' of ' + printIds.length + ' selected record(s) could not be prepared for printing and were skipped. The remaining ' + succeeded.length + ' record(s) are printing now.');
+            }
+
             return true;
         });
     }).catch(function(error) {
