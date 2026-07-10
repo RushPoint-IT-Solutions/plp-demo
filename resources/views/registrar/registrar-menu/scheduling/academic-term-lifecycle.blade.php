@@ -15,7 +15,7 @@
     <style>
         .atl-page { color:#143521; }
         .atl-grid { display:grid; grid-template-columns:minmax(280px, 420px) 1fr; gap:16px; align-items:start; }
-        .atl-panel { background:#fff; border:1px solid #dfe8e2; border-radius:8px; padding:16px; }
+        .atl-panel { background:#fff; border:1px solid #dfe8e2; border-radius:8px; padding:16px; min-width:0; }
         .atl-title { margin:0 0 12px; color:#123822; font-size:1rem; font-weight:800; }
         .atl-form { display:grid; gap:12px; }
         .atl-field label { display:block; margin-bottom:5px; color:#46564a; font-size:.78rem; font-weight:800; text-transform:uppercase; }
@@ -26,8 +26,8 @@
         .atl-btn.secondary { background:#eef6f1; color:#146c43; border:1px solid #b9d8c5; }
         .atl-btn.warn { background:#9a6112; }
         .atl-btn:disabled { opacity:.65; cursor:wait; }
-        .atl-flow { display:grid; grid-template-columns:repeat(5, minmax(130px, 1fr)); gap:8px; margin-top:12px; }
-        .atl-step { border:1px solid #e4ece7; border-radius:8px; background:#fbfdfb; padding:9px 10px; color:#435448; font-size:.78rem; font-weight:800; }
+        .atl-flow { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:8px; margin-top:12px; }
+        .atl-step { border:1px solid #e4ece7; border-radius:8px; background:#fbfdfb; padding:9px 10px; color:#435448; font-size:.78rem; font-weight:800; min-width:0; box-sizing:border-box; }
         .atl-summary { display:grid; grid-template-columns:repeat(4, minmax(120px, 1fr)); gap:10px; margin-bottom:14px; }
         .atl-stat { border:1px solid #e3ece6; border-radius:8px; padding:10px 12px; background:#fbfdfb; }
         .atl-stat span { display:block; color:#607264; font-size:.72rem; font-weight:800; text-transform:uppercase; }
@@ -52,10 +52,10 @@
         @media (max-width: 1100px) {
             .atl-grid { grid-template-columns:1fr; }
             .atl-summary { grid-template-columns:repeat(2, minmax(120px, 1fr)); }
-            .atl-flow { grid-template-columns:repeat(2, minmax(130px, 1fr)); }
         }
         @media (max-width: 640px) {
-            .atl-summary, .atl-flow { grid-template-columns:1fr; }
+            .atl-summary { grid-template-columns:1fr; }
+            .atl-flow { grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); }
         }
     </style>
 

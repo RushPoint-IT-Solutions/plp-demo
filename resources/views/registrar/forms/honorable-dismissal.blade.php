@@ -143,9 +143,6 @@
             <table id="hdTable" class="ga-table app-table" style="min-width: 900px;">
                 <thead>
                     <tr>
-                        <th style="width: 54px; text-align: center;">
-                            <input type="checkbox" id="hdSelectAll" onchange="hdToggleSelectAll(this)">
-                        </th>
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
@@ -172,9 +169,6 @@
                         data-hd-no="{{ $student->hd_no ?: ($student->student_no ? 'HD-' . $student->student_no : '') }}"
                         data-hd-date="{{ $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : now()->format('F d, Y') }}"
                         data-hd-status="{{ $hdStatus }}">
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()" @if($hdStatus === 'issued') disabled title="Already issued" @endif>
-                        </td>
                         <td>{{ $student->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
                         <td>{{ $program ?: '-' }}</td>
@@ -204,7 +198,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" style="text-align:center; color:#666;">No student records found.</td></tr>
+                    <tr><td colspan="7" style="text-align:center; color:#666;">No student records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
