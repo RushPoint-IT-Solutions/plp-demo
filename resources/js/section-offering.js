@@ -197,8 +197,42 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function hasSelect2Lib() {
+        return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
+    }
+
+    function refreshProgramSelect2(selectElement) {
+        if (!selectElement || !hasSelect2Lib() || !selectElement.classList.contains('so-program-select2')) {
+            return false;
+        }
+
+        var $select = window.jQuery(selectElement);
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.select2({
+            width: '100%',
+            placeholder: selectElement.getAttribute('data-placeholder') || 'Search program',
+            allowClear: false,
+            dropdownAutoWidth: false
+        });
+        $select.trigger('change.select2');
+        return true;
+    }
+
+    function initProgramSearchableSelects() {
+        [soProgram, soModalProgram].forEach(function (selectElement) {
+            refreshProgramSelect2(selectElement);
+        });
+    }
+
     function emitListboxRefresh(selectElement) {
         if (!selectElement) {
+            return;
+        }
+
+        if (refreshProgramSelect2(selectElement)) {
             return;
         }
 
@@ -2033,6 +2067,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    initProgramSearchableSelects();
     renderPagination();
     updateDirectorySummary();
     loadSections(1);

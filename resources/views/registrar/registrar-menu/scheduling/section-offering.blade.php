@@ -24,7 +24,12 @@
 @endphp
 
 @push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 <style>
+    .page-section-offering .so-program-select2 + .select2-container .select2-selection--single { min-height:38px; border:1px solid #cfd9d2; border-radius:8px; display:flex; align-items:center; padding:0 10px; }
+    .page-section-offering .so-program-select2 + .select2-container .select2-selection__rendered { padding:0; line-height:36px; color:#143521; font-size:.85rem; }
+    .page-section-offering .so-program-select2 + .select2-container .select2-selection__arrow { height:36px; }
+    .page-section-offering .select2-dropdown { z-index:1300; }
     .so-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
     .so-tab-btn { background:#f8fafc; border:1px solid #d7e2dc; border-radius:8px; color:#315a3f; cursor:pointer; font-weight:900; min-height:38px; padding:8px 13px; }
     .so-tab-btn.is-active { background:#146c43; border-color:#146c43; color:#fff; }
@@ -117,13 +122,9 @@
             </div>
             <div class="sched-filter-group sched-filter-group-lg so-filter-program">
                 <span class="app-filter-label">Course</span>
-                @include('registrar.components.listbox-select', [
-                    'id' => 'soProgram',
-                    'name' => 'course_id',
-                    'options' => [['value' => '', 'label' => 'All Courses']],
-                    'selected' => '',
-                    'placeholder' => 'All Courses',
-                ])
+                <select id="soProgram" name="course_id" class="app-filter-select so-program-select2" data-placeholder="All Courses">
+                    <option value="">All Courses</option>
+                </select>
             </div>
         </div>
         </div>
@@ -266,13 +267,9 @@
                 <div class="so-modal-grid">
                     <div class="so-modal-field so-modal-col-6">
                         <label for="soModalProgram">Program</label>
-                        @include('registrar.components.listbox-select', [
-                            'id' => 'soModalProgram',
-                            'name' => 'modal_course_id',
-                            'options' => [['value' => '', 'label' => 'Select Course']],
-                            'selected' => '',
-                            'placeholder' => 'Select Course',
-                        ])
+                        <select id="soModalProgram" name="modal_course_id" class="app-filter-input so-program-select2" data-placeholder="Select Course">
+                            <option value="">Select Course</option>
+                        </select>
                     </div>
 
                     <div class="so-modal-field so-modal-col-3">
@@ -494,6 +491,7 @@
 
 @push('scripts')
 <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ asset('js/section-offering.js') }}?v={{ file_exists(public_path('js/section-offering.js')) ? filemtime(public_path('js/section-offering.js')) : time() }}"></script>
 <script>
     (function () {

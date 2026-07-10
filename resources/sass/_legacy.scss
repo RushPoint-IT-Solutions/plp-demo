@@ -9531,13 +9531,20 @@ select.req-modal-input {
 
 #apstTable td:first-child,
 #sfTable td:first-child,
-#rfTable td:first-child,
 #smTable td:first-child,
 #gpTable td:first-child,
 #dfTable td:first-child,
 #tmTable td:first-child,
 #gsTable td:first-child {
   position: relative;
+}
+
+#rfTable td:last-child {
+  position: relative;
+}
+
+#rfTable td:last-child .apst-action-btn {
+  margin: 0 auto;
 }
 
 #rfTable .rf-sort-btn {
