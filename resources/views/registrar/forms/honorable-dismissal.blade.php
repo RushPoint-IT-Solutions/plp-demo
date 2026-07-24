@@ -14,7 +14,6 @@
 
 @section('content')
 @php
-    $hdTagUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => '__STUDENT__']);
     $hdIssueUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.issue', ['student' => '__STUDENT__']);
     $hdBulkIssueUrl = route('registrar.registrar-menu.forms.honorable-dismissal.bulk-issue');
     $hdLayoutUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout', ['student' => '__STUDENT__']);
@@ -76,56 +75,13 @@
                 <div class="frm-search-wrap">
                     <input type="text" class="app-filter-select frm-search-input" placeholder="Search student..." oninput="hdFilterTable(this.value)">
                 </div>
-                <button type="button" class="req-btn-save frm-action-btn" onclick="hdOpenBlankPreview()">Preview Form</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="hdOpenPreviewSmart()">Preview Form</button>
                 @if(\App\Support\UserAccessGate::currentUserAllows('documents_forms_honorable_dismissal', 'print'))
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdPrintSelected()">Print Selected</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdDismissAllSelected()">Dismiss All</button>
                 @endif
                 <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
-        </div>
-
-        <h3 style="margin: 4px 0 10px; color:#006837; font-size:1rem; font-weight:800;">TAG STUDENT FOR DISMISSAL</h3>
-        <div class="ga-table-wrap app-table-wrap" style="margin-bottom:24px;">
-            <table class="ga-table app-table" id="hdCandidateTable" style="min-width: 820px;">
-                <thead>
-                    <tr>
-                        <th style="width: 54px; text-align: center;">
-                            <input type="checkbox" id="hdCandidateSelectAll" onchange="hdToggleCandidateSelectAll(this)">
-                        </th>
-                        <th>Student Number</th>
-                        <th>Student Name</th>
-                        <th>Program</th>
-                        <th>Year</th>
-                        <th>Status</th>
-                        <th style="text-align: center; width: 150px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="hdCandidateTableBody">
-                    @forelse($honorableDismissalCandidates as $student)
-                        @php
-                            $program = trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
-                            $yearLevel = trim((string) ($student->year_level ?: optional($student->yearBlock)->label));
-                            $isGraduateCandidate = $student->relationLoaded('graduateTagging') && $student->graduateTagging && $student->graduateTagging->is_graduate;
-                            $isTransferredCandidate = (bool) ($student->is_withdrawn ?? false);
-                            $candidateStatus = $isGraduateCandidate ? 'Graduated' : ($isTransferredCandidate ? 'Transferred' : 'Eligible');
-                        @endphp
-                        <tr data-candidate-id="{{ $student->id }}">
-                            <td style="text-align: center;"><input type="checkbox" class="hd-candidate-row-select" onchange="hdSyncCandidateSelectAll()"></td>
-                            <td>{{ $student->student_no ?: '-' }}</td>
-                            <td>{{ $student->name ?: '-' }}</td>
-                            <td>{{ $program ?: '-' }}</td>
-                            <td>{{ $yearLevel ?: '-' }}</td>
-                            <td>{{ $candidateStatus }}</td>
-                            <td style="text-align:center;">
-                                <button type="button" class="req-btn-save" style="min-width:130px;" onclick="hdTagForDismissal({{ $student->id }})">For Dismissal</button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7" style="text-align:center; color:#666;">No graduated or transferred students pending dismissal tagging.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
 
         <h3 style="margin: 4px 0 10px; color:#006837; font-size:1rem; font-weight:800;">HONORABLE DISMISSAL MONITORING</h3>
@@ -173,7 +129,7 @@
                         data-hd-date="{{ $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : now()->format('F d, Y') }}"
                         data-hd-status="{{ $hdStatus }}">
                         <td style="text-align: center;">
-                            <input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()" @if($hdStatus === 'issued') disabled title="Already issued" @endif>
+                            <input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()">
                         </td>
                         <td>{{ $student->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
@@ -259,7 +215,7 @@
 <div class="req-modal-overlay" id="hdPreviewModal" style="display:none;" onclick="if(event.target===this) hdClosePreview()">
     <div class="req-modal-box hd-preview-modal-box">
         <div class="hd-preview-head">
-            <h3>HONORABLE DISMISSAL PREVIEW</h3>
+            <h3 id="hdPreviewTitle">HONORABLE DISMISSAL PREVIEW</h3>
         </div>
         <div class="hd-preview-wrap">
             <div class="hd-editor-toolbar" id="hdEditorToolbar" aria-hidden="true">
@@ -299,7 +255,6 @@
 
 @push('scripts')
 <script>
-window.hdTagUrlTemplate = @json($hdTagUrlTemplate);
 window.hdIssueUrlTemplate = @json($hdIssueUrlTemplate);
 window.hdBulkIssueUrl = @json($hdBulkIssueUrl);
 window.hdLayoutUrlTemplate = @json($hdLayoutUrlTemplate);

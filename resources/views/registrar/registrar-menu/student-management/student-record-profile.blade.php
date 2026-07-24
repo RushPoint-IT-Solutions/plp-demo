@@ -919,8 +919,8 @@
                                             <td><strong>{{ optional($cs->subject)->code ?? '—' }}</strong></td>
                                             <td>{{ optional($cs->subject)->name ?? '—' }}</td>
                                             <td style="text-align:center;">{{ $cs->credited_units ?? optional($cs->subject)->units ?? '—' }}</td>
-                                            <td>{{ optional($cs->yearBlock)->label ?? optional($cs->yearBlock)->block_name ?? '�' }}</td>
-                                            <td>{{ optional($cs->semester)->name ?? '�' }}</td>
+                                            <td>{{ optional($cs->yearBlock)->label ?? optional($cs->yearBlock)->block_name ?? '�' }}</td>
+                                            <td>{{ optional($cs->semester)->name ?? '�' }}</td>
                                         </tr>
                                         @endforeach
                                     @endforeach
@@ -1225,12 +1225,27 @@
 
             {{-- ── Primary Print Documents ── --}}
             <div class="srp-card" style="margin-bottom:18px;">
-                <div class="srp-card-head">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Print Documents
-                    @if($isGraduated)
-                        <span class="badge-green" style="margin-left:8px;">Graduate</span>
-                    @endif
+                <div class="srp-card-head" style="justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print Documents
+                        @if($isGraduated)
+                            <span class="badge-green" style="margin-left:8px;">Graduate</span>
+                        @endif
+                    </div>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#334155;cursor:{{ $honorableDismissalRecord ? 'default' : 'pointer' }};text-transform:none;letter-spacing:normal;">
+                        <input type="checkbox"
+                               id="srpHdTagCheckbox"
+                               style="width:15px;height:15px;accent-color:#0f7b43;"
+                               {{ $honorableDismissalRecord ? 'checked disabled' : '' }}
+                               onchange="srpTagHonorableDismissal(this)">
+                        Tag for Honorable Dismissal
+                        @if($honorableDismissalRecord)
+                            <span class="{{ $honorableDismissalRecord->status === 'issued' ? 'badge-green' : 'badge-red' }}">
+                                {{ $honorableDismissalRecord->status === 'issued' ? 'Issued' : 'Pending' }}
+                            </span>
+                        @endif
+                    </label>
                 </div>
                 <div class="srp-card-body">
                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -1902,6 +1917,37 @@
 <script>
 const SRP_PROFILE_URL = @json($profileUpdateUrl);
 const SRP_CSRF        = document.querySelector('meta[name=csrf-token]').getAttribute('content');
+const HD_TAG_URL      = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => $student->id]));
+
+// ── Tag for Honorable Dismissal ────────────────────────────
+async function srpTagHonorableDismissal(checkbox) {
+    if (!checkbox.checked) {
+        return;
+    }
+
+    checkbox.disabled = true;
+
+    try {
+        const r = await fetch(HD_TAG_URL, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+        });
+        const data = await r.json();
+
+        if (data.success) {
+            srpToast(data.message || 'Student tagged for Honorable Dismissal.', 'success');
+            setTimeout(function () { location.reload(); }, 700);
+        } else {
+            srpToast(data.message || 'Unable to tag student.', 'error');
+            checkbox.checked = false;
+            checkbox.disabled = false;
+        }
+    } catch (e) {
+        srpToast('Network error — check connection.', 'error');
+        checkbox.checked = false;
+        checkbox.disabled = false;
+    }
+}
 
 // ── Tab switching ──────────────────────────────────────────
 document.querySelectorAll('.srp-tab').forEach(btn => {

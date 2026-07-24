@@ -5,6 +5,9 @@ var hdCurrentPreviewName = 'honorable-dismissal.html';
 var hdTemplateState = null;
 var hdSelectedElementId = null;
 var hdPendingPrintedRowIds = [];
+var hdIsMultiPreview = false;
+var hdMultiPreviewRowIds = [];
+var hdMultiPreviewSheets = [];
 
 function hdCsrf() {
     var meta = document.querySelector('meta[name="csrf-token"]');
@@ -126,7 +129,7 @@ function hdRenderTemplate(layout) {
     if (!sheet) return;
 
     sheet.innerHTML = '';
-    sheet.classList.add('hd-template-canvas');
+    sheet.className = 'hd-sheet hd-template-canvas';
     sheet.style.background = (layout.page && layout.page.background) || '#ffffff';
     (layout.elements || []).forEach(function(item) {
         var el = document.createElement('div');
@@ -165,7 +168,9 @@ function hdOpenPreview(rowId) {
     hdCurrentRowId = rowId;
     hdCurrentPreviewName = hdFileName(data);
     hdSelectedElementId = null;
+    hdSetMultiMode(false);
     hdOpenPreviewModal();
+    hdSetPreviewTitle('HONORABLE DISMISSAL PREVIEW');
     hdSetSheetLoading('Loading layout...');
 
     hdLoadTemplate(rowId).then(function(layout) {
@@ -179,7 +184,9 @@ function hdOpenBlankPreview() {
     hdCurrentRowId = null;
     hdCurrentPreviewName = 'honorable-dismissal-template.html';
     hdSelectedElementId = null;
+    hdSetMultiMode(false);
     hdOpenPreviewModal();
+    hdSetPreviewTitle('HONORABLE DISMISSAL PREVIEW (Blank Template)');
     hdSetSheetLoading('Loading blank template...');
 
     hdLoadTemplate(null).then(function(layout) {
@@ -187,6 +194,92 @@ function hdOpenBlankPreview() {
     }).catch(function(error) {
         hdSetSheetLoading((error && error.message) || 'Unable to load blank template.');
     });
+}
+
+function hdOpenPreviewSmart() {
+    var rowIds = hdSelectedMonitoringRowIds();
+
+    if (!rowIds.length) {
+        hdOpenBlankPreview();
+        return;
+    }
+
+    if (rowIds.length === 1) {
+        hdOpenPreview(rowIds[0]);
+        return;
+    }
+
+    hdOpenMultiPreview(rowIds);
+}
+
+function hdOpenMultiPreview(rowIds) {
+    hdCurrentRowId = null;
+    hdSelectedElementId = null;
+    hdMultiPreviewRowIds = rowIds.slice();
+    hdMultiPreviewSheets = [];
+    hdCurrentPreviewName = 'honorable-dismissal-selected.html';
+    hdSetMultiMode(true);
+    hdOpenPreviewModal();
+    hdSetPreviewTitle('HONORABLE DISMISSAL PREVIEW (' + rowIds.length + ' selected)');
+
+    var sheet = document.getElementById('hdPreviewSheet');
+    if (sheet) {
+        sheet.className = 'hd-multi-stack';
+        sheet.innerHTML = '<div class="hd-multi-loading">Loading ' + rowIds.length + ' record(s)...</div>';
+    }
+
+    Promise.all(rowIds.map(function(rowId) {
+        return hdPrintableSheetForRow(rowId).then(function(html) {
+            return { rowId: rowId, html: html, data: hdGetRowData(rowId), ok: true };
+        }).catch(function(error) {
+            return { rowId: rowId, error: error, ok: false };
+        });
+    })).then(function(results) {
+        var succeeded = results.filter(function(result) { return result.ok; });
+        var failed = results.filter(function(result) { return !result.ok; });
+
+        var sheetEl = document.getElementById('hdPreviewSheet');
+        if (!sheetEl) return;
+
+        if (!succeeded.length) {
+            sheetEl.innerHTML = '<div class="hd-multi-loading">Unable to load any of the selected records.</div>';
+            return;
+        }
+
+        hdMultiPreviewSheets = succeeded.map(function(result) { return { rowId: result.rowId, html: result.html }; });
+
+        sheetEl.className = 'hd-multi-stack';
+        sheetEl.innerHTML = succeeded.map(function(result, index) {
+            var data = result.data || {};
+            var label = (index + 1) + '. ' + hdEsc(data.studentName || 'Student') +
+                (data.studentNo ? ' &middot; ' + hdEsc(data.studentNo) : '');
+            return '<div class="hd-multi-page">'
+                + '<div class="hd-multi-page-label">' + label + '</div>'
+                + result.html
+                + '</div>';
+        }).join('');
+
+        if (failed.length) {
+            alert(failed.length + ' of ' + rowIds.length + ' selected record(s) could not be loaded and were skipped.');
+        }
+    });
+}
+
+function hdSetMultiMode(isMulti) {
+    hdIsMultiPreview = !!isMulti;
+    var saveButton = document.querySelector('[data-hd-save-layout]');
+    if (saveButton) {
+        saveButton.style.display = hdIsMultiPreview ? 'none' : '';
+    }
+    if (!hdIsMultiPreview) {
+        hdMultiPreviewRowIds = [];
+        hdMultiPreviewSheets = [];
+    }
+}
+
+function hdSetPreviewTitle(text) {
+    var title = document.getElementById('hdPreviewTitle');
+    if (title) title.textContent = text;
 }
 
 function hdOpenPreviewModal() {
@@ -198,7 +291,9 @@ function hdOpenPreviewModal() {
 
 function hdSetSheetLoading(message) {
     var sheet = document.getElementById('hdPreviewSheet');
-    if (sheet) sheet.innerHTML = '<div class="hd-template-loading">' + hdEsc(message) + '</div>';
+    if (!sheet) return;
+    sheet.className = 'hd-sheet hd-template-canvas';
+    sheet.innerHTML = '<div class="hd-template-loading">' + hdEsc(message) + '</div>';
 }
 
 function hdClosePreview() {
@@ -206,6 +301,7 @@ function hdClosePreview() {
     if (m) m.style.display = 'none';
     document.body.classList.remove('hd-preview-open');
     hdSelectedElementId = null;
+    hdSetMultiMode(false);
     hdSyncToolbar();
 }
 
@@ -304,6 +400,20 @@ function hdCleanPrintSheet(sourceSheet) {
 }
 
 function hdPrintPreview() {
+    if (hdIsMultiPreview) {
+        var multiRowIds = hdMultiPreviewRowIds.slice();
+        if (!multiRowIds.length || !hdMultiPreviewSheets.length) return;
+
+        hdIssueRows(multiRowIds).then(function(ok) {
+            if (!ok) return;
+            hdPrintSheets(
+                hdMultiPreviewSheets.map(function(item) { return item.html; }),
+                hdMultiPreviewSheets.map(function(item) { return item.rowId; })
+            );
+        });
+        return;
+    }
+
     var sheet = document.getElementById('hdPreviewSheet');
     if (!sheet || !sheet.querySelector('.hd-template-element')) return;
     var rowIds = hdCurrentRowId ? [hdCurrentRowId] : [];
@@ -391,11 +501,7 @@ function hdDownloadRow(rowId) {
 }
 
 function hdPrintSelected() {
-    var rowIds = hdSelectedMonitoringRowIds();
-    var candidateIds = hdSelectedCandidateRowIds();
-    var printIds = rowIds.concat(candidateIds).filter(function(rowId, index, list) {
-        return rowId && list.indexOf(rowId) === index;
-    });
+    var printIds = hdSelectedMonitoringRowIds();
 
     if (!printIds.length) {
         alert('Select at least one Pending for Dismissal record to print.');
@@ -444,32 +550,18 @@ function hdPrintSelected() {
 }
 
 function hdDismissAllSelected() {
-    var candidateIds = hdSelectedCandidateRowIds();
     var pendingIds = hdSelectedMonitoringRowIds();
 
-    if (!candidateIds.length && !pendingIds.length) {
-        alert('Select at least one eligible student or Pending for Dismissal record.');
+    if (!pendingIds.length) {
+        alert('Select at least one Pending for Dismissal record.');
         return;
     }
 
-    var message = 'Process selected dismissal records?';
-    if (candidateIds.length && pendingIds.length) {
-        message = 'Tag ' + candidateIds.length + ' selected student(s) and process ' + pendingIds.length + ' Pending for Dismissal record(s)?';
-    } else if (candidateIds.length) {
-        message = 'Process ' + candidateIds.length + ' selected student(s) for dismissal?';
-    } else if (pendingIds.length) {
-        message = 'Process ' + pendingIds.length + ' selected Pending for Dismissal student(s)?';
-    }
-
-    if (!confirm(message)) {
+    if (!confirm('Process ' + pendingIds.length + ' selected Pending for Dismissal student(s)?')) {
         return;
     }
 
-    var allIds = candidateIds.concat(pendingIds).filter(function(rowId, index, list) {
-        return rowId && list.indexOf(rowId) === index;
-    });
-
-    hdBulkIssueRows(allIds).then(function(ok) {
+    hdBulkIssueRows(pendingIds).then(function(ok) {
         if (!ok) return;
         alert('Selected dismissal records have been processed.');
         window.location.reload();
@@ -482,20 +574,6 @@ function hdOpenPreviewFromSelection() {
     if (!row) return;
     var rowId = row.getAttribute('data-row-id');
     hdOpenPreview(rowId);
-}
-
-function hdTagForDismissal(studentId) {
-    var url = String(window.hdTagUrlTemplate || '').replace('__STUDENT__', studentId);
-    if (!url) return;
-    hdPost(url).then(function(data) {
-        if (!data || !data.success) {
-            alert((data && data.message) || 'Unable to tag student for dismissal.');
-            return;
-        }
-        window.location.reload();
-    }).catch(function() {
-        alert('Network error while tagging student.');
-    });
 }
 
 function hdIssueRows(rowIds) {
@@ -547,15 +625,6 @@ function hdSelectedMonitoringRowIds() {
     }).filter(Boolean);
 }
 
-function hdSelectedCandidateRowIds() {
-    return Array.from(document.querySelectorAll('#hdCandidateTableBody tr[data-candidate-id]')).filter(function(row) {
-        var checkbox = row.querySelector('.hd-candidate-row-select');
-        return !!checkbox && checkbox.checked && hdIsVisibleRow(row);
-    }).map(function(row) {
-        return row.getAttribute('data-candidate-id');
-    }).filter(Boolean);
-}
-
 function hdEligibleMonitoringRows() {
     return Array.from(document.querySelectorAll('#hdTableBody tr[data-row-id]')).filter(function(row) {
         var checkbox = row.querySelector('.hd-row-select');
@@ -586,8 +655,6 @@ function hdMarkMonitoringRowsPrinted(rowIds) {
         var checkbox = row.querySelector('.hd-row-select');
         if (checkbox) {
             checkbox.checked = false;
-            checkbox.disabled = true;
-            checkbox.title = 'Already issued';
         }
     });
 
@@ -615,35 +682,13 @@ function hdBulkIssueRows(rowIds) {
     });
 }
 
-function hdTagRows(rowIds) {
-    rowIds = (rowIds || []).filter(Boolean);
-    if (!rowIds.length) return Promise.resolve(true);
-    var template = String(window.hdTagUrlTemplate || '');
-    if (!template) return Promise.resolve(false);
-
-    return Promise.all(rowIds.map(function(rowId) {
-        return hdPost(template.replace('__STUDENT__', rowId));
-    })).then(function(results) {
-        var failed = results.find(function(result) { return !result || !result.success; });
-        if (failed) {
-            alert(failed.message || 'Unable to tag selected student for dismissal.');
-            return false;
-        }
-        return true;
-    }).catch(function() {
-        alert('Network error while tagging selected students.');
-        return false;
-    });
-}
-
 function hdFilterTable(query) {
     var q = String(query || '').toLowerCase().trim();
-    document.querySelectorAll('#hdCandidateTableBody tr, #hdTableBody tr').forEach(function(row) {
+    document.querySelectorAll('#hdTableBody tr').forEach(function(row) {
         var text = (row.textContent || '').toLowerCase();
         row.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none';
     });
     hdSyncSelectAll();
-    hdSyncCandidateSelectAll();
 }
 
 function hdGetRowData(rowId) {
@@ -672,7 +717,7 @@ function hdIsVisibleRow(row) {
 }
 
 function hdIsMonitoringRowPrintable(row) {
-    return !!row && hdIsVisibleRow(row) && (row.getAttribute('data-hd-status') || 'for_dismissal') === 'for_dismissal';
+    return !!row && hdIsVisibleRow(row);
 }
 
 function hdToggleSelectAll(s) {
@@ -689,11 +734,6 @@ function hdSyncSelectAll() {
         return checkbox || null;
     }).filter(Boolean);
     var t=items.length,c=0;items.forEach(function(x){if(x.checked)c++});h.checked=t>0&&c===t;h.indeterminate=c>0&&c<t;h.disabled=t===0;
-}
-function hdToggleCandidateSelectAll(s) { document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select').forEach(function(c){c.checked=!!s.checked});hdSyncCandidateSelectAll(); }
-function hdSyncCandidateSelectAll() {
-    var h=document.getElementById('hdCandidateSelectAll'),items=document.querySelectorAll('#hdCandidateTableBody .hd-candidate-row-select');if(!h)return;
-    var t=items.length,c=0;items.forEach(function(x){if(x.checked)c++});h.checked=t>0&&c===t;h.indeterminate=c>0&&c<t;
 }
 function hdCloseMenus(){document.querySelectorAll('.apst-dropdown.open').forEach(function(m){m.classList.remove('open','drop-up');m.style.top='';m.style.left='';m.style.right='';m.style.bottom=''});}
 function hdToggleMenu(id,trig){var m=document.getElementById(id);if(!m||!trig)return;var o=m.classList.contains('open');hdCloseMenus();if(o)return;var r=trig.getBoundingClientRect();m.style.left='auto';m.style.right=(window.innerWidth-r.left+4)+'px';if(window.innerHeight-r.bottom<120){m.classList.add('drop-up');m.style.top='auto';m.style.bottom=(window.innerHeight-r.bottom)+'px';}else{m.style.top=r.top+'px';m.style.bottom='auto';}m.classList.add('open');}
@@ -754,22 +794,6 @@ function hdBindSelectionControls() {
                 checkbox.checked = !checkbox.checked;
                 hdSyncSelectAll();
                 event.preventDefault();
-            }
-        });
-    }
-
-    var candidateTable = document.getElementById('hdCandidateTable');
-    if (candidateTable && !candidateTable.getAttribute('data-hd-selection-bound')) {
-        candidateTable.setAttribute('data-hd-selection-bound', '1');
-        candidateTable.addEventListener('change', function(event) {
-            var target = event.target;
-            if (!target || target.type !== 'checkbox') return;
-            if (target.id === 'hdCandidateSelectAll') {
-                hdToggleCandidateSelectAll(target);
-                return;
-            }
-            if (target.classList.contains('hd-candidate-row-select')) {
-                hdSyncCandidateSelectAll();
             }
         });
     }
@@ -879,15 +903,6 @@ window.addEventListener('afterprint', function() {
 
     if (!printedIds.length) return;
 
-    var includesNewlyTaggedCandidate = printedIds.some(function(rowId) {
-        return !!document.querySelector('#hdCandidateTableBody tr[data-candidate-id="' + rowId + '"]');
-    });
-
-    if (includesNewlyTaggedCandidate) {
-        window.location.reload();
-        return;
-    }
-
     hdMarkMonitoringRowsPrinted(printedIds);
 });
 
@@ -897,7 +912,6 @@ window.addEventListener('scroll',hdCloseMenus,true);
 document.addEventListener('DOMContentLoaded', function() {
     hdBindSelectionControls();
     hdSyncSelectAll();
-    hdSyncCandidateSelectAll();
     hdBindEditor();
     var tableBody = document.getElementById('hdTableBody');
     var selectedRowId = tableBody ? (tableBody.getAttribute('data-selected-row-id') || '').trim() : '';

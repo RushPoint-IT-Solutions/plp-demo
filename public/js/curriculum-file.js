@@ -19,10 +19,14 @@
     var viewListButton = document.getElementById('cfViewListBtn');
     var openPrereqButton = document.getElementById('cfOpenPrerequisitesBtn');
     var openPrereqSetupButton = document.getElementById('cfOpenPrerequisitesSetupBtn');
+    var viewListModal = document.getElementById('cfViewListModal');
 
     var preRequisitesUrl = page.getAttribute('data-pre-requisites-url') || '';
+    var curriculumFileUrl = page.getAttribute('data-curriculum-file-url') || '';
     var selectedCourseId = String(page.getAttribute('data-selected-course-id') || '');
     var selectedCurriculumYear = String(page.getAttribute('data-selected-curriculum-year') || '');
+    var loadedCourseId = selectedCourseId;
+    var loadedCurriculumYear = selectedCurriculumYear;
     var successMessage = String(page.getAttribute('data-success') || '').trim();
     var errorMessage = String(page.getAttribute('data-error') || '').trim();
 
@@ -165,6 +169,50 @@
         window.location.href = targetUrl;
     }
 
+    function openViewListModal() {
+        if (!viewListModal) {
+            return;
+        }
+        viewListModal.style.display = 'flex';
+        document.body.classList.add('cf-modal-open');
+    }
+
+    function closeViewListModal() {
+        if (!viewListModal) {
+            return;
+        }
+        viewListModal.style.display = 'none';
+        document.body.classList.remove('cf-modal-open');
+    }
+
+    window.closeCfViewListModal = closeViewListModal;
+
+    function navigateToViewList() {
+        var courseId = topCourse ? String(topCourse.value || '') : '';
+        var curriculumYear = topYear ? String(topYear.value || '') : '';
+
+        if (!courseId || !curriculumYear) {
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast('Please select Program and Curriculum Year first.', 'warning');
+            }
+            return;
+        }
+
+        if (courseId === loadedCourseId && curriculumYear === loadedCurriculumYear) {
+            openViewListModal();
+            return;
+        }
+
+        if (!curriculumFileUrl) {
+            return;
+        }
+
+        window.location.href = curriculumFileUrl
+            + '?course_id=' + encodeURIComponent(courseId)
+            + '&curriculum_year=' + encodeURIComponent(curriculumYear)
+            + '&open_view_list=1';
+    }
+
     function buildSetupPrerequisiteUrl() {
         if (!preRequisitesUrl || !setupCourse || !setupYear) {
             return '';
@@ -301,7 +349,7 @@
     }
 
     if (viewListButton) {
-        viewListButton.addEventListener('click', navigateToPreRequisites);
+        viewListButton.addEventListener('click', navigateToViewList);
     }
 
     if (openPrereqButton) {
@@ -310,5 +358,20 @@
 
     if (openPrereqSetupButton) {
         openPrereqSetupButton.addEventListener('click', navigateToSetupPreRequisites);
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeViewListModal();
+        }
+    });
+
+    if (window.location.search.indexOf('open_view_list=1') !== -1) {
+        openViewListModal();
+
+        if (window.history && window.history.replaceState) {
+            var cleanUrl = window.location.pathname + window.location.search.replace(/[?&]open_view_list=1/, '').replace(/^&/, '?');
+            window.history.replaceState(null, '', cleanUrl);
+        }
     }
 })();

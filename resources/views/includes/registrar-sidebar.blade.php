@@ -62,7 +62,8 @@
 
         {{-- ADMISSIONS                             --}}
         {{-- ══════════════════════════════════════ --}}
-        @if($canViewAny(['registrar.process.application', 'registrar.process.document-list', 'registrar.process.approval-status', 'registrar.process.exam-list', 'registrar.process.exam-interview-scheduling', 'registrar.process.requirements', 'registrar.process.batch-upload', 'registrar.process.citizenship', 'registrar.process.religion.index', 'registrar.process.exam-category']))
+        {{-- Hidden from the sidebar for all users. Remove the `false &&` below to restore. --}}
+        @if(false && $canViewAny(['registrar.process.application', 'registrar.process.document-list', 'registrar.process.approval-status', 'registrar.process.exam-list', 'registrar.process.exam-interview-scheduling', 'registrar.process.requirements', 'registrar.process.batch-upload', 'registrar.process.citizenship', 'registrar.process.religion.index', 'registrar.process.exam-category']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.process.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.process.*') ? 'active' : '' }}">
                 {{-- user-add icon --}}

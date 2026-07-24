@@ -141,6 +141,20 @@
     display:inline-flex; align-items:center; gap:5px; text-decoration:none;
 }
 .sr-alumni-btn:hover { background:#eef7f1; color:#0f5132; }
+.sr-hd-btn {
+    background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; border-radius:7px;
+    padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer;
+    display:inline-flex; align-items:center; gap:5px; text-decoration:none;
+    font-family:inherit;
+}
+.sr-hd-btn:hover { background:#ffedd5; color:#9a3412; }
+.sr-hd-btn:disabled { opacity:.6; cursor:not-allowed; }
+.sr-hd-status {
+    display:inline-flex; align-items:center; border-radius:999px; padding:5px 12px;
+    font-size:12px; font-weight:700; text-decoration:none; gap:5px;
+}
+.sr-hd-status.pending { background:#fef3c7; color:#92400e; }
+.sr-hd-status.issued { background:#dcfce7; color:#166534; }
 
 /* ── empty state ────────────────────────────────────────────── */
 .sr-empty {
@@ -407,6 +421,17 @@
                         Tag Graduate
                     </a>
                     @endif
+                    @if($s->hd_record)
+                        <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal.show', $s->id) }}" class="sr-hd-status {{ $s->hd_record->status === 'issued' ? 'issued' : 'pending' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            HD: {{ $s->hd_record->status === 'issued' ? 'Issued' : 'Pending' }}
+                        </a>
+                    @else
+                        <button type="button" class="sr-hd-btn" data-hd-student-id="{{ $s->id }}" onclick="srTagHonorableDismissal({{ $s->id }}, this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            Tag HD
+                        </button>
+                    @endif
                     <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.profile', $s->id) }}" class="sr-view-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         View Profile
@@ -487,6 +512,11 @@
                                 @else
                                     <a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}?student={{ $s->id }}" class="sr-alumni-btn">Tag Graduate</a>
                                 @endif
+                                @if($s->hd_record)
+                                    <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal.show', $s->id) }}" class="sr-hd-status {{ $s->hd_record->status === 'issued' ? 'issued' : 'pending' }}">HD: {{ $s->hd_record->status === 'issued' ? 'Issued' : 'Pending' }}</a>
+                                @else
+                                    <button type="button" class="sr-hd-btn" data-hd-student-id="{{ $s->id }}" onclick="srTagHonorableDismissal({{ $s->id }}, this)">Tag HD</button>
+                                @endif
                                 <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records.profile', $s->id) }}" class="sr-view-btn">View Profile</a>
                             </div>
                         </td>
@@ -505,6 +535,44 @@
 
 @push('scripts')
 <script>
+var SR_HD_TAG_URL_TEMPLATE = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => '__STUDENT__']));
+
+function srTagHonorableDismissal(studentId, btn) {
+    if (!confirm('Tag this student for Honorable Dismissal?')) {
+        return;
+    }
+
+    var url = SR_HD_TAG_URL_TEMPLATE.replace('__STUDENT__', encodeURIComponent(studentId));
+    var csrf = document.querySelector('meta[name=csrf-token]').getAttribute('content');
+    btn.disabled = true;
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrf, Accept: 'application/json' },
+    }).then(function (r) { return r.json(); }).then(function (data) {
+        if (data.success) {
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast(data.message || 'Student tagged for Honorable Dismissal.', 'success');
+            }
+            setTimeout(function () { window.location.reload(); }, 600);
+        } else {
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast(data.message || 'Unable to tag student.', 'error');
+            } else {
+                alert(data.message || 'Unable to tag student.');
+            }
+            btn.disabled = false;
+        }
+    }).catch(function () {
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast('Network error — check connection.', 'error');
+        } else {
+            alert('Network error — check connection.');
+        }
+        btn.disabled = false;
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     var storageKey = 'registrarStudentRecordsViewMode';
     var cardView = document.getElementById('srCardView');

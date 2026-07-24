@@ -210,6 +210,7 @@
         data-success="{{ session('curriculum_file_success', '') }}"
         data-error="{{ session('curriculum_file_error', '') }}"
         data-pre-requisites-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}"
+        data-curriculum-file-url="{{ route('registrar.registrar-menu.academic-master.curriculum-file') }}"
     >
         <section class="cf-hero-card">
             <div>
@@ -356,9 +357,11 @@
                             @endphp
                             <label class="cf-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}">
                                 <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
-                                <span class="cf-course-code">{{ $subject->code }}</span>
-                                <span class="cf-course-title">{{ $subject->name }}</span>
-                                <span class="cf-course-units">{{ number_format($units, 1) }} units · {{ $subject->hours ? number_format((float) $subject->hours, 1) . ' hrs' : 'hrs N/A' }} · {{ $subject->course_type ?: 'Major' }}</span>
+                                <span class="cf-course-info">
+                                    <span class="cf-course-code">{{ $subject->code }}</span>
+                                    <span class="cf-course-title">{{ $subject->name }}</span>
+                                    <span class="cf-course-units">{{ number_format($units, 1) }} units · {{ $subject->hours ? number_format((float) $subject->hours, 1) . ' hrs' : 'hrs N/A' }} · {{ $subject->course_type ?: 'Major' }}</span>
+                                </span>
                             </label>
                         @empty
                             <div class="cf-course-empty">No course records available. Add courses in Course File first.</div>
@@ -467,6 +470,79 @@
                 </div>
             @endif
         </section>
+    </div>
+</div>
+
+<div class="req-modal-overlay cf-viewlist-overlay" id="cfViewListModal" style="display:none;" onclick="if(event.target===this){window.closeCfViewListModal();}">
+    <div class="req-modal-box cf-viewlist-box">
+        <button type="button" class="rep-modal-close-x" onclick="window.closeCfViewListModal()" aria-label="Close">&times;</button>
+
+        <div class="cf-viewlist-head">
+            <p class="cf-eyebrow">Curriculum Masterlist</p>
+            <h3>{{ $curriculumMasterlist['program_name'] ?? 'PROGRAM' }}</h3>
+            <p class="cf-viewlist-year">A.Y. {{ $curriculumMasterlist['curriculum_year'] ?: $selectedCurriculumYear ?: '—' }}</p>
+        </div>
+
+        <div class="cf-viewlist-body">
+            @forelse($curriculumMasterlist['years'] as $year)
+                <div class="cf-viewlist-year-block">
+                    <div class="cf-viewlist-year-title">{{ $formatCfYear($year['label'] ?? '') }}</div>
+                    @foreach(($year['semesters'] ?? []) as $semester)
+                        <div class="cf-viewlist-term">
+                            <div class="cf-viewlist-term-title">{{ $formatCfTerm($semester['label'] ?? '') }}</div>
+                            <div class="cf-viewlist-table-wrap">
+                                <table class="cf-viewlist-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Subject Description</th>
+                                            <th>Prereq</th>
+                                            <th>Lec</th>
+                                            <th>Lab</th>
+                                            <th>Units</th>
+                                            <th>Hrs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse(($semester['subjects'] ?? []) as $subject)
+                                            <tr>
+                                                <td>{{ $subject['code'] ?: '-' }}</td>
+                                                <td class="cf-viewlist-title-col">{{ $subject['title'] ?: '-' }}</td>
+                                                <td>{{ $subject['prereq'] ?: 'None' }}</td>
+                                                <td>{{ $formatCfNumber($subject['lec'] ?? 0) }}</td>
+                                                <td>{{ $formatCfNumber($subject['lab'] ?? 0) }}</td>
+                                                <td>{{ $formatCfNumber($subject['units'] ?? 0) }}</td>
+                                                <td>{{ $formatCfNumber($subject['hours'] ?? 0) }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7">No courses assigned.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3">Total</td>
+                                            <td>{{ $formatCfNumber($semester['totals']['lec'] ?? 0) }}</td>
+                                            <td>{{ $formatCfNumber($semester['totals']['lab'] ?? 0) }}</td>
+                                            <td>{{ $formatCfNumber($semester['totals']['units'] ?? 0) }}</td>
+                                            <td>{{ $formatCfNumber($semester['totals']['hours'] ?? 0) }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @empty
+                <div class="cf-viewlist-empty">No curriculum courses saved yet for this program and curriculum year. Use the setup form to add courses first.</div>
+            @endforelse
+        </div>
+
+        <div class="cf-viewlist-actions">
+            <button type="button" class="pf-btn-new" onclick="window.print()" {{ empty($curriculumMasterlist['years']) ? 'disabled' : '' }}>Print</button>
+            <button type="button" class="pf-btn-new cf-btn-outline" onclick="window.closeCfViewListModal()">Close</button>
+        </div>
     </div>
 </div>
 
