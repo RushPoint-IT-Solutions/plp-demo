@@ -19,6 +19,21 @@
     $hdLayoutUrlTemplate = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout', ['student' => '__STUDENT__']);
     $hdBlankLayoutUrl = route('registrar.registrar-menu.forms.honorable-dismissal.template.layout');
     $hdTemplateSaveUrl = route('registrar.registrar-menu.forms.honorable-dismissal.template.save');
+    $hdOrdinal = function ($number) {
+        $number = (int) $number;
+        if ($number <= 0) {
+            return '';
+        }
+        if (in_array($number % 100, [11, 12, 13], true)) {
+            return $number . 'th';
+        }
+        switch ($number % 10) {
+            case 1: return $number . 'st';
+            case 2: return $number . 'nd';
+            case 3: return $number . 'rd';
+            default: return $number . 'th';
+        }
+    };
 @endphp
 <div class="pf-page">
     <div class="ga-page">
@@ -76,8 +91,8 @@
                     <input type="text" class="app-filter-select frm-search-input" placeholder="Search student..." oninput="hdFilterTable(this.value)">
                 </div>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdOpenPreviewSmart()">Preview Form</button>
+                <a href="{{ route('registrar.registrar-menu.forms.honorable-dismissal.export') }}" class="req-btn-save frm-action-btn" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none;">Export to Excel</a>
                 @if(\App\Support\UserAccessGate::currentUserAllows('documents_forms_honorable_dismissal', 'print'))
-                <button type="button" class="req-btn-save frm-action-btn" onclick="hdPrintSelected()">Print Selected</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="hdDismissAllSelected()">Dismiss All</button>
                 @endif
                 <button type="button" class="req-btn-save frm-action-btn">Set</button>
@@ -120,6 +135,8 @@
                         $semester = trim((string) ($student->semester ?: optional($student->academicTerm)->term));
                         $hdStatus = trim((string) ($student->hd_status ?? 'for_dismissal'));
                         $hdStatusLabel = $hdStatus === 'issued' ? 'Issued' : 'Pending for Dismissal';
+                        $hdIssuanceCount = (int) ($student->hd_issuance_count ?? 0);
+                        $hdOrdinalLabel = $hdStatus === 'issued' ? $hdOrdinal(max(1, $hdIssuanceCount)) : '';
                         $hdIssuedAt = $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : '-';
                     @endphp
                     <tr data-row-id="{{ $student->id }}"
@@ -127,11 +144,17 @@
                         data-semester="{{ $semester }}"
                         data-hd-no="{{ $student->hd_no ?: ($student->student_no ? 'HD-' . $student->student_no : '') }}"
                         data-hd-date="{{ $student->hd_issued_at ? \Carbon\Carbon::parse($student->hd_issued_at)->format('F d, Y') : now()->format('F d, Y') }}"
-                        data-hd-status="{{ $hdStatus }}">
+                        data-hd-status="{{ $hdStatus }}"
+                        data-hd-issuance-count="{{ $hdIssuanceCount }}">
                         <td style="text-align: center;">
                             <input type="checkbox" class="hd-row-select" onchange="hdSyncSelectAll()">
                         </td>
-                        <td>{{ $student->student_no ?: '-' }}</td>
+                        <td>
+                            @if($hdOrdinalLabel)
+                                <div class="hd-ordinal-badge">{{ $hdOrdinalLabel }}</div>
+                            @endif
+                            <span class="hd-student-no">{{ $student->student_no ?: '-' }}</span>
+                        </td>
                         <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
                         <td>{{ $program ?: '-' }}</td>
                         <td>{{ $student->hd_no ?: '-' }}</td>

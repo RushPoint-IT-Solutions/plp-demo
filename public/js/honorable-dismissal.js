@@ -57,6 +57,19 @@ function hdEsc(v) {
     });
 }
 
+function hdOrdinal(n) {
+    n = Number(n) || 0;
+    if (n <= 0) return '';
+    var mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 13) return n + 'th';
+    switch (n % 10) {
+        case 1: return n + 'st';
+        case 2: return n + 'nd';
+        case 3: return n + 'rd';
+        default: return n + 'th';
+    }
+}
+
 function hdTemplateUrl(rowId) {
     if (!rowId) return window.hdBlankLayoutUrl || '';
     return String(window.hdLayoutUrlTemplate || '').replace('__STUDENT__', encodeURIComponent(rowId));
@@ -485,67 +498,9 @@ function hdDownloadRow(rowId) {
     if (!data.hdNo) { alert('Student must be tagged For Dismissal before downloading HD.'); return; }
 
     hdLoadTemplate(rowId).then(function(layout) {
-        var temp = document.createElement('div');
-        temp.className = 'hd-sheet';
-        (layout.elements || []).forEach(function(item) {
-            var el = document.createElement('div');
-            el.className = 'hd-template-element';
-            el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
-            hdApplyElementStyle(el, item);
-            temp.appendChild(el);
-        });
-        hdDownloadHtml(temp.outerHTML, hdFileName(data));
+        hdDownloadHtml(hdBuildStaticSheet(layout).outerHTML, hdFileName(data));
     }).catch(function(error) {
         alert((error && error.message) || 'Unable to download HD.');
-    });
-}
-
-function hdPrintSelected() {
-    var printIds = hdSelectedMonitoringRowIds();
-
-    if (!printIds.length) {
-        alert('Select at least one Pending for Dismissal record to print.');
-        return false;
-    }
-
-    if (!confirm('Print ' + printIds.length + ' selected Honorable Dismissal record(s)? This will mark them as Issued.')) {
-        return false;
-    }
-
-    return hdBulkIssueRows(printIds).then(function(ok) {
-        if (!ok) return false;
-
-        // Use allSettled instead of all: one record failing to load its layout
-        // (e.g. a stale/removed template) must not silently discard every other
-        // record that was already bulk-issued and successfully prepared.
-        return Promise.all(printIds.map(function(rowId) {
-            return hdPrintableSheetForRow(rowId).then(function(sheet) {
-                return { rowId: rowId, sheet: sheet, ok: true };
-            }).catch(function(error) {
-                return { rowId: rowId, error: error, ok: false };
-            });
-        })).then(function(results) {
-            var succeeded = results.filter(function(result) { return result.ok; });
-            var failed = results.filter(function(result) { return !result.ok; });
-
-            if (!succeeded.length) {
-                alert('Unable to prepare any of the selected records for printing.');
-                return false;
-            }
-
-            hdPrintSheets(
-                succeeded.map(function(result) { return result.sheet; }),
-                succeeded.map(function(result) { return result.rowId; })
-            );
-
-            if (failed.length) {
-                alert(failed.length + ' of ' + printIds.length + ' selected record(s) could not be prepared for printing and were skipped. The remaining ' + succeeded.length + ' record(s) are printing now.');
-            }
-
-            return true;
-        });
-    }).catch(function(error) {
-        alert((error && error.message) || 'Unable to prepare selected records.');
     });
 }
 
@@ -597,18 +552,23 @@ function hdIssueRows(rowIds) {
     });
 }
 
+function hdBuildStaticSheet(layout) {
+    var sheet = document.createElement('div');
+    sheet.className = 'hd-sheet';
+    sheet.style.background = (layout.page && layout.page.background) || '#ffffff';
+    (layout.elements || []).forEach(function(item) {
+        var el = document.createElement('div');
+        el.className = 'hd-template-element';
+        el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
+        hdApplyElementStyle(el, item);
+        sheet.appendChild(el);
+    });
+    return sheet;
+}
+
 function hdPrintableSheetForRow(rowId) {
     return hdLoadTemplate(rowId).then(function(layout) {
-        var sheet = document.createElement('div');
-        sheet.className = 'hd-sheet';
-        (layout.elements || []).forEach(function(item) {
-            var el = document.createElement('div');
-            el.className = 'hd-template-element';
-            el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
-            hdApplyElementStyle(el, item);
-            sheet.appendChild(el);
-        });
-        return sheet.outerHTML;
+        return hdBuildStaticSheet(layout).outerHTML;
     });
 }
 
@@ -648,9 +608,22 @@ function hdMarkMonitoringRowsPrinted(rowIds) {
         if (!row) return;
 
         row.setAttribute('data-hd-status', 'issued');
+        var nextCount = (parseInt(row.getAttribute('data-hd-issuance-count'), 10) || 0) + 1;
+        row.setAttribute('data-hd-issuance-count', String(nextCount));
+
         var cells = row.querySelectorAll('td');
         if (cells[5]) cells[5].textContent = 'Issued';
         if (cells[6]) cells[6].textContent = row.getAttribute('data-hd-date') || new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+
+        if (cells[1]) {
+            var badge = cells[1].querySelector('.hd-ordinal-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'hd-ordinal-badge';
+                cells[1].insertBefore(badge, cells[1].firstChild);
+            }
+            badge.textContent = hdOrdinal(nextCount);
+        }
 
         var checkbox = row.querySelector('.hd-row-select');
         if (checkbox) {
@@ -691,6 +664,12 @@ function hdFilterTable(query) {
     hdSyncSelectAll();
 }
 
+function hdCellText(cell, innerSelector) {
+    if (!cell) return '';
+    var inner = innerSelector ? cell.querySelector(innerSelector) : null;
+    return (inner || cell).textContent.trim();
+}
+
 function hdGetRowData(rowId) {
     var row = hdGetRow(rowId);
     if (!row) return null;
@@ -699,7 +678,7 @@ function hdGetRowData(rowId) {
     var program = (cells[3] ? cells[3].textContent : '').trim();
 
     return {
-        studentNo: (cells[1] ? cells[1].textContent : '').trim(),
+        studentNo: hdCellText(cells[1], '.hd-student-no'),
         studentName: studentName,
         program: program,
         year: '',
@@ -740,8 +719,8 @@ function hdToggleMenu(id,trig){var m=document.getElementById(id);if(!m||!trig)re
 function hdOpenModal(id){hdCloseMenus();var m=document.getElementById(id);if(m)m.style.display='flex';}
 function hdCloseModal(id){var m=document.getElementById(id);if(m)m.style.display='none';}
 function hdGetRow(id){return document.querySelector('tr[data-row-id="'+id+'"]');}
-function hdOpenEdit(id){var r=hdGetRow(id);if(!r)return;hdCurrentRowId=id;var c=r.querySelectorAll('td');document.getElementById('hdEditNumber').value=(c[1]?c[1].textContent:'').trim();document.getElementById('hdEditName').value=(c[2]?c[2].textContent:'').trim();document.getElementById('hdEditCourse').value=(c[3]?c[3].textContent:'').trim();document.getElementById('hdEditYear').value=(c[4]?c[4].textContent:'').trim();hdOpenModal('hdEditModal');}
-function hdSaveEdit(){var r=hdGetRow(hdCurrentRowId);if(!r)return;var c=r.querySelectorAll('td');if(c[1])c[1].textContent=(document.getElementById('hdEditNumber').value||'').trim();if(c[2])c[2].textContent=(document.getElementById('hdEditName').value||'').trim();if(c[3])c[3].textContent=(document.getElementById('hdEditCourse').value||'').trim();if(c[4])c[4].textContent=(document.getElementById('hdEditYear').value||'').trim();hdCloseModal('hdEditModal');}
+function hdOpenEdit(id){var r=hdGetRow(id);if(!r)return;hdCurrentRowId=id;var c=r.querySelectorAll('td');document.getElementById('hdEditNumber').value=hdCellText(c[1],'.hd-student-no');document.getElementById('hdEditName').value=(c[2]?c[2].textContent:'').trim();document.getElementById('hdEditCourse').value=(c[3]?c[3].textContent:'').trim();document.getElementById('hdEditYear').value=(c[4]?c[4].textContent:'').trim();hdOpenModal('hdEditModal');}
+function hdSaveEdit(){var r=hdGetRow(hdCurrentRowId);if(!r)return;var c=r.querySelectorAll('td');if(c[1]){var numEl=c[1].querySelector('.hd-student-no')||c[1];numEl.textContent=(document.getElementById('hdEditNumber').value||'').trim();}if(c[2])c[2].textContent=(document.getElementById('hdEditName').value||'').trim();if(c[3])c[3].textContent=(document.getElementById('hdEditCourse').value||'').trim();if(c[4])c[4].textContent=(document.getElementById('hdEditYear').value||'').trim();hdCloseModal('hdEditModal');}
 function hdOpenDelete(id){hdCurrentRowId=id;hdOpenModal('hdDeleteModal');}
 function hdConfirmDelete(){var r=hdGetRow(hdCurrentRowId);if(r)r.remove();hdSyncSelectAll();hdCloseModal('hdDeleteModal');}
 

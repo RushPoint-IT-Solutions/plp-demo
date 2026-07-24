@@ -1469,6 +1469,19 @@ body.wce-preview-open {
    HONORABLE DISMISSAL & OGR Table Overrides
    ============================================================ */
 
+.hd-ordinal-badge {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #006837;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+}
+
+.hd-student-no {
+    display: block;
+}
+
 /* Fix clipped dropdown menus in table layout */
 #hdTable .apst-dropdown,
 #ogrTable .apst-dropdown,

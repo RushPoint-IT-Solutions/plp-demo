@@ -20025,6 +20025,7 @@ class RegistrarController extends Controller
             }, $studentColumns), [
                 'hdr.hd_no as hd_no',
                 'hdr.status as hd_status',
+                'hdr.issuance_count as hd_issuance_count',
                 'hdr.tagged_at as hd_tagged_at',
                 'hdr.issued_at as hd_issued_at',
             ]));
@@ -20040,6 +20041,68 @@ class RegistrarController extends Controller
             'selectedStudentId',
             'hdRecordsUnavailable'
         ));
+    }
+
+    public function formsHonorableDismissalExport()
+    {
+        $studentColumns = ['id', 'student_no', 'name', 'program', 'year_level'];
+        $studentColumns = array_values(array_filter($studentColumns, function ($column) {
+            return $column === 'id' || Schema::hasColumn('students', $column);
+        }));
+
+        $rows = Schema::hasTable('honorable_dismissal_records')
+            ? Student::query()
+                ->with(['canonicalCourse:id,code,name'])
+                ->join('honorable_dismissal_records as hdr', 'hdr.student_id', '=', 'students.id')
+                ->orderByDesc('hdr.created_at')
+                ->orderBy('students.name')
+                ->get(array_merge(array_map(function ($column) {
+                    return 'students.' . $column;
+                }, $studentColumns), [
+                    'hdr.hd_no as hd_no',
+                    'hdr.status as hd_status',
+                    'hdr.issuance_count as hd_issuance_count',
+                    'hdr.issued_at as hd_issued_at',
+                ]))
+            : collect();
+
+        $filename = 'HonorableDismissalMonitoring_' . date('Y-m-d') . '.csv';
+
+        return response()->stream(function () use ($rows) {
+            $file = fopen('php://output', 'w');
+
+            fputcsv($file, [
+                'Student Number',
+                'Student Name',
+                'Program',
+                'HD No.',
+                'Status',
+                'Issuance Count',
+                'Date Issued',
+            ]);
+
+            foreach ($rows as $row) {
+                $program = trim((string) ($row->program ?: optional($row->canonicalCourse)->code ?: optional($row->canonicalCourse)->name));
+                $issuanceCount = (int) ($row->hd_issuance_count ?? 0);
+                $isIssued = $row->hd_status === 'issued';
+                $ordinal = $isIssued ? $this->ordinalLabel(max(1, $issuanceCount)) : '';
+
+                fputcsv($file, [
+                    $row->student_no ?: '-',
+                    $row->name ?: '-',
+                    $program ?: '-',
+                    $row->hd_no ?: '-',
+                    $isIssued ? 'Issued' : 'Pending for Dismissal',
+                    $ordinal ?: '-',
+                    $row->hd_issued_at ? Carbon::parse($row->hd_issued_at)->format('F d, Y') : '-',
+                ]);
+            }
+
+            fclose($file);
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 
     public function formsHonorableDismissalTag(Request $request, Student $student): JsonResponse
@@ -20083,6 +20146,7 @@ class RegistrarController extends Controller
             ->where('student_id', (int) $student->id)
             ->update([
                 'status' => 'issued',
+                'issuance_count' => DB::raw('issuance_count + 1'),
                 'issued_at' => now()->toDateString(),
                 'issued_by' => optional(auth()->user())->id,
                 'updated_at' => now(),
@@ -20155,6 +20219,7 @@ class RegistrarController extends Controller
                 ->where('status', 'for_dismissal')
                 ->update([
                     'status' => 'issued',
+                    'issuance_count' => DB::raw('issuance_count + 1'),
                     'issued_at' => $now->toDateString(),
                     'issued_by' => optional(auth()->user())->id,
                     'updated_at' => $now,
@@ -20187,11 +20252,6 @@ class RegistrarController extends Controller
         $student = $studentId ? Student::with(['canonicalCourse:id,code,name'])->find($studentId) : null;
 
         if ($student) {
-            $student->loadMissing('yearBlock:id,label');
-            if (!$this->isDocumentFormsSeniorStudent($student)) {
-                return response()->json(['success' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 404);
-            }
-
             $layout = $this->resolveHonorableDismissalTokens($layout, $student);
         }
 
@@ -20264,6 +20324,24 @@ class RegistrarController extends Controller
             ->exists();
 
         return $existing ? $base . '-' . now()->format('Ymd') : $base;
+    }
+
+    private function ordinalLabel(int $number): string
+    {
+        if ($number <= 0) {
+            return '';
+        }
+
+        if (in_array($number % 100, [11, 12, 13], true)) {
+            return $number . 'th';
+        }
+
+        switch ($number % 10) {
+            case 1: return $number . 'st';
+            case 2: return $number . 'nd';
+            case 3: return $number . 'rd';
+            default: return $number . 'th';
+        }
     }
 
     private function syncHonorableDismissalEligibleStudents(): void
