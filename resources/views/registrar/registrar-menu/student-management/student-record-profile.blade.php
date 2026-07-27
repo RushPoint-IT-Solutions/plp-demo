@@ -1169,6 +1169,7 @@
                                     <th>File</th>
                                     <th>Upload</th>
                                     <th>Remarks</th>
+                                    <th style="text-align:center;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1209,6 +1210,20 @@
                                         </form>
                                     </td>
                                     <td>{{ $req->remarks ?? '—' }}</td>
+                                    <td style="text-align:center;white-space:nowrap;">
+                                        <button type="button"
+                                            onclick="srpEditRequirement({{ $req->id }}, @json($reqName), @json($reqType), @json($req->remarks))"
+                                            style="background:none;border:none;cursor:pointer;color:#2563eb;font-size:11px;padding:2px 6px;" title="Edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </button>
+                                        <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.requirements.delete', ['student' => $student->id, 'requirement' => $req->id]) }}" style="display:inline;" onsubmit="return confirm('Delete this document requirement? This cannot be undone.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:11px;padding:2px 6px;" title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -1233,19 +1248,26 @@
                             <span class="badge-green" style="margin-left:8px;">Graduate</span>
                         @endif
                     </div>
-                    <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#334155;cursor:{{ $honorableDismissalRecord ? 'default' : 'pointer' }};text-transform:none;letter-spacing:normal;">
-                        <input type="checkbox"
-                               id="srpHdTagCheckbox"
-                               style="width:15px;height:15px;accent-color:#0f7b43;"
-                               {{ $honorableDismissalRecord ? 'checked disabled' : '' }}
-                               onchange="srpTagHonorableDismissal(this)">
-                        Tag for Honorable Dismissal
-                        @if($honorableDismissalRecord)
-                            <span class="{{ $honorableDismissalRecord->status === 'issued' ? 'badge-green' : 'badge-red' }}">
-                                {{ $honorableDismissalRecord->status === 'issued' ? 'Issued' : 'Pending' }}
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#334155;cursor:{{ $honorableDismissalRecord ? 'default' : 'pointer' }};text-transform:none;letter-spacing:normal;">
+                            <input type="checkbox"
+                                   id="srpHdTagCheckbox"
+                                   style="width:15px;height:15px;accent-color:#0f7b43;"
+                                   {{ $honorableDismissalRecord ? 'checked disabled' : '' }}
+                                   onchange="srpTagHonorableDismissal(this)">
+                            Tag for Honorable Dismissal
+                            @if($honorableDismissalRecord)
+                                <span class="{{ $honorableDismissalRecord->status === 'issued' ? 'badge-green' : 'badge-red' }}">
+                                    {{ $honorableDismissalRecord->status === 'issued' ? 'Issued' : 'Pending' }}
+                                </span>
+                            @endif
+                        </label>
+                        @if($honorableDismissalRecord && $honorableDismissalRecord->copy_for)
+                            <span style="font-size:11px;color:#64748b;font-weight:500;text-transform:none;letter-spacing:normal;">
+                                HD Copy For: {{ $honorableDismissalRecord->copy_for }}
                             </span>
                         @endif
-                    </label>
+                    </div>
                 </div>
                 <div class="srp-card-body">
                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -1718,6 +1740,62 @@
     </div>{{-- end srp-body --}}
 </div>
 
+{{-- Edit Document Requirement Modal --}}
+<div class="med-overlay" id="reqEditOverlay">
+    <div class="med-modal" role="dialog" aria-modal="true" style="width:min(520px,95vw);">
+        <div class="med-modal-head">
+            <h3>Edit Document Requirement</h3>
+            <button type="button" class="med-close-btn" onclick="srpCloseReqEdit()" aria-label="Close">&times;</button>
+        </div>
+        <form method="POST" id="reqEditForm">
+            @csrf
+            @method('PUT')
+            <div class="med-modal-body">
+                <div class="med-field" style="margin-bottom:14px;">
+                    <label>Requirement Name</label>
+                    <input type="text" name="requirement_name" id="req_edit_name" required>
+                </div>
+                <div class="med-field" style="margin-bottom:14px;">
+                    <label>Type</label>
+                    <select name="requirement_type" id="req_edit_type">
+                        <option value="Document">Document</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Clearance">Clearance</option>
+                    </select>
+                </div>
+                <div class="med-field">
+                    <label>Remarks</label>
+                    <input type="text" name="remarks" id="req_edit_remarks" placeholder="Optional note for this student">
+                </div>
+            </div>
+            <div class="med-modal-foot">
+                <button type="button" class="med-btn-cancel" onclick="srpCloseReqEdit()">Cancel</button>
+                <button type="submit" class="srp-btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- HD Copy For Modal --}}
+<div class="med-overlay" id="hdCopyForOverlay">
+    <div class="med-modal" role="dialog" aria-modal="true" style="width:min(480px,95vw);">
+        <div class="med-modal-head">
+            <h3>Tag for Honorable Dismissal</h3>
+            <button type="button" class="med-close-btn" onclick="srpCancelHdTag()" aria-label="Close">&times;</button>
+        </div>
+        <div class="med-modal-body">
+            <div class="med-field">
+                <label>HD Copy For</label>
+                <textarea id="hd_copy_for" style="min-height:90px;" placeholder="e.g. Employer, CHED, Student's file..."></textarea>
+            </div>
+        </div>
+        <div class="med-modal-foot">
+            <button type="button" class="med-btn-cancel" onclick="srpCancelHdTag()">Cancel</button>
+            <button type="button" class="srp-btn-primary" onclick="srpConfirmHdTag()">Tag Student</button>
+        </div>
+    </div>
+</div>
+
 {{-- Scholastic Comment Modal --}}
 <div class="med-overlay" id="scholasticCommentOverlay">
     <div class="med-modal" role="dialog" aria-modal="true">
@@ -1918,34 +1996,80 @@
 const SRP_PROFILE_URL = @json($profileUpdateUrl);
 const SRP_CSRF        = document.querySelector('meta[name=csrf-token]').getAttribute('content');
 const HD_TAG_URL      = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => $student->id]));
+const REQ_UPDATE_URL_BASE = @json(route('registrar.registrar-menu.student-mgmt.student-records.requirements.update', ['student' => $student->id, 'requirement' => '__ID__']));
+
+// ── Edit Document Requirement ──────────────────────────────
+function srpEditRequirement(id, name, type, remarks) {
+    document.getElementById('req_edit_name').value = name || '';
+    document.getElementById('req_edit_type').value = type || 'Document';
+    document.getElementById('req_edit_remarks').value = remarks || '';
+    document.getElementById('reqEditForm').action = REQ_UPDATE_URL_BASE.replace('__ID__', id);
+    document.getElementById('reqEditOverlay').classList.add('open');
+}
+function srpCloseReqEdit() {
+    document.getElementById('reqEditOverlay').classList.remove('open');
+}
+document.getElementById('reqEditOverlay').addEventListener('click', function(e) {
+    if (e.target === this) srpCloseReqEdit();
+});
 
 // ── Tag for Honorable Dismissal ────────────────────────────
-async function srpTagHonorableDismissal(checkbox) {
+let _hdTagCheckbox = null;
+
+function srpTagHonorableDismissal(checkbox) {
     if (!checkbox.checked) {
         return;
     }
 
+    _hdTagCheckbox = checkbox;
     checkbox.disabled = true;
+    document.getElementById('hd_copy_for').value = '';
+    document.getElementById('hdCopyForOverlay').classList.add('open');
+}
+
+function srpCancelHdTag() {
+    document.getElementById('hdCopyForOverlay').classList.remove('open');
+    if (_hdTagCheckbox) {
+        _hdTagCheckbox.checked = false;
+        _hdTagCheckbox.disabled = false;
+        _hdTagCheckbox = null;
+    }
+}
+
+document.getElementById('hdCopyForOverlay').addEventListener('click', function(e) {
+    if (e.target === this) srpCancelHdTag();
+});
+
+async function srpConfirmHdTag() {
+    const checkbox = _hdTagCheckbox;
+    const copyFor = document.getElementById('hd_copy_for').value.trim();
 
     try {
         const r = await fetch(HD_TAG_URL, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+            body: JSON.stringify({ copy_for: copyFor }),
         });
         const data = await r.json();
 
         if (data.success) {
+            document.getElementById('hdCopyForOverlay').classList.remove('open');
+            _hdTagCheckbox = null;
             srpToast(data.message || 'Student tagged for Honorable Dismissal.', 'success');
             setTimeout(function () { location.reload(); }, 700);
         } else {
             srpToast(data.message || 'Unable to tag student.', 'error');
-            checkbox.checked = false;
-            checkbox.disabled = false;
+            if (checkbox) {
+                checkbox.checked = false;
+                checkbox.disabled = false;
+            }
         }
     } catch (e) {
         srpToast('Network error — check connection.', 'error');
-        checkbox.checked = false;
-        checkbox.disabled = false;
+        if (checkbox) {
+            checkbox.checked = false;
+            checkbox.disabled = false;
+        }
     }
 }
 

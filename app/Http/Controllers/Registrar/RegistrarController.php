@@ -18071,9 +18071,33 @@ class RegistrarController extends Controller
 
         $name = trim((string) $validated['requirement_name']);
         $typeLabel = trim((string) ($validated['requirement_type'] ?? 'Document')) ?: 'Document';
+        $remarks = trim((string) ($validated['remarks'] ?? ''));
+
+        $policy = $this->resolveRequirementPolicy($name, $typeLabel);
+
+        $existingStatus = StudentRequirementStatus::query()
+            ->where('student_id', (int) $student->id)
+            ->where('registrar_requirement_policy_id', (int) $policy->id)
+            ->first();
+
+        if ($existingStatus) {
+            return back()->with('error', 'This requirement is already assigned to the student.');
+        }
+
+        StudentRequirementStatus::query()->create([
+            'student_id' => (int) $student->id,
+            'registrar_requirement_policy_id' => (int) $policy->id,
+            'is_submitted' => false,
+            'remarks' => $remarks !== '' ? $remarks : 'Added by registrar for this student.',
+        ]);
+
+        return back()->with('success', 'Document requirement added successfully.');
+    }
+
+    private function resolveRequirementPolicy(string $name, string $typeLabel): RegistrarRequirementPolicy
+    {
         $typeCode = strtoupper(preg_replace('/[^A-Za-z0-9]+/', '_', $typeLabel));
         $typeCode = trim($typeCode, '_') ?: 'DOCUMENT';
-        $remarks = trim((string) ($validated['remarks'] ?? ''));
 
         $type = RegistrarRequirementType::query()->firstOrCreate(
             ['code' => $typeCode],
@@ -18116,23 +18140,67 @@ class RegistrarController extends Controller
             );
         }
 
-        $existingStatus = StudentRequirementStatus::query()
-            ->where('student_id', (int) $student->id)
-            ->where('registrar_requirement_policy_id', (int) $policy->id)
-            ->first();
+        return $policy;
+    }
 
-        if ($existingStatus) {
-            return back()->with('error', 'This requirement is already assigned to the student.');
+    public function studentRequirementUpdate(Request $request, Student $student, StudentRequirementStatus $requirement)
+    {
+        if ((int) $requirement->student_id !== (int) $student->id) {
+            abort(404);
         }
 
-        StudentRequirementStatus::query()->create([
-            'student_id' => (int) $student->id,
-            'registrar_requirement_policy_id' => (int) $policy->id,
-            'is_submitted' => false,
-            'remarks' => $remarks !== '' ? $remarks : 'Added by registrar for this student.',
+        if (!Schema::hasTable('student_requirement_statuses')
+            || !Schema::hasTable('registrar_requirement_types')
+            || !Schema::hasTable('registrar_requirement_definitions')
+            || !Schema::hasTable('registrar_requirement_policies')) {
+            return back()->withErrors(['requirement_name' => 'Student requirement tables are not ready.']);
+        }
+
+        $validated = $request->validate([
+            'requirement_name' => ['required', 'string', 'max:190'],
+            'requirement_type' => ['nullable', 'string', 'max:60'],
+            'remarks' => ['nullable', 'string', 'max:500'],
         ]);
 
-        return back()->with('success', 'Document requirement added successfully.');
+        $name = trim((string) $validated['requirement_name']);
+        $typeLabel = trim((string) ($validated['requirement_type'] ?? 'Document')) ?: 'Document';
+        $remarks = trim((string) ($validated['remarks'] ?? ''));
+
+        $policy = $this->resolveRequirementPolicy($name, $typeLabel);
+
+        if ((int) $policy->id !== (int) $requirement->registrar_requirement_policy_id) {
+            $duplicate = StudentRequirementStatus::query()
+                ->where('student_id', (int) $student->id)
+                ->where('registrar_requirement_policy_id', (int) $policy->id)
+                ->where('id', '!=', $requirement->id)
+                ->exists();
+
+            if ($duplicate) {
+                return back()->with('error', 'This requirement is already assigned to the student.');
+            }
+        }
+
+        $requirement->fill([
+            'registrar_requirement_policy_id' => (int) $policy->id,
+            'remarks' => $remarks,
+        ])->save();
+
+        return back()->with('success', 'Document requirement updated successfully.');
+    }
+
+    public function studentRequirementDestroy(Student $student, StudentRequirementStatus $requirement)
+    {
+        if ((int) $requirement->student_id !== (int) $student->id) {
+            abort(404);
+        }
+
+        if (!empty($requirement->uploaded_path) && Storage::disk('public')->exists($requirement->uploaded_path)) {
+            Storage::disk('public')->delete($requirement->uploaded_path);
+        }
+
+        $requirement->delete();
+
+        return back()->with('success', 'Document requirement deleted successfully.');
     }
 
     private function ensureDefaultStudentDocumentRequirementStatuses(Student $student = null): void
@@ -20111,6 +20179,10 @@ class RegistrarController extends Controller
             return response()->json(['success' => false, 'message' => 'Honorable Dismissal monitoring table is not available. Run migrations first.'], 500);
         }
 
+        $validated = $request->validate([
+            'copy_for' => ['nullable', 'string', 'max:2000'],
+        ]);
+
         $now = now();
         $hdNo = $this->nextHonorableDismissalNumber($student);
 
@@ -20119,6 +20191,7 @@ class RegistrarController extends Controller
             [
                 'hd_no' => $hdNo,
                 'status' => 'for_dismissal',
+                'copy_for' => trim((string) ($validated['copy_for'] ?? '')) ?: null,
                 'tagged_at' => $now->toDateString(),
                 'tagged_by' => optional(auth()->user())->id,
                 'updated_at' => $now,

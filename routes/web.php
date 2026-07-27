@@ -315,6 +315,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/student-records/{student}/scholarships/{tag}', 'Registrar\ScholarshipController@untagStudent')->name('student-records.scholarships.delete')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/scholastic-comments', 'Registrar\RegistrarController@studentScholasticCommentSave')->name('student-records.scholastic-comments.save')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/requirements', 'Registrar\RegistrarController@studentRequirementStore')->name('student-records.requirements.store')->middleware('throttle:30,1');
+            Route::put('/student-records/{student}/requirements/{requirement}', 'Registrar\RegistrarController@studentRequirementUpdate')->name('student-records.requirements.update')->middleware('throttle:30,1');
+            Route::delete('/student-records/{student}/requirements/{requirement}', 'Registrar\RegistrarController@studentRequirementDestroy')->name('student-records.requirements.delete')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/requirements/{requirement}/upload', 'Registrar\RegistrarController@studentRequirementUpload')->name('student-records.requirements.upload')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/medical', 'Registrar\RegistrarController@studentRecordMedicalSave')->name('student-records.medical.save');
             Route::post('/student-records/{student}/clinic', 'Registrar\RegistrarController@studentClinicRecordSave')->name('student-records.clinic.save');
