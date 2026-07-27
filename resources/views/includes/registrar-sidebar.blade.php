@@ -128,7 +128,7 @@
                 @if($canView('registrar.services.section-list'))<a href="{{ route('registrar.services.section-list') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.section-list') ? 'active' : '' }}">Section List</a>@endif
                 @if($canView('registrar.registrar-menu.alumni.tracker'))<a href="{{ route('registrar.registrar-menu.alumni.tracker') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.alumni.tracker') ? 'active' : '' }}">Alumni Tracker</a>@endif
                 @if($canView('registrar.registrar-menu.student-mgmt.student-enrollment'))<a href="{{ route('registrar.registrar-menu.student-mgmt.student-enrollment') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.student-enrollment') ? 'active' : '' }}">Enrollment List</a>@endif
-                @if($canView('registrar.registrar-menu.student-mgmt.clinic-record'))<a href="{{ route('registrar.registrar-menu.student-mgmt.clinic-record') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.student-mgmt.clinic-record') ? 'active' : '' }}">Clinic Records</a>@endif
+                {{-- Clinic Records link hidden from navbar per request --}}
 
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Student Affairs</div>
