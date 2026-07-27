@@ -364,7 +364,7 @@
 
         <div class="fgs-subject-summary">
             <div class="fgs-summary-item">
-                <span class="fgs-summary-label">Subject Name</span>
+                <span class="fgs-summary-label">Course</span>
                 <span class="fgs-summary-value" id="gradingMetaSubject">-</span>
             </div>
             <div class="fgs-summary-item">

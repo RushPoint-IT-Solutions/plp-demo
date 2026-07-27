@@ -764,7 +764,7 @@
                                 <thead>
                                     <tr>
                                         <th>Code</th>
-                                        <th>Subject Name</th>
+                                        <th>Course</th>
                                         <th>Units</th>
                                         <th>Schedule</th>
                                         <th>Room</th>
@@ -875,7 +875,7 @@
                                     <tr>
                                         <th style="width:70px;text-align:center;">Status</th>
                                         <th>Subject Code</th>
-                                        <th>Subject Name</th>
+                                        <th>Course</th>
                                         <th style="text-align:center;">Units</th>
                                         <th>Year</th>
                                         <th>Semester</th>

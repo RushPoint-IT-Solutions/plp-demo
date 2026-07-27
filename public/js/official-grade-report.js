@@ -201,7 +201,7 @@ function ogrBuildTemplate(data, subjects, meta) {
 
     /* Grades table */
     var tHead = '<tr>' +
-        '<th>SUBJECT NAME</th><th>SUBJECT DESCRIPTION</th><th>SECTION</th>' +
+        '<th>COURSE</th><th>Course DESCRIPTION</th><th>SECTION</th>' +
         '<th>PROFESSOR</th><th>SEM GRADE</th><th>REMARKS</th><th>RE-EXAM</th><th>UNITS EARNED</th>' +
     '</tr>';
 

@@ -345,7 +345,7 @@
                             <thead>
                                 <tr>
                                     <th>Subject Code</th>
-                                    <th>Subject Name</th>
+                                    <th>Course</th>
                                     <th>Type</th>
                                     <th>Lec</th>
                                     <th>Lab</th>

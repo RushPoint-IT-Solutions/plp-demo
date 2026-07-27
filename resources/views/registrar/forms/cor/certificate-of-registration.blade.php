@@ -651,8 +651,8 @@
                 <thead>
                     <tr><th colspan="8">CLASS SCHEDULE</th></tr>
                     <tr>
-                        <th>SUBJECT NAME</th>
-                        <th>SUBJECT DESCRIPTION</th>
+                        <th>COURSE</th>
+                        <th>COURSE DESCRIPTION</th>
                         <th>SECTION</th>
                         <th class="cor-num">UNITS</th>
                         <th>ROOM</th>

@@ -93,7 +93,7 @@
                     <th class="cor-table-title cor-th" colspan="8">CLASS SCHEDULE</th>
                 </tr>
                 <tr>
-                    <th class="cor-th col-name">Subject Name</th>
+                    <th class="cor-th col-name">Course</th>
                     <th class="cor-th col-desc">Subject Description</th>
                     <th class="cor-th col-section">Section</th>
                     <th class="cor-th col-units">Units</th>
