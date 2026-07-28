@@ -40,7 +40,8 @@
 
         {{-- ══════════════════════════════════════ --}}
         {{-- Communication --}}
-        @if($canViewAny(['registrar.communication.tickets', 'registrar.communication.stakeholders', 'registrar.messaging', 'registrar.communication.email-templates']))
+        {{-- Hidden from the sidebar per request. Remove the `false &&` below to restore. --}}
+        @if(false && $canViewAny(['registrar.communication.tickets', 'registrar.communication.stakeholders', 'registrar.messaging', 'registrar.communication.email-templates']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.communication.*') || request()->routeIs('registrar.messaging') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.communication.*') || request()->routeIs('registrar.messaging') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -143,7 +144,8 @@
         {{-- ACADEMICS                              --}}
         {{-- ══════════════════════════════════════ --}}
         {{-- SCHOLARSHIP MODULE                    --}}
-        @if($canViewAny(['registrar.registrar-menu.scholarships.index', 'registrar.registrar-menu.scholarships.report']))
+        {{-- Hidden from the sidebar per request. Remove the `false &&` below to restore. --}}
+        @if(false && $canViewAny(['registrar.registrar-menu.scholarships.index', 'registrar.registrar-menu.scholarships.report']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.scholarships.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.scholarships.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -368,7 +370,7 @@
                 @if($canView('registrar.registrar-menu.forms.permission-cross-enroll'))<a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.permission-cross-enroll') ? 'active' : '' }}">Permission to Cross-Enroll</a>@endif
                 @if($canView('registrar.registrar-menu.forms.request-form-f-137a'))<a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.request-form-f-137a') ? 'active' : '' }}">Request Form F137A</a>@endif
                 @if($canView('registrar.registrar-menu.forms.graduation-clearance'))<a href="{{ route('registrar.registrar-menu.forms.graduation-clearance') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.graduation-clearance') ? 'active' : '' }}">Graduation Clearance</a>@endif
-                @if($canView('registrar.registrar-menu.forms.waiver-cancellation'))<a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver &amp; Cancellation</a>@endif
+                @if($canView('registrar.registrar-menu.forms.waiver-cancellation'))<a href="{{ route('registrar.registrar-menu.forms.waiver-cancellation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.waiver-cancellation') ? 'active' : '' }}">Waiver Cancellation</a>@endif
                 @if($canView('registrar.registrar-menu.forms.citizens-charter'))<a href="{{ route('registrar.registrar-menu.forms.citizens-charter') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.forms.citizens-charter') ? 'active' : '' }}">Citizen's Charter</a>@endif
             </div>
         </div>
@@ -396,7 +398,8 @@
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Academic</div>
                 @if($canView('registrar.services.reports-admin.academic-reports'))<a href="{{ route('registrar.services.reports-admin.academic-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.academic-reports') ? 'active' : '' }}">Academic Reports</a>@endif
-                @if($canView('registrar.services.reports-admin.gwa-report'))<a href="{{ route('registrar.services.reports-admin.gwa-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.gwa-report') ? 'active' : '' }}">GWA Report</a>@endif
+                {{-- GWA Report link hidden from navbar per request --}}
+                @if(false && $canView('registrar.services.reports-admin.gwa-report'))<a href="{{ route('registrar.services.reports-admin.gwa-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.gwa-report') ? 'active' : '' }}">GWA Report</a>@endif
                 @if($canView('registrar.services.reports-admin.certifications'))<a href="{{ route('registrar.services.reports-admin.certifications') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.certifications') ? 'active' : '' }}">Certifications</a>@endif
                 @if($canView('registrar.services.reports-admin.tagging-of-graduates'))<a href="{{ route('registrar.services.reports-admin.tagging-of-graduates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.tagging-of-graduates') ? 'active' : '' }}">Graduation Tagging</a>@endif
 

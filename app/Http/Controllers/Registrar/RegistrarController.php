@@ -20429,6 +20429,13 @@ class RegistrarController extends Controller
             return;
         }
 
+        $studentColumns = ['id', 'student_no'];
+        foreach (['year_level', 'year_block_id'] as $column) {
+            if (Schema::hasColumn('students', $column)) {
+                $studentColumns[] = $column;
+            }
+        }
+
         $students = Student::query()
             ->with('yearBlock:id,label')
             ->when(true, function ($query) {
@@ -20451,7 +20458,7 @@ class RegistrarController extends Controller
             })
             ->orderBy('id')
             ->limit(500)
-            ->get(['id', 'student_no', 'year_level', 'year_block_id']);
+            ->get($studentColumns);
 
         if ($students->isEmpty()) {
             return;

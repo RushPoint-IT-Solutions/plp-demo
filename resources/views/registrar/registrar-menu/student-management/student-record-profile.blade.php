@@ -769,7 +769,6 @@
                                         <th>Schedule</th>
                                         <th>Room</th>
                                         <th>Faculty</th>
-                                        <th>Prelim</th>
                                         <th>Midterm</th>
                                         <th>Final</th>
                                         <th>Average</th>
@@ -795,7 +794,6 @@
                                         </td>
                                         <td>{{ $sub->room ?: '-' }}</td>
                                         <td>{{ optional($sub->facultyModel)->name ?: ($sub->faculty_id ? '-' : '-') }}</td>
-                                        <td style="text-align:center;">{{ $grade ? $grade->prelim : '-' }}</td>
                                         <td style="text-align:center;">{{ $grade ? $grade->midterm : '-' }}</td>
                                         <td style="text-align:center;">{{ $grade ? $grade->final : '-' }}</td>
                                         <td style="text-align:center;">
