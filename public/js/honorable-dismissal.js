@@ -612,8 +612,8 @@ function hdMarkMonitoringRowsPrinted(rowIds) {
         row.setAttribute('data-hd-issuance-count', String(nextCount));
 
         var cells = row.querySelectorAll('td');
-        if (cells[5]) cells[5].textContent = 'Issued';
-        if (cells[6]) cells[6].textContent = row.getAttribute('data-hd-date') || new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+        if (cells[6]) cells[6].textContent = 'Issued';
+        if (cells[7]) cells[7].textContent = row.getAttribute('data-hd-date') || new Date().toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
 
         if (cells[1]) {
             var badge = cells[1].querySelector('.hd-ordinal-badge');

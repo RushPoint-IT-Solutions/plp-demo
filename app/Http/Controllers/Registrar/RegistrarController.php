@@ -20093,6 +20093,7 @@ class RegistrarController extends Controller
             }, $studentColumns), [
                 'hdr.hd_no as hd_no',
                 'hdr.status as hd_status',
+                'hdr.copy_for as hd_copy_for',
                 'hdr.issuance_count as hd_issuance_count',
                 'hdr.tagged_at as hd_tagged_at',
                 'hdr.issued_at as hd_issued_at',
@@ -20129,6 +20130,7 @@ class RegistrarController extends Controller
                 }, $studentColumns), [
                     'hdr.hd_no as hd_no',
                     'hdr.status as hd_status',
+                    'hdr.copy_for as hd_copy_for',
                     'hdr.issuance_count as hd_issuance_count',
                     'hdr.issued_at as hd_issued_at',
                 ]))
@@ -20143,6 +20145,7 @@ class RegistrarController extends Controller
                 'Student Number',
                 'Student Name',
                 'Program',
+                'HD For',
                 'HD No.',
                 'Status',
                 'Issuance Count',
@@ -20159,6 +20162,7 @@ class RegistrarController extends Controller
                     $row->student_no ?: '-',
                     $row->name ?: '-',
                     $program ?: '-',
+                    $row->hd_copy_for ?: '-',
                     $row->hd_no ?: '-',
                     $isIssued ? 'Issued' : 'Pending for Dismissal',
                     $ordinal ?: '-',

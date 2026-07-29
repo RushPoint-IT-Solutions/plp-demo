@@ -111,7 +111,7 @@
         </div>
 
         <div class="ga-table-wrap app-table-wrap">
-            <table id="hdTable" class="ga-table app-table" style="min-width: 900px;">
+            <table id="hdTable" class="ga-table app-table" style="min-width: 1050px;">
                 <thead>
                     <tr>
                         <th style="width: 54px; text-align: center;">
@@ -120,6 +120,7 @@
                         <th>Student Number</th>
                         <th>Student Name</th>
                         <th>Program</th>
+                        <th>HD For</th>
                         <th>HD No.</th>
                         <th>Status</th>
                         <th>Date Issued</th>
@@ -157,6 +158,7 @@
                         </td>
                         <td><button type="button" class="doc-link-btn" onclick="hdOpenPreview({{ $student->id }})">{{ $student->name ?: '-' }}</button></td>
                         <td>{{ $program ?: '-' }}</td>
+                        <td>{{ $student->hd_copy_for ?: '-' }}</td>
                         <td>{{ $student->hd_no ?: '-' }}</td>
                         <td>{{ $hdStatusLabel }}</td>
                         <td>{{ $hdIssuedAt }}</td>
@@ -183,7 +185,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" style="text-align:center; color:#666;">No student records found.</td></tr>
+                    <tr><td colspan="9" style="text-align:center; color:#666;">No student records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
