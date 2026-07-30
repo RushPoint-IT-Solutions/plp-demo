@@ -497,18 +497,19 @@
 
     <style>
         .sidebar-section-label {
-            padding: 6px 14px 2px;
-            font-size: 9.5px;
+            padding: 3px 18px 1px;
+            font-size: 9px;
+            line-height: 1.2;
             font-weight: 700;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.35);
+            color: #6b7280;
             pointer-events: none;
             user-select: none;
         }
         .sidebar-section-divider {
-            margin: 5px 12px;
-            border-top: 1px solid rgba(255,255,255,0.08);
+            margin: 3px 12px 1px;
+            border-top: 1px solid #e5e7eb;
         }
         .sidebar-sublink-with-badge {
             display: flex;
