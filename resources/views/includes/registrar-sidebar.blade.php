@@ -40,10 +40,9 @@
 
         {{-- ══════════════════════════════════════ --}}
         {{-- Communication --}}
-        {{-- Hidden from the sidebar per request. Remove the `false &&` below to restore. --}}
-        @if(false && $canViewAny(['registrar.communication.tickets', 'registrar.communication.stakeholders', 'registrar.messaging', 'registrar.communication.email-templates']))
-        <div class="sidebar-dropdown {{ request()->routeIs('registrar.communication.*') || request()->routeIs('registrar.messaging') ? 'open' : '' }}">
-            <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.communication.*') || request()->routeIs('registrar.messaging') ? 'active' : '' }}">
+        @if($canViewAny(['registrar.communication.tickets', 'registrar.communication.stakeholders', 'registrar.communication.email-templates']))
+        <div class="sidebar-dropdown {{ request()->routeIs('registrar.communication.*') ? 'open' : '' }}">
+            <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.communication.*') ? 'active' : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -55,7 +54,6 @@
             <div class="sidebar-dropdown-menu">
                 @if($canView('registrar.communication.tickets'))<a href="{{ route('registrar.communication.tickets') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.tickets') ? 'active' : '' }}">Ticketing System</a>@endif
                 @if($canView('registrar.communication.stakeholders'))<a href="{{ route('registrar.communication.stakeholders') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.stakeholders') ? 'active' : '' }}">Stakeholder Communication</a>@endif
-                @if($canView('registrar.messaging'))<a href="{{ route('registrar.messaging') }}" class="sidebar-sublink {{ request()->routeIs('registrar.messaging') ? 'active' : '' }}">Messages Module</a>@endif
                 @if($canView('registrar.communication.email-templates'))<a href="{{ route('registrar.communication.email-templates') }}" class="sidebar-sublink {{ request()->routeIs('registrar.communication.email-templates') ? 'active' : '' }}">Email Notifications & Templates</a>@endif
             </div>
         </div>
@@ -109,7 +107,7 @@
                                 //  || request()->routeIs('registrar.services.classroom-faculty.class-list')
                                  || request()->routeIs('registrar.services.section-list');
         @endphp
-        @if($canViewAny(['registrar.registrar-menu.student-mgmt.student-records', 'registrar.services.section-list', 'registrar.registrar-menu.alumni.tracker', 'registrar.registrar-menu.student-mgmt.student-enrollment', 'registrar.registrar-menu.student-mgmt.clinic-record', 'registrar.services.student-account.student-discipline', 'registrar.services.student-account.family', 'registrar.services.student-account.change-password']))
+        @if($canViewAny(['registrar.registrar-menu.student-mgmt.student-records', 'registrar.services.section-list', 'registrar.registrar-menu.alumni.tracker', 'registrar.registrar-menu.student-mgmt.student-enrollment', 'registrar.registrar-menu.student-mgmt.clinic-record', 'registrar.services.student-account.student-discipline', 'registrar.services.student-account.change-password']))
         <div class="sidebar-dropdown {{ $studentRecordsActive ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ $studentRecordsActive ? 'active' : '' }}">
                 {{-- student icon --}}
@@ -134,7 +132,7 @@
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Student Affairs</div>
                 @if($canView('registrar.services.student-account.student-discipline'))<a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>@endif
-                @if($canView('registrar.services.student-account.family'))<a href="{{ route('registrar.services.student-account.family') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.family') ? 'active' : '' }}">Family Records</a>@endif
+                {{-- Family Records hidden from the navbar per request. --}}
                 @if($canView('registrar.services.student-account.change-password'))<a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>@endif
             </div>
         </div>
