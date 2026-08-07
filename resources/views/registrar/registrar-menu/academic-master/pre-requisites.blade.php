@@ -3,6 +3,10 @@
 @section('title', 'PLP - Pre-requisites')
 @section('page-title', 'PRE-REQUISITES')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+@endpush
+
 @section('content')
 <div
     class="prereq-page"
@@ -44,7 +48,7 @@
         <div class="prereq-filter-left">
             <div class="prereq-filter-group">
                 <span class="app-filter-label">Program</span>
-                <select class="app-filter-select" id="prereqCourse">
+                <select class="app-filter-select prereq-select2" id="prereqCourse" data-placeholder="Search program">
                     @forelse($courses as $course)
                         <option value="{{ $course->id }}" {{ (string) $selectedCourseId === (string) $course->id ? 'selected' : '' }}>
                             {{ $course->name ?: $course->description }}
@@ -191,7 +195,7 @@
                 <div class="prereq-add-grid">
                     <div class="prereq-add-field">
                         <label for="prereqAddProgram">Program</label>
-                        <select id="prereqAddProgram" name="setup_course_id" class="prereq-add-input">
+                        <select id="prereqAddProgram" name="setup_course_id" class="prereq-add-input prereq-select2" data-placeholder="Search program">
                             @forelse($courses as $course)
                                 <option value="{{ $course->id }}" {{ (string) old('setup_course_id', $selectedCourseId ?: '') === (string) $course->id ? 'selected' : '' }}>
                                     {{ $course->name ?: $course->description }}
@@ -274,6 +278,7 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ asset('js/pre-requisites.js') }}"></script>
 @endpush
 @endsection

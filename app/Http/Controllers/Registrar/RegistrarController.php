@@ -545,11 +545,14 @@ class RegistrarController extends Controller
             });
         }
 
-        $rows = $query
+        $subQuery = $query
             ->selectRaw($programExpression . ' as program_label')
-            ->selectRaw($semesterExpression . ' as semester_label')
-            ->selectRaw('COUNT(*) as total')
-            ->groupBy(DB::raw($programExpression), DB::raw($semesterExpression))
+            ->selectRaw($semesterExpression . ' as semester_label');
+
+        $rows = DB::table(DB::raw('(' . $subQuery->toSql() . ') as enrollment_matrix_source'))
+            ->mergeBindings($subQuery)
+            ->selectRaw('program_label, semester_label, COUNT(*) as total')
+            ->groupBy('program_label', 'semester_label')
             ->orderBy('program_label')
             ->get();
 

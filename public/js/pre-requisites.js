@@ -88,6 +88,42 @@
 
     var courseYearMap = parseCourseYearMap(page.getAttribute('data-course-years'));
 
+    function hasSelect2() {
+        return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
+    }
+
+    function initSelect2(selectElement) {
+        if (!selectElement || !hasSelect2()) {
+            return;
+        }
+
+        var $select = window.jQuery(selectElement);
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+
+        $select.select2({
+            width: '100%',
+            placeholder: selectElement.getAttribute('data-placeholder') || 'Select option',
+            allowClear: false,
+            dropdownAutoWidth: true
+        });
+    }
+
+    function initSearchableSelects() {
+        if (!hasSelect2()) {
+            return;
+        }
+
+        page.querySelectorAll('select.prereq-select2').forEach(function (selectElement) {
+            if (selectElement === addCourseProgram) {
+                return;
+            }
+
+            initSelect2(selectElement);
+        });
+    }
+
     function parseCourseYearMap(rawValue) {
         if (!rawValue) {
             return {};
@@ -204,12 +240,14 @@
             return;
         }
 
-        syncAddCourseModalDefaults();
-        filterAddCourseOptions();
-        updateAddCourseSaveState();
         addCourseModal.hidden = false;
         addCourseModal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('prereq-modal-open');
+
+        syncAddCourseModalDefaults();
+        initSelect2(addCourseProgram);
+        filterAddCourseOptions();
+        updateAddCourseSaveState();
 
         if (addCourseSearch) {
             addCourseSearch.focus();
@@ -894,6 +932,7 @@
             courseSelect.value = String(state.selectedCourseId);
         }
 
+        initSearchableSelects();
         updateCurriculumYearOptions();
         syncAddCourseModalDefaults();
         updateAddCourseSaveState();

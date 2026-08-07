@@ -131,7 +131,7 @@
 
                 <div class="sidebar-section-divider"></div>
                 <div class="sidebar-section-label">Student Affairs</div>
-                @if($canView('registrar.services.student-account.student-discipline'))<a href="{{ route('registrar.services.student-account.student-discipline') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.student-discipline') ? 'active' : '' }}">Student Discipline</a>@endif
+                {{-- Student Discipline hidden from the navbar per request. --}}
                 {{-- Family Records hidden from the navbar per request. --}}
                 @if($canView('registrar.services.student-account.change-password'))<a href="{{ route('registrar.services.student-account.change-password') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.student-account.change-password') ? 'active' : '' }}">Change Password</a>@endif
             </div>
