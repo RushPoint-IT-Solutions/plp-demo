@@ -165,7 +165,34 @@ class StudentController extends Controller
             })->values();
         }
 
-        return view('student.grades', compact('student', 'gradeRows', 'semesterOptions', 'selectedSemester'));
+        $gwa = $this->computeStudentGwa($gradeRows);
+
+        return view('student.grades', compact('student', 'gradeRows', 'semesterOptions', 'selectedSemester', 'gwa'));
+    }
+
+    /**
+     * Weighted average of posted final grades (mirrors Registrar > Reports > GWA Report formula).
+     */
+    private function computeStudentGwa($gradeRows)
+    {
+        $totalUnits = 0.0;
+        $weightedTotal = 0.0;
+
+        foreach ($gradeRows as $row) {
+            if ($row->final_average === null) {
+                continue;
+            }
+
+            $units = (float) optional($row->subject)->units;
+            if ($units <= 0) {
+                $units = 1.0;
+            }
+
+            $totalUnits += $units;
+            $weightedTotal += ((float) $row->final_average) * $units;
+        }
+
+        return $totalUnits > 0 ? round($weightedTotal / $totalUnits, 2) : null;
     }
 
     /**

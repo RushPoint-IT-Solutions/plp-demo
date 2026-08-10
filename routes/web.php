@@ -323,6 +323,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/student-records/{student}/clinic/{clinic}', 'Registrar\RegistrarController@studentClinicRecordDelete')->name('student-records.clinic.delete');
             Route::get('/student-records/{student}/print/tor', 'Registrar\RegistrarController@studentPrintTor')->name('student-records.print.tor');
             Route::get('/student-records/{student}/print/diploma', 'Registrar\RegistrarController@studentPrintDiploma')->name('student-records.print.diploma');
+            Route::get('/student-records/{student}/report-of-grades', 'Registrar\RegistrarController@studentRecordReportOfGrades')->name('student-records.report-of-grades');
             Route::post('/student-enrollment', 'Registrar\RegistrarController@storeStudent')->name('student-enrollment.store');
             Route::put('/student-enrollment/{student}', 'Registrar\RegistrarController@updateStudent')->name('student-enrollment.update')->middleware('throttle:60,1');
             Route::delete('/student-enrollment/{student}', 'Registrar\RegistrarController@destroyStudent')->name('student-enrollment.destroy')->middleware('throttle:60,1');
@@ -492,6 +493,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
             Route::get('/gwa-report', 'Registrar\Services\ReportsAdminController@gwaReport')->name('gwa-report');
             Route::post('/gwa-report/create-test', 'Registrar\Services\ReportsAdminController@gwaReportCreateTest')->name('gwa-report.create-test');
+            Route::get('/cwa-report', 'Registrar\Services\ReportsAdminController@cwaReport')->name('cwa-report');
             Route::post('/academic-reports/issue', 'Registrar\Services\ReportsAdminController@issueAcademicReport')->name('academic-reports.issue');
             Route::get('/guidance-reports', 'Registrar\Services\ReportsAdminController@guidanceReports')->name('guidance-reports');
             Route::get('/students/search', 'Registrar\Services\ReportsAdminController@studentSearch')->name('students.search');

@@ -1,7 +1,7 @@
 @extends('layouts.registrar')
 
-@section('title', 'PLP - GWA Report')
-@section('page-title', 'GWA REPORT')
+@section('title', 'PLP - CWA Report')
+@section('page-title', 'CWA REPORT')
 
 @push('styles')
 <style>
@@ -75,7 +75,7 @@
 
     .gwa-filter {
         display: grid;
-        grid-template-columns: 1.4fr repeat(3, minmax(130px, 0.7fr)) auto auto;
+        grid-template-columns: 1.4fr repeat(2, minmax(130px, 0.7fr)) auto auto;
         gap: 10px;
         align-items: end;
         padding: 14px;
@@ -172,15 +172,24 @@
         text-decoration: underline;
     }
 
-    .gwa-alert {
-        margin-bottom: 12px;
-        padding: 11px 14px;
-        border: 1px solid #bfdfcc;
-        border-radius: 8px;
-        background: #e8f6ee;
-        color: #17633a;
-        font-size: 0.86rem;
+    .cwa-missing-badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 10px;
+        font-size: 0.76rem;
         font-weight: 800;
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .cwa-complete-badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 10px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        background: #dcfce7;
+        color: #15803d;
     }
 
     @media (max-width: 980px) {
@@ -200,21 +209,13 @@
 <div class="gwa-page">
     <div class="gwa-head">
         <div>
-            <h1 class="gwa-title">General Weighted Average Report</h1>
-            <p class="gwa-lead">Every student's overall GWA (grade equivalent, weighted by subject units) across all their semesters{{ ($schoolYear || $semester) ? ', scoped to the filter below' : '' }}.</p>
+            <h1 class="gwa-title">Current Weighted Average Report</h1>
+            <p class="gwa-lead">Every student's CWA — the grade equivalent for their own most recent semester only, plus how many of that semester's grades are still missing.</p>
         </div>
         <div class="gwa-head-actions">
-            <form method="POST" action="{{ route('registrar.services.reports-admin.gwa-report.create-test') }}">
-                @csrf
-                <button type="submit" class="gwa-btn">Create</button>
-            </form>
             <button type="button" class="gwa-btn soft" onclick="window.print()">Print</button>
         </div>
     </div>
-
-    @if(session('success'))
-        <div class="gwa-alert">{{ session('success') }}</div>
-    @endif
 
     <div class="gwa-summary">
         <div class="gwa-card gwa-summary-item">
@@ -222,54 +223,45 @@
             <span class="gwa-summary-value">{{ number_format((int) ($summary['students'] ?? 0)) }}</span>
         </div>
         <div class="gwa-card gwa-summary-item">
-            <span class="gwa-summary-label">Graded Subjects</span>
-            <span class="gwa-summary-value">{{ number_format((int) ($summary['records'] ?? 0)) }}</span>
+            <span class="gwa-summary-label">Grades Still Missing</span>
+            <span class="gwa-summary-value">{{ number_format((int) ($summary['missing_grades'] ?? 0)) }}</span>
         </div>
         <div class="gwa-card gwa-summary-item">
-            <span class="gwa-summary-label">Average GWA</span>
-            <span class="gwa-summary-value">{{ $summary['average_gwa'] !== null ? number_format((float) $summary['average_gwa'], 2) : '-' }}</span>
+            <span class="gwa-summary-label">Average CWA</span>
+            <span class="gwa-summary-value">{{ $summary['average_cwa'] !== null ? number_format((float) $summary['average_cwa'], 2) : '-' }}</span>
         </div>
     </div>
 
-    <form method="GET" action="{{ route('registrar.services.reports-admin.gwa-report') }}" class="gwa-card gwa-filter">
+    <form method="GET" action="{{ route('registrar.services.reports-admin.cwa-report') }}" class="gwa-card gwa-filter">
         <div class="gwa-field">
-            <label for="gwaSearch">Search Student</label>
+            <label for="cwaSearch">Search Student</label>
             <div class="rsa-wrap">
-                <input id="gwaSearch" class="gwa-input" type="text" name="q" value="{{ $search }}" placeholder="Type student no. or name"
+                <input id="cwaSearch" class="gwa-input" type="text" name="q" value="{{ $search }}" placeholder="Type student no. or name"
                     data-student-autocomplete="reports"
                     data-student-fill-key="student_no"
                     data-student-search-url="{{ route('registrar.services.reports-admin.students.search') }}">
             </div>
         </div>
         <div class="gwa-field">
-            <label for="gwaSchoolYear">School Year</label>
-            <select id="gwaSchoolYear" class="gwa-input" name="school_year">
-                <option value="">All</option>
-                @foreach($schoolYears as $year)
-                    <option value="{{ $year }}" {{ $schoolYear === (string) $year ? 'selected' : '' }}>{{ $year }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="gwa-field">
-            <label for="gwaSemester">Semester</label>
-            <select id="gwaSemester" class="gwa-input" name="semester">
-                <option value="">All</option>
-                @foreach($semesters as $sem)
-                    <option value="{{ $sem }}" {{ $semester === (string) $sem ? 'selected' : '' }}>{{ $sem }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="gwa-field">
-            <label for="gwaProgram">Program</label>
-            <select id="gwaProgram" class="gwa-input" name="program">
+            <label for="cwaProgram">Program</label>
+            <select id="cwaProgram" class="gwa-input" name="program">
                 <option value="">All</option>
                 @foreach($programs as $item)
                     <option value="{{ $item }}" {{ $program === (string) $item ? 'selected' : '' }}>{{ $item }}</option>
                 @endforeach
             </select>
         </div>
+        <div class="gwa-field">
+            <label for="cwaYearLevel">Year Level</label>
+            <select id="cwaYearLevel" class="gwa-input" name="year_level">
+                <option value="">All</option>
+                @foreach($yearLevels as $item)
+                    <option value="{{ $item }}" {{ $yearLevel === (string) $item ? 'selected' : '' }}>{{ $item }}</option>
+                @endforeach
+            </select>
+        </div>
         <button class="gwa-btn" type="submit">Filter</button>
-        <a class="gwa-btn soft" href="{{ route('registrar.services.reports-admin.gwa-report') }}">Clear</a>
+        <a class="gwa-btn soft" href="{{ route('registrar.services.reports-admin.cwa-report') }}">Clear</a>
     </form>
 
     <div class="gwa-card">
@@ -282,9 +274,10 @@
                         <th>Student Name</th>
                         <th>Program</th>
                         <th>Year Level</th>
+                        <th>Current Semester</th>
                         <th>Subjects</th>
-                        <th>Total Units</th>
-                        <th>GWA</th>
+                        <th>Status</th>
+                        <th>CWA</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -303,13 +296,22 @@
                             <td>{{ $row['student_name'] ?: '-' }}</td>
                             <td>{{ $row['program'] ?: '-' }}</td>
                             <td>{{ $row['year_level'] ?: '-' }}</td>
+                            <td>{{ $row['current_semester'] ?: '-' }}</td>
                             <td>{{ number_format((int) $row['subjects_count']) }}</td>
-                            <td>{{ number_format((float) $row['total_units'], 1) }}</td>
-                            <td class="gwa-grade">{{ $row['gwa'] !== null ? number_format((float) $row['gwa'], 2) : '-' }}</td>
+                            <td>
+                                @if($row['subjects_count'] === 0)
+                                    <span class="cwa-missing-badge">No subjects yet</span>
+                                @elseif($row['missing_count'] > 0)
+                                    <span class="cwa-missing-badge">{{ $row['missing_count'] }} grade{{ $row['missing_count'] === 1 ? '' : 's' }} needed</span>
+                                @else
+                                    <span class="cwa-complete-badge">Complete</span>
+                                @endif
+                            </td>
+                            <td class="gwa-grade">{{ $row['cwa'] !== null ? number_format((float) $row['cwa'], 2) : '-' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8">No students found.</td>
+                            <td colspan="9">No students found.</td>
                         </tr>
                     @endforelse
                 </tbody>

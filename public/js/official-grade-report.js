@@ -175,9 +175,9 @@ function ogrBuildTemplate(data, subjects, meta) {
 
     /* CWA box upper-right */
     var cwaBox = '<div class="ogr-cwa-box">' +
-        '<div class="ogr-cwa-label">Cumulative Weighted Average (CWA)</div>' +
+        '<div class="ogr-cwa-label">Current Weighted Average (CWA)</div>' +
         '<div class="ogr-cwa-value">' + ogrEsc(meta.cwa) + '</div>' +
-        '<div class="ogr-cwa-note">NSTP course is not computed</div>' +
+        '<div class="ogr-cwa-note">PE and NSTP subjects are not computed</div>' +
         '</div>';
 
     /* Student info grid */

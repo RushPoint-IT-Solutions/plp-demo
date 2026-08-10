@@ -17836,9 +17836,29 @@ class RegistrarController extends Controller
         // Subject grades keyed by subject_id
         $subjectGrades = collect([]);
         if (Schema::hasTable('student_subject_grades')) {
-            $subjectGrades = StudentSubjectGrade::where('student_id', $student->id)
+            $subjectGrades = StudentSubjectGrade::with('subject')
+                ->where('student_id', $student->id)
                 ->get()
                 ->keyBy('subject_id');
+        }
+
+        // Attach the point/grade equivalent (1.00-5.00 scale) for each posted percentage average,
+        // using each subject's own transmutation table (course-specific, falling back to defaults).
+        foreach ($enrolledSubjects as $subject) {
+            $grade = $subjectGrades->get($subject->id);
+            if (!$grade || $grade->final_average === null) {
+                continue;
+            }
+
+            $raw = (float) $grade->final_average;
+            $eqGrade = null;
+            foreach ($this->transmutationRulesForRegistrarSubject($subject) as $rule) {
+                if ($raw >= (float) $rule['from'] && $raw <= (float) $rule['to']) {
+                    $eqGrade = (float) $rule['grade'];
+                    break;
+                }
+            }
+            $grade->eq_grade = $eqGrade;
         }
 
         // Enrolled subjects grouped by SY + Semester
@@ -17878,14 +17898,43 @@ class RegistrarController extends Controller
         $gradedRecords = $gradeRecords->filter(function ($r) {
             return !$r->inc && is_numeric($r->final_grade) && (float) $r->final_grade > 0 && (float) $r->units > 0;
         });
-        $gwa = null;
-        if ($gradedRecords->count() > 0) {
-            $tw = $gradedRecords->sum(function ($r) { return (float) $r->final_grade * (float) $r->units; });
-            $tu = $gradedRecords->sum(function ($r) { return (float) $r->units; });
-            $gwa = $tu > 0 ? round($tw / $tu, 4) : null;
+
+        // CWA = Current Weighted Average — scoped to the student's most recent (current) semester,
+        // computed from the live grade-encoding table (student_subject_grades) so it reflects
+        // grades as faculty/registrar actually post them, not the separate official-records archive.
+        $currentSemesterSubjects = collect();
+        $currentSyTermKey = null;
+        if ($enrolledSubjects->isNotEmpty()) {
+            $currentEnrolledSubject = $enrolledSubjects->sortByDesc('academic_term_id')->first();
+            $currentSchoolYear = (string) $currentEnrolledSubject->school_year;
+            $currentSemester = (string) $currentEnrolledSubject->semester;
+            $currentSyTermKey = $currentSchoolYear . '|||' . $currentSemester;
+
+            $currentSemesterSubjects = $enrolledSubjects->filter(function ($subject) use ($currentSchoolYear, $currentSemester) {
+                return (string) $subject->school_year === $currentSchoolYear
+                    && (string) $subject->semester === $currentSemester;
+            })->values();
         }
+
+        $currentSemesterGrades = $currentSemesterSubjects
+            ->map(function ($subject) use ($subjectGrades) {
+                return $subjectGrades->get($subject->id);
+            })
+            ->filter();
+
+        $currentSemesterPostedGrades = $currentSemesterGrades->filter(function ($grade) {
+            return $grade->final_average !== null;
+        });
+
+        $missingGradesCount = max(0, $currentSemesterSubjects->count() - $currentSemesterPostedGrades->count());
+
+        $cwa = $currentSemesterSubjects->isNotEmpty()
+            ? $this->weightedAverageExcludingPeNstp($currentSemesterPostedGrades)
+            : null;
+        $cwa = $cwa !== null ? (float) $cwa : null;
+
         $totalUnitsEarned = $gradedRecords->filter(function ($r) { return (float) $r->final_grade <= 3.0; })->sum(function ($r) { return (float) $r->units; });
-        $academicStanding = $this->computeAcademicStanding($gwa);
+        $academicStanding = $this->computeAcademicStanding($cwa);
         $gradesBySyTerm   = $gradeRecords->groupBy(function ($r) { return $r->school_year . '|||' . $r->term; });
 
         // Discipline
@@ -17965,7 +18014,7 @@ class RegistrarController extends Controller
         }
 
         return view('registrar.registrar-menu.student-management.student-record-profile', compact(
-            'student', 'gradeRecords', 'gradesBySyTerm', 'gwa', 'totalUnitsEarned',
+            'student', 'gradeRecords', 'gradesBySyTerm', 'cwa', 'totalUnitsEarned', 'missingGradesCount', 'currentSyTermKey',
             'academicStanding', 'deficiencies', 'courses',
             'disciplineStudent', 'disciplineRecords', 'requirements',
             'enrolledSubjects', 'subjectGrades', 'enrolledBySyTerm',
@@ -17975,6 +18024,158 @@ class RegistrarController extends Controller
             'scholarshipPrograms', 'studentScholarships',
             'honorableDismissalRecord'
         ));
+    }
+
+    /**
+     * Registrar > Student Records > Profile > Certificates tab
+     * Report of Grades (CWA) for the student's current semester.
+     */
+    public function studentRecordReportOfGrades(Student $student): JsonResponse
+    {
+        $student->load(['profile', 'canonicalCourse']);
+
+        // school_year / semester may be virtual attributes resolved via academic_term_id
+        // (see ResolvesAcademicTerm), not always real columns — filter/sort in PHP, not SQL.
+        $allEnrolledSubjects = $student->subjects()
+            ->with('academicTerm', 'facultyModel')
+            ->get();
+
+        if ($allEnrolledSubjects->isEmpty()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'No enrolled subjects found for this student.',
+            ], 404);
+        }
+
+        $currentSubject = $allEnrolledSubjects->sortByDesc('academic_term_id')->first();
+        $schoolYear = (string) $currentSubject->school_year;
+        $semester = (string) $currentSubject->semester;
+
+        $currentSemesterSubjects = $allEnrolledSubjects
+            ->filter(function ($subject) use ($schoolYear, $semester) {
+                return (string) $subject->school_year === $schoolYear
+                    && (string) $subject->semester === $semester;
+            })
+            ->sortBy('code')
+            ->values();
+
+        $grades = StudentSubjectGrade::with('subject')
+            ->where('student_id', $student->id)
+            ->whereIn('subject_id', $currentSemesterSubjects->pluck('id'))
+            ->get()
+            ->keyBy('subject_id');
+
+        $subjects = $currentSemesterSubjects->map(function ($subject) use ($grades) {
+            $grade = $grades->get($subject->id);
+            $isPosted = (bool) ($grade && $grade->final_average !== null);
+
+            return [
+                'code' => (string) $subject->code,
+                'desc' => (string) $subject->name,
+                'section' => (string) ($subject->year_section ?: '-'),
+                'prof' => (string) (optional($subject->facultyModel)->name ?: ($subject->faculty ?: 'TBA')),
+                'grade' => $isPosted ? number_format((float) $grade->final_average, 2) : '-',
+                'remarks' => $isPosted ? (string) ($grade->remarks ?: '-') : '-',
+                'reexam' => '',
+                'units' => $subject->units !== null ? number_format((float) $subject->units, 2) : '0.00',
+                'is_posted' => $isPosted,
+            ];
+        })->values();
+
+        $allPosted = $subjects->isNotEmpty() && $subjects->every(function ($s) { return $s['is_posted']; });
+
+        $profile = $student->profile;
+        $addressParts = array_filter([
+            $profile->present_street ?? null,
+            $profile->present_barangay ?? null,
+            $profile->present_municipality ?? null,
+            $profile->present_province ?? null,
+        ]);
+        $address = $addressParts ? implode(', ', $addressParts) : '-';
+        $birthday = ($profile && $profile->date_of_birth) ? $profile->date_of_birth->format('M d, Y') : '-';
+
+        $program = (string) ($student->program ?: optional($student->canonicalCourse)->code ?: '-');
+        $courseName = (string) (optional($student->canonicalCourse)->name ?: $program);
+
+        return response()->json([
+            'ok' => true,
+            'complete' => $allPosted,
+            'subjects' => $subjects,
+            'meta' => [
+                'studentNo' => (string) $student->student_no,
+                'studentName' => strtoupper((string) $student->name),
+                'address' => $address,
+                'birthday' => $birthday,
+                'section' => (string) ($currentSubject->year_section ?: '-'),
+                'course' => trim($program . ' : ' . $courseName),
+                'schoolYear' => $schoolYear . ' / ' . strtoupper($this->ordinalSemesterLabel($semester)),
+                'curriculum' => (string) ($student->curriculum ?: 'CURRENT'),
+                'studentType' => 'REGULAR',
+                'yearLevel' => (string) ($student->year_level ?: '-'),
+                'residency' => 'PR',
+                'cwa' => $this->weightedAverageExcludingPeNstp($grades) ?: '-',
+            ],
+        ]);
+    }
+
+    private function ordinalSemesterLabel($semester): string
+    {
+        $value = strtolower(trim((string) $semester));
+        if (strpos($value, 'first') !== false || $value === '1') return '1st Semester';
+        if (strpos($value, 'second') !== false || $value === '2') return '2nd Semester';
+        if (strpos($value, 'summer') !== false) return 'Summer';
+        return (string) $semester;
+    }
+
+    /**
+     * CWA = Current Weighted Average. Weighted average of each subject's grade EQUIVALENT
+     * (the transmuted 1.00-5.00 point value — matching how CWA reads on the Report of
+     * Grades / TOR samples, e.g. "1.40", not a raw percentage). Uses $grade->eq_grade if
+     * already attached by the caller, otherwise transmutes on the fly from final_average.
+     * PE and NSTP subjects are excluded, matching the Report of Grades footnote. Caller is
+     * responsible for scoping $grades to whichever semester should count as "current" —
+     * this helper does not filter by term itself.
+     */
+    private function weightedAverageExcludingPeNstp($grades): ?string
+    {
+        $totalUnits = 0.0;
+        $weightedTotal = 0.0;
+
+        foreach ($grades as $grade) {
+            if ($grade->final_average === null) {
+                continue;
+            }
+
+            $subject = $grade->subject;
+            $code = strtoupper(trim((string) optional($subject)->code));
+            if ($code === '' || strpos($code, 'PE') === 0 || strpos($code, 'NSTP') === 0) {
+                continue;
+            }
+
+            $eqGrade = $grade->eq_grade ?? null;
+            if ($eqGrade === null && $subject) {
+                $raw = (float) $grade->final_average;
+                foreach ($this->transmutationRulesForRegistrarSubject($subject) as $rule) {
+                    if ($raw >= (float) $rule['from'] && $raw <= (float) $rule['to']) {
+                        $eqGrade = (float) $rule['grade'];
+                        break;
+                    }
+                }
+            }
+            if ($eqGrade === null) {
+                continue;
+            }
+
+            $units = (float) optional($subject)->units;
+            if ($units <= 0) {
+                $units = 1.0;
+            }
+
+            $totalUnits += $units;
+            $weightedTotal += ((float) $eqGrade) * $units;
+        }
+
+        return $totalUnits > 0 ? number_format($weightedTotal / $totalUnits, 2) : null;
     }
 
     public function studentScholasticCommentSave(Request $request, Student $student): JsonResponse
@@ -18387,9 +18588,24 @@ class RegistrarController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function studentPrintTor(Student $student)
+    public function studentPrintTor(Request $request, Student $student)
     {
         $student->load(['profile', 'canonicalCourse']);
+
+        $purposeOptions = [
+            'FOR EVALUATION PURPOSES ONLY',
+            'FOR EMPLOYMENT PURPOSES ONLY',
+            'FOR TRAVEL PURPOSES ONLY',
+            'FOR FURTHER STUDIES PURPOSES ONLY',
+            'FOR PROMOTION PURPOSES ONLY',
+            'FOR BROKER EXAMINATION PURPOSES ONLY',
+            'FOR BOARD EXAMINATION PURPOSES ONLY',
+            'FOR COMPANY VERIFICATION PURPOSES ONLY',
+        ];
+        $purpose = $request->query('purpose');
+        if (!in_array($purpose, $purposeOptions, true)) {
+            $purpose = $purposeOptions[0];
+        }
 
         $gradeRecords = collect([]);
         if (Schema::hasTable('student_grade_records')) {
@@ -18426,11 +18642,25 @@ class RegistrarController extends Controller
         }
 
         $registrar = $signatories->first(function ($s) {
+            return stripos($s->designation_name, 'university registrar') !== false;
+        }) ?? $signatories->first(function ($s) {
             return stripos($s->designation_name, 'registrar') !== false;
         }) ?? $signatories->first();
 
+        $assistantRegistrar = $signatories->first(function ($s) {
+            return stripos($s->designation_name, 'assistant registrar') !== false;
+        });
+
+        $graduateTagging = null;
+        if (Schema::hasTable('graduate_taggings')) {
+            $graduateTagging = GraduateTagging::where('student_id', $student->id)->first();
+        }
+        $isGraduated = $graduateTagging && $graduateTagging->is_graduate;
+
         return view('registrar.registrar-menu.student-management.print.tor', compact(
-            'student', 'gradeRecords', 'gradesBySyTerm', 'gwa', 'totalUnitsEarned', 'registrar'
+            'student', 'gradeRecords', 'gradesBySyTerm', 'gwa', 'totalUnitsEarned',
+            'registrar', 'assistantRegistrar', 'graduateTagging', 'isGraduated',
+            'purpose', 'purposeOptions'
         ));
     }
 
@@ -21177,7 +21407,7 @@ JSON
         $students = $students instanceof \Illuminate\Support\Collection ? $students->values() : collect($students);
 
         $gradesByStudent = StudentSubjectGrade::query()
-            ->with('subject')
+            ->with('subject.facultyModel')
             ->whereIn('student_id', $students->pluck('id')->all())
             ->orderBy('student_id')
             ->orderBy('subject_id')
@@ -21218,7 +21448,7 @@ JSON
                     'code' => $subject ? (string) $subject->code : '-',
                     'desc' => $subject ? (string) $subject->name : '-',
                     'section' => $subject && $subject->year_section ? (string) $subject->year_section : $section,
-                    'prof' => 'TBA',
+                    'prof' => $subject ? (string) (optional($subject->facultyModel)->name ?: ($subject->faculty ?: 'TBA')) : 'TBA',
                     'grade' => $grade->final_average !== null ? (string) $grade->final_average : '-',
                     'remarks' => $grade->remarks ?: '-',
                     'reexam' => '',
@@ -21228,6 +21458,14 @@ JSON
 
             $schoolYear = (string) ($student->school_year ?: (optional($student->academicTerm)->school_year ?: '2025-2026'));
             $semester = (string) ($student->semester ?: (optional($student->academicTerm)->term ?: 'First'));
+
+            $currentSemesterGrades = ($gradesByStudent->get($student->id) ?: collect())
+                ->filter(function ($grade) use ($schoolYear, $semester) {
+                    $subject = $grade->subject;
+                    return $subject
+                        && (string) $subject->school_year === $schoolYear
+                        && (string) $subject->semester === $semester;
+                });
 
             $subjectsByRow[$rowId] = $subjects;
             $metaByRow[$rowId] = [
@@ -21242,7 +21480,7 @@ JSON
                 'studentType' => 'REGULAR',
                 'yearLevel' => $yearLevel,
                 'residency' => 'PR',
-                'cwa' => '-',
+                'cwa' => $this->weightedAverageExcludingPeNstp($currentSemesterGrades) ?: '-',
             ];
         }
 

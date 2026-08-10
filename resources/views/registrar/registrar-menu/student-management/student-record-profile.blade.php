@@ -3,7 +3,11 @@
 @section('title', 'Student Profile – ' . ($student->profile ? trim($student->profile->first_name.' '.$student->profile->last_name) : $student->name))
 
 @push('styles')
+<link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ file_exists(public_path('css/forms.css')) ? filemtime(public_path('css/forms.css')) : time() }}">
 <style>
+.srp-cert-card-btn { cursor: pointer; border: none; font-family: inherit; width: 100%; }
+.srp-cert-card-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+.srp-cert-card-btn:disabled:hover { border-color: #e2e8f0 !important; background: #fafafa !important; color: #374151 !important; }
 /* ── shell ─────────────────────────────────────────────────── */
 .srp-page { padding:0; }
 
@@ -45,6 +49,11 @@
 .srp-standing {
     display:inline-block; margin-top:8px;
     padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700;
+}
+.srp-grades-needed {
+    display:inline-flex; align-items:center; gap:4px; margin-top:6px;
+    padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700;
+    background:rgba(251,191,36,.22); color:#fde68a;
 }
 
 /* back link */
@@ -416,11 +425,16 @@
                 </div>
             </div>
             <div class="srp-gwa-box">
-                <div class="srp-gwa-num">{{ $gwa !== null ? number_format($gwa,2) : '—' }}</div>
-                <div class="srp-gwa-lbl">GWA</div>
+                <div class="srp-gwa-num">{{ $cwa !== null ? number_format($cwa,2) : '—' }}</div>
+                <div class="srp-gwa-lbl">CWA</div>
                 <div class="srp-standing" style="background:{{ $academicStanding['bg'] }};color:{{ $academicStanding['color'] }};">
                     {{ $academicStanding['icon'] }} {{ $academicStanding['label'] }}
                 </div>
+                @if($missingGradesCount > 0)
+                <div class="srp-grades-needed" title="Grades still needed this semester before CWA is final">
+                    ⏳ {{ $missingGradesCount }} grade{{ $missingGradesCount === 1 ? '' : 's' }} needed
+                </div>
+                @endif
             </div>
         </div>
 
@@ -743,10 +757,16 @@
                     </div>
                 </div>
                 @foreach($enrolledBySyTerm as $syTerm => $subjects)
-                    @php [$sy2,$sem2] = explode('|||', $syTerm, 2); @endphp
-                    <div class="srp-card" style="margin-bottom:18px;">
-                        <div class="srp-card-head" style="background:#f0fdf4;">
+                    @php
+                        [$sy2,$sem2] = explode('|||', $syTerm, 2);
+                        $isCurrentSem = $currentSyTermKey !== null && $syTerm === $currentSyTermKey;
+                    @endphp
+                    <div class="srp-card" style="margin-bottom:18px; {{ $isCurrentSem ? 'border:2px solid #15803d; box-shadow:0 0 0 3px rgba(21,128,61,.12);' : '' }}">
+                        <div class="srp-card-head" style="background:{{ $isCurrentSem ? '#dcfce7' : '#f0fdf4' }};">
                             AY {{ $sy2 }} &middot; {{ $sem2 }}
+                            @if($isCurrentSem)
+                                <span class="badge-green" style="margin-left:8px;background:#15803d;color:#fff;">● CURRENT SEMESTER</span>
+                            @endif
                             <span class="badge-blue" style="margin-left:8px;">{{ $subjects->count() }} courses</span>
                             <span class="badge-green" style="margin-left:4px;">{{ $subjects->sum('units') }} units</span>
                         </div>
@@ -763,6 +783,7 @@
                                         <th>Midterm</th>
                                         <th>Final</th>
                                         <th>Average</th>
+                                        <th>Grade Equivalent</th>
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
@@ -788,9 +809,16 @@
                                         <td style="text-align:center;">{{ $grade ? $grade->midterm : '-' }}</td>
                                         <td style="text-align:center;">{{ $grade ? $grade->final : '-' }}</td>
                                         <td style="text-align:center;">
-                                            @if($grade && $grade->final_average)
+                                            @if($grade && $grade->final_average !== null)
                                                 @php $avg = (float)$grade->final_average; @endphp
-                                                <span class="{{ $avg <= 3.0 ? 'badge-green' : 'badge-red' }}">{{ number_format($avg,2) }}</span>
+                                                <span class="{{ $avg >= 75 ? 'badge-green' : 'badge-red' }}">{{ number_format($avg,2) }}</span>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                        <td style="text-align:center;">
+                                            @if($grade && $grade->eq_grade !== null)
+                                                <span class="{{ $grade->eq_grade <= 3.0 ? 'badge-green' : 'badge-red' }}">{{ number_format($grade->eq_grade,2) }}</span>
                                             @else
                                                 -
                                             @endif
@@ -973,7 +1001,7 @@
                                     <div class="srp-field"><label>Financial Posting</label><select name="financial_posting_status"><option>Pending</option><option>Posted</option><option>For Adjustment</option><option>Cancelled</option></select></div>
                                     <div class="srp-field"><label>Posted Amount</label><input type="number" step="0.01" min="0" name="posted_amount"></div>
                                     <div class="srp-field"><label>Discount Percent</label><input type="number" step="0.01" min="0" max="100" name="discount_percent"></div>
-                                    <div class="srp-field"><label>Current GWA</label><input type="number" step="0.01" min="1" max="5" name="current_gwa" value="{{ $gwa }}"></div>
+                                    <div class="srp-field"><label>Current GWA</label><input type="number" step="0.01" min="1" max="5" name="current_gwa" value="{{ $cwa }}"></div>
                                     <div class="srp-field"><label>Application Date</label><input type="date" name="application_date"></div>
                                     <div class="srp-field"><label>Approval Date</label><input type="date" name="approval_date"></div>
                                     <div class="srp-field"><label>Renewal Due Date</label><input type="date" name="renewal_due_date"></div>
@@ -1364,7 +1392,19 @@
                             <div class="srp-cert-name">{{ $certName }}</div>
                         </a>
                         @endforeach
+
+                        <button type="button" class="srp-cert-card srp-cert-card-btn" onclick="srpOpenReportOfGrades({{ $student->id }})">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path d="M9 17v-6M12 17v-3M15 17v-9M4 4h16v16H4z"/>
+                                </svg>
+                            </div>
+                            <div class="srp-cert-name">Report of Grades (CWA)</div>
+                        </button>
                     </div>
+                    <p style="font-size:11.5px;color:#94a3b8;margin-top:10px;">
+                        Report of Grades (CWA) becomes available once all of the student's current-semester subjects have posted final grades.
+                    </p>
                 </div>
             </div>
         </div>
@@ -1982,6 +2022,8 @@
 {{-- Toast --}}
 <div id="srp-toast"></div>
 
+<div id="ogrPrintContainer" aria-hidden="true"></div>
+
 @push('scripts')
 <script>
 const SRP_PROFILE_URL = @json($profileUpdateUrl);
@@ -2383,6 +2425,49 @@ async function deleteClinicRecord(id, btn) {
         srpToast('Network error.', 'error');
     }
 }
+
+// ── Report of Grades (CWA) ─────────────────────────────────
+const SRP_REPORT_OF_GRADES_URL_BASE = @json(route('registrar.registrar-menu.student-mgmt.student-records.report-of-grades', ['student' => '__ID__']));
+
+function srpOpenReportOfGrades(studentId) {
+    var url = SRP_REPORT_OF_GRADES_URL_BASE.replace('__ID__', studentId);
+
+    fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (payload) {
+            if (!payload || !payload.ok) {
+                Swal.fire({ title: 'Unable to generate report', text: (payload && payload.message) || 'Please try again.', icon: 'error', confirmButtonColor: '#15803d' });
+                return;
+            }
+
+            if (!payload.complete) {
+                var missing = (payload.subjects || []).filter(function (s) { return !s.is_posted; });
+                Swal.fire({
+                    title: 'Report of Grades Not Yet Available',
+                    html: 'All subjects for the current semester must have posted final grades first.<br><br>'
+                        + '<strong>Still missing:</strong><ul style="text-align:left;margin:8px 0 0;">'
+                        + missing.map(function (s) { return '<li>' + s.code + ' — ' + s.desc + '</li>'; }).join('')
+                        + '</ul>',
+                    icon: 'warning',
+                    confirmButtonColor: '#15803d',
+                });
+                return;
+            }
+
+            var data = {
+                studentNo: payload.meta.studentNo,
+                studentName: payload.meta.studentName,
+                section: payload.meta.section,
+            };
+
+            var html = ogrBuildTemplate(data, payload.subjects, payload.meta);
+            ogrPrintSheets([html]);
+        })
+        .catch(function () {
+            Swal.fire({ title: 'Network Error', text: 'Something went wrong. Please try again.', icon: 'error', confirmButtonColor: '#15803d' });
+        });
+}
 </script>
+<script src="{{ asset('js/official-grade-report.js') }}?v={{ file_exists(public_path('js/official-grade-report.js')) ? filemtime(public_path('js/official-grade-report.js')) : time() }}"></script>
 @endpush
 @endsection

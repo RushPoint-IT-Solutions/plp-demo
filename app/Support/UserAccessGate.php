@@ -198,6 +198,7 @@ class UserAccessGate
             'registrar.registrar-menu.forms.citizens-charter' => 'documents_forms_citizens_charter',
             'registrar.services.reports-admin.academic-reports' => 'reports_academic_reports',
             'registrar.services.reports-admin.gwa-report' => 'reports_academic_reports',
+            'registrar.services.reports-admin.cwa-report' => 'reports_academic_reports',
             'registrar.services.reports-admin.certifications' => 'reports_certifications',
             'registrar.services.reports-admin.tagging-of-graduates' => 'reports_graduation_tagging',
             'registrar.services.reports-admin.guidance-reports' => 'reports_guidance_reports',

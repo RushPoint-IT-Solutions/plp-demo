@@ -107,11 +107,49 @@ class ReportsAdminController extends Controller
         $hasStudentProgram = Schema::hasColumn('students', 'program');
         $hasSubjectCourse = Schema::hasColumn('subjects', 'course');
 
+        $hasStudentYearLevel = Schema::hasColumn('students', 'year_level');
+        $hasStudentCourseId = Schema::hasColumn('students', 'course_id');
+        $hasStudentYearBlockId = Schema::hasColumn('students', 'year_block_id');
+
+        // Base list: every student (subject to search/program filters), so the report lists
+        // everyone — not only students who happen to already have a posted grade.
+        // program/year_level aren't always real columns here — they can be resolved via the
+        // canonicalCourse/yearBlock relations instead (same pattern used elsewhere in this app).
+        $studentQuery = Student::query();
+        if ($hasStudentCourseId) {
+            $studentQuery->with('canonicalCourse');
+        }
+        if ($hasStudentYearBlockId) {
+            $studentQuery->with('yearBlock');
+        }
+        if ($search !== '') {
+            $studentQuery->where(function ($query) use ($search) {
+                $query->where('student_no', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+            });
+        }
+        if ($program !== '') {
+            if ($hasStudentProgram) {
+                $studentQuery->where('program', $program);
+            } elseif ($hasStudentCourseId) {
+                $studentQuery->whereHas('canonicalCourse', function ($courseQuery) use ($program) {
+                    $courseQuery->where('code', $program)->orWhere('name', $program);
+                });
+            }
+        }
+        $studentColumns = array_values(array_filter([
+            'id', 'student_no', 'name',
+            $hasStudentProgram ? 'program' : null,
+            $hasStudentYearLevel ? 'year_level' : null,
+            $hasStudentCourseId ? 'course_id' : null,
+            $hasStudentYearBlockId ? 'year_block_id' : null,
+        ]));
+        $students = $studentQuery->orderBy('name')->get($studentColumns);
+
         $gradeQuery = StudentSubjectGrade::query()
-            ->with(['student', 'subject.academicTerm'])
-            ->whereNotNull('final_average')
-            ->whereHas('student')
-            ->whereHas('subject');
+            ->with('subject')
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereNotNull('final_average');
 
         if (Schema::hasColumn('student_subject_grades', 'final_posted_at')) {
             $gradeQuery->whereNotNull('final_posted_at');
@@ -143,96 +181,61 @@ class ReportsAdminController extends Controller
             });
         }
 
-        if ($program !== '' && ($hasStudentProgram || $hasSubjectCourse)) {
-            $gradeQuery->where(function ($query) use ($program, $hasStudentProgram, $hasSubjectCourse) {
-                if ($hasStudentProgram) {
-                    $query->whereHas('student', function ($studentQuery) use ($program) {
-                        $studentQuery->where('program', $program);
-                    });
-                }
-
-                if ($hasSubjectCourse) {
-                    $method = $hasStudentProgram ? 'orWhereHas' : 'whereHas';
-                    $query->{$method}('subject', function ($subjectQuery) use ($program) {
-                        $subjectQuery->where('course', $program);
-                    });
-                }
+        if ($program !== '' && !$hasStudentProgram && $hasSubjectCourse) {
+            $gradeQuery->whereHas('subject', function ($subjectQuery) use ($program) {
+                $subjectQuery->where('course', $program);
             });
         }
 
-        if ($search !== '') {
-            $gradeQuery->whereHas('student', function ($studentQuery) use ($search) {
-                $studentQuery->where('student_no', 'like', '%' . $search . '%')
-                    ->orWhere('name', 'like', '%' . $search . '%');
-            });
-        }
+        $gradesByStudent = $gradeQuery->get()->groupBy('student_id');
 
-        $gradeRows = $gradeQuery->get();
-
-        $rows = $gradeRows
-            ->groupBy(function ($grade) {
-                $subject = $grade->subject;
-
-                return implode('|', [
-                    $grade->student_id,
-                    $this->gwaSubjectSchoolYear($subject),
-                    $this->gwaSubjectSemester($subject),
-                ]);
-            })
-            ->map(function ($grades) {
-                $first = $grades->first();
-                $student = $first->student;
-                $schoolYear = $this->gwaSubjectSchoolYear($first->subject);
-                $semester = $this->gwaSubjectSemester($first->subject);
+        // One row per student — their overall GWA (grade equivalent, 1.00-5.00 scale,
+        // PE/NSTP excluded) across every semester in scope, not fragmented per term.
+        $rows = $students
+            ->map(function ($student) use ($gradesByStudent) {
+                $grades = $gradesByStudent->get($student->id, collect());
 
                 $totalUnits = 0.0;
                 $weightedTotal = 0.0;
+                $subjectsCount = 0;
 
                 foreach ($grades as $grade) {
-                    $units = (float) optional($grade->subject)->units;
+                    $subject = $grade->subject;
+                    $code = strtoupper(trim((string) optional($subject)->code));
+                    if ($code === '' || strpos($code, 'PE') === 0 || strpos($code, 'NSTP') === 0) {
+                        continue;
+                    }
+
+                    $eqGrade = $this->gwaEquivalentGrade((float) $grade->final_average, $subject);
+                    if ($eqGrade === null) {
+                        continue;
+                    }
+
+                    $units = (float) optional($subject)->units;
                     if ($units <= 0) {
                         $units = 1.0;
                     }
 
                     $totalUnits += $units;
-                    $weightedTotal += ((float) $grade->final_average) * $units;
+                    $weightedTotal += $eqGrade * $units;
+                    $subjectsCount++;
                 }
 
                 $gwa = $totalUnits > 0 ? round($weightedTotal / $totalUnits, 2) : null;
 
                 return [
-                    'student_id' => $student ? $student->id : null,
-                    'student_no' => $student ? (string) $student->student_no : '',
-                    'student_name' => $student ? (string) $student->name : '',
-                    'program' => $student ? (string) ($student->program ?: optional($first->subject)->course) : (string) optional($first->subject)->course,
-                    'year_level' => $student ? (string) ($student->year_level ?: '') : '',
-                    'school_year' => $schoolYear,
-                    'semester' => $semester,
-                    'subjects_count' => $grades->count(),
+                    'student_id' => (int) $student->id,
+                    'student_no' => (string) $student->student_no,
+                    'student_name' => (string) $student->name,
+                    'program' => (string) ($student->program ?: (optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name ?: '')),
+                    'year_level' => (string) ($student->year_level ?: (optional($student->yearBlock)->label ?: '')),
+                    'subjects_count' => $subjectsCount,
                     'total_units' => $totalUnits,
                     'gwa' => $gwa,
                 ];
             })
             ->sort(function ($left, $right) {
-                $leftSchoolYear = (string) ($left['school_year'] ?? '');
-                $rightSchoolYear = (string) ($right['school_year'] ?? '');
-                $schoolYearOrder = strcmp($rightSchoolYear, $leftSchoolYear);
-
-                if ($schoolYearOrder !== 0) {
-                    return $schoolYearOrder;
-                }
-
-                $leftSemesterWeight = $this->gwaSemesterSortWeight($left['semester'] ?? '');
-                $rightSemesterWeight = $this->gwaSemesterSortWeight($right['semester'] ?? '');
-
-                if ($leftSemesterWeight !== $rightSemesterWeight) {
-                    return $leftSemesterWeight <=> $rightSemesterWeight;
-                }
-
-                return strcasecmp(
-                    (string) ($left['student_name'] ?? ''),
-                    (string) ($right['student_name'] ?? '')
-                );
+                return strcasecmp((string) $left['student_name'], (string) $right['student_name']);
             })
             ->values();
 
@@ -247,8 +250,8 @@ class ReportsAdminController extends Controller
             ->values();
 
         $summary = [
-            'students' => $rows->pluck('student_id')->filter()->unique()->count(),
-            'records' => $rows->count(),
+            'students' => $rows->count(),
+            'records' => $rows->sum('subjects_count'),
             'average_gwa' => $rows->filter(function ($row) {
                 return is_array($row) && ($row['gwa'] ?? null) !== null;
             })->avg('gwa'),
@@ -265,6 +268,223 @@ class ReportsAdminController extends Controller
             'semester',
             'program'
         ));
+    }
+
+    /**
+     * CWA Report — every student's Current Weighted Average: the grade equivalent
+     * (1.00-5.00 scale, PE/NSTP excluded) for whichever semester is each student's own
+     * most recent one, plus how many of that semester's subjects still need a grade.
+     */
+    public function cwaReport(Request $request)
+    {
+        $search = $this->gwaQueryString($request, 'q');
+        $program = $this->gwaQueryString($request, 'program');
+        $yearLevel = $this->gwaQueryString($request, 'year_level');
+        $hasStudentProgram = Schema::hasColumn('students', 'program');
+        $hasStudentYearLevel = Schema::hasColumn('students', 'year_level');
+        $hasStudentCourseId = Schema::hasColumn('students', 'course_id');
+        $hasStudentYearBlockId = Schema::hasColumn('students', 'year_block_id');
+
+        $studentQuery = Student::query()->with(['subjects.academicTerm']);
+        if ($hasStudentCourseId) {
+            $studentQuery->with('canonicalCourse');
+        }
+        if ($hasStudentYearBlockId) {
+            $studentQuery->with('yearBlock');
+        }
+        if ($search !== '') {
+            $studentQuery->where(function ($query) use ($search) {
+                $query->where('student_no', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+            });
+        }
+        if ($program !== '') {
+            if ($hasStudentProgram) {
+                $studentQuery->where('program', $program);
+            } elseif ($hasStudentCourseId) {
+                $studentQuery->whereHas('canonicalCourse', function ($courseQuery) use ($program) {
+                    $courseQuery->where('code', $program)->orWhere('name', $program);
+                });
+            }
+        }
+        if ($yearLevel !== '' && $hasStudentYearLevel) {
+            $studentQuery->where('year_level', $yearLevel);
+        }
+
+        $students = $studentQuery->orderBy('name')->get();
+
+        $gradesByStudent = StudentSubjectGrade::with('subject')
+            ->whereIn('student_id', $students->pluck('id'))
+            ->get()
+            ->groupBy('student_id');
+
+        $rows = $students
+            ->map(function ($student) use ($gradesByStudent) {
+                $enrolledSubjects = $student->subjects;
+                $currentLabel = '';
+                $currentSemesterSubjects = collect();
+
+                if ($enrolledSubjects->isNotEmpty()) {
+                    $currentSubject = $enrolledSubjects->sortByDesc('academic_term_id')->first();
+                    $currentSchoolYear = (string) $currentSubject->school_year;
+                    $currentSemester = (string) $currentSubject->semester;
+                    $currentLabel = trim($currentSchoolYear . ' ' . $currentSemester);
+
+                    $currentSemesterSubjects = $enrolledSubjects->filter(function ($subject) use ($currentSchoolYear, $currentSemester) {
+                        return (string) $subject->school_year === $currentSchoolYear
+                            && (string) $subject->semester === $currentSemester;
+                    })->values();
+                }
+
+                $studentGrades = $gradesByStudent->get($student->id, collect())->keyBy('subject_id');
+
+                $totalUnits = 0.0;
+                $weightedTotal = 0.0;
+                $postedCount = 0;
+
+                foreach ($currentSemesterSubjects as $subject) {
+                    $grade = $studentGrades->get($subject->id);
+                    if (!$grade || $grade->final_average === null) {
+                        continue;
+                    }
+
+                    $postedCount++;
+
+                    $code = strtoupper(trim((string) $subject->code));
+                    if ($code === '' || strpos($code, 'PE') === 0 || strpos($code, 'NSTP') === 0) {
+                        continue;
+                    }
+
+                    $eqGrade = $this->gwaEquivalentGrade((float) $grade->final_average, $subject);
+                    if ($eqGrade === null) {
+                        continue;
+                    }
+
+                    $units = (float) $subject->units;
+                    if ($units <= 0) {
+                        $units = 1.0;
+                    }
+
+                    $totalUnits += $units;
+                    $weightedTotal += $eqGrade * $units;
+                }
+
+                $cwa = $totalUnits > 0 ? round($weightedTotal / $totalUnits, 2) : null;
+                $missingCount = max(0, $currentSemesterSubjects->count() - $postedCount);
+
+                return [
+                    'student_id' => (int) $student->id,
+                    'student_no' => (string) $student->student_no,
+                    'student_name' => (string) $student->name,
+                    'program' => (string) ($student->program ?: (optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name ?: '')),
+                    'year_level' => (string) ($student->year_level ?: (optional($student->yearBlock)->label ?: '')),
+                    'current_semester' => $currentLabel,
+                    'subjects_count' => $currentSemesterSubjects->count(),
+                    'missing_count' => $missingCount,
+                    'cwa' => $cwa,
+                ];
+            })
+            ->sort(function ($left, $right) {
+                return strcasecmp((string) $left['student_name'], (string) $right['student_name']);
+            })
+            ->values();
+
+        $programs = collect()
+            ->merge($hasStudentProgram ? Student::query()->whereNotNull('program')->where('program', '<>', '')->distinct()->orderBy('program')->pluck('program') : collect())
+            ->merge(Schema::hasColumn('subjects', 'course') ? \App\Subject::query()->whereNotNull('course')->where('course', '<>', '')->distinct()->orderBy('course')->pluck('course') : collect())
+            ->filter()
+            ->unique()
+            ->values();
+
+        $yearLevels = $hasStudentYearLevel
+            ? Student::query()->whereNotNull('year_level')->where('year_level', '<>', '')->distinct()->orderBy('year_level')->pluck('year_level')->values()
+            : collect();
+
+        $summary = [
+            'students' => $rows->count(),
+            'missing_grades' => $rows->sum('missing_count'),
+            'average_cwa' => $rows->filter(function ($row) {
+                return is_array($row) && ($row['cwa'] ?? null) !== null;
+            })->avg('cwa'),
+        ];
+
+        return view('registrar.services.reports-admin.cwa-report', compact(
+            'rows',
+            'programs',
+            'yearLevels',
+            'summary',
+            'search',
+            'program',
+            'yearLevel'
+        ));
+    }
+
+    /**
+     * Grade equivalent (1.00-5.00 point scale) for a raw percentage average, using the
+     * subject's own transmutation table (course-specific, falling back to global/defaults).
+     */
+    private function gwaEquivalentGrade(float $rawAverage, $subject): ?float
+    {
+        foreach ($this->gwaTransmutationRulesForSubject($subject) as $rule) {
+            if ($rawAverage >= $rule['from'] && $rawAverage <= $rule['to']) {
+                return $rule['grade'];
+            }
+        }
+
+        return null;
+    }
+
+    private function gwaTransmutationRulesForSubject($subject): array
+    {
+        if (!$subject || !Schema::hasTable('transmutation_rules')) {
+            return $this->gwaDefaultTransmutationBands();
+        }
+
+        if (Schema::hasColumn('transmutation_rules', 'course_id') && !empty($subject->course_id)) {
+            $rows = DB::table('transmutation_rules')
+                ->where('course_id', $subject->course_id)
+                ->orderByDesc('initial_from')
+                ->get();
+
+            if ($rows->isNotEmpty()) {
+                return $this->gwaFormatTransmutationRules($rows);
+            }
+        }
+
+        $global = DB::table('transmutation_rules');
+        if (Schema::hasColumn('transmutation_rules', 'course_id')) {
+            $global->whereNull('course_id');
+        }
+        $rows = $global->orderByDesc('initial_from')->get();
+
+        return $rows->isNotEmpty() ? $this->gwaFormatTransmutationRules($rows) : $this->gwaDefaultTransmutationBands();
+    }
+
+    private function gwaFormatTransmutationRules($rows): array
+    {
+        return $rows->map(function ($rule) {
+            return [
+                'from' => (float) $rule->initial_from,
+                'to' => (float) $rule->initial_to,
+                'grade' => (float) $rule->transmuted_grade,
+            ];
+        })->values()->all();
+    }
+
+    private function gwaDefaultTransmutationBands(): array
+    {
+        return [
+            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00],
+            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25],
+            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50],
+            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75],
+            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00],
+            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25],
+            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50],
+            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75],
+            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00],
+            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00],
+        ];
     }
 
     public function gwaReportCreateTest(Request $request)

@@ -3,25 +3,66 @@
 @section('title', 'PLP - Grades')
 @section('page-title', 'GRADES')
 
+@push('styles')
+<style>
+    .grades-filter-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .grades-gwa-badge {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+    }
+    .grades-gwa-badge .grades-gwa-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #15803d;
+    }
+    .grades-gwa-badge .grades-gwa-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #15803d;
+        line-height: 1.1;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="grades-page sched-page-container">
 
-    {{-- Semester Filter --}}
+    {{-- Semester Filter + GWA --}}
     <div class="mb-4 grades-filter-row">
-        <label class="form-label-plp">SELECTED SEMESTER</label>
-        <select class="form-select form-input-long" id="semesterFilter" onchange="if(this.value){window.location='?semester='+encodeURIComponent(this.value)}else{window.location='{{ route('student.grades') }}'}">
-            <option value="">All Semesters</option>
-            @foreach($semesterOptions as $option)
-                @php
-                    $parts = explode('|', $option);
-                    $sy = $parts[0] ?? '';
-                    $sem = $parts[1] ?? '';
-                @endphp
-                <option value="{{ $option }}" {{ ($selectedSemester === $option) ? 'selected' : '' }}>
-                    AY {{ $sy }} {{ $sem }}
-                </option>
-            @endforeach
-        </select>
+        <div>
+            <label class="form-label-plp">SELECTED SEMESTER</label>
+            <select class="form-select form-input-long" id="semesterFilter" onchange="if(this.value){window.location='?semester='+encodeURIComponent(this.value)}else{window.location='{{ route('student.grades') }}'}">
+                <option value="">All Semesters</option>
+                @foreach($semesterOptions as $option)
+                    @php
+                        $parts = explode('|', $option);
+                        $sy = $parts[0] ?? '';
+                        $sem = $parts[1] ?? '';
+                    @endphp
+                    <option value="{{ $option }}" {{ ($selectedSemester === $option) ? 'selected' : '' }}>
+                        AY {{ $sy }} {{ $sem }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="grades-gwa-badge">
+            <span class="grades-gwa-label">GWA</span>
+            <span class="grades-gwa-value">{{ $gwa !== null ? number_format($gwa, 2) : '-' }}</span>
+        </div>
     </div>
 
     {{-- Grades Table --}}
