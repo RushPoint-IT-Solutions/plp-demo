@@ -36,56 +36,25 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .gs-edit-approval-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            margin-left: 6px;
+            padding: 0;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #f9fafb;
+            color: #374151;
+            font-size: 0.75rem;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .gs-edit-approval-btn:hover { background: #f3f4f6; }
         .gs-status-header {
             text-align: center;
-        }
-        @media print {
-            body.page-registrar-grading-sheet .student-page-header,
-            body.page-registrar-grading-sheet .registrar-sidebar,
-            body.page-registrar-grading-sheet .gs-filter-bar,
-            body.page-registrar-grading-sheet .gs-detail-toolbar,
-            body.page-registrar-grading-sheet #gsListView,
-            body.page-registrar-grading-sheet .pf-pagination {
-                display: none !important;
-            }
-            body.page-registrar-grading-sheet .pf-page {
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-            body.page-registrar-grading-sheet #gsDetailView {
-                display: block !important;
-            }
-            body.page-registrar-grading-sheet .gs-section-banner-v2 {
-                border: 1px solid #111;
-                margin: 0 0 10px;
-                padding: 8px;
-                box-shadow: none;
-            }
-            body.page-registrar-grading-sheet .gs-banner-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 4px 16px;
-                font-size: 10px;
-            }
-            body.page-registrar-grading-sheet .student-table-wrapper {
-                overflow: visible !important;
-            }
-            body.page-registrar-grading-sheet .gs-detail-table {
-                width: 100% !important;
-                min-width: 0 !important;
-                border-collapse: collapse !important;
-                font-size: 9px;
-            }
-            body.page-registrar-grading-sheet .gs-detail-table th,
-            body.page-registrar-grading-sheet .gs-detail-table td {
-                border: 1px solid #111 !important;
-                padding: 4px !important;
-                color: #000 !important;
-            }
-            @page {
-                size: A4 landscape;
-                margin: 10mm;
-            }
         }
     </style>
 @endpush
@@ -220,13 +189,13 @@
                 </button>
             </div>
             <div class="gs-detail-toolbar-right">
-                <button type="button" class="gs-print-btn" onclick="window.print()">
+                <button type="button" class="gs-print-btn" onclick="gsPrintGradeList('midterm')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Print Grading Sheet
+                    Print Midterm
                 </button>
-                <button type="button" class="gs-print-btn gs-print-secondary" onclick="window.print()">
+                <button type="button" class="gs-print-btn gs-print-secondary" onclick="gsPrintGradeList('final')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Grading Sheet OLE
+                    Print Final
                 </button>
             </div>
         </div>
@@ -306,6 +275,8 @@
     @endif
 
     window.GS_ACTION_URL = "{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet.action') }}";
+    window.GS_UPDATE_APPROVAL_URL = "{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet.update-approval') }}";
+    window.GS_CURRENT_USER_NAME = @json(optional(auth()->user())->name ?: '');
 </script>
 <script src="{{ asset('js/grading-sheet.js') }}?v={{ file_exists(public_path('js/grading-sheet.js')) ? filemtime(public_path('js/grading-sheet.js')) : time() }}"></script>
 @endpush

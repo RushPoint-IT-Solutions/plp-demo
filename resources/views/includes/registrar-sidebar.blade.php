@@ -290,7 +290,7 @@
         {{-- ══════════════════════════════════════ --}}
         {{-- FACULTY                                --}}
         {{-- ══════════════════════════════════════ --}}
-        @if($canViewAny(['registrar.registrar-menu.faculty-mgmt.faculty-list', 'registrar.registrar-menu.faculty-mgmt.departments', 'registrar.registrar-menu.faculty-mgmt.faculty-create', 'registrar.registrar-menu.faculty-mgmt.grading-sheet', 'registrar.registrar-menu.faculty-mgmt.evaluation']))
+        @if($canViewAny(['registrar.registrar-menu.faculty-mgmt.faculty-list', 'registrar.registrar-menu.faculty-mgmt.departments', 'registrar.registrar-menu.faculty-mgmt.faculty-create', 'registrar.registrar-menu.faculty-mgmt.grading-sheet', 'registrar.registrar-menu.faculty-mgmt.upload-grades', 'registrar.registrar-menu.faculty-mgmt.evaluation']))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.*') ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.*') ? 'active' : '' }}">
                 {{-- teacher icon --}}
@@ -309,6 +309,7 @@
                 @if($canView('registrar.registrar-menu.faculty-mgmt.departments'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.departments') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.departments*') ? 'active' : '' }}">Departments</a>@endif
                 @if($canView('registrar.registrar-menu.faculty-mgmt.faculty-create'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.faculty-create') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.faculty-create') ? 'active' : '' }}">Create Faculty</a>@endif
                 @if($canView('registrar.registrar-menu.faculty-mgmt.grading-sheet'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.grading-sheet') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.grading-sheet') ? 'active' : '' }}">Grading Sheets</a>@endif
+                @if($canView('registrar.registrar-menu.faculty-mgmt.upload-grades'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.upload-grades') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.upload-grades') ? 'active' : '' }}">Upload Grades</a>@endif
                 @if($canView('registrar.registrar-menu.faculty-mgmt.evaluation'))<a href="{{ route('registrar.registrar-menu.faculty-mgmt.evaluation') }}" class="sidebar-sublink {{ request()->routeIs('registrar.registrar-menu.faculty-mgmt.evaluation') ? 'active' : '' }}">Faculty Evaluation</a>@endif
             </div>
         </div>

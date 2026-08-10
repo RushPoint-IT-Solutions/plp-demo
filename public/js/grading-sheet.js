@@ -43,11 +43,17 @@ function gsSeedSections(serverSections) {
                 program: sec.program || '',
                 midterm: sec.midterm || '-',
                 final: sec.final || '-',
+                units: sec.units || '-',
+                transmutationRules: sec.transmutationRules || [],
                 approvedBy: sec.approvedBy || '-',
                 courseFull: sec.courseFull || '-',
                 schedule: sec.schedule || 'Room No. : TBA',
                 status: sec.status || 'Submitted',
                 statusCode: String(sec.statusCode || '').toUpperCase(),
+                deanApprovedByName: sec.deanApprovedByName || '',
+                deanApprovedAtIso: sec.deanApprovedAtIso || '',
+                registrarFinalizedByName: sec.registrarFinalizedByName || '',
+                registrarFinalizedAtIso: sec.registrarFinalizedAtIso || '',
                 students: students
             };
         });
@@ -233,6 +239,210 @@ function gsGetCsrf() {
         || '';
 }
 
+/* ─── Report of Grade printing (mirrors faculty grading sheet print) ─────── */
+
+function gsFormatGradeNumber(value) {
+    var num = parseFloat(value);
+    if (isNaN(num)) return '';
+    return (Math.round(num * 100) / 100).toFixed(2);
+}
+
+function gsComputeRawAverage(midterm, finalGrade) {
+    var midtermNum = parseFloat(midterm);
+    var finalNum = parseFloat(finalGrade);
+    if (isNaN(midtermNum) || isNaN(finalNum)) return '';
+    return (Math.round(((midtermNum + finalNum) / 2) * 100) / 100).toFixed(2);
+}
+
+function gsComputeEquivalentGrade(sec, midterm, finalGrade) {
+    var rawAverage = gsComputeRawAverage(midterm, finalGrade);
+    var rawNum = parseFloat(rawAverage);
+    if (isNaN(rawNum)) return '';
+
+    var rules = (sec && sec.transmutationRules) ? sec.transmutationRules : [];
+    for (var i = 0; i < rules.length; i += 1) {
+        var from = parseFloat(rules[i].from);
+        var to = parseFloat(rules[i].to);
+        if (!isNaN(from) && !isNaN(to) && rawNum >= from && rawNum <= to) {
+            return gsFormatGradeNumber(rules[i].grade);
+        }
+    }
+
+    return gsFormatGradeNumber(rawNum);
+}
+
+function gsFormatReportSemester(value) {
+    var text = String(value || '').trim();
+    var lower = text.toLowerCase();
+    if (lower.indexOf('first') !== -1 || lower.indexOf('1st') !== -1) return '1ST SEMESTER';
+    if (lower.indexOf('second') !== -1 || lower.indexOf('2nd') !== -1) return '2ND SEMESTER';
+    if (lower.indexOf('summer') !== -1) return 'SUMMER';
+    return text ? text.toUpperCase() : '';
+}
+
+function gsReportAcadStat(student) {
+    var status = String(student.status || '').toUpperCase();
+    if (['INC', 'UD', 'OD', 'NA', 'GNA'].indexOf(status) !== -1) return status;
+    return '';
+}
+
+function gsReportRemarks(student, equivalent, average, isMidterm) {
+    if (isMidterm) return '';
+    var specialCode = gsReportAcadStat(student);
+    if (['INC', 'UD', 'OD', 'NA', 'GNA'].indexOf(specialCode) !== -1) return specialCode;
+    var explicit = String(student.remarks || '').trim();
+    if (explicit) return explicit.toUpperCase();
+    var equivalentNum = parseFloat(equivalent);
+    var averageNum = parseFloat(average);
+    if (!isNaN(equivalentNum)) return equivalentNum <= 3 ? 'PASSED' : 'FAILED';
+    if (!isNaN(averageNum)) return averageNum >= 74.5 ? 'PASSED' : 'FAILED';
+    return '';
+}
+
+function gsPrintGradeList(phase) {
+    var sec = findSectionById(GS_ACTIVE_SECTION_ID);
+    if (!sec) return;
+
+    var isMidterm = phase === 'midterm';
+    var students = (sec.students || []).slice();
+    var now = new Date();
+    var printedDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    var semesterLabel = gsFormatReportSemester(sec.term);
+    var schoolYearTerm = [sec.schoolYear || '-', semesterLabel].filter(Boolean).join(' / ');
+    var professorName = sec.faculty || '-';
+    var description = sec.description || '-';
+
+    var rows = students.map(function (student, index) {
+        var midterm = student.midterm !== null && student.midterm !== undefined ? student.midterm : '';
+        var finalGrade = isMidterm ? '' : (student.final !== null && student.final !== undefined ? student.final : '');
+        var average = isMidterm ? '' : (student.cRating || gsComputeRawAverage(student.midterm, student.final));
+        var equivalent = isMidterm ? '' : gsComputeEquivalentGrade(sec, student.midterm, student.final);
+        var acadStat = gsReportAcadStat(student);
+        var remarks = gsReportRemarks(student, equivalent, average, isMidterm);
+
+        return '<tr>'
+            + '<td class="num">' + (index + 1) + '.</td>'
+            + '<td class="name">' + gsEscapeHtml(student.name || '-') + '</td>'
+            + '<td>' + gsEscapeHtml(sec.section || '-') + '</td>'
+            + '<td>' + gsEscapeHtml(acadStat) + '</td>'
+            + '<td>' + gsEscapeHtml(midterm || '') + '</td>'
+            + '<td>' + gsEscapeHtml(finalGrade || '') + '</td>'
+            + '<td>' + gsEscapeHtml(average || '') + '</td>'
+            + '<td>' + gsEscapeHtml(equivalent || '') + '</td>'
+            + '<td>' + gsEscapeHtml(remarks || '') + '</td>'
+            + '</tr>';
+    }).join('');
+
+    var gradeLegendRows = [
+        ['97.5 - 100', '1.00', 'PASSED'],
+        ['94.5 - 97.4', '1.25', 'PASSED'],
+        ['91.5-94.4', '1.50', 'PASSED'],
+        ['88.5 - 91.4', '1.75', 'PASSED'],
+        ['85.5 - 88.4', '2.00', 'PASSED'],
+        ['82.5 - 85.4', '2.25', 'PASSED'],
+        ['79.5 - 82.4', '2.50', 'PASSED'],
+        ['76.5 - 79.4', '2.75', 'PASSED'],
+        ['74.5 76.4', '3.00', 'PASSED'],
+        ['BELOW 74.4', '5.00', 'FAILED']
+    ].map(function (row) {
+        return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';
+    }).join('');
+
+    var remarksLegendRows = [
+        ['INC', 'INCOMPLETE'],
+        ['UD', 'UNOFFICIALLY DROPPED'],
+        ['OD', 'OFFICIALLY DROPPED'],
+        ['NA', 'NOT ATTENDING'],
+        ['GNA', 'GRADE NOT AVAILABLE']
+    ].map(function (row) {
+        return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>';
+    }).join('');
+
+    var html = '<!doctype html><html><head><meta charset="utf-8"><title>Report of Grade</title>'
+        + '<style>'
+        + '@page{size:letter portrait;margin:0.28in;}'
+        + '*{box-sizing:border-box;}'
+        + 'body{font-family:Arial,Helvetica,sans-serif;color:#000;margin:0;font-size:10px;line-height:1.18;}'
+        + '.rog-page{width:100%;}'
+        + '.rog-head{text-align:center;margin:0 0 28px;}'
+        + '.rog-school{font-size:14px;font-weight:800;text-transform:uppercase;margin-top:8px;}'
+        + '.rog-city{font-size:12px;font-weight:800;margin-top:5px;}'
+        + '.rog-address{font-size:10px;font-weight:700;margin-top:5px;}'
+        + '.rog-office{font-size:20px;font-weight:900;letter-spacing:.02em;margin-top:16px;}'
+        + '.rog-title{font-size:15px;font-weight:900;margin-top:6px;}'
+        + '.rog-meta{display:grid;grid-template-columns:1fr 1fr;column-gap:78px;row-gap:14px;margin-bottom:28px;}'
+        + '.rog-meta-row{display:grid;grid-template-columns:112px 1fr;align-items:start;font-size:11px;}'
+        + '.rog-meta-label{font-weight:800;}'
+        + '.rog-main{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.2px;}'
+        + '.rog-main th,.rog-main td{border:2px solid #000;padding:1px 5px;text-align:center;vertical-align:middle;}'
+        + '.rog-main th{height:29px;font-size:10px;font-weight:900;}'
+        + '.rog-main td{height:12px;}'
+        + '.rog-main .num{width:44px;text-align:left;}'
+        + '.rog-main .name{text-align:left;padding-left:8px;}'
+        + '.rog-bottom{display:grid;grid-template-columns:43% 28% 1fr;gap:2px 10px;margin-top:8px;align-items:start;}'
+        + '.rog-legend{width:100%;border-collapse:collapse;font-size:10px;}'
+        + '.rog-legend th,.rog-legend td{border:2px solid #000;padding:3px 7px;text-align:center;}'
+        + '.rog-legend th{font-size:11px;font-weight:900;}'
+        + '.rog-release{padding:22px 10px 0;font-size:10px;}'
+        + '.rog-release div{margin-bottom:16px;}'
+        + '.rog-release strong{display:block;margin-top:4px;}'
+        + '.rog-sign{padding-left:0;font-size:10px;text-align:center;}'
+        + '.rog-sign-line{border-top:2px solid #000;margin-top:22px;padding-top:7px;}'
+        + '.rog-sign-name{font-weight:900;margin-bottom:20px;}'
+        + '.rog-sign-date{font-weight:900;margin:20px 0 0;}'
+        + '.rog-page-no{margin:18px 0 32px;}'
+        + '.rog-chair{border-top:2px solid #000;padding-top:7px;}'
+        + '@media print{button{display:none;}}'
+        + '</style></head><body>'
+        + '<div class="rog-page">'
+        + '<div class="rog-head">'
+        + '<div class="rog-school">PAMANTASAN NG LUNGSOD NG PASIG</div>'
+        + '<div class="rog-city">(University of Pasig City)</div>'
+        + '<div class="rog-address">Alcalde Jose Street, Kapasigan, Pasig City</div>'
+        + '<div class="rog-office">OFFICE OF THE REGISTRAR</div>'
+        + '<div class="rog-title">REPORT OF GRADE</div>'
+        + '</div>'
+        + '<div class="rog-meta">'
+        + '<div class="rog-meta-row"><span class="rog-meta-label">Prof. Name :</span><span>' + gsEscapeHtml(professorName) + '</span></div>'
+        + '<div class="rog-meta-row"><span class="rog-meta-label">School Year:</span><span>' + gsEscapeHtml(schoolYearTerm) + '</span></div>'
+        + '<div class="rog-meta-row"><span class="rog-meta-label">Subject Code:</span><span>' + gsEscapeHtml(sec.courseCode || '-') + '</span></div>'
+        + '<div class="rog-meta-row"><span class="rog-meta-label">Course YrSec:</span><span>' + gsEscapeHtml(sec.section || '-') + '</span></div>'
+        + '<div class="rog-meta-row"><span class="rog-meta-label">Description Title:</span><span>' + gsEscapeHtml(description) + '</span></div>'
+        + '<div class="rog-meta-row"><span class="rog-meta-label">Units:</span><span>' + gsEscapeHtml(sec.units || '-') + '</span></div>'
+        + '</div>'
+        + '<table class="rog-main"><colgroup><col style="width:5.4%;"><col style="width:30.8%;"><col style="width:10%;"><col style="width:8.5%;"><col style="width:7.4%;"><col style="width:8.4%;"><col style="width:8.4%;"><col style="width:8.4%;"><col style="width:12.7%;"></colgroup>'
+        + '<thead><tr><th></th><th>Student Name</th><th>CYS</th><th>AcadStat</th><th>MidGrd</th><th>FinGrd</th><th>SemGrd</th><th>Pt Eqv</th><th>Remarks</th></tr></thead>'
+        + '<tbody>' + (rows || '<tr><td colspan="9">No students found.</td></tr>') + '</tbody></table>'
+        + '<div class="rog-bottom">'
+        + '<table class="rog-legend"><thead><tr><th>Grades</th><th>Pt. Equivalent</th><th>Remarks</th></tr></thead><tbody>' + gradeLegendRows + '</tbody></table>'
+        + '<div><table class="rog-legend"><thead><tr><th>REMARKS</th><th>DESCRIPTION</th></tr></thead><tbody>' + remarksLegendRows + '</tbody></table>'
+        + '<div class="rog-release"><div>Released By:</div><div><strong>Date Printed:</strong></div><strong>Ms. Jay Anne I. Santos</strong></div></div>'
+        + '<div class="rog-sign">'
+        + '<div class="rog-sign-line rog-sign-name">' + gsEscapeHtml(professorName) + '</div>'
+        + '<div>Prof./Instructor</div>'
+        + '<div class="rog-sign-line rog-sign-date">' + gsEscapeHtml(printedDate) + '</div>'
+        + '<div>Date Submitted:</div>'
+        + '<div class="rog-page-no">Page 1 of 1</div>'
+        + '<div class="rog-chair">Dean / Department Chair</div>'
+        + '</div></div></div>'
+        + '<script>window.onload=function(){window.print();};<\/script>'
+        + '</body></html>';
+
+    var printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        Swal.fire({
+            title: 'Popup Blocked',
+            text: 'Please allow popups to print the grade list.',
+            icon: 'warning',
+            confirmButtonColor: '#15803d',
+        });
+        return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+}
+
 function gsStatusBadge(status) {
     var label = status || 'Submitted for Dean Review';
     var normalized = String(label).toLowerCase();
@@ -240,6 +450,29 @@ function gsStatusBadge(status) {
     if (normalized.indexOf('approved') !== -1 || normalized.indexOf('finalized') !== -1) className = 'gs-badge-approved';
     if (normalized.indexOf('returned') !== -1 || normalized.indexOf('rejected') !== -1) className = 'gs-badge-rejected';
     return '<span class="gs-badge ' + className + '">' + gsEscapeHtml(label) + '</span>';
+}
+
+function gsNowLocalInputValue() {
+    var d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+}
+
+function gsEditApprovalButton(sec) {
+    var statusCode = String(sec.statusCode || '').toUpperCase();
+    if (statusCode !== 'DEAN_APPROVED' && statusCode !== 'REGISTRAR_FINALIZED') return '';
+
+    var stage = statusCode === 'REGISTRAR_FINALIZED' ? 'registrar' : 'dean';
+    var name = stage === 'registrar' ? sec.registrarFinalizedByName : sec.deanApprovedByName;
+    var iso = stage === 'registrar' ? sec.registrarFinalizedAtIso : sec.deanApprovedAtIso;
+
+    return '<button type="button" class="gs-edit-approval-btn" title="Edit approver / date approved" '
+        + 'data-id="' + sec.id + '" '
+        + 'data-stage="' + stage + '" '
+        + 'data-approver="' + gsEscapeHtml(name || '') + '" '
+        + 'data-approved-at="' + gsEscapeHtml(iso || gsNowLocalInputValue()) + '">'
+        + '&#9998;'
+        + '</button>';
 }
 
 function gsActionButtons(sec) {
@@ -293,7 +526,7 @@ function renderSectionList() {
             '<td>' + s.faculty + '</td>' +
             '<td class="gs-date-cell">' + s.midterm + '</td>' +
             '<td class="gs-date-cell">' + s.final + '</td>' +
-            '<td>' + s.approvedBy + '</td>' +
+            '<td>' + s.approvedBy + gsEditApprovalButton(s) + '</td>' +
             '<td>' + gsStatusBadge(s.status) + '</td>' +
             '<td>' + gsActionButtons(s) + '</td>' +
         '</tr>';
@@ -527,16 +760,37 @@ function doGradingAction(subjectId, action, name, section, faculty, btn) {
                 + '<strong>' + gsEscapeHtml(name) + '</strong><br>'
                 + '<span style="color:#6b7280;font-size:0.9rem;">'
                 + gsEscapeHtml(section) + ' &bull; ' + gsEscapeHtml(faculty)
-                + '</span>',
+                + '</span>'
+                + '<div style="margin-top:14px;text-align:left;">'
+                + '<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px;">Approver Name</label>'
+                + '<input id="swalApproverName" class="swal2-input" style="margin:0 0 10px;" '
+                + 'value="' + gsEscapeHtml(window.GS_CURRENT_USER_NAME || '') + '">'
+                + '<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px;">Date Approved</label>'
+                + '<input id="swalApprovedAt" type="datetime-local" class="swal2-input" style="margin:0;" '
+                + 'value="' + gsNowLocalInputValue() + '">'
+                + '</div>',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#15803d',
             cancelButtonColor: '#6b7280',
             confirmButtonText: isFinalize ? 'Yes, Finalize' : 'Yes, Approve',
             cancelButtonText: 'Cancel',
+            preConfirm: function () {
+                var approverName = (document.getElementById('swalApproverName').value || '').trim();
+                var approvedAt = document.getElementById('swalApprovedAt').value || '';
+                if (!approverName) {
+                    Swal.showValidationMessage('Approver name is required');
+                    return false;
+                }
+                if (!approvedAt) {
+                    Swal.showValidationMessage('Date approved is required');
+                    return false;
+                }
+                return { approverName: approverName, approvedAt: approvedAt };
+            },
         }).then(function (result) {
             if (!result.isConfirmed) return;
-            gsPostAction(subjectId, action, '', name, section, btn);
+            gsPostAction(subjectId, action, '', name, section, btn, result.value.approverName, result.value.approvedAt);
         });
 
     } else {
@@ -566,7 +820,7 @@ function doGradingAction(subjectId, action, name, section, faculty, btn) {
     }
 }
 
-function gsPostAction(subjectId, action, remarks, name, section, btn) {
+function gsPostAction(subjectId, action, remarks, name, section, btn, approverName, approvedAt) {
     btn.disabled = true;
 
     fetch(window.GS_ACTION_URL, {
@@ -580,6 +834,8 @@ function gsPostAction(subjectId, action, remarks, name, section, btn) {
             subject_id: subjectId,
             action:     action,
             remarks:    remarks,
+            approver_name: approverName || '',
+            approved_at:   approvedAt || '',
         }),
     })
     .then(function (res) { return res.json(); })
@@ -601,6 +857,16 @@ function gsPostAction(subjectId, action, remarks, name, section, btn) {
                 s.statusCode = String(data.status || '').toUpperCase();
                 s.status = data.label || s.status;
                 s.approvedBy = data.approvedBy || (action === 'rejected' ? 'Returned' : 'Updated');
+                if (action === 'dean_approved') {
+                    s.deanApprovedAt = data.approvedAt || '';
+                    s.deanApprovedAtIso = data.approvedAtIso || '';
+                    s.deanApprovedByName = data.approvedBy || '';
+                }
+                if (action === 'finalized') {
+                    s.registrarFinalizedAt = data.approvedAt || '';
+                    s.registrarFinalizedAtIso = data.approvedAtIso || '';
+                    s.registrarFinalizedByName = data.approvedBy || '';
+                }
             }
         });
 
@@ -633,7 +899,13 @@ function gsPostAction(subjectId, action, remarks, name, section, btn) {
                 + '(<span style="color:#6b7280;">' + gsEscapeHtml(section) + '</span>)<br><br>'
                 + (isApproved
                     ? (action === 'finalized' ? 'Grades have been <strong>finalized</strong> successfully.' : 'Grades have been <strong>approved</strong> successfully.')
-                    : 'Grades have been <strong>sent back</strong> to faculty for revision.'),
+                    : 'Grades have been <strong>sent back</strong> to faculty for revision.')
+                + (isApproved
+                    ? '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:left;font-size:0.9rem;">'
+                        + '<div><strong>Approved By:</strong> ' + gsEscapeHtml(data.approvedBy || '-') + '</div>'
+                        + '<div><strong>Date Approved:</strong> ' + gsEscapeHtml(data.approvedAt || '-') + '</div>'
+                        + '</div>'
+                    : ''),
             icon: isApproved ? 'success' : 'info',
             confirmButtonColor: '#15803d',
             confirmButtonText: 'Done',
@@ -681,10 +953,123 @@ function bindListBodyActions(listBody) {
             return;
         }
 
+        var editBtn = event.target.closest('.gs-edit-approval-btn');
+        if (editBtn) {
+            event.stopPropagation();
+            openApprovalEditModal(
+                editBtn.getAttribute('data-id'),
+                editBtn.getAttribute('data-stage'),
+                editBtn.getAttribute('data-approver'),
+                editBtn.getAttribute('data-approved-at')
+            );
+            return;
+        }
+
         var row = event.target.closest('tr[data-section-id]');
         if (row && !event.target.closest('button')) {
             showDetailView(row.getAttribute('data-section-id'));
         }
+    });
+}
+
+function openApprovalEditModal(subjectId, stage, currentName, currentAtIso) {
+    Swal.fire({
+        title: 'Edit Approval Details',
+        html: '<div style="text-align:left;">'
+            + '<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px;">Approver Name</label>'
+            + '<input id="swalEditApproverName" class="swal2-input" style="margin:0 0 10px;" value="' + gsEscapeHtml(currentName || '') + '">'
+            + '<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px;">Date Approved</label>'
+            + '<input id="swalEditApprovedAt" type="datetime-local" class="swal2-input" style="margin:0;" value="' + gsEscapeHtml(currentAtIso || gsNowLocalInputValue()) + '">'
+            + '</div>',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#15803d',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Save Changes',
+        cancelButtonText: 'Cancel',
+        preConfirm: function () {
+            var nameVal = (document.getElementById('swalEditApproverName').value || '').trim();
+            var dateVal = document.getElementById('swalEditApprovedAt').value || '';
+            if (!nameVal) {
+                Swal.showValidationMessage('Approver name is required');
+                return false;
+            }
+            if (!dateVal) {
+                Swal.showValidationMessage('Date approved is required');
+                return false;
+            }
+            return { name: nameVal, date: dateVal };
+        },
+    }).then(function (result) {
+        if (!result.isConfirmed) return;
+        gsPostApprovalEdit(subjectId, stage, result.value.name, result.value.date);
+    });
+}
+
+function gsPostApprovalEdit(subjectId, stage, approverName, approvedAt) {
+    fetch(window.GS_UPDATE_APPROVAL_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': gsGetCsrf(),
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            subject_id: subjectId,
+            stage: stage,
+            approver_name: approverName,
+            approved_at: approvedAt,
+        }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (!data.ok) {
+            Swal.fire({
+                title: 'Error',
+                text: data.message || 'Update failed. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#15803d',
+            });
+            return;
+        }
+
+        [GS_SECTIONS, GS_ALL_SECTIONS, window.GS_SERVER_SECTIONS].forEach(function (list) {
+            if (!list) return;
+            list.forEach(function (s) {
+                if (String(s.id) !== String(subjectId)) return;
+                if (stage === 'dean') {
+                    s.deanApprovedByName = data.approvedBy || s.deanApprovedByName;
+                    s.deanApprovedAt = data.approvedAt || s.deanApprovedAt;
+                    s.deanApprovedAtIso = data.approvedAtIso || s.deanApprovedAtIso;
+                } else {
+                    s.registrarFinalizedByName = data.approvedBy || s.registrarFinalizedByName;
+                    s.registrarFinalizedAt = data.approvedAt || s.registrarFinalizedAt;
+                    s.registrarFinalizedAtIso = data.approvedAtIso || s.registrarFinalizedAtIso;
+                }
+                // "Current Owner" always reflects the latest stage reached (registrar overrides dean)
+                s.approvedBy = s.registrarFinalizedByName || s.deanApprovedByName || s.approvedBy;
+            });
+        });
+
+        renderSectionList();
+
+        Swal.fire({
+            title: 'Updated!',
+            html: 'Approval details have been updated.<br><br>'
+                + '<strong>Approved By:</strong> ' + gsEscapeHtml(data.approvedBy || '-') + '<br>'
+                + '<strong>Date Approved:</strong> ' + gsEscapeHtml(data.approvedAt || '-'),
+            icon: 'success',
+            confirmButtonColor: '#15803d',
+            confirmButtonText: 'Done',
+        });
+    })
+    .catch(function () {
+        Swal.fire({
+            title: 'Network Error',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonColor: '#15803d',
+        });
     });
 }
 

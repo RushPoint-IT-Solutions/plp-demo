@@ -51,7 +51,7 @@ class UserAccessGate
             ->first(['id', 'code']);
 
         if (!$module || !$permissionType) {
-            return in_array($normalizedRole, ['admin', 'registrar'], true);
+            return self::defaultAllows($normalizedRole, $moduleCode, $permissionCode);
         }
 
         $hasExplicitRows = UserAccessControl::query()
@@ -183,6 +183,7 @@ class UserAccessGate
             'registrar.registrar-menu.faculty-mgmt.faculty-list.profile.update' => 'faculty_directory',
             'registrar.registrar-menu.faculty-mgmt.departments' => 'faculty_directory',
             'registrar.registrar-menu.faculty-mgmt.grading-sheet' => 'faculty_grading_sheets',
+            'registrar.registrar-menu.faculty-mgmt.upload-grades' => 'faculty_grading_sheets',
             'registrar.registrar-menu.faculty-mgmt.evaluation' => 'faculty_evaluation',
             'registrar.registrar-menu.forms.diploma' => 'documents_forms_diploma',
             'registrar.registrar-menu.forms.official-grade-report' => 'documents_forms_official_grade_report',
@@ -287,6 +288,7 @@ class UserAccessGate
             'registrar.registrar-menu.faculty-mgmt.faculty-list.' => 'faculty_directory',
             'registrar.registrar-menu.faculty-mgmt.departments.' => 'faculty_directory',
             'registrar.registrar-menu.faculty-mgmt.grading-sheet.' => 'faculty_grading_sheets',
+            'registrar.registrar-menu.faculty-mgmt.upload-grades.' => 'faculty_grading_sheets',
             'registrar.registrar-menu.alumni.tracker.' => 'reports_alumni_tracker',
             'registrar.registrar-menu.forms.placeholder' => 'documents_forms_certificates',
             'registrar.registrar-menu.forms.tor' => 'documents_forms_copy_of_grades',

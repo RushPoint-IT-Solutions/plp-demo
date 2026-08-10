@@ -18940,11 +18940,17 @@ class RegistrarController extends Controller
 
             $statusCode = strtoupper((string) optional($subject->gradingStatusLookup)->code);
             $statusLabel = (string) (optional($subject->gradingStatusLookup)->label ?: 'Submitted for Dean Review');
+            $deanApprovedByName = (string) ($subject->dean_approved_by_name ?: (
+                !empty($subject->dean_approved_by) ? (optional(User::find((int) $subject->dean_approved_by))->name ?: 'Dean') : ''
+            ));
+            $registrarFinalizedByName = (string) ($subject->registrar_finalized_by_name ?: (
+                !empty($subject->registrar_finalized_by) ? (optional(User::find((int) $subject->registrar_finalized_by))->name ?: 'Registrar') : ''
+            ));
             $approvedBy = '-';
-            if (!empty($subject->registrar_finalized_by)) {
-                $approvedBy = optional(User::find((int) $subject->registrar_finalized_by))->name ?: 'Registrar';
-            } elseif (!empty($subject->dean_approved_by)) {
-                $approvedBy = optional(User::find((int) $subject->dean_approved_by))->name ?: 'Dean';
+            if ($registrarFinalizedByName !== '') {
+                $approvedBy = $registrarFinalizedByName;
+            } elseif ($deanApprovedByName !== '') {
+                $approvedBy = $deanApprovedByName;
             } elseif (!empty($subject->grading_returned_by)) {
                 $approvedBy = optional(User::find((int) $subject->grading_returned_by))->name ?: 'Registrar';
             }
@@ -18969,11 +18975,17 @@ class RegistrarController extends Controller
                 'schedule' => 'Room No. : ' . (string) ($subject->room ?: 'TBA'),
                 'schoolYear' => (string) ($subject->school_year ?: ''),
                 'term' => (string) ($subject->semester ?: ''),
+                'units' => (string) ($subject->units ?: '-'),
+                'transmutationRules' => $this->transmutationRulesForRegistrarSubject($subject),
                 'status' => $statusLabel,
                 'statusCode' => $statusCode,
                 'submittedAt' => optional($subject->submitted_at)->format('m/d/Y h:i A') ?: '',
                 'deanApprovedAt' => optional($subject->dean_approved_at)->format('m/d/Y h:i A') ?: '',
+                'deanApprovedAtIso' => optional($subject->dean_approved_at)->format('Y-m-d\TH:i') ?: '',
+                'deanApprovedByName' => $deanApprovedByName,
                 'registrarFinalizedAt' => optional($subject->registrar_finalized_at)->format('m/d/Y h:i A') ?: '',
+                'registrarFinalizedAtIso' => optional($subject->registrar_finalized_at)->format('Y-m-d\TH:i') ?: '',
+                'registrarFinalizedByName' => $registrarFinalizedByName,
                 'returnReason' => (string) ($subject->grading_return_reason ?: ''),
                 'students' => $students,
             ];
@@ -18995,11 +19007,15 @@ class RegistrarController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'action' => 'required|in:approved,dean_approved,finalized,rejected',
             'remarks' => 'nullable|string|max:500',
+            'approver_name' => 'nullable|string|max:150',
+            'approved_at' => 'nullable|date',
         ]);
 
         $subject = Subject::with('gradingStatusLookup')->findOrFail($request->input('subject_id'));
         $action = (string) $request->input('action');
         $currentCode = strtoupper((string) optional($subject->gradingStatusLookup)->code);
+        $approverName = trim((string) $request->input('approver_name', ''));
+        $approvedAtInput = $request->filled('approved_at') ? Carbon::parse($request->input('approved_at')) : now();
 
         if ($action === 'approved') {
             $action = 'dean_approved';
@@ -19031,15 +19047,18 @@ class RegistrarController extends Controller
 
         if ($action === 'dean_approved') {
             $subject->dean_approved_by = optional($request->user())->id;
-            $subject->dean_approved_at = now();
+            $subject->dean_approved_at = $approvedAtInput;
+            $subject->dean_approved_by_name = $approverName !== '' ? $approverName : (optional($request->user())->name ?: 'Dean');
             $subject->registrar_finalized_by = null;
             $subject->registrar_finalized_at = null;
+            $subject->registrar_finalized_by_name = null;
             $subject->grading_returned_by = null;
             $subject->grading_returned_at = null;
             $subject->grading_return_reason = null;
         } elseif ($action === 'finalized') {
             $subject->registrar_finalized_by = optional($request->user())->id;
-            $subject->registrar_finalized_at = now();
+            $subject->registrar_finalized_at = $approvedAtInput;
+            $subject->registrar_finalized_by_name = $approverName !== '' ? $approverName : (optional($request->user())->name ?: 'Registrar');
             $subject->load('students');
             foreach ($subject->students as $student) {
                 $this->syncStudentGradeSnapshot($student);
@@ -19050,17 +19069,72 @@ class RegistrarController extends Controller
             $subject->grading_return_reason = trim((string) $request->input('remarks', ''));
             $subject->dean_approved_by = null;
             $subject->dean_approved_at = null;
+            $subject->dean_approved_by_name = null;
             $subject->registrar_finalized_by = null;
             $subject->registrar_finalized_at = null;
+            $subject->registrar_finalized_by_name = null;
+        }
+
+        $subject->save();
+
+        $approvedAtValue = null;
+        $approvedByValue = optional($request->user())->name ?: 'Updated';
+        if ($action === 'dean_approved') {
+            $approvedAtValue = $subject->dean_approved_at;
+            $approvedByValue = $subject->dean_approved_by_name ?: $approvedByValue;
+        } elseif ($action === 'finalized') {
+            $approvedAtValue = $subject->registrar_finalized_at;
+            $approvedByValue = $subject->registrar_finalized_by_name ?: $approvedByValue;
+        } elseif ($action === 'rejected') {
+            $approvedAtValue = $subject->grading_returned_at;
+            $approvedByValue = 'Returned';
+        }
+
+        return response()->json([
+            'ok' => true,
+            'status' => $statusCode,
+            'label' => \DB::table('subject_grading_statuses')->where('id', $statusId)->value('label') ?: $statusCode,
+            'approvedBy' => $approvedByValue,
+            'approvedAt' => $approvedAtValue ? $approvedAtValue->format('m/d/Y h:i A') : '',
+            'approvedAtIso' => $approvedAtValue ? $approvedAtValue->format('Y-m-d\TH:i') : '',
+        ]);
+    }
+
+    public function gradingSheetUpdateApproval(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'stage' => 'required|in:dean,registrar',
+            'approver_name' => 'required|string|max:150',
+            'approved_at' => 'required|date',
+        ]);
+
+        $subject = Subject::findOrFail($validated['subject_id']);
+        $stage = $validated['stage'];
+        $approverName = trim($validated['approver_name']);
+        $approvedAt = Carbon::parse($validated['approved_at']);
+
+        if ($stage === 'dean') {
+            if (empty($subject->dean_approved_at)) {
+                return response()->json(['ok' => false, 'message' => 'This section has not been dean-approved yet.'], 422);
+            }
+            $subject->dean_approved_by_name = $approverName;
+            $subject->dean_approved_at = $approvedAt;
+        } else {
+            if (empty($subject->registrar_finalized_at)) {
+                return response()->json(['ok' => false, 'message' => 'This section has not been registrar-finalized yet.'], 422);
+            }
+            $subject->registrar_finalized_by_name = $approverName;
+            $subject->registrar_finalized_at = $approvedAt;
         }
 
         $subject->save();
 
         return response()->json([
             'ok' => true,
-            'status' => $statusCode,
-            'label' => \DB::table('subject_grading_statuses')->where('id', $statusId)->value('label') ?: $statusCode,
-            'approvedBy' => optional($request->user())->name ?: 'Updated',
+            'approvedBy' => $approverName,
+            'approvedAt' => $approvedAt->format('m/d/Y h:i A'),
+            'approvedAtIso' => $approvedAt->format('Y-m-d\TH:i'),
         ]);
     }
 
@@ -19153,6 +19227,264 @@ class RegistrarController extends Controller
         ]);
     }
 
+    /**
+     * Registrar > Faculty Management > Upload Grades
+     */
+    public function uploadGrades(Request $request)
+    {
+        $subjects = Subject::query()
+            ->where(function ($query) {
+                $query->where('is_subject_file_record', false)
+                    ->orWhereNull('is_subject_file_record');
+            })
+            ->with([
+                'students' => function ($query) {
+                    $query->select('students.id', 'students.student_no', 'students.name');
+                },
+                'studentGrades',
+                'facultyModel:id,name',
+                'canonicalCourse:id,code,name',
+                'gradingStatusLookup',
+            ])
+            ->orderBy('year_section')
+            ->orderBy('code')
+            ->get();
+
+        $uploadSubjects = $subjects->map(function ($subject) {
+            $gradeMap = $subject->studentGrades->keyBy('student_id');
+
+            $students = $subject->students->map(function ($student) use ($gradeMap) {
+                $grade = $gradeMap->get($student->id);
+                return [
+                    'id' => (int) $student->id,
+                    'studentNo' => (string) $student->student_no,
+                    'name' => (string) $student->name,
+                    'midterm' => $grade && $grade->midterm !== null ? (float) $grade->midterm : null,
+                    'final' => $grade && $grade->final !== null ? (float) $grade->final : null,
+                ];
+            })->values()->all();
+
+            return [
+                'id' => (int) $subject->id,
+                'section' => trim((string) ($subject->year_section ?: '-')),
+                'courseCode' => (string) ($subject->code ?: '-'),
+                'description' => (string) ($subject->name ?: '-'),
+                'faculty' => (string) (optional($subject->facultyModel)->name ?: ($subject->faculty ?: '-')),
+                'program' => (string) (
+                    optional($subject->canonicalCourse)->code
+                    ?: (optional($subject->canonicalCourse)->name ?: ($subject->course ?: '-'))
+                ),
+                'schoolYear' => (string) ($subject->school_year ?: ''),
+                'term' => (string) ($subject->semester ?: ''),
+                'status' => (string) (optional($subject->gradingStatusLookup)->label ?: 'Open For Encoding'),
+                'studentCount' => count($students),
+                'students' => $students,
+            ];
+        })->values()->all();
+
+        return view('registrar.registrar-menu.faculty-management.upload-grades', [
+            'uploadSubjects' => $uploadSubjects,
+            'uploadReport' => session('gradeUploadReport'),
+            'selectedSubjectId' => (int) $request->query('subject_id', 0),
+        ]);
+    }
+
+    public function uploadGradesTemplate(Subject $subject)
+    {
+        $subject->load(['students' => function ($query) {
+            $query->select('students.id', 'students.student_no', 'students.name')->orderBy('students.name');
+        }, 'studentGrades']);
+
+        $gradeMap = $subject->studentGrades->keyBy('student_id');
+
+        $filename = 'grade-upload-' . \Illuminate\Support\Str::slug($subject->code . '-' . $subject->year_section) . '.csv';
+
+        $callback = function () use ($subject, $gradeMap) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['student_no', 'name', 'midterm', 'final']);
+
+            foreach ($subject->students as $student) {
+                $grade = $gradeMap->get($student->id);
+                fputcsv($handle, [
+                    $student->student_no,
+                    $student->name,
+                    $grade && $grade->midterm !== null ? $grade->midterm : '',
+                    $grade && $grade->final !== null ? $grade->final : '',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->streamDownload($callback, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    public function storeUploadGrades(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'file' => 'required|file|max:2048',
+        ]);
+
+        $subject = Subject::with('students')->findOrFail($request->input('subject_id'));
+        $file = $request->file('file');
+        $extension = strtolower((string) $file->getClientOriginalExtension());
+
+        if (!in_array($extension, ['csv', 'txt'], true)) {
+            return redirect()
+                ->route('registrar.registrar-menu.faculty-mgmt.upload-grades', ['subject_id' => $subject->id])
+                ->withErrors(['file' => 'Please upload a .csv file.']);
+        }
+
+        $studentsByNo = $subject->students->keyBy(function ($student) {
+            return strtoupper(trim((string) $student->student_no));
+        });
+
+        $handle = fopen($file->getRealPath(), 'r');
+        $header = $handle ? fgetcsv($handle) : null;
+
+        if (!$handle || !$header) {
+            return redirect()
+                ->route('registrar.registrar-menu.faculty-mgmt.upload-grades', ['subject_id' => $subject->id])
+                ->withErrors(['file' => 'The uploaded file is empty or unreadable.']);
+        }
+
+        $columns = array_map(function ($col) {
+            return strtolower(trim((string) $col));
+        }, $header);
+
+        $noColIdx = array_search('student_no', $columns, true);
+        $midColIdx = array_search('midterm', $columns, true);
+        $finColIdx = array_search('final', $columns, true);
+
+        if ($noColIdx === false || ($midColIdx === false && $finColIdx === false)) {
+            fclose($handle);
+            return redirect()
+                ->route('registrar.registrar-menu.faculty-mgmt.upload-grades', ['subject_id' => $subject->id])
+                ->withErrors(['file' => 'CSV must include a "student_no" column and at least one of "midterm" or "final".']);
+        }
+
+        $updatedRows = [];
+        $skippedRows = [];
+        $rowNumber = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+            $studentNo = strtoupper(trim((string) ($row[$noColIdx] ?? '')));
+
+            if ($studentNo === '') {
+                $skippedRows[] = ['row' => $rowNumber, 'reason' => 'Missing student number.'];
+                continue;
+            }
+
+            $student = $studentsByNo->get($studentNo);
+            if (!$student) {
+                $skippedRows[] = ['row' => $rowNumber, 'reason' => $studentNo . ' is not enrolled in this section.'];
+                continue;
+            }
+
+            $midtermRaw = $midColIdx !== false ? trim((string) ($row[$midColIdx] ?? '')) : '';
+            $finalRaw = $finColIdx !== false ? trim((string) ($row[$finColIdx] ?? '')) : '';
+
+            if ($midtermRaw !== '' && (!is_numeric($midtermRaw) || $midtermRaw < 0 || $midtermRaw > 100)) {
+                $skippedRows[] = ['row' => $rowNumber, 'reason' => $studentNo . ' has an invalid midterm value.'];
+                continue;
+            }
+            if ($finalRaw !== '' && (!is_numeric($finalRaw) || $finalRaw < 0 || $finalRaw > 100)) {
+                $skippedRows[] = ['row' => $rowNumber, 'reason' => $studentNo . ' has an invalid final value.'];
+                continue;
+            }
+
+            if ($midtermRaw === '' && $finalRaw === '') {
+                $skippedRows[] = ['row' => $rowNumber, 'reason' => $studentNo . ' has no grade values to import.'];
+                continue;
+            }
+
+            $gradeRow = StudentSubjectGrade::firstOrNew([
+                'subject_id' => $subject->id,
+                'student_id' => $student->id,
+            ]);
+
+            if ($midtermRaw !== '') {
+                $gradeRow->midterm = (float) $midtermRaw;
+            }
+            if ($finalRaw !== '') {
+                $gradeRow->final = (float) $finalRaw;
+            }
+
+            $transmuted = $this->computeRegistrarTransmutedGrade($subject, $gradeRow->midterm, $gradeRow->final);
+            $gradeRow->final_average = $transmuted['grade'];
+            $gradeRow->remarks = $transmuted['remarks'];
+            if (Schema::hasColumn('student_subject_grades', 'status')) {
+                $gradeRow->status = $transmuted['status'];
+            }
+            $gradeRow->save();
+
+            $updatedRows[] = ['row' => $rowNumber, 'student_no' => $studentNo, 'name' => $student->name];
+        }
+
+        fclose($handle);
+
+        session()->flash('gradeUploadReport', [
+            'subject_id' => $subject->id,
+            'updated' => $updatedRows,
+            'skipped' => $skippedRows,
+        ]);
+
+        return redirect()->route('registrar.registrar-menu.faculty-mgmt.upload-grades', ['subject_id' => $subject->id]);
+    }
+
+    public function uploadGradesSubmit(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+        ]);
+
+        $subject = Subject::with('students', 'studentGrades')->findOrFail($request->input('subject_id'));
+        $gradeMap = $subject->studentGrades->keyBy('student_id');
+        $missing = [];
+
+        foreach ($subject->students as $student) {
+            $grade = $gradeMap->get($student->id);
+            $hasMidterm = $grade && $grade->midterm !== null;
+            $hasFinal = $grade && $grade->final !== null;
+
+            if (!$hasMidterm || !$hasFinal) {
+                $missing[] = $student->name . ' (missing: '
+                    . (!$hasMidterm ? 'Midterm ' : '')
+                    . (!$hasFinal ? 'Final' : '')
+                    . ')';
+            }
+        }
+
+        if (!empty($missing)) {
+            return redirect()
+                ->route('registrar.registrar-menu.faculty-mgmt.upload-grades', ['subject_id' => $subject->id])
+                ->withErrors(['submit' => 'Some students are missing grades: ' . implode('; ', $missing)]);
+        }
+
+        $subject->grading_status_id = \DB::table('subject_grading_statuses')
+            ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
+            ->value('id');
+        $subject->submitted_at = now();
+        $subject->dean_approved_by = null;
+        $subject->dean_approved_at = null;
+        $subject->dean_approved_by_name = null;
+        $subject->registrar_finalized_by = null;
+        $subject->registrar_finalized_at = null;
+        $subject->registrar_finalized_by_name = null;
+        $subject->grading_returned_by = null;
+        $subject->grading_returned_at = null;
+        $subject->grading_return_reason = null;
+        $subject->save();
+
+        return redirect()
+            ->route('registrar.registrar-menu.faculty-mgmt.grading-sheet')
+            ->with('success', 'Grades for ' . $subject->year_section . ' - ' . $subject->code . ' submitted for Dean review.');
+    }
+
     private function computeRegistrarTransmutedGrade(Subject $subject, $midterm, $final): array
     {
         $grades = collect([$midterm, $final])
@@ -19229,6 +19561,100 @@ class RegistrarController extends Controller
         }
 
         return ['First', 'First Semester', '1st Semester'];
+    }
+
+    private function transmutationRulesForRegistrarSubject(Subject $subject): array
+    {
+        if (!Schema::hasTable('transmutation_rules')) {
+            return $this->defaultTransmutationBands();
+        }
+
+        $base = TransmutationRule::query();
+
+        if (Schema::hasColumn('transmutation_rules', 'academic_term_id') && !empty($subject->academic_term_id)) {
+            $base->where('academic_term_id', (int) $subject->academic_term_id);
+        } elseif (Schema::hasColumn('transmutation_rules', 'school_year') && Schema::hasColumn('transmutation_rules', 'term')) {
+            $base->where('school_year', (string) $subject->school_year)
+                ->whereIn('term', $this->registrarTransmutationTermAliases($subject->semester));
+        }
+
+        if (Schema::hasColumn('transmutation_rules', 'course_id') && !empty($subject->course_id)) {
+            $courseRules = (clone $base)
+                ->where('course_id', (int) $subject->course_id)
+                ->orderByDesc('initial_from')
+                ->get();
+
+            if ($courseRules->isNotEmpty()) {
+                return $this->formatRegistrarTransmutationRules($courseRules);
+            }
+        }
+
+        if (Schema::hasColumn('transmutation_rules', 'program')) {
+            $program = trim((string) ($subject->course ?: $subject->code));
+            if ($program !== '') {
+                $programRules = (clone $base)
+                    ->where('program', $program)
+                    ->orderByDesc('initial_from')
+                    ->get();
+
+                if ($programRules->isNotEmpty()) {
+                    return $this->formatRegistrarTransmutationRules($programRules);
+                }
+            }
+        }
+
+        $global = TransmutationRule::query();
+        if (Schema::hasColumn('transmutation_rules', 'academic_term_id')) {
+            $global->whereNull('academic_term_id');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'course_id')) {
+            $global->whereNull('course_id');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'school_year')) {
+            $global->whereNull('school_year');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'term')) {
+            $global->whereNull('term');
+        }
+        if (Schema::hasColumn('transmutation_rules', 'program')) {
+            $global->whereNull('program');
+        }
+
+        $globalRules = $global->orderByDesc('initial_from')->get();
+
+        if ($globalRules->isEmpty()) {
+            return $this->defaultTransmutationBands();
+        }
+
+        return $this->formatRegistrarTransmutationRules($globalRules);
+    }
+
+    private function formatRegistrarTransmutationRules($rules): array
+    {
+        return $rules->map(function ($rule) {
+            return [
+                'from' => (float) $rule->initial_from,
+                'to' => (float) $rule->initial_to,
+                'grade' => (float) $rule->transmuted_grade,
+                'remarks' => trim((string) $rule->remarks),
+            ];
+        })->values()->all();
+    }
+
+    private function defaultTransmutationBands(): array
+    {
+        return [
+            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00, 'remarks' => 'Passed'],
+            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25, 'remarks' => 'Passed'],
+            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50, 'remarks' => 'Passed'],
+            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75, 'remarks' => 'Passed'],
+            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00, 'remarks' => 'Passed'],
+            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25, 'remarks' => 'Passed'],
+            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50, 'remarks' => 'Passed'],
+            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75, 'remarks' => 'Passed'],
+            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00, 'remarks' => 'Passed'],
+            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00, 'remarks' => 'Failed'],
+        ];
     }
 
     private function syncStudentGradeSnapshot(Student $student): void

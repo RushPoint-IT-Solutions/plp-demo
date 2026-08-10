@@ -361,7 +361,12 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::delete('/faculty-list/{faculty}/allowed-subjects/{subject}', 'Registrar\Services\FacultyLoadsController@removeAllowedSubject')->name('faculty-list.allowed-subjects.destroy');
             Route::get('/grading-sheet', 'Registrar\RegistrarController@gradingSheet')->name('grading-sheet');
             Route::post('/grading-sheet/action', 'Registrar\RegistrarController@gradingSheetAction')->name('grading-sheet.action');
+            Route::post('/grading-sheet/update-approval', 'Registrar\RegistrarController@gradingSheetUpdateApproval')->name('grading-sheet.update-approval');
             Route::post('/grading-sheet/update-phase', 'Registrar\RegistrarController@gradingSheetUpdatePhase')->name('grading-sheet.update-phase')->middleware('throttle:60,1');
+            Route::get('/upload-grades', 'Registrar\RegistrarController@uploadGrades')->name('upload-grades');
+            Route::post('/upload-grades/import', 'Registrar\RegistrarController@storeUploadGrades')->name('upload-grades.import')->middleware('throttle:30,1');
+            Route::post('/upload-grades/submit', 'Registrar\RegistrarController@uploadGradesSubmit')->name('upload-grades.submit');
+            Route::get('/upload-grades/template/{subject}', 'Registrar\RegistrarController@uploadGradesTemplate')->name('upload-grades.template');
             Route::get('/evaluation', 'Registrar\RegistrarController@evaluation')->name('evaluation');
             Route::post('/evaluation', 'Registrar\RegistrarController@storeEvaluationForm')->name('evaluation.store')->middleware('throttle:30,1');
             Route::post('/evaluation/{evaluationForm}/publish', 'Registrar\RegistrarController@publishEvaluationForm')->name('evaluation.publish')->middleware('throttle:30,1');

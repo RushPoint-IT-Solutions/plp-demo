@@ -24,8 +24,8 @@ class Subject extends Model
         'faculty_id',
         'year_section', 'course', 'course_id', 'semester', 'school_year', 'academic_term_id',
         'grading_status', 'grading_status_id',
-        'submitted_at', 'dean_approved_by', 'dean_approved_at',
-        'registrar_finalized_by', 'registrar_finalized_at',
+        'submitted_at', 'dean_approved_by', 'dean_approved_at', 'dean_approved_by_name',
+        'registrar_finalized_by', 'registrar_finalized_at', 'registrar_finalized_by_name',
         'grading_returned_by', 'grading_returned_at', 'grading_return_reason',
         'load_type', 'load_type_id', 'credited_tuition_units', 'load_hours', 'added_by',
     ];
