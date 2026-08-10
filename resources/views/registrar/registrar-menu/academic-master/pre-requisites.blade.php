@@ -192,80 +192,82 @@
                 @csrf
                 <input type="hidden" name="return_to_pre_requisites" value="1">
 
-                <div class="prereq-add-grid">
-                    <div class="prereq-add-field">
-                        <label for="prereqAddProgram">Program</label>
-                        <select id="prereqAddProgram" name="setup_course_id" class="prereq-add-input prereq-select2" data-placeholder="Search program">
-                            @forelse($courses as $course)
-                                <option value="{{ $course->id }}" {{ (string) old('setup_course_id', $selectedCourseId ?: '') === (string) $course->id ? 'selected' : '' }}>
-                                    {{ $course->name ?: $course->description }}
-                                </option>
-                            @empty
-                                <option value="">No Program Available</option>
-                            @endforelse
-                        </select>
+                <div class="prereq-add-modal-body">
+                    <div class="prereq-add-grid">
+                        <div class="prereq-add-field">
+                            <label for="prereqAddProgram">Program</label>
+                            <select id="prereqAddProgram" name="setup_course_id" class="prereq-add-input prereq-select2" data-placeholder="Search program">
+                                @forelse($courses as $course)
+                                    <option value="{{ $course->id }}" {{ (string) old('setup_course_id', $selectedCourseId ?: '') === (string) $course->id ? 'selected' : '' }}>
+                                        {{ $course->name ?: $course->description }}
+                                    </option>
+                                @empty
+                                    <option value="">No Program Available</option>
+                                @endforelse
+                            </select>
+                        </div>
+
+                        <div class="prereq-add-field">
+                            <label for="prereqAddCurriculumYear">Curriculum Year</label>
+                            <input id="prereqAddCurriculumYear" name="setup_curriculum_year" type="text" class="prereq-add-input" value="{{ old('setup_curriculum_year', $selectedCurriculumYear) }}" placeholder="Example: 2026-2027">
+                        </div>
+
+                        <div class="prereq-add-field">
+                            <label for="prereqAddDateFrom">Date From</label>
+                            <input id="prereqAddDateFrom" name="setup_date_from" type="date" class="prereq-add-input" value="{{ old('setup_date_from', $selectedDateFrom) }}">
+                        </div>
+
+                        <div class="prereq-add-field">
+                            <label for="prereqAddDateTo">Date To</label>
+                            <input id="prereqAddDateTo" name="setup_date_to" type="date" class="prereq-add-input" value="{{ old('setup_date_to', $selectedDateTo) }}">
+                        </div>
+
+                        <div class="prereq-add-field">
+                            <label for="prereqAddYearLevel">Year Level to Reflect</label>
+                            <select id="prereqAddYearLevel" name="setup_year_block_id" class="prereq-add-input">
+                                <option value="">Select Year Level</option>
+                                @foreach($yearBlocks as $yearBlock)
+                                    <option value="{{ $yearBlock->id }}" {{ (string) old('setup_year_block_id') === (string) $yearBlock->id ? 'selected' : '' }}>
+                                        {{ $yearBlock->label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="prereq-add-field">
+                            <label for="prereqAddTerm">Term / Semester</label>
+                            <select id="prereqAddTerm" name="setup_term_id" class="prereq-add-input">
+                                <option value="">Select Term</option>
+                                @foreach($semesters as $semester)
+                                    <option value="{{ $semester->id }}" {{ (string) old('setup_term_id') === (string) $semester->id ? 'selected' : '' }}>
+                                        {{ $semester->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="prereq-add-field">
-                        <label for="prereqAddCurriculumYear">Curriculum Year</label>
-                        <input id="prereqAddCurriculumYear" name="setup_curriculum_year" type="text" class="prereq-add-input" value="{{ old('setup_curriculum_year', $selectedCurriculumYear) }}" placeholder="Example: 2026-2027">
+                    <div class="prereq-add-course-tools">
+                        <label for="prereqAddCourseSearch">Course Search</label>
+                        <input id="prereqAddCourseSearch" type="text" class="prereq-add-input" placeholder="Search course code or title">
                     </div>
 
-                    <div class="prereq-add-field">
-                        <label for="prereqAddDateFrom">Date From</label>
-                        <input id="prereqAddDateFrom" name="setup_date_from" type="date" class="prereq-add-input" value="{{ old('setup_date_from', $selectedDateFrom) }}">
+                    <div class="prereq-add-course-list" id="prereqAddCourseList">
+                        @forelse($availableSubjects as $subject)
+                            @php
+                                $units = (float) ($subject->units ?: (($subject->lec ?: 0) + ($subject->lab ?: 0)));
+                                $oldSubjectIds = collect(old('setup_subject_ids', []))->map(function ($id) { return (string) $id; })->all();
+                            @endphp
+                            <label class="prereq-add-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}">
+                                <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
+                                <span class="prereq-add-course-code">{{ $subject->code }}</span>
+                                <span class="prereq-add-course-title">{{ $subject->name }}</span>
+                                <span class="prereq-add-course-meta">{{ number_format($units, 1) }} units &middot; {{ $subject->course_type ?: 'Major' }}</span>
+                            </label>
+                        @empty
+                            <div class="prereq-add-empty">No Course File records yet. Add courses in Course File first.</div>
+                        @endforelse
                     </div>
-
-                    <div class="prereq-add-field">
-                        <label for="prereqAddDateTo">Date To</label>
-                        <input id="prereqAddDateTo" name="setup_date_to" type="date" class="prereq-add-input" value="{{ old('setup_date_to', $selectedDateTo) }}">
-                    </div>
-
-                    <div class="prereq-add-field">
-                        <label for="prereqAddYearLevel">Year Level to Reflect</label>
-                        <select id="prereqAddYearLevel" name="setup_year_block_id" class="prereq-add-input">
-                            <option value="">Select Year Level</option>
-                            @foreach($yearBlocks as $yearBlock)
-                                <option value="{{ $yearBlock->id }}" {{ (string) old('setup_year_block_id') === (string) $yearBlock->id ? 'selected' : '' }}>
-                                    {{ $yearBlock->label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="prereq-add-field">
-                        <label for="prereqAddTerm">Term / Semester</label>
-                        <select id="prereqAddTerm" name="setup_term_id" class="prereq-add-input">
-                            <option value="">Select Term</option>
-                            @foreach($semesters as $semester)
-                                <option value="{{ $semester->id }}" {{ (string) old('setup_term_id') === (string) $semester->id ? 'selected' : '' }}>
-                                    {{ $semester->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="prereq-add-course-tools">
-                    <label for="prereqAddCourseSearch">Course Search</label>
-                    <input id="prereqAddCourseSearch" type="text" class="prereq-add-input" placeholder="Search course code or title">
-                </div>
-
-                <div class="prereq-add-course-list" id="prereqAddCourseList">
-                    @forelse($availableSubjects as $subject)
-                        @php
-                            $units = (float) ($subject->units ?: (($subject->lec ?: 0) + ($subject->lab ?: 0)));
-                            $oldSubjectIds = collect(old('setup_subject_ids', []))->map(function ($id) { return (string) $id; })->all();
-                        @endphp
-                        <label class="prereq-add-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}">
-                            <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
-                            <span class="prereq-add-course-code">{{ $subject->code }}</span>
-                            <span class="prereq-add-course-title">{{ $subject->name }}</span>
-                            <span class="prereq-add-course-meta">{{ number_format($units, 1) }} units &middot; {{ $subject->course_type ?: 'Major' }}</span>
-                        </label>
-                    @empty
-                        <div class="prereq-add-empty">No Course File records yet. Add courses in Course File first.</div>
-                    @endforelse
                 </div>
 
                 <div class="prereq-add-modal-actions">
