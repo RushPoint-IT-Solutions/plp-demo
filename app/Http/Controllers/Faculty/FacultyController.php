@@ -1246,20 +1246,18 @@ class FacultyController extends Controller
             }
         }
 
-        if ($phase === 'final') {
-            $subject->grading_status_id = \DB::table('subject_grading_statuses')
-                ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
-                ->value('id');
-            $subject->submitted_at = $postedAt;
-            $subject->dean_approved_by = null;
-            $subject->dean_approved_at = null;
-            $subject->registrar_finalized_by = null;
-            $subject->registrar_finalized_at = null;
-            $subject->grading_returned_by = null;
-            $subject->grading_returned_at = null;
-            $subject->grading_return_reason = null;
-            $subject->save();
-        }
+        $subject->grading_status_id = \DB::table('subject_grading_statuses')
+            ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
+            ->value('id');
+        $subject->submitted_at = $postedAt;
+        $subject->dean_approved_by = null;
+        $subject->dean_approved_at = null;
+        $subject->registrar_finalized_by = null;
+        $subject->registrar_finalized_at = null;
+        $subject->grading_returned_by = null;
+        $subject->grading_returned_at = null;
+        $subject->grading_return_reason = null;
+        $subject->save();
 
         return response()->json([
             'ok'      => true,
