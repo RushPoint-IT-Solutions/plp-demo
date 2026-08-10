@@ -4,7 +4,58 @@
 @section('page-title', 'UPLOAD GRADES')
 
 @push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.min.css">
 <style>
+    .ug-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    @media (max-width: 900px) {
+        .ug-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+        .ug-stats-grid { grid-template-columns: 1fr; }
+    }
+    .ug-stat-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px 18px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .ug-stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        font-size: 1.1rem;
+    }
+    .ug-stat-card-total .ug-stat-icon { background: #eff6ff; color: #1d4ed8; }
+    .ug-stat-card-graded .ug-stat-icon { background: #f0fdf4; color: #15803d; }
+    .ug-stat-card-incomplete .ug-stat-icon { background: #fffbeb; color: #b45309; }
+    .ug-stat-card-submitted .ug-stat-icon { background: #faf5ff; color: #7e22ce; }
+    .ug-stat-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.1;
+    }
+    .ug-stat-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        margin-top: 2px;
+    }
     .ug-picker-row {
         display: flex;
         flex-wrap: wrap;
@@ -30,6 +81,29 @@
         border: 1px solid #cbd5e1;
         border-radius: 6px;
         font-size: 0.85rem;
+    }
+    .ug-picker-group .chosen-container { width: 100% !important; font-size: 0.85rem; }
+    .ug-picker-group .chosen-container-single .chosen-single {
+        height: 36px;
+        line-height: 34px;
+        padding: 0 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        box-shadow: none;
+        background: #fff;
+    }
+    .ug-picker-group .chosen-container-single .chosen-single div b {
+        background-position: 0 4px;
+    }
+    .ug-picker-group .chosen-container-active.chosen-with-drop .chosen-single {
+        border-color: #15803d;
+    }
+    .ug-picker-group .chosen-container .chosen-results li.highlighted {
+        background-color: #15803d;
+    }
+    .ug-picker-group .chosen-container-single .chosen-search input[type="text"] {
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
     }
     .ug-selected-banner {
         display: none;
@@ -101,20 +175,68 @@
 <div class="student-page-container">
     <div class="batch-upload-wrapper">
 
+        {{-- Summary dashboard --}}
+        <div class="ug-stats-grid">
+            <div class="ug-stat-card ug-stat-card-total">
+                <div class="ug-stat-icon"><i class="ri-file-list-3-line"></i></div>
+                <div>
+                    <div class="ug-stat-number">{{ $stats['total'] }}</div>
+                    <div class="ug-stat-label">Total Sections</div>
+                </div>
+            </div>
+            <div class="ug-stat-card ug-stat-card-graded">
+                <div class="ug-stat-icon"><i class="ri-checkbox-circle-line"></i></div>
+                <div>
+                    <div class="ug-stat-number">{{ $stats['fullyGraded'] }}</div>
+                    <div class="ug-stat-label">Fully Graded</div>
+                </div>
+            </div>
+            <div class="ug-stat-card ug-stat-card-incomplete">
+                <div class="ug-stat-icon"><i class="ri-time-line"></i></div>
+                <div>
+                    <div class="ug-stat-number">{{ $stats['incomplete'] }}</div>
+                    <div class="ug-stat-label">Incomplete</div>
+                </div>
+            </div>
+            <div class="ug-stat-card ug-stat-card-submitted">
+                <div class="ug-stat-icon"><i class="ri-send-plane-line"></i></div>
+                <div>
+                    <div class="ug-stat-number">{{ $stats['submitted'] }}</div>
+                    <div class="ug-stat-label">Submitted for Review</div>
+                </div>
+            </div>
+        </div>
+
         {{-- Section & Course picker --}}
         <div id="ugPicker">
             <div class="ug-picker-row">
                 <div class="ug-picker-group">
                     <label for="ugCourse">Course</label>
-                    <select id="ugCourse">
+                    <select id="ugCourse" class="ug-chosen">
                         <option value="">All Courses</option>
                     </select>
                 </div>
                 <div class="ug-picker-group">
                     <label for="ugSection">Section</label>
-                    <select id="ugSection">
+                    <select id="ugSection" class="ug-chosen">
                         <option value="">All Sections</option>
                     </select>
+                </div>
+                <div class="ug-picker-group">
+                    <label for="ugFaculty">Faculty</label>
+                    <select id="ugFaculty" class="ug-chosen">
+                        <option value="">All Faculty</option>
+                    </select>
+                </div>
+                <div class="ug-picker-group">
+                    <label for="ugStatus">Status</label>
+                    <select id="ugStatus" class="ug-chosen">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="ug-picker-group" style="flex:1 1 240px;">
+                    <label for="ugSearch">Search</label>
+                    <input type="text" id="ugSearch" placeholder="Search section, course code, description, faculty..." style="padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.85rem;">
                 </div>
             </div>
 
@@ -235,5 +357,6 @@
     window.UG_LIST_URL = "{{ route('registrar.registrar-menu.faculty-mgmt.upload-grades') }}";
     window.UG_TEMPLATE_URL_TPL = "{{ route('registrar.registrar-menu.faculty-mgmt.upload-grades.template', ['subject' => '__SUBJECT__']) }}";
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.jquery.min.js"></script>
 <script src="{{ asset('js/upload-grades.js') }}?v={{ file_exists(public_path('js/upload-grades.js')) ? filemtime(public_path('js/upload-grades.js')) : time() }}"></script>
 @endpush

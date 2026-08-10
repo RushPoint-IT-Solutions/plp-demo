@@ -19250,7 +19250,10 @@ class RegistrarController extends Controller
             ->orderBy('code')
             ->get();
 
-        $uploadSubjects = $subjects->map(function ($subject) {
+        $fullyGradedCount = 0;
+        $submittedCount = 0;
+
+        $uploadSubjects = $subjects->map(function ($subject) use (&$fullyGradedCount, &$submittedCount) {
             $gradeMap = $subject->studentGrades->keyBy('student_id');
 
             $students = $subject->students->map(function ($student) use ($gradeMap) {
@@ -19263,6 +19266,18 @@ class RegistrarController extends Controller
                     'final' => $grade && $grade->final !== null ? (float) $grade->final : null,
                 ];
             })->values()->all();
+
+            $isFullyGraded = count($students) > 0 && collect($students)->every(function ($student) {
+                return $student['midterm'] !== null && $student['final'] !== null;
+            });
+            if ($isFullyGraded) {
+                $fullyGradedCount++;
+            }
+
+            $statusCode = strtoupper((string) optional($subject->gradingStatusLookup)->code);
+            if (in_array($statusCode, ['SUBMITTED', 'DEAN_APPROVED', 'REGISTRAR_FINALIZED'], true)) {
+                $submittedCount++;
+            }
 
             return [
                 'id' => (int) $subject->id,
@@ -19277,15 +19292,27 @@ class RegistrarController extends Controller
                 'schoolYear' => (string) ($subject->school_year ?: ''),
                 'term' => (string) ($subject->semester ?: ''),
                 'status' => (string) (optional($subject->gradingStatusLookup)->label ?: 'Open For Encoding'),
+                'statusCode' => $statusCode,
+                'isFullyGraded' => $isFullyGraded,
                 'studentCount' => count($students),
                 'students' => $students,
             ];
         })->values()->all();
 
+        $totalSections = count($uploadSubjects);
+
+        $stats = [
+            'total' => $totalSections,
+            'fullyGraded' => $fullyGradedCount,
+            'incomplete' => $totalSections - $fullyGradedCount,
+            'submitted' => $submittedCount,
+        ];
+
         return view('registrar.registrar-menu.faculty-management.upload-grades', [
             'uploadSubjects' => $uploadSubjects,
             'uploadReport' => session('gradeUploadReport'),
             'selectedSubjectId' => (int) $request->query('subject_id', 0),
+            'stats' => $stats,
         ]);
     }
 

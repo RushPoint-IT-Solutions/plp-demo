@@ -4,6 +4,9 @@
 
     var courseSelect = document.getElementById('ugCourse');
     var sectionSelect = document.getElementById('ugSection');
+    var facultySelect = document.getElementById('ugFaculty');
+    var statusSelect = document.getElementById('ugStatus');
+    var searchInput = document.getElementById('ugSearch');
     var pickerBody = document.getElementById('ugPickerBody');
     var pickerBlock = document.getElementById('ugPicker');
     var selectedBanner = document.getElementById('ugSelectedBanner');
@@ -36,22 +39,29 @@
         return out;
     }
 
+    function fillOptions(select, values) {
+        if (!select) return;
+        uniqueSorted(values).forEach(function (val) {
+            var opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            select.appendChild(opt);
+        });
+    }
+
     function populateFilters() {
-        if (!courseSelect || !sectionSelect) return;
+        fillOptions(courseSelect, subjects.map(function (s) { return s.program; }));
+        fillOptions(sectionSelect, subjects.map(function (s) { return s.section; }));
+        fillOptions(facultySelect, subjects.map(function (s) { return s.faculty; }));
+        fillOptions(statusSelect, subjects.map(function (s) { return s.status; }));
 
-        uniqueSorted(subjects.map(function (s) { return s.program; })).forEach(function (val) {
-            var opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = val;
-            courseSelect.appendChild(opt);
-        });
-
-        uniqueSorted(subjects.map(function (s) { return s.section; })).forEach(function (val) {
-            var opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = val;
-            sectionSelect.appendChild(opt);
-        });
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.chosen) {
+            window.jQuery('.ug-chosen').chosen({
+                width: '100%',
+                search_contains: true,
+                disable_search_threshold: 6,
+            });
+        }
     }
 
     function renderPicker() {
@@ -59,10 +69,21 @@
 
         var courseVal = courseSelect ? courseSelect.value : '';
         var sectionVal = sectionSelect ? sectionSelect.value : '';
+        var facultyVal = facultySelect ? facultySelect.value : '';
+        var statusVal = statusSelect ? statusSelect.value : '';
+        var searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
         var filtered = subjects.filter(function (s) {
             if (courseVal && s.program !== courseVal) return false;
             if (sectionVal && s.section !== sectionVal) return false;
+            if (facultyVal && s.faculty !== facultyVal) return false;
+            if (statusVal && s.status !== statusVal) return false;
+            if (searchVal) {
+                var haystack = [s.section, s.courseCode, s.description, s.faculty, s.program]
+                    .join(' ')
+                    .toLowerCase();
+                if (haystack.indexOf(searchVal) === -1) return false;
+            }
             return true;
         });
 
@@ -134,6 +155,9 @@
 
     if (courseSelect) courseSelect.addEventListener('change', renderPicker);
     if (sectionSelect) sectionSelect.addEventListener('change', renderPicker);
+    if (facultySelect) facultySelect.addEventListener('change', renderPicker);
+    if (statusSelect) statusSelect.addEventListener('change', renderPicker);
+    if (searchInput) searchInput.addEventListener('input', renderPicker);
 
     if (pickerBody) {
         pickerBody.addEventListener('click', function (event) {
