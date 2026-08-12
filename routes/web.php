@@ -26,7 +26,7 @@ Route::get('/admin', function () {
 });
 
 Route::get('/docs/registrar-playbook', function () {
-    return response()->file(base_path('docs/manual/registrar-playbook.html'));
+    return response()->file(public_path('manual/registrar-playbook.html'));
 })->name('docs.registrar-playbook');
 
 Auth::routes();

@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registrar Playbook</title>
+<style>
+  :root{
+    --bg:#F4F6F8;
+    --surface:#FFFFFF;
+    --surface-alt:#EAEEF2;
+    --ink:#1C2530;
+    --ink-muted:#57626F;
+    --border:#DBE2E9;
+    --accent:#1F3A5F;
+    --accent-2:#8C6B22;
+    --success:#2A7A57;
+    --warning:#9C6A12;
+    --critical:#A93636;
+    --success-bg:#E6F1EC;
+    --warning-bg:#F5EBD8;
+    --critical-bg:#F5E4E2;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10151C;
+      --surface:#171E27;
+      --surface-alt:#1E2731;
+      --ink:#E7EBEF;
+      --ink-muted:#9AA7B4;
+      --border:#2A3542;
+      --accent:#86AAD9;
+      --accent-2:#D8B565;
+      --success:#5FBB92;
+      --warning:#D9A548;
+      --critical:#E38080;
+      --success-bg:#173026;
+      --warning-bg:#332A16;
+      --critical-bg:#332020;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10151C;
+    --surface:#171E27;
+    --surface-alt:#1E2731;
+    --ink:#E7EBEF;
+    --ink-muted:#9AA7B4;
+    --border:#2A3542;
+    --accent:#86AAD9;
+    --accent-2:#D8B565;
+    --success:#5FBB92;
+    --warning:#D9A548;
+    --critical:#E38080;
+    --success-bg:#173026;
+    --warning-bg:#332A16;
+    --critical-bg:#332020;
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--bg);}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    margin:0;
+  }
+  .shell{
+    max-width:1240px;
+    margin:0 auto;
+    padding:0 24px 80px;
+  }
+  a{color:var(--accent);}
+  a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  /* Masthead */
+  .masthead{
+    padding:56px 0 32px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent-2);
+    margin:0 0 14px;
+  }
+  h1.title{
+    font-family:var(--font-display);
+    font-size:clamp(32px,4.4vw,50px);
+    line-height:1.08;
+    margin:0 0 12px;
+    text-wrap:balance;
+    font-weight:600;
+  }
+  .subtitle{
+    font-size:18px;
+    color:var(--ink-muted);
+    max-width:640px;
+    margin:0 0 28px;
+    text-wrap:balance;
+  }
+  .doc-control{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    max-width:920px;
+  }
+  .doc-control div{
+    background:var(--surface);
+    padding:12px 16px;
+  }
+  .doc-control .label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    color:var(--ink-muted);
+    margin-bottom:4px;
+  }
+  .doc-control .value{
+    font-size:14.5px;
+    font-weight:600;
+  }
+
+  /* Layout: sidebar + content */
+  .layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  @media (min-width:1080px){
+    .layout{grid-template-columns:230px minmax(0,1fr); gap:48px; align-items:start;}
+  }
+  nav.toc{
+    display:none;
+  }
+  @media (min-width:1080px){
+    nav.toc{
+      display:block;
+      position:sticky;
+      top:24px;
+      padding:32px 0;
+      font-size:13.5px;
+    }
+    nav.toc .toc-h{
+      font-family:var(--font-mono);
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      font-size:11px;
+      color:var(--ink-muted);
+      margin-bottom:10px;
+    }
+    nav.toc ol{
+      list-style:none; margin:0; padding:0;
+      counter-reset:toc;
+      border-left:1px solid var(--border);
+    }
+    nav.toc li{
+      counter-increment:toc;
+    }
+    nav.toc a{
+      display:block;
+      padding:6px 0 6px 14px;
+      margin-left:-1px;
+      border-left:1px solid transparent;
+      color:var(--ink-muted);
+      text-decoration:none;
+    }
+    nav.toc a:hover{color:var(--accent); border-left-color:var(--accent);}
+  }
+
+  main{min-width:0; padding-top:32px;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+
+  h2{
+    font-family:var(--font-display);
+    font-size:26px;
+    font-weight:600;
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  .section-kicker{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-muted);
+    margin:0 0 18px;
+  }
+  h3{
+    font-family:var(--font-display);
+    font-size:19px;
+    font-weight:600;
+    margin:28px 0 10px;
+  }
+  p{margin:0 0 14px; max-width:70ch;}
+  p.wide{max-width:none;}
+  ul,ol{margin:0 0 16px; padding-left:22px;}
+  li{margin-bottom:6px;}
+  code, .code{
+    font-family:var(--font-mono);
+    font-size:.86em;
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    padding:1px 5px;
+    border-radius:4px;
+    white-space:nowrap;
+  }
+
+  /* Phase badge chain (used in intro cards) */
+  .phase-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin:20px 0 8px;
+  }
+  .phase-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+  }
+  .phase-card .badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px;height:26px;border-radius:50%;
+    background:var(--accent); color:var(--surface);
+    font-family:var(--font-mono); font-size:13px; font-weight:700;
+    margin-bottom:10px;
+  }
+  .phase-card .name{font-weight:700; font-size:14.5px; margin-bottom:3px;}
+  .phase-card .desc{font-size:13px; color:var(--ink-muted); line-height:1.45;}
+
+  /* Callouts */
+  .callout{
+    border:1px solid var(--border);
+    border-left:4px solid var(--accent);
+    background:var(--surface);
+    border-radius:0 8px 8px 0;
+    padding:14px 18px;
+    margin:18px 0;
+  }
+  .callout p:last-child{margin-bottom:0;}
+  .callout .callout-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:700;
+    margin-bottom:6px;
+    display:block;
+  }
+  .callout--rule{border-left-color:var(--warning); background:var(--warning-bg);}
+  .callout--rule .callout-label{color:var(--warning);}
+  .callout--critical{border-left-color:var(--critical); background:var(--critical-bg);}
+  .callout--critical .callout-label{color:var(--critical);}
+  .callout--dep .callout-label{color:var(--accent);}
+
+  /* Tables */
+  .table-wrap{overflow-x:auto; margin:14px 0 24px; border:1px solid var(--border); border-radius:8px;}
+  table{border-collapse:collapse; width:100%; font-size:14px; min-width:560px;}
+  thead th{
+    background:var(--surface-alt);
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-muted);
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-alt);}
+
+  /* Day-one checklist */
+  .checklist{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:8px 28px;
+  }
+  .checklist ol{list-style:none; counter-reset:step; padding:0; margin:0;}
+  .checklist li{
+    counter-increment:step;
+    display:grid;
+    grid-template-columns:34px 1fr;
+    gap:12px;
+    padding:16px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .checklist li:last-child{border-bottom:none;}
+  .checklist li::before{
+    content:counter(step);
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:14px;
+    color:var(--accent);
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    width:30px;height:30px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .checklist .step-title{font-weight:700; margin-bottom:3px;}
+  .checklist .step-detail{font-size:14px; color:var(--ink-muted);}
+  .checklist .step-detail code{white-space:normal;}
+
+  figure{margin:22px 0 28px;}
+  figure svg{max-width:100%; height:auto; display:block;}
+  .fig-frame{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px 12px;
+    overflow-x:auto;
+  }
+  figcaption{
+    font-size:13px;
+    color:var(--ink-muted);
+    margin-top:10px;
+    max-width:70ch;
+  }
+
+  .pill{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:100px;
+    border:1px solid var(--border);
+    color:var(--ink-muted);
+  }
+
+  footer{
+    margin-top:64px;
+    padding-top:24px;
+    border-top:1px solid var(--border);
+    font-size:12.5px;
+    color:var(--ink-muted);
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    a{transition:color .15s ease;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="masthead">
+    <p class="eyebrow">Business Process Manual &middot; Registrar Role</p>
+    <h1 class="title">Registrar Playbook</h1>
+    <p class="subtitle">The end-to-end operating sequence for the Registrar module of the PLP Student Information System — from a blank installation to a closed academic term.</p>
+    <div class="doc-control">
+      <div><div class="label">System</div><div class="value">PLP Demo SIS</div></div>
+      <div><div class="label">Module</div><div class="value">Registrar</div></div>
+      <div><div class="label">Version</div><div class="value">1.0</div></div>
+      <div><div class="label">Prepared</div><div class="value">12 Aug 2026</div></div>
+      <div><div class="label">Basis</div><div class="value">Code &amp; route audit</div></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-h">On this page</div>
+      <ol>
+        <li><a href="#purpose">1. Purpose &amp; scope</a></li>
+        <li><a href="#actors">2. Roles &amp; access</a></li>
+        <li><a href="#entry">3. Getting in</a></li>
+        <li><a href="#day-one">4. Day-one critical path</a></li>
+        <li><a href="#map">5. Process map</a></li>
+        <li><a href="#phase-a">6. Phase A — Setup</a></li>
+        <li><a href="#phase-b">7. Phase B — Academic structure</a></li>
+        <li><a href="#phase-c">8. Phase C — Admissions</a></li>
+        <li><a href="#phase-d">9. Phase D — Term &amp; sections</a></li>
+        <li><a href="#phase-e">10. Phase E — Enrollment</a></li>
+        <li><a href="#phase-f">11. Phase F — Grading</a></li>
+        <li><a href="#phase-g">12. Phase G — Reporting &amp; close</a></li>
+        <li><a href="#appendix">13. Screen reference</a></li>
+        <li><a href="#glossary">14. Glossary</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section id="purpose">
+        <h2>1. Purpose &amp; scope</h2>
+        <p class="section-kicker">Why this document exists</p>
+        <p>This playbook documents the Registrar workflow as it is actually implemented in the codebase — every step below is traced to a route, controller method, or validation rule in <code>routes/web.php</code> and <code>app/Http/Controllers/Registrar/</code>. It is written for onboarding a new Registrar-office staff member and for use as a reference during audits or handovers.</p>
+        <p>The Registrar is the operational center of the system: it is the only role that can stand up academic structure (programs, curricula, sections), move a person from Applicant to Student, run the grading approval chain to completion, and open or close an academic term. Every other role — Student, Faculty, Parent, Applicant — depends on decisions made in this module.</p>
+      </section>
+
+      <section id="actors">
+        <h2>2. Roles &amp; access</h2>
+        <p class="section-kicker">Who else is in the system, and how access is enforced</p>
+        <p>Every login account carries a single <code>module</code> value that determines its portal. The Registrar module is functionally the administrator role: routes named <code>registrar.*</code> accept both the <code>registrar</code> and <code>admin</code> module values.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Role (module)</th><th>Portal</th><th>Relationship to Registrar</th></tr></thead>
+            <tbody>
+              <tr><td><strong>registrar</strong></td><td>Registrar dashboard</td><td>Owns academic structure, enrollment, grading sign-off, term lifecycle, and system configuration.</td></tr>
+              <tr><td>faculty</td><td>Faculty portal</td><td>Submits grades and attendance into records the Registrar reviews and finalizes.</td></tr>
+              <tr><td>student</td><td>Student portal</td><td>Created by the Registrar (directly or via applicant conversion); views records the Registrar maintains.</td></tr>
+              <tr><td>applicant</td><td>Applicant portal</td><td>Pre-student stage; the Registrar reviews and converts applicants into students.</td></tr>
+              <tr><td>parent</td><td>Parent portal</td><td>Read-only view of a linked student's records.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Beyond the module gate, every Registrar screen is checked a second time by a fine-grained permission engine (<code>app/Support/UserAccessGate.php</code>): each route maps to a module code (e.g. <code>academics_subject_file</code>) and each HTTP verb maps to a permission type — view / create / edit / delete. Access can be tuned per user or per custom role from inside the system itself, under <strong>Admin Tools &rarr; Access Management</strong>.</p>
+        <div class="callout callout--dep">
+          <span class="callout-label">Where to configure it</span>
+          <p><strong>Roles:</strong> <code>registrar.admin-tools.access-management.roles</code> &nbsp;&middot;&nbsp; <strong>Per-user overrides:</strong> <code>registrar.admin-tools.access-management.user-accounts</code></p>
+        </div>
+      </section>
+
+      <section id="entry">
+        <h2>3. Getting in</h2>
+        <p class="section-kicker">Login, and the forced password reset every new account hits</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Item</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Login URL</td><td class="code">/login/registrar</td></tr>
+              <tr><td>Landing page</td><td>Auto-redirects to <code>registrar.dashboard</code> on success</td></tr>
+              <tr><td>Auth check</td><td>Username + password, then confirms <code>module = registrar</code> and a linked <code>registrar_id</code> exists — an unlinked account is signed back out with an "account not linked" error</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Any account created by the Registrar (new staff, or a student produced by applicant conversion) is issued with <code>force_password_reset = true</code>. On next login the system intercepts every request and redirects to <code>/password/setup</code> until a new password is set — this is a global middleware, not a per-screen check, so it cannot be bypassed by deep-linking.</p>
+      </section>
+
+      <section id="day-one">
+        <h2>4. Day-one critical path</h2>
+        <p class="section-kicker">The minimum end-to-end sequence to take the system from empty to "a student can be graded"</p>
+        <p class="wide">This is the direct answer to <em>"what is the first thing that needs to happen, end to end, to use the system"</em>. It is the shortest path through Phases A–D that is not skippable — each step is a hard dependency (foreign key or explicit validation) for the one after it. Everything in Phases E–G repeats every term; the steps below happen once per environment (1–8) and once per term (9–13).</p>
+        <div class="checklist">
+          <ol>
+            <li><div><div class="step-title">Configure the academic calendar basics</div><div class="step-detail">School year / semester config, grade-posting windows, document signatories. Screen: <code>registrar.admin-tools.system-config.*</code>.</div></div></li>
+            <li><div><div class="step-title">Create Departments</div><div class="step-detail">A Program cannot exist without one. Screen: <code>academic-master.program-file</code> (department panel).</div></div></li>
+            <li><div><div class="step-title">Create at least one Program (Course)</div><div class="step-detail"><code>saveProgramSetup</code> validates a unique program code and a real <code>department_id</code>. This is the root of everything academic.</div></div></li>
+            <li><div><div class="step-title">Build the Subject catalog</div><div class="step-detail">Screen: <code>academic-master.subject-file</code>. These are master records — the raw pool a curriculum draws from.</div></div></li>
+            <li><div><div class="step-title">Build a Curriculum for the Program</div><div class="step-detail"><code>saveCurriculumSetup</code> rejects the request outright if the Program or any selected Subject doesn't already exist.</div></div></li>
+            <li><div><div class="step-title">Route the Curriculum to Published status</div><div class="step-detail">Department head &rarr; Dean &rarr; Registrar &rarr; Academic Council approval, then <code>is_published = true</code>. Nothing downstream can start without this flag.</div></div></li>
+            <li><div><div class="step-title">Add Rooms</div><div class="step-detail">Screen: <code>scheduling.room-file</code>. Needed before schedules can be auto-generated.</div></div></li>
+            <li><div><div class="step-title">Create staff / faculty accounts</div><div class="step-detail">Screen: <code>faculty-mgmt.faculty-create</code>. Needed before a section can be assigned a teacher.</div></div></li>
+            <li><div><div class="step-title">Open an Academic Term</div><div class="step-detail"><code>openNewAcademicTerm</code> — on a fresh system there is no prior term to close, so this is the one exception to the "must close current term first" rule.</div></div></li>
+            <li><div><div class="step-title">Create Section Offerings</div><div class="step-detail"><code>storeSectionOffering</code> pulls its subject list straight from the <strong>published</strong> curriculum from step 6 — this is where that dependency is enforced in code, with an explicit rejection message if it isn't met.</div></div></li>
+            <li><div><div class="step-title">Prepare the Class Schedule and assign Rooms/Teachers</div><div class="step-detail">Auto-generate, then confirm, time slots, rooms, and faculty per section-subject.</div></div></li>
+            <li><div><div class="step-title">Enroll Students</div><div class="step-detail">Either directly via <code>storeStudent</code>, or by admitting Applicants first (Phase C) and bulk-converting them. Each new student gets a linked login account automatically.</div></div></li>
+            <li><div><div class="step-title">System is now live for the term</div><div class="step-detail">Faculty can take attendance and submit grades; the Grading Sheet approval chain (Phase F) becomes active.</div></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="map">
+        <h2>5. Process map</h2>
+        <p class="section-kicker">Seven phases, one term-close loop</p>
+        <p>Phases A and B are effectively one-time setup (repeated only when a new program is introduced). Phases C through G repeat every academic term, and G feeds back into D to start the next cycle.</p>
+
+        <figure>
+          <div class="fig-frame">
+            <svg viewBox="0 0 1200 250" role="img" aria-label="Seven-phase registrar process: System Setup, Academic Structure, Admissions, Term Setup, Enrollment, Grading, and Reporting and Close, which loops back into Term Setup for the next term.">
+              <defs>
+                <marker id="arrowFlow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+                </marker>
+                <marker id="arrowLoop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent-2)"></path>
+                </marker>
+              </defs>
+
+              <!-- connecting arrows -->
+              <line x1="160" y1="70" x2="190" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="330" y1="70" x2="360" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="500" y1="70" x2="530" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="670" y1="70" x2="700" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="840" y1="70" x2="870" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="1010" y1="70" x2="1040" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+
+              <!-- loop back arrow: G -> D -->
+              <path d="M 1110,110 C 1110,195 600,195 600,110" fill="none" stroke="var(--accent-2)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowLoop)"></path>
+              <text x="855" y="216" text-anchor="middle" font-family="var(--font-mono)" font-size="11.5" fill="var(--accent-2)">next term begins here</text>
+
+              <!-- Phase boxes -->
+              <!-- A -->
+              <g>
+                <rect x="20" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="38" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="38" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">A</text>
+                <text x="34" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">System Setup</text>
+                <text x="34" y="90" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Config, roles,</text>
+                <text x="34" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">grading rules</text>
+              </g>
+              <!-- B -->
+              <g>
+                <rect x="190" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="208" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="208" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">B</text>
+                <text x="204" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Academic</text>
+                <text x="204" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Structure</text>
+                <text x="204" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Programs &amp; curricula</text>
+              </g>
+              <!-- C -->
+              <g>
+                <rect x="360" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="378" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="378" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">C</text>
+                <text x="374" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Admissions</text>
+                <text x="374" y="90" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Applicant &#8594;</text>
+                <text x="374" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Student</text>
+              </g>
+              <!-- D -->
+              <g>
+                <rect x="530" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="548" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="548" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">D</text>
+                <text x="544" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Term Setup</text>
+                <text x="544" y="90" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Sections,</text>
+                <text x="544" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">schedules, rooms</text>
+              </g>
+              <!-- E -->
+              <g>
+                <rect x="700" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="718" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="718" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">E</text>
+                <text x="714" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Enrollment</text>
+                <text x="714" y="90" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Student records</text>
+                <text x="714" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">&amp; accounts</text>
+              </g>
+              <!-- F -->
+              <g>
+                <rect x="870" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="888" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="888" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">F</text>
+                <text x="884" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Grading</text>
+                <text x="884" y="90" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Faculty &#8594; Dean</text>
+                <text x="884" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">&#8594; Registrar</text>
+              </g>
+              <!-- G -->
+              <g>
+                <rect x="1040" y="30" width="140" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="1058" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="1058" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">G</text>
+                <text x="1054" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Reporting</text>
+                <text x="1054" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">&amp; Close</text>
+                <text x="1054" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">Certify, close term</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Fig. 1 — The Registrar's full operating cycle. A and B are one-time (or per-new-program) setup; C through G repeat every academic term, with G's term-close gating the next D.</figcaption>
+        </figure>
+
+        <div class="phase-grid">
+          <div class="phase-card"><span class="badge">A</span><div class="name">System Setup</div><div class="desc">Roles, staff accounts, school calendar, grading rules.</div></div>
+          <div class="phase-card"><span class="badge">B</span><div class="name">Academic Structure</div><div class="desc">Departments, Programs, Subjects, Curricula, Rooms.</div></div>
+          <div class="phase-card"><span class="badge">C</span><div class="name">Admissions</div><div class="desc">Applicant review, exam results, conversion to Student.</div></div>
+          <div class="phase-card"><span class="badge">D</span><div class="name">Term &amp; Sections</div><div class="desc">Open term, create sections, schedule, assign rooms/faculty.</div></div>
+          <div class="phase-card"><span class="badge">E</span><div class="name">Enrollment</div><div class="desc">Enroll students, maintain records, scholarships, discipline.</div></div>
+          <div class="phase-card"><span class="badge">F</span><div class="name">Grading</div><div class="desc">Faculty submit &rarr; Dean approve &rarr; Registrar finalize.</div></div>
+          <div class="phase-card"><span class="badge">G</span><div class="name">Reporting &amp; Close</div><div class="desc">Certificates, TOR/diploma, close term, open next.</div></div>
+        </div>
+      </section>
+
+      <section id="phase-a">
+        <h2>6. Phase A — System setup</h2>
+        <p class="section-kicker">One-time configuration, done before anything academic exists</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Task</th><th>Screen (route name prefix)</th></tr></thead>
+            <tbody>
+              <tr><td>Define custom roles / permission matrix</td><td class="code">admin-tools.access-management.roles</td></tr>
+              <tr><td>Create staff &amp; user accounts</td><td class="code">admin-tools.access-management.user-accounts</td></tr>
+              <tr><td>School year / semester config</td><td class="code">admin-tools.system-config</td></tr>
+              <tr><td>Grade posting windows, signatories, cutoffs</td><td class="code">admin-tools.system-config</td></tr>
+              <tr><td>Academic calendar &amp; announcements</td><td class="code">admin-tools.system-config</td></tr>
+              <tr><td>Grading rules, periods, components, transmutation table</td><td class="code">services.grading-academic</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--dep">
+          <span class="callout-label">Why this comes first</span>
+          <p>The grading configuration here is what the Phase F approval chain and every transcript/report in Phase G reads from. Setting it up after grades exist means retroactively re-scoring records — configure it once, before the first term opens.</p>
+        </div>
+      </section>
+
+      <section id="phase-b">
+        <h2>7. Phase B — Academic structure</h2>
+        <p class="section-kicker">The dependency chain that everything else in the system stands on</p>
+        <p>This is the strictest dependency chain in the system — each link is enforced by a foreign-key validation or an explicit rejection message in the controller, not just by convention.</p>
+
+        <figure>
+          <div class="fig-frame">
+            <svg viewBox="0 0 1180 190" role="img" aria-label="Dependency chain: Department requires College, Program requires Department, Curriculum requires Program and Subjects and must be published, Section Offering requires a published Curriculum, then Schedule and Room and Teacher assignment follow.">
+              <defs>
+                <marker id="arrowDep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+                </marker>
+              </defs>
+              <line x1="140" y1="55" x2="170" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowDep)"></line>
+              <line x1="310" y1="55" x2="340" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowDep)"></line>
+              <line x1="480" y1="55" x2="510" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowDep)"></line>
+              <line x1="650" y1="55" x2="680" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowDep)"></line>
+              <line x1="820" y1="55" x2="850" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowDep)"></line>
+              <line x1="990" y1="55" x2="1020" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowDep)"></line>
+
+              <!-- 1 Department -->
+              <rect x="20" y="20" width="120" height="70" rx="8" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="80" y="50" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Department</text>
+              <text x="80" y="68" text-anchor="middle" font-size="10.5" font-family="var(--font-mono)" fill="var(--ink-muted)">1</text>
+
+              <!-- 2 Program -->
+              <rect x="170" y="20" width="140" height="70" rx="8" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="240" y="50" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Program</text>
+              <text x="240" y="65" text-anchor="middle" font-size="10.5" fill="var(--ink-muted)">(Course)</text>
+
+              <!-- 3 Subject catalog -->
+              <rect x="340" y="20" width="140" height="70" rx="8" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="410" y="50" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Subject</text>
+              <text x="410" y="65" text-anchor="middle" font-size="10.5" fill="var(--ink-muted)">Catalog</text>
+
+              <!-- 4 Curriculum -->
+              <rect x="510" y="20" width="140" height="70" rx="8" fill="var(--surface)" stroke="var(--warning)" stroke-width="2"></rect>
+              <text x="580" y="46" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Curriculum</text>
+              <text x="580" y="75" text-anchor="middle" font-size="10.5" font-family="var(--font-mono)" fill="var(--warning)">must be Published</text>
+
+              <!-- 5 Section Offering -->
+              <rect x="680" y="20" width="140" height="70" rx="8" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="750" y="50" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Section</text>
+              <text x="750" y="65" text-anchor="middle" font-size="10.5" fill="var(--ink-muted)">Offering</text>
+
+              <!-- 6 Schedule -->
+              <rect x="850" y="20" width="140" height="70" rx="8" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="920" y="50" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Class Schedule</text>
+              <text x="920" y="65" text-anchor="middle" font-size="10.5" fill="var(--ink-muted)">+ room/teacher</text>
+
+              <!-- 7 Enrollment -->
+              <rect x="1020" y="20" width="140" height="70" rx="8" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="1090" y="50" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Student</text>
+              <text x="1090" y="65" text-anchor="middle" font-size="10.5" fill="var(--ink-muted)">Enrollment</text>
+
+              <text x="590" y="130" text-anchor="middle" font-size="12" fill="var(--critical)">"No published curriculum is available for the selected course —</text>
+              <text x="590" y="147" text-anchor="middle" font-size="12" fill="var(--critical)">publish the curriculum first before creating a section offering."</text>
+              <text x="590" y="167" text-anchor="middle" font-size="10.5" font-family="var(--font-mono)" fill="var(--ink-muted)">— verbatim rejection message, storeSectionOffering()</text>
+            </svg>
+          </div>
+          <figcaption>Fig. 2 — The Program-to-Enrollment dependency chain. The Curriculum node is the load-bearing gate: Section Offering creation fails outright until it is published.</figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Step</th><th>Screen</th><th>Validated by</th></tr></thead>
+            <tbody>
+              <tr><td>Create Department</td><td class="code">academic-master.program-file</td><td>&mdash;</td></tr>
+              <tr><td>Create Program</td><td class="code">academic-master.program-file</td><td><code>saveProgramSetup</code> — unique code, real <code>department_id</code></td></tr>
+              <tr><td>Build Subject catalog</td><td class="code">academic-master.subject-file</td><td>&mdash;</td></tr>
+              <tr><td>Build Curriculum</td><td class="code">academic-master.curriculum-file</td><td><code>saveCurriculumSetup</code> — Program and every Subject must already exist</td></tr>
+              <tr><td>Approve &amp; publish Curriculum</td><td class="code">academic-master.curriculum-file</td><td><code>updateCurriculumWorkflow</code> — dept head &rarr; dean &rarr; registrar &rarr; academic council</td></tr>
+              <tr><td>Configure prerequisites</td><td class="code">academic-master.pre-requisites</td><td>&mdash;</td></tr>
+              <tr><td>Add Rooms / Buildings</td><td class="code">scheduling.room-file</td><td>&mdash;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="phase-c">
+        <h2>8. Phase C — Admissions</h2>
+        <p class="section-kicker">Applicant intake through conversion to Student</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Task</th><th>Screen / action</th></tr></thead>
+            <tbody>
+              <tr><td>Configure requirements, document checklist, exam categories</td><td class="code">process.requirements / document-list / exam-category</td></tr>
+              <tr><td>Review applicant queue</td><td class="code">process.application</td></tr>
+              <tr><td>Record exam schedule, result, interview outcome</td><td class="code">application.exam-schedule / .exam-result / .exam-interview</td></tr>
+              <tr><td>Review submitted documents</td><td class="code">application.documents.*</td></tr>
+              <tr><td>Set approval status (approve/reject)</td><td class="code">application.approval-status</td></tr>
+              <tr><td>Bulk-convert approved applicants to Students</td><td class="code">application.bulk-convert-to-student</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--dep">
+          <span class="callout-label">What conversion actually does</span>
+          <p><code>bulkConvertToStudent</code> generates a student number, copies name/sex/age and preferred course from the applicant's application, creates a linked <code>User</code> login with an auto-generated PLP email and a temporary password, and flags the account for forced reset — inside a single database transaction. This is the formal hand-off point from the Applicant domain to the Student domain.</p>
+        </div>
+      </section>
+
+      <section id="phase-d">
+        <h2>9. Phase D — Term setup &amp; sections</h2>
+        <p class="section-kicker">Opens each term and materializes the classes students will actually enroll into</p>
+        <div class="callout callout--rule">
+          <span class="callout-label">Hard rule — term lifecycle</span>
+          <p>A new Academic Term can only be opened (<code>openNewAcademicTerm</code>) once the current term's status is <code>Closed</code>. On a fresh install there is nothing to close, so the first term is the only one opened without this precondition.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Step</th><th>Screen</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Open Academic Term</td><td class="code">scheduling.academic-term-lifecycle</td><td>Enters <code>Draft</code>, then is published for the term to go live.</td></tr>
+              <tr><td>Create Section Offerings</td><td class="code">scheduling.section-offering</td><td><code>storeSectionOffering</code> pulls its subject list from the Program's <strong>published</strong> Curriculum; rejects duplicate section codes for the same term.</td></tr>
+              <tr><td>Prepare Class Schedule</td><td class="code">scheduling.class-schedule-preparation</td><td>Auto-generate or manually set time slots per section-subject.</td></tr>
+              <tr><td>Generate &amp; assign Rooms / allowed teachers</td><td class="code">scheduling.room-file (assignment actions)</td><td>Auto-generation engine, then confirm per section-subject.</td></tr>
+              <tr><td>Monitor capacity</td><td class="code">scheduling.slot-monitoring</td><td>Flags under-20 / dissolved / closed sections.</td></tr>
+              <tr><td>Merge under-enrolled sections</td><td class="code">scheduling.section-merging</td><td>As needed, before enrollment locks in.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="phase-e">
+        <h2>10. Phase E — Student enrollment &amp; records</h2>
+        <p class="section-kicker">Getting students into the term, and keeping their records current</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Task</th><th>Screen</th></tr></thead>
+            <tbody>
+              <tr><td>Enroll a student (manual entry or post-conversion)</td><td class="code">student-mgmt.student-enrollment</td></tr>
+              <tr><td>View / edit full student profile</td><td class="code">student-mgmt.student-records</td></tr>
+              <tr><td>Tag scholarships</td><td class="code">registrar-menu.scholarships</td></tr>
+              <tr><td>Log discipline records</td><td class="code">services.student-account.student-discipline</td></tr>
+              <tr><td>Medical / clinic records</td><td class="code">student-mgmt.clinic-record</td></tr>
+              <tr><td>Assign faculty to allowed subjects</td><td class="code">faculty-mgmt.faculty-list (allowed subjects)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--dep">
+          <span class="callout-label">What enrollment does under the hood</span>
+          <p><code>storeStudent</code> auto-generates a student number if left blank, creates the Student record, and creates a linked User account (username = student number, temporary password <code>PLP-{student_no}</code>, forced reset) — all inside one transaction, so a partially-created account can't be left behind.</p>
+        </div>
+      </section>
+
+      <section id="phase-f">
+        <h2>11. Phase F — Grading approval chain</h2>
+        <p class="section-kicker">The Registrar is the final signature, never the first</p>
+        <p>Grades never move directly from a faculty member to being final. Each subject carries a status field that only advances one step at a time, strictly forward, unless returned:</p>
+
+        <figure>
+          <div class="fig-frame">
+            <svg viewBox="0 0 940 220" role="img" aria-label="Grading approval chain: Faculty submits grades, moving status to SUBMITTED. Dean approves, moving to DEAN_APPROVED. Registrar finalizes, moving to REGISTRAR_FINALIZED. Either the Dean or Registrar stage can reject, returning the record to Faculty with a reason.">
+              <defs>
+                <marker id="arrowG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+                </marker>
+                <marker id="arrowReject" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--critical)"></path>
+                </marker>
+              </defs>
+
+              <line x1="240" y1="55" x2="300" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowG)"></line>
+              <text x="270" y="45" text-anchor="middle" font-family="var(--font-mono)" font-size="10.5" fill="var(--ink-muted)">SUBMITTED</text>
+
+              <line x1="540" y1="55" x2="600" y2="55" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowG)"></line>
+              <text x="570" y="45" text-anchor="middle" font-family="var(--font-mono)" font-size="10.5" fill="var(--ink-muted)">DEAN_APPROVED</text>
+
+              <!-- Faculty -->
+              <rect x="20" y="20" width="220" height="70" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="130" y="50" text-anchor="middle" font-weight="700" font-size="13.5" fill="var(--ink)">Faculty</text>
+              <text x="130" y="68" text-anchor="middle" font-size="11" fill="var(--ink-muted)">submits grades</text>
+
+              <!-- Dean -->
+              <rect x="300" y="20" width="240" height="70" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+              <text x="420" y="50" text-anchor="middle" font-weight="700" font-size="13.5" fill="var(--ink)">Dean</text>
+              <text x="420" y="68" text-anchor="middle" font-size="11" fill="var(--ink-muted)">approves the subject</text>
+
+              <!-- Registrar -->
+              <rect x="600" y="20" width="320" height="70" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"></rect>
+              <text x="760" y="50" text-anchor="middle" font-weight="700" font-size="13.5" fill="var(--ink)">Registrar</text>
+              <text x="760" y="68" text-anchor="middle" font-size="11" fill="var(--ink-muted)">finalizes &amp; syncs student grade records</text>
+
+              <!-- reject arrows -->
+              <path d="M 420,90 C 420,150 275,150 130,90" fill="none" stroke="var(--critical)" stroke-width="1.75" stroke-dasharray="5 4" marker-end="url(#arrowReject)"></path>
+              <path d="M 760,90 C 760,180 275,185 130,95" fill="none" stroke="var(--critical)" stroke-width="1.75" stroke-dasharray="5 4" marker-end="url(#arrowReject)"></path>
+              <text x="470" y="168" text-anchor="middle" font-size="11.5" fill="var(--critical)">reject at either stage &#8594; returns to Faculty with a reason</text>
+            </svg>
+          </div>
+          <figcaption>Fig. 3 — <code>gradingSheetAction()</code> enforces this order in code: the "finalized" action is only accepted while status is exactly <code>DEAN_APPROVED</code>; it cannot be called directly from <code>SUBMITTED</code>.</figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Task</th><th>Screen</th></tr></thead>
+            <tbody>
+              <tr><td>Review &amp; act on submitted grades (approve / finalize / reject)</td><td class="code">faculty-mgmt.grading-sheet</td></tr>
+              <tr><td>Bulk-import grades from spreadsheet template</td><td class="code">faculty-mgmt.upload-grades</td></tr>
+              <tr><td>Process grade correction requests</td><td class="code">student-mgmt.academic-record (correction approve/reject)</td></tr>
+              <tr><td>Track deficiencies / incompletes</td><td class="code">services.grading-academic.deficiency</td></tr>
+              <tr><td>Direct override (audited, exception path)</td><td class="code">admin-tools.grade-override</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--critical">
+          <span class="callout-label">Use sparingly</span>
+          <p>Grade Override bypasses the Faculty &rarr; Dean &rarr; Registrar chain entirely. It writes to its own audit log and should be reserved for correcting genuine errors after the fact, not for routine grading.</p>
+        </div>
+      </section>
+
+      <section id="phase-g">
+        <h2>12. Phase G — Reporting &amp; term close</h2>
+        <p class="section-kicker">Everything the Registrar certifies, and the gate that ends the cycle</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Document / report</th><th>Screen</th></tr></thead>
+            <tbody>
+              <tr><td>Transcript of Records (TOR)</td><td class="code">forms.tor</td></tr>
+              <tr><td>Diploma</td><td class="code">forms.diploma</td></tr>
+              <tr><td>Certificate of Registration (COR)</td><td class="code">forms.certificate-of-registration</td></tr>
+              <tr><td>Copy of Grades (COG)</td><td class="code">forms.cog.copy-of-grades</td></tr>
+              <tr><td>GWA / Dean's / President's Honor certificates</td><td class="code">forms.certificates.*</td></tr>
+              <tr><td>Graduation clearance, honorable dismissal</td><td class="code">forms.graduation-clearance / honorable-dismissal</td></tr>
+              <tr><td>GWA / CWA academic reports</td><td class="code">services.reports-admin</td></tr>
+              <tr><td>Tag graduates</td><td class="code">services.reports-admin.tagging-of-graduates</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--rule">
+          <span class="callout-label">Hard rule — closing a term</span>
+          <p><code>closeCurrentSemester</code> runs a validation pass (<code>academicTermCloseValidationIssues()</code>) before it will set the term to <code>Closed</code> — outstanding items (e.g. incomplete grading) block the close. Every closure and re-open is written to the audit trail via <code>AuditTrailRecorder</code>.</p>
+        </div>
+        <p>Once <code>Closed</code>, the term can be re-opened into the next cycle (back to Phase D) — optionally using <strong>Academic Setup Automation</strong> and <strong>Promotion Readiness</strong> to auto-generate the next term's sections and student year-level movements from the closed term's data, rather than rebuilding Phase D by hand.</p>
+      </section>
+
+      <section id="appendix">
+        <h2>13. Screen reference</h2>
+        <p class="section-kicker">Route-name prefixes by module, for quick lookup</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Module</th><th>Route-name prefix</th><th>Views directory</th></tr></thead>
+            <tbody>
+              <tr><td>Admissions</td><td class="code">registrar.process.*</td><td class="code">registrar/process/</td></tr>
+              <tr><td>Academic Master</td><td class="code">registrar.registrar-menu.academic-master.*</td><td class="code">registrar/registrar-menu/academic-master/</td></tr>
+              <tr><td>Scheduling</td><td class="code">registrar.registrar-menu.scheduling.*</td><td class="code">registrar/registrar-menu/scheduling/</td></tr>
+              <tr><td>Student Management</td><td class="code">registrar.registrar-menu.student-mgmt.*</td><td class="code">registrar/registrar-menu/student-management/</td></tr>
+              <tr><td>Scholarships</td><td class="code">registrar.registrar-menu.scholarships.*</td><td class="code">registrar/scholarships/</td></tr>
+              <tr><td>Faculty Management</td><td class="code">registrar.registrar-menu.faculty-mgmt.*</td><td class="code">registrar/registrar-menu/faculty-management/</td></tr>
+              <tr><td>Alumni Tracker</td><td class="code">registrar.registrar-menu.alumni.*</td><td class="code">registrar/graduation/</td></tr>
+              <tr><td>Forms &amp; Certificates</td><td class="code">registrar.registrar-menu.forms.*</td><td class="code">registrar/forms/</td></tr>
+              <tr><td>Classroom / Faculty Services</td><td class="code">registrar.services.classroom-faculty.*</td><td class="code">registrar/services/classroom-faculty/</td></tr>
+              <tr><td>Grading &amp; Academic Services</td><td class="code">registrar.services.grading-academic.*</td><td class="code">registrar/services/grading-academic/</td></tr>
+              <tr><td>Reports Admin</td><td class="code">registrar.services.reports-admin.*</td><td class="code">registrar/services/reports-admin/</td></tr>
+              <tr><td>Student Account Services</td><td class="code">registrar.services.student-account.*</td><td class="code">registrar/services/student-account/</td></tr>
+              <tr><td>Admin Tools</td><td class="code">registrar.admin-tools.*</td><td class="code">registrar/admin-tools/</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Full route list: <code>routes/web.php</code>, registrar group at lines 155–621. Primary controller: <code>app/Http/Controllers/Registrar/RegistrarController.php</code>.</p>
+      </section>
+
+      <section id="glossary">
+        <h2>14. Glossary</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Term</th><th>Meaning in this system</th></tr></thead>
+            <tbody>
+              <tr><td>Program</td><td>An academic degree/course offering (model: <code>Course</code>), e.g. BSCS. Belongs to a Department.</td></tr>
+              <tr><td>Curriculum</td><td>A versioned subject plan for a Program and school year (<code>CourseCurriculum</code>). Must pass a four-stage approval chain and be <em>published</em> before it can be used.</td></tr>
+              <tr><td>Subject (catalog)</td><td>A master catalog record — code, name, units — that a Curriculum draws from.</td></tr>
+              <tr><td>Subject (section instance)</td><td>The same underlying table, reused: once a Section Offering is created, one row per curriculum subject is generated to represent the actual class being taught that term.</td></tr>
+              <tr><td>Section Offering</td><td>A specific class group (e.g. "BSCS 1-A") for a Program / year level / term, generated from a published Curriculum.</td></tr>
+              <tr><td>Academic Term</td><td>A school year + semester with a lifecycle status: <code>Draft &rarr; active &rarr; Closed &rarr; Archived</code>.</td></tr>
+              <tr><td>Grading status chain</td><td>Per-subject status on the grading approval workflow: <code>SUBMITTED &rarr; DEAN_APPROVED &rarr; REGISTRAR_FINALIZED</code>, or returned to Faculty via a rejection.</td></tr>
+              <tr><td>Applicant</td><td>A pre-student record from the admissions pipeline; becomes a Student via bulk conversion.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        Sources: <code>routes/web.php</code>, <code>app/Http/Controllers/Registrar/</code>, <code>app/Http/Middleware/EnsureUserAccessControl.php</code>, <code>app/Support/UserAccessGate.php</code>, and the migrations under <code>database/migrations/</code>. Cross-checked against the existing screenshot walkthrough at <code>docs/manual/PLP-System-User-Manual.md</code>.
+      </footer>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>
