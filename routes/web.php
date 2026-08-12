@@ -25,9 +25,9 @@ Route::get('/admin', function () {
     return redirect('/admin/access');
 });
 
-Route::get('/docs/registrar-playbook', function () {
-    return response()->file(public_path('manual/registrar-playbook.html'));
-})->name('docs.registrar-playbook');
+Route::get('/docs/registrar-flow', function () {
+    return response()->file(public_path('manual/registrar-flow.html'));
+})->name('docs.registrar-flow');
 
 Auth::routes();
 Route::get('/password/setup', 'Auth\FirstLoginPasswordController@show')->name('password.first_reset');
