@@ -48,16 +48,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SemesterSeeder::class,
             YearBlockSeeder::class,
-            CourseCatalogSeeder::class,
             PlpMasterlistSeeder::class,
-            CourseCurriculumYearSeeder::class,
+            StudentMasterlistImportSeeder::class,
             ApplicantSeeder::class,
             ApplicantBulkSeeder::class,
             RegistrarAuthSeeder::class,
             FacultyAuthSeeder::class,
             UserAccount3nfSeeder::class,
-            StudentSeeder::class,
-            StudentFirstLoginDemoSeeder::class,
             ParentAuthSeeder::class,
             AcademicCalendarEventSeeder::class,
             GradeRuleSeeder::class,
@@ -65,15 +62,7 @@ class DatabaseSeeder extends Seeder
             SampleUniversalTransmutationSeeder::class,
             GradingPeriodSeeder::class,
             GradingComponentSeeder::class,
-            StudentDeficiencySeeder::class,
             SubjectSeeder::class,
-            CourseCurriculumSubjectMatrixSeeder::class,
-            FacultySeeder::class,
-            StudentDemoDataSeeder::class,
-            StudentProfileBackfillSeeder::class,
-            C3TrashDataSeeder::class,
-            SlotMonitoringReportSeeder::class,
-            RegistrarRequirement3nfSeeder::class,
             SystemConfigurationSeeder::class,
             CompactFacultyLoadSeeder::class,
         ]);
@@ -147,9 +136,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ClassListDataBackfillSeeder::class,
             ClassListStudentEnrollmentBackfillSeeder::class,
+            StrayLegacyCourseCleanupSeeder::class,
         ]);
-        
-        $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, student/student, first-reset student 2026A00001/PLP-2026A00001, applicant 2526B0177/PLP-2526B0177, applicant/applicant');
+
+        $this->command->info('Database seeded successfully. Login samples: admin/password, registrar/registrar, faculty/faculty, applicant 2526B0177/PLP-2526B0177, applicant/applicant');
         $this->command->info('Parent sample login: parent/parent (linked to PARENT-0001).');
+        $this->command->info('Real students: username = student number, password = PLP-{student_no}, force password reset on first login.');
     }
 }

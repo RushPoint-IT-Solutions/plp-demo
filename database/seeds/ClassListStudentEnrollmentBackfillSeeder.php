@@ -64,167 +64,20 @@ class ClassListStudentEnrollmentBackfillSeeder extends Seeder
                 }
             }, 'id');
 
-        $fallbackLinked = $this->ensureEveryStudentHasAtLeastOneSubjectLink();
+        // The unconditional fallback pass (ensureEveryStudentHasAtLeastOneSubjectLink)
+        // used to link any student without a subject to a random subject from the
+        // global pool, regardless of whether it matched their actual program. That
+        // put thousands of real students into unrelated courses' subjects, so it's
+        // disabled: students only get linked when a subject genuinely matches their
+        // course/term/year.
 
         $this->command->info(
             'ClassListStudentEnrollmentBackfillSeeder: processed '
             . $subjectsProcessed
             . ' subject(s) and synchronized '
             . $touched
-            . ' student-subject link(s); fallback-linked '
-            . $fallbackLinked
-            . ' previously unlinked student(s).'
+            . ' student-subject link(s).'
         );
-    }
-
-    private function ensureEveryStudentHasAtLeastOneSubjectLink()
-    {
-        $subjectPools = $this->buildSubjectPools();
-        if (!count($subjectPools['global'])) {
-            return 0;
-        }
-
-        $linked = 0;
-
-        DB::table('students')
-            ->select(['id', 'course_id', 'academic_term_id'])
-            ->orderBy('id')
-            ->chunkById(500, function ($rows) use (&$linked, $subjectPools) {
-                foreach ($rows as $row) {
-                    $studentId = (int) $row->id;
-
-                    $hasSubject = DB::table('student_subject')
-                        ->where('student_id', $studentId)
-                        ->exists();
-
-                    if ($hasSubject) {
-                        continue;
-                    }
-
-                    $subjectId = $this->pickFallbackSubjectId(
-                        $studentId,
-                        $subjectPools,
-                        (int) $row->course_id,
-                        (int) $row->academic_term_id
-                    );
-
-                    if ($subjectId <= 0) {
-                        continue;
-                    }
-
-                    DB::table('student_subject')->updateOrInsert(
-                        [
-                            'student_id' => $studentId,
-                            'subject_id' => $subjectId,
-                        ],
-                        [
-                            'student_id' => $studentId,
-                            'subject_id' => $subjectId,
-                            'updated_at' => now(),
-                            'created_at' => now(),
-                        ]
-                    );
-
-                    $linked++;
-                }
-            }, 'id');
-
-        return $linked;
-    }
-
-    private function buildSubjectPools()
-    {
-        $pools = [
-            'strict' => [],
-            'course' => [],
-            'term' => [],
-            'global' => [],
-        ];
-
-        DB::table('subjects')
-            ->select(['id', 'course_id', 'academic_term_id'])
-            ->orderBy('id')
-            ->chunkById(500, function ($rows) use (&$pools) {
-                foreach ($rows as $row) {
-                    $subjectId = (int) $row->id;
-                    $courseId = (int) $row->course_id;
-                    $termId = (int) $row->academic_term_id;
-
-                    $pools['global'][] = $subjectId;
-
-                    if ($courseId > 0) {
-                        if (!isset($pools['course'][$courseId])) {
-                            $pools['course'][$courseId] = [];
-                        }
-
-                        $pools['course'][$courseId][] = $subjectId;
-                    }
-
-                    if ($termId > 0) {
-                        if (!isset($pools['term'][$termId])) {
-                            $pools['term'][$termId] = [];
-                        }
-
-                        $pools['term'][$termId][] = $subjectId;
-                    }
-
-                    if ($courseId > 0 && $termId > 0) {
-                        if (!isset($pools['strict'][$courseId])) {
-                            $pools['strict'][$courseId] = [];
-                        }
-
-                        if (!isset($pools['strict'][$courseId][$termId])) {
-                            $pools['strict'][$courseId][$termId] = [];
-                        }
-
-                        $pools['strict'][$courseId][$termId][] = $subjectId;
-                    }
-                }
-            }, 'id');
-
-        $pools['global'] = array_values(array_unique($pools['global']));
-
-        foreach ($pools['course'] as $courseId => $subjectIds) {
-            $pools['course'][$courseId] = array_values(array_unique($subjectIds));
-        }
-
-        foreach ($pools['term'] as $termId => $subjectIds) {
-            $pools['term'][$termId] = array_values(array_unique($subjectIds));
-        }
-
-        foreach ($pools['strict'] as $courseId => $termMap) {
-            foreach ($termMap as $termId => $subjectIds) {
-                $pools['strict'][$courseId][$termId] = array_values(array_unique($subjectIds));
-            }
-        }
-
-        return $pools;
-    }
-
-    private function pickFallbackSubjectId($seed, array $pools, $courseId, $termId)
-    {
-        $candidates = [];
-
-        if (
-            $courseId > 0
-            && $termId > 0
-            && isset($pools['strict'][$courseId][$termId])
-            && count($pools['strict'][$courseId][$termId])
-        ) {
-            $candidates = $pools['strict'][$courseId][$termId];
-        } elseif ($termId > 0 && isset($pools['term'][$termId]) && count($pools['term'][$termId])) {
-            $candidates = $pools['term'][$termId];
-        } elseif ($courseId > 0 && isset($pools['course'][$courseId]) && count($pools['course'][$courseId])) {
-            $candidates = $pools['course'][$courseId];
-        } else {
-            $candidates = $pools['global'];
-        }
-
-        if (!count($candidates)) {
-            return 0;
-        }
-
-        return (int) $candidates[$seed % count($candidates)];
     }
 
     private function buildYearMap()
