@@ -194,8 +194,9 @@
 .sr-table-empty { text-align:center; color:#64748b; padding:36px 12px !important; }
 
 /* ── pagination ─────────────────────────────────────────────── */
-.sr-pager { margin-top:24px; display:flex; justify-content:center; }
-.sr-pager .pagination { gap:4px; }
+.sr-pager { margin-top:24px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.sr-pager-info { font-size:12.5px; color:#64748b; }
+.sr-pager .pagination { gap:4px; margin:0; }
 .sr-pager .page-link {
     border-radius:8px !important; border:1px solid #e2e8f0;
     color:#374151; font-size:13px; padding:6px 12px;
@@ -261,7 +262,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#ca8a04" stroke-width="1.5" viewBox="0 0 24 24"><path d="M2 2v19c0 1.66 1.34 3 3 3h17"/><path d="M5 17 9.59 11.64c.76-.88 2.11-.94 2.93-.11l.95.94c.82.83 2.17.77 2.93-.11L21 7"/></svg>
             </div>
             <div>
-                <div class="sr-stat-val">{{ $students->count() }}</div>
+                <div class="sr-stat-val">{{ number_format($students->total()) }}</div>
                 <div class="sr-stat-lbl">Matching Filter</div>
             </div>
         </div>
@@ -388,14 +389,14 @@
                     <div class="sr-card-row">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 2V5M16 2V5M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z"/></svg>
                         <div>
-                            <div class="sr-card-row-val">{{ $s->year_level ?: '—' }}</div>
+                            <div class="sr-card-row-val">{{ $s->year_level ?: optional($s->yearBlock)->label ?: '—' }}</div>
                             <div class="sr-card-row-lbl">Year Level</div>
                         </div>
                     </div>
                     <div class="sr-card-row">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                         <div>
-                            <div class="sr-card-row-val">AY {{ $s->school_year ?: '—' }} · {{ $s->semester ?: '—' }}</div>
+                            <div class="sr-card-row-val">AY {{ $s->school_year ?: optional($s->academicTerm)->school_year ?: '—' }} · {{ $s->semester ?: optional($s->academicTerm)->term ?: '—' }}</div>
                             <div class="sr-card-row-lbl">Academic Year &amp; Semester</div>
                         </div>
                     </div>
@@ -529,6 +530,15 @@
             </tbody>
         </table>
     </div>
+
+    @if($students->hasPages())
+        <div class="sr-pager">
+            <div class="sr-pager-info">
+                Showing {{ number_format($students->firstItem() ?? 0) }}&ndash;{{ number_format($students->lastItem() ?? 0) }} of {{ number_format($students->total()) }} student(s)
+            </div>
+            {{ $students->links() }}
+        </div>
+    @endif
 
 </div>
 @endsection

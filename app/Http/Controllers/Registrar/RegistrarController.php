@@ -17777,7 +17777,8 @@ class RegistrarController extends Controller
             $query->whereIn('academic_term_id', $termIds);
         }
 
-        $students = $query->get();
+        $perPage = 25;
+        $students = $query->paginate($perPage)->appends($request->query());
 
         $hdRecordsByStudent = collect();
         if (Schema::hasTable('honorable_dismissal_records')) {
