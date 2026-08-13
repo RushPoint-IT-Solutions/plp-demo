@@ -164,10 +164,9 @@ body { background:#f0f0f0; color:#000; }
             <div class="tor-sd-row"><span class="tor-sd-label">Date of Admission</span><span class="tor-sd-sep">:</span><span>N/A</span></div>
             <div class="tor-sd-row"><span class="tor-sd-label">Admission Credentials</span><span class="tor-sd-sep">:</span><span>N/A</span></div>
             <div class="tor-sd-row"><span class="tor-sd-label">Program</span><span class="tor-sd-sep">:</span><span>{{ $course }}{{ $courseCode !== '—' ? ' ('.$courseCode.')' : '' }}</span></div>
-            @if($isGraduated)
-            <div class="tor-sd-row"><span class="tor-sd-label">Date of Graduation</span><span class="tor-sd-sep">:</span><span>{{ $graduateTagging->date_graduated ? $graduateTagging->date_graduated->format('F j, Y') : 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Resolution No.</span><span class="tor-sd-sep">:</span><span>{{ $graduateTagging->so_number ?: 'N/A' }}</span></div>
-            @endif
+            <div class="tor-sd-row"><span class="tor-sd-label">Date of Completion</span><span class="tor-sd-sep">:</span><span>{{ ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : 'N/A' }}</span></div>
+            <div class="tor-sd-row"><span class="tor-sd-label">Date of Graduation</span><span class="tor-sd-sep">:</span><span>{{ ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : 'N/A' }}</span></div>
+            <div class="tor-sd-row"><span class="tor-sd-label">Resolution No.</span><span class="tor-sd-sep">:</span><span>{{ ($isGraduated && $graduateTagging->so_number) ? $graduateTagging->so_number : 'N/A' }}</span></div>
         </div>
         <div class="tor-sd-photo">
             <div class="tor-sd-photo-box">
