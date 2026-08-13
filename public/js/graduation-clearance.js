@@ -28,7 +28,6 @@ function gcGetRowDataFromRow(row) {
 
 function gcBuildTemplate(data) {
     var model = data || {};
-    var isBoardType = String(model.formType || 'non-board') === 'board';
 
     var requirements = [
         {
@@ -61,8 +60,7 @@ function gcBuildTemplate(data) {
         },
         {
             text: 'Accomplished and Submitted Student\'s<br>Evaluation of Implemented Intervention Form<br>For AY 2024 - 2025',
-            office: 'University Research Office',
-            showCheck: isBoardType
+            office: 'University Research Office'
         },
         {
             text: 'Submitted all required documents',
