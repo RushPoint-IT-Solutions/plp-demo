@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
             YearBlockSeeder::class,
             PlpMasterlistSeeder::class,
             CurriculumAbPsych20252026Seeder::class,
+            CurriculumBsNursing20232024Seeder::class,
             StudentMasterlistImportSeeder::class,
             ApplicantSeeder::class,
             ApplicantBulkSeeder::class,
