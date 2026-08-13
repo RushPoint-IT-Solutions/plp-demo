@@ -40,7 +40,7 @@
         <div class="cyt-card-head">
             <div>
                 <h3>Started Year by Program</h3>
-                <p>{{ $trackingRows->count() }} tracking row(s)</p>
+                <p id="cytRowCount">{{ $trackingRows->count() }} tracking row(s)</p>
             </div>
             <div class="cyt-actions">
                 <a href="{{ route('registrar.registrar-menu.academic-master.program-file') }}">Program File</a>
@@ -50,9 +50,14 @@
             </div>
         </div>
 
+        <div class="cyt-search-bar">
+            <input type="text" id="cytProgramSearch" placeholder="Search by program code, name, or department">
+            <button type="button" id="cytProgramSearchBtn">Search</button>
+        </div>
+
         @if($trackingRows->count())
             <div class="cyt-table-wrap">
-                <table class="cyt-table">
+                <table class="cyt-table" id="cytTable">
                     <thead>
                         <tr>
                             <th>Program</th>
@@ -66,7 +71,7 @@
                     </thead>
                     <tbody>
                         @foreach($trackingRows as $row)
-                            <tr>
+                            <tr data-cyt-search="{{ strtolower(($row->program_code ?? '') . ' ' . ($row->program_name ?? '') . ' ' . ($row->department_name ?? '')) }}">
                                 <td>
                                     <strong>{{ $row->program_code ?: 'N/A' }}</strong>
                                     <small>{{ $row->program_name }}</small>
@@ -94,6 +99,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                <div class="cyt-no-match" id="cytNoMatch" style="display:none;">No programs match your search.</div>
             </div>
         @else
             <div class="cyt-empty">
@@ -122,6 +128,11 @@
 .cyt-card-head p { margin:4px 0 0; color:#64748b; font-size:.78rem; }
 .cyt-actions { display:flex; gap:6px; flex-wrap:wrap; }
 .cyt-actions a { background:#f0faf1; color:#004d27; border:1px solid #c8e6c9; padding:7px 11px; }
+.cyt-search-bar { display:flex; gap:8px; padding:14px 18px; border-bottom:1px solid #e2e8f0; background:#f8fafc; }
+.cyt-search-bar input { flex:1; min-width:0; min-height:38px; border:1px solid #cbd5e1; border-radius:7px; padding:8px 12px; font-size:.84rem; background:#fff; }
+.cyt-search-bar input:focus { outline:none; border-color:#004d27; box-shadow:0 0 0 3px rgba(0,77,39,.12); }
+.cyt-search-bar button { border:0; background:#004d27; color:#fff; border-radius:7px; padding:9px 16px; font-size:.8rem; font-weight:800; cursor:pointer; }
+.cyt-no-match { text-align:center; padding:24px 18px; color:#64748b; font-size:.85rem; }
 .cyt-table-wrap { overflow-x:auto; }
 .cyt-table { width:100%; border-collapse:collapse; font-size:.83rem; }
 .cyt-table th { text-align:left; background:#f8fafc; color:#64748b; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; padding:10px 12px; white-space:nowrap; }
@@ -138,4 +149,57 @@
 .cyt-empty p { margin:0; }
 @media(max-width:900px){ .cyt-stats { grid-template-columns:repeat(2,1fr); } .cyt-filters select { min-width:100%; } }
 </style>
+
+<script>
+(function () {
+    var searchInput = document.getElementById('cytProgramSearch');
+    var searchButton = document.getElementById('cytProgramSearchBtn');
+    var table = document.getElementById('cytTable');
+    var noMatch = document.getElementById('cytNoMatch');
+    var rowCount = document.getElementById('cytRowCount');
+
+    if (!searchInput || !table) {
+        return;
+    }
+
+    var rows = table.querySelectorAll('tbody tr');
+    var totalRows = rows.length;
+
+    function applySearch() {
+        var query = searchInput.value.trim().toLowerCase();
+        var visibleCount = 0;
+
+        rows.forEach(function (row) {
+            var haystack = row.getAttribute('data-cyt-search') || '';
+            var isMatch = !query || haystack.indexOf(query) !== -1;
+            row.style.display = isMatch ? '' : 'none';
+            if (isMatch) {
+                visibleCount++;
+            }
+        });
+
+        if (noMatch) {
+            noMatch.style.display = visibleCount ? 'none' : 'block';
+        }
+
+        if (rowCount) {
+            rowCount.textContent = query
+                ? visibleCount + ' of ' + totalRows + ' tracking row(s)'
+                : totalRows + ' tracking row(s)';
+        }
+    }
+
+    searchInput.addEventListener('input', applySearch);
+    searchInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            applySearch();
+        }
+    });
+
+    if (searchButton) {
+        searchButton.addEventListener('click', applySearch);
+    }
+})();
+</script>
 @endsection

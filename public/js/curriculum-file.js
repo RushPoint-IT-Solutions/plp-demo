@@ -260,6 +260,22 @@
         updateActionStates();
     }
 
+    function bindChange(element, handler) {
+        if (!element) {
+            return;
+        }
+
+        // Select2 updates the underlying <select> through jQuery's synthetic
+        // event system, which does not dispatch a native 'change' event for
+        // <select> elements. A plain addEventListener('change', ...) never
+        // sees those updates, so bind through jQuery when it's available.
+        if (hasSelect2()) {
+            window.jQuery(element).on('change', handler);
+        } else {
+            element.addEventListener('change', handler);
+        }
+    }
+
     function filterCourseOptions() {
         if (!courseSearch || !coursePicker) {
             return;
@@ -294,28 +310,22 @@
     selectedCurriculumYear = topYear ? String(topYear.value || '') : selectedCurriculumYear;
     updateActionStates();
 
-    if (topCourse) {
-        topCourse.addEventListener('change', function () {
-            selectedCourseId = String(topCourse.value || '');
-            selectedCurriculumYear = '';
-            syncYearSelector(topCourse, topYear, '');
-            selectedCurriculumYear = topYear ? String(topYear.value || '') : '';
-            updateActionStates();
-        });
-    }
+    bindChange(topCourse, function () {
+        selectedCourseId = String(topCourse.value || '');
+        selectedCurriculumYear = '';
+        syncYearSelector(topCourse, topYear, '');
+        selectedCurriculumYear = topYear ? String(topYear.value || '') : '';
+        updateActionStates();
+    });
 
-    if (topYear) {
-        topYear.addEventListener('change', function () {
-            selectedCurriculumYear = String(topYear.value || '');
-            updateActionStates();
-        });
-    }
+    bindChange(topYear, function () {
+        selectedCurriculumYear = String(topYear.value || '');
+        updateActionStates();
+    });
 
-    if (setupCourse) {
-        setupCourse.addEventListener('change', function () {
-            updateActionStates();
-        });
-    }
+    bindChange(setupCourse, function () {
+        updateActionStates();
+    });
 
     if (setupYear) {
         setupYear.addEventListener('input', updateActionStates);
@@ -332,13 +342,9 @@
         setupDateTo.addEventListener('input', maybeUpdateCurriculumYearFromDates);
     }
 
-    if (setupTerm) {
-        setupTerm.addEventListener('change', updateActionStates);
-    }
+    bindChange(setupTerm, updateActionStates);
 
-    if (setupYearLevel) {
-        setupYearLevel.addEventListener('change', updateActionStates);
-    }
+    bindChange(setupYearLevel, updateActionStates);
 
     if (courseSearch) {
         courseSearch.addEventListener('input', filterCourseOptions);
