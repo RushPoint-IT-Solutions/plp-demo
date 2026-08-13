@@ -312,6 +312,17 @@ function renderTable() {
 
         var tr = document.createElement('tr');
         tr.innerHTML =
+            '<td>' + (rowNumberOffset + idx + 1) + '</td>' +
+            '<td>' + escapeHtml(subject.code) + '</td>' +
+            '<td style="text-align:left;">' + escapeHtml(subject.title) + '</td>' +
+            '<td style="text-align:center;">' + lec.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + lab.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + totalUnits.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + hours.toFixed(1) + '</td>' +
+            '<td style="text-align:center;">' + escapeHtml(subject.course_type || 'Major') + '</td>' +
+            '<td style="text-align:center;">' + yn(subject.core) + '</td>' +
+            '<td style="text-align:center;">' + yn(subject.applied) + '</td>' +
+            '<td style="text-align:center;">' + yn(subject.specialized) + '</td>' +
             '<td>' +
                 '<div class="apst-action-btn" onclick="toggleSubjectMenu(' + idx + ', event)">' +
                     '<span></span><span></span><span></span>' +
@@ -326,18 +337,7 @@ function renderTable() {
                         ' Delete' +
                     '</button>' +
                 '</div>' +
-            '</td>' +
-            '<td>' + (rowNumberOffset + idx + 1) + '</td>' +
-            '<td>' + escapeHtml(subject.code) + '</td>' +
-            '<td style="text-align:left;">' + escapeHtml(subject.title) + '</td>' +
-            '<td style="text-align:center;">' + lec.toFixed(1) + '</td>' +
-            '<td style="text-align:center;">' + lab.toFixed(1) + '</td>' +
-            '<td style="text-align:center;">' + totalUnits.toFixed(1) + '</td>' +
-            '<td style="text-align:center;">' + hours.toFixed(1) + '</td>' +
-            '<td style="text-align:center;">' + escapeHtml(subject.course_type || 'Major') + '</td>' +
-            '<td style="text-align:center;">' + yn(subject.core) + '</td>' +
-            '<td style="text-align:center;">' + yn(subject.applied) + '</td>' +
-            '<td style="text-align:center;">' + yn(subject.specialized) + '</td>';
+            '</td>';
         tbody.appendChild(tr);
     });
 

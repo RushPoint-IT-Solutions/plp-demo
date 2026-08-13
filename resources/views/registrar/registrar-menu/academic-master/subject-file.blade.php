@@ -34,7 +34,6 @@
         <table class="app-table" id="sfTable" data-no-auto-pager="1">
             <thead>
                 <tr>
-                    <th style="width:5%;">Action</th>
                     <th style="width:4%;">#</th>
                     <th style="width:14%;">Course Code</th>
                     <th style="width:25%;">Descriptive Title</th>
@@ -46,6 +45,7 @@
                     <th style="width:8%; text-align:center;">Core</th>
                     <th style="width:10%; text-align:center;">Applied</th>
                     <th style="width:10%; text-align:center;">Specialized</th>
+                    <th style="width:5%;">Action</th>
                 </tr>
             </thead>
             <tbody id="sfTableBody"></tbody>

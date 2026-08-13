@@ -9634,7 +9634,6 @@ select.req-modal-input {
 }
 
 #apstTable td:first-child,
-#sfTable td:first-child,
 #smTable td:first-child,
 #gpTable td:first-child,
 #dfTable td:first-child,
@@ -9643,8 +9642,13 @@ select.req-modal-input {
   position: relative;
 }
 
-#rfTable td:last-child {
+#rfTable td:last-child,
+#sfTable td:last-child {
   position: relative;
+}
+
+#sfTable td:last-child .apst-action-btn {
+  margin: 0 auto;
 }
 
 #rfTable td:last-child .apst-action-btn {
