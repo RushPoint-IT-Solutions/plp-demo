@@ -9,11 +9,19 @@ class SemesterSeeder extends Seeder
     {
         $now = now();
 
-        foreach (['1st Semester', '2nd Semester', 'Summer'] as $name) {
+        foreach (['First Semester', 'Second Semester', 'Summer Semester'] as $name) {
             DB::table('semesters')->updateOrInsert(
                 ['name' => $name],
                 ['name' => $name, 'created_at' => $now, 'updated_at' => $now]
             );
         }
+
+        // Earlier seed data used different naming ("1st Semester", "Summer", etc.)
+        // that doesn't match the convention RegistrarController::orderedSemesters()
+        // and the rest of the app expect. Safe to remove: no table with a
+        // semester_id column references these rows.
+        DB::table('semesters')
+            ->whereNotIn('name', ['First Semester', 'Second Semester', 'Summer Semester'])
+            ->delete();
     }
 }
