@@ -270,7 +270,7 @@
     .cor-num,
     .cor-table .cor-num,
     .cor-table th.cor-num {
-        text-align: right;
+        text-align: center;
     }
 
     .cor-total-row td {
@@ -694,7 +694,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="cor-total-row">
-                        <td colspan="3" class="cor-num">TOTAL:</td>
+                        <td colspan="3" style="text-align: right;">TOTAL:</td>
                         <td class="cor-num">{{ number_format((float) $totalUnits, 2) }}</td>
                         <td colspan="4"></td>
                     </tr>
