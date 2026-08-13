@@ -193,6 +193,114 @@
             flex-direction: column;
         }
     }
+
+    .gwa-print {
+        display: none;
+    }
+
+    @media print {
+        @page {
+            size: legal landscape;
+            margin: 0.4in;
+        }
+
+        body * {
+            visibility: hidden !important;
+        }
+
+        .gwa-print,
+        .gwa-print * {
+            visibility: visible !important;
+        }
+
+        .gwa-print {
+            display: block !important;
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            color: #111;
+        }
+
+        .gwa-print-head {
+            display: grid;
+            grid-template-columns: 70px 1fr;
+            align-items: center;
+            gap: 12px;
+            width: 9in;
+            margin: 0 auto 10px;
+        }
+
+        .gwa-print-logo {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            justify-self: center;
+        }
+
+        .gwa-print-school {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: 0.03em;
+        }
+
+        .gwa-print-address,
+        .gwa-print-phone {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
+            margin-top: 2px;
+            color: #333;
+        }
+
+        .gwa-print-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.04em;
+            margin: 6px 0 2px;
+        }
+
+        .gwa-print-subtitle {
+            text-align: center;
+            font-size: 11px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .gwa-print-table {
+            width: 9in;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 9px;
+        }
+
+        .gwa-print-table th,
+        .gwa-print-table td {
+            border: 1px solid #333;
+            padding: 3px 5px;
+            text-align: left;
+        }
+
+        .gwa-print-table th {
+            background: #f0f0f0;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .gwa-print-table td.num {
+            text-align: center;
+        }
+
+        .gwa-print-footer {
+            width: 9in;
+            margin: 10px auto 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #333;
+        }
+    }
 </style>
 @endpush
 
@@ -204,10 +312,6 @@
             <p class="gwa-lead">Every student's overall GWA (grade equivalent, weighted by subject units) across all their semesters{{ ($schoolYear || $semester) ? ', scoped to the filter below' : '' }}.</p>
         </div>
         <div class="gwa-head-actions">
-            <form method="POST" action="{{ route('registrar.services.reports-admin.gwa-report.create-test') }}">
-                @csrf
-                <button type="submit" class="gwa-btn">Create</button>
-            </form>
             <button type="button" class="gwa-btn soft" onclick="window.print()">Print</button>
         </div>
     </div>
@@ -318,6 +422,65 @@
     </div>
 
 </div>
+
+<section class="gwa-print" aria-label="GWA Report Print">
+    <header class="gwa-print-head">
+        <img class="gwa-print-logo" src="{{ asset('img/logobg.png') }}" alt="PLP Logo">
+        <div>
+            <div class="gwa-print-school">PAMANTASAN NG LUNGSOD NG PASIG</div>
+            <div class="gwa-print-address">Alkalde Jose St. Kapasigan, Pasig City, Philippines 1600</div>
+            <div class="gwa-print-phone">8628-1014</div>
+        </div>
+    </header>
+
+    <div class="gwa-print-title">GENERAL WEIGHTED AVERAGE REPORT</div>
+    @php
+        $gwaPrintScope = collect([
+            $schoolYear ? 'A.Y. ' . $schoolYear : null,
+            $semester ?: null,
+            $program ?: null,
+        ])->filter()->implode(' &middot; ');
+    @endphp
+    <div class="gwa-print-subtitle">{!! $gwaPrintScope !== '' ? $gwaPrintScope : 'All Programs &middot; All School Years &middot; All Semesters' !!}</div>
+
+    <table class="gwa-print-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student No.</th>
+                <th>Student Name</th>
+                <th>Program</th>
+                <th>Year Level</th>
+                <th>Subjects</th>
+                <th>Total Units</th>
+                <th>GWA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($rows as $index => $row)
+                <tr>
+                    <td class="num">{{ $index + 1 }}</td>
+                    <td>{{ $row['student_no'] ?: '-' }}</td>
+                    <td>{{ $row['student_name'] ?: '-' }}</td>
+                    <td>{{ $row['program'] ?: '-' }}</td>
+                    <td>{{ $row['year_level'] ?: '-' }}</td>
+                    <td class="num">{{ number_format((int) $row['subjects_count']) }}</td>
+                    <td class="num">{{ number_format((float) $row['total_units'], 1) }}</td>
+                    <td class="num">{{ $row['gwa'] !== null ? number_format((float) $row['gwa'], 2) : '-' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" class="num">No students found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <div class="gwa-print-footer">
+        <div>Generated on {{ now()->format('F j, Y g:i A') }}</div>
+        <div>Total: {{ number_format((int) ($summary['students'] ?? 0)) }} student(s) &middot; Average GWA: {{ $summary['average_gwa'] !== null ? number_format((float) $summary['average_gwa'], 2) : '-' }}</div>
+    </div>
+</section>
 @endsection
 
 @push('scripts')

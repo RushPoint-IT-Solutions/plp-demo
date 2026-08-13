@@ -498,7 +498,6 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('reports-admin')->name('reports-admin.')->group(function () {
             Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
             Route::get('/gwa-report', 'Registrar\Services\ReportsAdminController@gwaReport')->name('gwa-report');
-            Route::post('/gwa-report/create-test', 'Registrar\Services\ReportsAdminController@gwaReportCreateTest')->name('gwa-report.create-test');
             Route::get('/cwa-report', 'Registrar\Services\ReportsAdminController@cwaReport')->name('cwa-report');
             Route::post('/academic-reports/issue', 'Registrar\Services\ReportsAdminController@issueAcademicReport')->name('academic-reports.issue');
             Route::get('/guidance-reports', 'Registrar\Services\ReportsAdminController@guidanceReports')->name('guidance-reports');
