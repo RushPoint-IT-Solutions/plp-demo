@@ -29,6 +29,10 @@ Route::get('/docs/registrar-flow', function () {
     return response()->file(public_path('manual/registrar-flow.html'));
 })->name('docs.registrar-flow');
 
+Route::get('/docs/registrar-training-flow', function () {
+    return response()->file(public_path('manual/registrar-training-flow.html'));
+})->name('docs.registrar-training-flow');
+
 Auth::routes();
 Route::get('/password/setup', 'Auth\FirstLoginPasswordController@show')->name('password.first_reset');
 Route::post('/password/setup', 'Auth\FirstLoginPasswordController@update')->name('password.first_reset.update');
