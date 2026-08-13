@@ -171,8 +171,6 @@ class RegistrarController extends Controller
         $facultyCount = Faculty::count();
         $facultyEmploymentCounts = $this->dashboardFacultyEmploymentCounts();
         $departmentCount = Department::count();
-        $daySeed = (int) Carbon::now()->format('z') + 1;
-        $useDemoDashboard = ($studentCount <= 20);
 
         // Gender breakdown
         $maleCount = 0;
@@ -231,48 +229,15 @@ class RegistrarController extends Controller
             }
         }
 
-        // Demo data fallback
-        if ($useDemoDashboard || ($studentCount === 0 && $applicantCount === 0 && $facultyCount === 0)) {
-            $studentCount  = 230 + ($daySeed % 22);
-            $applicantCount = 82 + ($daySeed % 17);
-            $facultyCount  = 18 + ($daySeed % 6);
-            if ($facultyEmploymentCounts['full_time'] + $facultyEmploymentCounts['part_time'] === 0) {
-                $facultyEmploymentCounts['full_time'] = max(0, $facultyCount - 4);
-                $facultyEmploymentCounts['part_time'] = min(4, $facultyCount);
-            }
-            $departmentCount = max($departmentCount, 4);
-            $graduateCount = max($graduateCount, 47 + ($daySeed % 12));
-            $examPassed    = 35 + ($daySeed % 8);
-            $examFailed    = 12 + ($daySeed % 5);
-            $examPending   = max(0, $applicantCount - $examPassed - $examFailed);
-
-            $maleRatio  = 0.53 + (($daySeed % 6) * 0.01);
-            $maleCount  = (int) round($studentCount * $maleRatio);
-            $femaleCount = max($studentCount - $maleCount, 0);
-
-            $yearLevelMap = [
-                '1st Year' => 78 + ($daySeed % 10),
-                '2nd Year' => 62 + ($daySeed % 8),
-                '3rd Year' => 55 + ($daySeed % 7),
-                '4th Year' => 35 + ($daySeed % 6),
-            ];
-        }
-
         if ($maleCount + $femaleCount === 0 && $studentCount > 0) {
             $maleCount   = (int) round($studentCount * 0.56);
             $femaleCount = max($studentCount - $maleCount, 0);
         }
 
-        $enrollmentProgramSemesterMatrix = $this->dashboardEnrollmentProgramSemesterMatrix($activeAcademicTerm, $useDemoDashboard, $daySeed);
+        $enrollmentProgramSemesterMatrix = $this->dashboardEnrollmentProgramSemesterMatrix($activeAcademicTerm);
 
         // Enrollment trend
         $trendValues = $this->buildMonthlyCounts('students', 6);
-        $nonZeroTrendPoints = count(array_filter($trendValues, function ($value) {
-            return $value > 0;
-        }));
-        if ($useDemoDashboard || array_sum($trendValues) <= 0 || $nonZeroTrendPoints <= 2) {
-            $trendValues = $this->buildDemoUptrendSeries(6, 42 + ($daySeed % 6), 3, 7, $daySeed + 5);
-        }
         $trendPercent  = $this->computeLastMonthPercent($trendValues);
         $sparklinePaths = $this->buildSparklinePaths($trendValues, 110, 60);
 
@@ -460,14 +425,21 @@ class RegistrarController extends Controller
         return $counts;
     }
 
-    private function dashboardEnrollmentProgramSemesterMatrix($activeAcademicTerm, bool $useDemoDashboard, int $daySeed): array
+    private function dashboardEnrollmentProgramSemesterMatrix($activeAcademicTerm): array
     {
         $activeSemesterLabel = $this->dashboardSemesterDisplayLabel((string) ($activeAcademicTerm ? ($activeAcademicTerm->term ?? '') : ''));
         $semesterLabels = [$activeSemesterLabel !== '' ? $activeSemesterLabel : 'Current Semester'];
         $schoolYear = trim((string) ($activeAcademicTerm ? ($activeAcademicTerm->school_year ?? '') : ''));
 
-        if ($useDemoDashboard || !Schema::hasTable('students')) {
-            return $this->dashboardDemoEnrollmentProgramSemesterMatrix($semesterLabels, $daySeed);
+        $emptyMatrix = [
+            'schoolYear' => $schoolYear,
+            'semesters' => $semesterLabels,
+            'rows' => [],
+            'max' => 1,
+        ];
+
+        if (!Schema::hasTable('students')) {
+            return $emptyMatrix;
         }
 
         if ($schoolYear === '' && Schema::hasColumn('students', 'school_year')) {
@@ -578,7 +550,7 @@ class RegistrarController extends Controller
         }
 
         if (!count($programRows)) {
-            return $this->dashboardDemoEnrollmentProgramSemesterMatrix($semesterLabels, $daySeed);
+            return $emptyMatrix;
         }
 
         $matrixMax = 1;
@@ -610,35 +582,6 @@ class RegistrarController extends Controller
             'semesters' => $semesterLabels,
             'rows' => $matrixRows,
             'max' => $matrixMax,
-        ];
-    }
-
-    private function dashboardDemoEnrollmentProgramSemesterMatrix(array $semesterLabels, int $daySeed): array
-    {
-        $programs = ['BSCS', 'BSIT', 'BSBA', 'BSED', 'BSN'];
-        $rows = [];
-        $maxCell = 1;
-
-        foreach ($programs as $index => $program) {
-            $values = [];
-            foreach ($semesterLabels as $semesterIndex => $semesterLabel) {
-                $value = 18 + (($daySeed + ($index * 7) + ($semesterIndex * 5)) % 28);
-                $values[$semesterLabel] = $value;
-                $maxCell = max($maxCell, $value);
-            }
-
-            $rows[] = [
-                'program' => $program,
-                'values' => $values,
-                'total' => array_sum($values),
-            ];
-        }
-
-        return [
-            'schoolYear' => '',
-            'semesters' => $semesterLabels,
-            'rows' => $rows,
-            'max' => $maxCell,
         ];
     }
 

@@ -259,6 +259,15 @@ class StudentMasterlistImportSeeder extends Seeder
             ['school_year' => '2025-2026', 'term' => 'Second']
         );
 
+        // The dashboard picks the "active" term by status priority first
+        // (Open for Enrollment > Open > Draft > ...), then by school_year/id.
+        // Without this, a later-created Draft term (e.g. Summer, created by
+        // ClassListDataBackfillSeeder) can outrank this one on id alone even
+        // though this is where all the real students actually are.
+        if (Schema::hasColumn('academic_terms', 'status') && $term->status !== 'Open for Enrollment') {
+            DB::table('academic_terms')->where('id', $term->id)->update(['status' => 'Open for Enrollment']);
+        }
+
         return (int) $term->id;
     }
 
