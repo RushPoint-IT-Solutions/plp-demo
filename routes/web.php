@@ -33,6 +33,10 @@ Route::get('/docs/registrar-training-flow', function () {
     return response()->file(public_path('manual/registrar-training-flow.html'));
 })->name('docs.registrar-training-flow');
 
+Route::get('/docs/registrar-uat-config-to-grade', function () {
+    return response()->file(public_path('manual/registrar-uat-config-to-grade.html'));
+})->name('docs.registrar-uat-config-to-grade');
+
 Auth::routes();
 Route::get('/password/setup', 'Auth\FirstLoginPasswordController@show')->name('password.first_reset');
 Route::post('/password/setup', 'Auth\FirstLoginPasswordController@update')->name('password.first_reset.update');

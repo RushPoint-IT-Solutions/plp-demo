@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Config to Grade UAT</title>
+<style>
+  :root{
+    --bg:#F4F6F8;
+    --surface:#FFFFFF;
+    --surface-alt:#EAEEF2;
+    --ink:#1C2530;
+    --ink-muted:#57626F;
+    --border:#DBE2E9;
+    --accent:#1F3A5F;
+    --accent-2:#8C6B22;
+    --success:#2A7A57;
+    --warning:#9C6A12;
+    --critical:#A93636;
+    --success-bg:#E6F1EC;
+    --warning-bg:#F5EBD8;
+    --critical-bg:#F5E4E2;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10151C;
+      --surface:#171E27;
+      --surface-alt:#1E2731;
+      --ink:#E7EBEF;
+      --ink-muted:#9AA7B4;
+      --border:#2A3542;
+      --accent:#86AAD9;
+      --accent-2:#D8B565;
+      --success:#5FBB92;
+      --warning:#D9A548;
+      --critical:#E38080;
+      --success-bg:#173026;
+      --warning-bg:#332A16;
+      --critical-bg:#332020;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10151C;
+    --surface:#171E27;
+    --surface-alt:#1E2731;
+    --ink:#E7EBEF;
+    --ink-muted:#9AA7B4;
+    --border:#2A3542;
+    --accent:#86AAD9;
+    --accent-2:#D8B565;
+    --success:#5FBB92;
+    --warning:#D9A548;
+    --critical:#E38080;
+    --success-bg:#173026;
+    --warning-bg:#332A16;
+    --critical-bg:#332020;
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--bg);}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    margin:0;
+  }
+  .shell{
+    max-width:1320px;
+    margin:0 auto;
+    padding:0 24px 80px;
+  }
+  a{color:var(--accent);}
+  a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .masthead{
+    padding:56px 0 32px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent-2);
+    margin:0 0 14px;
+  }
+  h1.title{
+    font-family:var(--font-display);
+    font-size:clamp(32px,4.4vw,50px);
+    line-height:1.08;
+    margin:0 0 12px;
+    text-wrap:balance;
+    font-weight:600;
+  }
+  .subtitle{
+    font-size:18px;
+    color:var(--ink-muted);
+    max-width:700px;
+    margin:0 0 28px;
+    text-wrap:balance;
+  }
+  .doc-control{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    max-width:1020px;
+  }
+  .doc-control div{
+    background:var(--surface);
+    padding:12px 16px;
+  }
+  .doc-control .label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    color:var(--ink-muted);
+    margin-bottom:4px;
+  }
+  .doc-control .value{
+    font-size:14.5px;
+    font-weight:600;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  @media (min-width:1080px){
+    .layout{grid-template-columns:230px minmax(0,1fr); gap:48px; align-items:start;}
+  }
+  nav.toc{display:none;}
+  @media (min-width:1080px){
+    nav.toc{
+      display:block;
+      position:sticky;
+      top:24px;
+      padding:32px 0;
+      font-size:13.5px;
+    }
+    nav.toc .toc-h{
+      font-family:var(--font-mono);
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      font-size:11px;
+      color:var(--ink-muted);
+      margin-bottom:10px;
+    }
+    nav.toc ol{
+      list-style:none; margin:0; padding:0;
+      counter-reset:toc;
+      border-left:1px solid var(--border);
+    }
+    nav.toc li{counter-increment:toc;}
+    nav.toc a{
+      display:block;
+      padding:6px 0 6px 14px;
+      margin-left:-1px;
+      border-left:1px solid transparent;
+      color:var(--ink-muted);
+      text-decoration:none;
+    }
+    nav.toc a:hover{color:var(--accent); border-left-color:var(--accent);}
+  }
+
+  main{min-width:0; padding-top:32px;}
+  section{margin-bottom:56px; scroll-margin-top:20px;}
+
+  h2{
+    font-family:var(--font-display);
+    font-size:26px;
+    font-weight:600;
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  .section-kicker{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-muted);
+    margin:0 0 18px;
+  }
+  p{margin:0 0 14px; max-width:70ch;}
+  p.wide{max-width:none;}
+
+  .callout{
+    border:1px solid var(--border);
+    border-left:4px solid var(--accent);
+    background:var(--surface);
+    border-radius:0 8px 8px 0;
+    padding:14px 18px;
+    margin:18px 0;
+  }
+  .callout p:last-child{margin-bottom:0;}
+  .callout .callout-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:700;
+    margin-bottom:6px;
+    display:block;
+  }
+  .callout--rule{border-left-color:var(--warning); background:var(--warning-bg);}
+  .callout--rule .callout-label{color:var(--warning);}
+  .callout--dep .callout-label{color:var(--accent);}
+  .callout--note{border-left-color:var(--ink-muted);}
+  .callout--note .callout-label{color:var(--ink-muted);}
+
+  .table-wrap{overflow-x:auto; margin:14px 0 24px; border:1px solid var(--border); border-radius:8px;}
+  table{border-collapse:collapse; width:100%; font-size:14px; min-width:520px;}
+  thead th{
+    background:var(--surface-alt);
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-muted);
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-alt);}
+
+  table.uat{min-width:1280px; font-size:13.5px;}
+  table.uat td.uat-id{font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap;}
+  table.uat td.uat-feature{font-weight:700; white-space:nowrap;}
+  table.uat td.uat-pass{color:var(--success);}
+  table.uat td.uat-pass::before{content:"PASS "; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:.04em; color:var(--success);}
+  table.uat td.uat-fail{color:var(--critical);}
+  table.uat td.uat-fail::before{content:"FAIL "; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:.04em; color:var(--critical);}
+  .result-box{display:flex; flex-direction:column; gap:5px; white-space:nowrap;}
+  .result-box label{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-muted); margin:0;}
+  .chk{
+    display:inline-block; width:11px; height:11px; flex-shrink:0;
+    border:1.5px solid var(--ink-muted); border-radius:2px;
+  }
+  .blank-cell{
+    display:block;
+    min-height:1.3em;
+    border-bottom:1px dashed var(--border);
+    min-width:110px;
+  }
+
+  .signoff-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 18px;
+    margin-top:4px;
+    font-size:13px;
+  }
+  .signoff-bar .stat{display:flex; flex-direction:column; gap:2px;}
+  .signoff-bar .stat .k{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted);}
+  .signoff-bar .stat .v{font-weight:700; font-size:15px;}
+  .signoff-bar .sign{display:flex; gap:28px; flex-wrap:wrap;}
+  .signoff-bar .sign div{min-width:160px;}
+  .signoff-bar .sign .blank-cell{min-width:160px;}
+
+  figure{margin:22px 0 28px;}
+  figure svg{max-width:100%; height:auto; display:block;}
+  .fig-frame{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px 12px;
+    overflow-x:auto;
+  }
+  figcaption{
+    font-size:13px;
+    color:var(--ink-muted);
+    margin-top:10px;
+    max-width:70ch;
+  }
+
+  footer{
+    margin-top:64px;
+    padding-top:24px;
+    border-top:1px solid var(--border);
+    font-size:12.5px;
+    color:var(--ink-muted);
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    a{transition:color .15s ease;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="masthead">
+    <p class="eyebrow">Staff Onboarding Guide &middot; Registrar Role &middot; UAT Edition</p>
+    <h1 class="title">Config to Grade UAT</h1>
+    <p class="subtitle">One end-to-end pass through the core Registrar pipeline &mdash; System Configuration, through curriculum and scheduling, through enrolling a student, to a grade actually posted in the system. Every function states its own Pass and Fail line, not just an expected result.</p>
+    <div class="doc-control">
+      <div><div class="label">System</div><div class="value">PLP Demo SIS</div></div>
+      <div><div class="label">Scope</div><div class="value">Config &rarr; Grade Input</div></div>
+      <div><div class="label">Duration</div><div class="value">4 Days</div></div>
+      <div><div class="label">Test Cases</div><div class="value">48</div></div>
+      <div><div class="label">Prepared</div><div class="value">13 Aug 2026</div></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-h">On this page</div>
+      <ol>
+        <li><a href="#purpose">1. Purpose &amp; scope</a></li>
+        <li><a href="#map">2. Pipeline map</a></li>
+        <li><a href="#day-1">3. Day 1 &mdash; System Configuration &amp; Academic Structure</a></li>
+        <li><a href="#day-2">4. Day 2 &mdash; Resources, Term &amp; Class Scheduling</a></li>
+        <li><a href="#day-3">5. Day 3 &mdash; Students &amp; Enrollment</a></li>
+        <li><a href="#day-4">6. Day 4 &mdash; Grading</a></li>
+        <li><a href="#certification">7. Sign-off</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section id="purpose">
+        <h2>1. Purpose &amp; scope</h2>
+        <p class="section-kicker">One pipeline, start to finish</p>
+        <p>This script proves one thing end to end: that a system with nothing configured can be taken all the way to a real grade recorded against a real enrolled student, with every module along the way pulling correct data from the one before it. It's narrower than the full <a href="/manual/registrar-training-flow.html">Registrar Training Flow</a> UAT &mdash; that document tests every screen the Registrar role has, including documents, certificates, and reports printed <em>after</em> a grade exists. This one stops at the moment the grade is posted, because that's the line the request was scoped to: <em>system config to inputting grade</em>.</p>
+        <p>Every function below states two things instead of one "expected result": what a <strong>Pass</strong> looks like, and what a <strong>Fail</strong> looks like. A tester shouldn't have to infer failure from the absence of success &mdash; if the actual result doesn't match Pass, check it against Fail and record which one it actually was.</p>
+      </section>
+
+      <section id="map">
+        <h2>2. Pipeline map</h2>
+        <p class="section-kicker">Four days, each one only possible because the last one passed</p>
+        <p>Curriculum can't be built without a program. Scheduling can't happen without a published curriculum, a room, and a faculty member. A student can't enroll without a schedule to enroll into. A grade can't post without an enrolled student in an open grading period. That's the whole pipeline, in the order it has to happen.</p>
+
+        <figure>
+          <div class="fig-frame">
+            <svg viewBox="0 0 1000 250" role="img" aria-label="Four-day pipeline: Day 1 System Configuration and Academic Structure, Day 2 Resources, Term and Class Scheduling, Day 3 Students and Enrollment, Day 4 Grading, ending in Grade Recorded.">
+              <defs>
+                <marker id="arrowFlow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+                </marker>
+                <marker id="arrowFinal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent-2)"></path>
+                </marker>
+              </defs>
+
+              <line x1="205" y1="70" x2="240" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="450" y1="70" x2="485" y2="70" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrowFlow)"></line>
+              <line x1="695" y1="70" x2="730" y2="70" stroke="var(--accent-2)" stroke-width="2" marker-end="url(#arrowFinal)"></line>
+
+              <g>
+                <rect x="20" y="30" width="185" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="42" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="42" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">1</text>
+                <text x="38" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Config &amp;</text>
+                <text x="38" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Structure</text>
+                <text x="38" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">15 test cases</text>
+              </g>
+              <g>
+                <rect x="240" y="30" width="210" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="262" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="262" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">2</text>
+                <text x="258" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Resources &amp;</text>
+                <text x="258" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Scheduling</text>
+                <text x="258" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">14 test cases</text>
+              </g>
+              <g>
+                <rect x="485" y="30" width="210" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="507" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="507" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">3</text>
+                <text x="503" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Students &amp;</text>
+                <text x="503" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Enrollment</text>
+                <text x="503" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">13 test cases</text>
+              </g>
+              <g>
+                <rect x="730" y="30" width="130" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
+                <circle cx="752" cy="48" r="14" fill="var(--accent)"></circle>
+                <text x="752" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">4</text>
+                <text x="748" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Grading</text>
+                <text x="748" y="90" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">6 test cases</text>
+              </g>
+              <g>
+                <rect x="880" y="25" width="110" height="90" rx="9" fill="var(--surface)" stroke="var(--accent-2)" stroke-width="2"></rect>
+                <circle cx="902" cy="45" r="14" fill="var(--accent-2)"></circle>
+                <text x="902" y="49.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">&#10003;</text>
+                <text x="897" y="72" font-family="var(--font-body)" font-weight="700" font-size="12.5" fill="var(--ink)">Grade</text>
+                <text x="897" y="87" font-family="var(--font-body)" font-weight="700" font-size="12.5" fill="var(--ink)">Recorded</text>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Fig. 1 &mdash; 48 test cases, one continuous chain. Documents, certificates, and reports that read a grade back out (TOR, Certificate of GWA, honor rolls) are covered in the full <a href="/manual/registrar-training-flow.html">Registrar Training Flow</a> UAT, not here.</figcaption>
+        </figure>
+      </section>
+
+      <section id="day-1">
+        <h2>3. Day 1 &mdash; System Configuration &amp; Academic Structure</h2>
+        <p class="section-kicker">15 test cases &middot; the programs, curricula, and rules nothing else can exist without</p>
+        <div class="table-wrap">
+          <table class="uat">
+            <thead><tr><th style="width:50px">ID</th><th style="width:150px">Function</th><th>Test steps</th><th style="width:230px">Pass</th><th style="width:230px">Fail</th><th style="width:70px">Result</th><th style="width:120px">Tested by / Date</th></tr></thead>
+            <tbody>
+              <tr><td class="uat-id">1</td><td class="uat-feature">Configuration</td><td>Open System &rarr; System Config &rarr; Configuration; review document signatories and general settings.</td><td class="uat-pass">Signatory names/titles match who's actually authorized; settings persist after reload.</td><td class="uat-fail">Signatories are blank/outdated, or a saved setting reverts after navigating away.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">2</td><td class="uat-feature">Academic Calendar</td><td>Open System Config &rarr; Academic Calendar; set the current term's dates and grading-period windows.</td><td class="uat-pass">Dates save and are readable by other modules (Grading Periods, scheduling).</td><td class="uat-fail">Dates don't save, or another module shows different dates for the same term.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">3</td><td class="uat-feature">Announcements</td><td>Open System Config &rarr; Announcements; publish a test announcement.</td><td class="uat-pass">Announcement publishes and is immediately visible to its intended audience.</td><td class="uat-fail">Announcement doesn't save, or isn't visible where it should appear.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">4</td><td class="uat-feature">User Accounts</td><td>Open Access Management &rarr; User Accounts; create Registrar, Assistant Registrar, College Secretary, and Front-Desk accounts.</td><td class="uat-pass">Each account signs in and sees only the screens its role permits.</td><td class="uat-fail">An account can't sign in, or sees a screen outside its role's permission.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">5</td><td class="uat-feature">Report Access</td><td>Open Access Management &rarr; Report Access; restrict one report to a specific role.</td><td class="uat-pass">Restriction saves and is enforced for accounts outside that role.</td><td class="uat-fail">Restriction doesn't save, or the report stays visible to a role it shouldn't.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">6</td><td class="uat-feature">Departments</td><td>Open Faculty &rarr; Departments; create a department for the test program.</td><td class="uat-pass">Department saves and appears in Program File's department dropdown.</td><td class="uat-fail">Department doesn't save, or isn't selectable in Program File.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">7</td><td class="uat-feature">Program File</td><td>Open Academics &rarr; Curriculum &rarr; Program File; create a test program with a unique code, under the department above.</td><td class="uat-pass">Program saves and is selectable when building a curriculum.</td><td class="uat-fail">Program fails to save, allows a duplicate code, or isn't selectable in Curriculum File.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">8</td><td class="uat-feature">Course File</td><td>Open Curriculum &rarr; Course File; add subjects with code, units, and lec/lab hours.</td><td class="uat-pass">Subjects save with correct values and are selectable in Curriculum File.</td><td class="uat-fail">A subject fails to save, or its units/hours don't match what was entered.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">9</td><td class="uat-feature">Curriculum File</td><td>Open Curriculum &rarr; Curriculum File; build a full curriculum for the test program; route it through approval (Dept. Head &rarr; Dean &rarr; Registrar &rarr; Academic Council) and publish it.</td><td class="uat-pass">Curriculum saves with correct subjects/units per term and, once published, can be used to build sections.</td><td class="uat-fail">Subjects/units are wrong, an approval step is skippable, or sections can be built while still unpublished.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">10</td><td class="uat-feature">Pre-requisites</td><td>Open Curriculum &rarr; Pre-requisites; set a prerequisite link between two test subjects.</td><td class="uat-pass">Link saves and is available to enforce during Day 3 enrollment.</td><td class="uat-fail">Link doesn't save, or a student enrolls without meeting it once tested on Day 3.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">11</td><td class="uat-feature">Curriculum Year Tracking</td><td>Open Curriculum &rarr; Curriculum Year Tracking; confirm the test program's curriculum year is listed.</td><td class="uat-pass">Published curriculum year appears and is assignable to a student.</td><td class="uat-fail">Curriculum year is missing, or shows an unpublished/older version.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">12</td><td class="uat-feature">Grading System</td><td>Open Grading Setup &rarr; Grading System; review the configured scale.</td><td class="uat-pass">The 1.00&ndash;5.00 scale shown matches the university's official scale exactly.</td><td class="uat-fail">Scale is missing, incomplete, or doesn't match official policy.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">13</td><td class="uat-feature">Grading Periods</td><td>Open Grading Setup &rarr; Grading Periods; confirm midterm/final windows against the Academic Calendar.</td><td class="uat-pass">Windows match the calendar; grade entry is blocked outside them.</td><td class="uat-fail">Windows don't match, or grade entry is allowed outside the posting window.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">14</td><td class="uat-feature">Grading Components</td><td>Open Grading Setup &rarr; Grading Components; set a test subject's component weighting.</td><td class="uat-pass">Weights save and are correctly applied when a grade is computed.</td><td class="uat-fail">Weights don't save, or a computed grade doesn't reflect the configured weighting.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">15</td><td class="uat-feature">Transmutation Table</td><td>Open Grading Setup &rarr; Transmutation Table; review the percentage-to-grade mapping for the test subject and the global default.</td><td class="uat-pass">Mapping matches CHED/university policy for both the subject-specific and fallback tables.</td><td class="uat-fail">A raw score converts to the wrong grade point, or no fallback applies when a subject has no specific table.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="signoff-bar">
+          <div class="stat"><span class="k">Test cases</span><span class="v">15</span></div>
+          <div class="stat"><span class="k">Passed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="stat"><span class="k">Failed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="sign"><div>Day 1 accepted by<span class="blank-cell"></span></div><div>Date<span class="blank-cell"></span></div></div>
+        </div>
+      </section>
+
+      <section id="day-2">
+        <h2>4. Day 2 &mdash; Resources, Term &amp; Class Scheduling</h2>
+        <p class="section-kicker">14 test cases &middot; rooms, faculty, and an actual bookable schedule</p>
+        <div class="table-wrap">
+          <table class="uat">
+            <thead><tr><th style="width:50px">ID</th><th style="width:170px">Function</th><th>Test steps</th><th style="width:230px">Pass</th><th style="width:230px">Fail</th><th style="width:70px">Result</th><th style="width:120px">Tested by / Date</th></tr></thead>
+            <tbody>
+              <tr><td class="uat-id">1</td><td class="uat-feature">Create Faculty</td><td>Open Faculty &rarr; Create Faculty; create an account under the Day 1 department.</td><td class="uat-pass">Account saves under the correct department and can sign in.</td><td class="uat-fail">Account fails to save, or can't sign in after creation.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">2</td><td class="uat-feature">Faculty Profiles</td><td>Open Faculty &rarr; Faculty Profiles; open the profile just created.</td><td class="uat-pass">Profile shows the same details entered in Create Faculty.</td><td class="uat-fail">Profile is missing, or shows different details than entered.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">3</td><td class="uat-feature">Room File</td><td>Open Term Setup &amp; Scheduling &rarr; Room File; add a room with a capacity.</td><td class="uat-pass">Room saves and becomes available in Class Schedule Preparation.</td><td class="uat-fail">Room doesn't save, or isn't selectable when preparing a schedule.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">4</td><td class="uat-feature">Close / Open Term</td><td>Open Term Setup &amp; Scheduling &rarr; Close/Open Term; open a new academic term.</td><td class="uat-pass">Term opens and is selectable system-wide (scheduling, enrollment, grading).</td><td class="uat-fail">Term fails to open, or another module still shows no term / the old term.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">5</td><td class="uat-feature">Generate Academic Setup</td><td>Open Generate Academic Setup; run the automation for the new term.</td><td class="uat-pass">Baseline term structures generate with no errors for the correct term.</td><td class="uat-fail">Generation errors out, or targets the wrong term.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">6</td><td class="uat-feature">Section Offering</td><td>Open Class Scheduling &rarr; Section Offering; create sections for the test program from its Day 1 published curriculum.</td><td class="uat-pass">Sections are created only from subjects in the published curriculum.</td><td class="uat-fail">Sections can be created from an unpublished curriculum, or fail against a valid published one.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">7</td><td class="uat-feature">Class Schedule Preparation</td><td>Open Class Schedule Preparation; assign a section the room from #3, days, and a time block.</td><td class="uat-pass">Schedule saves; a conflict warning appears for a genuinely double-booked room or faculty.</td><td class="uat-fail">Schedule saves silently despite a real double-booking, or blocks a genuinely open slot.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">8</td><td class="uat-feature">Generate &amp; Assign Rooms</td><td>Open Generate &amp; Assign Rooms; run auto-assignment for the term's remaining sections.</td><td class="uat-pass">Every section gets a room with no double-booking.</td><td class="uat-fail">Two sections share a room at the same time, or a section is left unassigned.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">9</td><td class="uat-feature">Generate &amp; Assign Teachers</td><td>Open Generate &amp; Assign Teachers; run auto-assignment, including the faculty member from #1.</td><td class="uat-pass">Every section gets a faculty member with no schedule conflict.</td><td class="uat-fail">A faculty member is double-booked, or a section is left unassigned.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">10</td><td class="uat-feature">Room &amp; Section Offering Mgmt.</td><td>Open Room &amp; Section Offering Management; review the combined view for the term.</td><td class="uat-pass">View matches the actual room/section assignments made above.</td><td class="uat-fail">View shows stale or incorrect assignments.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">11</td><td class="uat-feature">Slot Monitoring &amp; Editing</td><td>Open Slot Monitoring &amp; Editing; adjust the test section's slot capacity.</td><td class="uat-pass">New capacity takes effect immediately, ready for Day 3 enrollment.</td><td class="uat-fail">Change doesn't save, or enrollment still uses the old capacity.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">12</td><td class="uat-feature">Section Merging</td><td>Open Section Merging; merge two under-enrolled sections of the same subject.</td><td class="uat-pass">Both sections' students consolidate into one section with one consistent schedule.</td><td class="uat-fail">A student is lost or duplicated during the merge, or the resulting schedule conflicts.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">13</td><td class="uat-feature">Deans &amp; Faculty Coordination</td><td>Open Deans &amp; Faculty Coordination; review the coordination view for the test program's college.</td><td class="uat-pass">View correctly surfaces sections/faculty needing dean sign-off this term.</td><td class="uat-fail">View is empty or missing an item that actually needs sign-off.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">14</td><td class="uat-feature">Promotion Readiness</td><td>Open Promotion Readiness; confirm the (currently empty) list loads for the test program.</td><td class="uat-pass">Screen loads with no error before any student exists.</td><td class="uat-fail">Screen errors out on an empty student list.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="signoff-bar">
+          <div class="stat"><span class="k">Test cases</span><span class="v">14</span></div>
+          <div class="stat"><span class="k">Passed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="stat"><span class="k">Failed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="sign"><div>Day 2 accepted by<span class="blank-cell"></span></div><div>Date<span class="blank-cell"></span></div></div>
+        </div>
+      </section>
+
+      <section id="day-3">
+        <h2>5. Day 3 &mdash; Students &amp; Enrollment</h2>
+        <p class="section-kicker">13 test cases &middot; the first point a student can honestly exist in the system</p>
+        <div class="table-wrap">
+          <table class="uat">
+            <thead><tr><th style="width:50px">ID</th><th style="width:160px">Function</th><th>Test steps</th><th style="width:230px">Pass</th><th style="width:230px">Fail</th><th style="width:70px">Result</th><th style="width:120px">Tested by / Date</th></tr></thead>
+            <tbody>
+              <tr><td class="uat-id">1</td><td class="uat-feature">Dashboard</td><td>Sign in as a Registrar user; land on the Dashboard.</td><td class="uat-pass">Loads without error; counts reflect the term/setup built on Days 1&ndash;2.</td><td class="uat-fail">Errors on load, or shows counts from the wrong term.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">2</td><td class="uat-feature">Ticketing System</td><td>Open Communication &rarr; Ticketing System; create a ticket for a sample concern.</td><td class="uat-pass">Ticket creates and appears in the list with status "Open".</td><td class="uat-fail">Ticket fails to save, or doesn't appear in the list.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">3</td><td class="uat-feature">Stakeholder Communication</td><td>Open Communication &rarr; Stakeholder Communication; compose and send a message to a stakeholder group.</td><td class="uat-pass">Message sends and appears in the communication log.</td><td class="uat-fail">Message fails to send, or isn't logged.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">4</td><td class="uat-feature">Email Notifications &amp; Templates</td><td>Open Communication &rarr; Email Notifications &amp; Templates; edit an existing template.</td><td class="uat-pass">Edited template is used the next time that notification fires.</td><td class="uat-fail">Edit doesn't save, or the old content still fires.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">5</td><td class="uat-feature">Student List</td><td>Open Student Records &rarr; Student List; add a test student under the Day 1 program and curriculum year; search by number and by name.</td><td class="uat-pass">Student saves correctly; both searches return the same record.</td><td class="uat-fail">Student fails to save, or one search method doesn't find them.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">6</td><td class="uat-feature">Enrollment List</td><td>Enroll the test student into the Day 2 section; open Enrollment List filtered by the current term.</td><td class="uat-pass">Enrollment with an unmet prerequisite is blocked; a valid enrollment appears on the list.</td><td class="uat-fail">Enrollment succeeds despite an unmet prerequisite, or a valid one doesn't appear.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">7</td><td class="uat-feature">Section List</td><td>Open Student Records &rarr; Section List; filter by the test program and term.</td><td class="uat-pass">The section shows with the enrolled student correctly counted in it.</td><td class="uat-fail">Section is missing, or the enrolled count doesn't match actual enrollment.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">8</td><td class="uat-feature">Change Password</td><td>Open Student Records &rarr; Change Password; reset the test student's password.</td><td class="uat-pass">Student can sign in with the new password immediately.</td><td class="uat-fail">Reset doesn't save, or the student still needs the old password.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">9</td><td class="uat-feature">Certificate of Registration</td><td>Open Documents &amp; Forms &rarr; COR; select the test student; review the schedule and fee assessment; print.</td><td class="uat-pass">Units and Pay Units match the enrolled subject; totals use the correct per-unit rate.</td><td class="uat-fail">Units/Pay Units don't match, or the fee total uses the wrong rate.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">10</td><td class="uat-feature">Class List</td><td>Open Academics &rarr; Classroom &rarr; Class List; open the Day 2 section's list.</td><td class="uat-pass">The test student appears as enrolled in that section.</td><td class="uat-fail">Student is missing from the class list despite being enrolled.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">11</td><td class="uat-feature">Attendance</td><td>Open Classroom &rarr; Attendance; record attendance for the section's class session.</td><td class="uat-pass">Attendance saves and reflects on the test student's record.</td><td class="uat-fail">Attendance doesn't save, or doesn't appear on the record.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">12</td><td class="uat-feature">Faculty Loads</td><td>Open Classroom &rarr; Faculty Loads; review the Day 2 faculty member's load.</td><td class="uat-pass">Load total matches the section actually assigned to that faculty member.</td><td class="uat-fail">Load total is wrong or missing the assigned section.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">13</td><td class="uat-feature">Alumni Tracker</td><td>Open Student Records &rarr; Alumni Tracker; search an existing graduated student.</td><td class="uat-pass">Graduate's record appears with correct graduation details.</td><td class="uat-fail">Record is missing or shows incorrect graduation details.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="signoff-bar">
+          <div class="stat"><span class="k">Test cases</span><span class="v">13</span></div>
+          <div class="stat"><span class="k">Passed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="stat"><span class="k">Failed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="sign"><div>Day 3 accepted by<span class="blank-cell"></span></div><div>Date<span class="blank-cell"></span></div></div>
+        </div>
+      </section>
+
+      <section id="day-4">
+        <h2>6. Day 4 &mdash; Grading</h2>
+        <p class="section-kicker">6 test cases &middot; the finish line: a grade actually recorded against the Day 3 student</p>
+        <div class="callout callout--dep">
+          <span class="callout-label">This is the end of scope</span>
+          <p>Once a grade posts here and shows correctly on Incomplete &amp; Failing / Deficiency, this script is done. Printing that grade onto a TOR, Certificate of GWA, or honor roll is covered by the full <a href="/manual/registrar-training-flow.html">Registrar Training Flow</a> UAT's Day 4&ndash;5, not by this document.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="uat">
+            <thead><tr><th style="width:50px">ID</th><th style="width:150px">Function</th><th>Test steps</th><th style="width:230px">Pass</th><th style="width:230px">Fail</th><th style="width:70px">Result</th><th style="width:120px">Tested by / Date</th></tr></thead>
+            <tbody>
+              <tr><td class="uat-id">1</td><td class="uat-feature">Grading Sheets</td><td>Sign in as the Day 2 faculty member; open Faculty &rarr; Grading Sheets; submit midterm and final grades for the Day 3 class list.</td><td class="uat-pass">Sheet submits and routes correctly through Faculty &rarr; Dean &rarr; Registrar approval.</td><td class="uat-fail">Sheet skips a step in the approval chain, or doesn't route at all.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">2</td><td class="uat-feature">Upload Grades</td><td>Open Faculty &rarr; Upload Grades; upload a batch grade file for a second section.</td><td class="uat-pass">Import matches the source file exactly; bad rows are reported, not dropped.</td><td class="uat-fail">Import silently drops or misreads a row without reporting an error.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">3</td><td class="uat-feature">Grading Sheet Approval</td><td>Sign in as Registrar; approve the #1 grading sheet.</td><td class="uat-pass">Grade posts and becomes visible on the test student's record.</td><td class="uat-fail">Approval doesn't post the grade, or posts it against the wrong student/subject.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">4</td><td class="uat-feature">Incomplete &amp; Failing</td><td>Open Grading Setup &rarr; Incomplete &amp; Failing.</td><td class="uat-pass">Any INC or failing grade from #1/#2 appears here; sidebar badge count matches the list.</td><td class="uat-fail">List or badge count doesn't match the actual posted grades.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">5</td><td class="uat-feature">Deficiency</td><td>Open Grading Setup &rarr; Deficiency; review the test student's record.</td><td class="uat-pass">Deficiency list matches the student's actual failed/incomplete history from #3.</td><td class="uat-fail">List is missing an entry, or shows one that shouldn't be there.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">6</td><td class="uat-feature">Student Grade File</td><td>Open System &rarr; Master Files &rarr; Student Grade File; review the test student's grade history.</td><td class="uat-pass">The grade posted in #3 appears here, matching exactly what was approved.</td><td class="uat-fail">Grade is missing, or doesn't match what was approved &mdash; the pipeline broke somewhere between input and this record.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="signoff-bar">
+          <div class="stat"><span class="k">Test cases</span><span class="v">6</span></div>
+          <div class="stat"><span class="k">Passed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="stat"><span class="k">Failed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
+          <div class="sign"><div>Day 4 accepted by<span class="blank-cell"></span></div><div>Date<span class="blank-cell"></span></div></div>
+        </div>
+      </section>
+
+      <section id="certification">
+        <h2>7. Sign-off</h2>
+        <p class="section-kicker">What "the pipeline works" means</p>
+        <p>This script is accepted once all 48 rows read Pass, tracing one unbroken path from an empty Configuration screen to a grade sitting correctly in the Student Grade File. Because every day's data feeds the next, a Fail on an earlier day should pause testing on whatever downstream row depends on it rather than being tested against broken data.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:110px">Day</th><th>Area</th><th style="width:100px">Cases</th><th style="width:110px">Passed</th><th style="width:110px">Failed</th></tr></thead>
+            <tbody>
+              <tr><td>Day 1</td><td>System Configuration &amp; Academic Structure</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td>Day 2</td><td>Resources, Term &amp; Class Scheduling</td><td>14</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td>Day 3</td><td>Students &amp; Enrollment</td><td>13</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td>Day 4</td><td>Grading</td><td>6</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td><strong>Total</strong></td><td></td><td><strong>48</strong></td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout--note">
+          <span class="callout-label">What's next</span>
+          <p>A passing run here proves the core pipeline is sound. Before go-live, also complete the remaining Documents, Certificates, Requests, Reports, and System Administration coverage in the full <a href="/manual/registrar-training-flow.html">Registrar Training Flow</a> UAT (its Day 4&ndash;5), and consult the <a href="/manual/registrar-flow.html">Registrar Flow</a> guide for the ongoing term-to-term cycle this pipeline feeds into.</p>
+        </div>
+
+        <div class="signoff-bar" style="margin-top:24px;">
+          <div class="sign">
+            <div>University Registrar<span class="blank-cell"></span></div>
+            <div>Date<span class="blank-cell"></span></div>
+            <div>MIS / Technical Sign-off<span class="blank-cell"></span></div>
+            <div>Date<span class="blank-cell"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        This guide reflects the screens available to the Registrar role as of the date above and pairs with the <a href="/manual/registrar-flow.html">Registrar Flow</a> business process guide and the <a href="/manual/registrar-training-flow.html">Registrar Training Flow</a> full UAT. For questions about access to a specific screen, contact your System administrator.
+      </footer>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>
