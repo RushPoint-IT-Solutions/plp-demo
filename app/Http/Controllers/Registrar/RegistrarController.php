@@ -21774,35 +21774,12 @@ JSON
                     ->where('student_id', $student->id)
                     ->get();
 
-                $weightedSum = 0.0;
-                $unitsSum = 0.0;
-                $plainSum = 0.0;
-                $plainCount = 0;
-
-                foreach ($grades as $rec) {
-                    if ($rec->final_average === null) {
-                        continue;
-                    }
-                    $avg = (float) $rec->final_average;
-                    $units = 0.0;
-                    if ($rec->relationLoaded('subject') && $rec->subject && isset($rec->subject->units) && is_numeric($rec->subject->units)) {
-                        $units = (float) $rec->subject->units;
-                    }
-
-                    if ($units > 0) {
-                        $weightedSum += $avg * $units;
-                        $unitsSum += $units;
-                    } else {
-                        $plainSum += $avg;
-                        $plainCount++;
-                    }
-                }
-
-                if ($unitsSum > 0) {
-                    $gwa = round($weightedSum / $unitsSum, 2);
-                } elseif ($plainCount > 0) {
-                    $gwa = round($plainSum / $plainCount, 2);
-                }
+                // final_average here is a raw percentage/numeric score, not yet on the
+                // official 1.00-5.00 point scale — run it through the same grade
+                // transmutation table used by the GWA/CWA reports before averaging,
+                // instead of averaging the raw scores directly.
+                $converted = $this->weightedAverageExcludingPeNstp($grades);
+                $gwa = $converted !== null ? (float) $converted : null;
             }
         }
 
