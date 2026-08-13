@@ -92,7 +92,7 @@
         return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
     }
 
-    function initSelect2(selectElement) {
+    function initSelect2(selectElement, dropdownParentElement) {
         if (!selectElement || !hasSelect2()) {
             return;
         }
@@ -102,12 +102,22 @@
             $select.select2('destroy');
         }
 
-        $select.select2({
+        var options = {
             width: '100%',
             placeholder: selectElement.getAttribute('data-placeholder') || 'Select option',
             allowClear: false,
             dropdownAutoWidth: true
-        });
+        };
+
+        // Without this, Select2's dropdown list renders appended to <body> with
+        // a lower z-index than the modal overlay, so it ends up hidden behind
+        // the overlay — clicks/hovers on options silently do nothing. Rendering
+        // the dropdown inside the modal keeps it in the same stacking context.
+        if (dropdownParentElement) {
+            options.dropdownParent = window.jQuery(dropdownParentElement);
+        }
+
+        $select.select2(options);
     }
 
     function bindChange(element, handler) {
@@ -261,7 +271,7 @@
         document.body.classList.add('prereq-modal-open');
 
         syncAddCourseModalDefaults();
-        initSelect2(addCourseProgram);
+        initSelect2(addCourseProgram, addCourseModal);
         filterAddCourseOptions();
         updateAddCourseSaveState();
 
