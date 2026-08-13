@@ -212,6 +212,7 @@
         data-pre-requisites-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}"
         data-curriculum-file-url="{{ route('registrar.registrar-menu.academic-master.curriculum-file') }}"
         data-term-year-subjects='@json($termYearSubjectMap)'
+        data-reopen-add-courses="{{ ($errors->has('setup_term_id') || $errors->has('setup_year_block_id')) ? '1' : ($errors->has('setup_subject_ids') ? '2' : '') }}"
     >
         <section class="cf-hero-card">
             <div>
@@ -311,87 +312,140 @@
                         <div class="cf-setup-note">This label groups curriculum courses, prerequisite setup, and section offering choices. Example: 2026-2027.</div>
                     </div>
 
-                    <div class="cf-subtitle">3. Active Year Level and Term</div>
-                    <div class="cf-setup-note">These selections decide the exact curriculum bucket where the selected courses will be placed.</div>
-
-                    <div class="cf-field-split">
-                        <div class="cf-field-row">
-                            <label class="req-modal-label" for="cfSetupTerm">Term</label>
-                            <select id="cfSetupTerm" name="setup_term_id" class="req-modal-input cf-select2" data-placeholder="Search term">
-                                <option value="">Term</option>
-                                @foreach($semesters as $semester)
-                                    <option value="{{ $semester->id }}" {{ (string) old('setup_term_id') === (string) $semester->id ? 'selected' : '' }}>
-                                        {{ $semester->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="cf-setup-note">Select the semester or term where these courses should be taken.</div>
-                        </div>
-                        <div class="cf-field-row">
-                            <label class="req-modal-label" for="cfSetupYearLevel">Year Level</label>
-                            <select id="cfSetupYearLevel" name="setup_year_block_id" class="req-modal-input cf-select2" data-placeholder="Search year level">
-                                <option value="">Year Level</option>
-                                @foreach($yearBlocks as $yearBlock)
-                                    <option value="{{ $yearBlock->id }}" {{ (string) old('setup_year_block_id') === (string) $yearBlock->id ? 'selected' : '' }}>
-                                        {{ $yearBlock->label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="cf-setup-note">Select the student year level for this group of curriculum courses.</div>
-                        </div>
-                    </div>
-
-                    <div class="cf-subtitle">4. Add Courses for Selected Year Level</div>
-                    <div class="cf-setup-note">Pick the Term and Year Level above first — courses already saved there will show as <strong>Already Added</strong> and pre-check automatically. Check more courses below to add them to the same term, then save.</div>
-
-                    <div class="cf-field-row">
-                        <label class="req-modal-label" for="cfCourseSearch">Course Search</label>
-                        <div class="cf-course-search-row">
-                            <input id="cfCourseSearch" type="text" class="req-modal-input" placeholder="Search course code or title">
-                            <button type="button" class="cf-picker-quick-btn" id="cfSelectAllVisible">Select All Shown</button>
-                            <button type="button" class="cf-picker-quick-btn cf-btn-outline" id="cfClearNewSelection">Clear New</button>
-                        </div>
-                        <div class="cf-setup-note">Filtering only changes what is visible in the picker; checked courses remain selected until you uncheck them.</div>
-                    </div>
-
-                    <div class="cf-picker-tally" id="cfPickerTally">
-                        <div class="cf-picker-tally-item">
-                            <span class="cf-picker-tally-value" id="cfTallyAssignedCount">0</span>
-                            <span class="cf-picker-tally-label">already in this term</span>
-                        </div>
-                        <div class="cf-picker-tally-item">
-                            <span class="cf-picker-tally-value" id="cfTallyNewCount">0</span>
-                            <span class="cf-picker-tally-label">new course(s) to add</span>
-                        </div>
-                        <div class="cf-picker-tally-item cf-picker-tally-total">
-                            <span class="cf-picker-tally-value" id="cfTallyUnits">0.0</span>
-                            <span class="cf-picker-tally-label">total units for this term</span>
-                        </div>
-                    </div>
-
-                    <div class="cf-course-picker" id="cfCoursePicker">
-                        @forelse($availableSubjects as $subject)
-                            @php
-                                $units = (float) ($subject->units ?: (($subject->lec ?: 0) + ($subject->lab ?: 0)));
-                                $oldSubjectIds = collect(old('setup_subject_ids', []))->map(function ($id) { return (string) $id; })->all();
-                            @endphp
-                            <label class="cf-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}" data-subject-id="{{ $subject->id }}">
-                                <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" data-units="{{ $units }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
-                                <span class="cf-course-info">
-                                    <span class="cf-course-code">{{ $subject->code }} <span class="cf-course-assigned-badge">Already Added</span></span>
-                                    <span class="cf-course-title">{{ $subject->name }}</span>
-                                    <span class="cf-course-units">{{ number_format($units, 1) }} units · {{ $subject->hours ? number_format((float) $subject->hours, 1) . ' hrs' : 'hrs N/A' }} · {{ $subject->course_type ?: 'Major' }}</span>
-                                </span>
-                            </label>
-                        @empty
-                            <div class="cf-course-empty">No course records available. Add courses in Course File first.</div>
-                        @endforelse
-                    </div>
-
                     <div class="cf-actions">
-                        <button type="submit" class="pf-btn-new" id="cfSaveSetupBtn">Save Setup</button>
+                        <button type="button" class="pf-btn-new" id="cfOpenAddCoursesBtn">Add Courses</button>
                         <button type="button" class="pf-btn-new" id="cfOpenPrerequisitesSetupBtn">Setup Pre/Co-Requisites</button>
-                        <span class="cf-setup-note">After saving courses, open Pre/Co-Requisites to connect prerequisite, co-requisite, and equivalent course rules.</span>
+                        <span class="cf-setup-note">Add Courses walks you through Term &amp; Year Level, then course selection, then a review before saving.</span>
+                    </div>
+
+                    <div class="req-modal-overlay cf-add-courses-overlay" id="cfAddCoursesModal" hidden aria-hidden="true">
+                        <div class="req-modal-box cf-add-courses-box">
+                            <button type="button" class="rep-modal-close-x" id="cfCloseAddCoursesBtn" aria-label="Close">&times;</button>
+                            <h3 class="cf-edit-title">Add Courses to Curriculum</h3>
+                            <p class="cf-edit-subtitle">Follow the steps below to place courses in a specific term and year level.</p>
+
+                            <div class="cf-wizard-steps">
+                                <span class="cf-wizard-step is-active" data-wizard-step-indicator="1"><span class="cf-wizard-step-num">1</span> Term &amp; Year</span>
+                                <span class="cf-wizard-step" data-wizard-step-indicator="2"><span class="cf-wizard-step-num">2</span> Select Courses</span>
+                                <span class="cf-wizard-step" data-wizard-step-indicator="3"><span class="cf-wizard-step-num">3</span> Review &amp; Save</span>
+                            </div>
+
+                            <div class="cf-wizard-panel" data-wizard-panel="1">
+                                <div class="cf-setup-note">These selections decide the exact curriculum bucket where the selected courses will be placed.</div>
+
+                                <div class="cf-field-split">
+                                    <div class="cf-field-row">
+                                        <label class="req-modal-label" for="cfSetupTerm">Term</label>
+                                        <select id="cfSetupTerm" name="setup_term_id" class="req-modal-input cf-select2" data-placeholder="Search term">
+                                            <option value="">Term</option>
+                                            @foreach($semesters as $semester)
+                                                <option value="{{ $semester->id }}" {{ (string) old('setup_term_id') === (string) $semester->id ? 'selected' : '' }}>
+                                                    {{ $semester->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="cf-setup-note">Select the semester or term where these courses should be taken.</div>
+                                    </div>
+                                    <div class="cf-field-row">
+                                        <label class="req-modal-label" for="cfSetupYearLevel">Year Level</label>
+                                        <select id="cfSetupYearLevel" name="setup_year_block_id" class="req-modal-input cf-select2" data-placeholder="Search year level">
+                                            <option value="">Year Level</option>
+                                            @foreach($yearBlocks as $yearBlock)
+                                                <option value="{{ $yearBlock->id }}" {{ (string) old('setup_year_block_id') === (string) $yearBlock->id ? 'selected' : '' }}>
+                                                    {{ $yearBlock->label }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="cf-setup-note">Select the student year level for this group of curriculum courses.</div>
+                                    </div>
+                                </div>
+
+                                <div class="cf-wizard-actions">
+                                    <button type="button" class="pf-btn-new cf-btn-outline" id="cfCancelAddCoursesBtn1">Cancel</button>
+                                    <button type="button" class="pf-btn-new" id="cfWizardNext1">Next: Select Courses</button>
+                                </div>
+                            </div>
+
+                            <div class="cf-wizard-panel" data-wizard-panel="2" hidden>
+                                <div class="cf-setup-note">Courses already saved for this term show as <strong>Already Added</strong> and pre-check automatically. Check more courses to add them to the same term.</div>
+
+                                <div class="cf-field-row">
+                                    <label class="req-modal-label" for="cfCourseSearch">Course Search</label>
+                                    <div class="cf-course-search-row">
+                                        <input id="cfCourseSearch" type="text" class="req-modal-input" placeholder="Search course code or title">
+                                        <button type="button" class="cf-picker-quick-btn" id="cfSelectAllVisible">Select All Shown</button>
+                                        <button type="button" class="cf-picker-quick-btn cf-btn-outline" id="cfClearNewSelection">Clear New</button>
+                                    </div>
+                                    <div class="cf-setup-note">Filtering only changes what is visible in the picker; checked courses remain selected until you uncheck them.</div>
+                                </div>
+
+                                <div class="cf-picker-tally" id="cfPickerTally">
+                                    <div class="cf-picker-tally-item">
+                                        <span class="cf-picker-tally-value" id="cfTallyAssignedCount">0</span>
+                                        <span class="cf-picker-tally-label">already in this term</span>
+                                    </div>
+                                    <div class="cf-picker-tally-item">
+                                        <span class="cf-picker-tally-value" id="cfTallyNewCount">0</span>
+                                        <span class="cf-picker-tally-label">new course(s) to add</span>
+                                    </div>
+                                    <div class="cf-picker-tally-item cf-picker-tally-total">
+                                        <span class="cf-picker-tally-value" id="cfTallyUnits">0.0</span>
+                                        <span class="cf-picker-tally-label">total units for this term</span>
+                                    </div>
+                                </div>
+
+                                <div class="cf-course-picker" id="cfCoursePicker">
+                                    @forelse($availableSubjects as $subject)
+                                        @php
+                                            $units = (float) ($subject->units ?: (($subject->lec ?: 0) + ($subject->lab ?: 0)));
+                                            $oldSubjectIds = collect(old('setup_subject_ids', []))->map(function ($id) { return (string) $id; })->all();
+                                        @endphp
+                                        <label class="cf-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}" data-subject-id="{{ $subject->id }}">
+                                            <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" data-units="{{ $units }}" data-code="{{ $subject->code }}" data-title="{{ $subject->name }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
+                                            <span class="cf-course-info">
+                                                <span class="cf-course-code">{{ $subject->code }} <span class="cf-course-assigned-badge">Already Added</span></span>
+                                                <span class="cf-course-title">{{ $subject->name }}</span>
+                                                <span class="cf-course-units">{{ number_format($units, 1) }} units · {{ $subject->hours ? number_format((float) $subject->hours, 1) . ' hrs' : 'hrs N/A' }} · {{ $subject->course_type ?: 'Major' }}</span>
+                                            </span>
+                                        </label>
+                                    @empty
+                                        <div class="cf-course-empty">No course records available. Add courses in Course File first.</div>
+                                    @endforelse
+                                </div>
+
+                                <div class="cf-wizard-actions">
+                                    <button type="button" class="pf-btn-new cf-btn-outline" id="cfWizardBack2">Back</button>
+                                    <button type="button" class="pf-btn-new" id="cfWizardNext2">Next: Review</button>
+                                </div>
+                            </div>
+
+                            <div class="cf-wizard-panel" data-wizard-panel="3" hidden>
+                                <div class="cf-review-summary">
+                                    <div class="cf-review-row"><span>Term</span><strong id="cfReviewTerm">—</strong></div>
+                                    <div class="cf-review-row"><span>Year Level</span><strong id="cfReviewYearLevel">—</strong></div>
+                                    <div class="cf-review-row"><span>Already in this term</span><strong id="cfReviewAssignedCount">0</strong></div>
+                                </div>
+
+                                <div class="cf-setup-note">New courses that will be added when you save:</div>
+                                <div class="cf-review-list" id="cfReviewList"></div>
+
+                                <div class="cf-picker-tally">
+                                    <div class="cf-picker-tally-item">
+                                        <span class="cf-picker-tally-value" id="cfReviewNewCount">0</span>
+                                        <span class="cf-picker-tally-label">new course(s)</span>
+                                    </div>
+                                    <div class="cf-picker-tally-item cf-picker-tally-total">
+                                        <span class="cf-picker-tally-value" id="cfReviewUnits">0.0</span>
+                                        <span class="cf-picker-tally-label">total units for this term</span>
+                                    </div>
+                                </div>
+
+                                <div class="cf-wizard-actions">
+                                    <button type="button" class="pf-btn-new cf-btn-outline" id="cfWizardBack3">Back</button>
+                                    <button type="submit" class="pf-btn-new" id="cfSaveSetupBtn">Save Setup</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </section>

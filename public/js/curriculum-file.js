@@ -59,6 +59,21 @@
     var selectAllVisibleButton = document.getElementById('cfSelectAllVisible');
     var clearNewSelectionButton = document.getElementById('cfClearNewSelection');
 
+    var addCoursesModal = document.getElementById('cfAddCoursesModal');
+    var openAddCoursesButton = document.getElementById('cfOpenAddCoursesBtn');
+    var closeAddCoursesButton = document.getElementById('cfCloseAddCoursesBtn');
+    var cancelAddCoursesButton1 = document.getElementById('cfCancelAddCoursesBtn1');
+    var wizardNext1 = document.getElementById('cfWizardNext1');
+    var wizardBack2 = document.getElementById('cfWizardBack2');
+    var wizardNext2 = document.getElementById('cfWizardNext2');
+    var wizardBack3 = document.getElementById('cfWizardBack3');
+    var reviewTerm = document.getElementById('cfReviewTerm');
+    var reviewYearLevel = document.getElementById('cfReviewYearLevel');
+    var reviewAssignedCount = document.getElementById('cfReviewAssignedCount');
+    var reviewList = document.getElementById('cfReviewList');
+    var reviewNewCount = document.getElementById('cfReviewNewCount');
+    var reviewUnits = document.getElementById('cfReviewUnits');
+
     function hasSelect2() {
         return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
     }
@@ -160,6 +175,10 @@
 
         if (openPrereqSetupButton) {
             openPrereqSetupButton.disabled = !(hasSetupCourse && hasSetupYear);
+        }
+
+        if (openAddCoursesButton) {
+            openAddCoursesButton.disabled = !(hasSetupCourse && hasSetupYear && hasSetupDates);
         }
     }
 
@@ -412,6 +431,117 @@
         }
     }
 
+    function showWizardStep(step) {
+        if (!addCoursesModal) {
+            return;
+        }
+
+        addCoursesModal.querySelectorAll('[data-wizard-panel]').forEach(function (panel) {
+            var panelStep = Number(panel.getAttribute('data-wizard-panel'));
+            panel.hidden = panelStep !== step;
+        });
+
+        addCoursesModal.querySelectorAll('[data-wizard-step-indicator]').forEach(function (indicator) {
+            var indicatorStep = Number(indicator.getAttribute('data-wizard-step-indicator'));
+            indicator.classList.toggle('is-active', indicatorStep === step);
+            indicator.classList.toggle('is-done', indicatorStep < step);
+        });
+    }
+
+    function openAddCoursesModal(step) {
+        if (!addCoursesModal) {
+            return;
+        }
+
+        addCoursesModal.hidden = false;
+        addCoursesModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('cf-modal-open');
+        syncCoursePickerForTermYear();
+        showWizardStep(step || 1);
+    }
+
+    function closeAddCoursesModal() {
+        if (!addCoursesModal) {
+            return;
+        }
+
+        addCoursesModal.hidden = true;
+        addCoursesModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('cf-modal-open');
+    }
+
+    function buildWizardReview() {
+        if (reviewTerm) {
+            reviewTerm.textContent = setupTerm && setupTerm.selectedIndex >= 0
+                ? setupTerm.options[setupTerm.selectedIndex].text
+                : '—';
+        }
+
+        if (reviewYearLevel) {
+            reviewYearLevel.textContent = setupYearLevel && setupYearLevel.selectedIndex >= 0
+                ? setupYearLevel.options[setupYearLevel.selectedIndex].text
+                : '—';
+        }
+
+        var assignedCount = 0;
+        var newCount = 0;
+        var totalUnits = 0;
+        var items = [];
+
+        if (coursePicker) {
+            coursePicker.querySelectorAll('input[type="checkbox"]:checked').forEach(function (checkbox) {
+                var units = parseFloat(checkbox.getAttribute('data-units') || '0') || 0;
+                totalUnits += units;
+
+                if (checkbox.disabled) {
+                    assignedCount++;
+                    return;
+                }
+
+                newCount++;
+                items.push({
+                    code: checkbox.getAttribute('data-code') || '',
+                    title: checkbox.getAttribute('data-title') || '',
+                    units: units
+                });
+            });
+        }
+
+        if (reviewAssignedCount) {
+            reviewAssignedCount.textContent = String(assignedCount);
+        }
+        if (reviewNewCount) {
+            reviewNewCount.textContent = String(newCount);
+        }
+        if (reviewUnits) {
+            reviewUnits.textContent = totalUnits.toFixed(1);
+        }
+
+        if (reviewList) {
+            if (!items.length) {
+                reviewList.innerHTML = '<div class="cf-review-empty">No new courses selected yet. Go back to pick at least one.</div>';
+            } else {
+                reviewList.innerHTML = items.map(function (item) {
+                    return '<div class="cf-review-item">'
+                        + '<span class="cf-review-item-name">'
+                        + '<span class="cf-review-item-code">' + escapeHtmlText(item.code) + '</span>'
+                        + '<span class="cf-review-item-title">' + escapeHtmlText(item.title) + '</span>'
+                        + '</span>'
+                        + '<span class="cf-review-item-units">' + item.units.toFixed(1) + ' units</span>'
+                        + '</div>';
+                }).join('');
+            }
+        }
+
+        return newCount;
+    }
+
+    function escapeHtmlText(value) {
+        var div = document.createElement('div');
+        div.textContent = String(value || '');
+        return div.innerHTML;
+    }
+
     if (successMessage && typeof showRegistrarToast === 'function') {
         showRegistrarToast(successMessage, 'success');
     }
@@ -545,12 +675,83 @@
         });
     }
 
+    if (openAddCoursesButton) {
+        openAddCoursesButton.addEventListener('click', function () {
+            openAddCoursesModal(1);
+        });
+    }
+
+    [closeAddCoursesButton, cancelAddCoursesButton1].forEach(function (button) {
+        if (!button) {
+            return;
+        }
+        button.addEventListener('click', closeAddCoursesModal);
+    });
+
+    if (addCoursesModal) {
+        addCoursesModal.addEventListener('click', function (event) {
+            if (event.target === addCoursesModal) {
+                closeAddCoursesModal();
+            }
+        });
+    }
+
+    if (wizardNext1) {
+        wizardNext1.addEventListener('click', function () {
+            var hasTerm = !!(setupTerm && setupTerm.value);
+            var hasYearLevel = !!(setupYearLevel && setupYearLevel.value);
+
+            if (!hasTerm || !hasYearLevel) {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Please select Term and Year Level first.', 'warning');
+                }
+                return;
+            }
+
+            syncCoursePickerForTermYear();
+            showWizardStep(2);
+        });
+    }
+
+    if (wizardBack2) {
+        wizardBack2.addEventListener('click', function () {
+            showWizardStep(1);
+        });
+    }
+
+    if (wizardNext2) {
+        wizardNext2.addEventListener('click', function () {
+            var newCount = buildWizardReview();
+
+            if (newCount <= 0) {
+                if (typeof showRegistrarToast === 'function') {
+                    showRegistrarToast('Please check at least one course to add.', 'warning');
+                }
+                return;
+            }
+
+            showWizardStep(3);
+        });
+    }
+
+    if (wizardBack3) {
+        wizardBack3.addEventListener('click', function () {
+            showWizardStep(2);
+        });
+    }
+
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             closeEditSubjectModal();
             closeViewListModal();
+            closeAddCoursesModal();
         }
     });
+
+    var reopenAddCoursesStep = parseInt(page.getAttribute('data-reopen-add-courses') || '0', 10);
+    if (reopenAddCoursesStep > 0) {
+        openAddCoursesModal(reopenAddCoursesStep);
+    }
 
     if (window.location.search.indexOf('open_view_list=1') !== -1) {
         openViewListModal();

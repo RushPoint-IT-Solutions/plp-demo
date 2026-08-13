@@ -44896,6 +44896,149 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   margin-bottom: 12px;
 }
 
+.cf-add-courses-box {
+  max-width: 820px;
+  width: 100%;
+}
+
+.cf-wizard-steps {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cf-wizard-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.cf-wizard-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cf-wizard-step.is-active {
+  color: #0f172a;
+}
+
+.cf-wizard-step.is-active .cf-wizard-step-num {
+  background: #006837;
+  color: #fff;
+}
+
+.cf-wizard-step.is-done .cf-wizard-step-num {
+  background: #0f7b43;
+  color: #fff;
+}
+
+.cf-wizard-step:not(:last-child)::after {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: #e2e8f0;
+  margin-left: 8px;
+  align-self: center;
+}
+
+.cf-wizard-panel .cf-field-split,
+.cf-wizard-panel .cf-field-row {
+  margin-bottom: 12px;
+}
+
+.cf-wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.cf-review-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.cf-review-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  color: #334155;
+}
+
+.cf-review-row strong {
+  color: #0f172a;
+}
+
+.cf-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 8px 0 14px;
+}
+
+.cf-review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f0faf5;
+  border: 1px solid #bfe8d1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.cf-review-item-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.cf-review-item-code {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cf-review-item-title {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.cf-review-item-units {
+  font-weight: 800;
+  color: #006837;
+  white-space: nowrap;
+}
+
+.cf-review-empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 16px;
+  font-size: 0.82rem;
+}
+
 .cf-viewlist-actions {
   display: flex;
   justify-content: flex-end;
