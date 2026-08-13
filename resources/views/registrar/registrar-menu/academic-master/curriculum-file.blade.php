@@ -312,10 +312,33 @@
                         <div class="cf-setup-note">This label groups curriculum courses, prerequisite setup, and section offering choices. Example: 2026-2027.</div>
                     </div>
 
+                    <div class="cf-subtitle">3. Curriculum Structure</div>
+                    <div class="cf-setup-note">Tell us how many years this program runs and which terms apply. We'll lay out every year/term slot below — click one to add its courses.</div>
+
+                    <div class="cf-field-split">
+                        <div class="cf-field-row">
+                            <label class="req-modal-label" for="cfYearCount">Number of Years</label>
+                            <input id="cfYearCount" type="number" min="1" max="{{ max(count($yearBlocks), 1) }}" value="{{ min(count($yearBlocks), 4) ?: 1 }}" class="req-modal-input">
+                        </div>
+                        <div class="cf-field-row">
+                            <label class="req-modal-label">Terms Offered</label>
+                            <div class="cf-term-toggle-row" id="cfTermToggles">
+                                @foreach($semesters as $semester)
+                                    <label class="cf-term-toggle">
+                                        <input type="checkbox" class="cf-term-toggle-input" value="{{ $semester->id }}" data-term-name="{{ $semester->name }}" {{ stripos($semester->name, 'summer') === false ? 'checked' : '' }}>
+                                        {{ $semester->name }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cf-term-year-grid" id="cfTermYearGrid"></div>
+
                     <div class="cf-actions">
-                        <button type="button" class="pf-btn-new" id="cfOpenAddCoursesBtn">Add Courses</button>
+                        <button type="button" class="pf-btn-new" id="cfOpenAddCoursesBtn">Add Courses Manually</button>
                         <button type="button" class="pf-btn-new" id="cfOpenPrerequisitesSetupBtn">Setup Pre/Co-Requisites</button>
-                        <span class="cf-setup-note">Add Courses walks you through Term &amp; Year Level, then course selection, then a review before saving.</span>
+                        <span class="cf-setup-note">Click a slot above to jump straight to course selection for that term. Use "Add Courses Manually" for a term/year not listed above.</span>
                     </div>
 
                     <div class="req-modal-overlay cf-add-courses-overlay" id="cfAddCoursesModal" hidden aria-hidden="true">

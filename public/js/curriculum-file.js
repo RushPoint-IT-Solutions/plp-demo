@@ -74,6 +74,10 @@
     var reviewNewCount = document.getElementById('cfReviewNewCount');
     var reviewUnits = document.getElementById('cfReviewUnits');
 
+    var yearCountInput = document.getElementById('cfYearCount');
+    var termToggles = document.querySelectorAll('.cf-term-toggle-input');
+    var termYearGrid = document.getElementById('cfTermYearGrid');
+
     function hasSelect2() {
         return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
     }
@@ -111,6 +115,15 @@
         }
 
         page.querySelectorAll('select.cf-select2').forEach(function (selectElement) {
+            // Term and Year Level live inside the Add Courses modal, which starts
+            // hidden. Select2 measures container width at init time, so
+            // initializing them now (against a display:none ancestor) produces a
+            // broken zero-width widget. They're initialized instead when the
+            // modal actually opens, once the container has real dimensions.
+            if (selectElement === setupTerm || selectElement === setupYearLevel) {
+                return;
+            }
+
             initSelect2(selectElement);
         });
     }
@@ -456,6 +469,8 @@
         addCoursesModal.hidden = false;
         addCoursesModal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('cf-modal-open');
+        initSelect2(setupTerm);
+        initSelect2(setupYearLevel);
         syncCoursePickerForTermYear();
         showWizardStep(step || 1);
     }
@@ -542,6 +557,85 @@
         return div.innerHTML;
     }
 
+    function getSubjectUnitsById() {
+        var lookup = {};
+        if (!coursePicker) {
+            return lookup;
+        }
+
+        coursePicker.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+            lookup[String(checkbox.value)] = parseFloat(checkbox.getAttribute('data-units') || '0') || 0;
+        });
+
+        return lookup;
+    }
+
+    function renderTermYearGrid() {
+        if (!termYearGrid || !setupYearLevel) {
+            return;
+        }
+
+        var yearOptions = Array.prototype.slice.call(setupYearLevel.options).filter(function (option) {
+            return option.value !== '';
+        });
+
+        var yearCount = yearCountInput ? Math.max(1, parseInt(yearCountInput.value, 10) || 1) : yearOptions.length;
+        var selectedYears = yearOptions.slice(0, yearCount);
+
+        var selectedTerms = [];
+        termToggles.forEach(function (toggle) {
+            if (toggle.checked) {
+                selectedTerms.push({
+                    id: toggle.value,
+                    name: toggle.getAttribute('data-term-name') || toggle.value
+                });
+            }
+        });
+
+        if (!selectedYears.length || !selectedTerms.length) {
+            termYearGrid.innerHTML = '<div class="cf-term-year-grid-empty">Set the number of years and at least one term to see the year/term slots.</div>';
+            return;
+        }
+
+        var unitsById = getSubjectUnitsById();
+        var html = '';
+
+        selectedYears.forEach(function (yearOption) {
+            selectedTerms.forEach(function (term) {
+                var key = yearOption.value + '_' + term.id;
+                var assignedIds = termYearSubjectMap[key] || [];
+                var totalUnits = 0;
+                assignedIds.forEach(function (subjectId) {
+                    totalUnits += unitsById[String(subjectId)] || 0;
+                });
+
+                var statusText = assignedIds.length
+                    ? assignedIds.length + ' course(s) · ' + totalUnits.toFixed(1) + ' units'
+                    : 'No courses yet';
+
+                html += '<button type="button" class="cf-term-year-cell' + (assignedIds.length ? ' has-courses' : '') + '" '
+                    + 'data-year-block-id="' + escapeHtmlText(yearOption.value) + '" data-term-id="' + escapeHtmlText(term.id) + '">'
+                    + '<span class="cf-term-year-cell-year">' + escapeHtmlText(yearOption.text) + '</span>'
+                    + '<span class="cf-term-year-cell-term">' + escapeHtmlText(term.name) + '</span>'
+                    + '<span class="cf-term-year-cell-status">' + escapeHtmlText(statusText) + '</span>'
+                    + '</button>';
+            });
+        });
+
+        termYearGrid.innerHTML = html;
+    }
+
+    function openAddCoursesForSlot(yearBlockId, termId) {
+        if (setupYearLevel) {
+            setupYearLevel.value = yearBlockId;
+        }
+        if (setupTerm) {
+            setupTerm.value = termId;
+        }
+
+        openAddCoursesModal(2);
+    }
+
     if (successMessage && typeof showRegistrarToast === 'function') {
         showRegistrarToast(successMessage, 'success');
     }
@@ -564,6 +658,26 @@
     selectedCurriculumYear = topYear ? String(topYear.value || '') : selectedCurriculumYear;
     updateActionStates();
     syncCoursePickerForTermYear();
+    renderTermYearGrid();
+
+    if (yearCountInput) {
+        yearCountInput.addEventListener('input', renderTermYearGrid);
+    }
+
+    termToggles.forEach(function (toggle) {
+        toggle.addEventListener('change', renderTermYearGrid);
+    });
+
+    if (termYearGrid) {
+        termYearGrid.addEventListener('click', function (event) {
+            var cell = event.target.closest('.cf-term-year-cell');
+            if (!cell) {
+                return;
+            }
+
+            openAddCoursesForSlot(cell.getAttribute('data-year-block-id'), cell.getAttribute('data-term-id'));
+        });
+    }
 
     bindChange(topCourse, function () {
         selectedCourseId = String(topCourse.value || '');

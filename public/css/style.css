@@ -44901,6 +44901,91 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   width: 100%;
 }
 
+.cf-term-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 40px;
+  align-items: center;
+}
+
+.cf-term-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.cf-term-toggle input {
+  accent-color: #006837;
+}
+
+.cf-term-year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.cf-term-year-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+
+.cf-term-year-cell:hover {
+  border-color: #006837;
+  transform: translateY(-1px);
+}
+
+.cf-term-year-cell-year {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.cf-term-year-cell-term {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cf-term-year-cell-status {
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.cf-term-year-cell.has-courses {
+  background: #f0faf5;
+  border-color: #9fdcb8;
+}
+
+.cf-term-year-cell.has-courses .cf-term-year-cell-status {
+  color: #0f7b43;
+  font-weight: 700;
+}
+
+.cf-term-year-grid-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.84rem;
+  padding: 16px;
+}
+
 .cf-wizard-steps {
   display: flex;
   gap: 8px;
