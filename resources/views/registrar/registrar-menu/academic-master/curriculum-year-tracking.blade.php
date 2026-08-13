@@ -3,6 +3,10 @@
 @section('title', 'PLP - Curriculum Year Tracking')
 @section('page-title', 'CURRICULUM YEAR TRACKING')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+@endpush
+
 @section('content')
 <div class="cyt-page">
     <div class="cyt-header">
@@ -11,7 +15,7 @@
             <p>Record the year students started and monitor how many students are aligned with approved curriculum structures.</p>
         </div>
         <form method="GET" action="{{ route('registrar.registrar-menu.academic-master.curriculum-year-tracking') }}" class="cyt-filters">
-            <select name="course_id">
+            <select name="course_id" id="cytProgramFilter" class="cyt-select2" data-placeholder="Search program">
                 <option value="">All Programs</option>
                 @foreach($courses as $course)
                     <option value="{{ $course->id }}" {{ (string) $selectedCourseId === (string) $course->id ? 'selected' : '' }}>
@@ -117,6 +121,13 @@
 .cyt-header p { margin:0; color:#64748b; font-size:.88rem; }
 .cyt-filters { display:flex; gap:8px; flex-wrap:wrap; }
 .cyt-filters select { min-height:38px; border:1px solid #cbd5e1; border-radius:7px; padding:8px 10px; background:#fff; font-size:.84rem; min-width:190px; }
+.cyt-filters .select2-container { min-width:220px; }
+.cyt-filters .select2-container--default .select2-selection--single { height:38px; border:1px solid #cbd5e1; border-radius:7px; display:flex; align-items:center; padding:0 8px; }
+.cyt-filters .select2-container--default .select2-selection--single .select2-selection__rendered { padding-left:4px; line-height:normal; color:#1a1a2e; font-size:.84rem; }
+.cyt-filters .select2-container--default .select2-selection--single .select2-selection__arrow { height:36px; }
+.cyt-filters .select2-container--default.select2-container--open .select2-selection--single { border-color:#004d27; }
+.cyt-filters .select2-dropdown { border-color:#cbd5e1; border-radius:7px; overflow:hidden; }
+.cyt-filters .select2-container--default .select2-results__option--highlighted[aria-selected] { background-color:#004d27; }
 .cyt-filters button, .cyt-actions a { border:0; background:#004d27; color:#fff; border-radius:7px; padding:9px 14px; font-size:.8rem; font-weight:800; text-decoration:none; }
 .cyt-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
 .cyt-stat { background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:16px; }
@@ -150,8 +161,19 @@
 @media(max-width:900px){ .cyt-stats { grid-template-columns:repeat(2,1fr); } .cyt-filters select { min-width:100%; } }
 </style>
 
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 (function () {
+    if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+        window.jQuery('#cytProgramFilter').select2({
+            width: '100%',
+            placeholder: 'Search program',
+            allowClear: false,
+            dropdownAutoWidth: true
+        });
+    }
+
     var searchInput = document.getElementById('cytProgramSearch');
     var searchButton = document.getElementById('cytProgramSearchBtn');
     var table = document.getElementById('cytTable');
@@ -202,4 +224,5 @@
     }
 })();
 </script>
+@endpush
 @endsection
