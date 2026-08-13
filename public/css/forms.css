@@ -1929,7 +1929,7 @@ body.wce-preview-open {
 
 .wce-grid-head {
     display: grid;
-    grid-template-columns: 1.85fr 1fr 1fr 1fr;
+    grid-template-columns: 1.85fr 1fr 1fr;
     gap: 12px;
     margin: 8px 0 6px;
     font-size: 10pt;
@@ -1942,7 +1942,7 @@ body.wce-preview-open {
 
 .wce-item-row {
     display: grid;
-    grid-template-columns: 1.85fr 1fr 1fr 1fr;
+    grid-template-columns: 1.85fr 1fr 1fr;
     gap: 12px;
     margin-bottom: 2px;
     align-items: center;

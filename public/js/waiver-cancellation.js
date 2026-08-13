@@ -84,23 +84,22 @@ function wceBuildTemplate(data) {
 
         '<div class="wce-grid-head">' +
             '<div></div>' +
-            '<div class="wce-rec-head">ACKNOWLEDGEMENT RECEIPT</div>' +
             '<div class="wce-rec-head">RELEASED BY</div>' +
             '<div class="wce-rec-head">RECEIVED BY</div>' +
         '</div>' +
 
-        '<div class="wce-item-row"><span class="wce-item">____ 2 pcs 2 x 2 picture</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Birth Certificate</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Barangay Clearance</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Cert. of Good Moral Character</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Photocopy of Voters ID</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Photocopy of Real Estate Tax Dec. No. or</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ 2 Utility Bills</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Form 138</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Form 137</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Transcript of Records</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Honorable Dismissal</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Certified True Copy of Grades</span><span class="wce-line"></span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ 2 pcs 2 x 2 picture</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Original Birth Certificate</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Original Barangay Clearance</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Original Cert. of Good Moral Character</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Photocopy of Voters ID</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Photocopy of Real Estate Tax Dec. No. or</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ 2 Utility Bills</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Original Form 138</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Original Form 137</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Transcript of Records</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Honorable Dismissal</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item">____ Certified True Copy of Grades</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
 
         '<div class="wce-sign-area">' +
             '<div class="wce-vty">Very truly yours,</div>' +
