@@ -5389,6 +5389,8 @@ class RegistrarController extends Controller
             ? $this->buildCurriculumSummaryPayload($selectedCurriculum)
             : $this->emptyCurriculumSummaryPayload();
 
+        $termYearSubjectMap = $this->buildCurriculumTermYearSubjectMap($selectedCurriculum);
+
         return view('registrar.registrar-menu.academic-master.curriculum-file', [
             'courses' => $courses,
             'courseYearMap' => $courseYearMap,
@@ -5401,7 +5403,31 @@ class RegistrarController extends Controller
             'semesters' => $semesters,
             'availableSubjects' => $availableSubjects,
             'curriculumSummary' => $curriculumSummary,
+            'termYearSubjectMap' => $termYearSubjectMap,
         ]);
+    }
+
+    /**
+     * Maps "{year_block_id}_{semester_id}" => [subject_id, ...] for every course
+     * already assigned in the selected curriculum, so the setup form can show
+     * which courses are already in a given term/year level before you add more.
+     */
+    private function buildCurriculumTermYearSubjectMap(?CourseCurriculum $curriculum): array
+    {
+        if (!$curriculum) {
+            return [];
+        }
+
+        $map = [];
+        CourseCurriculumSubject::query()
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->get(['year_block_id', 'semester_id', 'subject_id'])
+            ->each(function ($assignment) use (&$map) {
+                $key = (int) $assignment->year_block_id . '_' . (int) $assignment->semester_id;
+                $map[$key][] = (int) $assignment->subject_id;
+            });
+
+        return $map;
     }
 
     public function curriculumYearTracking(Request $request)

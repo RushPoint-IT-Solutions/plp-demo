@@ -44,6 +44,21 @@
         yearMap = {};
     }
 
+    var termYearSubjectMap = {};
+    try {
+        termYearSubjectMap = JSON.parse(page.getAttribute('data-term-year-subjects') || '{}') || {};
+    } catch (error) {
+        console.error(error);
+        termYearSubjectMap = {};
+    }
+
+    var pickerTally = document.getElementById('cfPickerTally');
+    var tallyAssignedCount = document.getElementById('cfTallyAssignedCount');
+    var tallyNewCount = document.getElementById('cfTallyNewCount');
+    var tallyUnits = document.getElementById('cfTallyUnits');
+    var selectAllVisibleButton = document.getElementById('cfSelectAllVisible');
+    var clearNewSelectionButton = document.getElementById('cfClearNewSelection');
+
     function hasSelect2() {
         return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
     }
@@ -333,6 +348,70 @@
         });
     }
 
+    function syncCoursePickerForTermYear() {
+        if (!coursePicker) {
+            return;
+        }
+
+        var termId = setupTerm ? String(setupTerm.value || '') : '';
+        var yearBlockId = setupYearLevel ? String(setupYearLevel.value || '') : '';
+        var key = yearBlockId + '_' + termId;
+        var assignedIds = (termId && yearBlockId && termYearSubjectMap[key]) || [];
+        var assignedLookup = {};
+        assignedIds.forEach(function (id) {
+            assignedLookup[String(id)] = true;
+        });
+
+        coursePicker.querySelectorAll('.cf-course-option').forEach(function (option) {
+            var subjectId = option.getAttribute('data-subject-id') || '';
+            var checkbox = option.querySelector('input[type="checkbox"]');
+            if (!checkbox) {
+                return;
+            }
+
+            if (assignedLookup[subjectId]) {
+                option.classList.add('is-assigned');
+                checkbox.checked = true;
+                checkbox.disabled = true;
+            } else {
+                option.classList.remove('is-assigned');
+                checkbox.disabled = false;
+                checkbox.checked = false;
+            }
+        });
+
+        updateCoursePickerTally();
+    }
+
+    function updateCoursePickerTally() {
+        if (!coursePicker || !pickerTally) {
+            return;
+        }
+
+        var assignedCount = 0;
+        var newCount = 0;
+        var totalUnits = 0;
+
+        coursePicker.querySelectorAll('input[type="checkbox"]:checked').forEach(function (checkbox) {
+            totalUnits += parseFloat(checkbox.getAttribute('data-units') || '0') || 0;
+            if (checkbox.disabled) {
+                assignedCount++;
+            } else {
+                newCount++;
+            }
+        });
+
+        if (tallyAssignedCount) {
+            tallyAssignedCount.textContent = String(assignedCount);
+        }
+        if (tallyNewCount) {
+            tallyNewCount.textContent = String(newCount);
+        }
+        if (tallyUnits) {
+            tallyUnits.textContent = totalUnits.toFixed(1);
+        }
+    }
+
     if (successMessage && typeof showRegistrarToast === 'function') {
         showRegistrarToast(successMessage, 'success');
     }
@@ -354,6 +433,7 @@
 
     selectedCurriculumYear = topYear ? String(topYear.value || '') : selectedCurriculumYear;
     updateActionStates();
+    syncCoursePickerForTermYear();
 
     bindChange(topCourse, function () {
         selectedCourseId = String(topCourse.value || '');
@@ -387,16 +467,53 @@
         setupDateTo.addEventListener('input', maybeUpdateCurriculumYearFromDates);
     }
 
-    bindChange(setupTerm, updateActionStates);
+    bindChange(setupTerm, function () {
+        updateActionStates();
+        syncCoursePickerForTermYear();
+    });
 
-    bindChange(setupYearLevel, updateActionStates);
+    bindChange(setupYearLevel, function () {
+        updateActionStates();
+        syncCoursePickerForTermYear();
+    });
 
     if (courseSearch) {
         courseSearch.addEventListener('input', filterCourseOptions);
     }
 
     if (coursePicker) {
-        coursePicker.addEventListener('change', updateActionStates);
+        coursePicker.addEventListener('change', function () {
+            updateActionStates();
+            updateCoursePickerTally();
+        });
+    }
+
+    if (selectAllVisibleButton) {
+        selectAllVisibleButton.addEventListener('click', function () {
+            coursePicker.querySelectorAll('.cf-course-option').forEach(function (option) {
+                if (option.hidden) {
+                    return;
+                }
+                var checkbox = option.querySelector('input[type="checkbox"]');
+                if (checkbox && !checkbox.disabled) {
+                    checkbox.checked = true;
+                }
+            });
+            updateActionStates();
+            updateCoursePickerTally();
+        });
+    }
+
+    if (clearNewSelectionButton) {
+        clearNewSelectionButton.addEventListener('click', function () {
+            coursePicker.querySelectorAll('.cf-course-option input[type="checkbox"]').forEach(function (checkbox) {
+                if (!checkbox.disabled) {
+                    checkbox.checked = false;
+                }
+            });
+            updateActionStates();
+            updateCoursePickerTally();
+        });
     }
 
     if (viewListButton) {

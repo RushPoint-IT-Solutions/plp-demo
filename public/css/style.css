@@ -44612,6 +44612,111 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   font-weight: 800;
   font-size: 0.82rem;
   color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cf-course-assigned-badge {
+  display: none;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #0f7b43;
+  background: #e5f7ec;
+  border: 1px solid #bfe8d1;
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.cf-course-option.is-assigned {
+  background: #f3fbf6;
+  border-color: #9fdcb8;
+}
+
+.cf-course-option.is-assigned .cf-course-assigned-badge {
+  display: inline-flex;
+}
+
+.cf-course-search-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cf-course-search-row .req-modal-input {
+  flex: 1;
+  min-width: 180px;
+}
+
+.cf-picker-quick-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #006837;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.cf-picker-quick-btn:hover {
+  background: #005229;
+}
+
+.cf-picker-quick-btn.cf-btn-outline {
+  background: #fff;
+  color: #006837;
+  border: 1px solid #006837;
+}
+
+.cf-picker-quick-btn.cf-btn-outline:hover {
+  background: #f0faf5;
+}
+
+.cf-picker-tally {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.cf-picker-tally-item {
+  flex: 1;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cf-picker-tally-value {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.cf-picker-tally-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cf-picker-tally-total {
+  border-left: 1px solid #e2e8f0;
+  padding-left: 14px;
+}
+
+.cf-picker-tally-total .cf-picker-tally-value {
+  color: #006837;
 }
 
 .cf-course-title {

@@ -211,6 +211,7 @@
         data-error="{{ session('curriculum_file_error', '') }}"
         data-pre-requisites-url="{{ route('registrar.registrar-menu.academic-master.pre-requisites') }}"
         data-curriculum-file-url="{{ route('registrar.registrar-menu.academic-master.curriculum-file') }}"
+        data-term-year-subjects='@json($termYearSubjectMap)'
     >
         <section class="cf-hero-card">
             <div>
@@ -341,12 +342,31 @@
                     </div>
 
                     <div class="cf-subtitle">4. Add Courses for Selected Year Level</div>
-                    <div class="cf-setup-note">Search and check every course that belongs to the selected term and year level. Save again for each additional term or year level.</div>
+                    <div class="cf-setup-note">Pick the Term and Year Level above first — courses already saved there will show as <strong>Already Added</strong> and pre-check automatically. Check more courses below to add them to the same term, then save.</div>
 
                     <div class="cf-field-row">
                         <label class="req-modal-label" for="cfCourseSearch">Course Search</label>
-                        <input id="cfCourseSearch" type="text" class="req-modal-input" placeholder="Search course code or title">
+                        <div class="cf-course-search-row">
+                            <input id="cfCourseSearch" type="text" class="req-modal-input" placeholder="Search course code or title">
+                            <button type="button" class="cf-picker-quick-btn" id="cfSelectAllVisible">Select All Shown</button>
+                            <button type="button" class="cf-picker-quick-btn cf-btn-outline" id="cfClearNewSelection">Clear New</button>
+                        </div>
                         <div class="cf-setup-note">Filtering only changes what is visible in the picker; checked courses remain selected until you uncheck them.</div>
+                    </div>
+
+                    <div class="cf-picker-tally" id="cfPickerTally">
+                        <div class="cf-picker-tally-item">
+                            <span class="cf-picker-tally-value" id="cfTallyAssignedCount">0</span>
+                            <span class="cf-picker-tally-label">already in this term</span>
+                        </div>
+                        <div class="cf-picker-tally-item">
+                            <span class="cf-picker-tally-value" id="cfTallyNewCount">0</span>
+                            <span class="cf-picker-tally-label">new course(s) to add</span>
+                        </div>
+                        <div class="cf-picker-tally-item cf-picker-tally-total">
+                            <span class="cf-picker-tally-value" id="cfTallyUnits">0.0</span>
+                            <span class="cf-picker-tally-label">total units for this term</span>
+                        </div>
                     </div>
 
                     <div class="cf-course-picker" id="cfCoursePicker">
@@ -355,10 +375,10 @@
                                 $units = (float) ($subject->units ?: (($subject->lec ?: 0) + ($subject->lab ?: 0)));
                                 $oldSubjectIds = collect(old('setup_subject_ids', []))->map(function ($id) { return (string) $id; })->all();
                             @endphp
-                            <label class="cf-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}">
-                                <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
+                            <label class="cf-course-option" data-course-text="{{ strtolower(($subject->code ?? '') . ' ' . ($subject->name ?? '')) }}" data-subject-id="{{ $subject->id }}">
+                                <input type="checkbox" name="setup_subject_ids[]" value="{{ $subject->id }}" data-units="{{ $units }}" {{ in_array((string) $subject->id, $oldSubjectIds, true) ? 'checked' : '' }}>
                                 <span class="cf-course-info">
-                                    <span class="cf-course-code">{{ $subject->code }}</span>
+                                    <span class="cf-course-code">{{ $subject->code }} <span class="cf-course-assigned-badge">Already Added</span></span>
                                     <span class="cf-course-title">{{ $subject->name }}</span>
                                     <span class="cf-course-units">{{ number_format($units, 1) }} units · {{ $subject->hours ? number_format((float) $subject->hours, 1) . ' hrs' : 'hrs N/A' }} · {{ $subject->course_type ?: 'Major' }}</span>
                                 </span>
