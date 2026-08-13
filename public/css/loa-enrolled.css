@@ -635,22 +635,37 @@
 
 .registrar-body .loae-grade-table th:nth-child(1),
 .registrar-body .loae-grade-table td:nth-child(1) {
-  width: 13%;
+  width: 10%;
 }
 
 .registrar-body .loae-grade-table th:nth-child(2),
 .registrar-body .loae-grade-table td:nth-child(2) {
-  width: 43%;
+  width: 26%;
 }
 
 .registrar-body .loae-grade-table th:nth-child(3),
 .registrar-body .loae-grade-table td:nth-child(3) {
-  width: 11%;
+  width: 8%;
 }
 
 .registrar-body .loae-grade-table th:nth-child(4),
 .registrar-body .loae-grade-table td:nth-child(4) {
-  width: 33%;
+  width: 10%;
+}
+
+.registrar-body .loae-grade-table th:nth-child(5),
+.registrar-body .loae-grade-table td:nth-child(5) {
+  width: 10%;
+}
+
+.registrar-body .loae-grade-table th:nth-child(6),
+.registrar-body .loae-grade-table td:nth-child(6) {
+  width: 16%;
+}
+
+.registrar-body .loae-grade-table th:nth-child(7),
+.registrar-body .loae-grade-table td:nth-child(7) {
+  width: 20%;
 }
 
 .registrar-body .loae-grade-table th,

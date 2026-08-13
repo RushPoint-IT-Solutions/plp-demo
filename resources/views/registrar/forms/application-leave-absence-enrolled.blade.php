@@ -26,6 +26,9 @@
         'course_code' => '',
         'course_description' => '',
         'section' => '',
+        'midterm_grade' => '',
+        'final_grade' => '',
+        'semestral_grade_remarks' => '',
         'professor_name_signature' => '',
     ];
 
@@ -136,6 +139,9 @@
                     <th>COURSE CODE</th>
                     <th>COURSE DESCRIPTION</th>
                     <th>SECTION</th>
+                    <th>MIDTERM GRADE</th>
+                    <th>FINAL GRADE</th>
+                    <th>SEMESTRAL GRADE/REMARKS</th>
                     <th>PROFESSOR'S NAME &amp; SIGNATURE</th>
                 </tr>
             </thead>
@@ -145,6 +151,9 @@
                         <td><input type="text" class="loae-cell-input" value="{{ $row['course_code'] }}"></td>
                         <td><input type="text" class="loae-cell-input loae-cell-input--left" value="{{ $row['course_description'] }}"></td>
                         <td><input type="text" class="loae-cell-input" value="{{ $row['section'] }}"></td>
+                        <td><input type="text" class="loae-cell-input" value="{{ $row['midterm_grade'] }}"></td>
+                        <td><input type="text" class="loae-cell-input" value="{{ $row['final_grade'] }}"></td>
+                        <td><input type="text" class="loae-cell-input" value="{{ $row['semestral_grade_remarks'] }}"></td>
                         <td><input type="text" class="loae-cell-input loae-cell-input--left" value="{{ $row['professor_name_signature'] }}"></td>
                     </tr>
                 @endforeach
