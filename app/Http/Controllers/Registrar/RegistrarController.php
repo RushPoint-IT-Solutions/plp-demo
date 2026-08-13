@@ -5950,6 +5950,81 @@ class RegistrarController extends Controller
         );
     }
 
+    public function updateCurriculumFileSubject(Request $request, $courseCurriculumSubjectId)
+    {
+        $assignment = CourseCurriculumSubject::query()->with('curriculum')->find((int) $courseCurriculumSubjectId);
+        if (!$assignment || !$assignment->curriculum) {
+            return back()->with('curriculum_file_error', 'Curriculum course not found.');
+        }
+
+        $validated = $request->validate([
+            'edit_term_id' => 'required|integer|exists:semesters,id',
+            'edit_year_block_id' => 'required|integer|exists:year_blocks,id',
+            'edit_credited_units' => 'nullable|numeric|min:0',
+        ]);
+
+        $termId = (int) $validated['edit_term_id'];
+        $yearBlockId = (int) $validated['edit_year_block_id'];
+
+        $duplicate = CourseCurriculumSubject::query()
+            ->where('course_curriculum_id', (int) $assignment->course_curriculum_id)
+            ->where('subject_id', (int) $assignment->subject_id)
+            ->where('year_block_id', $yearBlockId)
+            ->where('semester_id', $termId)
+            ->where('id', '<>', (int) $assignment->id)
+            ->exists();
+
+        if ($duplicate) {
+            return $this->redirectToCurriculumFile(
+                $assignment->curriculum->course_id,
+                $assignment->curriculum->curriculum_year_code,
+                'This course is already assigned to that year level and term.',
+                'curriculum_file_error'
+            );
+        }
+
+        $assignment->year_block_id = $yearBlockId;
+        $assignment->semester_id = $termId;
+
+        if ($request->filled('edit_credited_units')) {
+            $assignment->credited_units = (float) $request->input('edit_credited_units');
+        }
+
+        $assignment->save();
+
+        return $this->redirectToCurriculumFile(
+            $assignment->curriculum->course_id,
+            $assignment->curriculum->curriculum_year_code,
+            'Curriculum course updated successfully.',
+            'curriculum_file_success'
+        );
+    }
+
+    public function deleteCurriculumFileSubject($courseCurriculumSubjectId)
+    {
+        $assignment = CourseCurriculumSubject::query()->with('curriculum')->find((int) $courseCurriculumSubjectId);
+        if (!$assignment || !$assignment->curriculum) {
+            return back()->with('curriculum_file_error', 'Curriculum course not found.');
+        }
+
+        $courseId = $assignment->curriculum->course_id;
+        $curriculumYear = $assignment->curriculum->curriculum_year_code;
+
+        DB::transaction(function () use ($assignment) {
+            CurriculumSubjectRequisite::query()
+                ->where('course_curriculum_subject_id', (int) $assignment->id)
+                ->delete();
+            $assignment->delete();
+        });
+
+        return $this->redirectToCurriculumFile(
+            $courseId,
+            $curriculumYear,
+            'Course removed from the curriculum.',
+            'curriculum_file_success'
+        );
+    }
+
     public function updateCurriculumWorkflow(Request $request, CourseCurriculum $courseCurriculum)
     {
         $validated = $request->validate([
@@ -6833,6 +6908,9 @@ class RegistrarController extends Controller
             }
 
             $masterlistYears[$yearLabel]['semesters'][$termLabel]['subjects'][] = [
+                'id' => (int) $assignment->id,
+                'year_block_id' => (int) $assignment->year_block_id,
+                'semester_id' => (int) $assignment->semester_id,
                 'code' => trim((string) optional($subject)->code),
                 'title' => trim((string) optional($subject)->name),
                 'prereq' => count($requisites) ? implode(', ', $requisites) : 'None',

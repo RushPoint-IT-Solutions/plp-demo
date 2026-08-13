@@ -501,6 +501,7 @@
                                             <th>Lab</th>
                                             <th>Units</th>
                                             <th>Hrs</th>
+                                            <th class="cf-viewlist-actions-col">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -513,10 +514,36 @@
                                                 <td>{{ $formatCfNumber($subject['lab'] ?? 0) }}</td>
                                                 <td>{{ $formatCfNumber($subject['units'] ?? 0) }}</td>
                                                 <td>{{ $formatCfNumber($subject['hours'] ?? 0) }}</td>
+                                                <td class="cf-viewlist-actions-col">
+                                                    @if(!empty($subject['id']))
+                                                        <div class="cf-viewlist-row-actions">
+                                                            <button
+                                                                type="button"
+                                                                class="cf-row-edit-btn"
+                                                                data-edit-url="{{ route('registrar.registrar-menu.academic-master.curriculum-file.subject.update', $subject['id']) }}"
+                                                                data-code="{{ $subject['code'] }}"
+                                                                data-title="{{ $subject['title'] }}"
+                                                                data-term-id="{{ $subject['semester_id'] ?? '' }}"
+                                                                data-year-block-id="{{ $subject['year_block_id'] ?? '' }}"
+                                                                data-units="{{ $subject['units'] ?? 0 }}"
+                                                            >Edit</button>
+                                                            <form
+                                                                method="POST"
+                                                                action="{{ route('registrar.registrar-menu.academic-master.curriculum-file.subject.delete', $subject['id']) }}"
+                                                                class="cf-row-remove-form"
+                                                                onsubmit="return confirm('Remove {{ addslashes($subject['code'] ?: 'this course') }} from this curriculum?');"
+                                                            >
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="cf-row-remove-btn">Remove</button>
+                                                            </form>
+                                                        </div>
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7">No courses assigned.</td>
+                                                <td colspan="8">No courses assigned.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -527,6 +554,7 @@
                                             <td>{{ $formatCfNumber($semester['totals']['lab'] ?? 0) }}</td>
                                             <td>{{ $formatCfNumber($semester['totals']['units'] ?? 0) }}</td>
                                             <td>{{ $formatCfNumber($semester['totals']['hours'] ?? 0) }}</td>
+                                            <td></td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -543,6 +571,48 @@
             <button type="button" class="pf-btn-new" onclick="window.print()" {{ empty($curriculumMasterlist['years']) ? 'disabled' : '' }}>Print</button>
             <button type="button" class="pf-btn-new cf-btn-outline" onclick="window.closeCfViewListModal()">Close</button>
         </div>
+    </div>
+</div>
+
+<div class="req-modal-overlay cf-edit-overlay" id="cfEditSubjectModal" style="display:none;" onclick="if(event.target===this){window.closeCfEditSubjectModal();}">
+    <div class="req-modal-box cf-edit-box">
+        <button type="button" class="rep-modal-close-x" onclick="window.closeCfEditSubjectModal()" aria-label="Close">&times;</button>
+
+        <h3 class="cf-edit-title">Edit Curriculum Course</h3>
+        <p class="cf-edit-subtitle" id="cfEditSubjectLabel"></p>
+
+        <form method="POST" id="cfEditSubjectForm">
+            @csrf
+            @method('PUT')
+
+            <div class="cf-field-row">
+                <label class="req-modal-label" for="cfEditTerm">Term</label>
+                <select id="cfEditTerm" name="edit_term_id" class="req-modal-input">
+                    @foreach($semesters as $semester)
+                        <option value="{{ $semester->id }}">{{ $semester->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="cf-field-row">
+                <label class="req-modal-label" for="cfEditYearLevel">Year Level</label>
+                <select id="cfEditYearLevel" name="edit_year_block_id" class="req-modal-input">
+                    @foreach($yearBlocks as $yearBlock)
+                        <option value="{{ $yearBlock->id }}">{{ $yearBlock->label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="cf-field-row">
+                <label class="req-modal-label" for="cfEditUnits">Credited Units</label>
+                <input id="cfEditUnits" name="edit_credited_units" type="number" step="0.5" min="0" class="req-modal-input">
+            </div>
+
+            <div class="cf-viewlist-actions">
+                <button type="submit" class="pf-btn-new">Save Changes</button>
+                <button type="button" class="pf-btn-new cf-btn-outline" onclick="window.closeCfEditSubjectModal()">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 

@@ -13578,6 +13578,29 @@ body.slot-monitoring-report-page {
   border-bottom: none;
 }
 
+.prereq-action-col {
+  width: 96px;
+  text-align: center;
+}
+
+.prereq-row-setup-btn {
+  padding: 6px 16px;
+  background: #006837;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.prereq-row-setup-btn:hover {
+  background: #005229;
+}
+
 .prereq-pagination {
   display: flex;
   align-items: center;
@@ -44695,6 +44718,77 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
 .cf-viewlist-table tfoot td {
   font-weight: 800;
   background: #f8fafc;
+}
+
+.cf-viewlist-table .cf-viewlist-actions-col {
+  white-space: nowrap;
+}
+
+.cf-viewlist-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.cf-row-edit-btn,
+.cf-row-remove-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cf-row-edit-btn {
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.cf-row-edit-btn:hover {
+  background: #3730a3;
+  color: #fff;
+}
+
+.cf-row-remove-form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.cf-row-remove-btn {
+  background: #fef2f2;
+  color: #b42318;
+  border: 1px solid #fecaca;
+}
+
+.cf-row-remove-btn:hover {
+  background: #b42318;
+  color: #fff;
+}
+
+.cf-edit-box {
+  max-width: 460px;
+  width: 100%;
+}
+
+.cf-edit-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cf-edit-subtitle {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.cf-edit-box .cf-field-row {
+  margin-bottom: 12px;
 }
 
 .cf-viewlist-actions {

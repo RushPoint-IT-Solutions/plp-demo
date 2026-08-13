@@ -247,6 +247,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/curriculum-file', 'Registrar\RegistrarController@curriculumFile')->name('curriculum-file');
             Route::post('/curriculum-file/setup', 'Registrar\RegistrarController@saveCurriculumSetup')->name('curriculum-file.setup')->middleware('throttle:60,1');
             Route::put('/curriculum-file/{courseCurriculum}/workflow', 'Registrar\RegistrarController@updateCurriculumWorkflow')->name('curriculum-file.workflow')->middleware('throttle:60,1');
+            Route::put('/curriculum-file/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@updateCurriculumFileSubject')->name('curriculum-file.subject.update')->middleware('throttle:60,1');
+            Route::delete('/curriculum-file/subjects/{courseCurriculumSubjectId}', 'Registrar\RegistrarController@deleteCurriculumFileSubject')->name('curriculum-file.subject.delete')->middleware('throttle:60,1');
             Route::get('/curriculum-year-tracking', 'Registrar\RegistrarController@curriculumYearTracking')->name('curriculum-year-tracking');
             Route::get('/pre-requisites', 'Registrar\RegistrarController@preRequisites')->name('pre-requisites');
             Route::get('/pre-requisites/data', 'Registrar\RegistrarController@preRequisitesData')->name('pre-requisites.data')->middleware('throttle:60,1');

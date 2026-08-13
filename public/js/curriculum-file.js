@@ -20,6 +20,12 @@
     var openPrereqButton = document.getElementById('cfOpenPrerequisitesBtn');
     var openPrereqSetupButton = document.getElementById('cfOpenPrerequisitesSetupBtn');
     var viewListModal = document.getElementById('cfViewListModal');
+    var editSubjectModal = document.getElementById('cfEditSubjectModal');
+    var editSubjectForm = document.getElementById('cfEditSubjectForm');
+    var editSubjectLabel = document.getElementById('cfEditSubjectLabel');
+    var editSubjectTerm = document.getElementById('cfEditTerm');
+    var editSubjectYearLevel = document.getElementById('cfEditYearLevel');
+    var editSubjectUnits = document.getElementById('cfEditUnits');
 
     var preRequisitesUrl = page.getAttribute('data-pre-requisites-url') || '';
     var curriculumFileUrl = page.getAttribute('data-curriculum-file-url') || '';
@@ -186,6 +192,45 @@
     }
 
     window.closeCfViewListModal = closeViewListModal;
+
+    function openEditSubjectModal(button) {
+        if (!editSubjectModal || !editSubjectForm) {
+            return;
+        }
+
+        editSubjectForm.action = button.getAttribute('data-edit-url') || '';
+
+        if (editSubjectLabel) {
+            var code = button.getAttribute('data-code') || '';
+            var title = button.getAttribute('data-title') || '';
+            editSubjectLabel.textContent = (code ? code + ' - ' : '') + title;
+        }
+
+        if (editSubjectTerm) {
+            editSubjectTerm.value = button.getAttribute('data-term-id') || '';
+        }
+
+        if (editSubjectYearLevel) {
+            editSubjectYearLevel.value = button.getAttribute('data-year-block-id') || '';
+        }
+
+        if (editSubjectUnits) {
+            editSubjectUnits.value = button.getAttribute('data-units') || '';
+        }
+
+        editSubjectModal.style.display = 'flex';
+        document.body.classList.add('cf-modal-open');
+    }
+
+    function closeEditSubjectModal() {
+        if (!editSubjectModal) {
+            return;
+        }
+        editSubjectModal.style.display = 'none';
+        document.body.classList.remove('cf-modal-open');
+    }
+
+    window.closeCfEditSubjectModal = closeEditSubjectModal;
 
     function navigateToViewList() {
         var courseId = topCourse ? String(topCourse.value || '') : '';
@@ -366,8 +411,26 @@
         openPrereqSetupButton.addEventListener('click', navigateToSetupPreRequisites);
     }
 
+    if (viewListModal) {
+        viewListModal.addEventListener('click', function (event) {
+            var editButton = event.target.closest('.cf-row-edit-btn');
+            if (editButton) {
+                openEditSubjectModal(editButton);
+            }
+        });
+    }
+
+    if (editSubjectModal) {
+        editSubjectModal.addEventListener('click', function (event) {
+            if (event.target === editSubjectModal) {
+                closeEditSubjectModal();
+            }
+        });
+    }
+
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
+            closeEditSubjectModal();
             closeViewListModal();
         }
     });

@@ -110,6 +110,22 @@
         });
     }
 
+    function bindChange(element, handler) {
+        if (!element) {
+            return;
+        }
+
+        // Select2 updates the underlying <select> through jQuery's synthetic
+        // event system, which does not dispatch a native 'change' event for
+        // <select> elements. A plain addEventListener('change', ...) never
+        // sees those updates, so bind through jQuery when it's available.
+        if (hasSelect2()) {
+            window.jQuery(element).on('change', handler);
+        } else {
+            element.addEventListener('change', handler);
+        }
+    }
+
     function initSearchableSelects() {
         if (!hasSelect2()) {
             return;
@@ -737,15 +753,13 @@
     }
 
     function bindEvents() {
-        if (courseSelect) {
-            courseSelect.addEventListener('change', function () {
-                state.selectedCourseId = String(courseSelect.value || '');
-                state.selectedCurriculumYear = '';
-                state.listPage = 1;
-                updateCurriculumYearOptions();
-                syncAddCourseModalDefaults();
-            });
-        }
+        bindChange(courseSelect, function () {
+            state.selectedCourseId = String(courseSelect.value || '');
+            state.selectedCurriculumYear = '';
+            state.listPage = 1;
+            updateCurriculumYearOptions();
+            syncAddCourseModalDefaults();
+        });
 
         if (curriculumYearSelect) {
             curriculumYearSelect.addEventListener('change', function () {
@@ -790,7 +804,9 @@
             });
         }
 
-        [addCourseProgram, addCourseCurriculumYear, addCourseYearLevel, addCourseTerm].forEach(function (input) {
+        bindChange(addCourseProgram, updateAddCourseSaveState);
+
+        [addCourseCurriculumYear, addCourseYearLevel, addCourseTerm].forEach(function (input) {
             if (!input) {
                 return;
             }
