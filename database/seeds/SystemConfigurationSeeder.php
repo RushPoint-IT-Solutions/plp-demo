@@ -89,9 +89,9 @@ class SystemConfigurationSeeder extends Seeder
 
         $designationMap = DB::table($designationTable)->pluck('id', 'code')->all();
         $rows = [
-            ['code' => 'REGISTRAR', 'name' => 'System Registrar'],
+            ['code' => 'REGISTRAR', 'name' => 'MR. FEDERICO G. NUEVA'],
             ['code' => 'ACCOUNTING_HEAD', 'name' => 'Accounting Head'],
-            ['code' => 'ASSISTANT_REGISTRAR', 'name' => 'Assistant Registrar'],
+            ['code' => 'ASSISTANT_REGISTRAR', 'name' => 'MS. JAY ANNE I. SANTOS'],
         ];
 
         foreach ($rows as $row) {

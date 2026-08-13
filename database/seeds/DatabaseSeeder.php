@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
             SemesterSeeder::class,
             YearBlockSeeder::class,
             CourseCatalogSeeder::class,
+            PlpMasterlistSeeder::class,
             CourseCurriculumYearSeeder::class,
             ApplicantSeeder::class,
             ApplicantBulkSeeder::class,
