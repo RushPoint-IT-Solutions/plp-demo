@@ -704,6 +704,17 @@
 
     bindChange(setupCourse, function () {
         updateActionStates();
+
+        var newCourseId = String(setupCourse.value || '');
+        if (!newCourseId || newCourseId === loadedCourseId || !curriculumFileUrl) {
+            return;
+        }
+
+        // The Curriculum Structure grid, "Already Added" badges, and summary
+        // panel are all rendered server-side for whichever program the page
+        // was loaded with. Switching programs here without reloading would
+        // leave them showing the previous program's data.
+        window.location.href = curriculumFileUrl + '?course_id=' + encodeURIComponent(newCourseId);
     });
 
     if (setupYear) {
