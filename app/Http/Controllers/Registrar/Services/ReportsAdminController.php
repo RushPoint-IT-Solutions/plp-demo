@@ -242,11 +242,17 @@ class ReportsAdminController extends Controller
         $schoolYears = $this->gwaSchoolYearOptions($hasSubjectSchoolYear, $hasSubjectAcademicTerm);
         $semesters = $this->gwaSemesterOptions($hasSubjectSemester, $hasSubjectTerm, $hasSubjectAcademicTerm);
 
+        // The current schema links students to programs via students.course_id
+        // -> courses.code, not a legacy program/course text column, so pull the
+        // live list from the courses table (falls back to the legacy columns
+        // too, in case this runs against an older schema variant).
         $programs = collect()
-            ->merge(Schema::hasColumn('students', 'program') ? Student::query()->whereNotNull('program')->where('program', '<>', '')->distinct()->orderBy('program')->pluck('program') : collect())
-            ->merge(Schema::hasColumn('subjects', 'course') ? \App\Subject::query()->whereNotNull('course')->where('course', '<>', '')->distinct()->orderBy('course')->pluck('course') : collect())
+            ->merge($hasStudentCourseId && Schema::hasTable('courses') ? Course::query()->orderBy('code')->pluck('code') : collect())
+            ->merge($hasStudentProgram ? Student::query()->whereNotNull('program')->where('program', '<>', '')->distinct()->orderBy('program')->pluck('program') : collect())
+            ->merge($hasSubjectCourse ? Subject::query()->whereNotNull('course')->where('course', '<>', '')->distinct()->orderBy('course')->pluck('course') : collect())
             ->filter()
             ->unique()
+            ->sort()
             ->values();
 
         $summary = [
