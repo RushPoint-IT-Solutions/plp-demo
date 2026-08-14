@@ -12,15 +12,16 @@
     --ink:#1C2530;
     --ink-muted:#57626F;
     --border:#DBE2E9;
-    --accent:#1F3A5F;
-    --accent-2:#8C6B22;
+    --accent:#087F3C;
+    --accent-strong:#065E2D;
+    --accent-2:#A47709;
     --success:#2A7A57;
     --warning:#9C6A12;
     --critical:#A93636;
     --success-bg:#E6F1EC;
     --warning-bg:#F5EBD8;
     --critical-bg:#F5E4E2;
-    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
   }
@@ -97,7 +98,8 @@
     line-height:1.08;
     margin:0 0 12px;
     text-wrap:balance;
-    font-weight:600;
+    font-weight:800;
+    letter-spacing:-.035em;
   }
   .subtitle{
     font-size:18px;
@@ -237,6 +239,92 @@
   .phase-card .name{font-weight:700; font-size:14.5px; margin-bottom:3px;}
   .phase-card .desc{font-size:13px; color:var(--ink-muted); line-height:1.45;}
 
+  /* Reference-style walkthroughs */
+  .quick-start{
+    display:grid;
+    grid-template-columns:minmax(260px,.75fr) minmax(0,1.25fr);
+    gap:28px;
+    align-items:start;
+    margin-top:20px;
+  }
+  .steps{list-style:none; padding:0; margin:0; counter-reset:walkthrough;}
+  .steps li{
+    counter-increment:walkthrough;
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr);
+    gap:12px;
+    margin:0 0 16px;
+    color:var(--ink-muted);
+  }
+  .steps li::before{
+    content:counter(walkthrough);
+    display:grid;
+    place-items:center;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--font-mono);
+    font-size:13px;
+    font-weight:800;
+  }
+  .steps strong{display:block; color:var(--ink); margin-bottom:2px;}
+  .screen-shot{
+    margin:0;
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+    background:var(--surface);
+    box-shadow:0 18px 44px rgba(19,41,29,.12);
+  }
+  .screen-shot img{display:block; width:100%; height:auto;}
+  .screen-shot figcaption{padding:10px 14px; margin:0; border-top:1px solid var(--border);}
+  .day-walkthrough{
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:var(--surface);
+    overflow:hidden;
+    margin:22px 0 28px;
+  }
+  .day-instructions{padding:24px;}
+  .day-label{
+    display:inline-block;
+    color:var(--accent);
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .day-instructions h3{font-family:var(--font-body); font-size:20px; margin:0 0 16px;}
+  .day-instructions .steps{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px;}
+  .day-instructions .steps li{font-size:14px; line-height:1.45; grid-template-columns:30px minmax(0,1fr); margin:0;}
+  .day-instructions .steps li::before{width:28px; height:28px; font-size:12px;}
+  .menu-path{
+    display:inline-flex;
+    flex-wrap:wrap;
+    gap:5px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    color:var(--accent-strong);
+    background:var(--success-bg);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:4px 9px;
+    margin-top:4px;
+  }
+  .process-jump{display:inline-block; margin-left:8px; font-size:12px; font-weight:700; text-decoration:none;}
+  .process-jump:hover{text-decoration:underline;}
+  .day-screen{margin:0; border-top:1px solid var(--border); background:var(--surface);}
+  .day-screen img{display:block; width:100%; height:auto;}
+  .day-screen figcaption{padding:10px 14px; margin:0; border-top:1px solid var(--border);}
+  .table-intro{display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-top:28px;}
+  .table-intro h3{margin:0;}
+  .table-intro span{font-size:12px; color:var(--ink-muted); font-family:var(--font-mono);}
+
   /* Callouts */
   .callout{
     border:1px solid var(--border);
@@ -293,6 +381,94 @@
   table.uat td.uat-id{font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap;}
   table.uat td.uat-feature{font-weight:700; white-space:nowrap;}
   table.uat td.uat-expected{color:var(--ink-muted);}
+  table.uat td.process-steps{min-width:330px;}
+  .case-steps{
+    list-style:none;
+    counter-reset:case-step;
+    margin:0;
+    padding:0;
+    display:grid;
+    gap:8px;
+  }
+  .case-steps li{
+    counter-increment:case-step;
+    display:grid;
+    grid-template-columns:24px minmax(0,1fr);
+    gap:8px;
+    align-items:start;
+    margin:0;
+    line-height:1.45;
+  }
+  .case-steps li::before{
+    content:counter(case-step);
+    display:grid;
+    place-items:center;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    color:var(--accent);
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:800;
+  }
+  .case-steps li:first-child::before{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .action-label{
+    display:block;
+    margin-bottom:2px;
+    color:var(--ink-muted);
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+  .expected-list{list-style:none; padding:0; margin:0; display:grid; gap:7px;}
+  .expected-list li{position:relative; margin:0; padding-left:20px; line-height:1.45;}
+  .expected-list li::before{content:"\2713"; position:absolute; left:0; color:var(--success); font-weight:900;}
+  .evidence-box{
+    margin-top:10px;
+    padding:8px 10px;
+    border:1px dashed var(--border);
+    border-radius:7px;
+    background:var(--surface-alt);
+    color:var(--ink-muted);
+    font-size:11.5px;
+    line-height:1.4;
+  }
+  .evidence-box strong{display:block; color:var(--ink); font-family:var(--font-mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:2px;}
+  .process-screen{
+    margin-top:10px;
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+  }
+  .process-screen summary{
+    cursor:pointer;
+    padding:9px 10px;
+    color:var(--accent);
+    font-size:11.5px;
+    font-weight:800;
+    line-height:1.35;
+  }
+  .process-screen[open] summary{background:var(--success-bg);}
+  .process-screen figure{margin:0; border-top:1px solid var(--border);}
+  .process-screen img{display:block; width:100%; height:auto; background:var(--surface-alt);}
+  .process-screen figcaption{margin:0; padding:7px 9px; color:var(--ink-muted); font-size:10.5px; line-height:1.35;}
+  .sign-fields{display:grid; gap:9px; min-width:118px;}
+  .sign-field-label{display:block; color:var(--ink-muted); font-family:var(--font-mono); font-size:9px; letter-spacing:.05em; text-transform:uppercase;}
+  .sign-field-line{display:block; height:16px; border-bottom:1px dashed var(--ink-muted);}
+  .process-key{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:10px;
+    margin:20px 0 4px;
+  }
+  .process-key-card{background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:13px;}
+  .process-key-card b{display:block; color:var(--accent); font-family:var(--font-mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; margin-bottom:4px;}
+  .process-key-card span{font-size:12.5px; color:var(--ink-muted); line-height:1.4;}
   .result-box{display:flex; flex-direction:column; gap:5px; white-space:nowrap;}
   .result-box label{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-muted); margin:0;}
   .chk{
@@ -354,6 +530,38 @@
   @media (prefers-reduced-motion:no-preference){
     a{transition:color .15s ease;}
   }
+  @media (max-width:780px){
+    .quick-start,.day-walkthrough{grid-template-columns:1fr;}
+    .day-instructions .steps{grid-template-columns:1fr; gap:0;}
+    .day-instructions .steps li{margin:0 0 16px;}
+    .table-intro{display:block;}
+    .process-key{grid-template-columns:1fr 1fr;}
+    .table-wrap:has(table.uat){overflow:visible; border:0; background:transparent;}
+    table.uat{display:block; min-width:0;}
+    table.uat thead{display:none;}
+    table.uat tbody{display:grid; gap:16px;}
+    table.uat tbody tr{display:block; border:1px solid var(--border); border-radius:11px; background:var(--surface); overflow:hidden; box-shadow:0 8px 22px rgba(19,41,29,.06);}
+    table.uat tbody td{display:block; width:100%; padding:12px 14px; border-bottom:1px solid var(--border); white-space:normal;}
+    table.uat tbody td:last-child{border-bottom:0;}
+    table.uat tbody td::before{display:block; margin-bottom:6px; color:var(--ink-muted); font-family:var(--font-mono); font-size:9.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;}
+    table.uat tbody td:nth-child(1)::before{content:"Process ID";}
+    table.uat tbody td:nth-child(2)::before{content:"Process";}
+    table.uat tbody td:nth-child(3)::before{content:"Actions";}
+    table.uat tbody td:nth-child(4)::before{content:"Verify & evidence";}
+    table.uat tbody td:nth-child(5)::before{content:"Result";}
+    table.uat tbody td:nth-child(6)::before{content:"Sign-off";}
+    table.uat td.uat-id{background:var(--success-bg); font-size:14px;}
+    table.uat td.uat-feature{font-size:17px;}
+    .result-box{flex-direction:row; gap:20px;}
+  }
+  @media (max-width:480px){.process-key{grid-template-columns:1fr;}}
+  @media print{
+    .shell{max-width:none; padding:0 16px;}
+    nav.toc{display:none;}
+    .layout{display:block;}
+    .day-walkthrough,.screen-shot{break-inside:avoid; box-shadow:none;}
+    .process-screen{break-inside:avoid;}
+  }
 </style>
 </head>
 <body>
@@ -368,7 +576,7 @@
       <div><div class="label">Program</div><div class="value">Registrar UAT</div></div>
       <div><div class="label">Duration</div><div class="value">5 Days</div></div>
       <div><div class="label">Test Cases</div><div class="value">75</div></div>
-      <div><div class="label">Prepared</div><div class="value">13 Aug 2026</div></div>
+      <div><div class="label">Updated</div><div class="value">14 Aug 2026</div></div>
     </div>
   </div>
 
@@ -379,12 +587,13 @@
         <li><a href="#purpose">1. Purpose &amp; audience</a></li>
         <li><a href="#rhythm">2. How this UAT is organized</a></li>
         <li><a href="#map">3. Coverage map</a></li>
-        <li><a href="#day-1">4. Day 1 &mdash; System &amp; Academic Structure Setup</a></li>
-        <li><a href="#day-2">5. Day 2 &mdash; Resources, Term &amp; Class Scheduling</a></li>
-        <li><a href="#day-3">6. Day 3 &mdash; Students, Enrollment &amp; Classroom Ops</a></li>
-        <li><a href="#day-4">7. Day 4 &mdash; Grading &amp; Academic Records</a></li>
-        <li><a href="#day-5">8. Day 5 &mdash; Requests, Reports &amp; System</a></li>
-        <li><a href="#certification">9. Sign-off &amp; go-live</a></li>
+        <li><a href="#access">4. Access &amp; navigation</a></li>
+        <li><a href="#day-1">5. Day 1 &mdash; System &amp; Academic Structure Setup</a></li>
+        <li><a href="#day-2">6. Day 2 &mdash; Resources, Term &amp; Class Scheduling</a></li>
+        <li><a href="#day-3">7. Day 3 &mdash; Students, Enrollment &amp; Classroom Ops</a></li>
+        <li><a href="#day-4">8. Day 4 &mdash; Grading &amp; Academic Records</a></li>
+        <li><a href="#day-5">9. Day 5 &mdash; Requests, Reports &amp; System</a></li>
+        <li><a href="#certification">10. Sign-off &amp; go-live</a></li>
       </ol>
     </nav>
 
@@ -404,6 +613,15 @@
         <div class="callout callout--rule">
           <span class="callout-label">Scoring convention</span>
           <p>Mark <strong>Fail</strong> the moment the actual result doesn't match what's written, not just when the page errors out. Log a one-line note of what actually happened in the Remarks column, then re-test the same row after a fix ships &mdash; don't overwrite the original Fail. A day is considered accepted only once every row in it reads Pass, since every later day builds its test data on top of it.</p>
+        </div>
+        <h3>How to run every process</h3>
+        <p>Each test case below is broken into the same routine and includes its own real Registrar screen. Complete every numbered action in order; do not mark Pass until the verification and evidence both support the expected result.</p>
+        <div class="process-key" aria-label="Five parts of every process breakdown">
+          <div class="process-key-card"><b>1. Navigate</b><span>Follow the named sidebar path and confirm the destination page title.</span></div>
+          <div class="process-key-card"><b>2. Perform</b><span>Complete each numbered action using the shared UAT data for that day.</span></div>
+          <div class="process-key-card"><b>3. Verify</b><span>Compare the saved or displayed result with every success check listed.</span></div>
+          <div class="process-key-card"><b>4. Record</b><span>Capture the stated evidence, mark Pass or Fail, then add tester and date.</span></div>
+          <div class="process-key-card"><b>5. Screen</b><span>Open the matching live-screen reference inside the process card whenever you need visual guidance.</span></div>
         </div>
       </section>
 
@@ -484,16 +702,42 @@
         </figure>
       </section>
 
+      <section id="access">
+        <h2>4. Access &amp; navigation</h2>
+        <p class="section-kicker">Start every training day from the same known point</p>
+        <div class="quick-start">
+          <div>
+            <ol class="steps">
+              <li><div><strong>Open the PLP portal.</strong>Use the approved Test or Production URL supplied by MIS. Complete UAT in Test unless the facilitator says otherwise.</div></li>
+              <li><div><strong>Select the Registrar module.</strong>Confirm the heading reads <em>Registrar Login</em> before entering credentials.</div></li>
+              <li><div><strong>Sign in with your assigned account.</strong>Never share a password or use another tester's account; the Audit Trail must identify the person who performed each action.</div></li>
+              <li><div><strong>Check the dashboard and current term.</strong>Verify your name, role, active school year, semester, and notification count before opening a module.</div></li>
+              <li><div><strong>Use the left navigation.</strong>Follow the exact menu path shown in each test case, then confirm the page title before creating or changing data.</div></li>
+            </ol>
+            <div class="callout callout--critical"><span class="callout-label">Stop before testing</span><p>If your role, school year, semester, or available menu does not match the facilitator's test sheet, sign out and report the mismatch. Do not continue in the wrong term.</p></div>
+          </div>
+          <figure class="screen-shot">
+            <img src="/manual/media/registrar-login.png" alt="PLP Registrar Login screen with username and password fields and the green Sign In button">
+            <figcaption>Screen 1 &mdash; Registrar sign-in. Confirm the module name before entering your authorized credentials.</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <section id="day-1">
-        <h2>4. Day 1 &mdash; System &amp; Academic Structure Setup</h2>
+        <h2>5. Day 1 &mdash; System &amp; Academic Structure Setup</h2>
         <p class="section-kicker">15 test cases &middot; the programs, curricula, and rules nothing else can exist without</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 1</span>
           <p>Nothing downstream works on an empty system. A section can't be created without a published curriculum; a curriculum can't be built without a Program and a Course File; grades can't post without a grading scale and a transmutation table. This day exists so every day after it has real, correct data to test against &mdash; not placeholders.</p>
         </div>
+        <div class="day-walkthrough">
+          <div class="day-instructions"><span class="day-label">Day 1 walkthrough</span><h3>Create the academic foundation</h3><ol class="steps"><li><div><strong>Confirm system settings.</strong>Open signatories, school term, access, and grading configuration.</div></li><li><div><strong>Build the structure.</strong>Create the college, program, course file, and curriculum in dependency order.</div></li><li><div><strong>Validate before publishing.</strong>Check subjects, units, prerequisites, grade rules, then publish the curriculum.</div></li></ol><span class="menu-path">System &rarr; Academic Master</span><a class="process-jump" href="#day-1-processes">View 15 breakdowns &darr;</a></div>
+          <figure class="day-screen"><img src="/manual/media/registrar-day-1-curriculum.png" alt="Live Registrar Curriculum File screen showing curriculum setup and approval workflow"><figcaption>Live screen &mdash; Curriculum File. Select the program and curriculum year, validate the structure, complete approvals, then publish.</figcaption></figure>
+        </div>
+        <div class="table-intro" id="day-1-processes"><h3>Day 1 process breakdowns</h3><span>Run D1-01 through D1-15 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Feature</th><th>Test steps</th><th>Expected result</th><th style="width:70px">Result</th><th style="width:130px">Tested by / Date</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D1-01</td><td class="uat-feature">Configuration</td><td>Open System &rarr; System Config &rarr; Configuration; review and confirm document signatories and general settings.</td><td class="uat-expected">Signatory names and titles match who's actually authorized to sign documents this term.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D1-02</td><td class="uat-feature">Academic Calendar</td><td>Open System Config &rarr; Academic Calendar; set the current term's dates and grading-period windows.</td><td class="uat-expected">Dates save and match the official academic calendar; they're readable by every other module (grading, scheduling).</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -522,15 +766,20 @@
       </section>
 
       <section id="day-2">
-        <h2>5. Day 2 &mdash; Resources, Term &amp; Class Scheduling</h2>
+        <h2>6. Day 2 &mdash; Resources, Term &amp; Class Scheduling</h2>
         <p class="section-kicker">14 test cases &middot; turning Day 1's curriculum into an actual, bookable class schedule</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 2</span>
           <p>A section needs a room and a teacher before it can hold a class, and it needs an open term before it can exist at all. This day builds every physical and human resource, opens the term, and produces the class schedule &mdash; the last thing that has to exist before a student can be enrolled in anything.</p>
         </div>
+        <div class="day-walkthrough">
+          <div class="day-instructions"><span class="day-label">Day 2 walkthrough</span><h3>Turn the curriculum into classes</h3><ol class="steps"><li><div><strong>Add resources.</strong>Create or verify faculty, buildings, hallways, rooms, and room-subject rules.</div></li><li><div><strong>Open the term.</strong>Set the school year, semester, grading periods, and enrollment window.</div></li><li><div><strong>Schedule and conflict-check.</strong>Create sections, assign subjects, rooms, and faculty, then resolve every overlap.</div></li></ol><span class="menu-path">Registrar Menu &rarr; Scheduling</span><a class="process-jump" href="#day-2-processes">View 14 breakdowns &darr;</a></div>
+          <figure class="day-screen"><img src="/manual/media/registrar-day-2-scheduling.png" alt="Live Registrar Class Schedule Preparation screen with term filters and scheduled classes"><figcaption>Live screen &mdash; Class Schedule Preparation. Filter the term, review room and instructor assignments, and resolve rows needing attention.</figcaption></figure>
+        </div>
+        <div class="table-intro" id="day-2-processes"><h3>Day 2 process breakdowns</h3><span>Run D2-01 through D2-14 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:190px">Feature</th><th>Test steps</th><th>Expected result</th><th style="width:70px">Result</th><th style="width:130px">Tested by / Date</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:190px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D2-01</td><td class="uat-feature">Create Faculty</td><td>Open Faculty &rarr; Create Faculty; create a faculty account under the Day 1 department.</td><td class="uat-expected">Account is created and that faculty member can sign in.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-02</td><td class="uat-feature">Faculty Profiles</td><td>Open Faculty &rarr; Faculty Profiles; search and open the profile just created.</td><td class="uat-expected">Profile shows correct personal and employment details.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -558,15 +807,20 @@
       </section>
 
       <section id="day-3">
-        <h2>6. Day 3 &mdash; Students, Enrollment &amp; Classroom Operations</h2>
+        <h2>7. Day 3 &mdash; Students, Enrollment &amp; Classroom Operations</h2>
         <p class="section-kicker">13 test cases &middot; the first day a student can actually exist in the system</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 3, not Day 1</span>
           <p>This is the earliest point in the week where adding a student means anything: there's a published curriculum to enroll them under, a section with a room and a teacher to enroll them into, and an open term to enroll them in. Testing Student Records before this point would only prove the search box works, not that enrollment does.</p>
         </div>
+        <div class="day-walkthrough">
+          <div class="day-instructions"><span class="day-label">Day 3 walkthrough</span><h3>Create and enroll the test student</h3><ol class="steps"><li><div><strong>Create the student record.</strong>Complete identity, contact, program, and requirement information.</div></li><li><div><strong>Enroll into the open term.</strong>Select the correct curriculum, year level, section, and eligible subjects.</div></li><li><div><strong>Verify every downstream list.</strong>Confirm the student appears in Enrollment List, Class List, and the assigned faculty view.</div></li></ol><span class="menu-path">Registrar Menu &rarr; Student Management</span><a class="process-jump" href="#day-3-processes">View 13 breakdowns &darr;</a></div>
+          <figure class="day-screen"><img src="/manual/media/registrar-day-3-enrollment.png" alt="Live Registrar Student Enrollment screen listing students, programs, and year levels"><figcaption>Live screen &mdash; Student Enrollment. Search or add the student, confirm program and year level, then open the enrollment action.</figcaption></figure>
+        </div>
+        <div class="table-intro" id="day-3-processes"><h3>Day 3 process breakdowns</h3><span>Run D3-01 through D3-13 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Feature</th><th>Test steps</th><th>Expected result</th><th style="width:70px">Result</th><th style="width:130px">Tested by / Date</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D3-01</td><td class="uat-feature">Dashboard</td><td>Sign in as a Registrar user; land on the Dashboard; review the summary widgets and counts shown.</td><td class="uat-expected">Dashboard loads without error and counts reflect the term/setup built on Days 1&ndash;2.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D3-02</td><td class="uat-feature">Ticketing System</td><td>Open Communication &rarr; Ticketing System; create a ticket for a sample concern; save it.</td><td class="uat-expected">Ticket is created and appears in the list with status "Open".</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -593,15 +847,20 @@
       </section>
 
       <section id="day-4">
-        <h2>7. Day 4 &mdash; Grading &amp; Academic Records</h2>
+        <h2>8. Day 4 &mdash; Grading &amp; Academic Records</h2>
         <p class="section-kicker">15 test cases &middot; turning Day 3's enrollment into official, printable grades</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 4</span>
           <p>Grades can only be encoded for a student who's enrolled in a class &mdash; Day 3's work &mdash; against the scale and transmutation table Day 1 configured. Everything in Day 5 (transcripts, certificates, honor rolls) reads the numbers this day produces, so a Fail here should block Day 5 from starting on that student's record.</p>
         </div>
+        <div class="day-walkthrough">
+          <div class="day-instructions"><span class="day-label">Day 4 walkthrough</span><h3>Post grades and verify records</h3><ol class="steps"><li><div><strong>Encode the test grades.</strong>Use the assigned class list and the correct grading period.</div></li><li><div><strong>Review the computation.</strong>Compare raw scores, transmuted grade, remarks, units, and GWA before posting.</div></li><li><div><strong>Read the official outputs.</strong>Confirm posted values match the grade file, COG, report card, and certificate previews.</div></li></ol><span class="menu-path">Services &rarr; Grading &amp; Academic</span><a class="process-jump" href="#day-4-processes">View 15 breakdowns &darr;</a></div>
+          <figure class="day-screen"><img src="/manual/media/registrar-day-4-grading.png" alt="Live Registrar Grading Sheet screen showing filters, posting status, and approval actions"><figcaption>Live screen &mdash; Grading Sheet. Filter by department, term, faculty, or section; review posting status before approval or return.</figcaption></figure>
+        </div>
+        <div class="table-intro" id="day-4-processes"><h3>Day 4 process breakdowns</h3><span>Run D4-01 through D4-15 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Feature</th><th>Test steps</th><th>Expected result</th><th style="width:70px">Result</th><th style="width:130px">Tested by / Date</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D4-01</td><td class="uat-feature">Grading Sheets</td><td>Sign in as the D2-01 faculty member; open Faculty &rarr; Grading Sheets; submit midterm and final grades for the Day 3 class list.</td><td class="uat-expected">Sheet submits and routes correctly through the approval flow (Faculty &rarr; Dean &rarr; Registrar).</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D4-02</td><td class="uat-feature">Upload Grades</td><td>Open Faculty &rarr; Upload Grades; upload a batch grade file for a second section.</td><td class="uat-expected">Grades import correctly and match the source file; bad rows are reported, not silently dropped.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -630,15 +889,20 @@
       </section>
 
       <section id="day-5">
-        <h2>8. Day 5 &mdash; Requests, Reports &amp; System</h2>
+        <h2>9. Day 5 &mdash; Requests, Reports &amp; System</h2>
         <p class="section-kicker">18 test cases &middot; the paperwork and oversight that read back everything built this week</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 5</span>
           <p>Student requests, reports, and master files are read-only views over what Days 1&ndash;4 built &mdash; there's nothing left to set up, only to confirm the whole chain reads back correctly. This is also where the week gets audited: Master Files and Audit Trail exist specifically to catch anything the four days before missed.</p>
         </div>
+        <div class="day-walkthrough">
+          <div class="day-instructions"><span class="day-label">Day 5 walkthrough</span><h3>Prove the full record reads back</h3><ol class="steps"><li><div><strong>Process student requests.</strong>Open each form with the Day 3 test student and verify all auto-filled fields.</div></li><li><div><strong>Reconcile reports.</strong>Compare GWA, CWA, certifications, and graduation data with Day 4's posted records.</div></li><li><div><strong>Audit and sign off.</strong>Review Master Files and Audit Trail, record every exception, and complete acceptance only after re-tests pass.</div></li></ol><span class="menu-path">Reports &amp; Admin Tools</span><a class="process-jump" href="#day-5-processes">View 18 breakdowns &darr;</a></div>
+          <figure class="day-screen"><img src="/manual/media/registrar-day-5-reports.png" alt="Live Registrar Academic Reports screen with school year, term, and report categories"><figcaption>Live screen &mdash; Academic Reports. Set the school year and term, choose the required report, then reconcile it with source records.</figcaption></figure>
+        </div>
+        <div class="table-intro" id="day-5-processes"><h3>Day 5 process breakdowns</h3><span>Run D5-01 through D5-18 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Feature</th><th>Test steps</th><th>Expected result</th><th style="width:70px">Result</th><th style="width:130px">Tested by / Date</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D5-01</td><td class="uat-feature">Graduation Clearance</td><td>Open Student Requests &rarr; Graduation Clearance; select the test student; review every checklist line and its signing office; print.</td><td class="uat-expected">All checklist lines appear, including the Student's Evaluation of Implemented Intervention Form line, each with its correct signatory office.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D5-02</td><td class="uat-feature">Leave of Absence</td><td>Open Student Requests &rarr; Leave of Absence; select the test student; choose a reason; review the grade/remarks table; print.</td><td class="uat-expected">Table lists the D4-01 subject with Midterm, Final, and Semestral Grade/Remarks filled in; the approval box matches the reason selected.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -670,7 +934,7 @@
       </section>
 
       <section id="certification">
-        <h2>9. Sign-off &amp; go-live</h2>
+        <h2>10. Sign-off &amp; go-live</h2>
         <p class="section-kicker">What "accepted" means before the office goes live</p>
         <p>The Portal is ready for live use once every one of the 75 rows above reads Pass, or every Fail has a linked fix that was re-tested and now reads Pass. Because each day's data feeds the next, a Fail on an earlier day should pause testing on whatever downstream row depends on it rather than being tested against broken data.</p>
 
@@ -724,5 +988,118 @@
     </main>
   </div>
 </div>
+<script>
+(function () {
+  function splitParts(text) {
+    return text.split(';').map(function (part) {
+      return part.trim().replace(/^and\s+/i, '');
+    }).filter(Boolean);
+  }
+
+  function sentenceCase(text) {
+    return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+  }
+
+  function evidenceFor(feature, steps) {
+    var source = (feature + ' ' + steps).toLowerCase();
+    if (/print|download|export|certificate|diploma|transcript|form\b/.test(source)) {
+      return 'Keep the generated preview, PDF, or printed output together with the source-record comparison.';
+    }
+    if (/create|save|update|publish|assign|merge|upload|override|tag|post|encode|bulk/.test(source)) {
+      return 'Capture the saved record or confirmation state, including the identifying value changed in this process.';
+    }
+    if (/report|filter|search|list|monitor|audit/.test(source)) {
+      return 'Capture the page title, active filters, and the result rows that prove the success check.';
+    }
+    if (/review|confirm|open|check/.test(source)) {
+      return 'Capture the page title and the visible configured values that satisfy the success check.';
+    }
+    return 'Capture the completed screen and the visible value that proves the expected result.';
+  }
+
+  document.querySelectorAll('table.uat tbody tr').forEach(function (row) {
+    if (row.dataset.breakdown === 'ready' || row.cells.length < 6) return;
+
+    var id = row.cells[0].textContent.trim();
+    var feature = row.cells[1].textContent.trim();
+    var stepsCell = row.cells[2];
+    var expectedCell = row.cells[3];
+    var signCell = row.cells[5];
+    var rawSteps = stepsCell.textContent.trim();
+    var rawExpected = expectedCell.textContent.trim();
+    var stepParts = splitParts(rawSteps);
+    var expectedParts = splitParts(rawExpected);
+
+    var stepList = document.createElement('ol');
+    stepList.className = 'case-steps';
+    stepParts.forEach(function (part, index) {
+      var item = document.createElement('li');
+      var body = document.createElement('div');
+      var label = document.createElement('span');
+      label.className = 'action-label';
+      label.textContent = index === 0 && /^(open|sign in|go to|select)/i.test(part) ? 'Navigate' : 'Action ' + (index + 1);
+      body.appendChild(label);
+      body.appendChild(document.createTextNode(sentenceCase(part)));
+      item.appendChild(body);
+      stepList.appendChild(item);
+    });
+    stepsCell.textContent = '';
+    stepsCell.classList.add('process-steps');
+    stepsCell.appendChild(stepList);
+
+    var expectedList = document.createElement('ul');
+    expectedList.className = 'expected-list';
+    expectedParts.forEach(function (part) {
+      var item = document.createElement('li');
+      item.textContent = sentenceCase(part);
+      expectedList.appendChild(item);
+    });
+    var evidence = document.createElement('div');
+    evidence.className = 'evidence-box';
+    var evidenceLabel = document.createElement('strong');
+    evidenceLabel.textContent = 'Evidence to capture';
+    evidence.appendChild(evidenceLabel);
+    evidence.appendChild(document.createTextNode(evidenceFor(feature, rawSteps)));
+    expectedCell.textContent = '';
+    expectedCell.appendChild(expectedList);
+    expectedCell.appendChild(evidence);
+
+    var screen = document.createElement('details');
+    screen.className = 'process-screen';
+    var screenSummary = document.createElement('summary');
+    screenSummary.textContent = 'View real screen for ' + id + ' — ' + feature;
+    var screenFigure = document.createElement('figure');
+    var screenImage = document.createElement('img');
+    screenImage.loading = 'lazy';
+    screenImage.decoding = 'async';
+    screenImage.src = '/manual/media/processes/' + id.toLowerCase() + '.png';
+    screenImage.alt = 'Authenticated Registrar screen for ' + id + ', ' + feature;
+    var screenCaption = document.createElement('figcaption');
+    screenCaption.textContent = 'Live authenticated screen reference for ' + id + ' — ' + feature + '.';
+    screenFigure.appendChild(screenImage);
+    screenFigure.appendChild(screenCaption);
+    screen.appendChild(screenSummary);
+    screen.appendChild(screenFigure);
+    expectedCell.appendChild(screen);
+
+    signCell.innerHTML = '<div class="sign-fields"><label><span class="sign-field-label">Tested by</span><span class="sign-field-line"></span></label><label><span class="sign-field-label">Date / Re-test</span><span class="sign-field-line"></span></label></div>';
+    row.dataset.breakdown = 'ready';
+    row.setAttribute('aria-label', id + ' ' + feature + ' process breakdown');
+  });
+
+  window.addEventListener('beforeprint', function () {
+    document.querySelectorAll('.process-screen').forEach(function (screen) {
+      screen.dataset.wasOpen = screen.open ? 'true' : 'false';
+      screen.open = true;
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    document.querySelectorAll('.process-screen').forEach(function (screen) {
+      screen.open = screen.dataset.wasOpen === 'true';
+      delete screen.dataset.wasOpen;
+    });
+  });
+}());
+</script>
 </body>
 </html>

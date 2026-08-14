@@ -84,6 +84,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\View\View;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -13660,8 +13661,13 @@ class RegistrarController extends Controller
 
     public function gradeOverrideIndex(): View
     {
-        $programOptions = DB::table('courses')
-            ->where('is_active', 1)
+        $programQuery = DB::table('courses');
+
+        if (Schema::hasColumn('courses', 'is_active')) {
+            $programQuery->where('is_active', 1);
+        }
+
+        $programOptions = $programQuery
             ->orderBy('code')
             ->get(['id', 'code', 'name'])
             ->map(function ($c) {
