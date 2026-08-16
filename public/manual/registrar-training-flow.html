@@ -141,13 +141,13 @@
     grid-template-columns:1fr;
     gap:0;
   }
-  @media (min-width:1080px){
+  @media (min-width:1500px){
     .layout{grid-template-columns:230px minmax(0,1fr); gap:48px; align-items:start;}
   }
   nav.toc{
     display:none;
   }
-  @media (min-width:1080px){
+  @media (min-width:1500px){
     nav.toc{
       display:block;
       position:sticky;
@@ -377,7 +377,7 @@
   tbody tr:hover{background:var(--surface-alt);}
 
   /* UAT test-case log */
-  table.uat{min-width:1180px; font-size:13.5px;}
+  table.uat{min-width:1270px; font-size:13.5px;}
   table.uat td.uat-id{font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap;}
   table.uat td.uat-feature{font-weight:700; white-space:nowrap;}
   table.uat td.uat-expected{color:var(--ink-muted);}
@@ -398,6 +398,14 @@
     align-items:start;
     margin:0;
     line-height:1.45;
+  }
+  .case-step-text{display:block; color:var(--ink);}
+  .step-explanation{
+    display:block;
+    margin-top:3px;
+    color:var(--ink-muted);
+    font-size:11.5px;
+    line-height:1.4;
   }
   .case-steps li::before{
     content:counter(case-step);
@@ -424,6 +432,35 @@
     letter-spacing:.07em;
     text-transform:uppercase;
   }
+  .case-prerequisite{
+    margin:0 0 10px;
+    padding:8px 10px;
+    border-left:3px solid var(--warning);
+    border-radius:0 7px 7px 0;
+    background:var(--warning-bg);
+    color:var(--ink-muted);
+    font-size:11.5px;
+    line-height:1.4;
+  }
+  .case-prerequisite strong{
+    display:block;
+    margin-bottom:2px;
+    color:var(--ink);
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .verification-label{
+    display:block;
+    margin-bottom:7px;
+    color:var(--ink);
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
   .expected-list{list-style:none; padding:0; margin:0; display:grid; gap:7px;}
   .expected-list li{position:relative; margin:0; padding-left:20px; line-height:1.45;}
   .expected-list li::before{content:"\2713"; position:absolute; left:0; color:var(--success); font-weight:900;}
@@ -438,25 +475,45 @@
     line-height:1.4;
   }
   .evidence-box strong{display:block; color:var(--ink); font-family:var(--font-mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:2px;}
-  .process-screen{
-    margin-top:10px;
+  table.uat td.uat-image-result{min-width:230px; width:230px;}
+  .result-image-card{
+    margin:0;
     overflow:hidden;
     border:1px solid var(--border);
     border-radius:8px;
     background:var(--surface);
   }
-  .process-screen summary{
-    cursor:pointer;
-    padding:9px 10px;
+  .result-image-card a{
+    display:block;
+    color:inherit;
+    text-decoration:none;
+  }
+  .result-image-card .image-crop{
+    display:block;
+    width:100%;
+    aspect-ratio:16/9;
+    overflow:hidden;
+    background:var(--surface-alt);
+  }
+  .result-image-card img{
+    display:block;
+    width:124%;
+    max-width:none;
+    height:100%;
+    object-fit:cover;
+    object-position:top right;
+    transform:translateX(-19.35%);
+  }
+  .result-image-card .image-action{
+    display:block;
+    padding:8px 9px 3px;
     color:var(--accent);
     font-size:11.5px;
     font-weight:800;
     line-height:1.35;
   }
-  .process-screen[open] summary{background:var(--success-bg);}
-  .process-screen figure{margin:0; border-top:1px solid var(--border);}
-  .process-screen img{display:block; width:100%; height:auto; background:var(--surface-alt);}
-  .process-screen figcaption{margin:0; padding:7px 9px; color:var(--ink-muted); font-size:10.5px; line-height:1.35;}
+  .result-image-card a:hover .image-action{text-decoration:underline;}
+  .result-image-card figcaption{margin:0; padding:0 9px 8px; color:var(--ink-muted); font-size:10.5px; line-height:1.35;}
   .sign-fields{display:grid; gap:9px; min-width:118px;}
   .sign-field-label{display:block; color:var(--ink-muted); font-family:var(--font-mono); font-size:9px; letter-spacing:.05em; text-transform:uppercase;}
   .sign-field-line{display:block; height:16px; border-bottom:1px dashed var(--ink-muted);}
@@ -546,10 +603,11 @@
     table.uat tbody td::before{display:block; margin-bottom:6px; color:var(--ink-muted); font-family:var(--font-mono); font-size:9.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;}
     table.uat tbody td:nth-child(1)::before{content:"Process ID";}
     table.uat tbody td:nth-child(2)::before{content:"Process";}
-    table.uat tbody td:nth-child(3)::before{content:"Actions";}
-    table.uat tbody td:nth-child(4)::before{content:"Verify & evidence";}
-    table.uat tbody td:nth-child(5)::before{content:"Result";}
-    table.uat tbody td:nth-child(6)::before{content:"Sign-off";}
+    table.uat tbody td:nth-child(3)::before{content:"Step-by-step actions";}
+    table.uat tbody td:nth-child(4)::before{content:"Expected result";}
+    table.uat tbody td:nth-child(5)::before{content:"Image result";}
+    table.uat tbody td:nth-child(6)::before{content:"Result";}
+    table.uat tbody td:nth-child(7)::before{content:"Sign-off";}
     table.uat td.uat-id{background:var(--success-bg); font-size:14px;}
     table.uat td.uat-feature{font-size:17px;}
     .result-box{flex-direction:row; gap:20px;}
@@ -560,7 +618,7 @@
     nav.toc{display:none;}
     .layout{display:block;}
     .day-walkthrough,.screen-shot{break-inside:avoid; box-shadow:none;}
-    .process-screen{break-inside:avoid;}
+    .result-image-card{break-inside:avoid;}
   }
 </style>
 </head>
@@ -576,7 +634,7 @@
       <div><div class="label">Program</div><div class="value">Registrar UAT</div></div>
       <div><div class="label">Duration</div><div class="value">5 Days</div></div>
       <div><div class="label">Test Cases</div><div class="value">75</div></div>
-      <div><div class="label">Updated</div><div class="value">14 Aug 2026</div></div>
+      <div><div class="label">Updated</div><div class="value">15 Aug 2026</div></div>
     </div>
   </div>
 
@@ -615,13 +673,13 @@
           <p>Mark <strong>Fail</strong> the moment the actual result doesn't match what's written, not just when the page errors out. Log a one-line note of what actually happened in the Remarks column, then re-test the same row after a fix ships &mdash; don't overwrite the original Fail. A day is considered accepted only once every row in it reads Pass, since every later day builds its test data on top of it.</p>
         </div>
         <h3>How to run every process</h3>
-        <p>Each test case below is broken into the same routine and includes its own real Registrar screen. Complete every numbered action in order; do not mark Pass until the verification and evidence both support the expected result.</p>
+        <p>Each test case below is a true click-by-click walkthrough: every menu level is its own numbered step, followed by the action, page confirmation, and final result verification. The separate <strong>Expected Result</strong> column states what must happen, while <strong>Image Result</strong> focuses on the main content or output area instead of the sidebar navigation. Complete all steps in order before marking Pass or Fail; select a thumbnail to open the complete screenshot.</p>
         <div class="process-key" aria-label="Five parts of every process breakdown">
-          <div class="process-key-card"><b>1. Navigate</b><span>Follow the named sidebar path and confirm the destination page title.</span></div>
-          <div class="process-key-card"><b>2. Perform</b><span>Complete each numbered action using the shared UAT data for that day.</span></div>
-          <div class="process-key-card"><b>3. Verify</b><span>Compare the saved or displayed result with every success check listed.</span></div>
-          <div class="process-key-card"><b>4. Record</b><span>Capture the stated evidence, mark Pass or Fail, then add tester and date.</span></div>
-          <div class="process-key-card"><b>5. Screen</b><span>Open the matching live-screen reference inside the process card whenever you need visual guidance.</span></div>
+          <div class="process-key-card"><b>1. Prepare</b><span>Confirm the prerequisite and use the same shared UAT record throughout the day.</span></div>
+          <div class="process-key-card"><b>2. Follow</b><span>Complete each click-by-click numbered step, including every level of the menu path.</span></div>
+          <div class="process-key-card"><b>3. Understand</b><span>Read the short explanation under a step whenever its purpose is not obvious.</span></div>
+          <div class="process-key-card"><b>4. Verify</b><span>Compare your saved data with every written expected result and capture evidence.</span></div>
+          <div class="process-key-card"><b>5. Compare image</b><span>Use the separate Image Result thumbnail to confirm you reached the same screen or output area.</span></div>
         </div>
       </section>
 
@@ -737,7 +795,7 @@
         <div class="table-intro" id="day-1-processes"><h3>Day 1 process breakdowns</h3><span>Run D1-01 through D1-15 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D1-01</td><td class="uat-feature">Configuration</td><td>Open System &rarr; System Config &rarr; Configuration; review and confirm document signatories and general settings.</td><td class="uat-expected">Signatory names and titles match who's actually authorized to sign documents this term.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D1-02</td><td class="uat-feature">Academic Calendar</td><td>Open System Config &rarr; Academic Calendar; set the current term's dates and grading-period windows.</td><td class="uat-expected">Dates save and match the official academic calendar; they're readable by every other module (grading, scheduling).</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -779,7 +837,7 @@
         <div class="table-intro" id="day-2-processes"><h3>Day 2 process breakdowns</h3><span>Run D2-01 through D2-14 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:190px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:190px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D2-01</td><td class="uat-feature">Create Faculty</td><td>Open Faculty &rarr; Create Faculty; create a faculty account under the Day 1 department.</td><td class="uat-expected">Account is created and that faculty member can sign in.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-02</td><td class="uat-feature">Faculty Profiles</td><td>Open Faculty &rarr; Faculty Profiles; search and open the profile just created.</td><td class="uat-expected">Profile shows correct personal and employment details.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -820,7 +878,7 @@
         <div class="table-intro" id="day-3-processes"><h3>Day 3 process breakdowns</h3><span>Run D3-01 through D3-13 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D3-01</td><td class="uat-feature">Dashboard</td><td>Sign in as a Registrar user; land on the Dashboard; review the summary widgets and counts shown.</td><td class="uat-expected">Dashboard loads without error and counts reflect the term/setup built on Days 1&ndash;2.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D3-02</td><td class="uat-feature">Ticketing System</td><td>Open Communication &rarr; Ticketing System; create a ticket for a sample concern; save it.</td><td class="uat-expected">Ticket is created and appears in the list with status "Open".</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -860,7 +918,7 @@
         <div class="table-intro" id="day-4-processes"><h3>Day 4 process breakdowns</h3><span>Run D4-01 through D4-15 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D4-01</td><td class="uat-feature">Grading Sheets</td><td>Sign in as the D2-01 faculty member; open Faculty &rarr; Grading Sheets; submit midterm and final grades for the Day 3 class list.</td><td class="uat-expected">Sheet submits and routes correctly through the approval flow (Faculty &rarr; Dean &rarr; Registrar).</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D4-02</td><td class="uat-feature">Upload Grades</td><td>Open Faculty &rarr; Upload Grades; upload a batch grade file for a second section.</td><td class="uat-expected">Grades import correctly and match the source file; bad rows are reported, not silently dropped.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -902,7 +960,7 @@
         <div class="table-intro" id="day-5-processes"><h3>Day 5 process breakdowns</h3><span>Run D5-01 through D5-18 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
-            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Numbered actions</th><th>Verify &amp; evidence</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
+            <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
               <tr><td class="uat-id">D5-01</td><td class="uat-feature">Graduation Clearance</td><td>Open Student Requests &rarr; Graduation Clearance; select the test student; review every checklist line and its signing office; print.</td><td class="uat-expected">All checklist lines appear, including the Student's Evaluation of Implemented Intervention Form line, each with its correct signatory office.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D5-02</td><td class="uat-feature">Leave of Absence</td><td>Open Student Requests &rarr; Leave of Absence; select the test student; choose a reason; review the grade/remarks table; print.</td><td class="uat-expected">Table lists the D4-01 subject with Midterm, Final, and Semestral Grade/Remarks filled in; the approval box matches the reason selected.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -996,8 +1054,106 @@
     }).filter(Boolean);
   }
 
+  function withPeriod(text) {
+    return /[.!?]$/.test(text) ? text : text + '.';
+  }
+
+  function detailedSteps(steps, expected, feature) {
+    var expanded = [];
+    splitParts(steps).forEach(function (part) {
+      var openMatch = part.match(/^Open\s+(.+)$/i);
+      if (openMatch && openMatch[1].indexOf('→') !== -1) {
+        var path = openMatch[1].split('→').map(function (segment) {
+          return segment.trim();
+        }).filter(Boolean);
+        path.forEach(function (segment, index) {
+          if (index === 0) {
+            expanded.push('From the left navigation, select ' + segment + '.');
+          } else if (index === path.length - 1) {
+            expanded.push('Select ' + segment + ' to open the page.');
+          } else {
+            expanded.push('Under ' + path[index - 1] + ', select ' + segment + '.');
+          }
+        });
+        expanded.push('Confirm the page heading reads ' + feature + ' before continuing.');
+      } else {
+        expanded.push(withPeriod(part));
+        if (/^(open|land on)\b/i.test(part)) {
+          expanded.push('Confirm the page heading reads ' + feature + ' before continuing.');
+        }
+      }
+    });
+
+    splitParts(expected).forEach(function (result) {
+      expanded.push('Verify the result: ' + withPeriod(result));
+    });
+    return expanded;
+  }
+
   function sentenceCase(text) {
     return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+  }
+
+  function actionMeta(action, index) {
+    var text = action.toLowerCase();
+    if (/^verify the result:/.test(text)) {
+      return {
+        label: 'Verify result',
+        explanation: 'Do not mark Pass unless the visible value and saved record both match this check.'
+      };
+    }
+    if (/^(from the left navigation|under |select .* to open|confirm the page heading|open|sign in|go to|land on)/.test(text)) {
+      return {
+        label: index === 0 ? 'Start here' : 'Navigate',
+        explanation: /confirm the page heading/.test(text) ? 'This prevents changes from being made on the wrong page or module.' : ''
+      };
+    }
+    if (/\b(print|preview|download|export|generate)\b/.test(text)) {
+      return {
+        label: 'Generate output',
+        explanation: 'Review the preview before printing or saving it; the output is part of the evidence for this test.'
+      };
+    }
+    if (/\b(save|submit|send|publish|approve|upload|run|merge|assign|tag|override|record|enroll|create|add|set|edit|adjust|bulk-update)\b/.test(text)) {
+      return {
+        label: 'Save or apply',
+        explanation: 'Wait for the success message or refreshed record before moving on. This proves the action was stored, not only entered on screen.'
+      };
+    }
+    if (/\b(select|choose|search|filter|fill in|enter)\b/.test(text)) {
+      return {
+        label: 'Choose test data',
+        explanation: 'Use the shared UAT record named by the facilitator so this result can be compared with the earlier and later cases.'
+      };
+    }
+    if (/\b(review|confirm|check|compare|verify)\b/.test(text)) {
+      return {
+        label: 'Review',
+        explanation: 'Compare the visible value with the approved source or earlier test result; a page loading successfully is not enough to pass.'
+      };
+    }
+    return { label: 'Step ' + (index + 1), explanation: '' };
+  }
+
+  function prerequisiteFor(id, feature, steps, expected) {
+    var source = steps + ' ' + expected;
+    var references = source.match(/D[1-5]-\d{2}/g) || [];
+    references = references.filter(function (reference, index) {
+      return reference !== id && references.indexOf(reference) === index;
+    });
+    if (/admin only|admin-module account/i.test(feature + ' ' + steps)) {
+      return 'Use an authorized Admin account for this case. Confirm the equivalent option is hidden from a normal Registrar account.';
+    }
+    if (references.length) {
+      return 'Confirm ' + references.join(', ') + ' passed first. This case uses the records or settings created there.';
+    }
+    if (/existing graduate|graduated student|honor student|transferring|withdrawing/i.test(steps)) {
+      return 'Ask the facilitator for an existing record that matches the required status; the shared new test student may not qualify.';
+    }
+    if (/D1-/.test(id)) {
+      return 'Use the facilitator-approved test values. Do not replace live academic settings unless this UAT is running in the Test environment.';
+    }
+    return 'Use the shared UAT program, term, section, faculty member, and student created during the earlier steps of this guide.';
   }
 
   function evidenceFor(feature, steps) {
@@ -1027,8 +1183,18 @@
     var signCell = row.cells[5];
     var rawSteps = stepsCell.textContent.trim();
     var rawExpected = expectedCell.textContent.trim();
-    var stepParts = splitParts(rawSteps);
+    var stepParts = detailedSteps(rawSteps, rawExpected, feature);
     var expectedParts = splitParts(rawExpected);
+
+    var prerequisite = document.createElement('div');
+    prerequisite.className = 'case-prerequisite';
+    var prerequisiteLabel = document.createElement('strong');
+    prerequisiteLabel.textContent = 'Before you start';
+    prerequisite.appendChild(prerequisiteLabel);
+    prerequisite.appendChild(document.createTextNode(prerequisiteFor(id, feature, rawSteps, rawExpected)));
+    stepsCell.textContent = '';
+    stepsCell.classList.add('process-steps');
+    stepsCell.appendChild(prerequisite);
 
     var stepList = document.createElement('ol');
     stepList.className = 'case-steps';
@@ -1036,17 +1202,28 @@
       var item = document.createElement('li');
       var body = document.createElement('div');
       var label = document.createElement('span');
+      var meta = actionMeta(part, index);
       label.className = 'action-label';
-      label.textContent = index === 0 && /^(open|sign in|go to|select)/i.test(part) ? 'Navigate' : 'Action ' + (index + 1);
+      label.textContent = meta.label;
+      var actionText = document.createElement('span');
+      actionText.className = 'case-step-text';
+      actionText.textContent = sentenceCase(part);
       body.appendChild(label);
-      body.appendChild(document.createTextNode(sentenceCase(part)));
+      body.appendChild(actionText);
+      if (meta.explanation) {
+        var explanation = document.createElement('span');
+        explanation.className = 'step-explanation';
+        explanation.textContent = meta.explanation;
+        body.appendChild(explanation);
+      }
       item.appendChild(body);
       stepList.appendChild(item);
     });
-    stepsCell.textContent = '';
-    stepsCell.classList.add('process-steps');
     stepsCell.appendChild(stepList);
 
+    var verificationLabel = document.createElement('strong');
+    verificationLabel.className = 'verification-label';
+    verificationLabel.textContent = 'Expected result';
     var expectedList = document.createElement('ul');
     expectedList.className = 'expected-list';
     expectedParts.forEach(function (part) {
@@ -1061,44 +1238,45 @@
     evidence.appendChild(evidenceLabel);
     evidence.appendChild(document.createTextNode(evidenceFor(feature, rawSteps)));
     expectedCell.textContent = '';
+    expectedCell.appendChild(verificationLabel);
     expectedCell.appendChild(expectedList);
     expectedCell.appendChild(evidence);
 
-    var screen = document.createElement('details');
-    screen.className = 'process-screen';
-    var screenSummary = document.createElement('summary');
-    screenSummary.textContent = 'View real screen for ' + id + ' — ' + feature;
+    var imageCell = document.createElement('td');
+    imageCell.className = 'uat-image-result';
+    expectedCell.parentNode.insertBefore(imageCell, expectedCell.nextSibling);
+
     var screenFigure = document.createElement('figure');
+    screenFigure.className = 'result-image-card';
+    var screenLink = document.createElement('a');
+    screenLink.href = '/manual/media/processes/' + id.toLowerCase() + '.png';
+    screenLink.target = '_blank';
+    screenLink.rel = 'noopener';
+    screenLink.title = 'Open the full-size image result for ' + id + ' ' + feature;
     var screenImage = document.createElement('img');
     screenImage.loading = 'lazy';
     screenImage.decoding = 'async';
-    screenImage.src = '/manual/media/processes/' + id.toLowerCase() + '.png';
-    screenImage.alt = 'Authenticated Registrar screen for ' + id + ', ' + feature;
+    screenImage.src = screenLink.href;
+    screenImage.alt = 'Expected result screen for ' + id + ', ' + feature;
+    var imageCrop = document.createElement('span');
+    imageCrop.className = 'image-crop';
+    var imageAction = document.createElement('span');
+    imageAction.className = 'image-action';
+    imageAction.textContent = 'Open complete screenshot';
     var screenCaption = document.createElement('figcaption');
-    screenCaption.textContent = 'Live authenticated screen reference for ' + id + ' — ' + feature + '.';
-    screenFigure.appendChild(screenImage);
+    screenCaption.textContent = id + ' — ' + feature + '. The thumbnail focuses on the result area; the complete screenshot also shows the navigation path.';
+    imageCrop.appendChild(screenImage);
+    screenLink.appendChild(imageCrop);
+    screenLink.appendChild(imageAction);
+    screenFigure.appendChild(screenLink);
     screenFigure.appendChild(screenCaption);
-    screen.appendChild(screenSummary);
-    screen.appendChild(screenFigure);
-    expectedCell.appendChild(screen);
+    imageCell.appendChild(screenFigure);
 
     signCell.innerHTML = '<div class="sign-fields"><label><span class="sign-field-label">Tested by</span><span class="sign-field-line"></span></label><label><span class="sign-field-label">Date / Re-test</span><span class="sign-field-line"></span></label></div>';
     row.dataset.breakdown = 'ready';
     row.setAttribute('aria-label', id + ' ' + feature + ' process breakdown');
   });
 
-  window.addEventListener('beforeprint', function () {
-    document.querySelectorAll('.process-screen').forEach(function (screen) {
-      screen.dataset.wasOpen = screen.open ? 'true' : 'false';
-      screen.open = true;
-    });
-  });
-  window.addEventListener('afterprint', function () {
-    document.querySelectorAll('.process-screen').forEach(function (screen) {
-      screen.open = screen.dataset.wasOpen === 'true';
-      delete screen.dataset.wasOpen;
-    });
-  });
 }());
 </script>
 </body>
