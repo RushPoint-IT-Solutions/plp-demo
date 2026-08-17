@@ -98,10 +98,8 @@
                     <div class="req-modal-field-group" style="flex:1;">
                         <label class="req-modal-label">Course Type</label>
                         <select class="req-modal-input" id="sfInputCourseType">
-                            <option value="Major">Major</option>
-                            <option value="Minor">Minor</option>
-                            <option value="GE">GE</option>
-                            <option value="Elective">Elective</option>
+                            <option value="Major">Professional</option>
+                            <option value="Minor">Gen Education</option>
                         </select>
                     </div>
                 </div>

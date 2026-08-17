@@ -25,7 +25,6 @@
                         <col class="ga-trans-col-initial">
                         <col class="ga-trans-col-initial">
                         <col class="ga-trans-col-grade">
-                        <col class="ga-trans-col-code">
                         <col class="ga-trans-col-remarks">
                     </colgroup>
                     <thead>
@@ -36,7 +35,6 @@
                             <th rowspan="2">Program</th>
                             <th colspan="2">Initial Grade</th>
                             <th rowspan="2">Transmuted Grade</th>
-                            <th rowspan="2">Code</th>
                             <th rowspan="2">Remarks</th>
                         </tr>
                         <tr class="ga-trans-head-sub">
@@ -52,6 +50,7 @@
                             data-course-id="{{ $rule->course_id }}"
                             data-school-year="{{ $rule->resolved_school_year }}"
                             data-term="{{ $rule->resolved_term }}"
+                            data-code="{{ strtoupper((string) $rule->code) }}"
                         >
                             <td>
                                 <div class="apst-action-btn" data-tm-menu-toggle="tmMenu{{ ($transmutationRules->firstItem() ?? 1) + $index }}" aria-label="Open row actions" title="Actions">
@@ -74,11 +73,10 @@
                             <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_from, 2) }}</span></td>
                             <td><span class="ga-trans-chip">{{ number_format((float) $rule->initial_to, 2) }}</span></td>
                             <td><span class="ga-trans-chip">{{ number_format((float) $rule->transmuted_grade, 2) }}</span></td>
-                            <td>{{ strtoupper((string) $rule->code) }}</td>
                             <td class="{{ (stripos((string) $rule->remarks, 'fail') !== false || strtoupper((string) $rule->code) === 'F') ? 'ga-state-fail' : 'ga-state-pass' }}">{{ $rule->remarks }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="9" class="text-center text-muted py-4">No transmutation rules found.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-4">No transmutation rules found.</td></tr>
                         @endforelse
                     </tbody>
             </table>
@@ -473,15 +471,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fillEditForm(row) {
-        if (!row || row.cells.length < 9) return;
+        if (!row || row.cells.length < 8) return;
         setSelectValue(tmEditSy, (row.getAttribute('data-school-year') || '').trim());
         setSelectValue(tmEditTerm, (row.getAttribute('data-term') || '').trim());
         setSelectValue(tmEditProgram, (row.getAttribute('data-course-id') || '').trim());
         tmEditFrom.value = (row.cells[4].textContent || '').trim();
         tmEditTo.value = (row.cells[5].textContent || '').trim();
         tmEditGrade.value = (row.cells[6].textContent || '').trim();
-        tmEditCode.value = (row.cells[7].textContent || '').trim();
-        tmEditRemarks.value = (row.cells[8].textContent || '').trim();
+        tmEditCode.value = (row.getAttribute('data-code') || '').trim();
+        tmEditRemarks.value = (row.cells[7].textContent || '').trim();
     }
 
     function closeActionMenus() {
@@ -639,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (event.target.matches('[data-ga-confirm-action]')) {
-            if (activeAction === 'edit' && activeRow && activeRow.cells.length >= 9) {
+            if (activeAction === 'edit' && activeRow && activeRow.cells.length >= 8) {
                 var id = activeRow.getAttribute('data-transmutation-rule-id');
                 if (!id) {
                     openMessageModal('EDIT TRANSMUTATION FAILED', 'Missing transmutation rule id.');
