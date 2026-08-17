@@ -132,6 +132,14 @@
     border-radius: $radius-sm;
     background: #ffffff;
     margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.am-card-icon {
+    width: 45%;
+    height: 45%;
 }
 
 .am-btn {

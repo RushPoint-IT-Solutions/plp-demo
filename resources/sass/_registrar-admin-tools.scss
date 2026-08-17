@@ -312,6 +312,27 @@
   max-width: 420px;
 }
 
+.page-user-accounts .ua-form-grid .ua-form-full-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 170px minmax(0, 720px);
+  gap: 10px;
+  align-items: start;
+}
+
+.page-user-accounts .ua-form-grid .ua-form-full-row .ua-course-scope-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.page-user-accounts .ua-form-grid .ua-form-full-row .ua-form-note {
+  grid-column: 2;
+}
+
+.page-user-accounts .ua-course-scope-select + .select2-container {
+  max-width: 100%;
+}
+
 .page-user-accounts .ua-credential-search-wrap {
   width: 100%;
   max-width: 420px;
@@ -1456,11 +1477,16 @@ body.page-user-accounts #uaAccessModal.ua-access-modal .ua-access-depth-5 {
 
   .page-user-accounts .ua-selected-user,
   .page-user-accounts .ua-form-grid,
+  .page-user-accounts .ua-form-grid .ua-form-full-row,
   .page-report-access .ra-groups,
   .page-student-update .su-grid-4,
   .page-student-update .su-grid-5,
   .page-student-update .su-task-meta {
     grid-template-columns: 1fr;
+  }
+
+  .page-user-accounts .ua-form-grid .ua-form-full-row .ua-form-note {
+    grid-column: 1;
   }
 
   .page-user-accounts .ua-bottom-actions,
