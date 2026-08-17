@@ -22,8 +22,8 @@
         .rga-form { display:grid; gap:12px; }
         .rga-field label { display:block; margin-bottom:5px; color:#46564a; font-size:.78rem; font-weight:800; text-transform:uppercase; }
         .rga-input, .rga-select { width:100%; min-height:38px; border:1px solid #cfd9d2; border-radius:7px; background:#fff; color:#143521; padding:8px 10px; }
-        .rga-actions { display:flex; flex-wrap:wrap; gap:8px; }
-        .rga-btn { border:0; border-radius:7px; background:#146c43; color:#fff; cursor:pointer; font-weight:800; min-height:38px; padding:8px 14px; }
+        .rga-actions { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; }
+        .rga-btn { border:0; border-radius:7px; background:#146c43; color:#fff; cursor:pointer; font-weight:800; min-height:38px; padding:8px 14px; width:100%; text-align:center; white-space:normal; line-height:1.25; }
         .rga-btn.secondary { background:#eef6f1; color:#146c43; border:1px solid #b9d8c5; }
         .rga-btn:disabled { cursor:wait; opacity:.65; }
         .rga-alert { display:none; margin-bottom:14px; border-radius:8px; padding:10px 12px; font-weight:700; }

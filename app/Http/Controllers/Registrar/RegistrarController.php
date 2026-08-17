@@ -10723,6 +10723,19 @@ class RegistrarController extends Controller
             ->values()
             ->all();
 
+        $sectionOptions = DB::table('subjects')
+            ->whereNotNull('year_section')
+            ->whereRaw("TRIM(year_section) <> ''")
+            ->distinct()
+            ->orderBy('year_section')
+            ->pluck('year_section')
+            ->map(function ($value) {
+                $value = trim((string) $value);
+                return ['value' => $value, 'label' => $value];
+            })
+            ->values()
+            ->all();
+
         $facultyOptions = Faculty::query()
             ->orderBy('name')
             ->get(['id', 'code', 'name'])
@@ -10754,6 +10767,7 @@ class RegistrarController extends Controller
             'courseOptions',
             'roomOptions',
             'facultyOptions',
+            'sectionOptions',
             'summary',
             'schoolYear',
             'semester',
