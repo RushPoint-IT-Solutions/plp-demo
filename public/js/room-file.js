@@ -8,6 +8,7 @@ var RF_STORE_HALLWAY_URL = RF_PAGE ? RF_PAGE.getAttribute('data-store-hallway-ur
 var RF_PROGRAM_FILE_URL = RF_PAGE ? RF_PAGE.getAttribute('data-program-file-url') : '';
 var RF_UPDATE_URL_TEMPLATE = RF_PAGE ? RF_PAGE.getAttribute('data-update-url-template') : '';
 var RF_DELETE_URL_TEMPLATE = RF_PAGE ? RF_PAGE.getAttribute('data-delete-url-template') : '';
+var RF_IMPORT_URL = RF_PAGE ? RF_PAGE.getAttribute('data-import-url') : '';
 var RF_CSRF_TOKEN = RF_PAGE ? RF_PAGE.getAttribute('data-csrf-token') : '';
 
 var ROOMS = [];
@@ -1057,6 +1058,115 @@ function handleNewRoomSave(event) {
         .finally(function () {
             if (submitBtn) {
                 submitBtn.disabled = false;
+            }
+        });
+
+    return false;
+}
+
+function openImportRoomModal() {
+    var form = document.getElementById('importRoomForm');
+    if (form) {
+        form.reset();
+    }
+
+    var summary = document.getElementById('importRoomSummary');
+    var errorsBox = document.getElementById('importRoomErrors');
+    if (summary) {
+        summary.style.display = 'none';
+        summary.textContent = '';
+    }
+    if (errorsBox) {
+        errorsBox.style.display = 'none';
+        errorsBox.innerHTML = '';
+    }
+
+    document.getElementById('importRoomModal').style.display = 'flex';
+}
+
+function closeImportRoomModal() {
+    document.getElementById('importRoomModal').style.display = 'none';
+}
+
+function handleImportRoomSubmit(event) {
+    event.preventDefault();
+
+    var fileInput = document.getElementById('importRoomFile');
+    if (!fileInput || !fileInput.files || !fileInput.files.length) {
+        showErrorMessage('Please choose a CSV file to import.');
+        return false;
+    }
+
+    if (!RF_IMPORT_URL) {
+        showErrorMessage('Import endpoint is unavailable.');
+        return false;
+    }
+
+    var formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    var submitBtn = document.getElementById('importRoomSubmitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Importing...';
+    }
+
+    var summary = document.getElementById('importRoomSummary');
+    var errorsBox = document.getElementById('importRoomErrors');
+
+    fetch(RF_IMPORT_URL, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': RF_CSRF_TOKEN
+        },
+        body: formData,
+        credentials: 'same-origin'
+    })
+        .then(function (response) {
+            return response.json().catch(function () {
+                return {};
+            }).then(function (payload) {
+                if (!response.ok) {
+                    throw payload;
+                }
+                return payload;
+            });
+        })
+        .then(function (payload) {
+            loadRooms(activeSearch, 1);
+
+            if (summary) {
+                summary.style.display = 'block';
+                summary.textContent = payload.message || ('Imported ' + (payload.created || 0) + ' room(s).');
+            }
+
+            if (errorsBox) {
+                var errors = payload.errors || [];
+                if (errors.length) {
+                    errorsBox.style.display = 'block';
+                    errorsBox.innerHTML = errors.map(function (line) {
+                        return '<div>' + escapeHtml(line) + '</div>';
+                    }).join('');
+                } else {
+                    errorsBox.style.display = 'none';
+                    errorsBox.innerHTML = '';
+                }
+            }
+
+            if (!payload.errors || !payload.errors.length) {
+                showRoomSuccessModal(payload.message || 'Rooms imported successfully.');
+                closeImportRoomModal();
+            }
+        })
+        .catch(function (errorPayload) {
+            showErrorMessage(getPayloadErrorMessage(errorPayload, 'Unable to import rooms right now.'));
+        })
+        .finally(function () {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Import';
             }
         });
 

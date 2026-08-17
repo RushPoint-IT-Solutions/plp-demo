@@ -415,7 +415,7 @@
             $systemConfigRoutes = ['registrar.admin-tools.system-config.configuration', 'registrar.admin-tools.system-config.academic-calendar', 'registrar.admin-tools.system-config.announcement'];
             $accessManagementRoutes = ['registrar.admin-tools.access-management.user-accounts', 'registrar.admin-tools.access-management.report-access'];
             $masterFilesRoutes = ['registrar.admin-tools.master-files.faculty-file', 'registrar.admin-tools.master-files.student-profile', 'registrar.admin-tools.master-files.student-grade-file', 'registrar.admin-tools.student-maintenance.student-update'];
-            $systemRoutes = array_merge($systemConfigRoutes, $accessManagementRoutes, $masterFilesRoutes, ['registrar.admin-tools.audit-trail']);
+            $systemRoutes = array_merge($systemConfigRoutes, $accessManagementRoutes, $masterFilesRoutes, ['registrar.admin-tools.audit-trail', 'registrar.admin-tools.data-imports.index']);
         @endphp
         @if($canViewAny($systemRoutes) || (auth()->check() && strtolower(trim((string)(auth()->user()->module ?? ''))) === 'admin'))
         <div class="sidebar-dropdown {{ request()->routeIs('registrar.admin-tools.*') ? 'open' : '' }}">
@@ -475,6 +475,12 @@
                         @if($canView('registrar.admin-tools.student-maintenance.student-update'))<a href="{{ route('registrar.admin-tools.student-maintenance.student-update') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.student-maintenance.student-update') ? 'active' : '' }}">Student Update</a>@endif
                     </div>
                 </div>
+                @endif
+
+                @if($canView('registrar.admin-tools.data-imports.index'))
+                <a href="{{ route('registrar.admin-tools.data-imports.index') }}" class="sidebar-sublink {{ request()->routeIs('registrar.admin-tools.data-imports.*') ? 'active' : '' }}">
+                    Data Imports
+                </a>
                 @endif
 
                 @if(auth()->check() && strtolower(trim((string)(auth()->user()->module ?? ''))) === 'admin')

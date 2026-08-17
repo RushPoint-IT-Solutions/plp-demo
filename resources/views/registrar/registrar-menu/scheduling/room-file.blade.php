@@ -3,6 +3,50 @@
 @section('title', 'PLP - Room File')
 @section('page-title', 'ROOM FILE')
 
+@push('styles')
+<style>
+.pf-btn-outline {
+    background: #fff;
+    color: #006837;
+    border: 1px solid #006837;
+}
+.pf-btn-outline:hover {
+    background: #eef6f1;
+}
+.rf-import-note {
+    display: block;
+    margin: 6px 0 0;
+    color: #66756b;
+    font-size: .78rem;
+    line-height: 1.45;
+}
+.rf-import-link {
+    color: #006837;
+    font-weight: 700;
+    text-decoration: underline;
+}
+.rf-import-summary {
+    margin-top: 12px;
+    font-size: .85rem;
+    color: #143521;
+}
+.rf-import-errors {
+    max-height: 160px;
+    overflow-y: auto;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #fdecec;
+    border: 1px solid #efb8b8;
+    border-radius: 6px;
+    font-size: .78rem;
+    color: #9f1d1d;
+}
+.rf-import-errors div {
+    padding: 2px 0;
+}
+</style>
+@endpush
+
 @section('content')
 <div
     class="pf-page"
@@ -14,6 +58,8 @@
     data-program-file-url="{{ route('registrar.registrar-menu.academic-master.subject-file') }}"
     data-update-url-template="{{ route('registrar.registrar-menu.scheduling.room-file.update', ['room' => '__ROOM_ID__']) }}"
     data-delete-url-template="{{ route('registrar.registrar-menu.scheduling.room-file.delete', ['room' => '__ROOM_ID__']) }}"
+    data-import-url="{{ route('registrar.registrar-menu.scheduling.room-file.import') }}"
+    data-import-template-url="{{ route('registrar.registrar-menu.scheduling.room-file.import.template') }}"
     data-csrf-token="{{ csrf_token() }}"
     data-default-sort-by="floor_number"
     data-default-sort-dir="asc"
@@ -25,6 +71,10 @@
             <svg class="pf-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" class="pf-search-input" placeholder="Search Room No" id="rfSearch">
         </div>
+        <button type="button" class="pf-btn-new pf-btn-outline" onclick="openImportRoomModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Import
+        </button>
         <button type="button" class="pf-btn-new" onclick="openNewRoomModal()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Room
@@ -94,6 +144,33 @@
                 </div>
             </nav>
         </div>
+    </div>
+</div>
+
+{{-- ══════ IMPORT ROOMS MODAL ══════ --}}
+<div class="pf-modal-overlay" id="importRoomModal" style="display:none;">
+    <div class="pf-modal-box" style="max-width:520px;">
+        <div class="pf-modal-title">Import Rooms</div>
+        <form id="importRoomForm" onsubmit="return handleImportRoomSubmit(event)">
+            <div class="pf-modal-form">
+                <div class="pf-modal-field">
+                    <label class="pf-modal-label">CSV File</label>
+                    <input type="file" class="pf-modal-input" id="importRoomFile" accept=".csv,text/csv" required>
+                    <span class="rf-import-note">
+                        Columns: Building, Hallway, Room Number, Floor, Capacity.
+                        <a href="{{ route('registrar.registrar-menu.scheduling.room-file.import.template') }}" class="rf-import-link">Download template</a>.
+                        Buildings and hallways are created automatically if they don't already exist.
+                        Imported rooms have no allowed subjects yet — assign those afterward by editing each room.
+                    </span>
+                </div>
+                <div id="importRoomSummary" class="rf-import-summary" style="display:none;"></div>
+                <div id="importRoomErrors" class="rf-import-errors" style="display:none;"></div>
+                <div class="pf-modal-actions">
+                    <button type="button" class="pf-modal-btn-cancel" onclick="closeImportRoomModal()">Cancel</button>
+                    <button type="submit" class="pf-modal-btn-save" id="importRoomSubmitBtn">Import</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 

@@ -276,6 +276,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/room-file', 'Registrar\RegistrarController@storeRoomFile')->name('room-file.store')->middleware('throttle:60,1');
             Route::put('/room-file/{room}', 'Registrar\RegistrarController@updateRoomFile')->name('room-file.update')->middleware('throttle:60,1');
             Route::delete('/room-file/{room}', 'Registrar\RegistrarController@destroyRoomFile')->name('room-file.delete')->middleware('throttle:60,1');
+            Route::get('/room-file/import/template', 'Registrar\RegistrarController@roomFileImportTemplate')->name('room-file.import.template');
+            Route::post('/room-file/import', 'Registrar\RegistrarController@importRoomFile')->name('room-file.import')->middleware('throttle:10,1');
             Route::get('/room-generation-assignment', 'Registrar\RegistrarController@roomGenerationAssignment')->name('room-generation-assignment');
             Route::post('/room-generation-assignment/generate', 'Registrar\RegistrarController@generateRoomsForAssignment')->name('room-generation-assignment.generate')->middleware('throttle:30,1');
             Route::post('/room-generation-assignment/generate-teachers', 'Registrar\RegistrarController@generateTeacherAllowedSubjectsForAssignment')->name('room-generation-assignment.generate-teachers')->middleware('throttle:30,1');
@@ -606,6 +608,24 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/student-grade-file/records', 'Registrar\Services\AdminToolsController@studentGradeRecordStore')->name('student-grade-file.records.store');
             Route::put('/student-grade-file/records/{studentGradeRecord}', 'Registrar\Services\AdminToolsController@studentGradeRecordUpdate')->name('student-grade-file.records.update');
             Route::delete('/student-grade-file/records/{studentGradeRecord}', 'Registrar\Services\AdminToolsController@studentGradeRecordDestroy')->name('student-grade-file.records.destroy');
+        });
+
+        Route::prefix('data-imports')->name('data-imports.')->group(function () {
+            Route::get('/', 'Registrar\RegistrarController@dataImportsIndex')->name('index');
+            Route::get('/room-assignments/template', 'Registrar\RegistrarController@roomAssignmentImportTemplate')->name('room-assignments.template');
+            Route::post('/room-assignments', 'Registrar\RegistrarController@importRoomAssignments')->name('room-assignments.import')->middleware('throttle:10,1');
+            Route::get('/rooms/template', 'Registrar\RegistrarController@roomFileImportTemplate')->name('rooms.template');
+            Route::post('/rooms', 'Registrar\RegistrarController@importRoomFile')->name('rooms.import')->middleware('throttle:10,1');
+            Route::get('/course-room/template', 'Registrar\RegistrarController@courseRoomImportTemplate')->name('course-room.template');
+            Route::post('/course-room', 'Registrar\RegistrarController@importCourseRoomAssignments')->name('course-room.import')->middleware('throttle:10,1');
+            Route::get('/schedules/template', 'Registrar\RegistrarController@schedulesImportTemplate')->name('schedules.template');
+            Route::post('/schedules', 'Registrar\RegistrarController@importSchedules')->name('schedules.import')->middleware('throttle:10,1');
+            Route::get('/section-offerings/template', 'Registrar\RegistrarController@sectionOfferingsImportTemplate')->name('section-offerings.template');
+            Route::post('/section-offerings', 'Registrar\RegistrarController@importSectionOfferings')->name('section-offerings.import')->middleware('throttle:10,1');
+            Route::get('/subject-file/template', 'Registrar\RegistrarController@subjectFileImportTemplate')->name('subject-file.template');
+            Route::post('/subject-file', 'Registrar\RegistrarController@importSubjectFile')->name('subject-file.import')->middleware('throttle:10,1');
+            Route::get('/curriculum-subjects/template', 'Registrar\RegistrarController@curriculumSubjectsImportTemplate')->name('curriculum-subjects.template');
+            Route::post('/curriculum-subjects', 'Registrar\RegistrarController@importCurriculumSubjects')->name('curriculum-subjects.import')->middleware('throttle:10,1');
         });
 
         Route::prefix('student-maintenance')->name('student-maintenance.')->group(function () {

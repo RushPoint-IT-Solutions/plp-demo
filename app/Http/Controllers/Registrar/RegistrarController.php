@@ -8661,6 +8661,1246 @@ class RegistrarController extends Controller
         ]);
     }
 
+    public function dataImportsIndex()
+    {
+        $configOptions = SystemConfigSchoolTermOptions::resolveOptions();
+        $schoolYearOptions = collect(array_values($configOptions['school_years'] ?? []))
+            ->map(function ($schoolYear) {
+                $value = trim((string) $schoolYear);
+                return ['value' => $value, 'label' => $value];
+            })
+            ->filter(function ($option) {
+                return (string) ($option['value'] ?? '') !== '';
+            })
+            ->values()
+            ->all();
+
+        $semesterOptions = collect(['First', 'Second', 'Summer'])
+            ->map(function ($semester) {
+                return ['value' => $semester, 'label' => $semester];
+            })
+            ->all();
+
+        return view('registrar.admin-tools.data-imports.index', compact('schoolYearOptions', 'semesterOptions'));
+    }
+
+    public function roomAssignmentImportTemplate()
+    {
+        $csv = "Subject Code,Section,Component,Room Number,Day,Start Time,End Time\n"
+            . "MATH101,1-A,Lecture,101,MWF,08:00,09:00\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="room-assignment-import-template.csv"',
+        ]);
+    }
+
+    public function importRoomAssignments(Request $request): JsonResponse
+    {
+        $this->ensureRoomAssignmentSchemaReady();
+
+        $validated = $request->validate([
+            'school_year' => 'required|string|max:30',
+            'semester' => 'required|string|max:40',
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+        $schoolYear = $this->normalizeSectionOfferingSchoolYear((string) $validated['school_year']);
+        $semester = $this->normalizeSlotMonitoringSemester((string) $validated['semester']);
+
+        if ($semester === '') {
+            throw ValidationException::withMessages([
+                'semester' => ['Please select a valid semester.'],
+            ]);
+        }
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json(['message' => 'Unable to read the uploaded file.'], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json(['message' => 'The uploaded file is empty.'], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['subject code', 'section', 'room number', 'day', 'start time', 'end time'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $assigned = [];
+        $issues = [];
+        $errors = [];
+        $summary = ['assigned' => 0, 'pending' => 0, 'conflicts' => 0];
+        $rowNumber = 1;
+
+        DB::transaction(function () use (
+            $handle, $columnIndex, $schoolYear, $semester, $dryRun,
+            &$assigned, &$issues, &$errors, &$summary, &$rowNumber
+        ) {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
+
+                if (count(array_filter($row, function ($value) {
+                    return trim((string) $value) !== '';
+                })) === 0) {
+                    continue;
+                }
+
+                $subjectCode = trim((string) ($row[$columnIndex['subject code']] ?? ''));
+                $section = trim((string) ($row[$columnIndex['section']] ?? ''));
+                $componentInput = trim((string) ($row[$columnIndex['component']] ?? ''));
+                $roomNumber = trim((string) ($row[$columnIndex['room number']] ?? ''));
+                $day = strtoupper(trim((string) ($row[$columnIndex['day']] ?? '')));
+                $startTime = trim((string) ($row[$columnIndex['start time']] ?? ''));
+                $endTime = trim((string) ($row[$columnIndex['end time']] ?? ''));
+
+                if ($subjectCode === '' || $section === '' || $roomNumber === '' || $day === '' || $startTime === '' || $endTime === '') {
+                    $summary['pending']++;
+                    $errors[] = 'Row ' . $rowNumber . ': missing Subject Code, Section, Room Number, Day, Start Time, or End Time.';
+                    continue;
+                }
+
+                $component = stripos($componentInput, 'lab') !== false ? 'Laboratory' : 'Lecture';
+
+                $subject = Subject::query()
+                    ->with(['academicTerm', 'canonicalCourse'])
+                    ->whereNotNull('course_id')
+                    ->where('code', $subjectCode)
+                    ->where('year_section', $section)
+                    ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                        $query->where(function ($builder) {
+                            $builder->whereNull('is_subject_file_record')
+                                ->orWhere('is_subject_file_record', 0);
+                        });
+                    })
+                    ->whereHas('academicTerm', function ($termQuery) use ($schoolYear, $semester) {
+                        $termQuery->where('school_year', $schoolYear);
+                        $termQuery->whereIn(DB::raw('LOWER(TRIM(term))'), collect($this->slotMonitoringSemesterAliases($semester))->map(function ($value) {
+                            return strtolower(trim((string) $value));
+                        })->all());
+                    })
+                    ->first();
+
+                if (!$subject) {
+                    $summary['pending']++;
+                    $errors[] = 'Row ' . $rowNumber . ': no matching class offering for Subject Code "' . $subjectCode . '", Section "' . $section . '" in the selected school year/semester.';
+                    continue;
+                }
+
+                $room = Room::query()->where('room_number', (int) $roomNumber)->first();
+                if (!$room) {
+                    $summary['pending']++;
+                    $errors[] = 'Row ' . $rowNumber . ': Room ' . $roomNumber . ' was not found.';
+                    continue;
+                }
+
+                $slot = [
+                    'days' => $day,
+                    'time_start' => $this->classScheduleTimeInputValue($startTime),
+                    'time_end' => $this->classScheduleTimeInputValue($endTime),
+                ];
+
+                $validationIssues = $this->roomAssignmentValidationIssues($room, $subject, $slot, $schoolYear, $semester);
+                if (count($validationIssues)) {
+                    $summary['conflicts']++;
+                    $errors[] = 'Row ' . $rowNumber . ': ' . implode(' ', $validationIssues);
+                    $issues[] = $this->roomAssignmentReportRow((object) [
+                        'class_offering_id' => (int) $subject->id,
+                        'course_code' => (string) $subject->code,
+                        'subject_name' => (string) $subject->name,
+                        'section_id' => (string) $subject->year_section,
+                        'room_code' => $this->roomAssignmentRoomCode($room),
+                        'schedule_component_type' => $component,
+                        'academic_year' => $schoolYear,
+                        'semester' => $semester,
+                        'day' => $slot['days'],
+                        'start_time' => $slot['time_start'],
+                        'end_time' => $slot['time_end'],
+                        'assignment_status' => 'Room Conflict',
+                        'remarks' => implode(' ', $validationIssues),
+                    ]);
+                    continue;
+                }
+
+                $payload = [
+                    'class_offering_id' => (int) $subject->id,
+                    'course_code' => (string) $subject->code,
+                    'section_id' => (string) $subject->year_section,
+                    'room_id' => (int) $room->id,
+                    'room_type_required' => $this->resolveSubjectRequiredRoomType($subject, $component),
+                    'schedule_component_type' => $component,
+                    'academic_year' => $schoolYear,
+                    'semester' => $semester,
+                    'day' => $slot['days'],
+                    'start_time' => $slot['time_start'],
+                    'end_time' => $slot['time_end'],
+                    'assignment_status' => 'Manual Override',
+                    'remarks' => 'Imported via Data Imports - Room Assignments.',
+                    'created_by' => auth()->id(),
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ];
+
+                $existingId = null;
+
+                if (!$dryRun) {
+                    DB::table('class_room_assignments')->updateOrInsert([
+                        'class_offering_id' => (int) $subject->id,
+                        'schedule_component_type' => $component,
+                    ], $payload);
+
+                    $subject->room = $this->roomAssignmentRoomCode($room);
+                    $subject->room_requirement_status = 'Assigned';
+                    if (trim((string) $subject->days) === '') {
+                        $subject->days = $slot['days'];
+                    }
+                    if (trim((string) $subject->time_start) === '') {
+                        $subject->time_start = $slot['time_start'];
+                    }
+                    if (trim((string) $subject->time_end) === '') {
+                        $subject->time_end = $slot['time_end'];
+                    }
+                    $subject->save();
+
+                    $existingId = DB::table('class_room_assignments')
+                        ->where('class_offering_id', (int) $subject->id)
+                        ->where('schedule_component_type', $component)
+                        ->value('id');
+                }
+
+                $summary['assigned']++;
+                $assigned[] = $this->roomAssignmentReportRow((object) array_merge($payload, [
+                    'id' => $existingId,
+                    'assignment_status' => $dryRun ? 'Would Assign' : $payload['assignment_status'],
+                    'subject_name' => (string) $subject->name,
+                    'room_code' => $this->roomAssignmentRoomCode($room),
+                ]));
+            }
+        });
+
+        fclose($handle);
+
+        $verb = $dryRun ? 'File checked - would import' : 'Imported';
+        $skippedCount = $summary['pending'] + $summary['conflicts'];
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'message' => $verb . ' ' . $summary['assigned'] . ' room assignment(s)' . ($skippedCount > 0 ? ($dryRun ? ', would skip ' : ', skipped ') . $skippedCount . '.' : '.'),
+            'summary' => $summary,
+            'assigned' => $assigned,
+            'issues' => $issues,
+            'errors' => array_slice($errors, 0, 20),
+        ]);
+    }
+
+    public function courseRoomImportTemplate()
+    {
+        $csv = "Room Number,Course Code\n"
+            . "101,BSIT\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="course-room-import-template.csv"',
+        ]);
+    }
+
+    public function importCourseRoomAssignments(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json(['message' => 'Unable to read the uploaded file.'], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json(['message' => 'The uploaded file is empty.'], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['room number', 'course code'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $assignedCount = 0;
+        $skipped = 0;
+        $errors = [];
+        $rowNumber = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+
+            if (count(array_filter($row, function ($value) {
+                return trim((string) $value) !== '';
+            })) === 0) {
+                continue;
+            }
+
+            $roomNumber = trim((string) ($row[$columnIndex['room number']] ?? ''));
+            $courseCode = trim((string) ($row[$columnIndex['course code']] ?? ''));
+
+            if ($roomNumber === '' || $courseCode === '') {
+                $skipped++;
+                $errors[] = 'Row ' . $rowNumber . ': missing Room Number or Course Code.';
+                continue;
+            }
+
+            $room = Room::query()->where('room_number', (int) $roomNumber)->first();
+            if (!$room) {
+                $skipped++;
+                $errors[] = 'Row ' . $rowNumber . ': Room ' . $roomNumber . ' was not found.';
+                continue;
+            }
+
+            $course = Course::query()->where('code', $courseCode)->first();
+            if (!$course) {
+                $skipped++;
+                $errors[] = 'Row ' . $rowNumber . ': Course "' . $courseCode . '" was not found.';
+                continue;
+            }
+
+            if (!$dryRun) {
+                $room->courses()->syncWithoutDetaching([
+                    (int) $course->id => ['assigned_by_user_id' => auth()->id()],
+                ]);
+            }
+
+            $assignedCount++;
+        }
+
+        fclose($handle);
+
+        $verb = $dryRun ? 'would link' : 'Linked';
+        $skipVerb = $dryRun ? 'would skip' : 'skipped';
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'message' => ($dryRun ? 'File checked - ' . $verb . ' ' : $verb . ' ') . $assignedCount . ' room-course assignment(s)' . ($skipped > 0 ? ', ' . $skipVerb . ' ' . $skipped . '.' : '.'),
+            'summary' => ['assigned' => $assignedCount, 'pending' => $skipped, 'conflicts' => 0],
+            'errors' => array_slice($errors, 0, 20),
+        ]);
+    }
+
+    public function schedulesImportTemplate()
+    {
+        $csv = "Subject Code,Section,School Year,Semester,Days,Start Time,End Time,Room Number,Faculty Code\n"
+            . "MATH101,1-A,2025-2026,First,MWF,08:00,09:00,101,FAC-001\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="schedules-import-template.csv"',
+        ]);
+    }
+
+    public function importSchedules(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json(['message' => 'Unable to read the uploaded file.'], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json(['message' => 'The uploaded file is empty.'], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['subject code', 'section', 'school year', 'semester', 'days', 'start time', 'end time'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $hasRoomColumn = $columnIndex->has('room number');
+        $hasFacultyColumn = $columnIndex->has('faculty code');
+
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+        $rows = [];
+        $rowNumber = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+
+            if (count(array_filter($row, function ($value) {
+                return trim((string) $value) !== '';
+            })) === 0) {
+                continue;
+            }
+
+            $subjectCode = trim((string) ($row[$columnIndex['subject code']] ?? ''));
+            $section = trim((string) ($row[$columnIndex['section']] ?? ''));
+            $schoolYear = $this->normalizeSectionOfferingSchoolYear((string) ($row[$columnIndex['school year']] ?? ''));
+            $semester = $this->normalizeSlotMonitoringSemester((string) ($row[$columnIndex['semester']] ?? ''));
+            $days = strtoupper(trim((string) ($row[$columnIndex['days']] ?? '')));
+            $startTime = trim((string) ($row[$columnIndex['start time']] ?? ''));
+            $endTime = trim((string) ($row[$columnIndex['end time']] ?? ''));
+            $roomNumber = $hasRoomColumn ? trim((string) ($row[$columnIndex['room number']] ?? '')) : '';
+            $facultyCode = $hasFacultyColumn ? trim((string) ($row[$columnIndex['faculty code']] ?? '')) : '';
+
+            if ($subjectCode === '' || $section === '' || $schoolYear === '' || $semester === '' || $days === '' || $startTime === '' || $endTime === '') {
+                $skipped++;
+                $errors[] = 'Row ' . $rowNumber . ': missing required field(s).';
+                continue;
+            }
+
+            $subject = Subject::query()
+                ->whereNotNull('course_id')
+                ->where('code', $subjectCode)
+                ->where('year_section', $section)
+                ->when(Schema::hasColumn('subjects', 'is_subject_file_record'), function ($query) {
+                    $query->where(function ($builder) {
+                        $builder->whereNull('is_subject_file_record')
+                            ->orWhere('is_subject_file_record', 0);
+                    });
+                })
+                ->whereHas('academicTerm', function ($termQuery) use ($schoolYear, $semester) {
+                    $termQuery->where('school_year', $schoolYear);
+                    $termQuery->whereIn(DB::raw('LOWER(TRIM(term))'), collect($this->slotMonitoringSemesterAliases($semester))->map(function ($value) {
+                        return strtolower(trim((string) $value));
+                    })->all());
+                })
+                ->first();
+
+            if (!$subject) {
+                $skipped++;
+                $errors[] = 'Row ' . $rowNumber . ': no matching class offering for Subject Code "' . $subjectCode . '", Section "' . $section . '" in ' . $schoolYear . ' ' . $semester . '.';
+                continue;
+            }
+
+            $room = null;
+            if ($roomNumber !== '') {
+                $room = Room::query()->where('room_number', (int) $roomNumber)->first();
+                if (!$room) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': Room ' . $roomNumber . ' was not found.';
+                    continue;
+                }
+            }
+
+            $faculty = null;
+            if ($facultyCode !== '') {
+                $faculty = Faculty::query()->where('code', $facultyCode)->first();
+                if (!$faculty) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': Faculty code "' . $facultyCode . '" was not found.';
+                    continue;
+                }
+            }
+
+            $newDays = $days;
+            $newTimeStart = $this->classScheduleTimeInputValue($startTime);
+            $newTimeEnd = $this->classScheduleTimeInputValue($endTime);
+            $newRoomCode = $room ? $this->roomAssignmentRoomCode($room) : (string) $subject->room;
+
+            if (!$dryRun) {
+                $subject->days = $newDays;
+                $subject->time_start = $newTimeStart;
+                $subject->time_end = $newTimeEnd;
+                if ($room) {
+                    $subject->room = $newRoomCode;
+                    $subject->room_requirement_status = 'Assigned';
+                }
+                if ($faculty) {
+                    $subject->faculty_id = $faculty->id;
+                }
+                $subject->save();
+            }
+
+            $updated++;
+            $rows[] = [
+                'course_code' => (string) $subject->code,
+                'subject_name' => (string) $subject->name,
+                'section_id' => (string) $subject->year_section,
+                'schedule_component_type' => 'Schedule',
+                'room_code' => $newRoomCode,
+                'day' => $newDays,
+                'start_time' => $newTimeStart,
+                'end_time' => $newTimeEnd,
+                'assignment_status' => $dryRun ? 'Would Update' : 'Updated',
+            ];
+        }
+
+        fclose($handle);
+
+        $verb = $dryRun ? 'File checked - would update' : 'Updated';
+        $skipVerb = $dryRun ? 'would skip' : 'skipped';
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'message' => $verb . ' ' . $updated . ' schedule(s)' . ($skipped > 0 ? ', ' . $skipVerb . ' ' . $skipped . '.' : '.'),
+            'summary' => ['assigned' => $updated, 'pending' => $skipped, 'conflicts' => 0],
+            'assigned' => $rows,
+            'issues' => [],
+            'errors' => array_slice($errors, 0, 20),
+        ]);
+    }
+
+    public function sectionOfferingsImportTemplate()
+    {
+        $csv = "Course Code,School Year,Semester,Year Level,Section,Subject Code,Adviser,Slots\n"
+            . "BSIT,2025-2026,First,1,A,MATH101,,40\n"
+            . "BSIT,2025-2026,First,1,A,ENG101,,40\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="section-offerings-import-template.csv"',
+        ]);
+    }
+
+    public function importSectionOfferings(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json(['message' => 'Unable to read the uploaded file.'], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json(['message' => 'The uploaded file is empty.'], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['course code', 'school year', 'semester', 'year level', 'section', 'subject code'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $hasAdviserColumn = $columnIndex->has('adviser');
+        $hasSlotsColumn = $columnIndex->has('slots');
+
+        $groups = [];
+        $rowNumber = 1;
+        $errors = [];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+
+            if (count(array_filter($row, function ($value) {
+                return trim((string) $value) !== '';
+            })) === 0) {
+                continue;
+            }
+
+            $courseCode = trim((string) ($row[$columnIndex['course code']] ?? ''));
+            $schoolYear = trim((string) ($row[$columnIndex['school year']] ?? ''));
+            $semester = trim((string) ($row[$columnIndex['semester']] ?? ''));
+            $yearLevel = trim((string) ($row[$columnIndex['year level']] ?? ''));
+            $section = trim((string) ($row[$columnIndex['section']] ?? ''));
+            $subjectCode = trim((string) ($row[$columnIndex['subject code']] ?? ''));
+            $adviser = $hasAdviserColumn ? trim((string) ($row[$columnIndex['adviser']] ?? '')) : '';
+            $slots = $hasSlotsColumn ? trim((string) ($row[$columnIndex['slots']] ?? '')) : '';
+
+            if ($courseCode === '' || $schoolYear === '' || $semester === '' || $yearLevel === '' || $section === '' || $subjectCode === '') {
+                $errors[] = 'Row ' . $rowNumber . ': missing required field(s).';
+                continue;
+            }
+
+            $groupKey = strtoupper($courseCode) . '|' . $schoolYear . '|' . strtolower($semester) . '|' . strtolower($yearLevel) . '|' . strtoupper($section);
+
+            if (!isset($groups[$groupKey])) {
+                $groups[$groupKey] = [
+                    'course_code' => $courseCode,
+                    'school_year' => $schoolYear,
+                    'semester' => $semester,
+                    'year_level' => $yearLevel,
+                    'section' => $section,
+                    'adviser' => $adviser,
+                    'slots' => $slots,
+                    'subject_codes' => [],
+                    'first_row' => $rowNumber,
+                ];
+            }
+
+            $groups[$groupKey]['subject_codes'][] = strtoupper($subjectCode);
+            if ($adviser !== '' && $groups[$groupKey]['adviser'] === '') {
+                $groups[$groupKey]['adviser'] = $adviser;
+            }
+            if ($slots !== '' && $groups[$groupKey]['slots'] === '') {
+                $groups[$groupKey]['slots'] = $slots;
+            }
+        }
+
+        fclose($handle);
+
+        $created = 0;
+        $skippedGroups = 0;
+        $createdSections = [];
+
+        DB::transaction(function () use ($groups, $dryRun, &$created, &$skippedGroups, &$errors, &$createdSections) {
+            foreach ($groups as $group) {
+                $result = $this->createSectionOfferingFromImportGroup($group, $dryRun);
+                if ($result['ok']) {
+                    $created++;
+                    $createdSections[] = $result['label'];
+                    if (!empty($result['warnings'])) {
+                        $errors = array_merge($errors, $result['warnings']);
+                    }
+                } else {
+                    $skippedGroups++;
+                    $errors[] = 'Group starting at row ' . $group['first_row'] . ' (' . $group['course_code'] . ' ' . $group['section'] . '): ' . $result['message'];
+                }
+            }
+        });
+
+        $verb = $dryRun ? 'File checked - would create' : 'Created';
+        $skipVerb = $dryRun ? 'would skip' : 'skipped';
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'message' => $verb . ' ' . $created . ' section offering(s)' . ($skippedGroups > 0 ? ', ' . $skipVerb . ' ' . $skippedGroups . '.' : '.'),
+            'summary' => ['assigned' => $created, 'pending' => $skippedGroups, 'conflicts' => 0],
+            'created_sections' => $createdSections,
+            'errors' => array_slice($errors, 0, 25),
+        ]);
+    }
+
+    private function createSectionOfferingFromImportGroup(array $group, bool $dryRun = false): array
+    {
+        $course = Course::query()->where('code', $group['course_code'])->first();
+        if (!$course) {
+            return ['ok' => false, 'message' => 'Course "' . $group['course_code'] . '" was not found.'];
+        }
+        $courseId = (int) $course->id;
+
+        $schoolYear = $this->normalizeSectionOfferingSchoolYear($group['school_year']);
+        $semester = $this->normalizeSlotMonitoringSemester($group['semester']);
+        if ($semester === '') {
+            return ['ok' => false, 'message' => 'Invalid semester "' . $group['semester'] . '".'];
+        }
+
+        $yearLevel = $this->normalizeSectionOfferingYearLevel($group['year_level']);
+        $yearLevelNumber = $this->sectionOfferingYearLevelWeight($yearLevel);
+        if ($yearLevel === '' || $yearLevelNumber > 6) {
+            return ['ok' => false, 'message' => 'Invalid year level "' . $group['year_level'] . '".'];
+        }
+
+        $sectionCode = $this->sanitizeSectionOfferingSectionCode($group['section']);
+        $sectionLabel = $this->composeSectionOfferingLabel($yearLevelNumber, $sectionCode);
+        if ($sectionCode === '' || $sectionLabel === '') {
+            return ['ok' => false, 'message' => 'Invalid section code "' . $group['section'] . '".'];
+        }
+
+        $curriculum = $this->resolveSectionOfferingCurriculum($courseId);
+        if (!$curriculum) {
+            return ['ok' => false, 'message' => 'No published curriculum for ' . $group['course_code'] . '.'];
+        }
+
+        $yearBlockId = $this->resolveSectionOfferingYearBlockId($yearLevelNumber);
+        if (!$yearBlockId) {
+            return ['ok' => false, 'message' => 'Year level is not configured in curriculum dimensions.'];
+        }
+
+        $semesterIds = $this->resolveSectionOfferingSemesterIds($semester);
+        if (!count($semesterIds)) {
+            return ['ok' => false, 'message' => 'Semester is not configured in curriculum dimensions.'];
+        }
+
+        $academicTermId = $this->resolveSectionOfferingAcademicTermId($schoolYear, $semester);
+        $facultyId = $this->resolveSectionOfferingFacultyId($group['adviser']);
+
+        $existingSectionQuery = Subject::query()
+            ->where('course_id', $courseId)
+            ->where('academic_term_id', $academicTermId)
+            ->where('year_section', $sectionLabel);
+
+        if (Schema::hasColumn('subjects', 'is_subject_file_record')) {
+            $existingSectionQuery->where(function ($builder) {
+                $builder->whereNull('is_subject_file_record')
+                    ->orWhere('is_subject_file_record', 0);
+            });
+        }
+
+        if ($existingSectionQuery->exists()) {
+            return ['ok' => false, 'message' => 'Section ' . $sectionLabel . ' already exists for ' . $group['course_code'] . ' in ' . $schoolYear . ' ' . $semester . '.'];
+        }
+
+        $assignments = CourseCurriculumSubject::query()
+            ->with('subject')
+            ->where('course_curriculum_id', (int) $curriculum->id)
+            ->where('year_block_id', $yearBlockId)
+            ->whereIn('semester_id', $semesterIds)
+            ->whereHas('subject', function ($query) use ($group) {
+                $query->whereIn('code', $group['subject_codes']);
+            })
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($assignments->isEmpty()) {
+            return ['ok' => false, 'message' => 'None of the listed subject codes are part of the published curriculum for ' . $group['course_code'] . ' at that year level/semester.'];
+        }
+
+        $matchedCodes = $assignments->map(function (CourseCurriculumSubject $assignment) {
+            return strtoupper(trim((string) optional($assignment->subject)->code));
+        })->all();
+        $unmatchedCodes = collect($group['subject_codes'])->diff($matchedCodes)->values()->all();
+
+        $now = now();
+        $addedBy = auth()->check() ? trim((string) optional(auth()->user())->name) : '';
+        if ($addedBy === '') {
+            $addedBy = null;
+        }
+
+        $rowsToInsert = $assignments
+            ->map(function (CourseCurriculumSubject $assignment) use ($courseId, $academicTermId, $sectionLabel, $facultyId, $addedBy, $now) {
+                $subject = $assignment->subject;
+
+                $code = trim((string) optional($subject)->code);
+                if ($code === '') {
+                    $code = 'SUBJ-' . (int) $assignment->id;
+                }
+
+                $name = trim((string) optional($subject)->name);
+                if ($name === '') {
+                    $name = 'Curriculum Subject ' . (int) $assignment->id;
+                }
+
+                $units = $subject ? (float) $subject->units : (float) $assignment->credited_units;
+                $lec = $subject ? (int) $subject->lec : 0;
+                $lab = $subject ? (int) $subject->lab : 0;
+                $hours = $subject ? (float) ($subject->hours ?: 0) : (float) ($assignment->credited_units ?: 0);
+
+                $creditedTuitionUnits = $subject && $subject->credited_tuition_units !== null
+                    ? (float) $subject->credited_tuition_units
+                    : (float) $assignment->credited_units;
+
+                $loadHours = $subject && $subject->load_hours !== null
+                    ? (float) $subject->load_hours
+                    : null;
+
+                return [
+                    'code' => $code,
+                    'name' => $name,
+                    'is_subject_file_record' => 0,
+                    'units' => $units,
+                    'lec' => $lec,
+                    'lab' => $lab,
+                    'hours' => $hours,
+                    'course_type' => $subject ? (string) ($subject->course_type ?: '') : null,
+                    'is_core' => $subject ? (int) ((bool) $subject->is_core) : 0,
+                    'is_applied' => $subject ? (int) ((bool) $subject->is_applied) : 0,
+                    'is_specialized' => $subject ? (int) ((bool) $subject->is_specialized) : 0,
+                    'days' => null,
+                    'time_start' => null,
+                    'time_end' => null,
+                    'room' => null,
+                    'faculty_id' => $facultyId,
+                    'year_section' => $sectionLabel,
+                    'course_id' => $courseId,
+                    'academic_term_id' => $academicTermId,
+                    'grading_status_id' => null,
+                    'load_type_id' => null,
+                    'credited_tuition_units' => $creditedTuitionUnits,
+                    'load_hours' => $loadHours,
+                    'added_by' => $addedBy,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (!$dryRun) {
+            $slots = (int) $group['slots'];
+            if ($slots > 0) {
+                Course::query()->where('id', $courseId)->update(['slots' => $slots]);
+            }
+
+            DB::table('subjects')->insert($rowsToInsert);
+
+            AuditTrailRecorder::record('SECTION_OFFERING_CREATED', [[
+                'type' => 'SectionOfferingBatch',
+                'id' => null,
+                'label' => $sectionLabel,
+                'changes' => [
+                    ['field' => 'course_id', 'old' => null, 'new' => $courseId],
+                    ['field' => 'school_year', 'old' => null, 'new' => $schoolYear],
+                    ['field' => 'semester', 'old' => null, 'new' => $semester],
+                    ['field' => 'year_level', 'old' => null, 'new' => $yearLevel],
+                    ['field' => 'section', 'old' => null, 'new' => $sectionLabel],
+                    ['field' => 'subjects', 'old' => null, 'new' => count($rowsToInsert)],
+                ],
+            ]], [
+                'source_action' => 'Section offering imported via Data Imports',
+            ]);
+        }
+
+        $warnings = [];
+        if (!empty($unmatchedCodes)) {
+            $warnings[] = $group['course_code'] . ' ' . $sectionLabel . ': subject code(s) not in curriculum, skipped: ' . implode(', ', $unmatchedCodes) . '.';
+        }
+
+        return [
+            'ok' => true,
+            'label' => ($dryRun ? 'Would create: ' : '') . $group['course_code'] . ' - ' . $sectionLabel . ' (' . count($rowsToInsert) . ' subject(s))',
+            'warnings' => $warnings,
+        ];
+    }
+
+    public function subjectFileImportTemplate()
+    {
+        $csv = "Code,Title,Lec,Lab,Hours,Course Type,Core,Applied,Specialized\n"
+            . "CP 126,Capstone Project,2,1,3,Major,1,0,0\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="subject-file-import-template.csv"',
+        ]);
+    }
+
+    public function importSubjectFile(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json(['message' => 'Unable to read the uploaded file.'], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json(['message' => 'The uploaded file is empty.'], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['code', 'title', 'hours', 'course type'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $hasLecColumn = $columnIndex->has('lec');
+        $hasLabColumn = $columnIndex->has('lab');
+        $hasCoreColumn = $columnIndex->has('core');
+        $hasAppliedColumn = $columnIndex->has('applied');
+        $hasSpecializedColumn = $columnIndex->has('specialized');
+
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+        $rowNumber = 1;
+
+        $courseTypeMap = [
+            'major' => 'Major',
+            'professional' => 'Major',
+            'minor' => 'Minor',
+            'gen education' => 'Minor',
+            'general education' => 'Minor',
+            'ge' => 'GE',
+            'elective' => 'Elective',
+        ];
+
+        DB::transaction(function () use (
+            $handle, $columnIndex, $hasLecColumn, $hasLabColumn, $hasCoreColumn, $hasAppliedColumn, $hasSpecializedColumn,
+            $courseTypeMap, $dryRun,
+            &$created, &$updated, &$skipped, &$errors, &$rowNumber
+        ) {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
+
+                if (count(array_filter($row, function ($value) {
+                    return trim((string) $value) !== '';
+                })) === 0) {
+                    continue;
+                }
+
+                $code = strtoupper(trim((string) ($row[$columnIndex['code']] ?? '')));
+                $title = trim((string) ($row[$columnIndex['title']] ?? ''));
+                $hours = trim((string) ($row[$columnIndex['hours']] ?? ''));
+                $courseTypeInput = strtolower(trim((string) ($row[$columnIndex['course type']] ?? '')));
+
+                if ($code === '' || $title === '' || $hours === '' || !is_numeric($hours) || (float) $hours < 0.5) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': missing/invalid Code, Title, or Hours (must be at least 0.5).';
+                    continue;
+                }
+
+                $courseType = $courseTypeMap[$courseTypeInput] ?? null;
+                if (!$courseType) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': Course Type "' . $courseTypeInput . '" is not recognized (use Professional/Major, Gen Education/Minor, GE, or Elective).';
+                    continue;
+                }
+
+                $lec = $hasLecColumn ? max(0, (int) trim((string) ($row[$columnIndex['lec']] ?? '0'))) : 0;
+                $lab = $hasLabColumn ? max(0, (int) trim((string) ($row[$columnIndex['lab']] ?? '0'))) : 0;
+                $core = $hasCoreColumn ? $this->importCsvBoolean($row[$columnIndex['core']] ?? '') : false;
+                $applied = $hasAppliedColumn ? $this->importCsvBoolean($row[$columnIndex['applied']] ?? '') : false;
+                $specialized = $hasSpecializedColumn ? $this->importCsvBoolean($row[$columnIndex['specialized']] ?? '') : false;
+
+                $existing = Subject::query()
+                    ->where('code', $code)
+                    ->where('is_subject_file_record', true)
+                    ->first();
+
+                $roomRequirementSubject = (object) [
+                    'code' => $code,
+                    'name' => $title,
+                    'course_type' => $courseType,
+                    'required_lecture_room_type' => null,
+                    'required_laboratory_room_type' => null,
+                ];
+
+                $subjectPayload = [
+                    'code' => $code,
+                    'name' => $title,
+                    'units' => (float) ($lec + $lab),
+                    'hours' => (float) $hours,
+                    'course_type' => $courseType,
+                    'lec' => $lec,
+                    'lab' => $lab,
+                    'is_subject_file_record' => true,
+                    'is_core' => $core,
+                    'is_applied' => $applied,
+                    'is_specialized' => $specialized,
+                ];
+
+                if (Schema::hasColumn('subjects', 'required_lecture_room_type')) {
+                    $subjectPayload['required_lecture_room_type'] = $this->resolveSubjectRequiredRoomType($roomRequirementSubject, 'Lecture');
+                }
+                if (Schema::hasColumn('subjects', 'required_laboratory_room_type')) {
+                    $subjectPayload['required_laboratory_room_type'] = $lab > 0
+                        ? $this->resolveSubjectRequiredRoomType($roomRequirementSubject, 'Laboratory')
+                        : null;
+                }
+                if (Schema::hasColumn('subjects', 'room_requirement_status') && !$existing) {
+                    $subjectPayload['room_requirement_status'] = 'Pending';
+                }
+
+                if (!$dryRun) {
+                    if ($existing) {
+                        $existing->update($subjectPayload);
+                    } else {
+                        Subject::create($subjectPayload);
+                    }
+                }
+
+                if ($existing) {
+                    $updated++;
+                } else {
+                    $created++;
+                }
+            }
+        });
+
+        fclose($handle);
+
+        $totalHandled = $created + $updated;
+        $verb = $dryRun ? 'File checked - would create' : 'Created';
+        $updateVerb = $dryRun ? 'would update' : 'updated';
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'message' => $verb . ' ' . $created . ' and ' . $updateVerb . ' ' . $updated . ' catalog subject(s)' . ($skipped > 0 ? ($dryRun ? ', would skip ' : ', skipped ') . $skipped . '.' : '.'),
+            'summary' => ['assigned' => $totalHandled, 'pending' => $skipped, 'conflicts' => 0],
+            'errors' => array_slice($errors, 0, 20),
+        ]);
+    }
+
+    public function curriculumSubjectsImportTemplate()
+    {
+        $csv = "Course Code,Curriculum Year Code,Year Level,Semester,Subject Code,Credited Units\n"
+            . "BSCS,2025-2026,1,First,GE 006,3\n"
+            . "BSCS,2025-2026,1,First,GE 003,3\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="curriculum-subjects-import-template.csv"',
+        ]);
+    }
+
+    public function importCurriculumSubjects(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json(['message' => 'Unable to read the uploaded file.'], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json(['message' => 'The uploaded file is empty.'], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['course code', 'year level', 'semester', 'subject code'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $hasCurriculumYearColumn = $columnIndex->has('curriculum year code');
+        $hasCreditedUnitsColumn = $columnIndex->has('credited units');
+
+        $linked = 0;
+        $skipped = 0;
+        $errors = [];
+        $rowNumber = 1;
+
+        DB::transaction(function () use (
+            $handle, $columnIndex, $hasCurriculumYearColumn, $hasCreditedUnitsColumn, $dryRun,
+            &$linked, &$skipped, &$errors, &$rowNumber
+        ) {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
+
+                if (count(array_filter($row, function ($value) {
+                    return trim((string) $value) !== '';
+                })) === 0) {
+                    continue;
+                }
+
+                $courseCode = trim((string) ($row[$columnIndex['course code']] ?? ''));
+                $curriculumYearCode = $hasCurriculumYearColumn ? trim((string) ($row[$columnIndex['curriculum year code']] ?? '')) : '';
+                $yearLevelInput = trim((string) ($row[$columnIndex['year level']] ?? ''));
+                $semesterInput = trim((string) ($row[$columnIndex['semester']] ?? ''));
+                $subjectCode = strtoupper(trim((string) ($row[$columnIndex['subject code']] ?? '')));
+                $creditedUnitsInput = $hasCreditedUnitsColumn ? trim((string) ($row[$columnIndex['credited units']] ?? '')) : '';
+
+                if ($courseCode === '' || $yearLevelInput === '' || $semesterInput === '' || $subjectCode === '') {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': missing required field(s).';
+                    continue;
+                }
+
+                $course = Course::query()->where('code', $courseCode)->first();
+                if (!$course) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': Course "' . $courseCode . '" was not found.';
+                    continue;
+                }
+
+                $curriculumQuery = CourseCurriculum::query()->where('course_id', (int) $course->id);
+                if ($curriculumYearCode !== '') {
+                    $curriculumQuery->where('curriculum_year_code', $curriculumYearCode);
+                } else {
+                    $curriculumQuery->orderByDesc('id');
+                }
+                $curriculum = $curriculumQuery->first();
+
+                if (!$curriculum) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': no curriculum found for ' . $courseCode . ($curriculumYearCode !== '' ? ' (' . $curriculumYearCode . ')' : '') . '. Create the curriculum year in Curriculum File first.';
+                    continue;
+                }
+
+                $yearLevel = $this->normalizeSectionOfferingYearLevel($yearLevelInput);
+                $yearLevelNumber = $this->sectionOfferingYearLevelWeight($yearLevel);
+                $yearBlockId = $yearLevel !== '' ? $this->resolveSectionOfferingYearBlockId($yearLevelNumber) : null;
+
+                if (!$yearBlockId) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': invalid Year Level "' . $yearLevelInput . '".';
+                    continue;
+                }
+
+                $semesterCanonical = $this->normalizeSlotMonitoringSemester($semesterInput);
+                $semesterId = $semesterCanonical !== '' ? $this->resolveSingleSemesterId($semesterCanonical) : null;
+
+                if (!$semesterId) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': invalid Semester "' . $semesterInput . '".';
+                    continue;
+                }
+
+                $subject = Subject::query()
+                    ->where('code', $subjectCode)
+                    ->where('is_subject_file_record', true)
+                    ->first();
+
+                if (!$subject) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': catalog subject "' . $subjectCode . '" was not found. Import it via Subject File first.';
+                    continue;
+                }
+
+                $creditedUnits = ($hasCreditedUnitsColumn && $creditedUnitsInput !== '' && is_numeric($creditedUnitsInput))
+                    ? (float) $creditedUnitsInput
+                    : (float) ($subject->hours ?: ($subject->lec + $subject->lab));
+
+                if (!$dryRun) {
+                    $nextDisplayOrder = (int) CourseCurriculumSubject::query()
+                        ->where('course_curriculum_id', (int) $curriculum->id)
+                        ->max('display_order');
+
+                    $existing = CourseCurriculumSubject::query()
+                        ->where('course_curriculum_id', (int) $curriculum->id)
+                        ->where('subject_id', (int) $subject->id)
+                        ->where('year_block_id', $yearBlockId)
+                        ->where('semester_id', $semesterId)
+                        ->first();
+
+                    if ($existing) {
+                        $existing->update(['credited_units' => $creditedUnits]);
+                    } else {
+                        CourseCurriculumSubject::create([
+                            'course_curriculum_id' => (int) $curriculum->id,
+                            'subject_id' => (int) $subject->id,
+                            'year_block_id' => $yearBlockId,
+                            'semester_id' => $semesterId,
+                            'credited_units' => $creditedUnits,
+                            'display_order' => $nextDisplayOrder + 1,
+                        ]);
+                    }
+                }
+
+                $linked++;
+            }
+        });
+
+        fclose($handle);
+
+        $verb = $dryRun ? 'File checked - would link' : 'Linked';
+        $skipVerb = $dryRun ? 'would skip' : 'skipped';
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'message' => $verb . ' ' . $linked . ' curriculum subject row(s)' . ($skipped > 0 ? ', ' . $skipVerb . ' ' . $skipped . '.' : '.'),
+            'summary' => ['assigned' => $linked, 'pending' => $skipped, 'conflicts' => 0],
+            'errors' => array_slice($errors, 0, 20),
+        ]);
+    }
+
+    private function resolveSingleSemesterId(string $semesterCanonical)
+    {
+        if (!Schema::hasTable('semesters')) {
+            return null;
+        }
+
+        $aliases = collect($this->slotMonitoringSemesterAliases($semesterCanonical))
+            ->push($this->sectionOfferingDatabaseSemesterLabel($semesterCanonical))
+            ->map(function ($value) {
+                return strtolower(trim((string) $value));
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        if (!count($aliases)) {
+            return null;
+        }
+
+        $id = Semester::query()
+            ->whereIn(DB::raw('LOWER(TRIM(name))'), $aliases)
+            ->orderBy('id')
+            ->value('id');
+
+        return $id ? (int) $id : null;
+    }
+
+    private function importCsvBoolean($value): bool
+    {
+        $normalized = strtolower(trim((string) $value));
+
+        return in_array($normalized, ['1', 'true', 'yes', 'y'], true);
+    }
+
     public function roomAssignmentReport(Request $request): JsonResponse
     {
         $this->ensureRoomAssignmentSchemaReady();
@@ -8995,6 +10235,167 @@ class RegistrarController extends Controller
             'ok' => true,
             'id' => $room->id,
             'row' => $this->mapRoomFileRow($room),
+        ]);
+    }
+
+    public function roomFileImportTemplate()
+    {
+        $csv = "Building,Hallway,Room Number,Floor,Capacity\n"
+            . "Main Building,West Wing,101,1,45\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="room-import-template.csv"',
+        ]);
+    }
+
+    public function importRoomFile(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $dryRun = $this->requestBoolean($request, 'dry_run');
+
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
+        if (!$handle) {
+            return response()->json([
+                'message' => 'Unable to read the uploaded file.',
+            ], 422);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'The uploaded file is empty.',
+            ], 422);
+        }
+
+        $columnIndex = collect($header)->map(function ($column) {
+            return strtolower(trim((string) $column));
+        })->flip();
+
+        $requiredColumns = ['building', 'hallway', 'room number', 'floor', 'capacity'];
+        $missingColumns = collect($requiredColumns)->filter(function ($column) use ($columnIndex) {
+            return !$columnIndex->has($column);
+        })->values();
+
+        if ($missingColumns->isNotEmpty()) {
+            fclose($handle);
+            return response()->json([
+                'message' => 'Missing required column(s): ' . $missingColumns->implode(', ') . '. Download the template and try again.',
+            ], 422);
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $errors = [];
+        $rowNumber = 1;
+
+        DB::beginTransaction();
+        try {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
+
+                if (count(array_filter($row, function ($value) {
+                    return trim((string) $value) !== '';
+                })) === 0) {
+                    continue;
+                }
+
+                $buildingName = $this->normalizeRoomBuildingName($row[$columnIndex['building']] ?? '');
+                $hallwayName = $this->normalizeRoomHallwayName($row[$columnIndex['hallway']] ?? '');
+                $roomNumber = (int) trim((string) ($row[$columnIndex['room number']] ?? ''));
+                $floorNumber = (int) trim((string) ($row[$columnIndex['floor']] ?? ''));
+                $capacity = (int) trim((string) ($row[$columnIndex['capacity']] ?? ''));
+
+                if ($buildingName === '' || $hallwayName === '' || $roomNumber < 1 || $floorNumber < 1 || $capacity < 1) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': missing or invalid Building, Hallway, Room Number, Floor, or Capacity.';
+                    continue;
+                }
+
+                if ($dryRun) {
+                    $building = RoomBuilding::query()->where('name', $buildingName)->first();
+                    $hallway = $building
+                        ? RoomHallway::query()->where('room_building_id', $building->id)->where('name', $hallwayName)->first()
+                        : null;
+
+                    $duplicate = $hallway
+                        ? Room::query()
+                            ->where('room_hallway_id', $hallway->id)
+                            ->where('floor_number', $floorNumber)
+                            ->where('room_number', $roomNumber)
+                            ->exists()
+                        : false;
+
+                    if ($duplicate) {
+                        $skipped++;
+                        $errors[] = 'Row ' . $rowNumber . ': Room ' . $roomNumber . ' already exists on floor ' . $floorNumber . ' in ' . $buildingName . ' / ' . $hallwayName . '.';
+                        continue;
+                    }
+
+                    $created++;
+                    continue;
+                }
+
+                $building = RoomBuilding::query()->firstOrCreate(['name' => $buildingName]);
+                $hallway = RoomHallway::query()->firstOrCreate([
+                    'room_building_id' => $building->id,
+                    'name' => $hallwayName,
+                ]);
+
+                $duplicate = Room::query()
+                    ->where('room_hallway_id', $hallway->id)
+                    ->where('floor_number', $floorNumber)
+                    ->where('room_number', $roomNumber)
+                    ->exists();
+
+                if ($duplicate) {
+                    $skipped++;
+                    $errors[] = 'Row ' . $rowNumber . ': Room ' . $roomNumber . ' already exists on floor ' . $floorNumber . ' in ' . $buildingName . ' / ' . $hallwayName . '.';
+                    continue;
+                }
+
+                $roomPayload = array_merge([
+                    'room_hallway_id' => $hallway->id,
+                    'room_number' => $roomNumber,
+                    'floor_number' => $floorNumber,
+                    'capacity' => $capacity,
+                    'updated_by_user_id' => auth()->id(),
+                ], $this->defaultExtendedRoomPayload($roomNumber));
+
+                Room::create($roomPayload);
+                $created++;
+            }
+
+            if ($dryRun) {
+                DB::rollBack();
+            } else {
+                DB::commit();
+            }
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+            fclose($handle);
+
+            return response()->json([
+                'message' => 'Import failed: ' . $exception->getMessage(),
+            ], 422);
+        }
+
+        fclose($handle);
+
+        $verb = $dryRun ? 'File checked - would import' : 'Imported';
+        $skipVerb = $dryRun ? 'would skip' : 'skipped';
+
+        return response()->json([
+            'ok' => true,
+            'dry_run' => $dryRun,
+            'created' => $created,
+            'skipped' => $skipped,
+            'errors' => array_slice($errors, 0, 20),
+            'message' => $verb . ' ' . $created . ' room(s)' . ($skipped > 0 ? ', ' . $skipVerb . ' ' . $skipped . '.' : '.'),
         ]);
     }
 
