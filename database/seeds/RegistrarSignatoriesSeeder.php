@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Seeds the TOR/COG signatories (University Registrar, Assistant University
- * Registrar, and the five program-group Academic Secretaries) plus a
- * course-scoped login account for each Academic Secretary so each one only
- * sees students in their assigned program(s).
+ * Registrar, and the five program-group Academic Secretaries) plus a login
+ * account for each. The two university-level registrars are left unscoped
+ * (full access to all courses/programs); each Academic Secretary is
+ * course-scoped so they only see students in their assigned program(s).
  */
 class RegistrarSignatoriesSeeder extends Seeder
 {
@@ -25,7 +26,25 @@ class RegistrarSignatoriesSeeder extends Seeder
         $this->upsertSigner('REGISTRAR', 'University Registrar', 10, 'MR. FEDERICO G. NUEVA', $now);
         $this->upsertSigner('ASSISTANT_REGISTRAR', 'Assistant University Registrar', 30, 'MS. JAY ANNE I. SANTOS', $now);
 
-        $academicSecretaries = [
+        $signatoryAccounts = [
+            // University-level registrars: no course_codes means unrestricted
+            // (full access to all courses/programs), same as the admin/registrar demo accounts.
+            [
+                'code' => 'REGISTRAR',
+                'name' => 'University Registrar',
+                'sort_order' => 10,
+                'signer' => 'MR. FEDERICO G. NUEVA',
+                'username' => 'fnueva',
+                'course_codes' => [],
+            ],
+            [
+                'code' => 'ASSISTANT_REGISTRAR',
+                'name' => 'Assistant University Registrar',
+                'sort_order' => 30,
+                'signer' => 'MS. JAY ANNE I. SANTOS',
+                'username' => 'jsantos',
+                'course_codes' => [],
+            ],
             [
                 'code' => 'ACAD_SEC_HEALTH_HOSP',
                 'name' => 'Academic Secretary - BSHM, BSN, BSMCS, BSHRM, AHRM, MAN',
@@ -70,14 +89,14 @@ class RegistrarSignatoriesSeeder extends Seeder
 
         $registrar = Schema::hasTable('registrars') ? DB::table('registrars')->where('code', 'REG-001')->first() : null;
 
-        foreach ($academicSecretaries as $row) {
+        foreach ($signatoryAccounts as $row) {
             $this->upsertSigner($row['code'], $row['name'], $row['sort_order'], $row['signer'], $now);
 
             if (!Schema::hasTable('users') || !Schema::hasTable('user_course_scopes')) {
                 continue;
             }
 
-            $user = DB::table('users')->updateOrInsert(
+            DB::table('users')->updateOrInsert(
                 ['username' => $row['username']],
                 [
                     'name' => $this->titleCaseName($row['signer']),

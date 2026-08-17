@@ -18,15 +18,17 @@
     border: 1px solid #bcdcc7;
     color: #143521;
     border-radius: 6px;
-    padding: 2px 8px;
+    padding: 2px 8px 2px 22px;
     font-size: .8rem;
 }
 .ua-course-scope-select + .select2-container .select2-selection__choice__remove {
     color: #2f7a4d;
-    margin-right: 6px;
+    border-right: 1px solid #bcdcc7;
+    padding: 0 5px;
 }
 .ua-course-scope-select + .select2-container .select2-selection__choice__remove:hover {
     color: #b3261e;
+    background: #d9ece0;
 }
 .ua-course-scope-select + .select2-container .select2-search__field {
     font-size: .85rem;
