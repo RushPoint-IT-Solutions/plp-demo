@@ -13,10 +13,14 @@
         .di-intro { color:#5a6b62; font-size:.88rem; margin:0 0 16px; max-width:760px; line-height:1.5; }
         .di-grid { display:grid; grid-template-columns:260px 1fr; gap:16px; align-items:start; }
         .di-type-list { background:#fff; border:1px solid #dfe8e2; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:4px; }
-        .di-type-item { display:flex; flex-direction:column; gap:2px; width:100%; text-align:left; border:0; background:transparent; border-radius:7px; padding:10px 12px; cursor:pointer; }
-        .di-type-item.is-active { background:#eef6f1; }
+        .di-type-row { display:flex; align-items:stretch; gap:2px; border-radius:7px; }
+        .di-type-row.is-active { background:#eef6f1; }
+        .di-type-item { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; text-align:left; border:0; background:transparent; border-radius:7px 0 0 7px; padding:10px 8px 10px 12px; cursor:pointer; }
         .di-type-item strong { color:#123822; font-size:.88rem; }
         .di-type-item span { color:#66756b; font-size:.76rem; }
+        .di-type-template-btn { flex-shrink:0; display:flex; align-items:center; justify-content:center; width:34px; border:0; background:transparent; border-radius:0 7px 7px 0; color:#66756b; cursor:pointer; text-decoration:none; }
+        .di-type-template-btn:hover { color:#006837; background:#e1f0e6; }
+        .di-type-template-btn svg { width:16px; height:16px; }
         .di-panel { background:#fff; border:1px solid #dfe8e2; border-radius:8px; padding:18px; }
         .di-panel h2 { margin:0 0 6px; color:#123822; font-size:1.05rem; font-weight:800; }
         .di-panel p.di-desc { margin:0 0 16px; color:#66756b; font-size:.84rem; line-height:1.5; }
@@ -25,6 +29,11 @@
         .di-select, .di-file-input { width:100%; min-height:38px; border:1px solid #cfd9d2; border-radius:7px; background:#fff; color:#143521; padding:8px 10px; }
         .di-note { display:block; margin:6px 0 14px; color:#66756b; font-size:.78rem; line-height:1.45; }
         .di-link { color:#006837; font-weight:700; text-decoration:underline; }
+        .di-file-row { display:flex; align-items:flex-end; gap:10px; }
+        .di-file-row .di-field { flex:1; }
+        .di-template-btn { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:38px; padding:8px 14px; border-radius:7px; border:1px solid #146c43; background:#eef6f1; color:#146c43; font-weight:800; font-size:.82rem; text-decoration:none; white-space:nowrap; }
+        .di-template-btn:hover { background:#dcefe3; }
+        .di-template-btn svg { width:15px; height:15px; }
         .di-actions { display:flex; justify-content:flex-end; }
         .di-btn { border:0; border-radius:7px; background:#146c43; color:#fff; cursor:pointer; font-weight:800; min-height:38px; padding:8px 18px; }
         .di-btn:disabled { cursor:not-allowed; opacity:.5; }
@@ -85,11 +94,17 @@
                     </div>
                 </div>
 
-                <div class="di-field">
-                    <label for="diFile">CSV File</label>
-                    <input type="file" class="di-file-input" id="diFile" accept=".csv,text/csv" required>
-                    <span class="di-note" id="diNote"></span>
+                <div class="di-file-row">
+                    <div class="di-field">
+                        <label for="diFile">CSV File</label>
+                        <input type="file" class="di-file-input" id="diFile" accept=".csv,text/csv" required>
+                    </div>
+                    <a href="#" class="di-template-btn" id="diTemplateBtn" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download Template
+                    </a>
                 </div>
+                <span class="di-note" id="diNote"></span>
 
                 <div class="di-actions">
                     <span class="di-validated-badge" id="diValidatedBadge">&#10003; File checked, ready to import</span>
@@ -238,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var confirmBtn = document.getElementById('diConfirmBtn');
     var validatedBadge = document.getElementById('diValidatedBadge');
     var fileInput = document.getElementById('diFile');
+    var templateBtn = document.getElementById('diTemplateBtn');
 
     var activeType = IMPORT_TYPES[0];
     var isValidated = false;
@@ -249,11 +265,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderTypeList() {
-        typeList.innerHTML = IMPORT_TYPES.map(function (type, index) {
-            return '<button type="button" class="di-type-item' + (type.key === activeType.key ? ' is-active' : '') + '" data-di-type="' + type.key + '">'
-                + '<strong>' + esc(type.label) + '</strong>'
-                + '<span>' + esc(type.hint) + '</span>'
-                + '</button>';
+        typeList.innerHTML = IMPORT_TYPES.map(function (type) {
+            return '<div class="di-type-row' + (type.key === activeType.key ? ' is-active' : '') + '">'
+                + '<button type="button" class="di-type-item" data-di-type="' + type.key + '">'
+                    + '<strong>' + esc(type.label) + '</strong>'
+                    + '<span>' + esc(type.hint) + '</span>'
+                + '</button>'
+                + '<a href="' + type.templateUrl + '" class="di-type-template-btn" title="Download ' + esc(type.label) + ' template" download>'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+                + '</a>'
+                + '</div>';
         }).join('');
     }
 
@@ -283,7 +304,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         panelTitle.textContent = type.title;
         panelDesc.textContent = type.desc;
-        noteEl.innerHTML = type.note + ' <a href="' + type.templateUrl + '" class="di-link">Download template</a>.';
+        noteEl.textContent = type.note;
+        templateBtn.setAttribute('href', type.templateUrl);
         termFields.style.display = type.needsTerm ? 'grid' : 'none';
         document.getElementById('diSchoolYear').required = !!type.needsTerm;
         document.getElementById('diSemester').required = !!type.needsTerm;
