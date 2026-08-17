@@ -97,4 +97,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(RoomCourseAssignment::class, 'assigned_by_user_id');
     }
+
+    public function courseScopes()
+    {
+        return $this->hasMany(UserCourseScope::class);
+    }
 }

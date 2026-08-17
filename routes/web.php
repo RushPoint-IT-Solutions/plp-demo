@@ -321,7 +321,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         });
 
         // Student Management
-        Route::prefix('student-management')->name('student-mgmt.')->group(function () {
+        Route::prefix('student-management')->name('student-mgmt.')->middleware('course.scope.student')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
             Route::get('/student-records', 'Registrar\RegistrarController@studentRecordList')->name('student-records');
             Route::get('/student-records/{student}', 'Registrar\RegistrarController@studentRecordProfile')->name('student-records.profile');

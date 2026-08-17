@@ -17750,6 +17750,11 @@ class RegistrarController extends Controller
             ->with($studentRelations)
             ->orderBy('name');
 
+        $scopedCourseIds = \App\Support\CourseScopeGate::allowedCourseIds($request->user());
+        if ($scopedCourseIds !== null) {
+            $query->whereIn('course_id', $scopedCourseIds);
+        }
+
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('student_no', 'like', '%' . $search . '%')
@@ -17824,7 +17829,11 @@ class RegistrarController extends Controller
             $s->hd_record = $hdRecordsByStudent->get($s->id);
         });
 
-        $courses = Course::orderBy('code')->get(['id', 'code', 'name']);
+        $coursesQuery = Course::orderBy('code');
+        if ($scopedCourseIds !== null) {
+            $coursesQuery->whereIn('id', $scopedCourseIds);
+        }
+        $courses = $coursesQuery->get(['id', 'code', 'name']);
 
         // Pull distinct term ids used by students once (avoid repeated subqueries)
         $usedTermIds  = DB::table('students')->pluck('academic_term_id')->filter()->unique();
@@ -17854,13 +17863,25 @@ class RegistrarController extends Controller
             ->filter()
             ->unique();
 
-        $totalCount     = Student::count();
+        $totalCount     = Student::when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+            $q->whereIn('course_id', $scopedCourseIds);
+        })->count();
         $activeCount    = Student::where(function ($q) {
             $q->whereNull('is_withdrawn')->orWhere('is_withdrawn', false);
+        })->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+            $q->whereIn('course_id', $scopedCourseIds);
         })->count();
-        $withdrawnCount = Student::where('is_withdrawn', true)->count();
+        $withdrawnCount = Student::where('is_withdrawn', true)
+            ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+                $q->whereIn('course_id', $scopedCourseIds);
+            })->count();
         $graduateCount  = Schema::hasTable('graduate_taggings')
-            ? GraduateTagging::where('is_graduate', true)->count()
+            ? GraduateTagging::where('is_graduate', true)
+                ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+                    $q->whereHas('student', function ($sq) use ($scopedCourseIds) {
+                        $sq->whereIn('course_id', $scopedCourseIds);
+                    });
+                })->count()
             : 0;
 
         return view('registrar.registrar-menu.student-management.student-records', compact(
@@ -21879,8 +21900,13 @@ JSON
      */
     public function formsCertificateOfRegistration(Request $request)
     {
+        $scopedCourseIds = \App\Support\CourseScopeGate::allowedCourseIds($request->user());
+
         $students = Student::query()
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
+            ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+                $q->whereIn('course_id', $scopedCourseIds);
+            })
             ->orderBy('name')
             ->limit(500)
             ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
@@ -21900,6 +21926,10 @@ JSON
                 'yearBlock:id,label',
                 'academicTerm:id,school_year,term',
             ])->find($selectedStudentId);
+
+            if ($student && !\App\Support\CourseScopeGate::canAccessStudent($request->user(), $student)) {
+                abort(403, "You do not have access to this student's records.");
+            }
         }
 
         $subjects = collect();
@@ -21928,8 +21958,13 @@ JSON
         $search = trim((string) $request->query('q', ''));
         $limit = max(1, min((int) $request->query('limit', 25), 50));
 
+        $scopedCourseIds = \App\Support\CourseScopeGate::allowedCourseIds($request->user());
+
         $students = Student::query()
             ->select(['id', 'student_no', 'name'])
+            ->when($scopedCourseIds !== null, function ($query) use ($scopedCourseIds) {
+                $query->whereIn('course_id', $scopedCourseIds);
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $terms = array_values(array_filter(
                     preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [],
