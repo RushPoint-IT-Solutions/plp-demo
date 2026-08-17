@@ -6,7 +6,7 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 <style>
-.csp-section-select2 + .select2-container .select2-selection--single {
+.csp-search-select + .select2-container .select2-selection--single {
     min-height: 38px;
     border: 1px solid #cfd9d2;
     border-radius: 7px;
@@ -14,13 +14,13 @@
     align-items: center;
     padding: 0 10px;
 }
-.csp-section-select2 + .select2-container .select2-selection__rendered {
+.csp-search-select + .select2-container .select2-selection__rendered {
     padding: 0;
     line-height: 36px;
     color: #143521;
     font-size: .85rem;
 }
-.csp-section-select2 + .select2-container .select2-selection__arrow {
+.csp-search-select + .select2-container .select2-selection__arrow {
     height: 36px;
 }
 .csp-page .select2-dropdown {
@@ -119,7 +119,7 @@
             </div>
             <div class="csp-field">
                 <label for="cspCourse">Program</label>
-                <select class="csp-select" id="cspCourse" name="course_id">
+                <select class="csp-select csp-search-select" id="cspCourse" name="course_id" data-placeholder="All Programs">
                     <option value="0">All Programs</option>
                     @foreach($courseOptions as $option)
                         <option value="{{ $option['id'] }}" {{ $selectedCourseId === (int) $option['id'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
@@ -128,7 +128,7 @@
             </div>
             <div class="csp-field">
                 <label for="cspSection">Section</label>
-                <select class="csp-select csp-section-select2" id="cspSection" name="section" data-placeholder="All Sections">
+                <select class="csp-select csp-search-select" id="cspSection" name="section" data-placeholder="All Sections">
                     <option value="">All Sections</option>
                     @foreach($sectionOptions as $option)
                         <option value="{{ $option['value'] }}" {{ (string) ($section ?? '') === (string) $option['value'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
@@ -224,11 +224,13 @@
     }
 
     if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
-        window.jQuery('.csp-section-select2').select2({
-            width: '100%',
-            placeholder: 'All Sections',
-            allowClear: false,
-            dropdownAutoWidth: false
+        document.querySelectorAll('.csp-search-select').forEach(function (el) {
+            window.jQuery(el).select2({
+                width: '100%',
+                placeholder: el.getAttribute('data-placeholder') || '',
+                allowClear: false,
+                dropdownAutoWidth: false
+            });
         });
     }
 
