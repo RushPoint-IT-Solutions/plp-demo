@@ -1587,6 +1587,7 @@ class AdminToolsController extends Controller
     public function userAccounts()
     {
         return view('registrar.admin-tools.access-management.user-accounts', [
+            'courses' => Course::query()->orderBy('code')->get(['id', 'code', 'name']),
             'userAccountDataUrl' => route('registrar.admin-tools.access-management.user-accounts.data'),
             'userAccountStoreUrl' => route('registrar.admin-tools.access-management.user-accounts.store'),
             'userAccountUpdateTemplate' => route('registrar.admin-tools.access-management.user-accounts.update', ['user' => '__ID__']),
@@ -1692,8 +1693,21 @@ class AdminToolsController extends Controller
             ->orderBy('users.username')
             ->paginate($perPage, ['*'], 'page', $page);
 
+        $courseScopeByUserId = collect();
+        if (Schema::hasTable('user_course_scopes')) {
+            $courseScopeByUserId = DB::table('user_course_scopes')
+                ->whereIn('user_id', collect($paginator->items())->pluck('id'))
+                ->get(['user_id', 'course_id'])
+                ->groupBy('user_id')
+                ->map(function ($rows) {
+                    return $rows->pluck('course_id')->map(function ($id) {
+                        return (int) $id;
+                    })->values()->all();
+                });
+        }
+
         $rows = collect($paginator->items())
-            ->map(function ($row) use ($hasNormalizedTables) {
+            ->map(function ($row) use ($hasNormalizedTables, $courseScopeByUserId) {
                 $fullName = trim((string) ($row->name ?: $row->username));
                 list($lastName, $firstName) = $this->splitUserName($fullName);
 
@@ -1734,6 +1748,7 @@ class AdminToolsController extends Controller
                     'isSample' => $hasNormalizedTables ? $this->parseBooleanInput($row->profile_is_sample) : false,
                     'roleId' => property_exists($row, 'access_control_role_id') && $row->access_control_role_id ? (int) $row->access_control_role_id : null,
                     'roleName' => property_exists($row, 'role_name') ? (string) $row->role_name : '',
+                    'courseScopeIds' => $courseScopeByUserId->get($row->id, []),
                 ];
             })
             ->values()
@@ -1873,6 +1888,8 @@ class AdminToolsController extends Controller
             'inactive' => 'nullable',
             'user_type' => 'nullable|string|max:50',
             'access_control_role_id' => 'nullable|integer|exists:access_control_roles,id',
+            'course_scope_ids' => 'nullable|array',
+            'course_scope_ids.*' => 'integer|exists:courses,id',
         ]);
 
         $user->username = (string) $validated['user_id'];
@@ -1911,6 +1928,10 @@ class AdminToolsController extends Controller
 
         $this->syncUserAccountProfile($user, $inactive, $typeCode);
 
+        if ($request->has('course_scope_ids')) {
+            $this->syncUserCourseScope($user, $validated['course_scope_ids'] ?? []);
+        }
+
         list($lastName, $firstName) = $this->splitUserName((string) ($user->name ?: $user->username));
         $typeName = ucfirst($typeCode);
 
@@ -1937,6 +1958,7 @@ class AdminToolsController extends Controller
                 'inactive' => $inactive,
                 'roleId' => $user->access_control_role_id ? (int) $user->access_control_role_id : null,
                 'roleName' => $user->access_control_role_id ? (string) optional($user->role)->name : '',
+                'courseScopeIds' => $this->fetchUserCourseScopeIds($user),
             ],
         ]);
     }
@@ -1964,6 +1986,8 @@ class AdminToolsController extends Controller
             'password' => 'required|string|min:6|max:190',
             'access_control_role_id' => 'nullable|integer|exists:access_control_roles,id',
             'inactive' => 'nullable',
+            'course_scope_ids' => 'nullable|array',
+            'course_scope_ids.*' => 'integer|exists:courses,id',
         ]);
 
         $user = new User();
@@ -1988,6 +2012,7 @@ class AdminToolsController extends Controller
         }
 
         $this->syncUserAccountProfile($user, $inactive, 'registrar');
+        $this->syncUserCourseScope($user, $validated['course_scope_ids'] ?? []);
 
         list($lastName, $firstName) = $this->splitUserName((string) ($user->name ?: $user->username));
 
@@ -2005,6 +2030,7 @@ class AdminToolsController extends Controller
                 'inactive' => $inactive,
                 'roleId' => $user->access_control_role_id ? (int) $user->access_control_role_id : null,
                 'roleName' => $user->access_control_role_id ? (string) optional($user->role)->name : '',
+                'courseScopeIds' => $this->fetchUserCourseScopeIds($user),
             ],
         ]);
     }
@@ -2716,6 +2742,51 @@ class AdminToolsController extends Controller
             'modules' => $modulePayload,
             'source' => $storedRows->isEmpty() ? 'role-default' : 'explicit',
         ];
+    }
+
+    private function syncUserCourseScope(User $user, array $courseIds): void
+    {
+        if (!Schema::hasTable('user_course_scopes')) {
+            return;
+        }
+
+        $courseIds = collect($courseIds)->map(function ($id) {
+            return (int) $id;
+        })->unique()->values();
+
+        DB::table('user_course_scopes')->where('user_id', $user->id)->delete();
+
+        if ($courseIds->isEmpty()) {
+            return;
+        }
+
+        $now = now();
+        $rows = $courseIds->map(function ($courseId) use ($user, $now) {
+            return [
+                'user_id' => $user->id,
+                'course_id' => $courseId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        })->all();
+
+        DB::table('user_course_scopes')->insert($rows);
+    }
+
+    private function fetchUserCourseScopeIds(User $user): array
+    {
+        if (!Schema::hasTable('user_course_scopes')) {
+            return [];
+        }
+
+        return DB::table('user_course_scopes')
+            ->where('user_id', $user->id)
+            ->pluck('course_id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
     }
 
     private function syncUserAccountProfile(User $user, bool $inactive, string $typeCode): void

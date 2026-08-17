@@ -158,6 +158,14 @@
                     <option value="">- No role assigned -</option>
                 </select>
                 <div class="ua-form-note">Determines which modules and actions this account can access. Per-account access overrides (Edit Access) still take priority over the role.</div>
+
+                <label class="ua-form-label" for="uaFormCourseScope">Course Scope</label>
+                <select id="uaFormCourseScope" class="app-filter-select" multiple size="6">
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}">{{ $course->code }} &mdash; {{ $course->name }}</option>
+                    @endforeach
+                </select>
+                <div class="ua-form-note">Ctrl/Cmd-click to select multiple courses. Restricts this account to only students in the selected course(s) in Student Records, Academic Record, and TOR/Diploma printing. Leave empty for unrestricted (all courses) access.</div>
             </div>
 
             <div class="ua-bottom-actions">

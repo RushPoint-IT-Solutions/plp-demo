@@ -265,6 +265,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     formPassword: document.getElementById('uaFormPassword'),
     formUserType: document.getElementById('uaFormUserType'),
     formRole: document.getElementById('uaFormRole'),
+    formCourseScope: document.getElementById('uaFormCourseScope'),
     inactive: document.getElementById('uaInactive'),
     formModeBadge: document.getElementById('uaFormModeBadge'),
     newAccountBtn: document.getElementById('uaNewAccountBtn'),
@@ -645,6 +646,11 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     if (els.formRole) {
       els.formRole.value = '';
     }
+    if (els.formCourseScope) {
+      Array.prototype.forEach.call(els.formCourseScope.options, function (option) {
+        option.selected = false;
+      });
+    }
     if (els.inactive) {
       els.inactive.checked = false;
     }
@@ -682,6 +688,12 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     }
     if (els.formRole) {
       els.formRole.value = user.roleId ? String(user.roleId) : '';
+    }
+    if (els.formCourseScope) {
+      var scopedIds = (user.courseScopeIds || []).map(String);
+      Array.prototype.forEach.call(els.formCourseScope.options, function (option) {
+        option.selected = scopedIds.indexOf(option.value) !== -1;
+      });
     }
     if (els.inactive) {
       els.inactive.checked = !!user.inactive;
@@ -2215,7 +2227,10 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               email: (els.formEmail ? els.formEmail.value : '').trim(),
               password: (els.formPassword ? els.formPassword.value : '').trim(),
               inactive: !!(els.inactive && els.inactive.checked),
-              access_control_role_id: (els.formRole ? els.formRole.value : '').trim()
+              access_control_role_id: (els.formRole ? els.formRole.value : '').trim(),
+              course_scope_ids: els.formCourseScope ? Array.prototype.map.call(els.formCourseScope.selectedOptions || [], function (option) {
+                return parseInt(option.value, 10);
+              }) : []
             };
             if (!isCreating) {
               payload.user_type = (els.formUserType ? els.formUserType.value : '').trim();
