@@ -4,6 +4,39 @@
 @section('page-title', 'USER ACCOUNTS')
 @section('body-class', 'page-user-accounts')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<style>
+.ua-course-scope-select + .select2-container .select2-selection--multiple {
+    min-height: 42px;
+    border: 1px solid #cfd9d2;
+    border-radius: 8px;
+    padding: 4px 6px;
+}
+.ua-course-scope-select + .select2-container .select2-selection__choice {
+    background: #eaf4ee;
+    border: 1px solid #bcdcc7;
+    color: #143521;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: .8rem;
+}
+.ua-course-scope-select + .select2-container .select2-selection__choice__remove {
+    color: #2f7a4d;
+    margin-right: 6px;
+}
+.ua-course-scope-select + .select2-container .select2-selection__choice__remove:hover {
+    color: #b3261e;
+}
+.ua-course-scope-select + .select2-container .select2-search__field {
+    font-size: .85rem;
+}
+.select2-dropdown {
+    z-index: 1300;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="pf-page">
     <div
@@ -160,12 +193,12 @@
                 <div class="ua-form-note">Determines which modules and actions this account can access. Per-account access overrides (Edit Access) still take priority over the role.</div>
 
                 <label class="ua-form-label" for="uaFormCourseScope">Course Scope</label>
-                <select id="uaFormCourseScope" class="app-filter-select" multiple size="6">
+                <select id="uaFormCourseScope" class="app-filter-select ua-course-scope-select" multiple data-placeholder="All courses (unrestricted)">
                     @foreach($courses as $course)
                         <option value="{{ $course->id }}">{{ $course->code }} &mdash; {{ $course->name }}</option>
                     @endforeach
                 </select>
-                <div class="ua-form-note">Ctrl/Cmd-click to select multiple courses. Restricts this account to only students in the selected course(s) in Student Records, Academic Record, and TOR/Diploma printing. Leave empty for unrestricted (all courses) access.</div>
+                <div class="ua-form-note">Type to search and click to tag courses. Restricts this account to only students in the tagged course(s) in Student Records, Academic Record, and TOR/Diploma printing. Leave empty for unrestricted (all courses) access.</div>
             </div>
 
             <div class="ua-bottom-actions">
@@ -286,6 +319,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ mix('js/registrar-user-accounts.js') }}"></script>
 @endpush
 

@@ -303,6 +303,45 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     roleDeleteCancelBtn: document.getElementById('uaRoleDeleteCancelBtn'),
     roleDeleteConfirmBtn: document.getElementById('uaRoleDeleteConfirmBtn')
   };
+  function uaHasSelect2Lib() {
+    return !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
+  }
+  function uaInitCourseScopeSelect2() {
+    if (!els.formCourseScope || !uaHasSelect2Lib()) {
+      return;
+    }
+    var $select = window.jQuery(els.formCourseScope);
+    if ($select.hasClass('select2-hidden-accessible')) {
+      return;
+    }
+    $select.select2({
+      width: '100%',
+      placeholder: els.formCourseScope.getAttribute('data-placeholder') || 'All courses (unrestricted)',
+      allowClear: true,
+      closeOnSelect: false,
+      dropdownAutoWidth: false
+    });
+  }
+  function uaSetCourseScopeSelection(courseIds) {
+    if (!els.formCourseScope) {
+      return;
+    }
+    var idStrings = (courseIds || []).map(String);
+    Array.prototype.forEach.call(els.formCourseScope.options, function (option) {
+      option.selected = idStrings.indexOf(option.value) !== -1;
+    });
+    if (uaHasSelect2Lib()) {
+      window.jQuery(els.formCourseScope).trigger('change');
+    }
+  }
+  function uaGetCourseScopeSelection() {
+    if (!els.formCourseScope) {
+      return [];
+    }
+    return Array.prototype.map.call(els.formCourseScope.selectedOptions || [], function (option) {
+      return parseInt(option.value, 10);
+    });
+  }
   function uaNormalize(value) {
     return String(value || '').trim().toLowerCase();
   }
@@ -646,11 +685,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     if (els.formRole) {
       els.formRole.value = '';
     }
-    if (els.formCourseScope) {
-      Array.prototype.forEach.call(els.formCourseScope.options, function (option) {
-        option.selected = false;
-      });
-    }
+    uaSetCourseScopeSelection([]);
     if (els.inactive) {
       els.inactive.checked = false;
     }
@@ -689,12 +724,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
     if (els.formRole) {
       els.formRole.value = user.roleId ? String(user.roleId) : '';
     }
-    if (els.formCourseScope) {
-      var scopedIds = (user.courseScopeIds || []).map(String);
-      Array.prototype.forEach.call(els.formCourseScope.options, function (option) {
-        option.selected = scopedIds.indexOf(option.value) !== -1;
-      });
-    }
+    uaSetCourseScopeSelection(user.courseScopeIds || []);
     if (els.inactive) {
       els.inactive.checked = !!user.inactive;
     }
@@ -2228,9 +2258,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
               password: (els.formPassword ? els.formPassword.value : '').trim(),
               inactive: !!(els.inactive && els.inactive.checked),
               access_control_role_id: (els.formRole ? els.formRole.value : '').trim(),
-              course_scope_ids: els.formCourseScope ? Array.prototype.map.call(els.formCourseScope.selectedOptions || [], function (option) {
-                return parseInt(option.value, 10);
-              }) : []
+              course_scope_ids: uaGetCourseScopeSelection()
             };
             if (!isCreating) {
               payload.user_type = (els.formUserType ? els.formUserType.value : '').trim();
@@ -2659,6 +2687,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
   uaPrimeAccessControlMetadata();
   uaWireEvents();
   uaPreventAutofillArtifacts();
+  uaInitCourseScopeSelect2();
   uaSetSelectedSummary(null);
   uaSetFormMode('create');
   uaFetchRows(1);
