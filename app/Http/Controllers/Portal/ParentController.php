@@ -501,7 +501,7 @@ class ParentController extends Controller
                 })
                 ->visibleToAudience($audienceCode)
                 ->orderBy('event_date')
-                ->orderBy('time_from')
+                ->orderBy('date_from')
                 ->get()
                 ->map(function ($event) {
                     return [

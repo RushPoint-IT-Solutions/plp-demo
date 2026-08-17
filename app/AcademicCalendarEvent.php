@@ -12,8 +12,8 @@ class AcademicCalendarEvent extends Model
 
     protected $fillable = [
         'event_date',
-        'time_from',
-        'time_to',
+        'date_from',
+        'date_to',
         'title',
         'venue',
         'in_charge',
@@ -25,6 +25,8 @@ class AcademicCalendarEvent extends Model
 
     protected $casts = [
         'event_date' => 'date',
+        'date_from' => 'date',
+        'date_to' => 'date',
         'post_until' => 'date',
         'is_active' => 'boolean',
     ];

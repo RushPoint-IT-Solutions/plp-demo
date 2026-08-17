@@ -245,7 +245,7 @@ class StudentController extends Controller
                 })
                 ->visibleToAudience('student')
                 ->orderBy('event_date')
-                ->orderBy('time_from')
+                ->orderBy('date_from')
                 ->get()
                 ->map(function ($event) {
                     return [

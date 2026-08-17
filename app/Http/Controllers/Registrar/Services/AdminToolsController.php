@@ -293,7 +293,7 @@ class AdminToolsController extends Controller
         if (Schema::hasTable('academic_calendar_events')) {
             $calendarQuery = AcademicCalendarEvent::query()
                 ->orderBy('event_date')
-                ->orderBy('time_from');
+                ->orderBy('date_from');
 
             if (Schema::hasTable('academic_calendar_event_audiences')
                 && Schema::hasTable('academic_calendar_audience_types')) {
@@ -316,8 +316,8 @@ class AdminToolsController extends Controller
     {
         $validated = $request->validate([
             'date' => 'required|date',
-            'timeFrom' => 'required|date_format:H:i',
-            'timeTo' => 'required|date_format:H:i|after:timeFrom',
+            'dateFrom' => 'required|date',
+            'dateTo' => 'required|date|after_or_equal:dateFrom',
             'event' => 'required|string|max:190',
             'venue' => 'nullable|string|max:190',
             'inCharge' => 'nullable|string|max:190',
@@ -331,8 +331,8 @@ class AdminToolsController extends Controller
         $event = DB::transaction(function () use ($validated, $audienceCodes) {
             $createdEvent = AcademicCalendarEvent::create([
                 'event_date' => $validated['date'],
-                'time_from' => $validated['timeFrom'],
-                'time_to' => $validated['timeTo'],
+                'date_from' => $validated['dateFrom'],
+                'date_to' => $validated['dateTo'],
                 'title' => $validated['event'],
                 'venue' => $validated['venue'] ?? null,
                 'in_charge' => $validated['inCharge'] ?? null,
@@ -361,8 +361,8 @@ class AdminToolsController extends Controller
     {
         $validated = $request->validate([
             'date' => 'required|date',
-            'timeFrom' => 'required|date_format:H:i',
-            'timeTo' => 'required|date_format:H:i|after:timeFrom',
+            'dateFrom' => 'required|date',
+            'dateTo' => 'required|date|after_or_equal:dateFrom',
             'event' => 'required|string|max:190',
             'venue' => 'nullable|string|max:190',
             'inCharge' => 'nullable|string|max:190',
@@ -376,8 +376,8 @@ class AdminToolsController extends Controller
         DB::transaction(function () use ($academicCalendarEvent, $validated, $audienceCodes) {
             $academicCalendarEvent->update([
                 'event_date' => $validated['date'],
-                'time_from' => $validated['timeFrom'],
-                'time_to' => $validated['timeTo'],
+                'date_from' => $validated['dateFrom'],
+                'date_to' => $validated['dateTo'],
                 'title' => $validated['event'],
                 'venue' => $validated['venue'] ?? null,
                 'in_charge' => $validated['inCharge'] ?? null,
@@ -3987,8 +3987,8 @@ class AdminToolsController extends Controller
         return [
             'id' => $event->id,
             'date' => optional($event->event_date)->format('Y-m-d') ?: '',
-            'timeFrom' => $event->time_from ? substr((string) $event->time_from, 0, 5) : '',
-            'timeTo' => $event->time_to ? substr((string) $event->time_to, 0, 5) : '',
+            'dateFrom' => optional($event->date_from)->format('Y-m-d') ?: '',
+            'dateTo' => optional($event->date_to)->format('Y-m-d') ?: '',
             'event' => (string) $event->title,
             'venue' => (string) ($event->venue ?? ''),
             'inCharge' => (string) ($event->in_charge ?? ''),

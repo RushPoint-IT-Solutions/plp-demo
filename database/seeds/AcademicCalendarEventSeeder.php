@@ -48,8 +48,8 @@ class AcademicCalendarEventSeeder extends Seeder
         $events = [
             [
                 'event_date' => '2026-03-28',
-                'time_from' => null,
-                'time_to' => null,
+                'date_from' => '2026-03-28',
+                'date_to' => '2026-03-28',
                 'title' => 'Maundy Thursday',
                 'venue' => 'National Holiday',
                 'in_charge' => 'University Administration',
@@ -59,8 +59,8 @@ class AcademicCalendarEventSeeder extends Seeder
             ],
             [
                 'event_date' => '2026-04-14',
-                'time_from' => '08:00:00',
-                'time_to' => '17:00:00',
+                'date_from' => '2026-04-14',
+                'date_to' => '2026-04-20',
                 'title' => 'Midterm Examinations Start',
                 'venue' => 'Main Campus',
                 'in_charge' => 'Registrar Office',
@@ -70,8 +70,8 @@ class AcademicCalendarEventSeeder extends Seeder
             ],
             [
                 'event_date' => '2026-06-12',
-                'time_from' => null,
-                'time_to' => null,
+                'date_from' => '2026-06-12',
+                'date_to' => '2026-06-12',
                 'title' => 'Independence Day',
                 'venue' => 'National Holiday',
                 'in_charge' => 'University Administration',
@@ -84,8 +84,8 @@ class AcademicCalendarEventSeeder extends Seeder
         foreach ($events as $event) {
             $payload = [
                 'event_date' => $event['event_date'],
-                'time_from' => $event['time_from'],
-                'time_to' => $event['time_to'],
+                'date_from' => $event['date_from'],
+                'date_to' => $event['date_to'],
                 'title' => $event['title'],
                 'venue' => $event['venue'],
                 'in_charge' => $event['in_charge'],

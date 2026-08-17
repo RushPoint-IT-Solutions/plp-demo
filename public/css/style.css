@@ -44307,6 +44307,797 @@ body.page-profile-edit .sc-table-head .pf-entries-control.sc-show-entry span {
   margin-top: 2px;
 }
 
+/* Curriculum File — hero card */
+
+.cf-hero-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: linear-gradient(135deg, #0f7b43, #0a5c32);
+  border-radius: 12px;
+  padding: 20px 24px;
+  color: #fff;
+}
+
+.cf-hero-card h2 {
+  margin: 2px 0 6px;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.cf-hero-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.88rem;
+  max-width: 640px;
+  line-height: 1.5;
+}
+
+.cf-eyebrow {
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.cf-hero-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cf-hero-steps span {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Curriculum File — setup panel layout */
+
+.cf-curriculum-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cf-panel-heading {
+  margin-bottom: 10px;
+}
+
+.cf-panel-heading p {
+  margin: 2px 0 0;
+  color: #5a6b62;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+/* Curriculum File — term/year structure grid */
+
+.cf-term-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  min-height: 40px;
+}
+
+.cf-term-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #2f3a45;
+  cursor: pointer;
+}
+
+.cf-term-toggle-input {
+  width: 16px;
+  height: 16px;
+  accent-color: #0f7b43;
+  cursor: pointer;
+}
+
+.cf-term-year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.cf-term-year-grid-empty {
+  padding: 16px;
+  border: 1px dashed #cfd9d2;
+  border-radius: 10px;
+  color: #6b7a72;
+  font-size: 0.85rem;
+  text-align: center;
+  margin: 14px 0;
+}
+
+.cf-term-year-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  background: #f8faf9;
+  border: 1px solid #dbe6df;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.cf-term-year-cell:hover {
+  border-color: #0f7b43;
+  box-shadow: 0 2px 10px rgba(15, 123, 67, 0.12);
+}
+
+.cf-term-year-cell.has-courses {
+  background: #f0f9f3;
+  border-color: #9fd3b3;
+}
+
+.cf-term-year-cell-year {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #143521;
+}
+
+.cf-term-year-cell-term {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4d5d54;
+}
+
+.cf-term-year-cell-status {
+  margin-top: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #8a9791;
+}
+
+.cf-term-year-cell.has-courses .cf-term-year-cell-status {
+  color: #0f7b43;
+}
+
+/* Curriculum File — review/summary card */
+
+.cf-summary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cf-summary-title {
+  text-align: left;
+  margin-bottom: 2px;
+}
+
+.cf-summary-sub {
+  margin: 0;
+  color: #5a6b62;
+  font-size: 0.82rem;
+}
+
+.cf-status-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cf-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #f1e6c8;
+  color: #8a5a00;
+}
+
+.cf-status-pill.is-published {
+  background: #d9f0e1;
+  color: #0f7b43;
+}
+
+.cf-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cf-summary-panel {
+  background: #f8faf9;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.cf-summary-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7a72;
+  margin-bottom: 6px;
+}
+
+.cf-summary-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #143521;
+  line-height: 1.15;
+}
+
+.cf-summary-note {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #6b7a72;
+}
+
+.cf-validation-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  color: #b3261e;
+  line-height: 1.5;
+}
+
+.cf-valid-message {
+  font-size: 0.82rem;
+  color: #0f7b43;
+  line-height: 1.5;
+}
+
+.cf-workflow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cf-workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+
+.cf-workflow-step span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d8dfda;
+  flex-shrink: 0;
+}
+
+.cf-workflow-step.is-done span {
+  background: #0f7b43;
+}
+
+.cf-workflow-step strong {
+  color: #2f3a45;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.cf-workflow-step small {
+  color: #8a9791;
+  font-weight: 600;
+}
+
+.cf-workflow-step.is-done small {
+  color: #0f7b43;
+}
+
+.cf-unit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2ebe5;
+}
+
+.cf-unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  border-bottom: 1px dashed #e2ebe5;
+  color: #2f3a45;
+}
+
+.cf-unit-row:last-child {
+  border-bottom: none;
+}
+
+.cf-unit-empty {
+  font-size: 0.82rem;
+  color: #8a9791;
+  padding: 6px 0;
+}
+
+.cf-workflow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2ebe5;
+}
+
+.cf-workflow-actions form {
+  display: contents;
+}
+
+.cf-workflow-actions .pf-btn-new {
+  width: auto;
+}
+
+/* Curriculum File — Add Courses wizard modal */
+
+.cf-add-courses-box,
+.cf-edit-box,
+.cf-viewlist-box {
+  width: min(720px, 94vw);
+  max-width: 720px;
+}
+
+.cf-edit-title {
+  margin: 0 30px 4px 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #143521;
+}
+
+.cf-edit-subtitle {
+  margin: 0 0 16px;
+  font-size: 0.84rem;
+  color: #5a6b62;
+}
+
+.cf-wizard-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.cf-wizard-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  background: #f1f4f2;
+  color: #8a9791;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.cf-wizard-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #d8dfda;
+  color: #fff;
+  font-size: 0.72rem;
+}
+
+.cf-wizard-step.is-active {
+  background: #0f7b43;
+  color: #fff;
+}
+
+.cf-wizard-step.is-active .cf-wizard-step-num {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.cf-wizard-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cf-wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.cf-btn-outline {
+  background: #fff !important;
+  color: #0f7b43 !important;
+  border: 1px solid #0f7b43 !important;
+}
+
+.cf-btn-outline:hover {
+  background: #f1f9f4 !important;
+}
+
+.cf-course-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cf-course-search-row .req-modal-input {
+  flex: 1;
+  min-width: 180px;
+}
+
+.cf-picker-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #0f7b43;
+  background: #0f7b43;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cf-picker-quick-btn.cf-btn-outline {
+  background: #fff;
+  color: #0f7b43;
+}
+
+.cf-picker-tally {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cf-picker-tally-item {
+  background: #f8faf9;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.cf-picker-tally-item.cf-picker-tally-total {
+  background: #f0f9f3;
+  border-color: #9fd3b3;
+}
+
+.cf-picker-tally-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #143521;
+}
+
+.cf-picker-tally-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #6b7a72;
+  margin-top: 2px;
+}
+
+.cf-course-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.cf-course-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #e2ebe5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cf-course-option:hover {
+  border-color: #9fd3b3;
+  background: #f8faf9;
+}
+
+.cf-course-option input[type=checkbox] {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: #0f7b43;
+  flex-shrink: 0;
+}
+
+.cf-course-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cf-course-code {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #143521;
+  font-size: 0.85rem;
+}
+
+.cf-course-assigned-badge {
+  display: none;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #d9f0e1;
+  color: #0f7b43;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.cf-course-option.is-assigned .cf-course-assigned-badge {
+  display: inline-flex;
+}
+
+.cf-course-title {
+  font-size: 0.82rem;
+  color: #2f3a45;
+}
+
+.cf-course-units {
+  font-size: 0.74rem;
+  color: #8a9791;
+}
+
+.cf-course-empty {
+  padding: 20px;
+  text-align: center;
+  color: #8a9791;
+  font-size: 0.85rem;
+}
+
+.cf-review-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f8faf9;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.cf-review-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  color: #2f3a45;
+}
+
+.cf-review-row span {
+  color: #6b7a72;
+}
+
+.cf-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px 0;
+}
+
+.cf-review-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e2ebe5;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+
+/* Curriculum File — View List (masterlist) modal */
+
+.cf-viewlist-head {
+  margin: 0 30px 14px 0;
+}
+
+.cf-viewlist-head h3 {
+  margin: 2px 0 4px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #143521;
+}
+
+.cf-viewlist-year {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #5a6b62;
+}
+
+.cf-viewlist-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 62vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.cf-viewlist-year-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f7b43;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.cf-viewlist-term {
+  margin-bottom: 12px;
+}
+
+.cf-viewlist-term-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #2f3a45;
+  margin-bottom: 6px;
+}
+
+.cf-viewlist-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2ebe5;
+  border-radius: 8px;
+}
+
+.cf-viewlist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.cf-viewlist-table th,
+.cf-viewlist-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eef2ef;
+  vertical-align: top;
+}
+
+.cf-viewlist-table th {
+  background: #0f7b43;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.cf-viewlist-table tbody tr:hover {
+  background: #f8faf9;
+}
+
+.cf-viewlist-table tfoot td {
+  font-weight: 800;
+  background: #f0f9f3;
+  color: #143521;
+}
+
+.cf-viewlist-title-col {
+  min-width: 160px;
+}
+
+.cf-viewlist-actions-col {
+  white-space: nowrap;
+}
+
+.cf-viewlist-row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.cf-row-edit-btn,
+.cf-row-remove-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cf-row-edit-btn {
+  background: #eaf4ee;
+  color: #0f7b43;
+}
+
+.cf-row-edit-btn:hover {
+  background: #d9f0e1;
+}
+
+.cf-row-remove-btn {
+  background: #fbe9e7;
+  color: #b3261e;
+}
+
+.cf-row-remove-btn:hover {
+  background: #f6d4cf;
+}
+
+.cf-row-remove-form {
+  display: inline-flex;
+}
+
+.cf-viewlist-empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: #8a9791;
+  font-size: 0.88rem;
+}
+
+.cf-viewlist-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2ebe5;
+}
+
+@media (max-width: 900px) {
+  .cf-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cf-summary-grid,
+  .cf-unit-grid,
+  .cf-picker-tally {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-viewlist-actions,
+  .cf-wizard-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .cf-viewlist-actions .pf-btn-new,
+  .cf-wizard-actions .pf-btn-new {
+    width: 100%;
+  }
+}
+
 /* Configuration extended sections */
 
 .cfg-filter-row {

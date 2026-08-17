@@ -61,12 +61,12 @@
                 <input id="acDatePostUntil" type="date" class="req-modal-input" onclick="if(this.showPicker){this.showPicker()}" onfocus="if(this.showPicker){this.showPicker()}">
             </div>
             <div class="req-modal-field-group">
-                <label class="req-modal-label">Time From</label>
-                <input id="acTimeFrom" type="time" class="req-modal-input" onclick="if(this.showPicker){this.showPicker()}" onfocus="if(this.showPicker){this.showPicker()}">
+                <label class="req-modal-label">Date From</label>
+                <input id="acDateFrom" type="date" class="req-modal-input" onclick="if(this.showPicker){this.showPicker()}" onfocus="if(this.showPicker){this.showPicker()}">
             </div>
             <div class="req-modal-field-group">
-                <label class="req-modal-label">Time To</label>
-                <input id="acTimeTo" type="time" class="req-modal-input" onclick="if(this.showPicker){this.showPicker()}" onfocus="if(this.showPicker){this.showPicker()}">
+                <label class="req-modal-label">Date To</label>
+                <input id="acDateTo" type="date" class="req-modal-input" onclick="if(this.showPicker){this.showPicker()}" onfocus="if(this.showPicker){this.showPicker()}">
             </div>
         </div>
 
@@ -205,27 +205,6 @@
         return d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
     }
 
-    function acFormatTime(timeString) {
-        if (!timeString) {
-            return '';
-        }
-        var parts = String(timeString).split(':');
-        if (parts.length < 2) {
-            return timeString;
-        }
-        var hour24 = parseInt(parts[0], 10);
-        var mins = parts[1];
-        if (isNaN(hour24)) {
-            return timeString;
-        }
-        var ampm = hour24 >= 12 ? 'pm' : 'am';
-        var hour12 = hour24 % 12;
-        if (hour12 === 0) {
-            hour12 = 12;
-        }
-        return hour12 + ':' + mins + ' ' + ampm;
-    }
-
     function acBuildMenu(menuId, index) {
         return '' +
             '<div class="apst-action-btn" data-ac-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
@@ -288,8 +267,8 @@
 
         var rows = filtered.slice(0, limit).map(function(item, index) {
             var actualIndex = acEvents.indexOf(item);
-            var fromDisplay = acFormatDate(item.date) + (item.timeFrom ? ' ' + acFormatTime(item.timeFrom) : '');
-            var toDisplay = acFormatDate(item.date) + (item.timeTo ? ' ' + acFormatTime(item.timeTo) : '');
+            var fromDisplay = acFormatDate(item.dateFrom || item.date);
+            var toDisplay = acFormatDate(item.dateTo || item.date);
             return '' +
                 '<tr>' +
                     '<td>' + acEscapeHtml(fromDisplay) + '</td>' +
@@ -314,8 +293,8 @@
     function acClearEventForm() {
         document.getElementById('acEditingIndex').value = '';
         document.getElementById('acDatePostUntil').value = '';
-        document.getElementById('acTimeFrom').value = '';
-        document.getElementById('acTimeTo').value = '';
+        document.getElementById('acDateFrom').value = '';
+        document.getElementById('acDateTo').value = '';
         document.getElementById('acEvent').value = '';
         document.getElementById('acVenue').value = '';
         document.getElementById('acInCharge').value = '';
@@ -336,8 +315,8 @@
         }
         document.getElementById('acEditingIndex').value = String(index);
         document.getElementById('acDatePostUntil').value = item.date || item.postUntil || '';
-        document.getElementById('acTimeFrom').value = item.timeFrom || '';
-        document.getElementById('acTimeTo').value = item.timeTo || '';
+        document.getElementById('acDateFrom').value = item.dateFrom || item.date || '';
+        document.getElementById('acDateTo').value = item.dateTo || item.date || '';
         document.getElementById('acEvent').value = item.event;
         document.getElementById('acVenue').value = item.venue;
         document.getElementById('acInCharge').value = item.inCharge;
@@ -355,8 +334,8 @@
         var datePostUntil = document.getElementById('acDatePostUntil').value;
         var payload = {
             date: datePostUntil,
-            timeFrom: document.getElementById('acTimeFrom').value,
-            timeTo: document.getElementById('acTimeTo').value,
+            dateFrom: document.getElementById('acDateFrom').value,
+            dateTo: document.getElementById('acDateTo').value,
             event: document.getElementById('acEvent').value.trim(),
             venue: document.getElementById('acVenue').value.trim(),
             inCharge: document.getElementById('acInCharge').value.trim(),
@@ -368,8 +347,13 @@
             return;
         }
 
-        if (!payload.timeFrom || !payload.timeTo) {
-            acShowErrorModal('Please add both Time From and Time To time slots for this event.');
+        if (!payload.dateFrom || !payload.dateTo) {
+            acShowErrorModal('Please add both Date From and Date To for this event.');
+            return;
+        }
+
+        if (payload.dateTo < payload.dateFrom) {
+            acShowErrorModal('Date To cannot be earlier than Date From.');
             return;
         }
 
