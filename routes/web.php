@@ -523,6 +523,10 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/certifications/issue', 'Registrar\Services\ReportsAdminController@issueCertification')->name('certifications.issue');
             Route::get('/tagging-of-graduates', 'Registrar\Services\ReportsAdminController@taggingOfGraduates')->name('tagging-of-graduates');
             Route::put('/tagging-of-graduates/{student}', 'Registrar\Services\ReportsAdminController@taggingOfGraduatesUpdate')->name('tagging-of-graduates.update');
+            Route::get('/batch-print', 'Registrar\Services\ReportsAdminController@batchPrint')->name('batch-print');
+            Route::get('/batch-print/sections', 'Registrar\Services\ReportsAdminController@batchPrintSections')->name('batch-print.sections');
+            Route::get('/batch-print/students', 'Registrar\Services\ReportsAdminController@batchPrintStudents')->name('batch-print.students');
+            Route::get('/batch-print/render', 'Registrar\Services\ReportsAdminController@batchPrintRender')->name('batch-print.render');
         });
 
         Route::prefix('student-account')->name('student-account.')->group(function () {

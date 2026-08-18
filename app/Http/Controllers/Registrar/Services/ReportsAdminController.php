@@ -7,6 +7,7 @@ use App\CertificateIssued;
 use App\Course;
 use App\GraduateTagging;
 use App\Http\Controllers\Controller;
+use App\Support\CorTorReportData;
 use App\Support\SystemConfigSchoolTermOptions;
 use App\Student;
 use App\StudentSubjectGrade;
@@ -72,6 +73,121 @@ class ReportsAdminController extends Controller
         });
 
         return response()->json(['results' => $students]);
+    }
+
+    public function batchPrint(Request $request)
+    {
+        $courseOptions = Course::query()->orderBy('code')->get(['id', 'code', 'name']);
+        $yearBlockOptions = YearBlock::query()->orderBy('id')->get(['id', 'label']);
+
+        return view('registrar.services.reports-admin.batch-print', compact('courseOptions', 'yearBlockOptions'));
+    }
+
+    public function batchPrintSections(Request $request): JsonResponse
+    {
+        $courseId = (int) $request->query('course_id', 0);
+        $yearBlockId = (int) $request->query('year_block_id', 0);
+
+        $sections = collect();
+        if (Schema::hasTable('student_section_assignments')) {
+            $sections = DB::table('student_section_assignments')
+                ->where('status', 'active')
+                ->whereRaw("TRIM(COALESCE(section, '')) <> ''")
+                ->when($courseId > 0, function ($query) use ($courseId) {
+                    $query->where('course_id', $courseId);
+                })
+                ->when($yearBlockId > 0, function ($query) use ($yearBlockId) {
+                    $query->where('year_block_id', $yearBlockId);
+                })
+                ->distinct()
+                ->orderBy('section')
+                ->pluck('section');
+        }
+
+        return response()->json(['results' => $sections->filter()->values()]);
+    }
+
+    public function batchPrintStudents(Request $request): JsonResponse
+    {
+        $courseId = (int) $request->query('course_id', 0);
+        $yearBlockId = (int) $request->query('year_block_id', 0);
+        $section = trim((string) $request->query('section', ''));
+
+        if ($section !== '' && Schema::hasTable('student_section_assignments')) {
+            $students = Student::query()
+                ->select('students.id', 'students.student_no', 'students.name')
+                ->join('student_section_assignments as ssa', 'ssa.student_id', '=', 'students.id')
+                ->where('ssa.status', 'active')
+                ->where('ssa.section', $section)
+                ->when($courseId > 0, function ($query) use ($courseId) {
+                    $query->where('ssa.course_id', $courseId);
+                })
+                ->when($yearBlockId > 0, function ($query) use ($yearBlockId) {
+                    $query->where('ssa.year_block_id', $yearBlockId);
+                })
+                ->distinct()
+                ->orderBy('students.name')
+                ->get();
+        } else {
+            $students = Student::query()
+                ->select('id', 'student_no', 'name')
+                ->when($courseId > 0, function ($query) use ($courseId) {
+                    $query->where('course_id', $courseId);
+                })
+                ->when($yearBlockId > 0, function ($query) use ($yearBlockId) {
+                    $query->where('year_block_id', $yearBlockId);
+                })
+                ->orderBy('name')
+                ->limit(300)
+                ->get();
+        }
+
+        return response()->json([
+            'results' => $students->map(function (Student $student) {
+                return [
+                    'id' => (int) $student->id,
+                    'student_no' => (string) $student->student_no,
+                    'name' => (string) $student->name,
+                ];
+            })->values(),
+        ]);
+    }
+
+    public function batchPrintRender(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'string', 'in:cor,tor'],
+            'student_ids' => ['required', 'array', 'min:1'],
+            'student_ids.*' => ['integer'],
+        ]);
+
+        $scopedCourseIds = \App\Support\CourseScopeGate::allowedCourseIds($request->user());
+
+        $students = Student::query()
+            ->when($scopedCourseIds !== null, function ($query) use ($scopedCourseIds) {
+                $query->whereIn('course_id', $scopedCourseIds);
+            })
+            ->whereIn('id', $validated['student_ids'])
+            ->orderBy('name')
+            ->get();
+
+        if ($students->isEmpty()) {
+            abort(404, 'No matching students found for the selected batch.');
+        }
+
+        if ($validated['type'] === 'cor') {
+            $entries = $students->map(function (Student $student) {
+                return CorTorReportData::corForStudent($student);
+            });
+
+            return view('registrar.services.reports-admin.batch-print-cor', compact('entries'));
+        }
+
+        $entries = $students->map(function (Student $student) {
+            return CorTorReportData::torForStudent($student);
+        });
+
+        return view('registrar.services.reports-admin.batch-print-tor', compact('entries'));
     }
 
     public function academicReports(Request $request)
