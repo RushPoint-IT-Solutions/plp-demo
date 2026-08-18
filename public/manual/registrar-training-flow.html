@@ -633,7 +633,7 @@
       <div><div class="label">System</div><div class="value">PLP Demo SIS</div></div>
       <div><div class="label">Program</div><div class="value">Registrar UAT</div></div>
       <div><div class="label">Duration</div><div class="value">5 Days</div></div>
-      <div><div class="label">Test Cases</div><div class="value">76</div></div>
+      <div><div class="label">Test Cases</div><div class="value">78</div></div>
       <div><div class="label">Updated</div><div class="value">18 Aug 2026</div></div>
     </div>
   </div>
@@ -728,7 +728,7 @@
                 <text x="430" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">3</text>
                 <text x="426" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Students &amp;</text>
                 <text x="426" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Enrollment</text>
-                <text x="426" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">13 test cases</text>
+                <text x="426" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">15 test cases</text>
               </g>
               <g>
                 <rect x="605" y="30" width="165" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
@@ -752,11 +752,11 @@
                 <text x="1022" y="49.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">&#10003;</text>
                 <text x="1017" y="70" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Signed Off</text>
                 <text x="1017" y="86" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">/ Go-Live</text>
-                <text x="1017" y="104" font-family="var(--font-body)" font-size="11" fill="var(--ink-muted)">76 / 76 pass</text>
+                <text x="1017" y="104" font-family="var(--font-body)" font-size="11" fill="var(--ink-muted)">78 / 78 pass</text>
               </g>
             </svg>
           </div>
-          <figcaption>Fig. 1 &mdash; 76 test cases in strict build order: nothing in Day 3 can be honestly tested until every Day 1 and Day 2 case passes. Two menu groups present in the codebase &mdash; Admissions and the Scholarship module &mdash; are currently disabled from the live sidebar and are out of scope for this pass; re-add them here if they're switched on.</figcaption>
+          <figcaption>Fig. 1 &mdash; 78 test cases in strict build order: nothing in Day 3 can be honestly tested until every Day 1 and Day 2 case passes. Two menu groups present in the codebase &mdash; Admissions and the Scholarship module &mdash; are currently disabled from the live sidebar and are out of scope for this pass; re-add them here if they're switched on.</figcaption>
         </figure>
       </section>
 
@@ -839,7 +839,7 @@
           <table class="uat">
             <thead><tr><th style="width:56px">ID</th><th style="width:190px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
             <tbody>
-              <tr><td class="uat-id">D2-01</td><td class="uat-feature">Create Faculty</td><td>Open Faculty &rarr; Create Faculty; create a faculty account under the Day 1 department.</td><td class="uat-expected">Account is created and that faculty member can sign in.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">D2-01</td><td class="uat-feature">Create Faculty</td><td>Open Faculty &rarr; Create Faculty; enter a unique Faculty Code (Employee Number, e.g. FAC-002), full name, and the Day 1 department; save.</td><td class="uat-expected">Account is created under that Faculty Code and that faculty member can sign in.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-02</td><td class="uat-feature">Faculty Profiles</td><td>Open Faculty &rarr; Faculty Profiles; search and open the profile just created.</td><td class="uat-expected">Profile shows correct personal and employment details.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-03</td><td class="uat-feature">Room File</td><td>Open Academics &rarr; Term Setup &amp; Scheduling &rarr; Room File; add a room with a capacity; save.</td><td class="uat-expected">Room is created and available in Class Schedule Preparation.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-04</td><td class="uat-feature">Close / Open Term</td><td>Open Term Setup &amp; Scheduling &rarr; Close/Open Term; open a new academic term.</td><td class="uat-expected">Term opens and becomes selectable across the system with no earlier term required to close first (first-run case).</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
@@ -867,16 +867,16 @@
 
       <section id="day-3">
         <h2>7. Day 3 &mdash; Students, Enrollment &amp; Classroom Operations</h2>
-        <p class="section-kicker">13 test cases &middot; the first day a student can actually exist in the system</p>
+        <p class="section-kicker">15 test cases &middot; the first day a student can actually exist in the system</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 3, not Day 1</span>
           <p>This is the earliest point in the week where adding a student means anything: there's a published curriculum to enroll them under, a section with a room and a teacher to enroll them into, and an open term to enroll them in. Testing Student Records before this point would only prove the search box works, not that enrollment does.</p>
         </div>
         <div class="day-walkthrough">
-          <div class="day-instructions"><span class="day-label">Day 3 walkthrough</span><h3>Create and enroll the test student</h3><ol class="steps"><li><div><strong>Create the student record.</strong>Complete identity, contact, program, and requirement information.</div></li><li><div><strong>Enroll into the open term.</strong>Select the correct curriculum, year level, section, and eligible subjects.</div></li><li><div><strong>Verify every downstream list.</strong>Confirm the student appears in Enrollment List, Class List, and the assigned faculty view.</div></li></ol><span class="menu-path">Registrar Menu &rarr; Student Management</span><a class="process-jump" href="#day-3-processes">View 13 breakdowns &darr;</a></div>
+          <div class="day-instructions"><span class="day-label">Day 3 walkthrough</span><h3>Create and enroll the test student</h3><ol class="steps"><li><div><strong>Create the student record.</strong>Complete identity, contact, program, and requirement information.</div></li><li><div><strong>Enroll into the open term.</strong>Select the correct curriculum, year level, section, and eligible subjects.</div></li><li><div><strong>Verify every downstream list.</strong>Confirm the student appears in Enrollment List, Class List, and the assigned faculty view.</div></li></ol><span class="menu-path">Registrar Menu &rarr; Student Management</span><a class="process-jump" href="#day-3-processes">View 15 breakdowns &darr;</a></div>
           <figure class="day-screen"><img src="/manual/media/registrar-day-3-enrollment.png" alt="Live Registrar Student Enrollment screen listing students, programs, and year levels"><figcaption>Live screen &mdash; Student Enrollment. Search or add the student, confirm program and year level, then open the enrollment action.</figcaption></figure>
         </div>
-        <div class="table-intro" id="day-3-processes"><h3>Day 3 process breakdowns</h3><span>Run D3-01 through D3-13 in order</span></div>
+        <div class="table-intro" id="day-3-processes"><h3>Day 3 process breakdowns</h3><span>Run D3-01 through D3-15 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
             <thead><tr><th style="width:56px">ID</th><th style="width:170px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
@@ -894,11 +894,13 @@
               <tr><td class="uat-id">D3-11</td><td class="uat-feature">Attendance</td><td>Open Classroom &rarr; Attendance; record attendance for the section's class session.</td><td class="uat-expected">Attendance saves and reflects in the test student's record.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D3-12</td><td class="uat-feature">Faculty Loads</td><td>Open Classroom &rarr; Faculty Loads; review the D2-01 faculty member's assigned sections and units.</td><td class="uat-expected">Load total matches the section actually assigned to that faculty member.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D3-13</td><td class="uat-feature">Alumni Tracker</td><td>Open Student Records &rarr; Alumni Tracker; search an existing graduated student (not the test student).</td><td class="uat-expected">Graduate's record appears with correct graduation details.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">D3-14</td><td class="uat-feature">Transferee Records</td><td>Open Student Records &rarr; Student List; open the test student's profile; go to the Background tab; under Educational Background, fill in School Last Attended; save.</td><td class="uat-expected">Field saves and still shows the entered school on reload, correctly capturing a transferee's prior school on the record.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">D3-15</td><td class="uat-feature">Withdrawn Students</td><td>Open Student Records &rarr; Student List; select the Withdrawn status pill.</td><td class="uat-expected">List filters to withdrawn students correctly. Known gap: the Withdraw Enrollment button on Student Enrollment only shows a confirmation toast and does not persist a withdrawal &mdash; there is currently no in-app action that moves a student into Withdrawn status. Do not mark Fail for that; log it as an open item instead.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
             </tbody>
           </table>
         </div>
         <div class="signoff-bar">
-          <div class="stat"><span class="k">Test cases</span><span class="v">13</span></div>
+          <div class="stat"><span class="k">Test cases</span><span class="v">15</span></div>
           <div class="stat"><span class="k">Passed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
           <div class="stat"><span class="k">Failed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
           <div class="sign"><div>Day 3 accepted by<span class="blank-cell"></span></div><div>Date<span class="blank-cell"></span></div></div>
@@ -995,7 +997,7 @@
       <section id="certification">
         <h2>10. Sign-off &amp; go-live</h2>
         <p class="section-kicker">What "accepted" means before the office goes live</p>
-        <p>The Portal is ready for live use once every one of the 76 rows above reads Pass, or every Fail has a linked fix that was re-tested and now reads Pass. Because each day's data feeds the next, a Fail on an earlier day should pause testing on whatever downstream row depends on it rather than being tested against broken data.</p>
+        <p>The Portal is ready for live use once every one of the 78 rows above reads Pass, or every Fail has a linked fix that was re-tested and now reads Pass. Because each day's data feeds the next, a Fail on an earlier day should pause testing on whatever downstream row depends on it rather than being tested against broken data.</p>
 
         <div class="table-wrap">
           <table>
@@ -1003,10 +1005,10 @@
             <tbody>
               <tr><td>Day 1</td><td>System &amp; Academic Structure Setup</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
               <tr><td>Day 2</td><td>Resources, Term &amp; Class Scheduling</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
-              <tr><td>Day 3</td><td>Students, Enrollment &amp; Classroom Ops</td><td>13</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td>Day 3</td><td>Students, Enrollment &amp; Classroom Ops</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
               <tr><td>Day 4</td><td>Grading &amp; Academic Records</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
               <tr><td>Day 5</td><td>Requests, Reports &amp; System</td><td>18</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
-              <tr><td><strong>Total</strong></td><td></td><td><strong>76</strong></td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td><strong>Total</strong></td><td></td><td><strong>78</strong></td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1015,7 +1017,7 @@
           <table>
             <thead><tr><th>Go-live checklist</th><th style="width:220px">Owner</th></tr></thead>
             <tbody>
-              <tr><td>All 76 test cases read Pass, or every Fail has a re-tested fix</td><td>Training facilitator / QA</td></tr>
+              <tr><td>All 78 test cases read Pass, or every Fail has a re-tested fix</td><td>Training facilitator / QA</td></tr>
               <tr><td>Test/sandbox data (the test program, test student, etc.) cleared before go-live</td><td>Registrar (role administrator)</td></tr>
               <tr><td>Current academic term and grading periods confirmed (D1-02, D1-13)</td><td>Registrar</td></tr>
               <tr><td>Signatories list up to date for COR, TOR, and clearance forms (D1-01)</td><td>Registrar</td></tr>
