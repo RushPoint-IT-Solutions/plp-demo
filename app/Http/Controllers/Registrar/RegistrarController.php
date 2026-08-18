@@ -20328,10 +20328,15 @@ class RegistrarController extends Controller
             'student_email'        => 'nullable|email|max:150',
             'lrn'                  => 'nullable|string|max:30',
             'elementary_school'    => 'nullable|string|max:200',
+            'elementary_year_graduated'    => 'nullable|string|max:20',
             'high_school'          => 'nullable|string|max:200',
+            'high_school_year_graduated'   => 'nullable|string|max:20',
             'junior_school'        => 'nullable|string|max:200',
+            'junior_school_year_graduated' => 'nullable|string|max:20',
             'senior_school'        => 'nullable|string|max:200',
+            'senior_school_year_graduated' => 'nullable|string|max:20',
             'shs_track_strand'     => 'nullable|string|max:100',
+            'no_k12'               => 'nullable|boolean',
             'school_last_attended' => 'nullable|string|max:200',
             'present_street'       => 'nullable|string|max:200',
             'present_barangay'     => 'nullable|string|max:100',
@@ -20351,6 +20356,10 @@ class RegistrarController extends Controller
             'guardian_lastname'    => 'nullable|string|max:100',
             'guardian_contact'     => 'nullable|string|max:30',
         ]);
+
+        if ($request->has('no_k12')) {
+            $validated['no_k12'] = $this->requestBoolean($request, 'no_k12');
+        }
 
         $profile = StudentProfile::firstOrCreate(
             ['student_id' => $student->id],
