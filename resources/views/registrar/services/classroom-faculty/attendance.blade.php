@@ -16,6 +16,8 @@
     .att-summary-label{font-size:.72rem;color:#66756b;font-weight:800;text-transform:uppercase;}
     .att-summary-value{font-size:.92rem;color:#123822;font-weight:800;}
     .att-back-btn{border:1px solid #146c43;background:#fff;color:#146c43;border-radius:7px;padding:7px 12px;font-weight:800;cursor:pointer;}
+    .att-import-btn{border:none;border-radius:6px;padding:8px 14px;font-size:.82rem;font-weight:700;color:#fff;background:#0f7b43;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+    .att-import-btn:hover{background:#0d6a3a;}
     .att-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
     .att-date-input{border:1px solid #cfd9d2;border-radius:7px;padding:7px 10px;font-size:.85rem;}
     .att-status-select{border:1px solid #cfd9d2;border-radius:6px;padding:5px 8px;font-size:.82rem;background:#fff;}
@@ -129,7 +131,7 @@
             <label class="app-filter-label" for="attDate">Session Date</label>
             <input type="date" id="attDate" class="att-date-input">
             <button type="button" class="pf-btn-new" id="attSaveBtn">Save Attendance</button>
-            <button type="button" class="svc-btn-excel" id="attImportBtn">Import Attendance (CSV)</button>
+            <button type="button" class="att-import-btn" id="attImportBtn">Import Attendance (CSV)</button>
             <span class="att-save-note" id="attSaveNote"></span>
         </div>
 
