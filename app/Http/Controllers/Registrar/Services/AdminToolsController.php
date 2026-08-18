@@ -14,7 +14,6 @@ use App\MasterStudentProfileFile;
 use App\NotificationDelivery;
 use App\NotificationType;
 use App\PortalNotification;
-use App\Religion;
 use App\Student;
 use App\StudentGradeRecord;
 use App\StudentUpdateRun;
@@ -2950,9 +2949,6 @@ class AdminToolsController extends Controller
         $cfgFaculty = null;
         $cfgFormState = [];
         $cfgDetailRows = $this->defaultFacultyConfigSections();
-        $religions = Schema::hasTable('religions')
-            ? Religion::orderBy('name')->pluck('name')->all()
-            : [];
 
         if (Schema::hasTable('master_faculty_files')) {
             if (MasterFacultyFile::query()->count() === 0) {
@@ -3006,29 +3002,7 @@ class AdminToolsController extends Controller
             }
         }
 
-        return view('registrar.admin-tools.master-files.faculty-file', compact('ffRows', 'cfgFaculty', 'cfgFormState', 'cfgDetailRows', 'religions'));
-    }
-
-    public function facultyFileReligionStore(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:190',
-        ]);
-
-        $name = trim($validated['name']);
-
-        $religion = Religion::query()->whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
-        if (!$religion) {
-            $religion = Religion::create([
-                'name' => $name,
-                'created_by' => $request->user()->id,
-            ]);
-        }
-
-        return response()->json([
-            'ok' => true,
-            'religion' => ['id' => $religion->id, 'name' => $religion->name],
-        ]);
+        return view('registrar.admin-tools.master-files.faculty-file', compact('ffRows', 'cfgFaculty', 'cfgFormState', 'cfgDetailRows'));
     }
 
     public function facultyFileStore(Request $request): JsonResponse

@@ -130,6 +130,19 @@
 }
 .srp-field .val-empty { color:#94a3b8; font-style:italic; }
 
+/* ── searchable combo (Religion) ───────────────────────────────── */
+.srp-combo { position:relative; }
+.srp-combo-menu {
+    display:none; position:absolute; z-index:40; top:calc(100% + 4px); left:0; right:0;
+    max-height:220px; overflow-y:auto; background:#fff; border:1.5px solid #e2e8f0;
+    border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,.10);
+}
+.srp-combo-menu.show { display:block; }
+.srp-combo-option { padding:8px 12px; font-size:13px; cursor:pointer; color:#1e293b; }
+.srp-combo-option:hover, .srp-combo-option.is-active { background:#f0fdf4; }
+.srp-combo-option.is-others { border-top:1px solid #f1f5f9; font-weight:700; color:#004d27; }
+.srp-combo-empty { padding:8px 12px; font-size:12px; color:#94a3b8; }
+
 /* ── save bar ───────────────────────────────────────────────── */
 .srp-save-bar { display:flex; justify-content:flex-end; gap:10px; margin-top:16px; padding-top:14px; border-top:1px solid #f1f5f9; }
 .srp-btn-save {
@@ -562,7 +575,14 @@
                                 </select>
                             </div>
                             <div class="srp-field"><label>Nationality</label><input id="pi_nationality" value="{{ $prof->nationality ?? '' }}"></div>
-                            <div class="srp-field"><label>Religion</label><input id="pi_religion" value="{{ $prof->religion ?? '' }}"></div>
+                            <div class="srp-field">
+                                <label for="pi_religion">Religion</label>
+                                <div class="srp-combo" id="srpReligionCombo">
+                                    <input id="pi_religion" value="{{ $prof->religion ?? '' }}" placeholder="Search or select religion..." autocomplete="off" role="combobox" aria-expanded="false">
+                                    <div class="srp-combo-menu" id="srpReligionMenu"></div>
+                                </div>
+                                <input id="pi_religion_other" placeholder="Enter new religion" style="display:none; margin-top:6px;">
+                            </div>
                             <div class="srp-field"><label>Mobile Number</label><input id="pi_mobile" value="{{ $prof->mobile_number ?? '' }}"></div>
                             <div class="srp-field"><label>Student Email</label><input type="email" id="pi_email" value="{{ $prof->student_email ?? '' }}"></div>
                         </div>
@@ -2028,6 +2048,8 @@
 <script>
 const SRP_PROFILE_URL = @json($profileUpdateUrl);
 const SRP_CSRF        = document.querySelector('meta[name=csrf-token]').getAttribute('content');
+const SRP_RELIGION_STORE_URL = '{{ route("registrar.registrar-menu.student-mgmt.student-records.religion.store") }}';
+let SRP_RELIGIONS     = @json($religions ?? []);
 const HD_TAG_URL      = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => $student->id]));
 const REQ_UPDATE_URL_BASE = @json(route('registrar.registrar-menu.student-mgmt.student-records.requirements.update', ['student' => $student->id, 'requirement' => '__ID__']));
 
@@ -2156,7 +2178,95 @@ function buildBgPayload() {
     };
 }
 
+function srpEscapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+        var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return map[ch];
+    });
+}
+
+function srpInitReligionCombo() {
+    const input = document.getElementById('pi_religion');
+    const menu = document.getElementById('srpReligionMenu');
+    const otherInput = document.getElementById('pi_religion_other');
+    if (!input || !menu || !otherInput) return;
+
+    const OTHERS_VALUE = '__others__';
+
+    function renderMenu(filter) {
+        const q = (filter || '').trim().toLowerCase();
+        const matches = SRP_RELIGIONS.filter(name => name.toLowerCase().indexOf(q) !== -1);
+        let html = matches.length
+            ? matches.map(name => '<div class="srp-combo-option" data-value="' + srpEscapeHtml(name) + '">' + srpEscapeHtml(name) + '</div>').join('')
+            : '<div class="srp-combo-empty">No matches</div>';
+        html += '<div class="srp-combo-option is-others" data-value="' + OTHERS_VALUE + '">+ Others (enter new religion)</div>';
+        menu.innerHTML = html;
+        menu.classList.add('show');
+        input.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+        menu.classList.remove('show');
+        input.setAttribute('aria-expanded', 'false');
+    }
+
+    function selectValue(value) {
+        if (value === OTHERS_VALUE) {
+            input.value = '';
+            otherInput.style.display = 'block';
+            otherInput.focus();
+        } else {
+            input.value = value;
+            otherInput.style.display = 'none';
+            otherInput.value = '';
+        }
+        closeMenu();
+    }
+
+    input.addEventListener('focus', () => renderMenu(input.value));
+    input.addEventListener('input', () => renderMenu(input.value));
+    menu.addEventListener('mousedown', (event) => {
+        const option = event.target.closest('.srp-combo-option');
+        if (!option || !option.dataset.value) return;
+        event.preventDefault();
+        selectValue(option.dataset.value);
+    });
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('#srpReligionCombo')) closeMenu();
+    });
+}
+srpInitReligionCombo();
+
+async function srpResolveReligion() {
+    const mainInput = document.getElementById('pi_religion');
+    const otherInput = document.getElementById('pi_religion_other');
+    const otherValue = otherInput && otherInput.style.display !== 'none' ? otherInput.value.trim() : '';
+    if (!otherValue) return;
+
+    const r = await fetch(SRP_RELIGION_STORE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+        body: JSON.stringify({ name: otherValue }),
+    });
+    const data = await r.json();
+    if (!r.ok || !data.success) {
+        throw new Error(data.message || 'Unable to save the new religion.');
+    }
+
+    const savedName = data.religion && data.religion.name ? data.religion.name : otherValue;
+    if (SRP_RELIGIONS.indexOf(savedName) === -1) SRP_RELIGIONS.push(savedName);
+    mainInput.value = savedName;
+    otherInput.value = '';
+    otherInput.style.display = 'none';
+}
+
 async function srpSaveInfo() {
+    try {
+        await srpResolveReligion();
+    } catch (e) {
+        srpToast(e.message || 'Could not save new religion — check connection.', 'error');
+        return;
+    }
     await srpDoSave(buildInfoPayload());
 }
 async function srpSaveBg() {

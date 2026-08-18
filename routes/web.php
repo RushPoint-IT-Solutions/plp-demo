@@ -340,6 +340,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/student-records/{student}/print/tor', 'Registrar\RegistrarController@studentPrintTor')->name('student-records.print.tor');
             Route::get('/student-records/{student}/print/diploma', 'Registrar\RegistrarController@studentPrintDiploma')->name('student-records.print.diploma');
             Route::get('/student-records/{student}/report-of-grades', 'Registrar\RegistrarController@studentRecordReportOfGrades')->name('student-records.report-of-grades');
+            Route::post('/student-records/religion', 'Registrar\RegistrarController@studentRecordReligionStore')->name('student-records.religion.store')->middleware('throttle:30,1');
             Route::post('/student-enrollment', 'Registrar\RegistrarController@storeStudent')->name('student-enrollment.store');
             Route::put('/student-enrollment/{student}', 'Registrar\RegistrarController@updateStudent')->name('student-enrollment.update')->middleware('throttle:60,1');
             Route::delete('/student-enrollment/{student}', 'Registrar\RegistrarController@destroyStudent')->name('student-enrollment.destroy')->middleware('throttle:60,1');
@@ -596,7 +597,6 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFileStore')->name('faculty-file.store');
             Route::put('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileUpdate')->name('faculty-file.update');
             Route::delete('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileDestroy')->name('faculty-file.destroy');
-            Route::post('/faculty-file/religion', 'Registrar\Services\AdminToolsController@facultyFileReligionStore')->name('faculty-file.religion.store')->middleware('throttle:30,1');
             Route::get('/student-profile', 'Registrar\Services\AdminToolsController@studentProfile')->name('student-profile');
             Route::post('/student-profile', 'Registrar\Services\AdminToolsController@studentProfileStore')->name('student-profile.store');
             Route::put('/student-profile/{masterStudentProfile}', 'Registrar\Services\AdminToolsController@studentProfileUpdate')->name('student-profile.update');

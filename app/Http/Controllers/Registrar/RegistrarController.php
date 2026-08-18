@@ -47,6 +47,7 @@ use App\RoomHallway;
 use App\Semester;
 use App\SectionMergingOperation;
 use App\SlotMonitoring;
+use App\Religion;
 use App\Student;
 use App\StudentProfile;
 use App\StudentProfileImage;
@@ -19450,6 +19451,9 @@ class RegistrarController extends Controller
         $deficiencies     = $student->deficiencies ?? collect([]);
         $courses          = Course::orderBy('code')->orderBy('name')->get(['id', 'code', 'name']);
         $profileUpdateUrl = route('registrar.registrar-menu.student-mgmt.academic-record.update-profile', ['student' => $student->id]);
+        $religions        = Schema::hasTable('religions')
+            ? Religion::orderBy('name')->pluck('name')->all()
+            : [];
 
         // Graduate tagging
         $graduateTagging = null;
@@ -19512,8 +19516,30 @@ class RegistrarController extends Controller
             'profileUpdateUrl', 'medicalRecord', 'clinicRecords',
             'graduateTagging', 'isGraduated', 'scholasticComments',
             'scholarshipPrograms', 'studentScholarships',
-            'honorableDismissalRecord'
+            'honorableDismissalRecord', 'religions'
         ));
+    }
+
+    public function studentRecordReligionStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:190',
+        ]);
+
+        $name = trim($validated['name']);
+
+        $religion = Religion::query()->whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
+        if (!$religion) {
+            $religion = Religion::create([
+                'name' => $name,
+                'created_by' => $request->user()->id,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'religion' => ['id' => $religion->id, 'name' => $religion->name],
+        ]);
     }
 
     /**
@@ -20297,6 +20323,7 @@ class RegistrarController extends Controller
             'date_of_birth'        => 'nullable|date',
             'place_of_birth'       => 'nullable|string|max:200',
             'civil_status'         => 'nullable|string|max:30',
+            'religion'             => 'nullable|string|max:150',
             'mobile_number'        => 'nullable|string|max:20',
             'student_email'        => 'nullable|email|max:150',
             'lrn'                  => 'nullable|string|max:30',
