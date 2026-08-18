@@ -19245,6 +19245,10 @@ class RegistrarController extends Controller
             });
         } elseif ($status === 'withdrawn') {
             $query->where('is_withdrawn', true);
+        } elseif ($status === 'transferee') {
+            $query->where('is_transferee', true);
+        } elseif ($status === 'irregular') {
+            $query->where('is_irregular', true);
         }
         if (Schema::hasTable('graduate_taggings')) {
             if ($graduate === 'graduates') {
@@ -19333,6 +19337,14 @@ class RegistrarController extends Controller
             ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
                 $q->whereIn('course_id', $scopedCourseIds);
             })->count();
+        $transfereeCount = Student::where('is_transferee', true)
+            ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+                $q->whereIn('course_id', $scopedCourseIds);
+            })->count();
+        $irregularCount = Student::where('is_irregular', true)
+            ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+                $q->whereIn('course_id', $scopedCourseIds);
+            })->count();
         $graduateCount  = Schema::hasTable('graduate_taggings')
             ? GraduateTagging::where('is_graduate', true)
                 ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
@@ -19345,7 +19357,8 @@ class RegistrarController extends Controller
         return view('registrar.registrar-menu.student-management.student-records', compact(
             'students', 'courses', 'schoolYears', 'semesterOptions', 'yearLevels',
             'search', 'program', 'year', 'status', 'graduate', 'sy', 'sem',
-            'totalCount', 'activeCount', 'withdrawnCount', 'graduateCount'
+            'totalCount', 'activeCount', 'withdrawnCount', 'graduateCount',
+            'transfereeCount', 'irregularCount'
         ));
     }
 

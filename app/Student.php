@@ -17,11 +17,14 @@ class Student extends Model
         'scholarship', 'registration_no', 'school_year', 'semester', 'academic_term_id',
         'course_id', 'year_block_id',
         'is_withdrawn', 'withdrawn_date', 'withdrawn_remarks',
+        'is_transferee', 'is_irregular',
     ];
 
     protected $casts = [
         'is_withdrawn' => 'boolean',
         'withdrawn_date' => 'date',
+        'is_transferee' => 'boolean',
+        'is_irregular' => 'boolean',
     ];
 
     /**

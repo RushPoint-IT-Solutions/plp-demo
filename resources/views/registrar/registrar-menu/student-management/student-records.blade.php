@@ -62,12 +62,16 @@
 .sr-status-pill.withdrawn{ border-color:#dc2626; color:#dc2626; background:#fff1f2; }
 .sr-status-pill.graduates{ border-color:#0f766e; color:#0f766e; background:#f0fdfa; }
 .sr-status-pill.non_graduates{ border-color:#7c3aed; color:#6d28d9; background:#f5f3ff; }
+.sr-status-pill.transferee{ border-color:#d97706; color:#b45309; background:#fffbeb; }
+.sr-status-pill.irregular{ border-color:#db2777; color:#be185d; background:#fdf2f8; }
 .sr-status-pill.selected { color:#fff !important; }
 .sr-status-pill.all.selected      { background:#475569; border-color:#475569; }
 .sr-status-pill.active.selected   { background:#16a34a; border-color:#16a34a; }
 .sr-status-pill.withdrawn.selected{ background:#dc2626; border-color:#dc2626; }
 .sr-status-pill.graduates.selected{ background:#0f766e; border-color:#0f766e; }
 .sr-status-pill.non_graduates.selected{ background:#7c3aed; border-color:#7c3aed; }
+.sr-status-pill.transferee.selected{ background:#d97706; border-color:#d97706; }
+.sr-status-pill.irregular.selected{ background:#db2777; border-color:#db2777; }
 
 .sr-view-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .sr-view-toggle {
@@ -119,6 +123,9 @@
 .badge-active    { background:#d1fae5; color:#065f46; }
 .badge-withdrawn { background:#fee2e2; color:#991b1b; }
 .badge-graduate  { background:#ccfbf1; color:#115e59; }
+.badge-transferee{ background:#fef3c7; color:#92400e; }
+.badge-irregular { background:#fce7f3; color:#9d174d; }
+.sr-card-flags   { position:absolute; top:34px; right:10px; display:flex; flex-direction:column; gap:3px; align-items:flex-end; }
 
 .sr-card-body { padding:12px 14px; flex:1; }
 .sr-card-row  { display:flex; align-items:flex-start; gap:6px; margin-bottom:7px; }
@@ -190,6 +197,9 @@
 .sr-table-status.active { background:#dcfce7; color:#166534; }
 .sr-table-status.withdrawn { background:#fee2e2; color:#991b1b; }
 .sr-table-status.graduate { background:#ccfbf1; color:#115e59; }
+.sr-table-status.transferee { background:#fef3c7; color:#92400e; }
+.sr-table-status.irregular { background:#fce7f3; color:#9d174d; }
+.sr-table-flags { display:flex; gap:4px; margin-top:4px; flex-wrap:wrap; }
 .sr-table-actions { display:flex; align-items:center; gap:7px; justify-content:flex-end; white-space:nowrap; }
 .sr-table-empty { text-align:center; color:#64748b; padding:36px 12px !important; }
 
@@ -275,6 +285,24 @@
                 <div class="sr-stat-lbl">Graduates</div>
             </div>
         </div>
+        <div class="sr-stat">
+            <div class="sr-stat-icon" style="background:#fffbeb;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#d97706" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7 12 2l9 5-9 5-9-5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/></svg>
+            </div>
+            <div>
+                <div class="sr-stat-val" style="color:#d97706;">{{ number_format($transfereeCount ?? 0) }}</div>
+                <div class="sr-stat-lbl">Transferee</div>
+            </div>
+        </div>
+        <div class="sr-stat">
+            <div class="sr-stat-icon" style="background:#fdf2f8;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#db2777" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+            </div>
+            <div>
+                <div class="sr-stat-val" style="color:#db2777;">{{ number_format($irregularCount ?? 0) }}</div>
+                <div class="sr-stat-lbl">Irregular</div>
+            </div>
+        </div>
     </div>
 
     {{-- Toolbar --}}
@@ -326,7 +354,7 @@
 
         {{-- Status pills --}}
         <div class="sr-status-bar">
-            @foreach([['all','All Students'],['active','Active'],['withdrawn','Withdrawn']] as [$val,$lbl])
+            @foreach([['all','All Students'],['active','Active'],['withdrawn','Withdrawn'],['transferee','Transferee'],['irregular','Irregular']] as [$val,$lbl])
                 <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records', array_merge(request()->except('status','graduate','page'), ['status'=>$val, 'graduate'=>'all'])) }}"
                    class="sr-status-pill {{ $val }} {{ $status === $val ? 'selected' : '' }}">
                     {{ $lbl }}
@@ -368,6 +396,12 @@
                     <span class="sr-card-badge {{ $isWD ? 'badge-withdrawn' : 'badge-active' }}">
                         {{ $isWD ? 'Withdrawn' : 'Active' }}
                     </span>
+                    @if($s->is_transferee || $s->is_irregular)
+                    <div class="sr-card-flags">
+                        @if($s->is_transferee)<span class="sr-card-badge badge-transferee" style="position:static;">Transferee</span>@endif
+                        @if($s->is_irregular)<span class="sr-card-badge badge-irregular" style="position:static;">Irregular</span>@endif
+                    </div>
+                    @endif
                 </div>
                 <div class="sr-card-body">
                     @if($isGraduate)
@@ -496,6 +530,12 @@
                         </td>
                         <td>
                             <span class="sr-table-status {{ $isWD ? 'withdrawn' : 'active' }}">{{ $isWD ? 'Withdrawn' : 'Active' }}</span>
+                            @if($s->is_transferee || $s->is_irregular)
+                            <div class="sr-table-flags">
+                                @if($s->is_transferee)<span class="sr-table-status transferee">Transferee</span>@endif
+                                @if($s->is_irregular)<span class="sr-table-status irregular">Irregular</span>@endif
+                            </div>
+                            @endif
                         </td>
                         <td>
                             @if($isGraduate)
