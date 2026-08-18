@@ -596,6 +596,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/faculty-file', 'Registrar\Services\AdminToolsController@facultyFileStore')->name('faculty-file.store');
             Route::put('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileUpdate')->name('faculty-file.update');
             Route::delete('/faculty-file/{masterFacultyFile}', 'Registrar\Services\AdminToolsController@facultyFileDestroy')->name('faculty-file.destroy');
+            Route::post('/faculty-file/religion', 'Registrar\Services\AdminToolsController@facultyFileReligionStore')->name('faculty-file.religion.store')->middleware('throttle:30,1');
             Route::get('/student-profile', 'Registrar\Services\AdminToolsController@studentProfile')->name('student-profile');
             Route::post('/student-profile', 'Registrar\Services\AdminToolsController@studentProfileStore')->name('student-profile.store');
             Route::put('/student-profile/{masterStudentProfile}', 'Registrar\Services\AdminToolsController@studentProfileUpdate')->name('student-profile.update');

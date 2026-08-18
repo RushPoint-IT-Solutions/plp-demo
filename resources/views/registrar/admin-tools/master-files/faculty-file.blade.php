@@ -60,6 +60,15 @@
     </div>
 </div>
 @else
+<style>
+    .ffc-combo { position:relative; }
+    .ffc-combo-menu { display:none; position:absolute; z-index:40; top:calc(100% + 4px); left:0; right:0; max-height:220px; overflow-y:auto; background:#fff; border:1px solid #cfd9d2; border-radius:7px; box-shadow:0 8px 20px rgba(0,0,0,.10); }
+    .ffc-combo-menu.show { display:block; }
+    .ffc-combo-option { padding:8px 12px; font-size:.86rem; cursor:pointer; color:#143521; }
+    .ffc-combo-option:hover, .ffc-combo-option.is-active { background:#eef6f1; }
+    .ffc-combo-option.is-others { border-top:1px solid #edf3ef; font-weight:700; color:#146c43; }
+    .ffc-combo-empty { padding:8px 12px; font-size:.82rem; color:#66756b; }
+</style>
 <div class="pf-page">
     <div class="ffc-page">
         <div class="ffc-head-row">
@@ -107,7 +116,14 @@
                 <div class="ffc-field"><label class="app-filter-label">Citizenship</label><input class="app-filter-input" type="text" placeholder="-nationality-"></div>
                 <div class="ffc-field"><label class="app-filter-label">Email Address</label><input class="app-filter-input" type="text" placeholder="Enter Email"></div>
                 <div class="ffc-field"><label class="app-filter-label">Place of Birth</label><input class="app-filter-input" type="text" placeholder="Birthplace"></div>
-                <div class="ffc-field"><label class="app-filter-label">Religion</label><select class="app-filter-select"><option>-select religion-</option></select></div>
+                <div class="ffc-field">
+                    <label class="app-filter-label" for="ffcReligionInput">Religion</label>
+                    <div class="ffc-combo" id="ffcReligionCombo">
+                        <input type="text" class="app-filter-input" id="ffcReligionInput" placeholder="Search or select religion..." autocomplete="off" role="combobox" aria-expanded="false">
+                        <div class="ffc-combo-menu" id="ffcReligionMenu"></div>
+                    </div>
+                    <input type="text" class="app-filter-input" id="ffcReligionOtherInput" placeholder="Enter new religion" style="display:none; margin-top:6px;">
+                </div>
                 <div class="ffc-field"><label class="app-filter-label">Civil Status</label><select class="app-filter-select"><option>-select status-</option><option>Single</option><option>Married</option></select></div>
                 <div class="ffc-field"><label class="app-filter-label">SSS#</label><input class="app-filter-input" type="text" placeholder="SSS #"></div>
                 <div class="ffc-field"><label class="app-filter-label">PhilHealth#</label><input class="app-filter-input" type="text" placeholder="Philhealth #"></div>
@@ -668,8 +684,10 @@
     var ffcFacultyId = @json($cfgId ?? null);
     var ffcCsrf = '{{ csrf_token() }}';
     var ffcUpdateTemplate = '{{ route('registrar.admin-tools.master-files.faculty-file.update', ['masterFacultyFile' => '__ID__']) }}';
+    var ffcReligionStoreUrl = '{{ route('registrar.admin-tools.master-files.faculty-file.religion.store') }}';
     var ffcFormState = @json($cfgFormState ?? []);
     var ffcRows = @json($cfgDetailRows ?? []);
+    var ffcReligionOptions = @json($religions ?? []);
 
     var ffcSections = {
         education: {
@@ -970,32 +988,122 @@
         ffcRenderSection(section);
     }
 
+    var ffcReligionOthersValue = '__others__';
+
+    function ffcInitReligionCombo() {
+        var input = document.getElementById('ffcReligionInput');
+        var menu = document.getElementById('ffcReligionMenu');
+        var otherInput = document.getElementById('ffcReligionOtherInput');
+        if (!input || !menu || !otherInput) return;
+
+        function renderMenu(filter) {
+            var q = (filter || '').trim().toLowerCase();
+            var matches = ffcReligionOptions.filter(function (name) {
+                return name.toLowerCase().indexOf(q) !== -1;
+            });
+
+            var html = matches.length
+                ? matches.map(function (name) {
+                    return '<div class="ffc-combo-option" data-value="' + ffcEscapeHtml(name) + '">' + ffcEscapeHtml(name) + '</div>';
+                }).join('')
+                : '<div class="ffc-combo-empty">No matches</div>';
+
+            html += '<div class="ffc-combo-option is-others" data-value="' + ffcReligionOthersValue + '">+ Others (enter new religion)</div>';
+            menu.innerHTML = html;
+            menu.classList.add('show');
+            input.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeMenu() {
+            menu.classList.remove('show');
+            input.setAttribute('aria-expanded', 'false');
+        }
+
+        function selectValue(value) {
+            if (value === ffcReligionOthersValue) {
+                input.value = '';
+                otherInput.style.display = 'block';
+                otherInput.focus();
+            } else {
+                input.value = value;
+                otherInput.style.display = 'none';
+                otherInput.value = '';
+            }
+            closeMenu();
+        }
+
+        input.addEventListener('focus', function () { renderMenu(input.value); });
+        input.addEventListener('input', function () { renderMenu(input.value); });
+        menu.addEventListener('mousedown', function (event) {
+            var option = event.target.closest('.ffc-combo-option');
+            if (!option || !option.dataset.value) return;
+            event.preventDefault();
+            selectValue(option.dataset.value);
+        });
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('#ffcReligionCombo')) {
+                closeMenu();
+            }
+        });
+
+        // If a religion was restored that isn't in the known list, treat it as a
+        // previously-entered "Others" value and keep the field visible.
+        if (otherInput.value.trim() !== '') {
+            otherInput.style.display = 'block';
+        } else if (input.value.trim() !== '' && ffcReligionOptions.indexOf(input.value.trim()) === -1) {
+            otherInput.value = input.value.trim();
+            otherInput.style.display = 'block';
+        }
+    }
+
+    function ffcResolveReligion() {
+        var input = document.getElementById('ffcReligionInput');
+        var otherInput = document.getElementById('ffcReligionOtherInput');
+        var otherValue = otherInput && otherInput.style.display !== 'none' ? otherInput.value.trim() : '';
+
+        if (!otherValue) {
+            return Promise.resolve();
+        }
+
+        return ffcRequest(ffcReligionStoreUrl, 'POST', { name: otherValue }).then(function (data) {
+            var savedName = (data && data.religion && data.religion.name) ? data.religion.name : otherValue;
+            if (ffcReligionOptions.indexOf(savedName) === -1) {
+                ffcReligionOptions.push(savedName);
+            }
+            input.value = savedName;
+            otherInput.value = '';
+            otherInput.style.display = 'none';
+        });
+    }
+
     function ffcSaveFacultyConfig() {
         if (!ffcFacultyId) {
             alert('Faculty record not found. Please return to list and open a record again.');
             return;
         }
 
-        var payload = {
-            code: (document.getElementById('ffcFacultyCode').value || '').trim(),
-            name: (document.getElementById('ffcFacultyName').value || '').trim(),
-            department: (document.getElementById('ffcOffice').value || '').trim(),
-            status: document.getElementById('ffcFacultyStatusTop').value || 'Active',
-            config_payload: {
-                form_state: ffcCollectFormState(),
-                sections: ffcRows
+        ffcResolveReligion().then(function () {
+            var payload = {
+                code: (document.getElementById('ffcFacultyCode').value || '').trim(),
+                name: (document.getElementById('ffcFacultyName').value || '').trim(),
+                department: (document.getElementById('ffcOffice').value || '').trim(),
+                status: document.getElementById('ffcFacultyStatusTop').value || 'Active',
+                config_payload: {
+                    form_state: ffcCollectFormState(),
+                    sections: ffcRows
+                }
+            };
+
+            if (!payload.name || !payload.department) {
+                alert('Faculty Name and Office Department are required. Faculty Code is generated automatically when blank.');
+                return;
             }
-        };
 
-        if (!payload.name || !payload.department) {
-            alert('Faculty Name and Office Department are required. Faculty Code is generated automatically when blank.');
-            return;
-        }
-
-        ffcRequest(ffcBuildUrl(ffcUpdateTemplate, ffcFacultyId), 'PUT', payload).then(function(data) {
-            ffcFacultyId = data.row.id;
-            ffcFormState = payload.config_payload.form_state;
-            alert('Faculty profile saved successfully.');
+            return ffcRequest(ffcBuildUrl(ffcUpdateTemplate, ffcFacultyId), 'PUT', payload).then(function(data) {
+                ffcFacultyId = data.row.id;
+                ffcFormState = payload.config_payload.form_state;
+                alert('Faculty profile saved successfully.');
+            });
         }).catch(function(error) {
             alert(error.message || 'Unable to save faculty profile.');
         });
@@ -1055,6 +1163,7 @@
 
     ffcRenderAllSections();
     ffcApplyFormState();
+    ffcInitReligionCombo();
 </script>
 @endif
 @endpush
