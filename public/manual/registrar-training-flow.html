@@ -633,8 +633,8 @@
       <div><div class="label">System</div><div class="value">PLP Demo SIS</div></div>
       <div><div class="label">Program</div><div class="value">Registrar UAT</div></div>
       <div><div class="label">Duration</div><div class="value">5 Days</div></div>
-      <div><div class="label">Test Cases</div><div class="value">75</div></div>
-      <div><div class="label">Updated</div><div class="value">15 Aug 2026</div></div>
+      <div><div class="label">Test Cases</div><div class="value">76</div></div>
+      <div><div class="label">Updated</div><div class="value">18 Aug 2026</div></div>
     </div>
   </div>
 
@@ -720,7 +720,7 @@
                 <text x="235" y="52.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">2</text>
                 <text x="231" y="72" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Resources &amp;</text>
                 <text x="231" y="87" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Scheduling</text>
-                <text x="231" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">14 test cases</text>
+                <text x="231" y="103" font-family="var(--font-body)" font-size="11.5" fill="var(--ink-muted)">15 test cases</text>
               </g>
               <g>
                 <rect x="410" y="30" width="165" height="80" rx="9" fill="var(--surface)" stroke="var(--border)"></rect>
@@ -752,11 +752,11 @@
                 <text x="1022" y="49.5" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--surface)">&#10003;</text>
                 <text x="1017" y="70" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">Signed Off</text>
                 <text x="1017" y="86" font-family="var(--font-body)" font-weight="700" font-size="13.5" fill="var(--ink)">/ Go-Live</text>
-                <text x="1017" y="104" font-family="var(--font-body)" font-size="11" fill="var(--ink-muted)">75 / 75 pass</text>
+                <text x="1017" y="104" font-family="var(--font-body)" font-size="11" fill="var(--ink-muted)">76 / 76 pass</text>
               </g>
             </svg>
           </div>
-          <figcaption>Fig. 1 &mdash; 75 test cases in strict build order: nothing in Day 3 can be honestly tested until every Day 1 and Day 2 case passes. Two menu groups present in the codebase &mdash; Admissions and the Scholarship module &mdash; are currently disabled from the live sidebar and are out of scope for this pass; re-add them here if they're switched on.</figcaption>
+          <figcaption>Fig. 1 &mdash; 76 test cases in strict build order: nothing in Day 3 can be honestly tested until every Day 1 and Day 2 case passes. Two menu groups present in the codebase &mdash; Admissions and the Scholarship module &mdash; are currently disabled from the live sidebar and are out of scope for this pass; re-add them here if they're switched on.</figcaption>
         </figure>
       </section>
 
@@ -825,16 +825,16 @@
 
       <section id="day-2">
         <h2>6. Day 2 &mdash; Resources, Term &amp; Class Scheduling</h2>
-        <p class="section-kicker">14 test cases &middot; turning Day 1's curriculum into an actual, bookable class schedule</p>
+        <p class="section-kicker">15 test cases &middot; turning Day 1's curriculum into an actual, bookable class schedule</p>
         <div class="callout callout--dep">
           <span class="callout-label">Why this is Day 2</span>
           <p>A section needs a room and a teacher before it can hold a class, and it needs an open term before it can exist at all. This day builds every physical and human resource, opens the term, and produces the class schedule &mdash; the last thing that has to exist before a student can be enrolled in anything.</p>
         </div>
         <div class="day-walkthrough">
-          <div class="day-instructions"><span class="day-label">Day 2 walkthrough</span><h3>Turn the curriculum into classes</h3><ol class="steps"><li><div><strong>Add resources.</strong>Create or verify faculty, buildings, hallways, rooms, and room-subject rules.</div></li><li><div><strong>Open the term.</strong>Set the school year, semester, grading periods, and enrollment window.</div></li><li><div><strong>Schedule and conflict-check.</strong>Create sections, assign subjects, rooms, and faculty, then resolve every overlap.</div></li></ol><span class="menu-path">Registrar Menu &rarr; Scheduling</span><a class="process-jump" href="#day-2-processes">View 14 breakdowns &darr;</a></div>
+          <div class="day-instructions"><span class="day-label">Day 2 walkthrough</span><h3>Turn the curriculum into classes</h3><ol class="steps"><li><div><strong>Add resources.</strong>Create or verify faculty, buildings, hallways, rooms, and room-subject rules.</div></li><li><div><strong>Open the term.</strong>Set the school year, semester, grading periods, and enrollment window.</div></li><li><div><strong>Schedule and conflict-check.</strong>Create sections, assign subjects, rooms, and faculty, then resolve every overlap.</div></li></ol><span class="menu-path">Registrar Menu &rarr; Scheduling</span><a class="process-jump" href="#day-2-processes">View 15 breakdowns &darr;</a></div>
           <figure class="day-screen"><img src="/manual/media/registrar-day-2-scheduling.png" alt="Live Registrar Class Schedule Preparation screen with term filters and scheduled classes"><figcaption>Live screen &mdash; Class Schedule Preparation. Filter the term, review room and instructor assignments, and resolve rows needing attention.</figcaption></figure>
         </div>
-        <div class="table-intro" id="day-2-processes"><h3>Day 2 process breakdowns</h3><span>Run D2-01 through D2-14 in order</span></div>
+        <div class="table-intro" id="day-2-processes"><h3>Day 2 process breakdowns</h3><span>Run D2-01 through D2-15 in order</span></div>
         <div class="table-wrap">
           <table class="uat">
             <thead><tr><th style="width:56px">ID</th><th style="width:190px">Process</th><th>Step-by-Step Actions</th><th>Expected Result</th><th style="width:230px">Image Result</th><th style="width:70px">Result</th><th style="width:130px">Sign-off</th></tr></thead>
@@ -853,11 +853,12 @@
               <tr><td class="uat-id">D2-12</td><td class="uat-feature">Section Merging</td><td>Open Section Merging; merge two under-enrolled sections of the same subject.</td><td class="uat-expected">Both sections' students consolidate into one section with a consistent schedule.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-13</td><td class="uat-feature">Deans &amp; Faculty Coordination</td><td>Open Deans &amp; Faculty Coordination; review the coordination view for the test program's college.</td><td class="uat-expected">View surfaces this term's sections and faculty needing dean sign-off.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
               <tr><td class="uat-id">D2-14</td><td class="uat-feature">Promotion Readiness</td><td>Open Promotion Readiness; review the (currently empty) readiness list for the test program.</td><td class="uat-expected">Screen loads without error; list will populate once students exist from Day 3 onward.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td class="uat-id">D2-15</td><td class="uat-feature">Data Imports</td><td>Open System &rarr; Data Imports; download the Rooms template, fill in a batch of rooms (including the D2-03 room), validate the file, then confirm the import; repeat for a Section Offerings or Schedules CSV against the D2-06/D2-07 term.</td><td class="uat-expected">Validation reports row-level errors without importing; confirming a clean file bulk-creates or updates the records, which immediately appear in Room File / Class Schedule Preparation exactly as if entered by hand.</td><td><div class="result-box"><label><span class="chk"></span>Pass</label><label><span class="chk"></span>Fail</label></div></td><td><span class="blank-cell"></span></td></tr>
             </tbody>
           </table>
         </div>
         <div class="signoff-bar">
-          <div class="stat"><span class="k">Test cases</span><span class="v">14</span></div>
+          <div class="stat"><span class="k">Test cases</span><span class="v">15</span></div>
           <div class="stat"><span class="k">Passed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
           <div class="stat"><span class="k">Failed</span><span class="v"><span class="blank-cell" style="min-width:60px"></span></span></div>
           <div class="sign"><div>Day 2 accepted by<span class="blank-cell"></span></div><div>Date<span class="blank-cell"></span></div></div>
@@ -994,18 +995,18 @@
       <section id="certification">
         <h2>10. Sign-off &amp; go-live</h2>
         <p class="section-kicker">What "accepted" means before the office goes live</p>
-        <p>The Portal is ready for live use once every one of the 75 rows above reads Pass, or every Fail has a linked fix that was re-tested and now reads Pass. Because each day's data feeds the next, a Fail on an earlier day should pause testing on whatever downstream row depends on it rather than being tested against broken data.</p>
+        <p>The Portal is ready for live use once every one of the 76 rows above reads Pass, or every Fail has a linked fix that was re-tested and now reads Pass. Because each day's data feeds the next, a Fail on an earlier day should pause testing on whatever downstream row depends on it rather than being tested against broken data.</p>
 
         <div class="table-wrap">
           <table>
             <thead><tr><th style="width:110px">Day</th><th>Area</th><th style="width:100px">Cases</th><th style="width:110px">Passed</th><th style="width:110px">Failed</th></tr></thead>
             <tbody>
               <tr><td>Day 1</td><td>System &amp; Academic Structure Setup</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
-              <tr><td>Day 2</td><td>Resources, Term &amp; Class Scheduling</td><td>14</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td>Day 2</td><td>Resources, Term &amp; Class Scheduling</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
               <tr><td>Day 3</td><td>Students, Enrollment &amp; Classroom Ops</td><td>13</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
               <tr><td>Day 4</td><td>Grading &amp; Academic Records</td><td>15</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
               <tr><td>Day 5</td><td>Requests, Reports &amp; System</td><td>18</td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
-              <tr><td><strong>Total</strong></td><td></td><td><strong>75</strong></td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
+              <tr><td><strong>Total</strong></td><td></td><td><strong>76</strong></td><td><span class="blank-cell"></span></td><td><span class="blank-cell"></span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1014,7 +1015,7 @@
           <table>
             <thead><tr><th>Go-live checklist</th><th style="width:220px">Owner</th></tr></thead>
             <tbody>
-              <tr><td>All 75 test cases read Pass, or every Fail has a re-tested fix</td><td>Training facilitator / QA</td></tr>
+              <tr><td>All 76 test cases read Pass, or every Fail has a re-tested fix</td><td>Training facilitator / QA</td></tr>
               <tr><td>Test/sandbox data (the test program, test student, etc.) cleared before go-live</td><td>Registrar (role administrator)</td></tr>
               <tr><td>Current academic term and grading periods confirmed (D1-02, D1-13)</td><td>Registrar</td></tr>
               <tr><td>Signatories list up to date for COR, TOR, and clearance forms (D1-01)</td><td>Registrar</td></tr>
