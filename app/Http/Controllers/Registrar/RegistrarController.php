@@ -22869,6 +22869,387 @@ JSON
     }
 
     /**
+     * Generic sanitizer shared by document layout editors (TOR, COR, ...).
+     * Kept separate from sanitizeHonorableDismissalLayout() so the already
+     * shipped Honorable Dismissal editor is never touched by other documents.
+     */
+    private function sanitizeDocumentElementLayout(array $layout, float $widthMm, float $heightMm): array
+    {
+        $allowedFonts = ['Arial', 'Times New Roman', 'Courier New', 'Georgia'];
+        $clean = [
+            'page' => [
+                'width_mm' => $widthMm,
+                'height_mm' => $heightMm,
+                'orientation' => 'portrait',
+                'background' => '#ffffff',
+            ],
+            'elements' => [],
+        ];
+
+        foreach ($layout['elements'] as $element) {
+            $font = in_array(($element['font_family'] ?? 'Arial'), $allowedFonts, true) ? $element['font_family'] : 'Arial';
+            $clean['elements'][] = [
+                'id' => (string) $element['id'],
+                'type' => 'text',
+                'text' => (string) $element['text'],
+                'top' => round((float) $element['top'], 3),
+                'left' => round((float) $element['left'], 3),
+                'width' => round((float) ($element['width'] ?? 30), 3),
+                'font_family' => $font,
+                'font_size' => round((float) ($element['font_size'] ?? 12), 2),
+                'font_weight' => ($element['font_weight'] ?? 'normal') === 'bold' ? 'bold' : 'normal',
+                'font_style' => ($element['font_style'] ?? 'normal') === 'italic' ? 'italic' : 'normal',
+                'text_decoration' => ($element['text_decoration'] ?? 'none') === 'underline' ? 'underline' : 'none',
+                'text_align' => in_array(($element['text_align'] ?? 'left'), ['left', 'center', 'right', 'justify'], true) ? $element['text_align'] : 'left',
+                'line_height' => round((float) ($element['line_height'] ?? 1.25), 2),
+            ];
+        }
+
+        return $clean;
+    }
+
+    private function documentTemplateLayoutValidationRules(): array
+    {
+        return [
+            'content_json' => 'required|array',
+            'content_json.page' => 'nullable|array',
+            'content_json.elements' => 'required|array|min:1',
+            'content_json.elements.*.id' => 'required|string|max:80',
+            'content_json.elements.*.type' => 'required|string|in:text',
+            'content_json.elements.*.text' => 'nullable|string',
+            'content_json.elements.*.top' => 'required|numeric|min:0|max:100',
+            'content_json.elements.*.left' => 'required|numeric|min:0|max:100',
+            'content_json.elements.*.width' => 'nullable|numeric|min:1|max:100',
+            'content_json.elements.*.font_family' => 'nullable|string|max:80',
+            'content_json.elements.*.font_size' => 'nullable|numeric|min:6|max:96',
+            'content_json.elements.*.font_weight' => 'nullable|string|in:normal,bold',
+            'content_json.elements.*.font_style' => 'nullable|string|in:normal,italic',
+            'content_json.elements.*.text_decoration' => 'nullable|string|in:none,underline',
+            'content_json.elements.*.text_align' => 'nullable|string|in:left,center,right,justify',
+            'content_json.elements.*.line_height' => 'nullable|numeric|min:0.8|max:3',
+        ];
+    }
+
+    /* ── TOR (Transcript of Records) editable layout ─────────────────── */
+
+    public function getTorTemplateLayout(Request $request, $studentId = null): JsonResponse
+    {
+        if (!Schema::hasTable('document_templates')) {
+            return response()->json(['success' => false, 'message' => 'Document templates table is not available. Run migrations first.'], 500);
+        }
+
+        $template = $this->torTemplate();
+        $layout = $template->content_json ?: $this->defaultTorTemplateLayout();
+        $student = $studentId ? Student::with(['profile', 'canonicalCourse'])->find($studentId) : null;
+
+        if ($student) {
+            $layout = $this->resolveTorTokens($layout, $student);
+        }
+
+        return response()->json([
+            'success' => true,
+            'template' => [
+                'id' => $template->id,
+                'name' => $template->name,
+                'slug' => $template->slug,
+                'content_json' => $layout,
+            ],
+        ]);
+    }
+
+    public function saveTorTemplateLayout(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('document_templates')) {
+            return response()->json(['success' => false, 'message' => 'Document templates table is not available. Run migrations first.'], 500);
+        }
+
+        $payload = $request->validate($this->documentTemplateLayoutValidationRules());
+        $layout = $this->sanitizeDocumentElementLayout($payload['content_json'], 215.9, 279.4);
+        $template = $this->torTemplate();
+        $template->content_json = $layout;
+        $template->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transcript of Records layout template saved.',
+            'template' => [
+                'id' => $template->id,
+                'name' => $template->name,
+                'slug' => $template->slug,
+                'content_json' => $template->content_json,
+            ],
+        ]);
+    }
+
+    private function torTemplate(): DocumentTemplate
+    {
+        return DocumentTemplate::firstOrCreate(
+            ['slug' => 'tor'],
+            [
+                'name' => 'Transcript of Records',
+                'content_json' => $this->defaultTorTemplateLayout(),
+            ]
+        );
+    }
+
+    private function defaultTorTemplateLayout(): array
+    {
+        return [
+            'page' => ['width_mm' => 215.9, 'height_mm' => 279.4, 'orientation' => 'portrait', 'background' => '#ffffff'],
+            'elements' => [
+                ['id' => 'sd_header', 'type' => 'text', 'text' => 'STUDENT DATA', 'top' => 18, 'left' => 7, 'width' => 86, 'font_family' => 'Times New Roman', 'font_size' => 11, 'font_weight' => 'bold', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'center', 'line_height' => 1.1],
+                ['id' => 'student_fields', 'type' => 'text', 'text' => "{{student_fields}}", 'top' => 21.5, 'left' => 7, 'width' => 60, 'font_family' => 'Times New Roman', 'font_size' => 9.5, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.4],
+                ['id' => 'sr_header', 'type' => 'text', 'text' => 'SCHOLASTIC RECORD', 'top' => 46, 'left' => 7, 'width' => 86, 'font_family' => 'Times New Roman', 'font_size' => 11, 'font_weight' => 'bold', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'center', 'line_height' => 1.1],
+                ['id' => 'scholastic_fields', 'type' => 'text', 'text' => "{{scholastic_record_fields}}", 'top' => 49, 'left' => 7, 'width' => 60, 'font_family' => 'Times New Roman', 'font_size' => 9.5, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.35],
+                ['id' => 'grading_system_box', 'type' => 'text', 'text' => "GRADING SYSTEM\n1.00 = 97.5-100   2.25 = 82.5-85.4   INC = Incomplete\n1.25 = 94.5-97.4   2.50 = 79.5-82.4   OD = Officially Dropped\n1.50 = 91.5-94.4   2.75 = 76.5-79.4   UD = Unofficially Dropped\n1.75 = 88.5-91.4   3.00 = 74.5-76.4   NC = No Credit\n2.00 = 85.5-88.4   5.00 = 74.4 & below   GNA = Grade Not Available\nCredits: One unit of credit is one hour lecture or recitation or three\nhours of laboratory work each week for a complete semester.", 'top' => 64.5, 'left' => 7, 'width' => 52, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.3],
+                ['id' => 'remarks_box', 'type' => 'text', 'text' => "REMARKS\n{{remarks_value}}", 'top' => 64.5, 'left' => 62, 'width' => 31, 'font_family' => 'Arial', 'font_size' => 10, 'font_weight' => 'bold', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'center', 'line_height' => 1.6],
+                ['id' => 'legal_notice', 'type' => 'text', 'text' => "This copy is an exact reproduction of the original transcript on file with the Office of the University Registrar and should be considered as an original copy when signed by the university registrar and impressed with the university seal. Any erasure or alteration on this transcript renders the whole document invalid unless authenticated by the signature of the foregoing official.", 'top' => 76.5, 'left' => 7, 'width' => 86, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'justify', 'line_height' => 1.3],
+                ['id' => 'sig_prepared', 'type' => 'text', 'text' => "Prepared by:\n{{prepared_by_name}}\n{{prepared_by_title}}", 'top' => 84, 'left' => 10, 'width' => 38, 'font_family' => 'Arial', 'font_size' => 9.5, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.3],
+                ['id' => 'sig_checked', 'type' => 'text', 'text' => "Checked by:\n{{checked_by_name}}\n{{checked_by_title}}", 'top' => 84, 'left' => 55, 'width' => 38, 'font_family' => 'Arial', 'font_size' => 9.5, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.3],
+                ['id' => 'sig_certified', 'type' => 'text', 'text' => "Certified True and Correct:\n{{certified_by_name}}\n{{certified_by_title}}", 'top' => 89, 'left' => 28, 'width' => 44, 'font_family' => 'Arial', 'font_size' => 9.5, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'center', 'line_height' => 1.3],
+                ['id' => 'footer_note', 'type' => 'text', 'text' => "Not Valid Without University Seal\nDate Issued: {{date_issued}}", 'top' => 95, 'left' => 13, 'width' => 45, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'italic', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.3],
+                ['id' => 'footer_page', 'type' => 'text', 'text' => "Page 1", 'top' => 95, 'left' => 78, 'width' => 15, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'right', 'line_height' => 1.3],
+            ],
+        ];
+    }
+
+    private function resolveTorTokens(array $layout, Student $student): array
+    {
+        $prof = $student->profile;
+        $course = optional($student->canonicalCourse)->name ?: $student->program ?: '—';
+        $courseCode = optional($student->canonicalCourse)->code ?: '—';
+        $fullName = $prof ? strtoupper(trim($prof->last_name . ', ' . $prof->first_name . ' ' . ($prof->middle_name ? $prof->middle_name[0] . '.' : '') . ($prof->suffix ? ' ' . $prof->suffix : ''))) : strtoupper($student->name);
+
+        $graduateTagging = Schema::hasTable('graduate_taggings') ? GraduateTagging::where('student_id', $student->id)->first() : null;
+        $isGraduated = $graduateTagging && $graduateTagging->is_graduate;
+
+        $isK12 = $prof && !$prof->no_k12 && ($prof->junior_school || $prof->senior_school);
+        $isCtpCompleter = $isGraduated && strtoupper($courseCode) === 'CTP';
+
+        if ($isCtpCompleter) {
+            $scholasticLines = 'School Last Attended  :  ' . (($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A')
+                . "\n" . 'Year Graduated        :  ' . (($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A');
+        } elseif ($isK12) {
+            $scholasticLines = 'Elementary            :  ' . ($prof->elementary_school ?: 'N/A')
+                . "\n" . 'Year Graduated        :  ' . ($prof->elementary_year_graduated ?: 'N/A')
+                . "\n" . 'Junior High School    :  ' . ($prof->junior_school ?: 'N/A')
+                . "\n" . 'Year Graduated        :  ' . ($prof->junior_school_year_graduated ?: 'N/A')
+                . "\n" . 'Senior High School    :  ' . ($prof->senior_school ?: 'N/A')
+                . "\n" . 'Year Graduated        :  ' . ($prof->senior_school_year_graduated ?: 'N/A')
+                . "\n" . 'School Last Attended  :  ' . (($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A')
+                . "\n" . 'Year Graduated        :  ' . (($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A');
+        } else {
+            $scholasticLines = 'Elementary            :  ' . (($prof && $prof->elementary_school) ? $prof->elementary_school : 'N/A')
+                . "\n" . 'Year Graduated        :  ' . (($prof && $prof->elementary_year_graduated) ? $prof->elementary_year_graduated : 'N/A')
+                . "\n" . 'High School           :  ' . (($prof && $prof->high_school) ? $prof->high_school : 'N/A')
+                . "\n" . 'Year Graduated        :  ' . (($prof && $prof->high_school_year_graduated) ? $prof->high_school_year_graduated : 'N/A')
+                . "\n" . 'School Last Attended  :  ' . (($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A')
+                . "\n" . 'Year Graduated        :  ' . (($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A');
+        }
+
+        $signatories = collect([]);
+        if (Schema::hasTable('system_config_name_signatures') && Schema::hasTable('system_config_signature_designations')) {
+            $signatories = DB::table('system_config_name_signatures as s')
+                ->join('system_config_signature_designations as d', 's.designation_id', '=', 'd.id')
+                ->where('s.is_active', 1)
+                ->orderBy('d.sort_order')
+                ->select('s.signer_name', 's.signature_path', 'd.name as designation_name', 'd.code')
+                ->get();
+        }
+        $registrar = $signatories->first(function ($s) {
+            return stripos($s->designation_name, 'university registrar') !== false;
+        }) ?? $signatories->first(function ($s) {
+            return stripos($s->designation_name, 'registrar') !== false;
+        }) ?? $signatories->first();
+        $assistantRegistrar = $signatories->first(function ($s) {
+            return stripos($s->designation_name, 'assistant registrar') !== false;
+        });
+
+        $purposeOptions = [
+            'FOR EVALUATION PURPOSES ONLY', 'FOR EMPLOYMENT PURPOSES ONLY', 'FOR TRAVEL PURPOSES ONLY',
+            'FOR FURTHER STUDIES PURPOSES ONLY', 'FOR PROMOTION PURPOSES ONLY', 'FOR BROKER EXAMINATION PURPOSES ONLY',
+            'FOR BOARD EXAMINATION PURPOSES ONLY', 'FOR COMPANY VERIFICATION PURPOSES ONLY',
+        ];
+        $purpose = request()->query('purpose');
+        if (!in_array($purpose, $purposeOptions, true)) {
+            $purpose = $purposeOptions[0];
+        }
+
+        $address = ($prof && $prof->present_municipality) ? trim(($prof->present_street ? $prof->present_street . ', ' : '') . ($prof->present_barangay ? $prof->present_barangay . ', ' : '') . $prof->present_municipality . ', ' . $prof->present_province) : 'N/A';
+        $dateOfCompletion = ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : 'N/A';
+
+        $studentFieldsText = 'Student Number        :  ' . ($student->student_no ?? 'N/A')
+            . "\n" . 'Name                  :  ' . $fullName
+            . "\n" . 'Address               :  ' . $address
+            . "\n" . 'Sex                   :  ' . ($student->sex ?? 'N/A')
+            . "\n" . 'Date of Birth         :  ' . (($prof && $prof->date_of_birth) ? $prof->date_of_birth->format('F j, Y') : 'N/A')
+            . "\n" . 'Place of Birth        :  ' . (($prof && $prof->place_of_birth) ? $prof->place_of_birth : 'N/A')
+            . "\n" . 'Date of Admission     :  N/A'
+            . "\n" . 'Admission Credentials :  N/A'
+            . "\n" . 'Program               :  ' . $course . ($courseCode !== '—' ? ' (' . $courseCode . ')' : '')
+            . "\n" . 'Date of Completion    :  ' . $dateOfCompletion
+            . "\n" . 'Date of Graduation    :  ' . $dateOfCompletion
+            . "\n" . 'Resolution No.        :  ' . (($isGraduated && $graduateTagging->so_number) ? $graduateTagging->so_number : 'N/A');
+
+        $tokens = [
+            '{{student_fields}}' => $studentFieldsText,
+            '{{scholastic_record_fields}}' => $scholasticLines,
+            '{{remarks_value}}' => $purpose,
+            '{{prepared_by_name}}' => 'Registrar Staff',
+            '{{prepared_by_title}}' => 'College Secretary',
+            '{{checked_by_name}}' => $assistantRegistrar->signer_name ?? 'Assistant Registrar',
+            '{{checked_by_title}}' => $assistantRegistrar->designation_name ?? 'Assistant Registrar',
+            '{{certified_by_name}}' => $registrar->signer_name ?? 'University Registrar',
+            '{{certified_by_title}}' => $registrar->designation_name ?? 'University Registrar',
+            '{{date_issued}}' => now()->format('M d, Y'),
+        ];
+
+        foreach (($layout['elements'] ?? []) as $index => $element) {
+            $text = (string) ($element['text'] ?? '');
+            $layout['elements'][$index]['resolved_text'] = strtr($text, $tokens);
+        }
+
+        return $layout;
+    }
+
+    /* ── COR (Certificate of Registration) editable header layout ────────
+       Only the fixed enrollment/student/course meta block + scholarship
+       line are editable. The Assessment of Fees box, signatures, stamp,
+       and the subjects table stay exactly as before (fees box is a fixed
+       set of rows but tightly tied to computed totals; the subjects table
+       is genuinely variable-length per student). ── */
+
+    public function getCorTemplateLayout(Request $request, $studentId = null): JsonResponse
+    {
+        if (!Schema::hasTable('document_templates')) {
+            return response()->json(['success' => false, 'message' => 'Document templates table is not available. Run migrations first.'], 500);
+        }
+
+        $template = $this->corTemplate();
+        $layout = $template->content_json ?: $this->defaultCorTemplateLayout();
+        $student = $studentId ? Student::with(['profile', 'canonicalCourse', 'academicTerm'])->find($studentId) : null;
+
+        if ($student) {
+            $layout = $this->resolveCorTokens($layout, $student);
+        }
+
+        return response()->json([
+            'success' => true,
+            'template' => [
+                'id' => $template->id,
+                'name' => $template->name,
+                'slug' => $template->slug,
+                'content_json' => $layout,
+            ],
+        ]);
+    }
+
+    public function saveCorTemplateLayout(Request $request): JsonResponse
+    {
+        if (!Schema::hasTable('document_templates')) {
+            return response()->json(['success' => false, 'message' => 'Document templates table is not available. Run migrations first.'], 500);
+        }
+
+        $payload = $request->validate($this->documentTemplateLayoutValidationRules());
+        $layout = $this->sanitizeDocumentElementLayout($payload['content_json'], 215.9, 355.6);
+        $template = $this->corTemplate();
+        $template->content_json = $layout;
+        $template->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Certificate of Registration header layout saved.',
+            'template' => [
+                'id' => $template->id,
+                'name' => $template->name,
+                'slug' => $template->slug,
+                'content_json' => $template->content_json,
+            ],
+        ]);
+    }
+
+    private function corTemplate(): DocumentTemplate
+    {
+        return DocumentTemplate::firstOrCreate(
+            ['slug' => 'cor'],
+            [
+                'name' => 'Certificate of Registration (header)',
+                'content_json' => $this->defaultCorTemplateLayout(),
+            ]
+        );
+    }
+
+    private function defaultCorTemplateLayout(): array
+    {
+        return [
+            'page' => ['width_mm' => 215.9, 'height_mm' => 355.6, 'orientation' => 'portrait', 'background' => '#ffffff'],
+            'elements' => [
+                ['id' => 'meta_col1', 'type' => 'text', 'text' => "Enrollment No: {{enrollment_no}}\nStudent No: {{student_no}}\nStudent Name: {{student_name}}\nAddress: {{address}}\nCourse: {{course}}\nDepartment: {{department}}", 'top' => 2, 'left' => 4, 'width' => 60, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5],
+                ['id' => 'meta_col2', 'type' => 'text', 'text' => "Enrollment Date: {{enrollment_date}}\nCurriculum: {{curriculum}}\nSchool Year: {{school_year}}", 'top' => 2, 'left' => 66, 'width' => 34, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5],
+                ['id' => 'meta_col3', 'type' => 'text', 'text' => "Year Level: {{year_level}}\nStudent Type: {{student_type}}\nAdjustment No: {{adjustment_no}}", 'top' => 46, 'left' => 66, 'width' => 34, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5],
+                ['id' => 'scholarship_line', 'type' => 'text', 'text' => "Scholarship/Grant:  {{scholarship}}", 'top' => 82, 'left' => 4, 'width' => 92, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'bold', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.2],
+            ],
+        ];
+    }
+
+    private function resolveCorTokens(array $layout, Student $student): array
+    {
+        $prof = $student->profile;
+
+        $formattedSchoolYear = trim((string) $student->school_year);
+        if ($formattedSchoolYear === '' && $student->relationLoaded('academicTerm')) {
+            $formattedSchoolYear = trim((string) optional($student->academicTerm)->school_year);
+        }
+        $formattedSemester = strtoupper(trim((string) $student->semester));
+        if ($formattedSemester === '' && $student->relationLoaded('academicTerm')) {
+            $formattedSemester = strtoupper(trim((string) optional($student->academicTerm)->term));
+        }
+        $semesterLabel = $formattedSemester !== ''
+            ? (strpos($formattedSemester, 'SEMESTER') !== false ? $formattedSemester : $formattedSemester . ' SEMESTER')
+            : '-';
+        $academicYearLabel = $formattedSchoolYear !== '' ? $formattedSchoolYear : '-';
+        $schoolYearLabel = $academicYearLabel . ($semesterLabel !== '-' ? ' / ' . $semesterLabel : '');
+
+        $programText = trim((string) $student->program);
+        if ($programText === '' && $student->relationLoaded('canonicalCourse')) {
+            $programText = trim((string) (optional($student->canonicalCourse)->name ?: optional($student->canonicalCourse)->code));
+        }
+        $programText = $programText !== '' ? $programText : '-';
+
+        $addressParts = array_filter([
+            trim((string) optional($prof)->present_street),
+            trim((string) optional($prof)->present_barangay),
+            trim((string) optional($prof)->present_municipality),
+            trim((string) optional($prof)->present_province),
+        ]);
+        $addressText = count($addressParts) ? implode(', ', $addressParts) : trim((string) $student->address);
+        $addressText = $addressText !== '' ? $addressText : '-';
+
+        $tokens = [
+            '{{enrollment_no}}' => (string) ($student->registration_no ?: $student->id ?: '-'),
+            '{{student_no}}' => (string) ($student->student_no ?: '-'),
+            '{{student_name}}' => strtoupper(trim((string) $student->name)) ?: '-',
+            '{{address}}' => $addressText,
+            '{{course}}' => $programText,
+            '{{department}}' => (string) ($student->college ?: $student->department ?: '-'),
+            '{{enrollment_date}}' => optional($student->created_at)->format('m/d/Y') ?: '-',
+            '{{curriculum}}' => (string) ($student->curriculum ?: '-'),
+            '{{school_year}}' => $schoolYearLabel,
+            '{{year_level}}' => (string) ($student->year_level ?: '-'),
+            '{{student_type}}' => (string) ($student->student_type ?: 'Old Student'),
+            '{{adjustment_no}}' => (string) ($student->adjustment_no ?: $student->registration_no ?: '-'),
+            '{{scholarship}}' => 'UNIFIED FINANCIAL ASSISTANCE FOR TERTIARY EDUCATION',
+        ];
+
+        foreach (($layout['elements'] ?? []) as $index => $element) {
+            $text = (string) ($element['text'] ?? '');
+            $layout['elements'][$index]['resolved_text'] = strtr($text, $tokens);
+        }
+
+        return $layout;
+    }
+
+    /**
      * Registrar > Forms > Official Grade Report
      */
     public function formsOfficialGradeReport(Request $request)

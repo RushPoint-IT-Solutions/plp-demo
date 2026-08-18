@@ -340,6 +340,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/student-records/{student}/clinic', 'Registrar\RegistrarController@studentClinicRecordSave')->name('student-records.clinic.save');
             Route::delete('/student-records/{student}/clinic/{clinic}', 'Registrar\RegistrarController@studentClinicRecordDelete')->name('student-records.clinic.delete');
             Route::get('/student-records/{student}/print/tor', 'Registrar\RegistrarController@studentPrintTor')->name('student-records.print.tor');
+            Route::get('/student-records/{student}/print/tor/layout', 'Registrar\RegistrarController@getTorTemplateLayout')->name('student-records.print.tor.layout');
+            Route::post('/student-records/print/tor/layout', 'Registrar\RegistrarController@saveTorTemplateLayout')->name('student-records.print.tor.layout.save')->middleware('throttle:30,1');
             Route::get('/student-records/{student}/print/diploma', 'Registrar\RegistrarController@studentPrintDiploma')->name('student-records.print.diploma');
             Route::get('/student-records/{student}/report-of-grades', 'Registrar\RegistrarController@studentRecordReportOfGrades')->name('student-records.report-of-grades');
             Route::post('/student-records/religion', 'Registrar\RegistrarController@studentRecordReligionStore')->name('student-records.religion.store')->middleware('throttle:30,1');
@@ -455,6 +457,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::prefix('cor')->name('cor.')->group(function () {
                 Route::get('/students/search', 'Registrar\\RegistrarController@formsCorStudentSearch')->name('students.search');
                 Route::get('/certificate-of-registration', 'Registrar\\RegistrarController@formsCertificateOfRegistration')->name('certificate-of-registration');
+                Route::get('/layout/{student?}', 'Registrar\\RegistrarController@getCorTemplateLayout')->name('layout');
+                Route::post('/layout', 'Registrar\\RegistrarController@saveCorTemplateLayout')->name('layout.save')->middleware('throttle:30,1');
             });
         });
     });

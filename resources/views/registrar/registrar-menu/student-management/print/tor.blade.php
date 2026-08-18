@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Transcript of Records – {{ strtoupper($student->name) }}</title>
 <style>
 *  { box-sizing:border-box; margin:0; padding:0; font-family:'Times New Roman',Times,serif; }
@@ -33,6 +34,40 @@ body { background:#f0f0f0; color:#000; }
 
 /* ── header space — blank; the letterhead is pre-printed on the physical paper ── */
 .tor-header-space { height:45mm; }
+
+/* ── editable layout (page 1 fixed content: student data, scholastic record,
+     grading system, remarks, legal notice, signatures, footer). The grade
+     table on page 2 stays server-rendered since its row count is per-student. ── */
+.tor-page1-frame { position:relative; height:279.4mm; margin:-12mm -15mm 0; }
+.tor-sheet { position:absolute; top:0; left:0; right:0; bottom:0; }
+.tor-tpl-element { position:absolute; white-space:pre-wrap; outline:none; cursor:default; padding:1px 3px; border:1px dashed transparent; }
+body.tor-editing .tor-tpl-element { cursor:move; }
+body.tor-editing .tor-tpl-element:hover { border-color:#0a7a3f66; }
+.tor-tpl-element.is-selected { border-color:#0a7a3f; background:rgba(10,122,63,.06); }
+.tor-photo-box-fixed { position:absolute; top:21.5%; left:71%; width:18%; text-align:center; }
+.tor-photo-box-fixed .tor-sd-photo-box { width:100%; aspect-ratio:130/150; }
+
+.tor-edit-toggle-btn {
+    background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5); border-radius:6px;
+    padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:Arial,sans-serif;
+}
+.tor-edit-toggle-btn.is-active { background:#fff; color:#004d27; }
+
+.tor-editor-toolbar {
+    display:none; position:fixed; top:64px; right:16px; z-index:200; width:220px;
+    padding:10px; border:1px solid #cbd5d1; border-radius:8px; background:#fff;
+    box-shadow:0 8px 20px rgba(0,0,0,.18); gap:7px; font-family:Arial,sans-serif;
+}
+.tor-editor-toolbar.is-visible { display:grid; }
+.tor-editor-toolbar select, .tor-editor-toolbar input, .tor-editor-toolbar button {
+    height:30px; border:1px solid #cbd5d1; border-radius:5px; font-size:.78rem; font-family:Arial,sans-serif;
+}
+.tor-editor-toolbar button { font-weight:800; cursor:pointer; background:#fff; }
+.tor-editor-toolbar button.is-active { background:#0a7a3f; border-color:#0a7a3f; color:#fff; }
+.tor-editor-toolbar label { display:grid; grid-template-columns:42px 1fr; align-items:center; gap:6px; font-size:.74rem; font-weight:700; color:#333; }
+.tor-editor-toolbar .tor-toolbar-row { display:flex; gap:6px; }
+.tor-editor-toolbar .tor-toolbar-row select { flex:1; }
+.tor-editor-toolbar .tor-toolbar-row button { flex:0 0 30px; }
 
 /* ── section bar (STUDENT DATA / SCHOLASTIC RECORD) ── */
 .tor-section-bar {
@@ -112,8 +147,10 @@ body { background:#f0f0f0; color:#000; }
 @media print {
     body { background:#fff; }
     .tor-toolbar { display:none !important; }
+    .tor-editor-toolbar { display:none !important; }
     .tor-page { margin:0; box-shadow:none; padding:10mm 14mm; width:auto; min-height:0; }
     .tor-tbl tr { page-break-inside:avoid; }
+    .tor-tpl-element { border-color:transparent !important; background:transparent !important; }
     @page { size:letter portrait; margin:10mm; }
 }
 </style>
@@ -132,8 +169,36 @@ body { background:#f0f0f0; color:#000; }
             </select>
         </label>
         <a href="{{ url()->previous() }}">← Back to Profile</a>
+        <button type="button" class="tor-edit-toggle-btn" id="torEditToggleBtn" onclick="torToggleEdit()">✎ Edit Layout</button>
+        <button type="button" class="tor-edit-toggle-btn" id="torSaveLayoutBtn" onclick="torSaveLayout()" style="display:none;">Save Layout</button>
         <button class="tor-print-btn" onclick="window.print()">🖨 Print</button>
     </div>
+</div>
+
+<div class="tor-editor-toolbar" id="torEditorToolbar" aria-hidden="true">
+    <div class="tor-toolbar-row">
+        <select data-doc-font-family title="Font family">
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+        </select>
+        <input type="number" data-doc-font-size title="Font size" min="6" max="96" step="0.5">
+    </div>
+    <div class="tor-toolbar-row">
+        <button type="button" data-doc-style="bold" title="Bold">B</button>
+        <button type="button" data-doc-style="italic" title="Italic"><em>I</em></button>
+        <button type="button" data-doc-style="underline" title="Underline"><u>U</u></button>
+        <select data-doc-text-align title="Text alignment">
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+            <option value="justify">Justify</option>
+        </select>
+    </div>
+    <label>Top <input type="number" data-doc-top min="0" max="100" step="0.1"></label>
+    <label>Left <input type="number" data-doc-left min="0" max="100" step="0.1"></label>
+    <button type="button" data-doc-delete title="Delete selected element">Delete Element</button>
 </div>
 
 <div class="tor-page">
@@ -151,138 +216,21 @@ body { background:#f0f0f0; color:#000; }
          physical paper stock this prints onto, same as the Report of Grades sheet. --}}
     <div class="tor-header-space"></div>
 
-    {{-- STUDENT DATA --}}
-    <div class="tor-section-bar">STUDENT DATA</div>
-    <div class="tor-sd-wrap">
-        <div class="tor-sd-fields">
-            <div class="tor-sd-row"><span class="tor-sd-label">Student Number</span><span class="tor-sd-sep">:</span><span>{{ $student->student_no ?? 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Name</span><span class="tor-sd-sep">:</span><span>{{ $fullName }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Address</span><span class="tor-sd-sep">:</span><span>{{ $prof && $prof->present_municipality ? trim(($prof->present_street ? $prof->present_street.', ' : '') . ($prof->present_barangay ? $prof->present_barangay.', ' : '') . $prof->present_municipality . ', ' . $prof->present_province) : 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Sex</span><span class="tor-sd-sep">:</span><span>{{ $student->sex ?? 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Date of Birth</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->date_of_birth) ? $prof->date_of_birth->format('F j, Y') : 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Place of Birth</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->place_of_birth) ? $prof->place_of_birth : 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Date of Admission</span><span class="tor-sd-sep">:</span><span>N/A</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Admission Credentials</span><span class="tor-sd-sep">:</span><span>N/A</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Program</span><span class="tor-sd-sep">:</span><span>{{ $course }}{{ $courseCode !== '—' ? ' ('.$courseCode.')' : '' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Date of Completion</span><span class="tor-sd-sep">:</span><span>{{ ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Date of Graduation</span><span class="tor-sd-sep">:</span><span>{{ ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : 'N/A' }}</span></div>
-            <div class="tor-sd-row"><span class="tor-sd-label">Resolution No.</span><span class="tor-sd-sep">:</span><span>{{ ($isGraduated && $graduateTagging->so_number) ? $graduateTagging->so_number : 'N/A' }}</span></div>
-        </div>
-        <div class="tor-sd-photo">
+    {{-- Editable page-1 frame: student data, scholastic record, grading system,
+         remarks, legal notice, signatures, footer. Populated from the saved
+         layout template (registrar-editable via "Edit Layout") with this
+         student's data resolved into each text block server-side. --}}
+    <div class="tor-page1-frame">
+        <div class="tor-sheet" id="torSheet"></div>
+        <div class="tor-photo-box-fixed">
             <div class="tor-sd-photo-box">
                 @if($photoUrl)
-                    <img src="{{ $photoUrl }}" alt="Student photo">
+                    <img src="{{ $photoUrl }}" alt="Student photo" style="width:100%;height:100%;object-fit:cover;">
                 @endif
             </div>
             <div class="tor-sd-photo-caption">Not Valid Without University Seal and Student's Picture</div>
         </div>
-    </div>
-
-    {{-- SCHOLASTIC RECORD --}}
-    <div class="tor-section-bar">SCHOLASTIC RECORD</div>
-    @php
-        // K-12 curriculum students record Junior/Senior High School separately;
-        // pre-K12 students only have a single "High School" entry.
-        $isK12 = $prof && !$prof->no_k12 && ($prof->junior_school || $prof->senior_school);
-        // CTP (Certificate in Teaching Profession) completers are already degree
-        // holders taking a post-baccalaureate certificate, so their scholastic
-        // record only carries School Last Attended, not elementary/high school.
-        $isCtpCompleter = $isGraduated && strtoupper($courseCode) === 'CTP';
-    @endphp
-    @if($isCtpCompleter)
-        <div class="tor-sr-row"><span class="tor-sr-label">School Last Attended</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A' }}</span></div>
-        <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A' }}</span></div>
-    @else
-        @if($isK12)
-            <div class="tor-sr-row"><span class="tor-sr-label">Elementary</span><span class="tor-sd-sep">:</span><span>{{ $prof->elementary_school ?: 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ $prof->elementary_year_graduated ?: 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Junior High School</span><span class="tor-sd-sep">:</span><span>{{ $prof->junior_school ?: 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ $prof->junior_school_year_graduated ?: 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Senior High School</span><span class="tor-sd-sep">:</span><span>{{ $prof->senior_school ?: 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ $prof->senior_school_year_graduated ?: 'N/A' }}</span></div>
-        @else
-            <div class="tor-sr-row"><span class="tor-sr-label">Elementary</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->elementary_school) ? $prof->elementary_school : 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->elementary_year_graduated) ? $prof->elementary_year_graduated : 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">High School</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->high_school) ? $prof->high_school : 'N/A' }}</span></div>
-            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->high_school_year_graduated) ? $prof->high_school_year_graduated : 'N/A' }}</span></div>
-        @endif
-        <div class="tor-sr-row"><span class="tor-sr-label">School Last Attended</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A' }}</span></div>
-        <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A' }}</span></div>
-    @endif
-
-    {{-- GRADING SYSTEM + REMARKS --}}
-    <div class="tor-gs-wrap">
-        <div class="tor-gs-box">
-            <div class="tor-gs-title">GRADING SYSTEM</div>
-            <div class="tor-gs-grid">
-                <div>1.00 = 97.5-100</div><div>2.25 = 82.5-85.4</div><div>INC &nbsp; Incomplete</div>
-                <div>1.25 = 94.5-97.4</div><div>2.50 = 79.5-82.4</div><div>OD &nbsp;&nbsp; Officially Dropped</div>
-                <div>1.50 = 91.5-94.4</div><div>2.75 = 76.5-79.4</div><div>UD &nbsp;&nbsp; Unofficially Dropped</div>
-                <div>1.75 = 88.5-91.4</div><div>3.00 = 74.5-76.4</div><div>NC &nbsp;&nbsp; No Credit</div>
-                <div>2.00 = 85.5-88.4</div><div>5.00 = 74.4 &amp; below</div><div>GNA &nbsp; Grade Not Available</div>
-            </div>
-            <div class="tor-gs-credits">
-                <strong>Credits:</strong>
-                One unit of credit is one hour lecture or recitation or three hours of laboratory work each week
-                for the period of a complete semester. The medium of instruction in this University is English
-                except courses in Filipino and other foreign languages.
-            </div>
-        </div>
-        <div class="tor-remarks-box">
-            <div class="tor-remarks-title">REMARKS</div>
-            <div class="tor-remarks-val">{{ $purpose }}</div>
-        </div>
-    </div>
-
-    {{-- Legal notice --}}
-    <div class="tor-legal">
-        This copy is an exact reproduction of the original transcript on file with the Office of the University Registrar
-        and should be considered as an original copy when signed by the university registrar and impressed with the
-        university seal. Any erasure or alteration on this transcript renders the whole document invalid unless
-        authenticated by the signature of the foregoing official.
-    </div>
-
-    {{-- Signatures --}}
-    <div class="tor-sig-grid">
-        <div class="tor-sig-cell">
-            <div class="tor-sig-cell-label" style="text-align:left;">Prepared by:</div>
-            <div class="tor-sig-line">
-                <div class="tor-sig-name">Registrar Staff</div>
-                <div class="tor-sig-title">College Secretary</div>
-            </div>
-        </div>
-        <div class="tor-sig-cell">
-            <div class="tor-sig-cell-label" style="text-align:left;">Checked by:</div>
-            <div class="tor-sig-line">
-                @if($assistantRegistrar && $assistantRegistrar->signature_path && file_exists(public_path($assistantRegistrar->signature_path)))
-                    <img src="{{ asset($assistantRegistrar->signature_path) }}" class="tor-sig-img" alt="signature">
-                @endif
-                <div class="tor-sig-name">{{ $assistantRegistrar->signer_name ?? 'Assistant Registrar' }}</div>
-                <div class="tor-sig-title">{{ $assistantRegistrar->designation_name ?? 'Assistant Registrar' }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="tor-cert-block">
-        <div class="tor-cert-label">Certified True and Correct:</div>
-        @if($registrar && $registrar->signature_path && file_exists(public_path($registrar->signature_path)))
-            <img src="{{ asset($registrar->signature_path) }}" class="tor-sig-img" alt="signature">
-        @endif
-        <div class="tor-sig-line" style="display:inline-block;">
-            <div class="tor-sig-name">{{ $registrar->signer_name ?? 'University Registrar' }}</div>
-            <div class="tor-sig-title">{{ $registrar->designation_name ?? 'University Registrar' }}</div>
-        </div>
-    </div>
-
-    {{-- Footer --}}
-    <div class="tor-footer">
-        <div class="tor-footer-seal">
-            <div class="tor-footer-seal-circle">PLP<br>SEAL</div>
-            <div>
-                <div class="tor-footer-note">Not Valid Without University Seal</div>
-                <div class="tor-footer-meta">Date Issued: {{ now()->format('M d, Y') }}</div>
-            </div>
-        </div>
-        <div class="tor-footer-meta">Page 1</div>
+        <div class="tor-footer-seal-circle" style="position:absolute; top:93.5%; left:7%;">PLP<br>SEAL</div>
     </div>
 
     {{-- Grade Tables --}}
@@ -361,10 +309,59 @@ body { background:#f0f0f0; color:#000; }
 
 </div>
 
+<script src="{{ asset('js/document-layout-editor.js') }}?v={{ time() }}"></script>
 <script>
 document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'p') { e.preventDefault(); window.print(); }
 });
+
+var torLayoutUrl = @json(route('registrar.registrar-menu.student-mgmt.student-records.print.tor.layout', ['student' => $student->id]));
+var torSaveUrl = @json(route('registrar.registrar-menu.student-mgmt.student-records.print.tor.layout.save'));
+var torCsrf = document.querySelector('meta[name="csrf-token"]');
+torCsrf = torCsrf ? torCsrf.getAttribute('content') : '';
+
+var torEditor = DocLayoutEditor.create({
+    sheetEl: document.getElementById('torSheet'),
+    toolbarEl: document.getElementById('torEditorToolbar'),
+    loadUrl: torLayoutUrl,
+    saveUrl: torSaveUrl,
+    csrfToken: torCsrf,
+    elementClass: 'tor-tpl-element',
+    sheetClass: 'tor-sheet'
+});
+
+torEditor.load().then(function (layout) {
+    torEditor.render(layout);
+}).catch(function (error) {
+    console.error('Unable to load TOR layout template.', error);
+});
+
+function torToggleEdit() {
+    var editing = !document.body.classList.contains('tor-editing');
+    document.body.classList.toggle('tor-editing', editing);
+    torEditor.setEditable(editing);
+    document.getElementById('torEditToggleBtn').classList.toggle('is-active', editing);
+    document.getElementById('torSaveLayoutBtn').style.display = editing ? '' : 'none';
+    if (!editing) torEditor.selectElement(null);
+}
+
+function torSaveLayout() {
+    var btn = document.getElementById('torSaveLayoutBtn');
+    btn.disabled = true;
+    var originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    torEditor.save().then(function (data) {
+        alert((data && data.message) || 'Layout saved.');
+    }).catch(function (error) {
+        var detail = error && error.errors ? Object.keys(error.errors).map(function (key) {
+            return error.errors[key].join(' ');
+        }).join('\n') : '';
+        alert(detail || (error && error.message) || 'Unable to save layout.');
+    }).then(function () {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    });
+}
 </script>
 </body>
 </html>

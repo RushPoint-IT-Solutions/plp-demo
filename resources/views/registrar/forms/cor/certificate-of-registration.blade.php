@@ -202,6 +202,40 @@
         margin: 5px 0 2px;
     }
 
+    /* ── editable header block (enrollment/student/course meta + scholarship
+         line). Everything below it — fees box, signatures, stamp, and the
+         subjects table — stays server-rendered as before. ── */
+    .cor-header-frame { position: relative; height: 190px; margin-bottom: 4px; }
+    @media print { .cor-header-frame { height: 48mm; } }
+    .cor-sheet-editable { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+    .cor-tpl-element { position: absolute; white-space: pre-wrap; outline: none; cursor: default; padding: 1px 3px; border: 1px dashed transparent; }
+    body.cor-editing .cor-tpl-element { cursor: move; }
+    body.cor-editing .cor-tpl-element:hover { border-color: #0a7a3f66; }
+    .cor-tpl-element.is-selected { border-color: #0a7a3f; background: rgba(10, 122, 63, .06); }
+
+    .cor-edit-toggle-btn {
+        height: 36px; border: 1px solid #94a3b8; background: #fff; color: #0f172a;
+        border-radius: 6px; padding: 0 16px; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .cor-edit-toggle-btn.is-active { background: #0a7a3f; border-color: #0a7a3f; color: #fff; }
+
+    .cor-editor-toolbar {
+        display: none; position: fixed; top: 220px; right: 16px; z-index: 200; width: 220px;
+        padding: 10px; border: 1px solid #cbd5d1; border-radius: 8px; background: #fff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, .18); gap: 7px; font-family: Arial, sans-serif;
+    }
+    .cor-editor-toolbar.is-visible { display: grid; }
+    .cor-editor-toolbar select, .cor-editor-toolbar input, .cor-editor-toolbar button {
+        height: 30px; border: 1px solid #cbd5d1; border-radius: 5px; font-size: .78rem; font-family: Arial, sans-serif;
+    }
+    .cor-editor-toolbar button { font-weight: 800; cursor: pointer; background: #fff; }
+    .cor-editor-toolbar button.is-active { background: #0a7a3f; border-color: #0a7a3f; color: #fff; }
+    .cor-editor-toolbar label { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 6px; font-size: .74rem; font-weight: 700; color: #333; }
+    .cor-editor-toolbar .cor-toolbar-row { display: flex; gap: 6px; }
+    .cor-editor-toolbar .cor-toolbar-row select { flex: 1; }
+    .cor-editor-toolbar .cor-toolbar-row button { flex: 0 0 30px; }
+    @media print { .cor-editor-toolbar { display: none !important; } .cor-tpl-element { border-color: transparent !important; background: transparent !important; } }
+
     .cor-scholarship {
         display: grid;
         grid-template-columns: 92px 1fr;
@@ -604,38 +638,42 @@
             </div>
         </form>
 
+        <button type="button" class="cor-edit-toggle-btn d-print-none" id="corEditToggleBtn" onclick="corToggleEdit()">✎ Edit Header</button>
+        <button type="button" class="cor-edit-toggle-btn d-print-none" id="corSaveLayoutBtn" onclick="corSaveLayout()" style="display:none;">Save Layout</button>
         <button type="button" id="cor-registrar-print" class="cor-print-btn">Print</button>
+    </div>
+
+    <div class="cor-editor-toolbar d-print-none" id="corEditorToolbar" aria-hidden="true">
+        <div class="cor-toolbar-row">
+            <select data-doc-font-family title="Font family">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+            </select>
+            <input type="number" data-doc-font-size title="Font size" min="6" max="96" step="0.5">
+        </div>
+        <div class="cor-toolbar-row">
+            <button type="button" data-doc-style="bold" title="Bold">B</button>
+            <button type="button" data-doc-style="italic" title="Italic"><em>I</em></button>
+            <button type="button" data-doc-style="underline" title="Underline"><u>U</u></button>
+            <select data-doc-text-align title="Text alignment">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+                <option value="justify">Justify</option>
+            </select>
+        </div>
+        <label>Top <input type="number" data-doc-top min="0" max="100" step="0.1"></label>
+        <label>Left <input type="number" data-doc-left min="0" max="100" step="0.1"></label>
+        <button type="button" data-doc-delete title="Delete selected element">Delete Element</button>
     </div>
 
     <div class="cor-sheet-wrap">
         <article class="cor-sheet" aria-label="Certificate of Registration">
-            <section class="cor-meta-grid">
-                <div>
-                    <div class="cor-info-line"><span>Enrollment No:</span><span>{{ optional($student)->registration_no ?: optional($student)->id ?: '-' }}</span></div>
-                    <div class="cor-info-line"><span>Student No:</span><span><strong>{{ optional($student)->student_no ?: '-' }}</strong></span></div>
-                    <div class="cor-info-line"><span>Student Name:</span><span><strong>{{ $studentDisplayName }}</strong></span></div>
-                    <div class="cor-info-line"><span>Address:</span><span>{{ $addressText }}</span></div>
-                    <div class="cor-info-line"><span>Course:</span><span>{{ $programText }}</span></div>
-                    <div class="cor-info-line"><span>Department:</span><span><strong>{{ optional($student)->college ?: optional($student)->department ?: '-' }}</strong></span></div>
-                </div>
-                <div>
-                    <div class="cor-info-line"><span>Enrollment Date:</span><span>{{ $formattedEnrollmentDate }}</span></div>
-                    <div class="cor-info-line"><span>Curriculum:</span><span>{{ optional($student)->curriculum ?: '-' }}</span></div>
-                    <div class="cor-info-line"><span>School Year:</span><span>{{ $schoolYearLabel }}</span></div>
-                </div>
-                <div>
-                    <div class="cor-info-line"><span>Year Level:</span><span>{{ optional($student)->year_level ?: '-' }}</span></div>
-                    <div class="cor-info-line"><span>Student Type:</span><span>{{ optional($student)->student_type ?: 'Old Student' }}</span></div>
-                    <div class="cor-info-line"><span>Adjustment No:</span><span>{{ optional($student)->adjustment_no ?: optional($student)->registration_no ?: '-' }}</span></div>
-                </div>
-            </section>
-
-            <div class="cor-rule"></div>
-            <section class="cor-scholarship">
-                <span>Scholarship/Grant:</span>
-                <strong>UNIFIED FINANCIAL ASSISTANCE FOR TERTIARY EDUCATION</strong>
-            </section>
-            <div class="cor-rule"></div>
+            <div class="cor-header-frame">
+                <div id="corSheet" class="cor-sheet-editable"></div>
+            </div>
 
             <table class="cor-table" data-no-auto-pager="1">
                 <colgroup>
@@ -773,4 +811,58 @@
 
 @push('scripts')
 <script src="{{ asset('js/registrar-cor.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/document-layout-editor.js') }}?v={{ time() }}"></script>
+<script>
+(function () {
+    var corStudentId = @json($selectedStudentId > 0 ? $selectedStudentId : null);
+    var corLayoutUrlTemplate = @json(route('registrar.registrar-menu.forms.cor.layout', ['student' => '__STUDENT__']));
+    var corBlankLayoutUrl = @json(route('registrar.registrar-menu.forms.cor.layout'));
+    var corSaveUrl = @json(route('registrar.registrar-menu.forms.cor.layout.save'));
+    var corCsrf = document.querySelector('meta[name="csrf-token"]');
+    corCsrf = corCsrf ? corCsrf.getAttribute('content') : '';
+
+    var corEditor = DocLayoutEditor.create({
+        sheetEl: document.getElementById('corSheet'),
+        toolbarEl: document.getElementById('corEditorToolbar'),
+        loadUrl: corStudentId ? corLayoutUrlTemplate.replace('__STUDENT__', corStudentId) : corBlankLayoutUrl,
+        saveUrl: corSaveUrl,
+        csrfToken: corCsrf,
+        elementClass: 'cor-tpl-element',
+        sheetClass: 'cor-sheet-editable'
+    });
+
+    corEditor.load().then(function (layout) {
+        corEditor.render(layout);
+    }).catch(function (error) {
+        console.error('Unable to load COR header layout template.', error);
+    });
+
+    window.corToggleEdit = function () {
+        var editing = !document.body.classList.contains('cor-editing');
+        document.body.classList.toggle('cor-editing', editing);
+        corEditor.setEditable(editing);
+        document.getElementById('corEditToggleBtn').classList.toggle('is-active', editing);
+        document.getElementById('corSaveLayoutBtn').style.display = editing ? '' : 'none';
+        if (!editing) corEditor.selectElement(null);
+    };
+
+    window.corSaveLayout = function () {
+        var btn = document.getElementById('corSaveLayoutBtn');
+        btn.disabled = true;
+        var originalText = btn.textContent;
+        btn.textContent = 'Saving...';
+        corEditor.save().then(function (data) {
+            alert((data && data.message) || 'Layout saved.');
+        }).catch(function (error) {
+            var detail = error && error.errors ? Object.keys(error.errors).map(function (key) {
+                return error.errors[key].join(' ');
+            }).join('\n') : '';
+            alert(detail || (error && error.message) || 'Unable to save layout.');
+        }).then(function () {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        });
+    };
+})();
+</script>
 @endpush
