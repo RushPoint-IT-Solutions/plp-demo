@@ -924,7 +924,8 @@ class RegistrarController extends Controller
     public function stakeholderCommunication()
     {
         $tickets = SupportTicket::query()->orderByDesc('updated_at')->limit(50)->get();
-        $stakeholders = collect(['Student', 'Faculty', 'Parent', 'Applicant', 'CHED', 'Other'])
+        $stakeholderTypes = ['Student', 'Faculty', 'Parent', 'Applicant', 'CHED', 'Other'];
+        $stakeholders = collect($stakeholderTypes)
             ->map(function ($type) use ($tickets) {
                 $group = $tickets->where('requester_type', $type);
                 return [
@@ -936,7 +937,48 @@ class RegistrarController extends Controller
             })
             ->values();
 
-        return view('registrar.communication.stakeholders', compact('stakeholders', 'tickets'));
+        $stakeholderMessages = RegistrarMessage::query()
+            ->where('source_type', 'stakeholder')
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        return view('registrar.communication.stakeholders', compact('stakeholders', 'tickets', 'stakeholderTypes', 'stakeholderMessages'));
+    }
+
+    public function storeStakeholderMessage(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'stakeholder_type' => 'required|string|in:Student,Faculty,Parent,Applicant,CHED,Other',
+            'subject' => 'required|string|max:190',
+            'body' => 'required|string|max:5000',
+        ]);
+
+        $user = auth()->user();
+
+        $message = RegistrarMessage::query()->create([
+            'folder' => 'sent',
+            'sender_name' => $user && trim((string) $user->name) !== '' ? (string) $user->name : 'Registrar Office',
+            'sender_type' => 'Registrar',
+            'recipient' => 'Stakeholder Group: ' . $validated['stakeholder_type'],
+            'subject' => trim($validated['subject']),
+            'body' => trim($validated['body']),
+            'source_type' => 'stakeholder',
+            'created_by_user_id' => $user ? (int) $user->id : null,
+        ]);
+
+        RegistrarEmailNotifier::sendRegistrarMessage($message);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Message sent to ' . $validated['stakeholder_type'] . ' stakeholders.',
+            'data' => [
+                'id' => (int) $message->id,
+                'stakeholder_type' => $validated['stakeholder_type'],
+                'subject' => $message->subject,
+                'created_at' => optional($message->created_at)->format('M d, Y h:i A'),
+            ],
+        ], 201);
     }
 
     public function emailNotificationTemplates()

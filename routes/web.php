@@ -176,6 +176,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     Route::post('/communication/tickets', 'Registrar\RegistrarController@storeCommunicationTicket')->name('communication.tickets.store')->middleware('throttle:30,1');
     Route::put('/communication/tickets/{supportTicket}', 'Registrar\RegistrarController@updateCommunicationTicket')->name('communication.tickets.update')->middleware('throttle:60,1');
     Route::get('/communication/stakeholders', 'Registrar\RegistrarController@stakeholderCommunication')->name('communication.stakeholders');
+    Route::post('/communication/stakeholders/message', 'Registrar\RegistrarController@storeStakeholderMessage')->name('communication.stakeholders.message')->middleware('throttle:30,1');
     Route::get('/communication/email-templates', 'Registrar\RegistrarController@emailNotificationTemplates')->name('communication.email-templates');
     Route::post('/communication/email-templates', 'Registrar\RegistrarController@storeEmailNotificationTemplate')->name('communication.email-templates.store')->middleware('throttle:30,1');
     Route::put('/communication/email-templates/{registrarEmailTemplate}', 'Registrar\RegistrarController@updateEmailNotificationTemplate')->name('communication.email-templates.update')->middleware('throttle:60,1');
@@ -467,6 +468,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/class-list/{subject}/students/search', 'Registrar\Services\ClassListController@searchStudents')->name('class-list.students.search');
             Route::post('/class-list/{subject}/students', 'Registrar\Services\ClassListController@addStudent')->name('class-list.students.store');
             Route::get('/attendance', 'Registrar\Services\AttendanceController@index')->name('attendance');
+            Route::get('/attendance/{subject}/students', 'Registrar\Services\AttendanceController@students')->name('attendance.students');
+            Route::post('/attendance/{subject}/students', 'Registrar\Services\AttendanceController@store')->name('attendance.students.store')->middleware('throttle:60,1');
+            Route::post('/attendance/{subject}/import', 'Registrar\Services\AttendanceController@import')->name('attendance.import')->middleware('throttle:30,1');
 
             Route::prefix('faculty-loads')->name('faculty-loads.')->group(function () {
                 Route::get('/', 'Registrar\Services\FacultyLoadsController@index')->name('index');

@@ -4,127 +4,162 @@
 @section('page-title', 'ATTENDANCE')
 @section('body-class', 'page-services-attendance')
 
+@push('scripts')
+    <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
+@endpush
+
+@push('styles')
+<style>
+    .att-summary-card{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #dfe8e2;border-radius:8px;padding:12px 14px;margin-bottom:14px;}
+    .att-summary-meta{display:flex;gap:18px;flex-wrap:wrap;}
+    .att-summary-pill{display:flex;flex-direction:column;}
+    .att-summary-label{font-size:.72rem;color:#66756b;font-weight:800;text-transform:uppercase;}
+    .att-summary-value{font-size:.92rem;color:#123822;font-weight:800;}
+    .att-back-btn{border:1px solid #146c43;background:#fff;color:#146c43;border-radius:7px;padding:7px 12px;font-weight:800;cursor:pointer;}
+    .att-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+    .att-date-input{border:1px solid #cfd9d2;border-radius:7px;padding:7px 10px;font-size:.85rem;}
+    .att-status-select{border:1px solid #cfd9d2;border-radius:6px;padding:5px 8px;font-size:.82rem;background:#fff;}
+    .att-status-select[data-status="Present"]{color:#146c43;font-weight:700;}
+    .att-status-select[data-status="Absent"]{color:#b3261e;font-weight:700;}
+    .att-status-select[data-status="Late"]{color:#8a5b00;font-weight:700;}
+    .att-status-select[data-status="Excused"]{color:#4a5568;font-weight:700;}
+    .att-save-note{font-size:.78rem;color:#66756b;}
+    .att-counts{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
+    .att-count-chip{background:#f5faf7;border:1px solid #dfe8e2;border-radius:7px;padding:6px 12px;font-size:.8rem;font-weight:800;color:#143521;}
+</style>
+@endpush
+
 @section('content')
-<div class="pf-page">
-    <div class="svc-filter-panel">
-        <div class="svc-filter-grid">
-            <div class="svc-filter-item">
-                <span class="app-filter-label">School Year</span>
-                <select id="attSchoolYear" class="app-filter-select" style="width:100%;">
-                    <option value="" selected>All school years</option>
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2024-2025">2024-2025</option>
-                    <option value="2023-2024">2023-2024</option>
-                </select>
-            </div>
+<div class="pf-page" id="attendancePage" data-csrf="{{ csrf_token() }}">
+    @if(session('status'))
+        <div class="alert alert-{{ session('status_type', 'success') }}" role="alert">{{ session('status') }}</div>
+    @endif
 
-            <div class="svc-filter-item">
-                <span class="app-filter-label">Semester</span>
-                <select id="attSemester" class="app-filter-select" style="width:100%;">
-                    <option value="" selected>All semesters</option>
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                    <option value="Summer">Summer</option>
-                </select>
-            </div>
+    <form method="GET" action="{{ route('registrar.services.classroom-faculty.attendance') }}" class="sched-filter-bar at-top-row">
+        <div class="at-search-block at-search-card">
+            <span class="app-filter-label">Search</span>
+            @include('registrar.components.search-bar', [
+                'id' => 'attSearchInput',
+                'name' => 'q',
+                'value' => $search,
+                'placeholder' => 'Search Course / Section / Subject / Faculty',
+                'containerClass' => 'at-search-wrap',
+            ])
+        </div>
 
-            <div class="svc-filter-item svc-filter-professor">
-                <span class="app-filter-label">Professor</span>
-                <select id="attProfessor" class="app-filter-select" style="width:100%;">
-                    <option value="" selected>All professors</option>
-                    <option value="Diaz, Jonnel">Diaz, Jonnel</option>
-                    <option value="Dela Cruz, Juan">Dela Cruz, Juan</option>
-                    <option value="Santos, Maria">Santos, Maria</option>
-                </select>
-            </div>
+        <div class="at-config-card">
+            <div class="at-config-title">System Configuration</div>
+            <div class="at-config-grid">
+                <div class="at-config-item">
+                    <span class="at-config-inline-label">School Year:</span>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'attSchoolYear',
+                        'name' => 'school_year',
+                        'options' => $schoolYearOptions,
+                        'selected' => $selectedSchoolYear,
+                        'placeholder' => 'All School Years',
+                    ])
+                </div>
 
-            <div class="svc-filter-item">
-                <span class="app-filter-label">Year Level</span>
-                <select id="attYearLevel" class="app-filter-select" style="width:100%;">
-                    <option value="" selected>All year levels</option>
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                    <option value="Third">Third</option>
-                    <option value="Fourth">Fourth</option>
-                </select>
-            </div>
+                <div class="at-config-item">
+                    <span class="at-config-inline-label">Semester:</span>
+                    @include('registrar.components.listbox-select', [
+                        'id' => 'attSemester',
+                        'name' => 'semester',
+                        'options' => $semesterOptions,
+                        'selected' => $selectedSemester,
+                        'placeholder' => 'All Semesters',
+                    ])
+                </div>
 
-            <div class="svc-filter-item">
-                <span class="app-filter-label">Section</span>
-                <select id="attSection" class="app-filter-select" style="width:100%;">
-                    <option value="" selected>All sections</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                </select>
-            </div>
-
-            <div class="svc-filter-action">
-                <button type="button" class="pf-btn-new" onclick="runAttendanceSearch()">Search</button>
+                <div class="at-config-action">
+                    <button type="submit" class="pf-btn-new at-btn-set">Set</button>
+                </div>
             </div>
         </div>
-    </div>
+    </form>
 
     <div id="attAssignmentWrap" class="student-table-wrapper table-responsive att-assignment-wrap">
-        <table class="app-table" id="attAssignmentTable">
+        <table class="student-table registrar-table svc-table" id="attAssignmentTable" data-no-auto-pager="1">
             <thead>
                 <tr>
-                    <th>SY</th>
-                    <th>Semester</th>
+                    <th>#</th>
                     <th>Section</th>
-                    <th>Year Level</th>
+                    <th>Subject Code</th>
+                    <th>Description</th>
                     <th>Professor</th>
                 </tr>
             </thead>
-            <tbody id="attAssignmentBody"></tbody>
+            <tbody>
+                @forelse($classRows as $index => $subject)
+                    @php
+                        $sectionLabel = trim((string) optional($subject->canonicalCourse)->code . ' ' . (string) $subject->year_section);
+                        $professorLabel = trim((string) optional($subject->facultyModel)->name) ?: trim((string) $subject->faculty);
+                    @endphp
+                    <tr class="att-assignment-row" data-subject-id="{{ $subject->id }}" data-section="{{ $sectionLabel ?: 'N/A' }}" data-subject-line="{{ $subject->code }} - {{ $subject->name }}" style="cursor:pointer;">
+                        <td>{{ ($classRows->firstItem() ?? 0) + $index }}</td>
+                        <td>{{ $sectionLabel !== '' ? $sectionLabel : 'N/A' }}</td>
+                        <td>{{ $subject->code }}</td>
+                        <td>{{ $subject->name }}</td>
+                        <td>{{ $professorLabel !== '' ? $professorLabel : 'TBA' }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No sections found for the selected filters.</td>
+                    </tr>
+                @endforelse
+            </tbody>
         </table>
-        <div id="attAssignmentEmpty" class="att-assignment-empty">
-            No matching schedule found.
-        </div>
+    </div>
+
+    <div class="app-table-pager">
+        {{ $classRows->links() }}
     </div>
 
     <div id="attResult" style="display:none;">
         <div class="att-summary-card">
             <div class="att-summary-meta">
                 <div class="att-summary-pill"><span class="att-summary-label">Section</span><span class="att-summary-value" id="attSummarySection">-</span></div>
-                <div class="att-summary-pill"><span class="att-summary-label">Adviser</span><span class="att-summary-value" id="attSummaryAdviser">-</span></div>
+                <div class="att-summary-pill"><span class="att-summary-label">Subject</span><span class="att-summary-value" id="attSummarySubject">-</span></div>
             </div>
             <button type="button" class="att-back-btn" onclick="showAttendanceAssignments()">&larr; Back to List</button>
         </div>
 
+        <div class="att-toolbar">
+            <label class="app-filter-label" for="attDate">Session Date</label>
+            <input type="date" id="attDate" class="att-date-input">
+            <button type="button" class="pf-btn-new" id="attSaveBtn">Save Attendance</button>
+            <button type="button" class="svc-btn-excel" id="attImportBtn">Import Attendance (CSV)</button>
+            <span class="att-save-note" id="attSaveNote"></span>
+        </div>
+
+        <div class="att-counts" id="attCounts"></div>
+
         <div class="student-table-wrapper table-responsive">
-            <table class="att-table">
-                <colgroup>
-                    <col class="att-col-index">
-                    <col class="att-col-name">
-                    <col class="att-col-metric"><col class="att-col-metric">
-                    <col class="att-col-metric"><col class="att-col-metric">
-                    <col class="att-col-metric"><col class="att-col-metric">
-                    <col class="att-col-metric"><col class="att-col-metric">
-                    <col class="att-col-metric"><col class="att-col-metric">
-                    <col class="att-col-summary">
-                </colgroup>
+            <table class="student-table registrar-table svc-table">
                 <thead>
-                    <tr class="att-thead-top">
-                        <th rowspan="2">#</th>
-                        <th rowspan="2" class="att-name-head">Name</th>
-                        <th colspan="2">Jan</th>
-                        <th colspan="2">Feb</th>
-                        <th colspan="2">Mar</th>
-                        <th colspan="2">Nov</th>
-                        <th colspan="2">Dec</th>
-                        <th rowspan="2">Total No. Of Days</th>
-                    </tr>
-                    <tr class="att-thead-sub">
-                        <th class="att-sub-metric">P</th><th class="att-sub-metric">T</th>
-                        <th class="att-sub-metric">P</th><th class="att-sub-metric">T</th>
-                        <th class="att-sub-metric">P</th><th class="att-sub-metric">T</th>
-                        <th class="att-sub-metric">P</th><th class="att-sub-metric">T</th>
-                        <th class="att-sub-metric">P</th><th class="att-sub-metric">T</th>
+                    <tr>
+                        <th>#</th>
+                        <th>Student No.</th>
+                        <th>Name</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody id="attDetailBody"></tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="pf-modal-overlay" id="attImportModal" style="display:none;">
+        <div class="pf-modal-box" style="max-width:520px;">
+            <div class="pf-modal-title">Import Attendance (CSV)</div>
+            <p style="font-size:.8rem;color:#666;margin:0 0 12px;">Columns: <strong>Student No, Date, Status</strong> (Status must be Present, Absent, Late, or Excused). Only students already enrolled in this section will be matched.</p>
+            <input type="file" id="attImportFile" accept=".csv,text/csv" class="req-modal-input" style="margin-bottom:12px;">
+            <div id="attImportErrors" style="display:none;max-height:160px;overflow-y:auto;margin-bottom:12px;padding:8px 12px;background:#fdecec;border:1px solid #efb8b8;border-radius:6px;font-size:.78rem;color:#9f1d1d;"></div>
+            <div class="pf-modal-actions">
+                <button type="button" class="pf-modal-btn-cancel" onclick="closeAttImportModal()">Cancel</button>
+                <button type="button" class="pf-modal-btn-save" id="attImportSubmit">Import</button>
+            </div>
         </div>
     </div>
 </div>
@@ -132,206 +167,213 @@
 
 @push('scripts')
 <script>
-var attendanceRows = [
-    {
-        schoolYear: '2025-2026',
-        semester: 'Second',
-        section: 'A',
-        yearLevel: 'Fourth',
-        professor: 'Diaz, Jonnel',
-        students: [
-            { name: 'Bares, Mark Jay', metrics: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], total: 10 },
-            { name: 'Austero, Andrea Jone', metrics: [1, 1, 1, 0, 1, 1, 1, 1, 0, 1], total: 8 },
-            { name: 'Mendoza, Carlo', metrics: [1, 1, 0, 1, 1, 1, 1, 0, 1, 1], total: 8 },
-            { name: 'Santos, Princess Mae', metrics: [1, 1, 1, 1, 1, 0, 1, 1, 1, 0], total: 8 }
-        ]
-    },
-    {
-        schoolYear: '2025-2026',
-        semester: 'Second',
-        section: 'B',
-        yearLevel: 'Fourth',
-        professor: 'Diaz, Jonnel',
-        students: [
-            { name: 'Cruz, Paula Mae', metrics: [1, 1, 0, 1, 1, 1, 0, 1, 0, 1], total: 7 },
-            { name: 'Torres, John Michael', metrics: [0, 1, 1, 1, 0, 1, 1, 1, 0, 1], total: 7 },
-            { name: 'Reyes, Angela', metrics: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], total: 10 },
-            { name: 'Lim, Joshua', metrics: [1, 0, 1, 1, 1, 0, 1, 1, 1, 0], total: 7 }
-        ]
-    },
-    {
-        schoolYear: '2025-2026',
-        semester: 'Second',
-        section: 'C',
-        yearLevel: 'Fourth',
-        professor: 'Diaz, Jonnel',
-        students: [
-            { name: 'De Guzman, Francine', metrics: [1, 1, 1, 1, 1, 1, 1, 0, 1, 1], total: 9 },
-            { name: 'Lopez, Miguel', metrics: [1, 1, 1, 0, 1, 1, 1, 1, 1, 0], total: 8 },
-            { name: 'Manalo, Trisha', metrics: [1, 0, 1, 1, 1, 0, 1, 1, 1, 1], total: 8 }
-        ]
-    },
-    {
-        schoolYear: '2025-2026',
-        semester: 'Second',
-        section: 'C',
-        yearLevel: 'Third',
-        professor: 'Dela Cruz, Juan',
-        students: [
-            { name: 'Garcia, Angelica', metrics: [1, 1, 1, 1, 0, 1, 1, 1, 1, 0], total: 8 },
-            { name: 'Navarro, Bryan', metrics: [1, 1, 0, 1, 1, 1, 0, 1, 1, 1], total: 8 },
-            { name: 'Ramos, Cedric', metrics: [0, 1, 1, 0, 1, 1, 1, 1, 1, 1], total: 8 }
-        ]
-    },
-    {
-        schoolYear: '2024-2025',
-        semester: 'First',
-        section: 'A',
-        yearLevel: 'Second',
-        professor: 'Santos, Maria',
-        students: [
-            { name: 'Villanueva, Abby', metrics: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], total: 10 },
-            { name: 'Pascual, John Ray', metrics: [1, 1, 1, 0, 1, 1, 1, 1, 1, 0], total: 8 },
-            { name: 'Aquino, Jessa', metrics: [1, 1, 0, 1, 1, 1, 0, 1, 1, 1], total: 8 }
-        ]
-    }
-];
-
-var selectedAttendanceRow = null;
-var currentAttendanceRows = [];
-
-function getAttendanceFilters() {
-    return {
-        schoolYear: (document.getElementById('attSchoolYear') && document.getElementById('attSchoolYear').value) || '',
-        semester: (document.getElementById('attSemester') && document.getElementById('attSemester').value) || '',
-        professor: (document.getElementById('attProfessor') && document.getElementById('attProfessor').value) || '',
-        yearLevel: (document.getElementById('attYearLevel') && document.getElementById('attYearLevel').value) || '',
-        section: (document.getElementById('attSection') && document.getElementById('attSection').value) || ''
-    };
-}
-
-function matchesAttendanceFilters(row, filters) {
-    return (!filters.schoolYear || row.schoolYear === filters.schoolYear)
-        && (!filters.semester || row.semester === filters.semester)
-        && (!filters.professor || row.professor === filters.professor)
-        && (!filters.yearLevel || row.yearLevel === filters.yearLevel)
-        && (!filters.section || row.section === filters.section);
-}
-
-function renderAttendanceAssignments() {
-    var body = document.getElementById('attAssignmentBody');
-    var empty = document.getElementById('attAssignmentEmpty');
-    if (!body || !empty) return;
-
-    var filters = getAttendanceFilters();
-    var filteredRows = attendanceRows.filter(function (row) {
-        return matchesAttendanceFilters(row, filters);
-    });
-    currentAttendanceRows = filteredRows.slice();
-
-    body.innerHTML = '';
-    if (!filteredRows.length) {
-        empty.style.display = 'block';
-        selectedAttendanceRow = null;
-        hideAttendanceDetail();
-        return;
-    }
-
-    empty.style.display = 'none';
-    filteredRows.forEach(function (row, index) {
-        var tr = document.createElement('tr');
-        tr.setAttribute('data-att-row-index', String(index));
-        if (selectedAttendanceRow === row) {
-            tr.style.backgroundColor = '#eef8f2';
-        }
-        tr.innerHTML = '' +
-            '<td>' + row.schoolYear + '</td>' +
-            '<td>' + row.semester + '</td>' +
-            '<td>' + row.section + '</td>' +
-            '<td>' + row.yearLevel + '</td>' +
-            '<td>' + row.professor + '</td>';
-        body.appendChild(tr);
-    });
-
-    if (selectedAttendanceRow && !filteredRows.some(function (row) { return row === selectedAttendanceRow; })) {
-        selectedAttendanceRow = null;
-        hideAttendanceDetail();
-    }
-}
-
-function renderAttendanceDetail(row) {
+document.addEventListener('DOMContentLoaded', function () {
+    var page = document.getElementById('attendancePage');
     var assignmentWrap = document.getElementById('attAssignmentWrap');
+    var pager = document.querySelector('.app-table-pager');
     var result = document.getElementById('attResult');
     var detailBody = document.getElementById('attDetailBody');
     var summarySection = document.getElementById('attSummarySection');
-    var summaryAdviser = document.getElementById('attSummaryAdviser');
-    if (!result || !detailBody || !summarySection || !summaryAdviser) return;
+    var summarySubject = document.getElementById('attSummarySubject');
+    var dateInput = document.getElementById('attDate');
+    var saveBtn = document.getElementById('attSaveBtn');
+    var saveNote = document.getElementById('attSaveNote');
+    var countsWrap = document.getElementById('attCounts');
+    var importBtn = document.getElementById('attImportBtn');
+    var importModal = document.getElementById('attImportModal');
+    var importFile = document.getElementById('attImportFile');
+    var importSubmit = document.getElementById('attImportSubmit');
+    var importErrors = document.getElementById('attImportErrors');
 
-    summarySection.textContent = row.section;
-    summaryAdviser.textContent = row.professor;
-    detailBody.innerHTML = '';
+    var currentSubjectId = null;
+    var STATUSES = @json($statuses);
 
-    row.students.forEach(function (student, index) {
-        var tr = document.createElement('tr');
-        var cells = [index + 1, student.name]
-            .concat(student.metrics || [])
-            .concat([student.total || 0]);
+    function todayStr() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
 
-        tr.innerHTML = cells.map(function (value) {
-            return '<td>' + value + '</td>';
+    function renderCounts(summary) {
+        if (!summary) { countsWrap.innerHTML = ''; return; }
+        countsWrap.innerHTML =
+            '<span class="att-count-chip">Sessions recorded: ' + summary.sessions + '</span>' +
+            '<span class="att-count-chip">Present: ' + summary.present + '</span>' +
+            '<span class="att-count-chip">Absent: ' + summary.absent + '</span>' +
+            '<span class="att-count-chip">Late: ' + summary.late + '</span>' +
+            '<span class="att-count-chip">Excused: ' + summary.excused + '</span>';
+    }
+
+    function statusOptions(selected) {
+        return STATUSES.map(function (status) {
+            return '<option value="' + status + '"' + (status === selected ? ' selected' : '') + '>' + status + '</option>';
         }).join('');
-        detailBody.appendChild(tr);
-    });
+    }
 
-    if (assignmentWrap) assignmentWrap.style.display = 'none';
-    result.style.display = 'block';
-}
+    function renderStudents(payload) {
+        summarySection.textContent = payload.section || 'N/A';
+        summarySubject.textContent = payload.subject || 'N/A';
+        dateInput.value = payload.date;
+        renderCounts(payload.summary);
 
-function hideAttendanceDetail() {
-    var assignmentWrap = document.getElementById('attAssignmentWrap');
-    var result = document.getElementById('attResult');
-    var detailBody = document.getElementById('attDetailBody');
-    if (detailBody) detailBody.innerHTML = '';
-    if (result) result.style.display = 'none';
-    if (assignmentWrap) assignmentWrap.style.display = 'block';
-}
-
-function showAttendanceAssignments() {
-    hideAttendanceDetail();
-    renderAttendanceAssignments();
-}
-
-function runAttendanceSearch() {
-    hideAttendanceDetail();
-    selectedAttendanceRow = null;
-    renderAttendanceAssignments();
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    var filterIds = ['attSchoolYear', 'attSemester', 'attProfessor', 'attYearLevel', 'attSection'];
-    filterIds.forEach(function (id) {
-        var select = document.getElementById(id);
-        if (select) {
-            select.addEventListener('change', runAttendanceSearch);
+        detailBody.innerHTML = '';
+        if (!payload.students.length) {
+            detailBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;">No students enrolled in this section.</td></tr>';
+            return;
         }
-    });
 
-    var assignmentBody = document.getElementById('attAssignmentBody');
-    if (assignmentBody) {
-        assignmentBody.addEventListener('click', function (event) {
-            var rowEl = event.target.closest('tr[data-att-row-index]');
-            if (!rowEl) return;
+        payload.students.forEach(function (student, index) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-student-id', student.id);
+            tr.innerHTML =
+                '<td>' + (index + 1) + '</td>' +
+                '<td>' + student.student_no + '</td>' +
+                '<td>' + student.name + '</td>' +
+                '<td><select class="att-status-select" data-status="' + student.status + '">' + statusOptions(student.status) + '</select></td>';
+            detailBody.appendChild(tr);
+        });
 
-            var idx = parseInt(rowEl.getAttribute('data-att-row-index'), 10);
-            if (isNaN(idx) || !currentAttendanceRows[idx]) return;
-
-            selectedAttendanceRow = currentAttendanceRows[idx];
-            renderAttendanceDetail(selectedAttendanceRow);
+        detailBody.querySelectorAll('.att-status-select').forEach(function (select) {
+            select.addEventListener('change', function () {
+                select.setAttribute('data-status', select.value);
+            });
         });
     }
 
-    renderAttendanceAssignments();
-    hideAttendanceDetail();
+    function loadStudents(subjectId, date) {
+        currentSubjectId = subjectId;
+        var url = '{{ url("registrar/services/classroom-faculty/attendance") }}/' + subjectId + '/students?date=' + encodeURIComponent(date || todayStr());
+
+        fetch(url, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (payload) {
+                renderStudents(payload);
+                assignmentWrap.style.display = 'none';
+                if (pager) pager.style.display = 'none';
+                result.style.display = 'block';
+            });
+    }
+
+    function showAttendanceAssignments() {
+        result.style.display = 'none';
+        assignmentWrap.style.display = 'block';
+        if (pager) pager.style.display = '';
+        currentSubjectId = null;
+    }
+    window.showAttendanceAssignments = showAttendanceAssignments;
+
+    assignmentWrap.addEventListener('click', function (event) {
+        var row = event.target.closest('.att-assignment-row');
+        if (!row) return;
+        loadStudents(row.getAttribute('data-subject-id'), todayStr());
+    });
+
+    dateInput.addEventListener('change', function () {
+        if (currentSubjectId) loadStudents(currentSubjectId, dateInput.value);
+    });
+
+    saveBtn.addEventListener('click', function () {
+        if (!currentSubjectId) return;
+
+        var records = [];
+        detailBody.querySelectorAll('tr[data-student-id]').forEach(function (tr) {
+            var select = tr.querySelector('.att-status-select');
+            records.push({
+                student_id: parseInt(tr.getAttribute('data-student-id'), 10),
+                status: select ? select.value : 'Present'
+            });
+        });
+
+        if (!records.length) return;
+
+        saveBtn.disabled = true;
+        saveNote.textContent = 'Saving...';
+
+        fetch('{{ url("registrar/services/classroom-faculty/attendance") }}/' + currentSubjectId + '/students', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': page.dataset.csrf
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ date: dateInput.value, records: records })
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (payload) {
+                renderCounts(payload.summary);
+                saveNote.textContent = payload.message || 'Saved.';
+            })
+            .catch(function () {
+                saveNote.textContent = 'Unable to save attendance.';
+            })
+            .finally(function () {
+                saveBtn.disabled = false;
+                setTimeout(function () { saveNote.textContent = ''; }, 4000);
+            });
+    });
+
+    importBtn.addEventListener('click', function () {
+        if (!currentSubjectId) return;
+        importFile.value = '';
+        importErrors.style.display = 'none';
+        importErrors.innerHTML = '';
+        importModal.style.display = 'flex';
+    });
+
+    window.closeAttImportModal = function () {
+        importModal.style.display = 'none';
+    };
+
+    importSubmit.addEventListener('click', function () {
+        if (!currentSubjectId || !importFile.files.length) {
+            alert('Please choose a CSV file first.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('file', importFile.files[0]);
+        formData.append('dry_run', '0');
+
+        importSubmit.disabled = true;
+        importSubmit.textContent = 'Importing...';
+
+        fetch('{{ url("registrar/services/classroom-faculty/attendance") }}/' + currentSubjectId + '/import', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': page.dataset.csrf
+            },
+            credentials: 'same-origin',
+            body: formData
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (payload) {
+                if (payload.errors && payload.errors.length) {
+                    importErrors.style.display = 'block';
+                    importErrors.innerHTML = payload.errors.map(function (line) {
+                        return '<div>' + line + '</div>';
+                    }).join('');
+                }
+                renderCounts(payload.summary);
+                if (!payload.errors || !payload.errors.length) {
+                    closeAttImportModal();
+                }
+                loadStudents(currentSubjectId, dateInput.value);
+                alert(payload.message || 'Import completed.');
+            })
+            .catch(function () {
+                alert('Unable to import the file.');
+            })
+            .finally(function () {
+                importSubmit.disabled = false;
+                importSubmit.textContent = 'Import';
+            });
+    });
 });
 </script>
 @endpush
