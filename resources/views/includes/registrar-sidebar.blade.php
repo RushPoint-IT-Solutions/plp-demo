@@ -413,7 +413,7 @@
         {{-- SYSTEM                                 --}}
         {{-- ══════════════════════════════════════ --}}
         @php
-            $systemConfigRoutes = ['registrar.admin-tools.system-config.configuration', 'registrar.admin-tools.system-config.academic-calendar', 'registrar.admin-tools.system-config.announcement'];
+            $systemConfigRoutes = ['registrar.admin-tools.system-config.configuration', 'registrar.admin-tools.system-config.academic-calendar', 'registrar.admin-tools.system-config.announcement', 'registrar.admin-tools.system-config.document-templates'];
             $accessManagementRoutes = ['registrar.admin-tools.access-management.user-accounts', 'registrar.admin-tools.access-management.report-access'];
             $masterFilesRoutes = ['registrar.admin-tools.master-files.faculty-file', 'registrar.admin-tools.master-files.student-profile', 'registrar.admin-tools.master-files.student-grade-file', 'registrar.admin-tools.student-maintenance.student-update'];
             $systemRoutes = array_merge($systemConfigRoutes, $accessManagementRoutes, $masterFilesRoutes, ['registrar.admin-tools.audit-trail', 'registrar.admin-tools.data-imports.index']);
@@ -444,6 +444,7 @@
                         @if($canView('registrar.admin-tools.system-config.configuration'))<a href="{{ route('registrar.admin-tools.system-config.configuration') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.configuration') ? 'active' : '' }}">Configuration</a>@endif
                         @if($canView('registrar.admin-tools.system-config.academic-calendar'))<a href="{{ route('registrar.admin-tools.system-config.academic-calendar') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.academic-calendar') ? 'active' : '' }}">Academic Calendar</a>@endif
                         @if($canView('registrar.admin-tools.system-config.announcement'))<a href="{{ route('registrar.admin-tools.system-config.announcement') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.announcement') ? 'active' : '' }}">Announcements</a>@endif
+                        @if($canView('registrar.admin-tools.system-config.document-templates'))<a href="{{ route('registrar.admin-tools.system-config.document-templates') }}" class="sidebar-sublink sidebar-nested-sublink {{ request()->routeIs('registrar.admin-tools.system-config.document-templates') ? 'active' : '' }}">Document Templates</a>@endif
                     </div>
                 </div>
                 @endif

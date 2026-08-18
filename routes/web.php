@@ -554,6 +554,9 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
     // Admin Tools
     Route::prefix('admin-tools')->name('admin-tools.')->group(function () {
         Route::prefix('system-config')->name('system-config.')->group(function () {
+            Route::get('/document-templates', 'Registrar\Services\DocumentTemplateController@index')->name('document-templates');
+            Route::get('/document-templates/{slug}/layout/{student?}', 'Registrar\Services\DocumentTemplateController@getLayout')->name('document-templates.layout');
+            Route::post('/document-templates/{slug}/layout', 'Registrar\Services\DocumentTemplateController@saveLayout')->name('document-templates.layout.save')->middleware('throttle:30,1');
             Route::get('/configuration', 'Registrar\Services\AdminToolsController@configuration')->name('configuration');
             Route::post('/configuration/school-sem', 'Registrar\Services\AdminToolsController@configurationSchoolSemStore')->name('configuration.school-sem.store');
             Route::put('/configuration/school-sem/{systemSchoolSemester}', 'Registrar\Services\AdminToolsController@configurationSchoolSemUpdate')->name('configuration.school-sem.update');
