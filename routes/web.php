@@ -327,6 +327,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
         Route::prefix('student-management')->name('student-mgmt.')->middleware('course.scope.student')->group(function () {
             Route::get('/student-enrollment', 'Registrar\RegistrarController@studentEnrollment')->name('student-enrollment');
             Route::get('/student-records', 'Registrar\RegistrarController@studentRecordList')->name('student-records');
+            Route::post('/student-records/recalculate-irregular', 'Registrar\RegistrarController@recalculateIrregularStatus')->name('student-records.recalculate-irregular')->middleware('throttle:5,1');
             Route::get('/student-records/{student}', 'Registrar\RegistrarController@studentRecordProfile')->name('student-records.profile');
             Route::post('/student-records/{student}/scholarships', 'Registrar\ScholarshipController@tagStudent')->name('student-records.scholarships.save')->middleware('throttle:30,1');
             Route::delete('/student-records/{student}/scholarships/{tag}', 'Registrar\ScholarshipController@untagStudent')->name('student-records.scholarships.delete')->middleware('throttle:30,1');

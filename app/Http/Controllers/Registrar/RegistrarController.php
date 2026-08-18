@@ -13106,6 +13106,7 @@ class RegistrarController extends Controller
 
         foreach ($students as $student) {
             $evaluation = $this->evaluateStudentPromotionStatus($student, (int) $currentTerm->id);
+            Student::query()->where('id', (int) $student->id)->update(['is_irregular' => $evaluation['is_irregular']]);
             $nextYearBlockId = $this->nextYearBlockIdForPromotion((int) $student->year_block_id, (string) $currentTerm->term);
             if (!$nextYearBlockId || !in_array($nextYearBlockId, $allowedYearBlockIds, true)) {
                 DB::table('student_promotions')->updateOrInsert([
@@ -19079,6 +19080,7 @@ class RegistrarController extends Controller
             'scholarship' => 'nullable|string',
             'school_year' => 'required|string',
             'semester' => 'required|string',
+            'student_type' => 'nullable|string|in:New,Transferee,Returnee',
         ]);
 
         $defaultPass = null;
@@ -19103,6 +19105,8 @@ class RegistrarController extends Controller
             }
 
             $payload['student_no'] = trim((string) $request->input('student_no')) ?: Student::generateStudentNo($year);
+            $payload['student_type'] = $request->input('student_type') ?: 'New';
+            $payload['is_transferee'] = $payload['student_type'] === 'Transferee';
 
             $student = Student::create($payload);
 
@@ -19360,6 +19364,38 @@ class RegistrarController extends Controller
             'totalCount', 'activeCount', 'withdrawnCount', 'graduateCount',
             'transfereeCount', 'irregularCount'
         ));
+    }
+
+    /**
+     * Recompute is_irregular for every active student from their current
+     * term's finalized load/grades, using the same evaluation Promotion
+     * Readiness uses — lets a registrar refresh the flag outside of an
+     * actual term promotion run.
+     */
+    public function recalculateIrregularStatus(Request $request)
+    {
+        $scopedCourseIds = \App\Support\CourseScopeGate::allowedCourseIds($request->user());
+
+        $students = Student::query()
+            ->active()
+            ->whereNotNull('academic_term_id')
+            ->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+                $q->whereIn('course_id', $scopedCourseIds);
+            })
+            ->get(['id', 'academic_term_id', 'is_irregular']);
+
+        $changed = 0;
+        foreach ($students as $student) {
+            $evaluation = $this->evaluateStudentPromotionStatus($student, (int) $student->academic_term_id);
+            if ((bool) $student->is_irregular !== $evaluation['is_irregular']) {
+                $changed++;
+            }
+            Student::query()->where('id', (int) $student->id)->update(['is_irregular' => $evaluation['is_irregular']]);
+        }
+
+        return redirect()->route('registrar.registrar-menu.student-mgmt.student-records')
+            ->with('status', 'Irregular status recalculated for ' . $students->count() . ' student(s) — ' . $changed . ' updated.')
+            ->with('status_type', 'success');
     }
 
     /**

@@ -465,6 +465,16 @@
                             'placeholder' => 'Select Year Level',
                         ])
                     </div>
+                    <div class="se-modal-field">
+                        <label class="pf-modal-label">Student Type</label>
+                        @include('registrar.components.listbox-select', [
+                            'id' => 'seAddStudentType',
+                            'name' => 'student_type',
+                            'options' => ['New', 'Transferee', 'Returnee'],
+                            'selected' => 'New',
+                            'placeholder' => 'Select Student Type',
+                        ])
+                    </div>
                     <!-- Hidden requirements based on typical registrar input defaults -->
                     <input type="hidden" name="school_year" value="{{ date('Y') }}-{{ date('Y')+1 }}">
                     <input type="hidden" name="semester" value="First">
@@ -1260,6 +1270,7 @@ function openAddStudentModal() {
     if (studentNameInput) studentNameInput.value = '';
     setListboxValue('seAddStudentProgram', '');
     setListboxValue('seAddStudentYear', '');
+    setListboxValue('seAddStudentType', 'New');
     seApplicantSearchState.selectedApplicantId = '';
     closeApplicantSearchDropdowns();
 

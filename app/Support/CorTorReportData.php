@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\DocumentTemplate;
 use App\GraduateTagging;
 use App\Student;
 use App\StudentGradeRecord;
@@ -24,6 +25,94 @@ class CorTorReportData
             'subjects' => $subjects,
             'totalUnits' => $totalUnits,
             'assessment' => self::buildCorAssessment($subjects, $totalUnits),
+            'headerElements' => self::corHeaderElements($student),
+        ];
+    }
+
+    /**
+     * Mirrors RegistrarController::getCorTemplateLayout()/resolveCorTokens() so
+     * the batch print sheet reuses the same saved COR header layout/tokens as
+     * the single-student print page instead of a hand-built header.
+     */
+    public static function corHeaderElements(Student $student): array
+    {
+        if (!Schema::hasTable('document_templates')) {
+            return [];
+        }
+
+        $template = DocumentTemplate::firstOrCreate(
+            ['slug' => 'cor'],
+            ['name' => 'Certificate of Registration (header)', 'content_json' => self::defaultCorTemplateLayout()]
+        );
+
+        $layout = $template->content_json ?: self::defaultCorTemplateLayout();
+
+        $prof = $student->profile;
+
+        $formattedSchoolYear = trim((string) $student->school_year);
+        if ($formattedSchoolYear === '' && $student->relationLoaded('academicTerm')) {
+            $formattedSchoolYear = trim((string) optional($student->academicTerm)->school_year);
+        }
+        $formattedSemester = strtoupper(trim((string) $student->semester));
+        if ($formattedSemester === '' && $student->relationLoaded('academicTerm')) {
+            $formattedSemester = strtoupper(trim((string) optional($student->academicTerm)->term));
+        }
+        $semesterLabel = $formattedSemester !== ''
+            ? (strpos($formattedSemester, 'SEMESTER') !== false ? $formattedSemester : $formattedSemester . ' SEMESTER')
+            : '-';
+        $academicYearLabel = $formattedSchoolYear !== '' ? $formattedSchoolYear : '-';
+        $schoolYearLabel = $academicYearLabel . ($semesterLabel !== '-' ? ' / ' . $semesterLabel : '');
+
+        $programText = trim((string) $student->program);
+        if ($programText === '' && $student->relationLoaded('canonicalCourse')) {
+            $programText = trim((string) (optional($student->canonicalCourse)->name ?: optional($student->canonicalCourse)->code));
+        }
+        $programText = $programText !== '' ? $programText : '-';
+
+        $addressParts = array_filter([
+            trim((string) optional($prof)->present_street),
+            trim((string) optional($prof)->present_barangay),
+            trim((string) optional($prof)->present_municipality),
+            trim((string) optional($prof)->present_province),
+        ]);
+        $addressText = count($addressParts) ? implode(', ', $addressParts) : trim((string) $student->address);
+        $addressText = $addressText !== '' ? $addressText : '-';
+
+        $tokens = [
+            '{{enrollment_no}}' => (string) ($student->registration_no ?: $student->id ?: '-'),
+            '{{student_no}}' => (string) ($student->student_no ?: '-'),
+            '{{student_name}}' => strtoupper(trim((string) $student->name)) ?: '-',
+            '{{address}}' => $addressText,
+            '{{course}}' => $programText,
+            '{{department}}' => (string) ($student->college ?: $student->department ?: '-'),
+            '{{enrollment_date}}' => optional($student->created_at)->format('m/d/Y') ?: '-',
+            '{{curriculum}}' => (string) ($student->curriculum ?: '-'),
+            '{{school_year}}' => $schoolYearLabel,
+            '{{year_level}}' => (string) ($student->year_level ?: '-'),
+            '{{student_type}}' => (string) ($student->student_type ?: 'Old Student'),
+            '{{adjustment_no}}' => (string) ($student->adjustment_no ?: $student->registration_no ?: '-'),
+            '{{scholarship}}' => 'UNIFIED FINANCIAL ASSISTANCE FOR TERTIARY EDUCATION',
+        ];
+
+        $elements = $layout['elements'] ?? [];
+        foreach ($elements as $index => $element) {
+            $text = (string) ($element['text'] ?? '');
+            $elements[$index]['resolved_text'] = strtr($text, $tokens);
+        }
+
+        return $elements;
+    }
+
+    private static function defaultCorTemplateLayout(): array
+    {
+        return [
+            'page' => ['width_mm' => 215.9, 'height_mm' => 355.6, 'orientation' => 'portrait', 'background' => '#ffffff'],
+            'elements' => [
+                ['id' => 'meta_col1', 'type' => 'text', 'text' => "Enrollment No: {{enrollment_no}}\nStudent No: {{student_no}}\nStudent Name: {{student_name}}\nAddress: {{address}}\nCourse: {{course}}\nDepartment: {{department}}", 'top' => 2, 'left' => 4, 'width' => 60, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5],
+                ['id' => 'meta_col2', 'type' => 'text', 'text' => "Enrollment Date: {{enrollment_date}}\nCurriculum: {{curriculum}}\nSchool Year: {{school_year}}", 'top' => 2, 'left' => 66, 'width' => 34, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5],
+                ['id' => 'meta_col3', 'type' => 'text', 'text' => "Year Level: {{year_level}}\nStudent Type: {{student_type}}\nAdjustment No: {{adjustment_no}}", 'top' => 46, 'left' => 66, 'width' => 34, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'normal', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5],
+                ['id' => 'scholarship_line', 'type' => 'text', 'text' => "Scholarship/Grant:  {{scholarship}}", 'top' => 82, 'left' => 4, 'width' => 92, 'font_family' => 'Arial', 'font_size' => 8, 'font_weight' => 'bold', 'font_style' => 'normal', 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.2],
+            ],
         ];
     }
 

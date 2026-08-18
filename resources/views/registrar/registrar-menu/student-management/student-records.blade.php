@@ -218,6 +218,10 @@
 @section('content')
 <div class="sr-page">
 
+    @if(session('status'))
+        <div class="alert alert-{{ session('status_type', 'success') }}" role="alert" style="margin-bottom:16px;">{{ session('status') }}</div>
+    @endif
+
     {{-- Page header --}}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
         <div>
@@ -225,6 +229,10 @@
             <p style="font-size:13px;color:#64748b;margin:2px 0 0;">Complete student database — search, filter, and view full profiles</p>
         </div>
         <div class="sr-view-controls">
+            <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.recalculate-irregular') }}" onsubmit="return confirm('Recalculate Irregular status for every active student from their current term grades?');">
+                @csrf
+                <button type="submit" class="sr-btn-clear" title="Recompute Irregular status from current term grades">Recalculate Irregular Status</button>
+            </form>
             <div class="sr-view-toggle" role="group" aria-label="Student records view">
                 <button type="button" id="srCardViewBtn" class="sr-view-toggle-btn is-active" data-sr-view-button="card" title="Card View" aria-pressed="true">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
