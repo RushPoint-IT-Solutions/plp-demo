@@ -24,11 +24,26 @@ class DocumentTemplateController extends Controller
      * Slugs allowed through the generic editor. A document must be listed
      * here before its layout can be loaded/saved via these routes.
      */
-    private static $allowedSlugs = ['f137a', 'certificate-gwa'];
+    private static $allowedSlugs = [
+        'f137a', 'certificate-gwa', 'diploma', 'clearance-2', 'graduation-clearance',
+        'leave-of-absence', 'deans-honors', 'presidents-honors', 'form-8c2', 'form-8d2',
+        'cog', 'official-grade-report', 'cross-enroll-permit',
+    ];
 
     private static $labels = [
         'f137a' => 'Request Form F137A',
         'certificate-gwa' => 'Certificate of GWA',
+        'diploma' => 'Diploma',
+        'clearance-2' => 'Clearance 2',
+        'graduation-clearance' => 'Graduation Clearance',
+        'leave-of-absence' => 'Leave of Absence',
+        'deans-honors' => "Dean's Honors",
+        'presidents-honors' => "President's Honors",
+        'form-8c2' => 'Form 8C-2 (Graduation)',
+        'form-8d2' => 'Form 8D-2 (Honor)',
+        'cog' => 'Copy of Grades (COG)',
+        'official-grade-report' => 'Official Grade Report',
+        'cross-enroll-permit' => 'Cross-Enroll Permit',
     ];
 
     public function index()

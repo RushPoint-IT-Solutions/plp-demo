@@ -23,7 +23,9 @@ class DocumentTemplateTokens
         switch ($slug) {
             case 'certificate-gwa':
                 return array_merge($common, self::gwaTokens($student));
-            case 'f137a':
+            case 'diploma':
+            case 'form-8c2':
+                return array_merge($common, self::graduationTokens($student));
             default:
                 return $common;
         }
@@ -103,6 +105,44 @@ class DocumentTemplateTokens
         return ['{{gwa}}' => $gwa !== null ? number_format($gwa, 2) : '-'];
     }
 
+    private static function graduationTokens(?Student $student): array
+    {
+        if (!$student || !Schema::hasTable('graduate_taggings')) {
+            return ['{{date_graduated}}' => '-', '{{so_number}}' => '-'];
+        }
+
+        $tagging = \App\GraduateTagging::where('student_id', $student->id)->first();
+
+        return [
+            '{{date_graduated}}' => $tagging && $tagging->date_graduated ? $tagging->date_graduated->format('F j, Y') : '-',
+            '{{so_number}}' => $tagging && $tagging->so_number ? (string) $tagging->so_number : '-',
+        ];
+    }
+
+    /**
+     * Document title shown on the default starter layout. Slugs not listed
+     * here (any newly added one) just fall back to a title-cased slug.
+     */
+    private static function defaultTitle(string $slug): string
+    {
+        $titles = [
+            'f137a' => 'Request Form F137A',
+            'diploma' => 'Diploma',
+            'clearance-2' => 'Clearance 2',
+            'graduation-clearance' => 'Graduation Clearance',
+            'leave-of-absence' => 'Leave of Absence',
+            'deans-honors' => "Dean's Honors Certificate",
+            'presidents-honors' => "President's Honors Certificate",
+            'form-8c2' => 'Certificate of Graduation (Form 8C-2)',
+            'form-8d2' => 'Certificate of Honor (Form 8D-2)',
+            'cog' => 'Copy of Grades (COG)',
+            'official-grade-report' => 'Official Grade Report',
+            'cross-enroll-permit' => 'Cross-Enroll Permit',
+        ];
+
+        return $titles[$slug] ?? ucwords(str_replace('-', ' ', $slug));
+    }
+
     private static function defaultElements(string $slug): array
     {
         if ($slug === 'certificate-gwa') {
@@ -131,12 +171,25 @@ class DocumentTemplateTokens
             ];
         }
 
-        // f137a and any other not-yet-customized slug get a simple starter block.
+        $fields = "Student No: {{student_no}}\nStudent Name: {{student_name}}\nCourse: {{course}}\nYear Level: {{year_level}}\nSchool Year: {{school_year}}\nDate: {{date}}";
+        if (in_array($slug, ['diploma', 'form-8c2'], true)) {
+            $fields .= "\nDate Graduated: {{date_graduated}}\nS.O. Number: {{so_number}}";
+        }
+
+        // f137a and every other not-yet-customized slug get a title + a
+        // simple starter field block, editable/repositionable like the rest.
         return [
             [
+                'id' => 'doc_title', 'type' => 'text',
+                'text' => self::defaultTitle($slug),
+                'top' => 6, 'left' => 8, 'width' => 84,
+                'font_family' => 'Arial', 'font_size' => 16, 'font_weight' => 'bold', 'font_style' => 'normal',
+                'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.3,
+            ],
+            [
                 'id' => 'main_block', 'type' => 'text',
-                'text' => "Student No: {{student_no}}\nStudent Name: {{student_name}}\nCourse: {{course}}\nYear Level: {{year_level}}\nSchool Year: {{school_year}}\nDate: {{date}}",
-                'top' => 10, 'left' => 8, 'width' => 84,
+                'text' => $fields,
+                'top' => 18, 'left' => 8, 'width' => 84,
                 'font_family' => 'Arial', 'font_size' => 11, 'font_weight' => 'normal', 'font_style' => 'normal',
                 'text_decoration' => 'none', 'text_align' => 'left', 'line_height' => 1.5,
             ],

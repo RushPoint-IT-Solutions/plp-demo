@@ -46,47 +46,58 @@ class StudentDocumentRegistry
             ],
             [
                 'slug' => 'diploma', 'label' => 'Diploma', 'group' => 'Graduation',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.diploma'),
             ],
             [
                 'slug' => 'clearance-2', 'label' => 'Clearance 2', 'group' => 'Clearance',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.clearance-2'),
             ],
             [
                 'slug' => 'graduation-clearance', 'label' => 'Graduation Clearance', 'group' => 'Clearance',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.graduation-clearance'),
             ],
             [
                 'slug' => 'leave-of-absence', 'label' => 'Leave of Absence', 'group' => 'Enrollment',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled'),
             ],
             [
                 'slug' => 'deans-honors', 'label' => "Dean's Honors", 'group' => 'Honors',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.certificates.deans-honors'),
             ],
             [
                 'slug' => 'presidents-honors', 'label' => "President's Honors", 'group' => 'Honors',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.certificates.presidents-honors'),
             ],
             [
                 'slug' => 'form-8c2', 'label' => 'Form 8C-2 (Graduation)', 'group' => 'Graduation',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2'),
             ],
             [
                 'slug' => 'form-8d2', 'label' => 'Form 8D-2 (Honor)', 'group' => 'Honors',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2'),
             ],
             [
                 'slug' => 'cog', 'label' => 'Copy of Grades (COG)', 'group' => 'Academic Records',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.cog.copy-of-grades'),
             ],
             [
                 'slug' => 'official-grade-report', 'label' => 'Official Grade Report', 'group' => 'Academic Records',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.official-grade-report'),
             ],
             [
                 'slug' => 'cross-enroll-permit', 'label' => 'Cross-Enroll Permit', 'group' => 'Enrollment',
-                'has_editor' => false, 'editor' => null, 'live_url' => null,
+                'has_editor' => true, 'editor' => 'generic',
+                'live_url' => route('registrar.registrar-menu.forms.permission-cross-enroll'),
             ],
         ];
     }
