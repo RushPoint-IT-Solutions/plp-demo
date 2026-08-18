@@ -504,15 +504,10 @@ class FacultyLoadsController extends Controller
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'abbr']);
-        $employmentTypeOptions = Schema::hasTable('teacher_load_settings')
-            ? DB::table('teacher_load_settings')->orderBy('employment_type')->pluck('employment_type')->filter()->values()->all()
-            : [];
-        $employmentTypeOptions = array_values(array_unique(array_merge($employmentTypeOptions, [
+        $employmentTypeOptions = [
             'Full-time Teacher',
             'Part-time Teacher',
-            'Department Head',
-            'Visiting Lecturer',
-        ])));
+        ];
 
         return view('registrar.services.classroom-faculty.faculty-loads.show', compact(
             'faculty',
