@@ -92,44 +92,6 @@
 }
 .srp-tab-badge.blue { background:#3b82f6; }
 
-/* ── documents dropdown (persistent across tabs) ───────────────── */
-.srp-tabs-row { display:flex; align-items:flex-start; gap:10px; padding:0 32px 8px; margin-top:20px; }
-.srp-tabs-row .srp-tabs { flex:1; min-width:0; padding:0; margin:0; }
-.srp-doc-menu { position:relative; flex-shrink:0; }
-.srp-doc-menu-btn {
-    display:flex; align-items:center; gap:7px; white-space:nowrap;
-    padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer;
-    border:1px solid rgba(255,255,255,.4); border-radius:10px;
-    background:rgba(255,255,255,.14); color:#fff;
-    transition:background .15s;
-}
-.srp-doc-menu-btn:hover { background:rgba(255,255,255,.24); }
-.srp-doc-menu-btn .srp-doc-menu-caret { transition:transform .15s; }
-.srp-doc-menu.is-open .srp-doc-menu-btn .srp-doc-menu-caret { transform:rotate(180deg); }
-.srp-doc-menu-panel {
-    display:none; position:absolute; top:calc(100% + 6px); right:0; z-index:50;
-    width:300px; max-height:420px; overflow-y:auto;
-    background:#fff; border-radius:10px; box-shadow:0 14px 34px rgba(0,0,0,.22);
-    padding:8px;
-}
-.srp-doc-menu.is-open .srp-doc-menu-panel { display:block; }
-.srp-doc-menu-group-label {
-    font-size:10.5px; font-weight:800; color:#94a3b8; text-transform:uppercase;
-    letter-spacing:.05em; padding:8px 10px 4px;
-}
-.srp-doc-menu-item {
-    display:flex; align-items:center; gap:10px; width:100%;
-    padding:8px 10px; border-radius:7px; text-decoration:none;
-    color:#1e293b; font-size:12.5px; font-weight:600; text-align:left;
-    border:0; background:transparent; cursor:pointer; font-family:inherit;
-}
-.srp-doc-menu-item:hover { background:#f0fdf4; color:#166534; }
-.srp-doc-menu-item svg { flex-shrink:0; color:#006837; }
-.srp-doc-menu-item.is-disabled { color:#94a3b8; cursor:not-allowed; }
-.srp-doc-menu-item.is-disabled svg { color:#cbd5e1; }
-.srp-doc-menu-item.is-disabled:hover { background:transparent; color:#94a3b8; }
-.srp-doc-menu-item-reason { font-size:10px; color:#94a3b8; font-weight:500; }
-
 /* ── tab panels ─────────────────────────────────────────────── */
 .srp-body  { padding:24px 32px; }
 .srp-panel { display:none; }
@@ -489,13 +451,7 @@
             </div>
         </div>
 
-        @php
-            $studentDocuments = \App\Support\StudentDocumentTypes::forStudent($student, $isGraduated);
-            $studentDocumentGroups = collect($studentDocuments)->groupBy('group');
-        @endphp
-
-        {{-- Tab bar + Documents navbar --}}
-        <div class="srp-tabs-row">
+        {{-- Tab bar --}}
         <div class="srp-tabs">
             <button class="srp-tab active" data-tab="info">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z"/><path d="M20.59 22c0-3.87-3.85-7-8.59-7S3.41 18.13 3.41 22"/></svg>
@@ -533,40 +489,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
                 Certificates
             </button>
-        </div>
-
-        <div class="srp-doc-menu" id="srpDocMenu">
-            <button type="button" class="srp-doc-menu-btn" onclick="srpToggleDocMenu()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Documents
-                <svg class="srp-doc-menu-caret" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="srp-doc-menu-panel">
-                @foreach($studentDocumentGroups as $groupName => $groupDocs)
-                    <div class="srp-doc-menu-group-label">{{ $groupName }}</div>
-                    @foreach($groupDocs as $doc)
-                        @if($doc['available'])
-                            <a href="{{ $doc['url'] }}" target="_blank" class="srp-doc-menu-item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="{{ $doc['icon'] }}"/></svg>
-                                {{ $doc['label'] }}
-                            </a>
-                        @else
-                            <div class="srp-doc-menu-item is-disabled" title="{{ $doc['unavailable_reason'] ?? 'Not available' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="{{ $doc['icon'] }}"/></svg>
-                                <div>
-                                    {{ $doc['label'] }}
-                                    <div class="srp-doc-menu-item-reason">{{ $doc['unavailable_reason'] ?? 'Not available' }}</div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                @endforeach
-                <div class="srp-doc-menu-group-label">Academic Records</div>
-                <button type="button" class="srp-doc-menu-item" onclick="srpOpenReportOfGrades({{ $student->id }}); srpToggleDocMenu();">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M9 17v-6M12 17v-3M15 17v-9M4 4h16v16H4z"/></svg>
-                    Report of Grades (CWA)
-                </button>
-            </div>
         </div>
     </div>
 
@@ -1466,26 +1388,34 @@
                 <div class="srp-card-body">
                     <p style="font-size:13px;color:#64748b;margin-bottom:16px;">Click any document to generate it for this student.</p>
                     <div class="srp-cert-grid">
-                        @foreach($studentDocuments as $doc)
-                        @if($doc['available'])
-                        <a href="{{ $doc['url'] }}" target="_blank" class="srp-cert-card">
+                        @php
+                            $certs = [
+                                ['Certificate of Registration (COR)', route('registrar.registrar-menu.forms.cor.certificate-of-registration') . '?student_id=' . $student->id,'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0-1.756 1.077'],
+                                ['Clearance 2', route('registrar.registrar-menu.forms.clearance-2.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+                                ['Copy of Grades (COG)', route('registrar.registrar-menu.forms.cog.copy-of-grades'),'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M12 12h4M12 16h4M8 12h.01M8 16h.01'],
+                                ['Official Grade Report', route('registrar.registrar-menu.forms.official-grade-report'),'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8'],
+                                ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],
+                                ['Dean\'s Honors', route('registrar.registrar-menu.forms.certificates.deans-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
+                                ['President\'s Honors', route('registrar.registrar-menu.forms.certificates.presidents-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
+                                ['Form 8C-2 (Graduation)', route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2.show', ['student' => $student->id]),'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3'],
+                                ['Form 8D-2 (Honor)', route('registrar.registrar-menu.forms.certificates.certificate-honor-8d2.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z'],
+                                ['Diploma', route('registrar.registrar-menu.forms.diploma') . '?student_id=' . $student->id,'M22 10v6M2 10l10-5 10 5-10 5z M6 12v5c3 3 9 3 12 0v-5'],
+                                ['Honorable Dismissal', route('registrar.registrar-menu.forms.honorable-dismissal.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+                                ['Graduation Clearance', route('registrar.registrar-menu.forms.graduation-clearance.show', ['student' => $student->id]),'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
+                                ['Leave of Absence', route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled.show', ['student' => $student->id]),'M8 2v3M16 2v3M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5z'],
+                                ['Cross-Enroll Permit', route('registrar.registrar-menu.forms.permission-cross-enroll'),'M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4-3 3-3-3m3-3v11'],
+                                ['Request Form F137A', route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id]),'M4 4h16v16H4zM4 9h16M9 9v11'],
+                            ];
+                        @endphp
+                        @foreach($certs as [$certName,$certUrl,$certIcon])
+                        <a href="{{ $certUrl }}" class="srp-cert-card">
                             <div>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path d="{{ $doc['icon'] }}"/>
+                                    <path d="{{ $certIcon }}"/>
                                 </svg>
                             </div>
-                            <div class="srp-cert-name">{{ $doc['label'] }}</div>
+                            <div class="srp-cert-name">{{ $certName }}</div>
                         </a>
-                        @else
-                        <div class="srp-cert-card" style="opacity:.5;cursor:not-allowed;" title="{{ $doc['unavailable_reason'] ?? 'Not available' }}">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path d="{{ $doc['icon'] }}"/>
-                                </svg>
-                            </div>
-                            <div class="srp-cert-name">{{ $doc['label'] }}</div>
-                        </div>
-                        @endif
                         @endforeach
 
                         <button type="button" class="srp-cert-card srp-cert-card-btn" onclick="srpOpenReportOfGrades({{ $student->id }})">
@@ -2141,18 +2071,6 @@ function srpCloseReqEdit() {
 }
 document.getElementById('reqEditOverlay').addEventListener('click', function(e) {
     if (e.target === this) srpCloseReqEdit();
-});
-
-// ── Documents navbar dropdown ────────────────────────────
-function srpToggleDocMenu() {
-    document.getElementById('srpDocMenu').classList.toggle('is-open');
-}
-
-document.addEventListener('click', function (event) {
-    var menu = document.getElementById('srpDocMenu');
-    if (menu && !menu.contains(event.target)) {
-        menu.classList.remove('is-open');
-    }
 });
 
 // ── Tag for Honorable Dismissal ────────────────────────────
