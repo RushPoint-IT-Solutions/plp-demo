@@ -7,6 +7,32 @@
 @push('scripts')
     <script src="{{ asset('js/registrar-listbox-select.js') }}?v={{ file_exists(public_path('js/registrar-listbox-select.js')) ? filemtime(public_path('js/registrar-listbox-select.js')) : time() }}"></script>
     <script src="{{ asset('js/registrar-class-list.js') }}?v={{ file_exists(public_path('js/registrar-class-list.js')) ? filemtime(public_path('js/registrar-class-list.js')) : time() }}"></script>
+    <script src="{{ asset('js/reports-student-autocomplete.js') }}?v={{ file_exists(public_path('js/reports-student-autocomplete.js')) ? filemtime(public_path('js/reports-student-autocomplete.js')) : time() }}"></script>
+    <script>
+        var clAddStudentPoll = null;
+
+        function openClAddStudentModal() {
+            var modal = document.getElementById('clAddStudentModal');
+            if (!modal) return;
+            document.getElementById('clAddStudentSearch').value = '';
+            document.getElementById('clAddStudentId').value = '';
+            document.getElementById('clAddStudentSubmit').disabled = true;
+            modal.style.display = 'flex';
+
+            var idField = document.getElementById('clAddStudentId');
+            var submitBtn = document.getElementById('clAddStudentSubmit');
+            clearInterval(clAddStudentPoll);
+            clAddStudentPoll = setInterval(function () {
+                submitBtn.disabled = idField.value.trim() === '';
+            }, 250);
+        }
+
+        function closeClAddStudentModal() {
+            var modal = document.getElementById('clAddStudentModal');
+            if (modal) modal.style.display = 'none';
+            clearInterval(clAddStudentPoll);
+        }
+    </script>
 @endpush
 
 @push('styles')
@@ -243,6 +269,7 @@
                 Back to Subject List
             </button>
             <div class="cl-print-group">
+                <button type="button" class="pf-btn-new" onclick="openClAddStudentModal()">+ Add Student</button>
                 <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'pdf'], $exportQuery)) }}" target="_blank" class="svc-btn-pdf">Print Class List (PDF)</a>
                 <a href="{{ route('registrar.services.classroom-faculty.class-list.export', array_merge(['format' => 'excel'], $exportQuery)) }}" class="svc-btn-excel">Print Class List (Excel)</a>
             </div>
@@ -250,6 +277,33 @@
 
         <div class="cl-print-preview">
             @include('registrar.services.classroom-faculty.partials.class-list-print-sheet')
+        </div>
+
+        <div class="pf-modal-overlay" id="clAddStudentModal" style="display:none;">
+            <div class="pf-modal-box" style="max-width:480px;">
+                <div class="pf-modal-title">Add Student to Class List</div>
+                <p style="font-size:.8rem;color:#666;margin:0 0 12px;">Search by student number or name, then select the student to add to this section.</p>
+                <form action="{{ route('registrar.services.classroom-faculty.class-list.students.store', $selectedSubject->id) }}" method="POST" id="clAddStudentForm">
+                    @csrf
+                    <input type="hidden" name="school_year" value="{{ $selectedSchoolYear }}">
+                    <input type="hidden" name="semester" value="{{ $selectedSemester }}">
+                    <input type="hidden" name="q" value="{{ $search }}">
+                    <input type="hidden" name="student_id" id="clAddStudentId">
+
+                    <label class="pf-modal-label">Student ID / Name</label>
+                    <div class="rsa-wrap">
+                        <input type="text" class="req-modal-input" id="clAddStudentSearch" placeholder="Type student no. or name" autocomplete="off"
+                            data-student-autocomplete="reports"
+                            data-student-id-target="clAddStudentId"
+                            data-student-search-url="{{ route('registrar.services.classroom-faculty.class-list.students.search', $selectedSubject->id) }}">
+                    </div>
+
+                    <div class="pf-modal-actions" style="margin-top:14px;">
+                        <button type="button" class="pf-modal-btn-cancel" onclick="closeClAddStudentModal()">Cancel</button>
+                        <button type="submit" class="pf-modal-btn-save" id="clAddStudentSubmit" disabled>Add Student</button>
+                    </div>
+                </form>
+            </div>
         </div>
     @else
         <div class="student-table-wrapper table-responsive">
