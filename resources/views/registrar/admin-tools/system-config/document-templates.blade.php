@@ -66,11 +66,13 @@
         @if($selectedDoc && $selectedDoc['editor'] === 'generic')
             <div class="dt-field">
                 <label for="dtStudentSearch">Preview With Student (optional)</label>
-                <input type="hidden" name="student_id" id="dtStudentId" value="{{ $previewStudentId ?: '' }}">
-                <input type="text" id="dtStudentSearch" placeholder="Type student no. or name"
-                    data-student-autocomplete="reports"
-                    data-student-id-target="dtStudentId"
-                    data-student-search-url="{{ route('registrar.services.reports-admin.students.search') }}">
+                <div class="rsa-wrap">
+                    <input type="hidden" name="student_id" id="dtStudentId" value="{{ $previewStudentId ?: '' }}">
+                    <input type="text" id="dtStudentSearch" placeholder="Type student no. or name"
+                        data-student-autocomplete="reports"
+                        data-student-id-target="dtStudentId"
+                        data-student-search-url="{{ route('registrar.services.reports-admin.students.search') }}">
+                </div>
             </div>
             <button type="submit" class="pf-btn-new">Load Preview</button>
         @endif
@@ -125,6 +127,7 @@
             </article>
         </div>
 
+        @push('scripts')
         <script>
         (function () {
             var slug = @json($selectedDoc['slug']);
@@ -179,6 +182,7 @@
             };
         })();
         </script>
+        @endpush
     @else
         <div class="dt-note">
             <strong>{{ $selectedDoc['label'] }}</strong> does not have an editable template yet
