@@ -662,7 +662,8 @@
                         <div class="srp-field"><label>Elementary Year Graduated</label><input id="bg_elementary_year" value="{{ $prof->elementary_year_graduated ?? '' }}" placeholder="e.g. 2018"></div>
                         <div class="srp-field"><label>High School</label><input id="bg_high_school" value="{{ $prof->high_school ?? '' }}" placeholder="School name and location"></div>
                         <div class="srp-field"><label>High School Year Graduated</label><input id="bg_high_school_year" value="{{ $prof->high_school_year_graduated ?? '' }}" placeholder="e.g. 2022"></div>
-                        <div class="srp-field"><label>School Last Attended</label><input id="bg_school_last_attended" value="{{ $prof->school_last_attended ?? '' }}" placeholder="For transferee; N/A if not applicable"></div>
+                        <div class="srp-field"><label>School Last Attended</label><input id="bg_school_last_attended" value="{{ $prof->school_last_attended ?? '' }}" placeholder="For transferee or CTP completers; N/A if not applicable"></div>
+                        <div class="srp-field"><label>School Last Attended Year Graduated</label><input id="bg_school_last_attended_year" value="{{ $prof->school_last_attended_year_graduated ?? '' }}" placeholder="e.g. 2022"></div>
                         <div class="srp-field"><label>Junior High School</label><input id="bg_junior_school" value="{{ $prof->junior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
                         <div class="srp-field"><label>Junior High School Year Graduated</label><input id="bg_junior_year" value="{{ $prof->junior_school_year_graduated ?? '' }}" placeholder="e.g. 2020"></div>
                         <div class="srp-field"><label>Senior High School</label><input id="bg_senior_school" value="{{ $prof->senior_school ?? '' }}" placeholder="School name, location, or N/A"></div>
@@ -2168,7 +2169,7 @@ function buildBgPayload() {
         no_k12: g('bg_no_k12'),
         elementary_school: g('bg_elementary_school'), elementary_year_graduated: g('bg_elementary_year'),
         high_school: g('bg_high_school'), high_school_year_graduated: g('bg_high_school_year'),
-        school_last_attended: g('bg_school_last_attended'),
+        school_last_attended: g('bg_school_last_attended'), school_last_attended_year_graduated: g('bg_school_last_attended_year'),
         junior_school: g('bg_junior_school'), junior_school_year_graduated: g('bg_junior_year'),
         senior_school: g('bg_senior_school'), senior_school_year_graduated: g('bg_senior_year'),
         mother_firstname: g('bg_mfn'), mother_lastname: g('bg_mln'),

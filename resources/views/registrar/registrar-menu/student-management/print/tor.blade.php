@@ -184,16 +184,31 @@ body { background:#f0f0f0; color:#000; }
         // K-12 curriculum students record Junior/Senior High School separately;
         // pre-K12 students only have a single "High School" entry.
         $isK12 = $prof && !$prof->no_k12 && ($prof->junior_school || $prof->senior_school);
+        // CTP (Certificate in Teaching Profession) completers are already degree
+        // holders taking a post-baccalaureate certificate, so their scholastic
+        // record only carries School Last Attended, not elementary/high school.
+        $isCtpCompleter = $isGraduated && strtoupper($courseCode) === 'CTP';
     @endphp
-    @if($isK12)
-        <div class="tor-sr-row"><span class="tor-sr-label">Elementary</span><span class="tor-sd-sep">:</span><span>{{ $prof->elementary_school ?: 'N/A' }}</span></div>
-        <div class="tor-sr-row"><span class="tor-sr-label">Junior High School</span><span class="tor-sd-sep">:</span><span>{{ $prof->junior_school ?: 'N/A' }}</span></div>
-        <div class="tor-sr-row"><span class="tor-sr-label">Senior High School</span><span class="tor-sd-sep">:</span><span>{{ $prof->senior_school ?: 'N/A' }}</span></div>
+    @if($isCtpCompleter)
+        <div class="tor-sr-row"><span class="tor-sr-label">School Last Attended</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A' }}</span></div>
+        <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A' }}</span></div>
     @else
-        <div class="tor-sr-row"><span class="tor-sr-label">Elementary</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->elementary_school) ? $prof->elementary_school : 'N/A' }}</span></div>
-        <div class="tor-sr-row"><span class="tor-sr-label">High School</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->high_school) ? $prof->high_school : 'N/A' }}</span></div>
+        @if($isK12)
+            <div class="tor-sr-row"><span class="tor-sr-label">Elementary</span><span class="tor-sd-sep">:</span><span>{{ $prof->elementary_school ?: 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ $prof->elementary_year_graduated ?: 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Junior High School</span><span class="tor-sd-sep">:</span><span>{{ $prof->junior_school ?: 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ $prof->junior_school_year_graduated ?: 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Senior High School</span><span class="tor-sd-sep">:</span><span>{{ $prof->senior_school ?: 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ $prof->senior_school_year_graduated ?: 'N/A' }}</span></div>
+        @else
+            <div class="tor-sr-row"><span class="tor-sr-label">Elementary</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->elementary_school) ? $prof->elementary_school : 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->elementary_year_graduated) ? $prof->elementary_year_graduated : 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">High School</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->high_school) ? $prof->high_school : 'N/A' }}</span></div>
+            <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->high_school_year_graduated) ? $prof->high_school_year_graduated : 'N/A' }}</span></div>
+        @endif
+        <div class="tor-sr-row"><span class="tor-sr-label">School Last Attended</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A' }}</span></div>
+        <div class="tor-sr-row"><span class="tor-sr-label">Year Graduated</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended_year_graduated) ? $prof->school_last_attended_year_graduated : 'N/A' }}</span></div>
     @endif
-    <div class="tor-sr-row"><span class="tor-sr-label">School Last Attended</span><span class="tor-sd-sep">:</span><span>{{ ($prof && $prof->school_last_attended) ? $prof->school_last_attended : 'N/A' }}</span></div>
 
     {{-- GRADING SYSTEM + REMARKS --}}
     <div class="tor-gs-wrap">

@@ -20338,6 +20338,7 @@ class RegistrarController extends Controller
             'shs_track_strand'     => 'nullable|string|max:100',
             'no_k12'               => 'nullable|boolean',
             'school_last_attended' => 'nullable|string|max:200',
+            'school_last_attended_year_graduated' => 'nullable|string|max:20',
             'present_street'       => 'nullable|string|max:200',
             'present_barangay'     => 'nullable|string|max:100',
             'present_municipality' => 'nullable|string|max:100',

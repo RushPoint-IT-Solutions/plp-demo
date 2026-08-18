@@ -39,6 +39,7 @@ class StudentProfile extends Model
         'elementary_school', 'high_school', 'school_last_attended',
         'elementary_year_graduated', 'high_school_year_graduated',
         'junior_school_year_graduated', 'senior_school_year_graduated',
+        'school_last_attended_year_graduated',
 
         'family_income_source', 'family_income_source_other',
         'living_situation', 'living_situation_other',
