@@ -334,6 +334,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/student-records/{student}/scholarships/unifast-toggle', 'Registrar\ScholarshipController@toggleUnifast')->name('student-records.scholarships.toggle-unifast')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/scholastic-comments', 'Registrar\RegistrarController@studentScholasticCommentSave')->name('student-records.scholastic-comments.save')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/status', 'Registrar\RegistrarController@studentRecordStatusUpdate')->name('student-records.status.update')->middleware('throttle:30,1');
+            Route::post('/student-records/{student}/withdraw', 'Registrar\RegistrarController@studentRecordWithdraw')->name('student-records.withdraw')->middleware('throttle:30,1');
+            Route::post('/student-records/{student}/reactivate', 'Registrar\RegistrarController@studentRecordReactivateWithdrawn')->name('student-records.reactivate')->middleware('throttle:30,1');
             Route::post('/student-records/{student}/requirements', 'Registrar\RegistrarController@studentRequirementStore')->name('student-records.requirements.store')->middleware('throttle:30,1');
             Route::put('/student-records/{student}/requirements/{requirement}', 'Registrar\RegistrarController@studentRequirementUpdate')->name('student-records.requirements.update')->middleware('throttle:30,1');
             Route::delete('/student-records/{student}/requirements/{requirement}', 'Registrar\RegistrarController@studentRequirementDestroy')->name('student-records.requirements.delete')->middleware('throttle:30,1');

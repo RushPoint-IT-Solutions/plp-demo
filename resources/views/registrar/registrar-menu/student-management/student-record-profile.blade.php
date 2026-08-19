@@ -42,13 +42,17 @@
 .srp-hero-pill.clearance { background:rgba(59,130,246,.4); }
 .srp-hero-pill.undergrad { background:rgba(148,163,184,.4); }
 .srp-hero-contact { font-size:12.5px; color:rgba(255,255,255,.8); display:flex; gap:14px; flex-wrap:wrap; }
-.srp-hero-status-action { margin-top:10px; }
+.srp-hero-status-action { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
 .srp-btn-status {
     background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.4);
     color:#fff; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:700;
     cursor:pointer; transition:background .15s;
 }
 .srp-btn-status:hover { background:rgba(255,255,255,.28); }
+.srp-btn-status.withdraw { background:rgba(239,68,68,.3); border-color:rgba(239,68,68,.55); }
+.srp-btn-status.withdraw:hover { background:rgba(239,68,68,.45); }
+.srp-btn-status.reactivate { background:rgba(34,197,94,.3); border-color:rgba(34,197,94,.55); }
+.srp-btn-status.reactivate:hover { background:rgba(34,197,94,.45); }
 
 .srp-gwa-box {
     background:rgba(255,255,255,.12); border-radius:12px;
@@ -461,11 +465,14 @@
                     @if($prof && $prof->student_email) <span>✉ {{ $prof->student_email }}</span> @endif
                     @if($prof && $prof->present_municipality) <span>📍 {{ $prof->present_municipality }}, {{ $prof->present_province }}</span> @endif
                 </div>
-                @unless($isWD)
                 <div class="srp-hero-status-action">
-                    <button type="button" class="srp-btn-status" onclick="srpOpenStatusModal()">Edit Status</button>
+                    @if($isWD)
+                        <button type="button" class="srp-btn-status reactivate" onclick="srpReactivateWithdrawn()">Reactivate Student</button>
+                    @else
+                        <button type="button" class="srp-btn-status" onclick="srpOpenStatusModal()">Edit Status</button>
+                        <button type="button" class="srp-btn-status withdraw" onclick="srpOpenWithdrawModal()">Withdraw Student</button>
+                    @endif
                 </div>
-                @endunless
             </div>
             <div class="srp-gwa-box">
                 <div class="srp-gwa-num">{{ $cwa !== null ? number_format($cwa,2) : '—' }}</div>
@@ -1958,6 +1965,30 @@
     </div>
 </div>
 
+{{-- Withdraw Student Modal --}}
+<div class="med-overlay" id="withdrawOverlay">
+    <div class="med-modal" role="dialog" aria-modal="true" style="width:min(480px,95vw);">
+        <div class="med-modal-head">
+            <h3>Withdraw Student</h3>
+            <button type="button" class="med-close-btn" onclick="srpCancelWithdraw()" aria-label="Close">&times;</button>
+        </div>
+        <div class="med-modal-body">
+            <div class="med-field">
+                <label>Withdrawal Date</label>
+                <input type="date" id="withdraw_date" value="{{ now()->toDateString() }}">
+            </div>
+            <div class="med-field">
+                <label>Remarks</label>
+                <textarea id="withdraw_remarks" style="min-height:90px;" placeholder="Reason for withdrawal..."></textarea>
+            </div>
+        </div>
+        <div class="med-modal-foot">
+            <button type="button" class="med-btn-cancel" onclick="srpCancelWithdraw()">Cancel</button>
+            <button type="button" class="srp-btn-primary" style="background:linear-gradient(135deg,#dc2626,#b91c1c);" onclick="srpConfirmWithdraw()">Withdraw Student</button>
+        </div>
+    </div>
+</div>
+
 {{-- HD Copy For Modal --}}
 <div class="med-overlay" id="hdCopyForOverlay">
     <div class="med-modal" role="dialog" aria-modal="true" style="width:min(480px,95vw);">
@@ -2183,6 +2214,8 @@ const SRP_RELIGION_STORE_URL = '{{ route("registrar.registrar-menu.student-mgmt.
 let SRP_RELIGIONS     = @json($religions ?? []);
 const HD_TAG_URL      = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => $student->id]));
 const STATUS_UPDATE_URL = @json(route('registrar.registrar-menu.student-mgmt.student-records.status.update', ['student' => $student->id]));
+const WITHDRAW_URL = @json(route('registrar.registrar-menu.student-mgmt.student-records.withdraw', ['student' => $student->id]));
+const REACTIVATE_WD_URL = @json(route('registrar.registrar-menu.student-mgmt.student-records.reactivate', ['student' => $student->id]));
 const REQ_UPDATE_URL_BASE = @json(route('registrar.registrar-menu.student-mgmt.student-records.requirements.update', ['student' => $student->id, 'requirement' => '__ID__']));
 
 // ── Cascading address dropdowns (Region → Province → City/Municipality → Barangay) ─
@@ -2489,6 +2522,65 @@ async function srpConfirmStatusEdit() {
             setTimeout(srpReloadOnDocumentsTab, 700);
         } else {
             srpToast(data.message || 'Unable to update status.', 'error');
+        }
+    } catch (e) {
+        srpToast('Network error — check connection.', 'error');
+    }
+}
+
+// ── Withdraw / Reactivate ──────────────────────────────────
+function srpOpenWithdrawModal() {
+    document.getElementById('withdrawOverlay').classList.add('open');
+}
+
+function srpCancelWithdraw() {
+    document.getElementById('withdrawOverlay').classList.remove('open');
+}
+
+document.getElementById('withdrawOverlay').addEventListener('click', function(e) {
+    if (e.target === this) srpCancelWithdraw();
+});
+
+async function srpConfirmWithdraw() {
+    const date = document.getElementById('withdraw_date').value;
+    const remarks = document.getElementById('withdraw_remarks').value.trim();
+
+    try {
+        const r = await fetch(WITHDRAW_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+            body: JSON.stringify({ withdrawn_date: date, remarks: remarks }),
+        });
+        const data = await r.json();
+
+        if (data.success) {
+            srpToast(data.message || 'Student withdrawn.', 'success');
+            srpCancelWithdraw();
+            setTimeout(function () { location.reload(); }, 700);
+        } else {
+            srpToast(data.message || 'Unable to withdraw student.', 'error');
+        }
+    } catch (e) {
+        srpToast('Network error — check connection.', 'error');
+    }
+}
+
+async function srpReactivateWithdrawn() {
+    if (!confirm('Reactivate this student? This clears the Withdrawn status.')) return;
+
+    try {
+        const r = await fetch(REACTIVATE_WD_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+            body: JSON.stringify({}),
+        });
+        const data = await r.json();
+
+        if (data.success) {
+            srpToast(data.message || 'Student reactivated.', 'success');
+            setTimeout(function () { location.reload(); }, 700);
+        } else {
+            srpToast(data.message || 'Unable to reactivate student.', 'error');
         }
     } catch (e) {
         srpToast('Network error — check connection.', 'error');

@@ -19860,6 +19860,35 @@ class RegistrarController extends Controller
         return response()->json(['success' => true, 'message' => 'Student status updated to ' . $validated['status'] . '.']);
     }
 
+    public function studentRecordWithdraw(Request $request, Student $student): JsonResponse
+    {
+        if ($student->is_withdrawn) {
+            return response()->json(['success' => false, 'message' => 'Student is already withdrawn.'], 422);
+        }
+
+        $validated = $request->validate([
+            'withdrawn_date' => ['nullable', 'date'],
+            'remarks' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $student->is_withdrawn = true;
+        $student->withdrawn_date = $validated['withdrawn_date'] ?? now()->toDateString();
+        $student->withdrawn_remarks = trim((string) ($validated['remarks'] ?? '')) ?: null;
+        $student->save();
+
+        return response()->json(['success' => true, 'message' => 'Student withdrawn.']);
+    }
+
+    public function studentRecordReactivateWithdrawn(Request $request, Student $student): JsonResponse
+    {
+        $student->is_withdrawn = false;
+        $student->withdrawn_date = null;
+        $student->withdrawn_remarks = null;
+        $student->save();
+
+        return response()->json(['success' => true, 'message' => 'Student reactivated.']);
+    }
+
     public function studentRequirementUpload(Request $request, Student $student, StudentRequirementStatus $requirement)
     {
         if ((int) $requirement->student_id !== (int) $student->id) {
