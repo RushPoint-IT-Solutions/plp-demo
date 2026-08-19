@@ -344,8 +344,6 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::post('/student-records/{student}/clinic', 'Registrar\RegistrarController@studentClinicRecordSave')->name('student-records.clinic.save');
             Route::delete('/student-records/{student}/clinic/{clinic}', 'Registrar\RegistrarController@studentClinicRecordDelete')->name('student-records.clinic.delete');
             Route::get('/student-records/{student}/print/tor', 'Registrar\RegistrarController@studentPrintTor')->name('student-records.print.tor');
-            Route::get('/student-records/{student}/print/tor/layout', 'Registrar\RegistrarController@getTorTemplateLayout')->name('student-records.print.tor.layout');
-            Route::post('/student-records/print/tor/layout', 'Registrar\RegistrarController@saveTorTemplateLayout')->name('student-records.print.tor.layout.save')->middleware('throttle:30,1');
             Route::get('/student-records/{student}/print/diploma', 'Registrar\RegistrarController@studentPrintDiploma')->name('student-records.print.diploma');
             Route::get('/student-records/{student}/report-of-grades', 'Registrar\RegistrarController@studentRecordReportOfGrades')->name('student-records.report-of-grades');
             Route::post('/student-records/religion', 'Registrar\RegistrarController@studentRecordReligionStore')->name('student-records.religion.store')->middleware('throttle:30,1');

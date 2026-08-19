@@ -11,6 +11,7 @@ class GraduateTagging extends Model
         'is_graduate',
         'date_graduated',
         'so_number',
+        'latin_honor',
         'so_date',
         'suspend_account',
         'suspend_remarks',

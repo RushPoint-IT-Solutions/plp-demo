@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'English Towne';
+  src: url('../fonts/EnglishTowne-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --plp-green: #006837;
   --plp-green-dark: #005028;
@@ -7,31 +15,33 @@
   --plp-border: #cccccc;
 }
 
-@page {
-  size: A4;
-  margin: 25mm 20mm;
-}
-
+/* Letter size, 1in margins on every side — matches the Form 8C-2 certificate family */
 .registrar-body .certificate-8d2 {
   position: relative;
-  max-width: 180mm;
-  min-height: 250mm;
+  width: 215.9mm;
+  min-height: 279.4mm;
   margin: 0 auto;
-  padding: 20mm 14mm 22mm;
+  padding: 25.4mm;
   background: #fff;
   border: 1px solid #e6e6e6;
   box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
   color: #000;
-  font-family: "Times New Roman", Times, serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   overflow: hidden;
+}
+
+@media screen {
+  .registrar-body .certificate-8d2 {
+    margin-top: 0;
+  }
 }
 
 @media print {
   .registrar-body .certificate-8d2 {
-    width: 180mm;
-    min-height: 257mm;
+    width: auto;
+    min-height: 0;
     margin: 0;
-    padding: 18mm 12mm 18mm;
+    padding: 25.4mm;
     border: 0;
     box-shadow: none;
     -webkit-print-color-adjust: exact;
@@ -40,10 +50,12 @@
     -moz-column-break-inside: avoid;
          break-inside: avoid;
   }
+  @page { size: letter portrait; margin: 0; }
 }
 
 @media (max-width: 768px) {
   .registrar-body .certificate-8d2 {
+    width: auto;
     padding: 16mm 10mm 20mm;
   }
 }
@@ -53,9 +65,10 @@
 }
 
 .registrar-body .certificate-8d2__title {
-  margin: 12mm 0 8mm;
-  font-size: 24pt;
+  margin: 4mm 0 10mm;
+  font-family: 'English Towne', 'Brush Script MT', cursive;
   font-weight: 400;
+  font-size: 26pt;
   line-height: 1.1;
 }
 
@@ -63,29 +76,30 @@
   width: 100%;
   max-width: 158mm;
   margin: 0 auto;
-  text-align: center;
+  text-align: justify;
   font-size: 12pt;
-  line-height: 1.6;
-  letter-spacing: 0.01em;
+  line-height: 2;
 }
 
 .registrar-body .certificate-8d2__paragraph {
-  margin: 0 auto 10mm;
+  margin: 0 auto;
 }
 
 .registrar-body .certificate-8d2__paragraph--request {
-  margin-bottom: 0;
+  text-indent: 2em;
 }
 
-.registrar-body .certificate-8d2__emphasis {
+.registrar-body .certificate-8d2__name {
   font-weight: 700;
-  text-transform: uppercase;
+}
+
+.registrar-body .certificate-8d2__degree {
+  font-style: italic;
 }
 
 .registrar-body .certificate-8d2__honor {
   font-weight: 700;
   font-style: italic;
-  text-transform: uppercase;
 }
 
 .registrar-body .certificate-8d2__footer {
@@ -135,8 +149,7 @@
   position: absolute;
   left: 0;
   bottom: 0;
-  font-size: 12pt;
+  font-size: 10pt;
   line-height: 1.1;
   color: #222;
 }
-

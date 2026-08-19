@@ -10,17 +10,28 @@
 @section('content')
 @php
     $studentModel = isset($student) ? $student : null;
+    $prof = optional($studentModel)->profile;
 
-    $studentName = trim((string) optional($studentModel)->name);
-    $studentName = $studentName !== '' ? strtoupper($studentName) : 'STUDENT NAME';
+    $honorific = strtolower((string) optional($studentModel)->sex) === 'female' ? 'MS.' : 'MR.';
 
-    $programText = trim((string) optional($studentModel)->program);
-    if ($programText === '' && $studentModel && $studentModel->relationLoaded('canonicalCourse')) {
-        $programText = trim((string) (optional($studentModel->canonicalCourse)->name ?: optional($studentModel->canonicalCourse)->code));
-    }
+    $firstMiddleLastName = trim(
+        (string) optional($prof)->first_name
+        . ' ' . (string) optional($prof)->middle_name
+        . ' ' . (string) optional($prof)->last_name
+        . ($prof && $prof->suffix ? ' ' . $prof->suffix : '')
+    );
+    $firstMiddleLastName = preg_replace('/\s+/', ' ', $firstMiddleLastName);
+    $studentFullName = $firstMiddleLastName !== '' ? strtoupper($honorific . ' ' . $firstMiddleLastName) : 'STUDENT NAME';
+
+    $lastNameOnly = trim((string) optional($prof)->last_name . ($prof && $prof->suffix ? ' ' . $prof->suffix : ''));
+    $studentLastName = $lastNameOnly !== '' ? strtoupper($honorific . ' ' . $lastNameOnly) : $studentFullName;
+
+    $programText = optional(optional($studentModel)->canonicalCourse)->description
+        ?: optional(optional($studentModel)->canonicalCourse)->name
+        ?: trim((string) optional($studentModel)->program);
     $programText = $programText !== '' ? $programText : 'DEGREE/PROGRAM';
 
-    $honorValue = isset($honor_title) ? $honor_title : (isset($honor) ? $honor : optional($studentModel)->honor);
+    $honorValue = isset($honor_title) ? $honor_title : (isset($honor) ? $honor : optional(optional($studentModel)->graduateTagging)->latin_honor);
     $honorText = trim((string) $honorValue);
     $honorText = $honorText !== '' ? strtoupper($honorText) : 'HONOR';
 
@@ -49,15 +60,15 @@
 
         <section class="certificate-8d2__body" aria-label="Certificate text">
             <p class="certificate-8d2__paragraph">
-                This is to certify that <span class="certificate-8d2__emphasis">{{ $studentName }}</span> graduated
+                This is to certify that <span class="certificate-8d2__name">{{ $studentFullName }}</span> graduated
                 <span class="certificate-8d2__honor">{{ $honorText }}</span> from the university with the degree of
-                <span class="certificate-8d2__emphasis">{{ $programText }}</span> on
-                <span class="certificate-8d2__emphasis">{{ $graduationDateText }}</span>.
+                <span class="certificate-8d2__degree">{{ $programText }}</span> on
+                {{ $graduationDateText }}.
             </p>
 
             <p class="certificate-8d2__paragraph certificate-8d2__paragraph--request">
                 This certification is being issued upon the request of
-                <span class="certificate-8d2__emphasis">{{ $studentName }}</span>
+                <span class="certificate-8d2__name">{{ $studentLastName }}</span>
                 for whatever legal purposes it may serve.
             </p>
         </section>

@@ -142,6 +142,7 @@
                         <th style="text-align: center;">Graduate</th>
                         <th style="text-align: center;">Date Graduated</th>
                         <th style="text-align: center;">BOR Number</th>
+                        <th style="text-align: center;">Latin Honor</th>
                         <th style="text-align: center;">BOR Date</th>
                         <th style="text-align: center;">Suspend</th>
                         <th style="text-align: center;">Save</th>
@@ -183,6 +184,15 @@
                         <td style="text-align: center; white-space: nowrap;"><input type="checkbox" class="tog-check" data-tag-is-graduate style="vertical-align: middle;" {{ $tag && $tag->is_graduate ? 'checked' : '' }}></td>
                         <td style="text-align: center;"><input type="date" class="tog-input tog-input-date" data-tag-date-graduated value="{{ $tag && $tag->date_graduated ? $tag->date_graduated->format('Y-m-d') : '' }}"></td>
                         <td style="text-align: center;"><input type="text" class="tog-input tog-input-so" data-tag-so-number value="{{ $tag ? $tag->so_number : '' }}" placeholder="BOR Number"></td>
+                        <td style="text-align: center;">
+                            <select class="tog-input tog-input-honor" data-tag-latin-honor>
+                                <option value="" {{ (!$tag || !$tag->latin_honor) ? 'selected' : '' }}>&mdash;</option>
+                                <option value="With Honors" {{ $tag && $tag->latin_honor === 'With Honors' ? 'selected' : '' }}>With Honors</option>
+                                <option value="Cum Laude" {{ $tag && $tag->latin_honor === 'Cum Laude' ? 'selected' : '' }}>Cum Laude</option>
+                                <option value="Magna Cum Laude" {{ $tag && $tag->latin_honor === 'Magna Cum Laude' ? 'selected' : '' }}>Magna Cum Laude</option>
+                                <option value="Summa Cum Laude" {{ $tag && $tag->latin_honor === 'Summa Cum Laude' ? 'selected' : '' }}>Summa Cum Laude</option>
+                            </select>
+                        </td>
                         <td style="text-align: center;"><input type="date" class="tog-input tog-input-date" data-tag-so-date value="{{ $tag && $tag->so_date ? $tag->so_date->format('Y-m-d') : '' }}"></td>
                         <td style="text-align: center; white-space: nowrap;"><input type="checkbox" class="tog-check" data-tag-suspend style="vertical-align: middle;" {{ $tag && $tag->suspend_account ? 'checked' : '' }}></td>
                         <td style="text-align: center;"><button type="button" class="req-btn-save tog-save-btn" data-tag-save>Save</button></td>
@@ -585,6 +595,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     is_graduate: isGraduate,
                     date_graduated: row.querySelector('[data-tag-date-graduated]').value || null,
                     so_number: row.querySelector('[data-tag-so-number]').value || null,
+                    latin_honor: row.querySelector('[data-tag-latin-honor]').value || null,
                     so_date: row.querySelector('[data-tag-so-date]').value || null,
                     suspend_account: isSuspended,
                     suspend_remarks: isSuspended ? suspendRemarksToSave : null

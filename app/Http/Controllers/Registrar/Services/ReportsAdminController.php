@@ -963,12 +963,14 @@ class ReportsAdminController extends Controller
             'is_graduate' => 'nullable|boolean',
             'date_graduated' => 'nullable|date',
             'so_number' => 'nullable|string|max:80',
+            'latin_honor' => 'nullable|string|in:With Honors,Cum Laude,Magna Cum Laude,Summa Cum Laude',
             'so_date' => 'nullable|date',
             'suspend_account' => 'nullable|boolean',
             'suspend_remarks' => 'nullable|string|max:255|required_if:suspend_account,1',
         ], [], [
             'so_number' => 'BOR Number',
             'so_date' => 'BOR Date',
+            'latin_honor' => 'Latin Honor',
         ]);
 
         GraduateTagging::updateOrCreate(
@@ -977,6 +979,7 @@ class ReportsAdminController extends Controller
                 'is_graduate' => (bool) ($validated['is_graduate'] ?? false),
                 'date_graduated' => $validated['date_graduated'] ?? null,
                 'so_number' => isset($validated['so_number']) ? trim((string) $validated['so_number']) : null,
+                'latin_honor' => isset($validated['latin_honor']) && $validated['latin_honor'] !== '' ? $validated['latin_honor'] : null,
                 'so_date' => $validated['so_date'] ?? null,
                 'suspend_account' => (bool) ($validated['suspend_account'] ?? false),
                 'suspend_remarks' => (bool) ($validated['suspend_account'] ?? false)

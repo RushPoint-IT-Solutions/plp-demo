@@ -11,12 +11,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Shared, slug-driven template editor engine. COR, TOR, and Honorable
- * Dismissal each keep their own dedicated get/save methods on
- * RegistrarController (already shipped and in active use) — this generic
- * controller is for every document type added after them, so adding one
- * only needs a token resolver + default layout in DocumentTemplateTokens,
- * not a whole new pair of controller methods.
+ * Shared, slug-driven template editor engine. COR and Honorable Dismissal
+ * keep their own dedicated get/save methods on RegistrarController
+ * (already shipped and in active use) — this generic controller is for
+ * every document type added after them, so adding one only needs a token
+ * resolver + default layout in DocumentTemplateTokens, not a whole new
+ * pair of controller methods. COG and TOR are bespoke print pages
+ * (precise Excel-matching layout) and don't use this system at all.
  */
 class DocumentTemplateController extends Controller
 {
