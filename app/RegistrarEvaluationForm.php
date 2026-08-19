@@ -20,7 +20,13 @@ class RegistrarEvaluationForm extends Model
         'target_respondents',
         'blocks',
         'published_at',
+        'public_token',
     ];
+
+    public function responsesList()
+    {
+        return $this->hasMany(RegistrarEvaluationResponse::class, 'evaluation_form_id');
+    }
 
     protected $casts = [
         'responses' => 'integer',

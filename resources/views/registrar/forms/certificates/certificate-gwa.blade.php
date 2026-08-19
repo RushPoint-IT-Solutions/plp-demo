@@ -9,7 +9,22 @@
 
 @section('content')
 @php
-    $studentName = optional($student)->name ? strtoupper(optional($student)->name) : 'STUDENT NAME';
+    $prof = optional($student)->profile;
+
+    $honorific = strtolower((string) optional($student)->sex) === 'female' ? 'MS.' : 'MR.';
+
+    $firstMiddleLastName = trim(
+        (string) optional($prof)->first_name
+        . ' ' . (string) optional($prof)->middle_name
+        . ' ' . (string) optional($prof)->last_name
+        . ($prof && $prof->suffix ? ' ' . $prof->suffix : '')
+    );
+    $firstMiddleLastName = preg_replace('/\s+/', ' ', $firstMiddleLastName);
+    $studentFullName = $firstMiddleLastName !== '' ? strtoupper($honorific . ' ' . $firstMiddleLastName) : 'STUDENT NAME';
+
+    $lastNameOnly = trim((string) optional($prof)->last_name . ($prof && $prof->suffix ? ' ' . $prof->suffix : ''));
+    $studentLastName = $lastNameOnly !== '' ? strtoupper($honorific . ' ' . $lastNameOnly) : $studentFullName;
+
     $course = optional($student)->canonicalCourse;
     $programText = optional($course)->description
         ?: optional($course)->name
@@ -31,15 +46,15 @@
 
         <section class="certificate-gwa__body" aria-label="Certificate text">
             <p class="certificate-gwa__paragraph certificate-gwa__paragraph--lead">
-                This certifies that <span class="certificate-gwa__emphasis">{{ $studentName }}</span> who has completed
-                all the academic requirements of the <span class="certificate-gwa__emphasis">{{ $programText }}</span>
+                This certifies that <span class="certificate-gwa__emphasis">{{ $studentFullName }}</span> who has completed
+                all the academic requirements of the {{ $programText }}
                 Program of the Pamantasan ng Lungsod ng Pasig has a General Weighted Average (GWA)
                 of <span class="certificate-gwa__gwa">{{ $gwaText }}</span>.
             </p>
 
             <p class="certificate-gwa__paragraph certificate-gwa__paragraph--request">
                 This certification is being issued upon the request of
-                <span class="certificate-gwa__emphasis">{{ $studentName }}</span>
+                <span class="certificate-gwa__emphasis">{{ $studentLastName }}</span>
                 for whatever legal purposes it may serve.
             </p>
         </section>

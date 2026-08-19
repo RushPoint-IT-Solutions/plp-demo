@@ -21,6 +21,9 @@ Route::get('/access', function () {
     return view('student.access-module');
 })->name('access-module');
 
+Route::get('/evaluation/{token}', 'PublicEvaluationController@show')->name('public.evaluation.show');
+Route::post('/evaluation/{token}', 'PublicEvaluationController@submit')->name('public.evaluation.submit')->middleware('throttle:10,1');
+
 Route::get('/admin', function () {
     return redirect('/admin/access');
 });
@@ -413,8 +416,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/clearance-2/{student}', 'Registrar\RegistrarController@formsClearance2')->name('clearance-2.show');
             Route::get('/clearance-2', 'Registrar\RegistrarController@formsClearance2')->name('clearance-2');
-            Route::get('/honorable-dismissal/template/layout/{student?}', 'Registrar\RegistrarController@getTemplateLayoutData')->name('honorable-dismissal.template.layout');
-            Route::post('/honorable-dismissal/template/layout', 'Registrar\RegistrarController@saveTemplateLayout')->name('honorable-dismissal.template.save');
+            Route::get('/honorable-dismissal/sheet/{student?}', 'Registrar\RegistrarController@honorableDismissalSheet')->name('honorable-dismissal.sheet');
             Route::get('/honorable-dismissal/export', 'Registrar\RegistrarController@formsHonorableDismissalExport')->name('honorable-dismissal.export');
             Route::get('/honorable-dismissal/{student}', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal.show');
             Route::get('/honorable-dismissal', 'Registrar\RegistrarController@formsHonorableDismissal')->name('honorable-dismissal');

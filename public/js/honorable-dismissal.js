@@ -2,8 +2,6 @@
 
 var hdCurrentRowId = null;
 var hdCurrentPreviewName = 'honorable-dismissal.html';
-var hdTemplateState = null;
-var hdSelectedElementId = null;
 var hdPendingPrintedRowIds = [];
 var hdIsMultiPreview = false;
 var hdMultiPreviewRowIds = [];
@@ -70,104 +68,25 @@ function hdOrdinal(n) {
     }
 }
 
-function hdTemplateUrl(rowId) {
-    if (!rowId) return window.hdBlankLayoutUrl || '';
-    return String(window.hdLayoutUrlTemplate || '').replace('__STUDENT__', encodeURIComponent(rowId));
+function hdSheetUrl(rowId) {
+    if (!rowId) return window.hdBlankSheetUrl || '';
+    return String(window.hdSheetUrlTemplate || '').replace('__STUDENT__', encodeURIComponent(rowId));
 }
 
-function hdLoadTemplate(rowId) {
-    return hdJson(hdTemplateUrl(rowId)).then(function(data) {
-        if (!data || !data.success || !data.template) {
-            throw { message: 'Unable to load layout template.' };
+function hdLoadSheetHtml(rowId) {
+    return hdJson(hdSheetUrl(rowId)).then(function(data) {
+        if (!data || !data.success || typeof data.html !== 'string') {
+            throw { message: 'Unable to load Honorable Dismissal document.' };
         }
-        hdTemplateState = hdNormalizeLayout(data.template.content_json || {});
-        return hdTemplateState;
+        return data.html;
     });
 }
 
-function hdNormalizeLayout(layout) {
-    var elements = Array.isArray(layout.elements) ? layout.elements : [];
-    return {
-        page: Object.assign({ width_mm: 210, height_mm: 297, orientation: 'portrait', background: '#ffffff' }, layout.page || {}),
-        elements: elements.map(function(item, index) {
-            return {
-                id: String(item.id || ('element_' + index)),
-                type: 'text',
-                text: String(item.text || ''),
-                resolved_text: item.resolved_text == null ? null : String(item.resolved_text),
-                top: hdClampNumber(item.top, 0, 100, 10),
-                left: hdClampNumber(item.left, 0, 100, 10),
-                width: hdClampNumber(item.width, 1, 100, 30),
-                font_family: item.font_family || 'Arial',
-                font_size: hdClampNumber(item.font_size, 6, 96, 12),
-                font_weight: item.font_weight === 'bold' ? 'bold' : 'normal',
-                font_style: item.font_style === 'italic' ? 'italic' : 'normal',
-                text_decoration: item.text_decoration === 'underline' ? 'underline' : 'none',
-                text_align: ['left', 'center', 'right', 'justify'].indexOf(item.text_align) >= 0 ? item.text_align : 'left',
-                line_height: hdClampNumber(item.line_height, 0.8, 3, 1.25)
-            };
-        })
-    };
-}
-
-function hdClampNumber(value, min, max, fallback) {
-    var n = parseFloat(value);
-    if (isNaN(n)) return fallback;
-    return Math.min(max, Math.max(min, n));
-}
-
-function hdTemplateForSave() {
-    var state = hdTemplateState || hdNormalizeLayout({});
-    return {
-        page: state.page,
-        elements: state.elements.map(function(item) {
-            var copy = Object.assign({}, item);
-            delete copy.resolved_text;
-            return copy;
-        })
-    };
-}
-
-function hdHasTemplateTokens(value) {
-    return /\{\{\s*[a-z0-9_]+\s*\}\}/i.test(String(value || ''));
-}
-
-function hdElementById(id) {
-    if (!hdTemplateState) return null;
-    return hdTemplateState.elements.find(function(item) { return item.id === id; }) || null;
-}
-
-function hdRenderTemplate(layout) {
+function hdRenderSheetHtml(html) {
     var sheet = document.getElementById('hdPreviewSheet');
     if (!sheet) return;
-
-    sheet.innerHTML = '';
-    sheet.className = 'hd-sheet hd-template-canvas';
-    sheet.style.background = (layout.page && layout.page.background) || '#ffffff';
-    (layout.elements || []).forEach(function(item) {
-        var el = document.createElement('div');
-        el.className = 'hd-template-element';
-        el.setAttribute('data-hd-element-id', item.id);
-        el.setAttribute('contenteditable', 'true');
-        el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
-        hdApplyElementStyle(el, item);
-        sheet.appendChild(el);
-    });
-
-    hdSelectTemplateElement(hdSelectedElementId && hdElementById(hdSelectedElementId) ? hdSelectedElementId : null);
-}
-
-function hdApplyElementStyle(el, item) {
-    el.style.top = item.top + '%';
-    el.style.left = item.left + '%';
-    el.style.width = item.width + '%';
-    el.style.fontFamily = "'" + item.font_family + "', sans-serif";
-    el.style.fontSize = item.font_size + 'pt';
-    el.style.fontWeight = item.font_weight;
-    el.style.fontStyle = item.font_style;
-    el.style.textDecoration = item.text_decoration;
-    el.style.textAlign = item.text_align;
-    el.style.lineHeight = item.line_height;
+    sheet.className = '';
+    sheet.innerHTML = html;
 }
 
 function hdOpenPreview(rowId) {
@@ -180,30 +99,28 @@ function hdOpenPreview(rowId) {
 
     hdCurrentRowId = rowId;
     hdCurrentPreviewName = hdFileName(data);
-    hdSelectedElementId = null;
     hdSetMultiMode(false);
     hdOpenPreviewModal();
     hdSetPreviewTitle('HONORABLE DISMISSAL PREVIEW');
-    hdSetSheetLoading('Loading layout...');
+    hdSetSheetLoading('Loading document...');
 
-    hdLoadTemplate(rowId).then(function(layout) {
-        hdRenderTemplate(layout);
+    hdLoadSheetHtml(rowId).then(function(html) {
+        hdRenderSheetHtml(html);
     }).catch(function(error) {
-        hdSetSheetLoading((error && error.message) || 'Unable to load layout template.');
+        hdSetSheetLoading((error && error.message) || 'Unable to load Honorable Dismissal document.');
     });
 }
 
 function hdOpenBlankPreview() {
     hdCurrentRowId = null;
     hdCurrentPreviewName = 'honorable-dismissal-template.html';
-    hdSelectedElementId = null;
     hdSetMultiMode(false);
     hdOpenPreviewModal();
     hdSetPreviewTitle('HONORABLE DISMISSAL PREVIEW (Blank Template)');
     hdSetSheetLoading('Loading blank template...');
 
-    hdLoadTemplate(null).then(function(layout) {
-        hdRenderTemplate(layout);
+    hdLoadSheetHtml(null).then(function(html) {
+        hdRenderSheetHtml(html);
     }).catch(function(error) {
         hdSetSheetLoading((error && error.message) || 'Unable to load blank template.');
     });
@@ -227,7 +144,6 @@ function hdOpenPreviewSmart() {
 
 function hdOpenMultiPreview(rowIds) {
     hdCurrentRowId = null;
-    hdSelectedElementId = null;
     hdMultiPreviewRowIds = rowIds.slice();
     hdMultiPreviewSheets = [];
     hdCurrentPreviewName = 'honorable-dismissal-selected.html';
@@ -280,10 +196,6 @@ function hdOpenMultiPreview(rowIds) {
 
 function hdSetMultiMode(isMulti) {
     hdIsMultiPreview = !!isMulti;
-    var saveButton = document.querySelector('[data-hd-save-layout]');
-    if (saveButton) {
-        saveButton.style.display = hdIsMultiPreview ? 'none' : '';
-    }
     if (!hdIsMultiPreview) {
         hdMultiPreviewRowIds = [];
         hdMultiPreviewSheets = [];
@@ -299,117 +211,24 @@ function hdOpenPreviewModal() {
     var modal = document.getElementById('hdPreviewModal');
     if (modal) modal.style.display = 'flex';
     document.body.classList.add('hd-preview-open');
-    hdSyncToolbar();
 }
 
 function hdSetSheetLoading(message) {
     var sheet = document.getElementById('hdPreviewSheet');
     if (!sheet) return;
-    sheet.className = 'hd-sheet hd-template-canvas';
-    sheet.innerHTML = '<div class="hd-template-loading">' + hdEsc(message) + '</div>';
+    sheet.className = '';
+    sheet.innerHTML = '<div class="hd-sheet-loading">' + hdEsc(message) + '</div>';
 }
 
 function hdClosePreview() {
     var m = document.getElementById('hdPreviewModal');
     if (m) m.style.display = 'none';
     document.body.classList.remove('hd-preview-open');
-    hdSelectedElementId = null;
     hdSetMultiMode(false);
-    hdSyncToolbar();
-}
-
-function hdSelectTemplateElement(id) {
-    hdSelectedElementId = id;
-    document.querySelectorAll('#hdPreviewSheet .hd-template-element').forEach(function(el) {
-        el.classList.toggle('is-selected', el.getAttribute('data-hd-element-id') === id);
-    });
-    hdSyncToolbar();
-}
-
-function hdSyncToolbar() {
-    var toolbar = document.getElementById('hdEditorToolbar');
-    var item = hdElementById(hdSelectedElementId);
-    if (!toolbar) return;
-
-    toolbar.setAttribute('aria-hidden', item ? 'false' : 'true');
-    toolbar.classList.toggle('is-visible', !!item);
-    if (!item) return;
-
-    hdSetControlValue('hdFontFamily', item.font_family);
-    hdSetControlValue('hdFontSize', item.font_size);
-    hdSetControlValue('hdTextAlign', item.text_align);
-    hdSetControlValue('hdTopPercent', item.top);
-    hdSetControlValue('hdLeftPercent', item.left);
-    toolbar.querySelectorAll('[data-hd-style]').forEach(function(btn) {
-        var style = btn.getAttribute('data-hd-style');
-        var active = (style === 'bold' && item.font_weight === 'bold') ||
-            (style === 'italic' && item.font_style === 'italic') ||
-            (style === 'underline' && item.text_decoration === 'underline');
-        btn.classList.toggle('is-active', active);
-    });
-}
-
-function hdSetControlValue(id, value) {
-    var control = document.getElementById(id);
-    if (control) control.value = value;
-}
-
-function hdUpdateSelectedElement(changes) {
-    var item = hdElementById(hdSelectedElementId);
-    if (!item) return;
-    Object.assign(item, changes);
-    var el = null;
-    document.querySelectorAll('#hdPreviewSheet [data-hd-element-id]').forEach(function(candidate) {
-        if (candidate.getAttribute('data-hd-element-id') === item.id) el = candidate;
-    });
-    if (el) hdApplyElementStyle(el, item);
-    hdSyncToolbar();
-}
-
-function hdSaveLayoutTemplate() {
-    if (!hdTemplateState) return;
-    var saveButton = document.querySelector('[data-hd-save-layout]');
-    if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.setAttribute('data-original-text', saveButton.textContent);
-        saveButton.textContent = 'Saving...';
-    }
-
-    hdJson(window.hdTemplateSaveUrl || '', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': hdCsrf()
-        },
-        body: JSON.stringify({ content_json: hdTemplateForSave() })
-    }).then(function(data) {
-        return hdLoadTemplate(hdCurrentRowId).then(function(layout) {
-            hdRenderTemplate(layout);
-            alert((data && data.message) || 'Layout template saved.');
-        });
-    }).catch(function(error) {
-        var detail = error && error.errors ? Object.keys(error.errors).map(function(key) {
-            return error.errors[key].join(' ');
-        }).join('\n') : '';
-        alert(detail || (error && error.message) || 'Unable to save layout template.');
-    }).then(function() {
-        if (saveButton) {
-            saveButton.disabled = false;
-            saveButton.textContent = saveButton.getAttribute('data-original-text') || 'Save Layout Template';
-            saveButton.removeAttribute('data-original-text');
-        }
-    });
 }
 
 function hdCleanPrintSheet(sourceSheet) {
-    var clone = sourceSheet.cloneNode(true);
-    clone.removeAttribute('id');
-    clone.classList.remove('hd-template-canvas');
-    clone.querySelectorAll('.hd-template-element').forEach(function(el) {
-        el.classList.remove('is-selected');
-        el.removeAttribute('contenteditable');
-    });
-    return clone.outerHTML;
+    return sourceSheet.innerHTML;
 }
 
 function hdPrintPreview() {
@@ -428,7 +247,7 @@ function hdPrintPreview() {
     }
 
     var sheet = document.getElementById('hdPreviewSheet');
-    if (!sheet || !sheet.querySelector('.hd-template-element')) return;
+    if (!sheet || !sheet.querySelector('.hd-sheet')) return;
     var rowIds = hdCurrentRowId ? [hdCurrentRowId] : [];
     var printNow = function() { hdPrintSheets([hdCleanPrintSheet(sheet)], rowIds); };
     if (!rowIds.length) {
@@ -472,7 +291,7 @@ function hdDownloadHtml(html, fileName) {
     var documentHtml = '<!doctype html><html><head><meta charset="utf-8">'
         + '<title>Honorable Dismissal</title>'
         + '<link rel="stylesheet" href="' + hdEsc(css ? css.href : '') + '">'
-        + '<style>@page{size:A4 portrait;margin:0}body{background:#fff;margin:0}.hd-sheet{box-shadow:none;border:0;margin:0 auto}</style>'
+        + '<style>@page{size:legal portrait;margin:0}body{background:#fff;margin:0}.hd-sheet{box-shadow:none;border:0;margin:0 auto}</style>'
         + '</head><body>' + html + '</body></html>';
 
     var blob = new Blob([documentHtml], { type: 'text/html;charset=utf-8' });
@@ -488,7 +307,7 @@ function hdDownloadHtml(html, fileName) {
 
 function hdDownloadPreview() {
     var sheet = document.getElementById('hdPreviewSheet');
-    if (!sheet || !sheet.querySelector('.hd-template-element')) return;
+    if (!sheet || !sheet.querySelector('.hd-sheet')) return;
     hdDownloadHtml(hdCleanPrintSheet(sheet), hdCurrentPreviewName);
 }
 
@@ -497,14 +316,14 @@ function hdDownloadRow(rowId) {
     if (!data) return;
     if (!data.hdNo) { alert('Student must be tagged For Dismissal before downloading HD.'); return; }
 
-    hdLoadTemplate(rowId).then(function(layout) {
-        hdDownloadHtml(hdBuildStaticSheet(layout).outerHTML, hdFileName(data));
+    hdLoadSheetHtml(rowId).then(function(html) {
+        hdDownloadHtml(html, hdFileName(data));
     }).catch(function(error) {
         alert((error && error.message) || 'Unable to download HD.');
     });
 }
 
-function hdDismissAllSelected() {
+function hdIssueAllSelected() {
     var pendingIds = hdSelectedMonitoringRowIds();
 
     if (!pendingIds.length) {
@@ -512,13 +331,13 @@ function hdDismissAllSelected() {
         return;
     }
 
-    if (!confirm('Process ' + pendingIds.length + ' selected Pending for Dismissal student(s)?')) {
+    if (!confirm('Mark ' + pendingIds.length + ' selected student(s) as Issued?')) {
         return;
     }
 
     hdBulkIssueRows(pendingIds).then(function(ok) {
         if (!ok) return;
-        alert('Selected dismissal records have been processed.');
+        alert('Selected records have been marked as Issued.');
         window.location.reload();
     });
 }
@@ -552,24 +371,8 @@ function hdIssueRows(rowIds) {
     });
 }
 
-function hdBuildStaticSheet(layout) {
-    var sheet = document.createElement('div');
-    sheet.className = 'hd-sheet';
-    sheet.style.background = (layout.page && layout.page.background) || '#ffffff';
-    (layout.elements || []).forEach(function(item) {
-        var el = document.createElement('div');
-        el.className = 'hd-template-element';
-        el.innerHTML = hdEsc(item.resolved_text || item.text).replace(/\n/g, '<br>');
-        hdApplyElementStyle(el, item);
-        sheet.appendChild(el);
-    });
-    return sheet;
-}
-
 function hdPrintableSheetForRow(rowId) {
-    return hdLoadTemplate(rowId).then(function(layout) {
-        return hdBuildStaticSheet(layout).outerHTML;
-    });
+    return hdLoadSheetHtml(rowId);
 }
 
 function hdSelectedMonitoringRows() {
@@ -778,95 +581,6 @@ function hdBindSelectionControls() {
     }
 }
 
-function hdBindEditor() {
-    var sheet = document.getElementById('hdPreviewSheet');
-    if (!sheet) return;
-
-    sheet.addEventListener('mousedown', function(e) {
-        var target = e.target.closest('.hd-template-element');
-        if (!target || !sheet.contains(target)) {
-            hdSelectTemplateElement(null);
-            return;
-        }
-
-        var id = target.getAttribute('data-hd-element-id');
-        var item = hdElementById(id);
-        if (!item) return;
-        hdSelectTemplateElement(id);
-
-        var sheetRect = sheet.getBoundingClientRect();
-        var targetRect = target.getBoundingClientRect();
-        var startX = e.clientX;
-        var startY = e.clientY;
-        var startLeftPx = targetRect.left - sheetRect.left;
-        var startTopPx = targetRect.top - sheetRect.top;
-        var moved = false;
-
-        function onMove(ev) {
-            moved = true;
-            var nextLeft = ((startLeftPx + ev.clientX - startX) / sheetRect.width) * 100;
-            var nextTop = ((startTopPx + ev.clientY - startY) / sheetRect.height) * 100;
-            item.left = Math.round(hdClampNumber(nextLeft, 0, 100, item.left) * 1000) / 1000;
-            item.top = Math.round(hdClampNumber(nextTop, 0, 100, item.top) * 1000) / 1000;
-            hdApplyElementStyle(target, item);
-            hdSyncToolbar();
-        }
-
-        function onUp() {
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('mouseup', onUp);
-            if (moved) target.blur();
-        }
-
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-    });
-
-    sheet.addEventListener('input', function(e) {
-        var target = e.target.closest('.hd-template-element');
-        if (!target) return;
-        var item = hdElementById(target.getAttribute('data-hd-element-id'));
-        if (item) {
-            item.resolved_text = target.innerText.trim();
-            if (!hdCurrentRowId || !hdHasTemplateTokens(item.text)) {
-                item.text = item.resolved_text;
-            }
-        }
-    });
-
-    var fontFamily = document.getElementById('hdFontFamily');
-    var fontSize = document.getElementById('hdFontSize');
-    var textAlign = document.getElementById('hdTextAlign');
-    var topPercent = document.getElementById('hdTopPercent');
-    var leftPercent = document.getElementById('hdLeftPercent');
-    var deleteElement = document.getElementById('hdDeleteElement');
-
-    if (fontFamily) fontFamily.addEventListener('change', function() { hdUpdateSelectedElement({ font_family: this.value }); });
-    if (fontSize) fontSize.addEventListener('input', function() { hdUpdateSelectedElement({ font_size: hdClampNumber(this.value, 6, 96, 12) }); });
-    if (textAlign) textAlign.addEventListener('change', function() { hdUpdateSelectedElement({ text_align: this.value }); });
-    if (topPercent) topPercent.addEventListener('input', function() { hdUpdateSelectedElement({ top: hdClampNumber(this.value, 0, 100, 0) }); });
-    if (leftPercent) leftPercent.addEventListener('input', function() { hdUpdateSelectedElement({ left: hdClampNumber(this.value, 0, 100, 0) }); });
-    if (deleteElement) deleteElement.addEventListener('click', function() {
-        if (!hdTemplateState || !hdSelectedElementId) return;
-        hdTemplateState.elements = hdTemplateState.elements.filter(function(item) {
-            return item.id !== hdSelectedElementId;
-        });
-        hdSelectedElementId = null;
-        hdRenderTemplate(hdTemplateState);
-    });
-
-    document.querySelectorAll('[data-hd-style]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var item = hdElementById(hdSelectedElementId);
-            if (!item) return;
-            var style = btn.getAttribute('data-hd-style');
-            if (style === 'bold') hdUpdateSelectedElement({ font_weight: item.font_weight === 'bold' ? 'normal' : 'bold' });
-            if (style === 'italic') hdUpdateSelectedElement({ font_style: item.font_style === 'italic' ? 'normal' : 'italic' });
-            if (style === 'underline') hdUpdateSelectedElement({ text_decoration: item.text_decoration === 'underline' ? 'none' : 'underline' });
-        });
-    });
-}
-
 window.addEventListener('afterprint', function() {
     document.body.classList.remove('hd-printing');
 
@@ -891,7 +605,6 @@ window.addEventListener('scroll',hdCloseMenus,true);
 document.addEventListener('DOMContentLoaded', function() {
     hdBindSelectionControls();
     hdSyncSelectAll();
-    hdBindEditor();
     var tableBody = document.getElementById('hdTableBody');
     var selectedRowId = tableBody ? (tableBody.getAttribute('data-selected-row-id') || '').trim() : '';
     if (selectedRowId && hdGetRow(selectedRowId)) {

@@ -394,7 +394,8 @@ function normalizeEvaluationItem(item) {
         targetRespondents: item.targetRespondents || '',
         status: item.status || 'Draft',
         responses: Number(item.responses || 0),
-        blocks: cloneEvalBlocks(item.blocks && item.blocks.length ? item.blocks : EVAL_BLOCKS)
+        blocks: cloneEvalBlocks(item.blocks && item.blocks.length ? item.blocks : EVAL_BLOCKS),
+        publicUrl: item.publicUrl || null
     };
 }
 
@@ -593,6 +594,7 @@ function renderLibrary() {
         html += '<div class="eval-lib-dropdown" id="evalLibMenu' + e.id + '">';
         html += '<button onclick="viewLibraryItem(' + e.id + ')">View</button>';
         if (e.status === 'Draft') html += '<button onclick="publishLibraryItem(' + e.id + ')">Publish</button>';
+        if (e.status === 'Published' && e.publicUrl) html += '<button onclick="copyEvaluationLink(' + e.id + ')">Copy Student Link</button>';
         if (e.status !== 'Closed') html += '<button onclick="closeLibraryItem(' + e.id + ')">Close</button>';
         html += '</div>';
         html += '</div>';
@@ -600,6 +602,12 @@ function renderLibrary() {
         html += '<span>Status: <span class="eval-status-badge ' + statusClass + '">' + e.status + '</span></span>';
         html += '<span>' + e.responses + ' Responses</span>';
         html += '</div>';
+        if (e.status === 'Published' && e.publicUrl) {
+            html += '<div class="eval-lib-link-row">';
+            html += '<input type="text" readonly value="' + escapeEvalHtml(e.publicUrl) + '" onclick="this.select()">';
+            html += '<button type="button" onclick="copyEvaluationLink(' + e.id + ')">Copy Link</button>';
+            html += '</div>';
+        }
         html += '</div>';
     }
     container.innerHTML = html;
@@ -641,6 +649,39 @@ function publishLibraryItem(id) {
     }).catch(function(payload) {
         showRegistrarToast(getPayloadErrorMessage(payload, 'Unable to publish evaluation.'), 'error');
     });
+}
+
+function copyEvaluationLink(id) {
+    var item = EVAL_LIBRARY.find(function(e) { return e.id === id; });
+    document.querySelectorAll('.eval-lib-dropdown').forEach(function(d) { d.classList.remove('open'); });
+    if (!item || !item.publicUrl) {
+        showRegistrarToast('This evaluation does not have a shareable link yet.', 'error');
+        return;
+    }
+
+    var fallbackCopy = function() {
+        var temp = document.createElement('textarea');
+        temp.value = item.publicUrl;
+        temp.style.position = 'fixed';
+        temp.style.opacity = '0';
+        document.body.appendChild(temp);
+        temp.focus();
+        temp.select();
+        try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+        document.body.removeChild(temp);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(item.publicUrl).then(function() {
+            showRegistrarToast('Student evaluation link copied to clipboard.', 'success');
+        }).catch(function() {
+            fallbackCopy();
+            showRegistrarToast('Student evaluation link copied to clipboard.', 'success');
+        });
+    } else {
+        fallbackCopy();
+        showRegistrarToast('Student evaluation link copied to clipboard.', 'success');
+    }
 }
 
 function closeLibraryItem(id) {

@@ -3,6 +3,35 @@
 @section('title', 'PLP - Evaluation')
 @section('page-title', 'EVALUATION')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.min.css">
+<style>
+    .eval-define-field .chosen-container { width: 100% !important; font-size: 0.85rem; }
+    .eval-define-field .chosen-container-single .chosen-single {
+        height: 38px;
+        line-height: 36px;
+        padding: 0 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        box-shadow: none;
+        background: #fff;
+    }
+    .eval-define-field .chosen-container-single .chosen-single div b {
+        background-position: 0 4px;
+    }
+    .eval-define-field .chosen-container-active.chosen-with-drop .chosen-single {
+        border-color: #15803d;
+    }
+    .eval-define-field .chosen-container .chosen-results li.highlighted {
+        background-color: #15803d;
+    }
+    .eval-define-field .chosen-container-single .chosen-search input[type="text"] {
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="pf-page">
     <div id="evalPageData"
@@ -49,41 +78,42 @@
                         <div class="eval-define-field">
                             <label class="eval-define-label">ACADEMIC YEAR</label>
                             <select class="eval-define-select" id="evalAY">
-                                <option value="2025-2026">2025-2026</option>
-                                <option value="2024-2025">2024-2025</option>
+                                @forelse($academicYearOptions as $year)
+                                    <option value="{{ $year }}">{{ $year }}</option>
+                                @empty
+                                    <option value="">No school years configured</option>
+                                @endforelse
                             </select>
                         </div>
                         <div class="eval-define-field eval-define-field-lg">
                             <label class="eval-define-label">PROGRAM</label>
                             <select class="eval-define-select" id="evalProgram">
                                 <option value="">Select Course</option>
-                                <option value="BSIT">BSIT</option>
-                                <option value="BSCS">BSCS</option>
-                                <option value="BSED">BSED</option>
-                                <option value="BSN">BSN</option>
+                                @foreach($courseOptions as $course)
+                                    <option value="{{ $course->code }}">{{ $course->code }}{{ $course->name ? ' - ' . $course->name : '' }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
                     <div class="eval-define-row">
                         <div class="eval-define-field" style="flex:1;">
                             <label class="eval-define-label">SUBJECT SELECTION</label>
-                            <select class="eval-define-select" id="evalSubject">
+                            <select class="eval-define-select eval-chosen" id="evalSubject">
                                 <option value="">Select Subject</option>
-                                <option value="CAP102">Capstone Project 2</option>
-                                <option value="CC101">CC101 - Intro to Computing</option>
-                                <option value="OOP113">OOP 113</option>
-                                <option value="SAM125">SAM 125</option>
+                                @foreach($subjectOptions as $subject)
+                                    <option value="{{ $subject->code }}" data-course-id="{{ $subject->course_id }}">{{ $subject->code }} - {{ $subject->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
                     <div class="eval-define-row">
                         <div class="eval-define-field" style="flex:1;">
                             <label class="eval-define-label">INSTRUCTOR/FACULTY NAME</label>
-                            <select class="eval-define-select" id="evalFaculty">
+                            <select class="eval-define-select eval-chosen" id="evalFaculty">
                                 <option value="">Select Faculty</option>
-                                <option value="Diaz, Jonnel Mark">Diaz, Jonnel Mark</option>
-                                <option value="Santos, Maria">Santos, Maria</option>
-                                <option value="Reyes, Carlo">Reyes, Carlo</option>
+                                @foreach($facultyOptions as $faculty)
+                                    <option value="{{ $faculty->name }}">{{ $faculty->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -100,8 +130,9 @@
                             <label class="eval-define-label">TARGET RESPONDENTS</label>
                             <select class="eval-define-select" id="evalRespondents">
                                 <option value="">Select Course</option>
-                                <option value="BSIT">BSIT</option>
-                                <option value="BSCS">BSCS</option>
+                                @foreach($courseOptions as $course)
+                                    <option value="{{ $course->code }}">{{ $course->code }}</option>
+                                @endforeach
                                 <option value="All">All Courses</option>
                             </select>
                         </div>
@@ -115,7 +146,7 @@
             {{-- ── STEP 2: Build ── --}}
             <div class="eval-step-panel" id="stepBuild" style="display:none;">
                 <div class="eval-build-header">
-                    <span class="eval-build-info" id="evalBuildInfo">BSCS 4-A | Capstone Project 2</span>
+                    <span class="eval-build-info" id="evalBuildInfo">Select a program and subject in Define</span>
                     <button type="button" class="eval-new-block-btn" onclick="addNewBlock()">+ New Block</button>
                 </div>
 
@@ -131,7 +162,7 @@
 
             {{-- ── STEP 3: Preview ── --}}
             <div class="eval-step-panel" id="stepPreview" style="display:none;">
-                <div class="eval-preview-info" id="evalPreviewInfo">BSCS 4-A | Capstone Project 2 | Prof. Jonnel Mark Diaz</div>
+                <div class="eval-preview-info" id="evalPreviewInfo"></div>
 
                 <div id="evalPreviewContainer">
                     {{-- JS-rendered preview --}}
@@ -191,5 +222,17 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.jquery.min.js"></script>
 <script src="{{ asset('js/evaluation.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.chosen) {
+            window.jQuery('.eval-chosen').chosen({
+                width: '100%',
+                search_contains: true,
+                disable_search_threshold: 6,
+            });
+        }
+    });
+</script>
 @endpush

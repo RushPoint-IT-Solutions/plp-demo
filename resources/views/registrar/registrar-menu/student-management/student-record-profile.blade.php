@@ -1511,7 +1511,7 @@
                                 ['Clearance 2', route('registrar.registrar-menu.forms.clearance-2.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', $isSeniorStudent ? null : '4th/5th Year required'],
                                 ['Copy of Grades (COG)', route('registrar.registrar-menu.forms.cog.copy-of-grades') . '?student_id=' . $student->id,'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M12 12h4M12 16h4M8 12h.01M8 16h.01'],
                                 ['Official Grade Report', route('registrar.registrar-menu.forms.official-grade-report'),'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8'],
-                                ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],
+                                ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', $isGraduated ? null : 'Graduate status required'],
                                 ['Dean\'s Honors', route('registrar.registrar-menu.forms.certificates.deans-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
                                 ['President\'s Honors', route('registrar.registrar-menu.forms.certificates.presidents-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
                                 ['Form 8C-2 (Graduation)', route('registrar.registrar-menu.forms.certificates.certificate-graduation-8c2.show', ['student' => $student->id]),'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3', $isGraduated ? null : 'Graduate status required'],
@@ -1559,6 +1559,14 @@
                     <p style="font-size:11.5px;color:#94a3b8;margin-top:10px;">
                         Report of Grades (CWA) becomes available once all of the student's current-semester subjects have posted final grades.
                     </p>
+                    <div style="display:flex;gap:8px;align-items:flex-start;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;margin-top:14px;font-size:12px;color:#0369a1;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <ul style="margin:0;padding-left:16px;line-height:1.6;">
+                            <li><strong>Clearance 2</strong> requires 4th/5th Year standing.</li>
+                            <li><strong>Diploma, Certificate of GWA, Form 8C-2, and Form 8D-2</strong> require the student to be tagged as <strong>Graduate</strong> in Tagging of Graduates before they can be printed.</li>
+                            <li>Disabled cards above show the reason they're greyed out.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

@@ -21720,7 +21720,27 @@ class RegistrarController extends Controller
                 ->values()
             : collect();
 
-        return view('registrar.registrar-menu.faculty-management.evaluation', compact('evaluationLibrary'));
+        $academicYearOptions = array_values((SystemConfigSchoolTermOptions::resolveOptions()['school_years'] ?? []));
+
+        $courseOptions = Course::query()->orderBy('name')->get(['id', 'code', 'name']);
+
+        $facultyOptions = Schema::hasTable('faculties')
+            ? Faculty::query()->orderBy('name')->get(['id', 'code', 'name'])
+            : collect();
+
+        $subjectOptions = Schema::hasTable('subjects')
+            ? Subject::query()
+                ->whereNotNull('code')
+                ->where('code', '!=', '')
+                ->orderBy('name')
+                ->get(['id', 'code', 'name', 'course_id'])
+                ->unique('code')
+                ->values()
+            : collect();
+
+        return view('registrar.registrar-menu.faculty-management.evaluation', compact(
+            'evaluationLibrary', 'academicYearOptions', 'courseOptions', 'facultyOptions', 'subjectOptions'
+        ));
     }
 
     public function storeEvaluationForm(Request $request): JsonResponse
@@ -21742,8 +21762,11 @@ class RegistrarController extends Controller
         $evaluation->status = $status;
         $evaluation->responses = (int) $request->input('responses', $evaluation->responses ?: 0);
 
-        if ($status === 'Published' && !$evaluation->published_at) {
-            $evaluation->published_at = now();
+        if ($status === 'Published') {
+            if (!$evaluation->published_at) {
+                $evaluation->published_at = now();
+            }
+            $this->ensureEvaluationPublicToken($evaluation);
         }
 
         $evaluation->save();
@@ -21762,12 +21785,27 @@ class RegistrarController extends Controller
             $evaluationForm->published_at = now();
         }
 
+        $this->ensureEvaluationPublicToken($evaluationForm);
+
         $evaluationForm->save();
 
         return response()->json([
             'message' => $evaluationForm->name . ' published successfully.',
             'evaluation' => $this->formatRegistrarEvaluationForm($evaluationForm),
         ]);
+    }
+
+    private function ensureEvaluationPublicToken(RegistrarEvaluationForm $evaluation): void
+    {
+        if ($evaluation->public_token) {
+            return;
+        }
+
+        do {
+            $token = bin2hex(random_bytes(20));
+        } while (RegistrarEvaluationForm::where('public_token', $token)->exists());
+
+        $evaluation->public_token = $token;
     }
 
     private function validateRegistrarEvaluationForm(Request $request): array
@@ -21820,6 +21858,9 @@ class RegistrarController extends Controller
             'status' => $evaluation->status ?: 'Draft',
             'responses' => (int) $evaluation->responses,
             'blocks' => $evaluation->blocks ?: [],
+            'publicUrl' => $evaluation->public_token
+                ? route('public.evaluation.show', ['token' => $evaluation->public_token])
+                : null,
         ];
     }
 
@@ -22772,77 +22813,56 @@ class RegistrarController extends Controller
         ]);
     }
 
-    public function getTemplateLayoutData($studentId = null): JsonResponse
+    public function honorableDismissalSheet($studentId = null): JsonResponse
     {
-        if (!Schema::hasTable('document_templates')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Document templates table is not available. Run migrations first.',
-            ], 500);
-        }
+        $student = $studentId ? Student::with(['profile', 'canonicalCourse:id,code,name'])->find($studentId) : null;
+        $fields = $this->honorableDismissalFieldsForStudent($student);
 
-        $template = $this->honorableDismissalTemplate();
-        $layout = $template->content_json ?: $this->defaultHonorableDismissalTemplateLayout();
-        $student = $studentId ? Student::with(['canonicalCourse:id,code,name'])->find($studentId) : null;
-
-        if ($student) {
-            $layout = $this->resolveHonorableDismissalTokens($layout, $student);
-        }
+        $html = view('registrar.forms.partials.honorable-dismissal-sheet', $fields)->render();
 
         return response()->json([
             'success' => true,
-            'template' => [
-                'id' => $template->id,
-                'name' => $template->name,
-                'slug' => $template->slug,
-                'content_json' => $layout,
-            ],
+            'html' => $html,
         ]);
     }
 
-    public function saveTemplateLayout(Request $request): JsonResponse
+    private function honorableDismissalFieldsForStudent(?Student $student): array
     {
-        if (!Schema::hasTable('document_templates')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Document templates table is not available. Run migrations first.',
-            ], 500);
+        if (!$student) {
+            return [
+                'student' => null,
+                'studentFullName' => '',
+                'studentNo' => '',
+                'programLabel' => '',
+                'hdNo' => '',
+                'dateIssued' => '',
+            ];
         }
 
-        $payload = $request->validate([
-            'content_json' => 'required|array',
-            'content_json.page' => 'nullable|array',
-            'content_json.elements' => 'required|array|min:1',
-            'content_json.elements.*.id' => 'required|string|max:80',
-            'content_json.elements.*.type' => 'required|string|in:text',
-            'content_json.elements.*.text' => 'nullable|string',
-            'content_json.elements.*.top' => 'required|numeric|min:0|max:100',
-            'content_json.elements.*.left' => 'required|numeric|min:0|max:100',
-            'content_json.elements.*.width' => 'nullable|numeric|min:1|max:100',
-            'content_json.elements.*.font_family' => 'nullable|string|max:80',
-            'content_json.elements.*.font_size' => 'nullable|numeric|min:6|max:96',
-            'content_json.elements.*.font_weight' => 'nullable|string|in:normal,bold',
-            'content_json.elements.*.font_style' => 'nullable|string|in:normal,italic',
-            'content_json.elements.*.text_decoration' => 'nullable|string|in:none,underline',
-            'content_json.elements.*.text_align' => 'nullable|string|in:left,center,right,justify',
-            'content_json.elements.*.line_height' => 'nullable|numeric|min:0.8|max:3',
-        ]);
+        $record = Schema::hasTable('honorable_dismissal_records')
+            ? DB::table('honorable_dismissal_records')->where('student_id', (int) $student->id)->first()
+            : null;
 
-        $layout = $this->sanitizeHonorableDismissalLayout($payload['content_json']);
-        $template = $this->honorableDismissalTemplate();
-        $template->content_json = $layout;
-        $template->save();
+        $issuedAt = $record && $record->issued_at ? Carbon::parse($record->issued_at) : now();
+        $prof = $student->profile;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Honorable Dismissal layout template saved.',
-            'template' => [
-                'id' => $template->id,
-                'name' => $template->name,
-                'slug' => $template->slug,
-                'content_json' => $template->content_json,
-            ],
-        ]);
+        $fullName = trim(
+            (string) optional($prof)->first_name
+            . ' ' . (string) optional($prof)->middle_name
+            . ' ' . (string) optional($prof)->last_name
+            . (($prof && $prof->suffix) ? ' ' . $prof->suffix : '')
+        );
+        $fullName = preg_replace('/\s+/', ' ', $fullName);
+        $fullName = $fullName !== '' ? strtoupper($fullName) : strtoupper((string) $student->name);
+
+        return [
+            'student' => $student,
+            'studentFullName' => $fullName,
+            'studentNo' => (string) ($student->student_no ?: ''),
+            'programLabel' => $this->honorableDismissalProgramLabel($student),
+            'hdNo' => (string) (($record && $record->hd_no) ? $record->hd_no : $this->nextHonorableDismissalNumber($student)),
+            'dateIssued' => $issuedAt->format('F d, Y'),
+        ];
     }
 
     private function nextHonorableDismissalNumber(Student $student): string
@@ -22939,92 +22959,22 @@ class RegistrarController extends Controller
         }
     }
 
-    private function honorableDismissalTemplate(): DocumentTemplate
-    {
-        return DocumentTemplate::firstOrCreate(
-            ['slug' => 'honorable-dismissal'],
-            [
-                'name' => 'Honorable Dismissal',
-                'content_json' => $this->defaultHonorableDismissalTemplateLayout(),
-            ]
-        );
-    }
-
-    private function defaultHonorableDismissalTemplateLayout(): array
-    {
-        return json_decode(<<<'JSON'
-{"page":{"width_mm":210,"height_mm":297,"orientation":"portrait","background":"#ffffff"},"elements":[{"id":"seal","type":"text","text":"PLP\nSEAL","top":3.6,"left":16.2,"width":8.5,"font_family":"Arial","font_size":8,"font_weight":"bold","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.05},{"id":"header_city","type":"text","text":"City Government of Pasig","top":3.2,"left":28,"width":44,"font_family":"Times New Roman","font_size":8,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"header_school","type":"text","text":"PAMANTASAN NG LUNGSOD NG PASIG","top":4.45,"left":24,"width":52,"font_family":"Times New Roman","font_size":10,"font_weight":"bold","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"header_office","type":"text","text":"OFFICE OF THE UNIVERSITY REGISTRAR","top":5.95,"left":24,"width":52,"font_family":"Times New Roman","font_size":9,"font_weight":"bold","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"header_address","type":"text","text":"Alkalde Jose St., Kapasigan, Pasig City, Philippines","top":7.25,"left":24,"width":52,"font_family":"Arial","font_size":6.5,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"certificate_bar","type":"text","text":"CERTIFICATE OF ELIGIBILITY TO TRANSFER / HONORABLE DISMISSAL","top":10.4,"left":12,"width":76,"font_family":"Arial","font_size":7.5,"font_weight":"bold","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"hd_no","type":"text","text":"HD NO:\n{{hd_no}}","top":10.2,"left":77,"width":15,"font_family":"Arial","font_size":7,"font_weight":"bold","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.1},{"id":"date_issued","type":"text","text":"DATE:\n{{date_issued}}","top":13.3,"left":77,"width":17,"font_family":"Arial","font_size":7,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.1},{"id":"to_registrar","type":"text","text":"TO WHOM IT MAY CONCERN:","top":16.7,"left":10,"width":38,"font_family":"Arial","font_size":7.5,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.2},{"id":"certify_body","type":"text","text":"This is to certify that {{student_name}}\nis eligible for admission to transfer from this university.\nLast school year/semester attended: ________________________________","top":21,"left":14,"width":72,"font_family":"Arial","font_size":7.6,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.45},{"id":"registrar_signature_line","type":"text","text":"__________________________________________\nUniversity Registrar","top":29.7,"left":58,"width":30,"font_family":"Arial","font_size":7,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.25},{"id":"cut_line","type":"text","text":"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -","top":34.7,"left":9,"width":82,"font_family":"Arial","font_size":8,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1},{"id":"transcript_title","type":"text","text":"REQUEST FOR OFFICIAL TRANSCRIPT OF RECORDS","top":37.5,"left":28,"width":44,"font_family":"Arial","font_size":8,"font_weight":"bold","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"receipt_hd","type":"text","text":"HD NO:\n{{hd_no}}\nDate:\n{{date_issued}}","top":39,"left":77,"width":17,"font_family":"Arial","font_size":7,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.15},{"id":"registrar_request","type":"text","text":"THE REGISTRAR\nPamantasan ng Lungsod ng Pasig\nPasig City","top":43.2,"left":10,"width":32,"font_family":"Arial","font_size":7,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.3},{"id":"admission_line","type":"text","text":"Sir/Madam:\n\nYour Professionalism:\n\nPlease issue an Official Transcript of Records of the student,\nwhose credentials appear below:","top":47.6,"left":10,"width":45,"font_family":"Arial","font_size":7.2,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.35},{"id":"purpose_line","type":"text","text":"Diploma non-issuance was not a Portal of School Official","top":59.8,"left":58,"width":34,"font_family":"Arial","font_size":6.7,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"center","line_height":1.1},{"id":"student_fields","type":"text","text":"Student's Signature: ________________________________________________\nStudent Number:      {{student_no}}\nProgram:             {{course_program}}\nStudent's Name:      {{student_name}}\nBilling Address:     ________________________________________________\nSchool Contact No.:  ________________________________________________","top":66,"left":10,"width":78,"font_family":"Arial","font_size":7.4,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.7},{"id":"copy_options","type":"text","text":"(   )   PLM\n(   )   Direct to School","top":87.6,"left":10,"width":25,"font_family":"Arial","font_size":7,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"left","line_height":1.5},{"id":"footer_note","type":"text","text":"Not valid without University Seal","top":91.2,"left":70,"width":22,"font_family":"Arial","font_size":6.6,"font_weight":"normal","font_style":"normal","text_decoration":"none","text_align":"right","line_height":1.1}]}
-JSON
-        , true);
-    }
-
-    private function resolveHonorableDismissalTokens(array $layout, Student $student): array
-    {
-        $record = Schema::hasTable('honorable_dismissal_records')
-            ? DB::table('honorable_dismissal_records')->where('student_id', (int) $student->id)->first()
-            : null;
-
-        $issuedAt = $record && $record->issued_at ? Carbon::parse($record->issued_at) : now();
-        $tokens = [
-            '{{student_no}}' => (string) ($student->student_no ?: ''),
-            '{{student_name}}' => (string) ($student->name ?: ''),
-            '{{course_program}}' => $this->honorableDismissalProgramLabel($student),
-            '{{hd_no}}' => (string) (($record && $record->hd_no) ? $record->hd_no : $this->nextHonorableDismissalNumber($student)),
-            '{{date_issued}}' => $issuedAt->format('F d, Y'),
-        ];
-
-        foreach (($layout['elements'] ?? []) as $index => $element) {
-            $text = (string) ($element['text'] ?? '');
-            $layout['elements'][$index]['resolved_text'] = strtr($text, $tokens);
-        }
-
-        return $layout;
-    }
-
     private function honorableDismissalProgramLabel(Student $student): string
     {
-        return trim((string) ($student->program ?: optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name));
-    }
+        $course = $student->canonicalCourse;
 
-    private function sanitizeHonorableDismissalLayout(array $layout): array
-    {
-        $allowedFonts = ['Arial', 'Times New Roman', 'Courier New', 'Georgia'];
-        $clean = [
-            'page' => [
-                'width_mm' => 210,
-                'height_mm' => 297,
-                'orientation' => 'portrait',
-                'background' => '#ffffff',
-            ],
-            'elements' => [],
-        ];
-
-        foreach ($layout['elements'] as $element) {
-            $font = in_array(($element['font_family'] ?? 'Arial'), $allowedFonts, true) ? $element['font_family'] : 'Arial';
-            $clean['elements'][] = [
-                'id' => (string) $element['id'],
-                'type' => 'text',
-                'text' => (string) $element['text'],
-                'top' => round((float) $element['top'], 3),
-                'left' => round((float) $element['left'], 3),
-                'width' => round((float) ($element['width'] ?? 30), 3),
-                'font_family' => $font,
-                'font_size' => round((float) ($element['font_size'] ?? 12), 2),
-                'font_weight' => ($element['font_weight'] ?? 'normal') === 'bold' ? 'bold' : 'normal',
-                'font_style' => ($element['font_style'] ?? 'normal') === 'italic' ? 'italic' : 'normal',
-                'text_decoration' => ($element['text_decoration'] ?? 'none') === 'underline' ? 'underline' : 'none',
-                'text_align' => in_array(($element['text_align'] ?? 'left'), ['left', 'center', 'right', 'justify'], true) ? $element['text_align'] : 'left',
-                'line_height' => round((float) ($element['line_height'] ?? 1.25), 2),
-            ];
-        }
-
-        return $clean;
+        return trim((string) (
+            optional($course)->description
+            ?: optional($course)->name
+            ?: $student->program
+            ?: optional($course)->code
+            ?: ''
+        ));
     }
 
     /**
-     * Generic sanitizer shared by document layout editors (TOR, COR, ...).
-     * Kept separate from sanitizeHonorableDismissalLayout() so the already
-     * shipped Honorable Dismissal editor is never touched by other documents.
+     * Generic sanitizer shared by document layout editors (COR and any
+     * generic-editor document types registered in DocumentTemplateController).
      */
     private function sanitizeDocumentElementLayout(array $layout, float $widthMm, float $heightMm): array
     {
@@ -23665,7 +23615,11 @@ JSON
         $gwa = null;
 
         if ($student) {
-            $student->loadMissing('canonicalCourse');
+            $student->loadMissing(['profile', 'canonicalCourse', 'graduateTagging']);
+
+            if (!optional($student->graduateTagging)->is_graduate) {
+                return redirect()->back()->with('error', 'This student is not tagged as a graduate. Tag the student in Tagging of Graduates before printing this certificate.');
+            }
 
             if (Schema::hasTable('student_grade_records')) {
                 $gradeRecords = \App\StudentGradeRecord::where(function ($q) use ($student) {

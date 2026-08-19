@@ -11619,6 +11619,40 @@ body.slot-monitoring-report-page {
   color: #888;
 }
 
+.eval-lib-link-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.eval-lib-link-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: #4b5563;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.eval-lib-link-row button {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  background: #006837;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.eval-lib-link-row button:hover {
+  background: #005028;
+}
+
 /* Status badges */
 
 .eval-status-badge {
