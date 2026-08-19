@@ -162,6 +162,11 @@
 }
 .sr-hd-status.pending { background:#fef3c7; color:#92400e; }
 .sr-hd-status.issued { background:#dcfce7; color:#166534; }
+.sr-unifast-check {
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:700; color:#334155; cursor:pointer;
+}
+.sr-unifast-check input[type="checkbox"] { width:14px; height:14px; accent-color:#0f7b43; cursor:pointer; }
 
 /* ── empty state ────────────────────────────────────────────── */
 .sr-empty {
@@ -451,6 +456,12 @@
                         </div>
                     </div>
                     @endif
+                    <div class="sr-card-row">
+                        <label class="sr-unifast-check">
+                            <input type="checkbox" data-unifast-student-id="{{ $s->id }}" {{ $s->is_unifast ? 'checked' : '' }} onchange="srToggleUnifast({{ $s->id }}, this)">
+                            UNIFAST
+                        </label>
+                    </div>
                 </div>
                 <div class="sr-card-foot">
                     @if($isGraduate)
@@ -501,6 +512,7 @@
                     <th>Academic Term</th>
                     <th>Status</th>
                     <th>Graduation</th>
+                    <th style="text-align:center;">UNIFAST</th>
                     <th>Contact</th>
                     <th style="text-align:right;">Actions</th>
                 </tr>
@@ -553,6 +565,9 @@
                                 <span class="sr-table-muted">Non-Graduate</span>
                             @endif
                         </td>
+                        <td style="text-align:center;">
+                            <input type="checkbox" data-unifast-student-id="{{ $s->id }}" {{ $s->is_unifast ? 'checked' : '' }} onchange="srToggleUnifast({{ $s->id }}, this)">
+                        </td>
                         <td>{{ $contactText ?: '-' }}</td>
                         <td>
                             <div class="sr-table-actions">
@@ -572,7 +587,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="sr-table-empty">No students found. Try adjusting your search or filters.</td>
+                        <td colspan="10" class="sr-table-empty">No students found. Try adjusting your search or filters.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -594,6 +609,43 @@
 @push('scripts')
 <script>
 var SR_HD_TAG_URL_TEMPLATE = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => '__STUDENT__']));
+var SR_UNIFAST_TOGGLE_URL_TEMPLATE = @json(route('registrar.registrar-menu.student-mgmt.student-records.scholarships.toggle-unifast', ['student' => '__STUDENT__']));
+
+function srToggleUnifast(studentId, checkbox) {
+    var checked = checkbox.checked;
+    var url = SR_UNIFAST_TOGGLE_URL_TEMPLATE.replace('__STUDENT__', encodeURIComponent(studentId));
+    var csrf = document.querySelector('meta[name=csrf-token]').getAttribute('content');
+    var allBoxes = document.querySelectorAll('[data-unifast-student-id="' + studentId + '"]');
+    allBoxes.forEach(function (box) { box.disabled = true; });
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, Accept: 'application/json' },
+        body: JSON.stringify({ is_unifast: checked }),
+    }).then(function (r) { return r.json(); }).then(function (data) {
+        allBoxes.forEach(function (box) { box.disabled = false; });
+        if (data.success) {
+            allBoxes.forEach(function (box) { box.checked = data.is_unifast; });
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast(data.message || 'Updated.', 'success');
+            }
+        } else {
+            allBoxes.forEach(function (box) { box.checked = !checked; });
+            if (typeof showRegistrarToast === 'function') {
+                showRegistrarToast(data.message || 'Unable to update UNIFAST tag.', 'error');
+            } else {
+                alert(data.message || 'Unable to update UNIFAST tag.');
+            }
+        }
+    }).catch(function () {
+        allBoxes.forEach(function (box) { box.disabled = false; box.checked = !checked; });
+        if (typeof showRegistrarToast === 'function') {
+            showRegistrarToast('Network error — check connection.', 'error');
+        } else {
+            alert('Network error — check connection.');
+        }
+    });
+}
 
 function srTagHonorableDismissal(studentId, btn) {
     if (!confirm('Tag this student for Honorable Dismissal?')) {

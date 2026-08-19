@@ -19291,8 +19291,18 @@ class RegistrarController extends Controller
                 ->keyBy('student_id');
         }
 
-        $students->each(function ($s) use ($hdRecordsByStudent) {
+        $unifastStudentIds = collect();
+        if (Schema::hasTable('scholarship_student')) {
+            $unifastStudentIds = DB::table('scholarship_student')
+                ->whereIn('student_id', $students->pluck('id'))
+                ->where('is_unifast', true)
+                ->pluck('student_id')
+                ->unique();
+        }
+
+        $students->each(function ($s) use ($hdRecordsByStudent, $unifastStudentIds) {
             $s->hd_record = $hdRecordsByStudent->get($s->id);
+            $s->is_unifast = $unifastStudentIds->contains($s->id);
         });
 
         $coursesQuery = Course::orderBy('code');

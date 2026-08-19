@@ -172,6 +172,55 @@ class ScholarshipController extends Controller
             ->with('success', 'Scholarship tag removed.');
     }
 
+    public function toggleUnifast(Request $request, Student $student)
+    {
+        $this->ensureTables();
+
+        $validated = $request->validate([
+            'is_unifast' => ['required', 'boolean'],
+        ]);
+
+        if (!$validated['is_unifast']) {
+            ScholarshipStudent::where('student_id', $student->id)
+                ->where('is_unifast', true)
+                ->update(['is_unifast' => false]);
+
+            return response()->json(['success' => true, 'message' => 'UNIFAST tag removed.', 'is_unifast' => false]);
+        }
+
+        $program = ScholarshipProgram::where('name', 'like', '%UNIFIED FINANCIAL ASSISTANCE%')
+            ->orWhere('name', 'like', '%UNIFAST%')
+            ->first();
+
+        if (!$program) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No UNIFAST scholarship program found. Create one in Scholarship Program Setup first.',
+            ], 422);
+        }
+
+        $schoolYear = $student->school_year ?: null;
+        $semester = $student->semester ?: null;
+
+        ScholarshipStudent::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'scholarship_program_id' => $program->id,
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+            ],
+            [
+                'is_unifast' => true,
+                'application_status' => 'Tagged',
+                'award_status' => 'Active',
+                'financial_posting_status' => 'Pending',
+                'tagged_by_user_id' => optional($request->user())->id,
+            ]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Student tagged as UNIFAST.', 'is_unifast' => true]);
+    }
+
     public function report(Request $request)
     {
         $this->ensureTables();
