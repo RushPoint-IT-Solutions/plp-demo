@@ -495,6 +495,9 @@
                 You can also upload without header using this order: ID, Name, Program, Year Level.
             </div>
             <div class="se-modal-field" style="margin-top:12px;">
+                <button type="button" class="pf-modal-btn-cancel" onclick="downloadEnrollmentCsvTemplate()">Download Template</button>
+            </div>
+            <div class="se-modal-field" style="margin-top:12px;">
                 <label class="pf-modal-label">CSV File</label>
                 <input type="file" id="seCsvFile" class="pf-modal-input" accept=".csv,text/csv">
             </div>
@@ -1328,6 +1331,20 @@ function saveAddedStudent() {
 
 function openImportCsvModal() {
     document.getElementById('seImportCsvModal').style.display = 'flex';
+}
+
+function downloadEnrollmentCsvTemplate() {
+    var csvContent = 'student_id,student_name,program,year_level\n'
+        + '2023-00001,Juan Dela Cruz,BSIT,1st Year\n';
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'student_enrollment_import_template.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 function closeImportCsvModal() {
