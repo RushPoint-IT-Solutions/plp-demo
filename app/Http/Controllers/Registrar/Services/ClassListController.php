@@ -50,7 +50,7 @@ class ClassListController extends Controller
             'semester' => $state['selected_semester'],
         ]);
 
-        return view('registrar.services.classroom-faculty.class-list', [
+        return response()->view('registrar.services.classroom-faculty.class-list', [
             'classRows' => $classRows,
             'selectedSubject' => $selectedSubject,
             'sectionStudents' => $sectionStudents,
@@ -62,7 +62,7 @@ class ClassListController extends Controller
             'semesterMap' => $state['semester_map'],
             'queryBase' => $queryBase,
             'controller' => $this,
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     public function export(Request $request, $format)

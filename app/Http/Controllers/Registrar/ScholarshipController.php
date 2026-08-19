@@ -116,6 +116,7 @@ class ScholarshipController extends Controller
         $validated = $request->validate([
             'id' => 'nullable|integer|exists:scholarship_student,id',
             'scholarship_program_id' => 'required|integer|exists:scholarship_programs,id',
+            'is_unifast' => 'nullable|boolean',
             'school_year' => 'nullable|string|max:20',
             'semester' => 'nullable|string|max:40',
             'application_status' => 'required|string|max:40',
@@ -137,6 +138,7 @@ class ScholarshipController extends Controller
         $payload = $validated;
         unset($payload['id']);
         $payload['student_id'] = $student->id;
+        $payload['is_unifast'] = $request->has('is_unifast');
         $payload['school_year'] = $payload['school_year'] ?: $student->school_year;
         $payload['semester'] = $payload['semester'] ?: $student->semester;
         $payload['tagged_by_user_id'] = optional($request->user())->id;

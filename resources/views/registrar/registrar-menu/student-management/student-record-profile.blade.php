@@ -38,7 +38,17 @@
     padding:3px 12px; font-size:11.5px; font-weight:600;
 }
 .srp-hero-pill.warn { background:rgba(239,68,68,.35); }
+.srp-hero-pill.loa { background:rgba(245,158,11,.4); }
+.srp-hero-pill.clearance { background:rgba(59,130,246,.4); }
+.srp-hero-pill.undergrad { background:rgba(148,163,184,.4); }
 .srp-hero-contact { font-size:12.5px; color:rgba(255,255,255,.8); display:flex; gap:14px; flex-wrap:wrap; }
+.srp-hero-status-action { margin-top:10px; }
+.srp-btn-status {
+    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.4);
+    color:#fff; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:700;
+    cursor:pointer; transition:background .15s;
+}
+.srp-btn-status:hover { background:rgba(255,255,255,.28); }
 
 .srp-gwa-box {
     background:rgba(255,255,255,.12); border-radius:12px;
@@ -400,6 +410,21 @@
 @php
     $prof    = $student->profile;
     $isWD    = $student->is_withdrawn ?? false;
+    $studentStatus = $isWD ? 'Withdrawn' : ($student->status ?: 'Active');
+    $statusBadgeClass = [
+        'Active' => 'badge-green',
+        'LOA' => 'badge-yellow',
+        'Exit Clearance' => 'badge-blue',
+        'Under Grad' => 'badge-gray',
+        'Withdrawn' => 'badge-red',
+    ][$studentStatus] ?? 'badge-gray';
+    $statusPillClass = [
+        'Active' => '',
+        'LOA' => 'loa',
+        'Exit Clearance' => 'clearance',
+        'Under Grad' => 'undergrad',
+        'Withdrawn' => 'warn',
+    ][$studentStatus] ?? '';
     $fname   = $prof ? trim($prof->first_name . ' ' . ($prof->middle_name ? $prof->middle_name[0].'.' : '') . ' ' . $prof->last_name . ($prof->suffix ? ', '.$prof->suffix : '')) : $student->name;
     $fname   = trim($fname) ?: $student->name;
     $parts   = explode(' ', strtoupper($fname));
@@ -429,13 +454,18 @@
                     <span class="srp-hero-pill">{{ $course }}</span>
                     <span class="srp-hero-pill">{{ $student->year_level ?: 'N/A' }}</span>
                     <span class="srp-hero-pill">AY {{ $student->school_year ?: 'N/A' }} · {{ $student->semester ?: 'N/A' }}</span>
-                    @if($isWD) <span class="srp-hero-pill warn">Withdrawn</span> @endif
+                    <span class="srp-hero-pill {{ $statusPillClass }}">{{ $studentStatus }}</span>
                 </div>
                 <div class="srp-hero-contact">
                     @if($prof && $prof->mobile_number) <span>📞 {{ $prof->mobile_number }}</span> @endif
                     @if($prof && $prof->student_email) <span>✉ {{ $prof->student_email }}</span> @endif
                     @if($prof && $prof->present_municipality) <span>📍 {{ $prof->present_municipality }}, {{ $prof->present_province }}</span> @endif
                 </div>
+                @unless($isWD)
+                <div class="srp-hero-status-action">
+                    <button type="button" class="srp-btn-status" onclick="srpOpenStatusModal()">Edit Status</button>
+                </div>
+                @endunless
             </div>
             <div class="srp-gwa-box">
                 <div class="srp-gwa-num">{{ $cwa !== null ? number_format($cwa,2) : '—' }}</div>
@@ -470,7 +500,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 16.74V4.67C22 3.47 21.02 2.58 19.83 2.68H19.77C17.67 2.86 14.48 3.93 12.7 5.05L12.53 5.16C12.24 5.34 11.76 5.34 11.47 5.16L11.22 5.01C9.44 3.9 6.26 2.84 4.16 2.67C2.97 2.57 2 3.47 2 4.66V16.74C2 17.7 2.78 18.6 3.74 18.72L4.03 18.76C6.2 19.05 9.55 20.15 11.47 21.2L11.51 21.22C11.78 21.37 12.21 21.37 12.47 21.22C14.39 20.16 17.75 19.05 19.93 18.76L20.26 18.72C21.22 18.6 22 17.7 22 16.74Z"/></svg>
                 Curriculum
             </button>
-            <button class="srp-tab" data-tab="scholarships" style="display:none;">
+            <button class="srp-tab" data-tab="scholarships">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3L3 7.5L12 12L21 7.5L12 3Z"/><path d="M5 10v5.5C5 17.43 8.13 19 12 19s7-1.57 7-3.5V10"/><path d="M21 7.5V13"/></svg>
                 Scholarships
                 @if(($studentScholarships ?? collect())->count())<span class="srp-tab-badge blue">{{ $studentScholarships->count() }}</span>@endif
@@ -520,13 +550,13 @@
                                 ['Section',      optional($student->yearBlock)->block_name],
                                 ['Curriculum',   $student->curriculum],
                                 ['Scholarship',  $student->scholarship],
-                                ['Status',       $isWD ? 'Withdrawn' : 'Active'],
+                                ['Status',       $studentStatus],
                             ] as [$lbl,$val])
                             <div class="srp-field">
                                 <label>{{ $lbl }}</label>
                                 <div class="val {{ !$val ? 'val-empty' : '' }}">
                                     @if($lbl === 'Status')
-                                        <span class="{{ $isWD ? 'badge-red' : 'badge-green' }}">{{ $val }}</span>
+                                        <span class="{{ $statusBadgeClass }}">{{ $val }}</span>
                                     @else
                                         {{ $val ?: '—' }}
                                     @endif
@@ -538,6 +568,11 @@
                         <div style="margin-top:14px;background:#fff1f2;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#991b1b;">
                             <strong>Withdrawn:</strong> {{ $student->withdrawn_date ? $student->withdrawn_date->format('F j, Y') : 'Date not recorded' }}
                             @if($student->withdrawn_remarks) — {{ $student->withdrawn_remarks }} @endif
+                        </div>
+                        @elseif($studentStatus !== 'Active')
+                        <div style="margin-top:14px;background:#fffbeb;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#92400e;">
+                            <strong>{{ $studentStatus }}:</strong> {{ $student->status_date ? $student->status_date->format('F j, Y') : 'Date not recorded' }}
+                            @if($student->status_remarks) — {{ $student->status_remarks }} @endif
                         </div>
                         @endif
                     </div>
@@ -608,21 +643,69 @@
                             <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Present Address</p>
                             <div class="srp-fields">
                                 <div class="srp-field"><label>Street / Bldg.</label><input id="pi_pstreet" value="{{ $prof->present_street ?? '' }}"></div>
-                                <div class="srp-field"><label>Barangay</label><input id="pi_pbrgy" value="{{ $prof->present_barangay ?? '' }}"></div>
-                                <div class="srp-field"><label>Municipality / City</label><input id="pi_pmuni" value="{{ $prof->present_municipality ?? '' }}"></div>
-                                <div class="srp-field"><label>Province</label><input id="pi_pprov" value="{{ $prof->present_province ?? '' }}"></div>
-                                <div class="srp-field"><label>Region</label><input id="pi_pregion" value="{{ $prof->present_region ?? '' }}"></div>
+                                <div class="srp-field">
+                                    <label>Region</label>
+                                    <select id="pi_pregion" data-current="{{ $prof->present_region ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose Region</option>
+                                    </select>
+                                </div>
+                                <div class="srp-field">
+                                    <label>Province</label>
+                                    <select id="pi_pprov" data-current="{{ $prof->present_province ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose Province</option>
+                                    </select>
+                                </div>
+                                <div class="srp-field">
+                                    <label>Municipality / City</label>
+                                    <select id="pi_pmuni" data-current="{{ $prof->present_municipality ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose City/Municipality</option>
+                                    </select>
+                                </div>
+                                <div class="srp-field">
+                                    <label>Barangay</label>
+                                    <select id="pi_pbrgy" data-current="{{ $prof->present_barangay ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose Barangay</option>
+                                    </select>
+                                    <input id="pi_pbrgy_other" placeholder="Enter barangay" style="display:none;margin-top:6px;">
+                                </div>
                                 <div class="srp-field"><label>ZIP Code</label><input id="pi_pzip" value="{{ $prof->present_zipcode ?? '' }}"></div>
                             </div>
                         </div>
                         <div>
-                            <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Permanent Address</p>
-                            <div class="srp-fields">
+                            <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                                <span>Permanent Address</span>
+                                <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#334155;text-transform:none;letter-spacing:normal;cursor:pointer;">
+                                    <input type="checkbox" id="pi_sameAsPresent" style="width:14px;height:14px;accent-color:#0f7b43;">
+                                    Same as Present Address
+                                </label>
+                            </p>
+                            <div class="srp-fields" id="pi_permanentFields">
                                 <div class="srp-field"><label>Street / Bldg.</label><input id="pi_perstreet" value="{{ $prof->permanent_street ?? '' }}"></div>
-                                <div class="srp-field"><label>Barangay</label><input id="pi_perbrgy" value="{{ $prof->permanent_barangay ?? '' }}"></div>
-                                <div class="srp-field"><label>Municipality / City</label><input id="pi_permuni" value="{{ $prof->permanent_municipality ?? '' }}"></div>
-                                <div class="srp-field"><label>Province</label><input id="pi_perprov" value="{{ $prof->permanent_province ?? '' }}"></div>
-                                <div class="srp-field"><label>Region</label><input id="pi_perregion" value="{{ $prof->permanent_region ?? '' }}"></div>
+                                <div class="srp-field">
+                                    <label>Region</label>
+                                    <select id="pi_perregion" data-current="{{ $prof->permanent_region ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose Region</option>
+                                    </select>
+                                </div>
+                                <div class="srp-field">
+                                    <label>Province</label>
+                                    <select id="pi_perprov" data-current="{{ $prof->permanent_province ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose Province</option>
+                                    </select>
+                                </div>
+                                <div class="srp-field">
+                                    <label>Municipality / City</label>
+                                    <select id="pi_permuni" data-current="{{ $prof->permanent_municipality ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose City/Municipality</option>
+                                    </select>
+                                </div>
+                                <div class="srp-field">
+                                    <label>Barangay</label>
+                                    <select id="pi_perbrgy" data-current="{{ $prof->permanent_barangay ?? '' }}" disabled>
+                                        <option value="" disabled selected>Choose Barangay</option>
+                                    </select>
+                                    <input id="pi_perbrgy_other" placeholder="Enter barangay" style="display:none;margin-top:6px;">
+                                </div>
                                 <div class="srp-field"><label>ZIP Code</label><input id="pi_perzip" value="{{ $prof->permanent_zipcode ?? '' }}"></div>
                             </div>
                         </div>
@@ -1005,6 +1088,13 @@
                                     </div>
                                     <div class="srp-field"><label>Academic Year</label><input name="school_year" value="{{ $student->school_year }}"></div>
                                     <div class="srp-field"><label>Semester</label><input name="semester" value="{{ $student->semester }}"></div>
+                                    <div class="srp-field full">
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:normal;">
+                                            <input type="checkbox" name="is_unifast" value="1" style="width:15px;height:15px;accent-color:#0f7b43;">
+                                            Tag as UNIFAST (Unified Financial Assistance for Tertiary Education)
+                                        </label>
+                                        <div style="font-size:11px;color:#94a3b8;margin-top:3px;">Leave unchecked to tag as a general/other scholarship.</div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1062,7 +1152,9 @@
                                 @foreach($studentScholarships as $tag)
                                     <tr>
                                         <td>
-                                            <strong>{{ optional($tag->program)->name ?: 'Scholarship #' . $tag->scholarship_program_id }}</strong><br>
+                                            <strong>{{ optional($tag->program)->name ?: 'Scholarship #' . $tag->scholarship_program_id }}</strong>
+                                            @if($tag->is_unifast)<span class="badge-green" style="margin-left:4px;">UniFAST</span>@endif
+                                            <br>
                                             <small>{{ optional($tag->program)->category }}</small>
                                         </td>
                                         <td>AY {{ $tag->school_year ?: 'N/A' }}<br>{{ $tag->semester ?: 'N/A' }}</td>
@@ -1094,6 +1186,12 @@
                                                     <input type="hidden" name="approval_date" value="{{ optional($tag->approval_date)->format('Y-m-d') }}">
                                                     <input type="hidden" name="renewal_due_date" value="{{ optional($tag->renewal_due_date)->format('Y-m-d') }}">
                                                     <input type="hidden" name="remarks" value="{{ $tag->remarks }}">
+                                                    <div class="srp-field full">
+                                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:normal;font-weight:600;">
+                                                            <input type="checkbox" name="is_unifast" value="1" style="width:14px;height:14px;accent-color:#0f7b43;" {{ $tag->is_unifast ? 'checked' : '' }}>
+                                                            UNIFAST tag
+                                                        </label>
+                                                    </div>
                                                     <div class="srp-field"><label>Award Status</label><select name="award_status">@foreach(['Active','For Renewal','Renewed','Suspended','Ended'] as $item)<option {{ $tag->award_status === $item ? 'selected' : '' }}>{{ $item }}</option>@endforeach</select></div>
                                                     <div class="srp-field"><label>Monitoring</label><select name="monitoring_status"><option value="">Not set</option>@foreach(['Compliant','For Review','Below Maintaining Grade'] as $item)<option {{ $tag->monitoring_status === $item ? 'selected' : '' }}>{{ $item }}</option>@endforeach</select></div>
                                                     <div class="srp-field"><label>Financial Posting</label><select name="financial_posting_status">@foreach(['Pending','Posted','For Adjustment','Cancelled'] as $item)<option {{ $tag->financial_posting_status === $item ? 'selected' : '' }}>{{ $item }}</option>@endforeach</select></div>
@@ -1832,6 +1930,34 @@
     </div>
 </div>
 
+{{-- Edit Status Modal --}}
+<div class="med-overlay" id="statusEditOverlay">
+    <div class="med-modal" role="dialog" aria-modal="true" style="width:min(480px,95vw);">
+        <div class="med-modal-head">
+            <h3>Edit Student Status</h3>
+            <button type="button" class="med-close-btn" onclick="srpCancelStatusEdit()" aria-label="Close">&times;</button>
+        </div>
+        <div class="med-modal-body">
+            <div class="med-field">
+                <label>Status</label>
+                <select id="status_value">
+                    @foreach(\App\Student::STATUSES as $statusOption)
+                        <option value="{{ $statusOption }}" {{ $studentStatus === $statusOption ? 'selected' : '' }}>{{ $statusOption }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="med-field">
+                <label>Remarks</label>
+                <textarea id="status_remarks" style="min-height:90px;" placeholder="Reason / notes for this status change...">{{ $student->status_remarks }}</textarea>
+            </div>
+        </div>
+        <div class="med-modal-foot">
+            <button type="button" class="med-btn-cancel" onclick="srpCancelStatusEdit()">Cancel</button>
+            <button type="button" class="srp-btn-primary" onclick="srpConfirmStatusEdit()">Save Status</button>
+        </div>
+    </div>
+</div>
+
 {{-- HD Copy For Modal --}}
 <div class="med-overlay" id="hdCopyForOverlay">
     <div class="med-modal" role="dialog" aria-modal="true" style="width:min(480px,95vw);">
@@ -2056,7 +2182,202 @@ const SRP_CSRF        = document.querySelector('meta[name=csrf-token]').getAttri
 const SRP_RELIGION_STORE_URL = '{{ route("registrar.registrar-menu.student-mgmt.student-records.religion.store") }}';
 let SRP_RELIGIONS     = @json($religions ?? []);
 const HD_TAG_URL      = @json(route('registrar.registrar-menu.forms.honorable-dismissal.tag', ['student' => $student->id]));
+const STATUS_UPDATE_URL = @json(route('registrar.registrar-menu.student-mgmt.student-records.status.update', ['student' => $student->id]));
 const REQ_UPDATE_URL_BASE = @json(route('registrar.registrar-menu.student-mgmt.student-records.requirements.update', ['student' => $student->id, 'requirement' => '__ID__']));
+
+// ── Cascading address dropdowns (Region → Province → City/Municipality → Barangay) ─
+// with ZIP code auto-fill keyed off the selected city/municipality.
+(function () {
+    function fillSelect(selectEl, items, placeholder) {
+        selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
+        items.forEach(function (item) {
+            var opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            selectEl.appendChild(opt);
+        });
+        selectEl.disabled = false;
+    }
+    function resetSelect(selectEl, placeholder) {
+        selectEl.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>';
+        selectEl.disabled = true;
+        selectEl.value = '';
+    }
+
+    function fillBarangaySelect(brgyEl, brgyOtherEl, city, barangayData) {
+        var list = barangayData[city];
+        if (list && list.length) {
+            fillSelect(brgyEl, list, 'Choose Barangay');
+            var opt = document.createElement('option');
+            opt.value = '__other__';
+            opt.textContent = 'Other / not listed';
+            brgyEl.appendChild(opt);
+            if (brgyOtherEl) {
+                brgyOtherEl.style.display = 'none';
+                brgyOtherEl.value = '';
+            }
+        } else {
+            brgyEl.innerHTML = '<option value="__other__" selected>No barangay list available — type below</option>';
+            brgyEl.disabled = false;
+            if (brgyOtherEl) brgyOtherEl.style.display = '';
+        }
+    }
+
+    function setupCascade(regionEl, provinceEl, cityEl, brgyEl, brgyOtherEl, zipEl, addressData, zipData, barangayData) {
+        if (!regionEl || !provinceEl || !cityEl) return;
+
+        fillSelect(regionEl, addressData.map(function (r) { return r.name; }), 'Choose Region');
+
+        regionEl.addEventListener('change', function () {
+            resetSelect(provinceEl, 'Choose Province');
+            resetSelect(cityEl, 'Choose City/Municipality');
+            if (brgyEl) resetSelect(brgyEl, 'Choose Barangay');
+            var region = addressData.find(function (r) { return r.name === regionEl.value; });
+            if (!region) return;
+
+            if (region.provinces.length === 1) {
+                fillSelect(provinceEl, [region.provinces[0].name], 'Choose Province');
+                provinceEl.value = region.provinces[0].name;
+                provinceEl.dispatchEvent(new Event('change'));
+            } else {
+                fillSelect(provinceEl, region.provinces.map(function (p) { return p.name; }), 'Choose Province');
+            }
+        });
+
+        provinceEl.addEventListener('change', function () {
+            resetSelect(cityEl, 'Choose City/Municipality');
+            if (brgyEl) resetSelect(brgyEl, 'Choose Barangay');
+            var region = addressData.find(function (r) { return r.name === regionEl.value; });
+            var province = region && region.provinces.find(function (p) { return p.name === provinceEl.value; });
+            if (!province) return;
+            fillSelect(cityEl, province.cities, 'Choose City/Municipality');
+        });
+
+        cityEl.addEventListener('change', function () {
+            if (zipEl) {
+                var zip = zipData[cityEl.value];
+                if (zip) zipEl.value = zip;
+            }
+            if (brgyEl) fillBarangaySelect(brgyEl, brgyOtherEl, cityEl.value, barangayData);
+        });
+
+        if (brgyEl) {
+            brgyEl.addEventListener('change', function () {
+                if (!brgyOtherEl) return;
+                if (brgyEl.value === '__other__') {
+                    brgyOtherEl.style.display = '';
+                } else {
+                    brgyOtherEl.style.display = 'none';
+                    brgyOtherEl.value = '';
+                }
+            });
+        }
+    }
+
+    function restoreCascade(regionEl, provinceEl, cityEl, brgyEl, brgyOtherEl) {
+        var savedRegion = regionEl && regionEl.dataset.current;
+        var savedProvince = provinceEl && provinceEl.dataset.current;
+        var savedCity = cityEl && cityEl.dataset.current;
+        var savedBrgy = brgyEl && brgyEl.dataset.current;
+        if (!savedRegion || !regionEl) return;
+
+        regionEl.value = savedRegion;
+        regionEl.dispatchEvent(new Event('change'));
+        setTimeout(function () {
+            if (savedProvince && provinceEl) {
+                provinceEl.value = savedProvince;
+                provinceEl.dispatchEvent(new Event('change'));
+                setTimeout(function () {
+                    if (savedCity && cityEl) {
+                        cityEl.value = savedCity;
+                        cityEl.dispatchEvent(new Event('change'));
+                        setTimeout(function () {
+                            if (savedBrgy && brgyEl) {
+                                var hasOption = Array.prototype.some.call(brgyEl.options, function (o) { return o.value === savedBrgy; });
+                                if (hasOption) {
+                                    brgyEl.value = savedBrgy;
+                                } else {
+                                    brgyEl.value = '__other__';
+                                    if (brgyOtherEl) {
+                                        brgyOtherEl.style.display = '';
+                                        brgyOtherEl.value = savedBrgy;
+                                    }
+                                }
+                            }
+                        }, 60);
+                    }
+                }, 60);
+            }
+        }, 60);
+    }
+
+    Promise.all([
+        fetch('/js/ph-address.json').then(function (r) { return r.json(); }),
+        fetch('/js/ph-zipcodes.json').then(function (r) { return r.json(); }),
+        fetch('/js/ph-barangays.json').then(function (r) { return r.json(); }),
+    ]).then(function (results) {
+        var addressData = results[0];
+        var zipData = results[1];
+        var barangayData = results[2];
+
+        var presentRegion = document.getElementById('pi_pregion');
+        var presentProvince = document.getElementById('pi_pprov');
+        var presentCity = document.getElementById('pi_pmuni');
+        var presentBrgy = document.getElementById('pi_pbrgy');
+        var presentBrgyOther = document.getElementById('pi_pbrgy_other');
+        var presentZip = document.getElementById('pi_pzip');
+        setupCascade(presentRegion, presentProvince, presentCity, presentBrgy, presentBrgyOther, presentZip, addressData, zipData, barangayData);
+        restoreCascade(presentRegion, presentProvince, presentCity, presentBrgy, presentBrgyOther);
+
+        var permRegion = document.getElementById('pi_perregion');
+        var permProvince = document.getElementById('pi_perprov');
+        var permCity = document.getElementById('pi_permuni');
+        var permBrgy = document.getElementById('pi_perbrgy');
+        var permBrgyOther = document.getElementById('pi_perbrgy_other');
+        var permZip = document.getElementById('pi_perzip');
+        setupCascade(permRegion, permProvince, permCity, permBrgy, permBrgyOther, permZip, addressData, zipData, barangayData);
+        restoreCascade(permRegion, permProvince, permCity, permBrgy, permBrgyOther);
+
+        // ── Same as Present Address ─────────────────────────────
+        var sameAsPresentCb = document.getElementById('pi_sameAsPresent');
+        var permanentFieldsWrap = document.getElementById('pi_permanentFields');
+        if (sameAsPresentCb) {
+            sameAsPresentCb.addEventListener('change', function () {
+                if (sameAsPresentCb.checked) {
+                    document.getElementById('pi_perstreet').value = document.getElementById('pi_pstreet').value;
+
+                    permRegion.value = presentRegion.value;
+                    permRegion.dispatchEvent(new Event('change'));
+                    setTimeout(function () {
+                        permProvince.value = presentProvince.value;
+                        permProvince.dispatchEvent(new Event('change'));
+                        setTimeout(function () {
+                            permCity.value = presentCity.value;
+                            permCity.dispatchEvent(new Event('change'));
+                            setTimeout(function () {
+                                if (presentBrgy.value === '__other__') {
+                                    permBrgy.value = '__other__';
+                                    permBrgy.dispatchEvent(new Event('change'));
+                                    if (permBrgyOther) permBrgyOther.value = presentBrgyOther ? presentBrgyOther.value : '';
+                                } else {
+                                    permBrgy.value = presentBrgy.value;
+                                }
+                                document.getElementById('pi_perzip').value = document.getElementById('pi_pzip').value;
+                            }, 80);
+                        }, 80);
+                    }, 80);
+                }
+                if (permanentFieldsWrap) {
+                    permanentFieldsWrap.querySelectorAll('input, select').forEach(function (el) {
+                        el.disabled = sameAsPresentCb.checked;
+                    });
+                }
+            });
+        }
+    }).catch(function (err) {
+        console.warn('Could not load address data:', err);
+    });
+})();
 
 // ── Edit Document Requirement ──────────────────────────────
 function srpEditRequirement(id, name, type, remarks) {
@@ -2133,6 +2454,47 @@ async function srpConfirmHdTag() {
     }
 }
 
+// ── Edit Status ─────────────────────────────────────────────
+function srpOpenStatusModal() {
+    document.getElementById('statusEditOverlay').classList.add('open');
+}
+
+function srpCancelStatusEdit() {
+    document.getElementById('statusEditOverlay').classList.remove('open');
+}
+
+document.getElementById('statusEditOverlay').addEventListener('click', function(e) {
+    if (e.target === this) srpCancelStatusEdit();
+});
+
+function srpReloadOnDocumentsTab() {
+    window.location.href = window.location.pathname + '?tab=documents';
+}
+
+async function srpConfirmStatusEdit() {
+    const status = document.getElementById('status_value').value;
+    const remarks = document.getElementById('status_remarks').value.trim();
+
+    try {
+        const r = await fetch(STATUS_UPDATE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
+            body: JSON.stringify({ status: status, remarks: remarks }),
+        });
+        const data = await r.json();
+
+        if (data.success) {
+            srpToast(data.message || 'Student status updated.', 'success');
+            srpCancelStatusEdit();
+            setTimeout(srpReloadOnDocumentsTab, 700);
+        } else {
+            srpToast(data.message || 'Unable to update status.', 'error');
+        }
+    } catch (e) {
+        srpToast('Network error — check connection.', 'error');
+    }
+}
+
 // ── Tab switching ──────────────────────────────────────────
 document.querySelectorAll('.srp-tab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2142,9 +2504,21 @@ document.querySelectorAll('.srp-tab').forEach(btn => {
     });
 });
 
+(function () {
+    const initialTab = new URLSearchParams(window.location.search).get('tab');
+    if (initialTab) {
+        const tabBtn = document.querySelector('.srp-tab[data-tab="' + initialTab + '"]');
+        if (tabBtn) tabBtn.click();
+    }
+})();
+
 // ── Collect personal info payload ─────────────────────────
 function buildInfoPayload() {
     const g = id => document.getElementById(id)?.value?.trim() ?? '';
+    const gBrgy = (selectId, otherId) => {
+        const val = g(selectId);
+        return val === '__other__' ? g(otherId) : val;
+    };
     return {
         first_name: g('pi_first_name'), last_name: g('pi_last_name'),
         middle_name: g('pi_middle_name'), suffix: g('pi_suffix'),
@@ -2152,10 +2526,10 @@ function buildInfoPayload() {
         place_of_birth: g('pi_pob'), civil_status: g('pi_civil_status'),
         nationality: g('pi_nationality'), religion: g('pi_religion'),
         mobile_number: g('pi_mobile'), student_email: g('pi_email'),
-        present_street: g('pi_pstreet'), present_barangay: g('pi_pbrgy'),
+        present_street: g('pi_pstreet'), present_barangay: gBrgy('pi_pbrgy', 'pi_pbrgy_other'),
         present_municipality: g('pi_pmuni'), present_province: g('pi_pprov'),
         present_region: g('pi_pregion'), present_zipcode: g('pi_pzip'),
-        permanent_street: g('pi_perstreet'), permanent_barangay: g('pi_perbrgy'),
+        permanent_street: g('pi_perstreet'), permanent_barangay: gBrgy('pi_perbrgy', 'pi_perbrgy_other'),
         permanent_municipality: g('pi_permuni'), permanent_province: g('pi_perprov'),
         permanent_region: g('pi_perregion'), permanent_zipcode: g('pi_perzip'),
     };

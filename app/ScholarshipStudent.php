@@ -11,6 +11,7 @@ class ScholarshipStudent extends Model
     protected $fillable = [
         'student_id',
         'scholarship_program_id',
+        'is_unifast',
         'school_year',
         'semester',
         'application_status',
@@ -31,6 +32,7 @@ class ScholarshipStudent extends Model
     ];
 
     protected $casts = [
+        'is_unifast' => 'boolean',
         'posted_amount' => 'decimal:2',
         'discount_percent' => 'decimal:2',
         'current_gwa' => 'decimal:2',

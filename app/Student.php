@@ -17,14 +17,28 @@ class Student extends Model
         'scholarship', 'registration_no', 'school_year', 'semester', 'academic_term_id',
         'course_id', 'year_block_id',
         'is_withdrawn', 'withdrawn_date', 'withdrawn_remarks',
+        'status', 'status_date', 'status_remarks',
         'is_transferee', 'is_irregular', 'student_type',
     ];
 
     protected $casts = [
         'is_withdrawn' => 'boolean',
         'withdrawn_date' => 'date',
+        'status_date' => 'date',
         'is_transferee' => 'boolean',
         'is_irregular' => 'boolean',
+    ];
+
+    const STATUS_ACTIVE = 'Active';
+    const STATUS_LOA = 'LOA';
+    const STATUS_EXIT_CLEARANCE = 'Exit Clearance';
+    const STATUS_UNDER_GRAD = 'Under Grad';
+
+    const STATUSES = [
+        self::STATUS_ACTIVE,
+        self::STATUS_LOA,
+        self::STATUS_EXIT_CLEARANCE,
+        self::STATUS_UNDER_GRAD,
     ];
 
     /**
