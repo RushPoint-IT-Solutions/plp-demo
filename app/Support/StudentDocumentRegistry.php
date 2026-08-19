@@ -86,7 +86,7 @@ class StudentDocumentRegistry
             ],
             [
                 'slug' => 'cog', 'label' => 'Copy of Grades (COG)', 'group' => 'Academic Records',
-                'has_editor' => true, 'editor' => 'generic',
+                'has_editor' => true, 'editor' => 'dedicated',
                 'live_url' => route('registrar.registrar-menu.forms.cog.copy-of-grades'),
             ],
             [

@@ -27,7 +27,7 @@ class DocumentTemplateController extends Controller
     private static $allowedSlugs = [
         'f137a', 'certificate-gwa', 'diploma', 'clearance-2', 'graduation-clearance',
         'leave-of-absence', 'deans-honors', 'presidents-honors', 'form-8c2', 'form-8d2',
-        'cog', 'official-grade-report', 'cross-enroll-permit',
+        'official-grade-report', 'cross-enroll-permit',
     ];
 
     private static $labels = [
@@ -41,7 +41,6 @@ class DocumentTemplateController extends Controller
         'presidents-honors' => "President's Honors",
         'form-8c2' => 'Form 8C-2 (Graduation)',
         'form-8d2' => 'Form 8D-2 (Honor)',
-        'cog' => 'Copy of Grades (COG)',
         'official-grade-report' => 'Official Grade Report',
         'cross-enroll-permit' => 'Cross-Enroll Permit',
     ];

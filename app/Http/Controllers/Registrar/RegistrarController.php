@@ -23871,11 +23871,137 @@ JSON
 
     /**
      * Registrar > Forms > Copy Of Grades (COG)
+     *
+     * Page 1 layout (Student Data / Scholastic Record / Grading System /
+     * Remarks / signatures) is built to match the school's official COG
+     * Excel template exactly — same row spacing, fonts, and section
+     * borders — with every field pre-filled from the student's record but
+     * left directly editable before printing. Page 2 reuses the same
+     * per-term grade listing as the Transcript of Records, since COG is
+     * derived from the same source data.
      */
-    public function formsCopyOfGradesCog()
+    public function formsCopyOfGradesCog(Request $request, ?Student $student = null)
     {
-        return view('registrar.forms.cog.copy-of-grades');
+        if (!$student && $request->filled('student_id')) {
+            $student = Student::find($request->query('student_id'));
+        }
+
+        if ($student) {
+            $student->load(['profile', 'canonicalCourse']);
+        }
+
+        $remarksOptions = self::cogRemarksOptions();
+        $remarks = $request->query('remarks');
+        if (!in_array($remarks, $remarksOptions, true)) {
+            $remarks = $remarksOptions[0];
+        }
+
+        $gradeRecords = collect([]);
+        if ($student && Schema::hasTable('student_grade_records')) {
+            $gradeRecords = \App\StudentGradeRecord::where(function ($q) use ($student) {
+                $q->where('student_id', $student->id)
+                  ->orWhere('student_no', $student->student_no);
+            })->orderBy('school_year')->orderBy('term')->orderBy('subject_code')->get();
+        }
+        $gradesBySyTerm = $gradeRecords->groupBy(function ($r) {
+            return $r->school_year . '|||' . $r->term;
+        });
+
+        $signatories = $this->cogSignatories();
+        $cogFields = $this->cogFieldsForStudent($student);
+
+        return view('registrar.forms.cog.copy-of-grades', array_merge(
+            compact('student', 'cogFields', 'gradeRecords', 'gradesBySyTerm', 'remarks', 'remarksOptions'),
+            $signatories
+        ));
     }
+
+    private static function cogRemarksOptions(): array
+    {
+        return [
+            'FOR EVALUATION PURPOSES ONLY.',
+            'FOR EMPLOYMENT PURPOSES ONLY.',
+            'FOR TRAVEL PURPOSES ONLY.',
+            'FOR FURTHER STUDIES PURPOSES ONLY.',
+            'FOR PROMOTION PURPOSES ONLY.',
+            'FOR BROKER EXAMINATION PURPOSES ONLY.',
+            'FOR BOARD EXAMINATION PURPOSES ONLY.',
+            'FOR COMPANY VERIFICATION PURPOSES ONLY.',
+        ];
+    }
+
+    private function cogSignatories(): array
+    {
+        $signatories = collect([]);
+        if (Schema::hasTable('system_config_name_signatures') && Schema::hasTable('system_config_signature_designations')) {
+            $signatories = DB::table('system_config_name_signatures as s')
+                ->join('system_config_signature_designations as d', 's.designation_id', '=', 'd.id')
+                ->where('s.is_active', 1)
+                ->orderBy('d.sort_order')
+                ->select('s.signer_name', 's.signature_path', 'd.name as designation_name', 'd.code')
+                ->get();
+        }
+
+        return [
+            'registrar' => $signatories->first(function ($s) {
+                return stripos($s->designation_name, 'university registrar') !== false;
+            }) ?? $signatories->first(function ($s) {
+                return stripos($s->designation_name, 'registrar') !== false;
+            }) ?? $signatories->first(),
+            'assistantRegistrar' => $signatories->first(function ($s) {
+                return stripos($s->designation_name, 'assistant registrar') !== false;
+            }),
+            'collegeSecretary' => $signatories->first(function ($s) {
+                return stripos($s->designation_name, 'college secretary') !== false;
+            }),
+        ];
+    }
+
+    private function cogFieldsForStudent(?Student $student): array
+    {
+        if (!$student) {
+            return array_fill_keys([
+                'student_no', 'name', 'address', 'sex', 'date_of_birth', 'place_of_birth',
+                'date_of_admission', 'admission_credentials', 'degree_course_program',
+                'date_of_completion', 'date_of_graduation', 'resolution_no',
+                'junior_high_school', 'junior_high_school_year_graduated',
+                'senior_high_school', 'senior_high_school_year_graduated',
+            ], '');
+        }
+
+        $prof = $student->profile;
+        $graduateTagging = Schema::hasTable('graduate_taggings') ? GraduateTagging::where('student_id', $student->id)->first() : null;
+        $isGraduated = $graduateTagging && $graduateTagging->is_graduate;
+
+        $course = optional($student->canonicalCourse)->name ?: $student->program ?: '';
+        $courseCode = optional($student->canonicalCourse)->code ?: '';
+        $fullName = $prof
+            ? trim($prof->last_name . ', ' . $prof->first_name . ' ' . ($prof->middle_name ? $prof->middle_name[0] . '.' : '') . ($prof->suffix ? ' ' . $prof->suffix : ''))
+            : $student->name;
+        $address = $prof && $prof->present_municipality
+            ? trim(($prof->present_street ? $prof->present_street . ', ' : '') . ($prof->present_barangay ? $prof->present_barangay . ', ' : '') . $prof->present_municipality . ', ' . $prof->present_province)
+            : '';
+
+        return [
+            'student_no' => $student->student_no ?? '',
+            'name' => strtoupper($fullName),
+            'address' => $address,
+            'sex' => $student->sex ?? '',
+            'date_of_birth' => ($prof && $prof->date_of_birth) ? $prof->date_of_birth->format('F j, Y') : '',
+            'place_of_birth' => $prof->place_of_birth ?? '',
+            'date_of_admission' => '',
+            'admission_credentials' => '',
+            'degree_course_program' => trim($course . ($courseCode ? ' (' . $courseCode . ')' : '')),
+            'date_of_completion' => ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : '',
+            'date_of_graduation' => ($isGraduated && $graduateTagging->date_graduated) ? $graduateTagging->date_graduated->format('F j, Y') : '',
+            'resolution_no' => ($isGraduated && $graduateTagging->so_number) ? $graduateTagging->so_number : '',
+            'junior_high_school' => $prof->junior_school ?? '',
+            'junior_high_school_year_graduated' => $prof->junior_school_year_graduated ?? '',
+            'senior_high_school' => $prof->senior_school ?? '',
+            'senior_high_school_year_graduated' => $prof->senior_school_year_graduated ?? '',
+        ];
+    }
+
 
     /**
      * Registrar > Forms > Certificate of Registration (COR)

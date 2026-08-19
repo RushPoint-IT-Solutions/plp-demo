@@ -1497,7 +1497,7 @@
                             $certs = [
                                 ['Certificate of Registration (COR)', route('registrar.registrar-menu.forms.cor.certificate-of-registration') . '?student_id=' . $student->id,'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 0-1.756 1.077'],
                                 ['Clearance 2', route('registrar.registrar-menu.forms.clearance-2.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
-                                ['Copy of Grades (COG)', route('registrar.registrar-menu.forms.cog.copy-of-grades'),'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M12 12h4M12 16h4M8 12h.01M8 16h.01'],
+                                ['Copy of Grades (COG)', route('registrar.registrar-menu.forms.cog.copy-of-grades') . '?student_id=' . $student->id,'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M12 12h4M12 16h4M8 12h.01M8 16h.01'],
                                 ['Official Grade Report', route('registrar.registrar-menu.forms.official-grade-report'),'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8'],
                                 ['Certificate of GWA', route('registrar.registrar-menu.forms.certificates.certificate-gwa.show', ['student' => $student->id]),'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],
                                 ['Dean\'s Honors', route('registrar.registrar-menu.forms.certificates.deans-honors.show', ['student' => $student->id]),'M12 2l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 14.94 7.2 17.46l.92-5.34-3.88-3.78 5.36-.78L12 2z'],
@@ -1513,7 +1513,7 @@
                             ];
                         @endphp
                         @foreach($certs as [$certName,$certUrl,$certIcon])
-                        <a href="{{ $certUrl }}" class="srp-cert-card">
+                        <a href="{{ $certUrl }}" target="_blank" class="srp-cert-card">
                             <div>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                     <path d="{{ $certIcon }}"/>
