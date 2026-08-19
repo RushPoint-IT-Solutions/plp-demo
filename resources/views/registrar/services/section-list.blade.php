@@ -64,7 +64,7 @@
             <div class="at-config-grid">
                 <div class="at-config-item">
                     <span class="at-config-inline-label">School Year:</span>
-                    <select name="school_year" class="form-control">
+                    <select name="school_year" class="form-control sl-chosen">
                         <option value="">All School Years</option>
                         @foreach($schoolYearOptions as $schoolYear)
                             <option value="{{ $schoolYear }}" {{ $state['school_year'] === (string) $schoolYear ? 'selected' : '' }}>{{ $schoolYear }}</option>
@@ -74,7 +74,7 @@
 
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Semester:</span>
-                    <select name="semester" class="form-control">
+                    <select name="semester" class="form-control sl-chosen">
                         <option value="">All Semesters</option>
                         @foreach($semesterOptions as $semester)
                             <option value="{{ $semester }}" {{ $state['semester'] === (string) $semester ? 'selected' : '' }}>{{ $semester }}</option>
@@ -84,7 +84,7 @@
 
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Course:</span>
-                    <select name="course_id" class="form-control">
+                    <select name="course_id" class="form-control sl-chosen">
                         <option value="">All Courses</option>
                         @foreach($courseOptions as $course)
                             <option value="{{ $course->id }}" {{ (int) $state['course_id'] === (int) $course->id ? 'selected' : '' }}>
@@ -96,7 +96,7 @@
 
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Year Level:</span>
-                    <select name="year_block_id" class="form-control">
+                    <select name="year_block_id" class="form-control sl-chosen">
                         <option value="">All Year Levels</option>
                         @foreach($yearBlockOptions as $yearBlock)
                             <option value="{{ $yearBlock->id }}" {{ (int) $state['year_block_id'] === (int) $yearBlock->id ? 'selected' : '' }}>{{ $yearBlock->label }}</option>
