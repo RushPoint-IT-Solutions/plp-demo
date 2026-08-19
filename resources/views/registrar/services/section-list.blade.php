@@ -4,6 +4,35 @@
 @section('page-title', 'SECTION LIST')
 @section('body-class', 'page-services-section-list')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.min.css">
+<style>
+    .at-config-item .chosen-container { width: 100% !important; font-size: 0.85rem; }
+    .at-config-item .chosen-container-single .chosen-single {
+        height: 36px;
+        line-height: 34px;
+        padding: 0 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        box-shadow: none;
+        background: #fff;
+    }
+    .at-config-item .chosen-container-single .chosen-single div b {
+        background-position: 0 4px;
+    }
+    .at-config-item .chosen-container-active.chosen-with-drop .chosen-single {
+        border-color: #15803d;
+    }
+    .at-config-item .chosen-container .chosen-results li.highlighted {
+        background-color: #15803d;
+    }
+    .at-config-item .chosen-container-single .chosen-search input[type="text"] {
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="pf-page cl-page" id="sectionListPage">
     @php
@@ -77,7 +106,7 @@
 
                 <div class="at-config-item">
                     <span class="at-config-inline-label">Section:</span>
-                    <select name="section" class="form-control">
+                    <select name="section" class="form-control sl-chosen">
                         <option value="">Choose Section</option>
                         @foreach($sectionOptions as $section)
                             <option value="{{ $section }}" {{ $state['section'] === (string) $section ? 'selected' : '' }}>{{ $section }}</option>
@@ -209,3 +238,18 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.jquery.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.chosen) {
+            window.jQuery('.sl-chosen').chosen({
+                width: '100%',
+                search_contains: true,
+                disable_search_threshold: 6,
+            });
+        }
+    });
+</script>
+@endpush
