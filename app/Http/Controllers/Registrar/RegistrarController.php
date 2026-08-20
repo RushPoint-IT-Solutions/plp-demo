@@ -13151,8 +13151,6 @@ class RegistrarController extends Controller
 
             $payload = [
                 'academic_term_id' => (int) $nextTerm->id,
-                'school_year' => (string) $nextTerm->school_year,
-                'semester' => (string) $nextTerm->term,
                 'year_block_id' => $nextYearBlockId,
             ];
             $yearLabel = YearBlock::query()->where('id', $nextYearBlockId)->value('label');
