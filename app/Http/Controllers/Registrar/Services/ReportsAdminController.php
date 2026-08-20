@@ -444,27 +444,21 @@ class ReportsAdminController extends Controller
             ->map(function ($student) use ($gradesByStudent) {
                 $enrolledSubjects = $student->subjects;
                 $currentLabel = '';
-                $currentSemesterSubjects = collect();
 
                 if ($enrolledSubjects->isNotEmpty()) {
                     $currentSubject = $enrolledSubjects->sortByDesc('academic_term_id')->first();
-                    $currentSchoolYear = (string) $currentSubject->school_year;
-                    $currentSemester = (string) $currentSubject->semester;
-                    $currentLabel = trim($currentSchoolYear . ' ' . $currentSemester);
-
-                    $currentSemesterSubjects = $enrolledSubjects->filter(function ($subject) use ($currentSchoolYear, $currentSemester) {
-                        return (string) $subject->school_year === $currentSchoolYear
-                            && (string) $subject->semester === $currentSemester;
-                    })->values();
+                    $currentLabel = trim((string) $currentSubject->school_year . ' ' . (string) $currentSubject->semester);
                 }
 
                 $studentGrades = $gradesByStudent->get($student->id, collect())->keyBy('subject_id');
 
+                // CWA = Cumulative Weighted Average — computed across ALL of the student's
+                // enrolled subjects to date, not just their most recent semester.
                 $totalUnits = 0.0;
                 $weightedTotal = 0.0;
                 $postedCount = 0;
 
-                foreach ($currentSemesterSubjects as $subject) {
+                foreach ($enrolledSubjects as $subject) {
                     $grade = $studentGrades->get($subject->id);
                     if (!$grade || $grade->final_average === null) {
                         continue;
@@ -492,7 +486,7 @@ class ReportsAdminController extends Controller
                 }
 
                 $cwa = $totalUnits > 0 ? round($weightedTotal / $totalUnits, 2) : null;
-                $missingCount = max(0, $currentSemesterSubjects->count() - $postedCount);
+                $missingCount = max(0, $enrolledSubjects->count() - $postedCount);
 
                 return [
                     'student_id' => (int) $student->id,
@@ -501,7 +495,7 @@ class ReportsAdminController extends Controller
                     'program' => (string) ($student->program ?: (optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name ?: '')),
                     'year_level' => (string) ($student->year_level ?: (optional($student->yearBlock)->label ?: '')),
                     'current_semester' => $currentLabel,
-                    'subjects_count' => $currentSemesterSubjects->count(),
+                    'subjects_count' => $enrolledSubjects->count(),
                     'missing_count' => $missingCount,
                     'cwa' => $cwa,
                 ];
@@ -596,16 +590,16 @@ class ReportsAdminController extends Controller
     private function gwaDefaultTransmutationBands(): array
     {
         return [
-            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00],
-            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25],
-            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50],
-            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75],
-            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00],
-            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25],
-            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50],
-            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75],
-            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00],
-            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00],
+            ['from' => 97.50, 'to' => 100.00, 'grade' => 1.00],
+            ['from' => 94.50, 'to' => 97.49, 'grade' => 1.25],
+            ['from' => 91.50, 'to' => 94.49, 'grade' => 1.50],
+            ['from' => 88.50, 'to' => 91.49, 'grade' => 1.75],
+            ['from' => 85.50, 'to' => 88.49, 'grade' => 2.00],
+            ['from' => 82.50, 'to' => 85.49, 'grade' => 2.25],
+            ['from' => 79.50, 'to' => 82.49, 'grade' => 2.50],
+            ['from' => 76.50, 'to' => 79.49, 'grade' => 2.75],
+            ['from' => 74.50, 'to' => 76.49, 'grade' => 3.00],
+            ['from' => 0.00, 'to' => 74.49, 'grade' => 5.00],
         ];
     }
 

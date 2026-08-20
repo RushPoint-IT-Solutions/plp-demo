@@ -686,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ['82.5 - 85.4', '2.25', 'PASSED'],
             ['79.5 - 82.4', '2.50', 'PASSED'],
             ['76.5 - 79.4', '2.75', 'PASSED'],
-            ['74.5 76.4', '3.00', 'PASSED'],
+            ['74.5 - 76.4', '3.00', 'PASSED'],
             ['BELOW 74.4', '5.00', 'FAILED']
         ].map(function (row) {
             return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';

@@ -412,6 +412,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/application-leave-of-absence-enrolled/{student}', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled.show');
             Route::get('/application-leave-of-absence-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
+            Route::post('/diploma/signatories', 'Registrar\RegistrarController@formsDiplomaSaveSignatories')->name('diploma.signatories.save');
             Route::get('/graduation-clearance/{student}', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance.show');
             Route::get('/graduation-clearance', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance');
             Route::get('/clearance-2/{student}', 'Registrar\RegistrarController@formsClearance2')->name('clearance-2.show');

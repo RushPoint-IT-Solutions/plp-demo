@@ -14,6 +14,38 @@ function diplomaGetCellText(row, selector) {
     return (cell ? cell.textContent : '').trim();
 }
 
+function diplomaGetCsrf() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.content : '';
+}
+
+function diplomaSaveSignatoriesToServer(row) {
+    if (!row || !window.diplomaSignatoriesSaveUrl) return;
+
+    var studentNo = row.getAttribute('data-student-no') || diplomaGetCellText(row, '.diploma-cell-number');
+    if (!studentNo) return;
+
+    fetch(window.diplomaSignatoriesSaveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': diplomaGetCsrf(),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            student_no: studentNo,
+            registrar_name: row.getAttribute('data-registrar-name') || '',
+            registrar_title: row.getAttribute('data-registrar-title') || '',
+            president_name: row.getAttribute('data-president-name') || '',
+            president_title: row.getAttribute('data-president-title') || '',
+            chairman_name: row.getAttribute('data-chairman-name') || '',
+            chairman_title: row.getAttribute('data-chairman-title') || ''
+        })
+    }).catch(function() {
+        /* silent — row keeps working from local DOM state even if the save call fails */
+    });
+}
+
 function diplomaBuildCopyOneBottom() {
     return '' +
         '<div class="dpl-bottom dpl-bottom-copy1">' +
@@ -37,19 +69,36 @@ function diplomaBuildCopyOneBottom() {
         '</div>';
 }
 
-function diplomaBuildCopyTwoBottom() {
+var DIPLOMA_DEFAULT_SIGNATORIES = {
+    registrarName: 'PROF. MARIANO L. CHING',
+    registrarTitle: 'University Registrar',
+    presidentName: 'AMB. ROSALINDA V. TIRONA',
+    presidentTitle: 'University President',
+    chairmanName: 'HON. ROBERT C. EUSEBIO',
+    chairmanTitle: 'Chairman, Board of Regents'
+};
+
+function diplomaBuildCopyTwoBottom(data) {
+    data = data || {};
+    var registrarName = diplomaEscHtml((data.registrarName || '').trim() || DIPLOMA_DEFAULT_SIGNATORIES.registrarName);
+    var registrarTitle = diplomaEscHtml((data.registrarTitle || '').trim() || DIPLOMA_DEFAULT_SIGNATORIES.registrarTitle);
+    var presidentName = diplomaEscHtml((data.presidentName || '').trim() || DIPLOMA_DEFAULT_SIGNATORIES.presidentName);
+    var presidentTitle = diplomaEscHtml((data.presidentTitle || '').trim() || DIPLOMA_DEFAULT_SIGNATORIES.presidentTitle);
+    var chairmanName = diplomaEscHtml((data.chairmanName || '').trim() || DIPLOMA_DEFAULT_SIGNATORIES.chairmanName);
+    var chairmanTitle = diplomaEscHtml((data.chairmanTitle || '').trim() || DIPLOMA_DEFAULT_SIGNATORIES.chairmanTitle);
+
     return '' +
         '<div class="dpl-bottom dpl-bottom-copy2">' +
             '<div class="dpl-left-copy">' +
                 '<div class="dpl-left-note">Certified text of the original:</div>' +
-                '<div class="dpl-left-name">FEDERICO C. NUEVA</div>' +
-                '<div class="dpl-left-role">University Registrar</div>' +
+                '<div class="dpl-left-name">' + registrarName + '</div>' +
+                '<div class="dpl-left-role">' + registrarTitle + '</div>' +
             '</div>' +
             '<div class="dpl-right-stack">' +
                 '<div class="dpl-signatures">' +
-                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">PROF. MARIANO L. CHING</span></div><div class="title">University Registrar</div></div>' +
-                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">AMB. ROSALINDA V. TIRONA</span></div><div class="title">University President</div></div>' +
-                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">HON. ROBERT C. EUSEBIO</span></div><div class="title">Chairman, Board of Regents</div></div>' +
+                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">' + registrarName + '</span></div><div class="title">' + registrarTitle + '</div></div>' +
+                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">' + presidentName + '</span></div><div class="title">' + presidentTitle + '</div></div>' +
+                    '<div class="dpl-sign-item"><div class="name"><span class="sgd">(Sgd.)</span> <span class="person">' + chairmanName + '</span></div><div class="title">' + chairmanTitle + '</div></div>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -85,7 +134,7 @@ function diplomaBuildPreviewTemplate(data) {
     }
 
     var copyType = data.copyType === 'print-1' ? 'print-1' : 'print-2';
-    var bottomMarkup = copyType === 'print-1' ? diplomaBuildCopyOneBottom() : diplomaBuildCopyTwoBottom();
+    var bottomMarkup = copyType === 'print-1' ? diplomaBuildCopyOneBottom() : diplomaBuildCopyTwoBottom(data);
     var govHeaderLines = copyType === 'print-1'
         ? 'Republic of the Philippines<br>City Government of Pasig'
         : 'City Government of Pasig<br>Republic of the Philippines';
@@ -125,6 +174,12 @@ function diplomaGetRowData(rowId) {
         year: diplomaGetCellText(row, '.diploma-cell-year'),
         section: diplomaGetCellText(row, '.diploma-cell-section'),
         copyType: copySelect ? copySelect.value : 'print-2',
+        registrarName: row.getAttribute('data-registrar-name') || '',
+        registrarTitle: row.getAttribute('data-registrar-title') || '',
+        presidentName: row.getAttribute('data-president-name') || '',
+        presidentTitle: row.getAttribute('data-president-title') || '',
+        chairmanName: row.getAttribute('data-chairman-name') || '',
+        chairmanTitle: row.getAttribute('data-chairman-title') || '',
         issueDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     };
 }
@@ -350,6 +405,20 @@ function diplomaOpenEdit(rowId) {
     document.getElementById('diplomaEditName').value = diplomaGetCellText(row, '.diploma-cell-name');
     document.getElementById('diplomaEditCourse').value = diplomaGetCellText(row, '.diploma-cell-program');
     document.getElementById('diplomaEditYear').value = diplomaGetCellText(row, '.diploma-cell-year');
+
+    var registrarField = document.getElementById('diplomaEditRegistrar');
+    var registrarTitleField = document.getElementById('diplomaEditRegistrarTitle');
+    var presidentField = document.getElementById('diplomaEditPresident');
+    var presidentTitleField = document.getElementById('diplomaEditPresidentTitle');
+    var chairmanField = document.getElementById('diplomaEditChairman');
+    var chairmanTitleField = document.getElementById('diplomaEditChairmanTitle');
+    if (registrarField) registrarField.value = row.getAttribute('data-registrar-name') || DIPLOMA_DEFAULT_SIGNATORIES.registrarName;
+    if (registrarTitleField) registrarTitleField.value = row.getAttribute('data-registrar-title') || DIPLOMA_DEFAULT_SIGNATORIES.registrarTitle;
+    if (presidentField) presidentField.value = row.getAttribute('data-president-name') || DIPLOMA_DEFAULT_SIGNATORIES.presidentName;
+    if (presidentTitleField) presidentTitleField.value = row.getAttribute('data-president-title') || DIPLOMA_DEFAULT_SIGNATORIES.presidentTitle;
+    if (chairmanField) chairmanField.value = row.getAttribute('data-chairman-name') || DIPLOMA_DEFAULT_SIGNATORIES.chairmanName;
+    if (chairmanTitleField) chairmanTitleField.value = row.getAttribute('data-chairman-title') || DIPLOMA_DEFAULT_SIGNATORIES.chairmanTitle;
+
     diplomaOpenModal('diplomaEditModal');
 }
 
@@ -369,6 +438,20 @@ function diplomaSaveEdit() {
     if (programCell) programCell.textContent = (document.getElementById('diplomaEditCourse').value || '').trim();
     if (yearCell) yearCell.textContent = (document.getElementById('diplomaEditYear').value || '').trim();
 
+    var registrarField = document.getElementById('diplomaEditRegistrar');
+    var registrarTitleField = document.getElementById('diplomaEditRegistrarTitle');
+    var presidentField = document.getElementById('diplomaEditPresident');
+    var presidentTitleField = document.getElementById('diplomaEditPresidentTitle');
+    var chairmanField = document.getElementById('diplomaEditChairman');
+    var chairmanTitleField = document.getElementById('diplomaEditChairmanTitle');
+    if (registrarField) row.setAttribute('data-registrar-name', (registrarField.value || '').trim());
+    if (registrarTitleField) row.setAttribute('data-registrar-title', (registrarTitleField.value || '').trim());
+    if (presidentField) row.setAttribute('data-president-name', (presidentField.value || '').trim());
+    if (presidentTitleField) row.setAttribute('data-president-title', (presidentTitleField.value || '').trim());
+    if (chairmanField) row.setAttribute('data-chairman-name', (chairmanField.value || '').trim());
+    if (chairmanTitleField) row.setAttribute('data-chairman-title', (chairmanTitleField.value || '').trim());
+
+    diplomaSaveSignatoriesToServer(row);
     diplomaCloseModal('diplomaEditModal');
 }
 

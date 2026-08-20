@@ -98,7 +98,14 @@
                     </tr>
                 </thead>
                 <tbody id="diplomaTableBody">
-                    <tr data-row-id="1">
+                    @php $sig = $diplomaSignatoriesByStudentNo->get('2122B0104'); @endphp
+                    <tr data-row-id="1" data-student-no="2122B0104"
+                        data-registrar-name="{{ $sig->registrar_name ?? '' }}"
+                        data-registrar-title="{{ $sig->registrar_title ?? '' }}"
+                        data-president-name="{{ $sig->president_name ?? '' }}"
+                        data-president-title="{{ $sig->president_title ?? '' }}"
+                        data-chairman-name="{{ $sig->chairman_name ?? '' }}"
+                        data-chairman-title="{{ $sig->chairman_title ?? '' }}">
                         <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
                         <td class="diploma-cell-number">2122B0104</td>
                         <td class="diploma-cell-name"><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(1)">Jhon Mark Samson</button></td>
@@ -125,7 +132,14 @@
                             </div>
                         </td>
                     </tr>
-                    <tr data-row-id="2">
+                    @php $sig = $diplomaSignatoriesByStudentNo->get('2122B0115'); @endphp
+                    <tr data-row-id="2" data-student-no="2122B0115"
+                        data-registrar-name="{{ $sig->registrar_name ?? '' }}"
+                        data-registrar-title="{{ $sig->registrar_title ?? '' }}"
+                        data-president-name="{{ $sig->president_name ?? '' }}"
+                        data-president-title="{{ $sig->president_title ?? '' }}"
+                        data-chairman-name="{{ $sig->chairman_name ?? '' }}"
+                        data-chairman-title="{{ $sig->chairman_title ?? '' }}">
                         <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
                         <td class="diploma-cell-number">2122B0115</td>
                         <td class="diploma-cell-name"><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(2)">Mary Ann dela Cruz</button></td>
@@ -152,7 +166,14 @@
                             </div>
                         </td>
                     </tr>
-                    <tr data-row-id="3">
+                    @php $sig = $diplomaSignatoriesByStudentNo->get('2324E0012'); @endphp
+                    <tr data-row-id="3" data-student-no="2324E0012"
+                        data-registrar-name="{{ $sig->registrar_name ?? '' }}"
+                        data-registrar-title="{{ $sig->registrar_title ?? '' }}"
+                        data-president-name="{{ $sig->president_name ?? '' }}"
+                        data-president-title="{{ $sig->president_title ?? '' }}"
+                        data-chairman-name="{{ $sig->chairman_name ?? '' }}"
+                        data-chairman-title="{{ $sig->chairman_title ?? '' }}">
                         <td style="text-align: center;"><input type="checkbox" class="diploma-row-select" onchange="diplomaSyncSelectAll()"></td>
                         <td class="diploma-cell-number">2324E0012</td>
                         <td class="diploma-cell-name"><button type="button" class="doc-link-btn" onclick="diplomaOpenPreview(3)">Analyn Marbibi Rebosora</button></td>
@@ -209,6 +230,39 @@
                 <input type="text" id="diplomaEditYear" class="req-modal-input">
             </div>
         </div>
+        <div style="margin-top:14px; padding-top:10px; border-top:1px solid #e5e7eb;">
+            <div style="font-size:0.78rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:8px;">Print 2 Signatories</div>
+            <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">University Registrar</label>
+                    <input type="text" id="diplomaEditRegistrar" class="req-modal-input" placeholder="Name">
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">&nbsp;</label>
+                    <input type="text" id="diplomaEditRegistrarTitle" class="req-modal-input" placeholder="Label (e.g. University Registrar)">
+                </div>
+            </div>
+            <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">University President</label>
+                    <input type="text" id="diplomaEditPresident" class="req-modal-input" placeholder="Name">
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">&nbsp;</label>
+                    <input type="text" id="diplomaEditPresidentTitle" class="req-modal-input" placeholder="Label (e.g. University President)">
+                </div>
+            </div>
+            <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">Chairman, Board of Regents</label>
+                    <input type="text" id="diplomaEditChairman" class="req-modal-input" placeholder="Name">
+                </div>
+                <div class="req-modal-field-group">
+                    <label class="req-modal-label">&nbsp;</label>
+                    <input type="text" id="diplomaEditChairmanTitle" class="req-modal-input" placeholder="Label (e.g. Chairman, Board of Regents)">
+                </div>
+            </div>
+        </div>
         <div class="req-modal-actions" style="margin-top:14px;">
             <button type="button" class="req-btn-cancel" onclick="diplomaCloseModal('diplomaEditModal')">Cancel</button>
             <button type="button" class="req-btn-save" onclick="diplomaSaveEdit()">Save</button>
@@ -246,5 +300,8 @@
 @endsection
 
 @push('scripts')
+<script>
+    window.diplomaSignatoriesSaveUrl = "{{ route('registrar.registrar-menu.forms.diploma.signatories.save') }}";
+</script>
 <script src="{{ asset('js/diploma.js') }}?v={{ time() }}"></script>
 @endpush

@@ -22,6 +22,7 @@ use App\Support\UserAccessGate;
 use App\CurriculumRequisiteType;
 use App\CurriculumSubjectRequisite;
 use App\Department;
+use App\DiplomaSignatory;
 use App\DocumentTemplate;
 use App\Faculty;
 use App\Http\Requests\StoreRoomBuildingRequest;
@@ -19489,37 +19490,24 @@ class RegistrarController extends Controller
             return !$r->inc && is_numeric($r->final_grade) && (float) $r->final_grade > 0 && (float) $r->units > 0;
         });
 
-        // CWA = Current Weighted Average — scoped to the student's most recent (current) semester,
-        // computed from the live grade-encoding table (student_subject_grades) so it reflects
-        // grades as faculty/registrar actually post them, not the separate official-records archive.
-        $currentSemesterSubjects = collect();
+        // CWA = Cumulative Weighted Average — computed across ALL of the student's enrolled
+        // subjects to date (not just their most recent semester), from the live grade-encoding
+        // table (student_subject_grades) so it reflects grades as faculty/registrar actually
+        // post them, not the separate official-records archive.
         $currentSyTermKey = null;
         if ($enrolledSubjects->isNotEmpty()) {
             $currentEnrolledSubject = $enrolledSubjects->sortByDesc('academic_term_id')->first();
-            $currentSchoolYear = (string) $currentEnrolledSubject->school_year;
-            $currentSemester = (string) $currentEnrolledSubject->semester;
-            $currentSyTermKey = $currentSchoolYear . '|||' . $currentSemester;
-
-            $currentSemesterSubjects = $enrolledSubjects->filter(function ($subject) use ($currentSchoolYear, $currentSemester) {
-                return (string) $subject->school_year === $currentSchoolYear
-                    && (string) $subject->semester === $currentSemester;
-            })->values();
+            $currentSyTermKey = (string) $currentEnrolledSubject->school_year . '|||' . (string) $currentEnrolledSubject->semester;
         }
 
-        $currentSemesterGrades = $currentSemesterSubjects
-            ->map(function ($subject) use ($subjectGrades) {
-                return $subjectGrades->get($subject->id);
-            })
-            ->filter();
-
-        $currentSemesterPostedGrades = $currentSemesterGrades->filter(function ($grade) {
+        $allPostedGrades = $subjectGrades->filter(function ($grade) {
             return $grade->final_average !== null;
         });
 
-        $missingGradesCount = max(0, $currentSemesterSubjects->count() - $currentSemesterPostedGrades->count());
+        $missingGradesCount = max(0, $enrolledSubjects->count() - $allPostedGrades->count());
 
-        $cwa = $currentSemesterSubjects->isNotEmpty()
-            ? $this->weightedAverageExcludingPeNstp($currentSemesterPostedGrades)
+        $cwa = $enrolledSubjects->isNotEmpty()
+            ? $this->weightedAverageExcludingPeNstp($allPostedGrades)
             : null;
         $cwa = $cwa !== null ? (float) $cwa : null;
 
@@ -19645,7 +19633,8 @@ class RegistrarController extends Controller
 
     /**
      * Registrar > Student Records > Profile > Certificates tab
-     * Report of Grades (CWA) for the student's current semester.
+     * Report of Grades for the student's current semester, with a Cumulative
+     * Weighted Average (CWA) computed across all of their enrolled semesters to date.
      */
     public function studentRecordReportOfGrades(Student $student): JsonResponse
     {
@@ -19701,6 +19690,12 @@ class RegistrarController extends Controller
 
         $allPosted = $subjects->isNotEmpty() && $subjects->every(function ($s) { return $s['is_posted']; });
 
+        // CWA is cumulative — averaged across every subject the student has ever been
+        // graded in, not just the ones listed above for this semester's certificate.
+        $allGrades = StudentSubjectGrade::with('subject')
+            ->where('student_id', $student->id)
+            ->get();
+
         $profile = $student->profile;
         $addressParts = array_filter([
             $profile->present_street ?? null,
@@ -19730,7 +19725,7 @@ class RegistrarController extends Controller
                 'studentType' => 'REGULAR',
                 'yearLevel' => (string) ($student->year_level ?: '-'),
                 'residency' => 'PR',
-                'cwa' => $this->weightedAverageExcludingPeNstp($grades) ?: '-',
+                'cwa' => $this->weightedAverageExcludingPeNstp($allGrades) ?: '-',
             ],
         ]);
     }
@@ -19745,13 +19740,13 @@ class RegistrarController extends Controller
     }
 
     /**
-     * CWA = Current Weighted Average. Weighted average of each subject's grade EQUIVALENT
+     * CWA = Cumulative Weighted Average. Weighted average of each subject's grade EQUIVALENT
      * (the transmuted 1.00-5.00 point value — matching how CWA reads on the Report of
      * Grades / TOR samples, e.g. "1.40", not a raw percentage). Uses $grade->eq_grade if
      * already attached by the caller, otherwise transmutes on the fly from final_average.
-     * PE and NSTP subjects are excluded, matching the Report of Grades footnote. Caller is
-     * responsible for scoping $grades to whichever semester should count as "current" —
-     * this helper does not filter by term itself.
+     * PE and NSTP subjects are excluded, matching the Report of Grades footnote. Intended
+     * to run over ALL of a student's posted grades to date (cumulative) — the caller decides
+     * what to pass in, but this helper does not filter by term itself.
      */
     private function weightedAverageExcludingPeNstp($grades): ?string
     {
@@ -21670,16 +21665,16 @@ class RegistrarController extends Controller
     private function defaultTransmutationBands(): array
     {
         return [
-            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00, 'remarks' => 'Passed'],
-            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25, 'remarks' => 'Passed'],
-            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50, 'remarks' => 'Passed'],
-            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75, 'remarks' => 'Passed'],
-            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00, 'remarks' => 'Passed'],
-            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25, 'remarks' => 'Passed'],
-            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50, 'remarks' => 'Passed'],
-            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75, 'remarks' => 'Passed'],
-            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00, 'remarks' => 'Passed'],
-            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00, 'remarks' => 'Failed'],
+            ['from' => 97.50, 'to' => 100.00, 'grade' => 1.00, 'remarks' => 'Passed'],
+            ['from' => 94.50, 'to' => 97.49, 'grade' => 1.25, 'remarks' => 'Passed'],
+            ['from' => 91.50, 'to' => 94.49, 'grade' => 1.50, 'remarks' => 'Passed'],
+            ['from' => 88.50, 'to' => 91.49, 'grade' => 1.75, 'remarks' => 'Passed'],
+            ['from' => 85.50, 'to' => 88.49, 'grade' => 2.00, 'remarks' => 'Passed'],
+            ['from' => 82.50, 'to' => 85.49, 'grade' => 2.25, 'remarks' => 'Passed'],
+            ['from' => 79.50, 'to' => 82.49, 'grade' => 2.50, 'remarks' => 'Passed'],
+            ['from' => 76.50, 'to' => 79.49, 'grade' => 2.75, 'remarks' => 'Passed'],
+            ['from' => 74.50, 'to' => 76.49, 'grade' => 3.00, 'remarks' => 'Passed'],
+            ['from' => 0.00, 'to' => 74.49, 'grade' => 5.00, 'remarks' => 'Failed'],
         ];
     }
 
@@ -22464,7 +22459,41 @@ class RegistrarController extends Controller
             }
         }
 
-        return view('registrar.forms.diploma');
+        $diplomaSignatoriesByStudentNo = DiplomaSignatory::where('copy_type', 'print-2')
+            ->get()
+            ->keyBy('student_no');
+
+        return view('registrar.forms.diploma', compact('diplomaSignatoriesByStudentNo'));
+    }
+
+    /**
+     * Registrar > Forms > Diploma > Print 2 signatories (per student, encoded by registrar)
+     */
+    public function formsDiplomaSaveSignatories(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'student_no' => 'required|string|max:40',
+            'registrar_name' => 'nullable|string|max:150',
+            'registrar_title' => 'nullable|string|max:150',
+            'president_name' => 'nullable|string|max:150',
+            'president_title' => 'nullable|string|max:150',
+            'chairman_name' => 'nullable|string|max:150',
+            'chairman_title' => 'nullable|string|max:150',
+        ]);
+
+        $record = DiplomaSignatory::updateOrCreate(
+            ['student_no' => trim($validated['student_no']), 'copy_type' => 'print-2'],
+            [
+                'registrar_name' => trim((string) ($validated['registrar_name'] ?? '')) ?: null,
+                'registrar_title' => trim((string) ($validated['registrar_title'] ?? '')) ?: null,
+                'president_name' => trim((string) ($validated['president_name'] ?? '')) ?: null,
+                'president_title' => trim((string) ($validated['president_title'] ?? '')) ?: null,
+                'chairman_name' => trim((string) ($validated['chairman_name'] ?? '')) ?: null,
+                'chairman_title' => trim((string) ($validated['chairman_title'] ?? '')) ?: null,
+            ]
+        );
+
+        return response()->json(['ok' => true, 'signatory' => $record]);
     }
 
     /**
@@ -23377,14 +23406,6 @@ class RegistrarController extends Controller
             $schoolYear = (string) ($student->school_year ?: (optional($student->academicTerm)->school_year ?: '2025-2026'));
             $semester = (string) ($student->semester ?: (optional($student->academicTerm)->term ?: 'First'));
 
-            $currentSemesterGrades = ($gradesByStudent->get($student->id) ?: collect())
-                ->filter(function ($grade) use ($schoolYear, $semester) {
-                    $subject = $grade->subject;
-                    return $subject
-                        && (string) $subject->school_year === $schoolYear
-                        && (string) $subject->semester === $semester;
-                });
-
             $subjectsByRow[$rowId] = $subjects;
             $metaByRow[$rowId] = [
                 'studentNo' => (string) $student->student_no,
@@ -23398,7 +23419,7 @@ class RegistrarController extends Controller
                 'studentType' => 'REGULAR',
                 'yearLevel' => $yearLevel,
                 'residency' => 'PR',
-                'cwa' => $this->weightedAverageExcludingPeNstp($currentSemesterGrades) ?: '-',
+                'cwa' => $this->weightedAverageExcludingPeNstp($gradesByStudent->get($student->id) ?: collect()) ?: '-',
             ];
         }
 

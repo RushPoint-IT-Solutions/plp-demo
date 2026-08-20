@@ -1048,16 +1048,16 @@ class FacultyController extends Controller
     private function defaultTransmutationBands(): array
     {
         return [
-            ['from' => 98.00, 'to' => 100.00, 'grade' => 1.00, 'remarks' => 'Passed'],
-            ['from' => 95.00, 'to' => 97.99, 'grade' => 1.25, 'remarks' => 'Passed'],
-            ['from' => 92.00, 'to' => 94.99, 'grade' => 1.50, 'remarks' => 'Passed'],
-            ['from' => 89.00, 'to' => 91.99, 'grade' => 1.75, 'remarks' => 'Passed'],
-            ['from' => 86.00, 'to' => 88.99, 'grade' => 2.00, 'remarks' => 'Passed'],
-            ['from' => 83.00, 'to' => 85.99, 'grade' => 2.25, 'remarks' => 'Passed'],
-            ['from' => 80.00, 'to' => 82.99, 'grade' => 2.50, 'remarks' => 'Passed'],
-            ['from' => 77.00, 'to' => 79.99, 'grade' => 2.75, 'remarks' => 'Passed'],
-            ['from' => 75.00, 'to' => 76.99, 'grade' => 3.00, 'remarks' => 'Passed'],
-            ['from' => 0.00, 'to' => 74.99, 'grade' => 5.00, 'remarks' => 'Failed'],
+            ['from' => 97.50, 'to' => 100.00, 'grade' => 1.00, 'remarks' => 'Passed'],
+            ['from' => 94.50, 'to' => 97.49, 'grade' => 1.25, 'remarks' => 'Passed'],
+            ['from' => 91.50, 'to' => 94.49, 'grade' => 1.50, 'remarks' => 'Passed'],
+            ['from' => 88.50, 'to' => 91.49, 'grade' => 1.75, 'remarks' => 'Passed'],
+            ['from' => 85.50, 'to' => 88.49, 'grade' => 2.00, 'remarks' => 'Passed'],
+            ['from' => 82.50, 'to' => 85.49, 'grade' => 2.25, 'remarks' => 'Passed'],
+            ['from' => 79.50, 'to' => 82.49, 'grade' => 2.50, 'remarks' => 'Passed'],
+            ['from' => 76.50, 'to' => 79.49, 'grade' => 2.75, 'remarks' => 'Passed'],
+            ['from' => 74.50, 'to' => 76.49, 'grade' => 3.00, 'remarks' => 'Passed'],
+            ['from' => 0.00, 'to' => 74.49, 'grade' => 5.00, 'remarks' => 'Failed'],
         ];
     }
 
@@ -1246,18 +1246,20 @@ class FacultyController extends Controller
             }
         }
 
-        $subject->grading_status_id = \DB::table('subject_grading_statuses')
-            ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
-            ->value('id');
-        $subject->submitted_at = $postedAt;
-        $subject->dean_approved_by = null;
-        $subject->dean_approved_at = null;
-        $subject->registrar_finalized_by = null;
-        $subject->registrar_finalized_at = null;
-        $subject->grading_returned_by = null;
-        $subject->grading_returned_at = null;
-        $subject->grading_return_reason = null;
-        $subject->save();
+        if ($phase === 'final') {
+            $subject->grading_status_id = \DB::table('subject_grading_statuses')
+                ->whereRaw('UPPER(code) = ?', ['SUBMITTED'])
+                ->value('id');
+            $subject->submitted_at = $postedAt;
+            $subject->dean_approved_by = null;
+            $subject->dean_approved_at = null;
+            $subject->registrar_finalized_by = null;
+            $subject->registrar_finalized_at = null;
+            $subject->grading_returned_by = null;
+            $subject->grading_returned_at = null;
+            $subject->grading_return_reason = null;
+            $subject->save();
+        }
 
         return response()->json([
             'ok'      => true,

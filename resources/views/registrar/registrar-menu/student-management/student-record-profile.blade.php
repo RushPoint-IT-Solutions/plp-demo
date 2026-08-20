@@ -484,7 +484,7 @@
                     {{ $academicStanding['icon'] }} {{ $academicStanding['label'] }}
                 </div>
                 @if($missingGradesCount > 0)
-                <div class="srp-grades-needed" title="Grades still needed this semester before CWA is final">
+                <div class="srp-grades-needed" title="Grades still needed before CWA is final">
                     ⏳ {{ $missingGradesCount }} grade{{ $missingGradesCount === 1 ? '' : 's' }} needed
                 </div>
                 @endif

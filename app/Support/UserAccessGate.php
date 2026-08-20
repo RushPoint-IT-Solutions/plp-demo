@@ -186,6 +186,7 @@ class UserAccessGate
             'registrar.registrar-menu.faculty-mgmt.upload-grades' => 'faculty_grading_sheets',
             'registrar.registrar-menu.faculty-mgmt.evaluation' => 'faculty_evaluation',
             'registrar.registrar-menu.forms.diploma' => 'documents_forms_diploma',
+            'registrar.registrar-menu.forms.diploma.signatories.save' => 'documents_forms_diploma',
             'registrar.registrar-menu.forms.official-grade-report' => 'documents_forms_official_grade_report',
             'registrar.registrar-menu.forms.honorable-dismissal' => 'documents_forms_honorable_dismissal',
             'registrar.registrar-menu.forms.application-leave-of-absence-enrolled' => 'documents_forms_leave_of_absence',

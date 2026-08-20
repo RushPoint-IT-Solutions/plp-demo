@@ -20,8 +20,8 @@
     <div class="hd-bar">CERTIFICATE OF ELIGIBILITY TO TRANSFER/HONORABLE DISMISSAL</div>
 
     <div class="hd-no-block">
-        <div>HD NO: <strong>{{ $hdNo }}</strong></div>
-        <div>Date: <strong>{{ $dateIssued }}</strong></div>
+        <div>HD NO: <strong class="hd-value">{{ $hdNo }}</strong></div>
+        <div>Date: <strong class="hd-value">{{ $dateIssued }}</strong></div>
     </div>
 
     <div class="hd-label">TO WHOM IT MAY CONCERN:</div>
@@ -49,8 +49,8 @@
     <div class="hd-bar hd-bar-plain">REQUEST FOR OFFICIAL TRANSCRIPT OF RECORDS</div>
 
     <div class="hd-no-block">
-        <div>HD NO: <strong>{{ $hdNo }}</strong></div>
-        <div>Date: <strong>{{ $dateIssued }}</strong></div>
+        <div>HD NO: <strong class="hd-value">{{ $hdNo }}</strong></div>
+        <div>Date: <strong class="hd-value">{{ $dateIssued }}</strong></div>
     </div>
 
     <div class="hd-address-box">
@@ -79,11 +79,11 @@
         </div>
         <div class="hd-field-row">
             <div class="hd-field-label">Student Number</div>
-            <div class="hd-field-value hd-field-value--line">{{ $studentNo }}</div>
+            <div class="hd-field-value hd-field-value--line hd-value">{{ $studentNo }}</div>
         </div>
         <div class="hd-field-row">
             <div class="hd-field-label">Program</div>
-            <div class="hd-field-value hd-field-value--line">{{ $programLabel }}</div>
+            <div class="hd-field-value hd-field-value--line hd-value">{{ $programLabel }}</div>
         </div>
         <div class="hd-field-row">
             <div class="hd-field-label">School Requesting</div>

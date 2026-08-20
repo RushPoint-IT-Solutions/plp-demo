@@ -1115,6 +1115,21 @@ body.wce-preview-open {
     margin-bottom: 2mm;
 }
 
+/* This form prints onto pre-printed letterhead stock — the header, bars,
+   labels, captions, and field names below are already on the paper. Only
+   the actual encoded values (HD No., Date, student name, program, student
+   number) should render; everything else stays invisible but keeps its
+   layout space so the values still land in the same spot as the template. */
+.hd-sheet {
+    visibility: hidden;
+}
+
+.hd-sheet .hd-value,
+.hd-sheet .hd-line-value {
+    visibility: visible;
+    border: none;
+}
+
 .hd-label {
     font-size: 10pt;
     margin-bottom: 2mm;
@@ -1306,6 +1321,18 @@ body.wce-preview-open {
 
     body.hd-printing #hdPrintContainer,
     body.hd-printing #hdPrintContainer * {
+        visibility: visible !important;
+    }
+
+    /* Prints onto pre-printed letterhead stock — re-hide everything in the
+       sheet, then re-show only the actual encoded values (same rule as the
+       on-screen preview), so the physical letterhead/labels aren't doubled. */
+    body.hd-printing #hdPrintContainer .hd-sheet * {
+        visibility: hidden !important;
+    }
+
+    body.hd-printing #hdPrintContainer .hd-sheet .hd-value,
+    body.hd-printing #hdPrintContainer .hd-sheet .hd-line-value {
         visibility: visible !important;
     }
 

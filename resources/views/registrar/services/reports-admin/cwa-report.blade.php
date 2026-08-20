@@ -209,8 +209,8 @@
 <div class="gwa-page">
     <div class="gwa-head">
         <div>
-            <h1 class="gwa-title">Current Weighted Average Report</h1>
-            <p class="gwa-lead">Every student's CWA — the grade equivalent for their own most recent semester only, plus how many of that semester's grades are still missing.</p>
+            <h1 class="gwa-title">Cumulative Weighted Average Report</h1>
+            <p class="gwa-lead">Every student's CWA — their grade equivalent averaged across all enrolled semesters to date, plus how many grades overall are still missing.</p>
         </div>
         <div class="gwa-head-actions">
             <button type="button" class="gwa-btn soft" onclick="window.print()">Print</button>
