@@ -22862,6 +22862,7 @@ class RegistrarController extends Controller
                 'studentNo' => '',
                 'programLabel' => '',
                 'hdNo' => '',
+                'hdOrdinal' => '',
                 'dateIssued' => '',
             ];
         }
@@ -22882,12 +22883,16 @@ class RegistrarController extends Controller
         $fullName = preg_replace('/\s+/', ' ', $fullName);
         $fullName = $fullName !== '' ? strtoupper($fullName) : strtoupper((string) $student->name);
 
+        $issuanceCount = (int) ($record->issuance_count ?? 0);
+        $printOrdinal = $issuanceCount + 1;
+
         return [
             'student' => $student,
             'studentFullName' => $fullName,
             'studentNo' => (string) ($student->student_no ?: ''),
             'programLabel' => $this->honorableDismissalProgramLabel($student),
             'hdNo' => (string) (($record && $record->hd_no) ? $record->hd_no : $this->nextHonorableDismissalNumber($student)),
+            'hdOrdinal' => $this->ordinalLabel($printOrdinal),
             'dateIssued' => $issuedAt->format('F d, Y'),
         ];
     }

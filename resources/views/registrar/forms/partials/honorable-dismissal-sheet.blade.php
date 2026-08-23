@@ -3,6 +3,8 @@
     $studentNo = $studentNo ?? '';
     $programLabel = $programLabel ?? '';
     $hdNo = $hdNo ?? '';
+    $hdOrdinal = $hdOrdinal ?? '';
+    $hdNoDisplay = trim($hdOrdinal . ' ' . $hdNo);
     $dateIssued = $dateIssued ?? '';
 @endphp
 <div class="hd-sheet">
@@ -20,7 +22,7 @@
     <div class="hd-bar">CERTIFICATE OF ELIGIBILITY TO TRANSFER/HONORABLE DISMISSAL</div>
 
     <div class="hd-no-block">
-        <div>HD NO: <strong class="hd-value">{{ $hdNo }}</strong></div>
+        <div>HD NO: <strong class="hd-value">{{ $hdNoDisplay }}</strong></div>
         <div>Date: <strong class="hd-value">{{ $dateIssued }}</strong></div>
     </div>
 
@@ -49,7 +51,7 @@
     <div class="hd-bar hd-bar-plain">REQUEST FOR OFFICIAL TRANSCRIPT OF RECORDS</div>
 
     <div class="hd-no-block">
-        <div>HD NO: <strong class="hd-value">{{ $hdNo }}</strong></div>
+        <div>HD NO: <strong class="hd-value">{{ $hdNoDisplay }}</strong></div>
         <div>Date: <strong class="hd-value">{{ $dateIssued }}</strong></div>
     </div>
 
