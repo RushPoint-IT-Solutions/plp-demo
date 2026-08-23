@@ -91,7 +91,11 @@ function gcBuildTemplate(data) {
     }).join('');
 
     return '' +
-        '<div class="gc-header-space"></div>' +
+        '<div class="gc-header">' +
+            '<div class="gc-header-school">PAMANTASAN NG LUNGSOD NG PASIG</div>' +
+            '<div class="gc-header-office">OFFICE OF THE UNIVERSITY REGISTRAR</div>' +
+            '<div class="gc-header-title">GRADUATION CLEARANCE FORM</div>' +
+        '</div>' +
         '<div class="gc-title">Student Information</div>' +
 
         '<div class="gc-line-row gc-line-row-main">' +

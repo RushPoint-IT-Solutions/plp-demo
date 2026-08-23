@@ -2047,13 +2047,27 @@ body.wce-preview-open {
     color: #111827;
     padding: 20mm 14mm 15mm;
     box-sizing: border-box;
-    font-family: 'Times New Roman', serif;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     font-size: 11.2pt;
     line-height: 2;
 }
 
-.gc-header-space {
-    height: 1.55in;
+.gc-header {
+    text-align: center;
+    margin-bottom: 5mm;
+}
+
+.gc-header-school,
+.gc-header-office {
+    font-size: 12.5pt;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.gc-header-title {
+    font-size: 13.5pt;
+    font-weight: 700;
+    margin-top: 6mm;
 }
 
 .gc-title {
@@ -2174,7 +2188,7 @@ body.wce-preview-open {
 
 .gc-check-row {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) 6px 158px minmax(0, 0.9fr);
+    grid-template-columns: minmax(0, 1.4fr) 6px 172px minmax(0, 0.75fr);
     align-items: center;
     min-height: 25px;
     margin-bottom: 3px;
@@ -2375,7 +2389,7 @@ body.wce-preview-open {
     }
 
     body.gc-printing .gc-check-row {
-        grid-template-columns: minmax(0, 1.35fr) 6px 158px minmax(0, 0.9fr) !important;
+        grid-template-columns: minmax(0, 1.4fr) 6px 172px minmax(0, 0.75fr) !important;
         align-items: center !important;
         gap: 0 !important;
         margin-bottom: 3px !important;
