@@ -22331,9 +22331,6 @@ class RegistrarController extends Controller
 
         if ($student) {
             $student->loadMissing('yearBlock:id,label');
-            if (!$this->isDocumentFormsSeniorStudent($student)) {
-                abort(404);
-            }
         }
 
         $studentColumns = ['id', 'student_no', 'name'];
@@ -22345,9 +22342,6 @@ class RegistrarController extends Controller
 
         $students = Student::query()
             ->with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
-            ->when(true, function ($query) {
-                return $this->applyDocumentFormsSeniorStudentScope($query);
-            })
             ->when($student, function ($query) use ($student) {
                 $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
             })
@@ -22413,6 +22407,52 @@ class RegistrarController extends Controller
             'selectedStudentId' => $selectedStudentId,
             'student' => $student,
             'gradeRows' => $gradeRows,
+            'applicationDate' => Carbon::now()->format('F d, Y'),
+        ]);
+    }
+
+    /**
+     * Registrar > Forms > Application for Leave of Absence - Non-Enrolled
+     */
+    public function formsApplicationLeaveAbsenceNonEnrolled(Request $request, ?Student $student = null)
+    {
+        if (!$student && $request->filled('student_id')) {
+            $student = Student::find($request->query('student_id'));
+        }
+
+        if ($student) {
+            $student->loadMissing('yearBlock:id,label');
+        }
+
+        $studentColumns = ['id', 'student_no', 'name'];
+        foreach (['college', 'program', 'year_level', 'school_year', 'semester', 'course_id', 'year_block_id', 'academic_term_id'] as $column) {
+            if (Schema::hasColumn('students', $column)) {
+                $studentColumns[] = $column;
+            }
+        }
+
+        $students = Student::query()
+            ->with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])
+            ->when($student, function ($query) use ($student) {
+                $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$student->id]);
+            })
+            ->orderBy('name')
+            ->limit(500)
+            ->get($studentColumns);
+
+        $selectedStudentId = $student ? (int) $student->id : 0;
+        if ($selectedStudentId <= 0 && $students->isNotEmpty()) {
+            $selectedStudentId = (int) $students->first()->id;
+        }
+
+        if ($selectedStudentId > 0) {
+            $student = Student::with(['profile', 'canonicalCourse:id,code,name', 'yearBlock:id,label', 'academicTerm:id,school_year,term'])->find($selectedStudentId);
+        }
+
+        return view('registrar.forms.application-leave-absence-non-enrolled', [
+            'students' => $students,
+            'selectedStudentId' => $selectedStudentId,
+            'student' => $student,
             'applicationDate' => Carbon::now()->format('F d, Y'),
         ]);
     }
@@ -23484,9 +23524,6 @@ class RegistrarController extends Controller
 
         $crossEnrollRows = CrossEnrollmentRequest::query()
             ->with('student.subjects')
-            ->when(true, function ($query) {
-                return $this->applyDocumentFormsSeniorRecordScope($query, (new CrossEnrollmentRequest())->getTable());
-            })
             ->orderByDesc('id')
             ->get();
 
@@ -23501,9 +23538,6 @@ class RegistrarController extends Controller
 
         $student = Student::findOrFail($validated['student_id']);
         $student->loadMissing('yearBlock:id,label');
-        if (!$this->isDocumentFormsSeniorStudent($student)) {
-            return response()->json(['ok' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 422);
-        }
 
         $record = CrossEnrollmentRequest::create([
             'student_id' => $student->id,
@@ -23524,7 +23558,7 @@ class RegistrarController extends Controller
             'student_no' => 'required|string|max:40',
             'name' => 'required|string|max:120',
             'program' => 'nullable|string|max:80',
-            'year_level' => ['nullable', 'string', Rule::in($this->documentFormsSeniorYearLevelValues())],
+            'year_level' => 'nullable|string|max:40',
         ]);
 
         $student = $crossEnrollmentRequest->student;
@@ -23559,9 +23593,6 @@ class RegistrarController extends Controller
 
         $waiverRows = CancellationWaiver::query()
             ->with('student')
-            ->when(true, function ($query) {
-                return $this->applyDocumentFormsSeniorRecordScope($query, (new CancellationWaiver())->getTable());
-            })
             ->orderByDesc('id')
             ->get();
 
@@ -23576,9 +23607,6 @@ class RegistrarController extends Controller
 
         $student = Student::findOrFail($validated['student_id']);
         $student->loadMissing('yearBlock:id,label');
-        if (!$this->isDocumentFormsSeniorStudent($student)) {
-            return response()->json(['ok' => false, 'message' => 'Only Fourth and Fifth year students are applicable.'], 422);
-        }
 
         $record = CancellationWaiver::create([
             'student_id' => $student->id,
@@ -23599,7 +23627,7 @@ class RegistrarController extends Controller
             'student_no' => 'required|string|max:40',
             'name' => 'required|string|max:120',
             'program' => 'nullable|string|max:80',
-            'year_level' => ['nullable', 'string', Rule::in($this->documentFormsSeniorYearLevelValues())],
+            'year_level' => 'nullable|string|max:40',
         ]);
 
         $student = $cancellationWaiver->student;
@@ -24033,7 +24061,73 @@ class RegistrarController extends Controller
             $student = Student::find(request()->query('student_id'));
         }
 
-        return view('registrar.forms.request-form-f-137a', compact('student'));
+        $requestNumber = $student
+            ? min(4, $this->formsRequestFormF137aPrintCount($student) + 1)
+            : 1;
+
+        return view('registrar.forms.request-form-f-137a', compact('student', 'requestNumber'));
+    }
+
+    public function formsRequestFormF137aStudentSearch(Request $request): JsonResponse
+    {
+        return $this->formsCorStudentSearch($request);
+    }
+
+    public function formsRequestFormF137aPrint(Student $student): JsonResponse
+    {
+        try {
+            $result = DB::transaction(function () use ($student) {
+                DB::table('students')->where('id', $student->id)->lockForUpdate()->value('id');
+
+                $printCount = $this->formsRequestFormF137aPrintCount($student) + 1;
+                $requestNumber = min(4, $printCount);
+                $recorded = AuditTrailRecorder::record('F137A_PRINTED', [[
+                    'type' => 'Student',
+                    'id' => (int) $student->id,
+                    'label' => trim((string) ($student->student_no ?: '') . ' - ' . (string) $student->name, ' -'),
+                    'changes' => [[
+                        'field' => 'request_number',
+                        'old' => max(0, $printCount - 1),
+                        'new' => $requestNumber,
+                    ]],
+                ]], [
+                    'source_module' => 'Registrar Forms',
+                    'source_action' => 'Print Request Form F137A',
+                ]);
+
+                if (!$recorded) {
+                    throw new \RuntimeException('The print event could not be recorded.');
+                }
+
+                return [
+                    'print_count' => $printCount,
+                    'request_number' => $requestNumber,
+                ];
+            });
+
+            return response()->json(array_merge(['ok' => true], $result));
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Unable to record the F137A print count. Please try again.',
+            ], 500);
+        }
+    }
+
+    private function formsRequestFormF137aPrintCount(Student $student): int
+    {
+        if (!Schema::hasTable('audit_events') || !Schema::hasTable('audit_event_subjects')) {
+            return 0;
+        }
+
+        return (int) DB::table('audit_events as ae')
+            ->join('audit_event_subjects as aes', 'aes.audit_event_id', '=', 'ae.id')
+            ->where('ae.event_code', 'F137A_PRINTED')
+            ->where('aes.subject_type', 'Student')
+            ->where('aes.subject_id', $student->id)
+            ->count('ae.id');
     }
 
     private function citizensCharterPages(): array

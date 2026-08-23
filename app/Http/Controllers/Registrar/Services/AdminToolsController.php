@@ -3134,16 +3134,28 @@ class AdminToolsController extends Controller
                 $this->seedMasterStudentProfileFiles();
             }
 
-            $spRows = MasterStudentProfileFile::query()
+            $masterProfileRows = MasterStudentProfileFile::query()
                 ->orderBy('student_name')
-                ->get()
-                ->map(function ($row) {
+                ->get();
+
+            $studentIdsByNumber = Student::query()
+                ->whereIn('student_no', $masterProfileRows->pluck('student_no')->filter()->values())
+                ->pluck('id', 'student_no');
+
+            $spRows = $masterProfileRows
+                ->map(function ($row) use ($studentIdsByNumber) {
+                    $sourceStudentId = $row->source_student_id
+                        ?: $studentIdsByNumber->get((string) $row->student_no);
+
                     return [
                         'id' => $row->id,
                         'studentId' => (string) $row->student_no,
                         'name' => (string) $row->student_name,
                         'course' => (string) $row->course,
                         'yearLevel' => (string) $row->year_level,
+                        'profileUrl' => $sourceStudentId
+                            ? route('registrar.registrar-menu.student-mgmt.student-records.profile', ['student' => $sourceStudentId])
+                            : null,
                     ];
                 })
                 ->values()
@@ -3195,6 +3207,9 @@ class AdminToolsController extends Controller
                 'name' => (string) $row->student_name,
                 'course' => (string) $row->course,
                 'yearLevel' => (string) $row->year_level,
+                'profileUrl' => $sourceStudentId
+                    ? route('registrar.registrar-menu.student-mgmt.student-records.profile', ['student' => $sourceStudentId])
+                    : null,
             ],
         ]);
     }
@@ -3229,6 +3244,9 @@ class AdminToolsController extends Controller
                 'name' => (string) $masterStudentProfile->student_name,
                 'course' => (string) $masterStudentProfile->course,
                 'yearLevel' => (string) $masterStudentProfile->year_level,
+                'profileUrl' => $sourceStudentId
+                    ? route('registrar.registrar-menu.student-mgmt.student-records.profile', ['student' => $sourceStudentId])
+                    : null,
             ],
         ]);
     }
@@ -4625,12 +4643,13 @@ class AdminToolsController extends Controller
             ->with(['canonicalCourse:id,code,name', 'yearBlock:id,label'])
             ->orderBy('name')
             ->limit(80)
-            ->get(['student_no', 'name', 'course_id', 'year_block_id']);
+            ->get(['id', 'student_no', 'name', 'course_id', 'year_block_id']);
 
         if ($students->count()) {
             foreach ($students as $student) {
                 MasterStudentProfileFile::create([
                     'student_no' => (string) $student->student_no,
+                    'source_student_id' => (int) $student->id,
                     'student_name' => (string) $student->name,
                     'course' => (string) ($student->program ?: 'Not Set'),
                     'year_level' => (string) ($student->year_level ?: 'Not Set'),

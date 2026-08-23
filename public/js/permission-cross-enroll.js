@@ -58,7 +58,7 @@ function pceSubjectRows(subjects) {
     var list = Array.isArray(subjects) ? subjects.slice(0, 5) : [];
 
     while (list.length < 5) {
-        list.push({ code: '', description: '', units: '' });
+        list.push({ units: '' });
     }
 
     list.forEach(function(subject) {
@@ -66,11 +66,16 @@ function pceSubjectRows(subjects) {
         var numericUnits = parseFloat(subject.units);
         if (!Number.isNaN(numericUnits)) totalUnits += numericUnits;
 
-        rows += '<tr>'
-            + '<td>' + (subject.code ? pceEsc(subject.code) : '<span class="pce-underline"></span>') + '</td>'
-            + '<td>' + (subject.description ? pceEsc(subject.description) : '<span class="pce-underline"></span>') + '</td>'
-            + '<td>' + (units ? pceEsc(units) : '<span class="pce-underline"></span>') + '</td>'
-            + '</tr>';
+        var lineText = '';
+        if (subject.code || subject.description) {
+            lineText = [subject.code, subject.description].filter(Boolean).join(' - ');
+        }
+
+        rows += '<div class="pce-app-subject-row">'
+            + '<span class="pce-app-subject-line">' + (lineText ? pceEsc(lineText) : '') + '</span>'
+            + '<span class="pce-app-units-blank">' + (units ? pceEsc(units) : '') + '</span>'
+            + '<span class="pce-app-units-label">Units</span>'
+            + '</div>';
     });
 
     return {
@@ -80,50 +85,74 @@ function pceSubjectRows(subjects) {
 }
 
 function pceBuildTemplate(data) {
-    var now = new Date();
-    var ay = data.schoolYear || '__________';
-    var semester = pceCleanSemester(data.semester) || '__________';
-    var issueDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    var ay = data.schoolYear || '';
+    var ayParts = String(ay).split(/[-\u2013\u2014]/).map(function(p) { return p.trim().replace(/^2/, ''); });
+    var ayStart = ayParts[0] || '';
+    var ayEnd = ayParts[1] || '';
+    var semester = pceCleanSemester(data.semester) || '';
     var subjectTable = pceSubjectRows(data.subjects);
+    var printedBy = data.printedBy || '';
+    var studentName = String(data.studentName || '');
+    var studentNameClass = studentName.length > 38
+        ? ' pce-student-signature--extra-small'
+        : (studentName.length > 28 ? ' pce-student-signature--small' : '');
 
     return '' +
-        '<div class="pce-header-space"></div>' +
-        '<div class="pce-form-no">PLP/RO FORM NO. 1H Revised 2023</div>' +
-        '<div class="pce-title">PERMIT TO CROSS-ENROLL</div>' +
-
-        '<div class="pce-date-row">' +
-            '<span class="pce-date-line"><span class="pce-date-value">' + pceEsc(issueDate) + '</span></span>' +
-            '<span class="pce-date-label">Date</span>' +
+        '<div class="pce-header">' +
+            '<img class="pce-seal" src="/img/logobg.png" alt="PLP Seal">' +
+            '<div class="pce-header-text">' +
+                '<div class="pce-header-city">City Government of Pasig</div>' +
+                '<div class="pce-header-school">PAMANTASAN NG LUNGSOD NG PASIG</div>' +
+                '<div class="pce-header-office">OFFICE OF THE UNIVERSITY REGISTRAR</div>' +
+                '<div class="pce-header-address">Alkalde Jose St. Kapasigan, Pasig City, Philippines 1600</div>' +
+                '<div class="pce-header-tel">Tel Nos. 8642 8300 Telefax 642-41-00 Hotline No. (0926)2690463</div>' +
+            '</div>' +
         '</div>' +
 
-        '<div class="pce-registrar-label">THE REGISTRAR</div>' +
-        '<div class="pce-registrar-lines">' +
-            '<div class="pce-line"></div>' +
-            '<div class="pce-line"></div>' +
+        '<div class="pce-form-content">' +
+        '<div class="pce-form-no">PLPRO FORM NO. 1G Revised 2023</div>' +
+        '<div class="pce-title">APPLICATION TO CROSS-ENROLL</div>' +
+
+        '<div class="pce-app-date"><span class="pce-date-line">&nbsp;</span>, 2<span class="pce-date-year">&nbsp;</span></div>' +
+
+        '<div class="pce-registrar-block">' +
+            'THE REGISTRAR<br>' +
+            'Pamantasan ng Lungsod ng Pasig<br>' +
+            'Pasig City' +
         '</div>' +
 
-        '<div class="pce-body">' +
-            '<p>Sir/Madam:</p>' +
-            '<p style="text-indent: 28px; margin-top: 8px;">' +
-                'This is to authorize <span class="pce-fill">' + pceEsc(data.studentName) + '</span> with student number <span class="pce-fill-short">' + pceEsc(data.studentNo) + '</span> and a student from our university to cross-enroll the following subjects in your institution this <span class="pce-fill-short">' + pceEsc(semester) + '</span> (Summer/Semester) AY <span class="pce-fill-short">' + pceEsc(ay) + '</span>.' +
-            '</p>' +
+        '<p class="pce-salutation">Sir/Madam:</p>' +
+
+        '<p class="pce-app-body">' +
+            'I wish to enroll/cross-enroll the following subjects at the <span class="pce-fill pce-fill-school">&nbsp;</span> located at <span class="pce-fill pce-fill-location">&nbsp;</span> in the <span class="pce-fill-short">' + pceEsc(semester) + '</span> Semester of Academic Year 2<span class="pce-fill-year">' + pceEsc(ayStart) + '</span>,2<span class="pce-fill-year">' + pceEsc(ayEnd) + '</span>.' +
+        '</p>' +
+
+        '<div class="pce-app-subjects">' + subjectTable.rows + '</div>' +
+
+        '<div class="pce-app-total">TOTAL = <span class="pce-total-line">' + pceEsc(subjectTable.totalUnits) + '</span> UNITS</div>' +
+
+        '<p class="pce-app-body">I have passed the pre-requisite to the foregoing subjects, and I will promptly submit my ratings in the course after the close of the school term.</p>' +
+
+        '<div class="pce-app-sign-grid">' +
+            '<div class="pce-app-sign-left">' +
+                '<div class="pce-app-notvalid">NOT VALID<br>AS<br>PERMIT</div>' +
+                '<div class="pce-approved-label">Approved by:</div>' +
+                '<div class="pce-sign-line-blank pce-dean-line"></div>' +
+                '<div class="pce-sign-caption">Dean</div>' +
+                '<div class="pce-registrar-name">FEDERICO G. NUEVA, MT</div>' +
+                '<div class="pce-sign-caption">Registrar</div>' +
+                '<div class="pce-app-footer">Printed By: ' + pceEsc(printedBy) + '</div>' +
+            '</div>' +
+            '<div class="pce-app-sign-right">' +
+                '<div class="pce-respect">Very respectfully yours,</div>' +
+                '<div class="pce-sign-line-blank pce-student-signature' + studentNameClass + '">' + pceEsc(studentName) + '</div>' +
+                '<div class="pce-sign-caption">Signature over printed name</div>' +
+                '<div class="pce-app-kv">Student Number: <span class="pce-inline-line">' + pceEsc(data.studentNo) + '</span></div>' +
+                '<div class="pce-sign-line-blank pce-program-line">' + pceEsc((data.program || '') + (data.year ? (' - ' + data.year) : '')) + '</div>' +
+                '<div class="pce-sign-caption">Program &amp; Year</div>' +
+            '</div>' +
         '</div>' +
-
-        '<table class="pce-subject-table">' +
-            '<thead><tr><th>SUBJECT CODE</th><th>SUBJECT DESCRIPTION</th><th>UNITS</th></tr></thead>' +
-            '<tbody>' + subjectTable.rows + '</tbody>' +
-        '</table>' +
-
-        '<div class="pce-total-row">TOTAL <span class="pce-total-line">' + pceEsc(subjectTable.totalUnits) + '</span> UNITS</div>' +
-
-        '<div class="pce-sign-wrap">' +
-            '<div class="pce-respect">Respectfully yours,</div>' +
-            '<div class="pce-sign-name">FEDERICO G. NUEVA, MT</div>' +
-            '<div class="pce-sign-title">University Registrar</div>' +
-        '</div>' +
-
-        '<div class="pce-foot">Not Valid without seal</div>' +
-        '<div class="pce-print-date">Generated: ' + pceEsc(issueDate) + '</div>';
+        '</div>';
 }
 
 function pceGetRowData(rowId) {
@@ -145,7 +174,8 @@ function pceGetRowData(rowId) {
         section: (cells[5] ? cells[5].textContent : '').trim(),
         schoolYear: (row.getAttribute('data-school-year') || '').trim(),
         semester: (row.getAttribute('data-semester') || '').trim(),
-        subjects: subjects
+        subjects: subjects,
+        printedBy: pceConfig.printedBy || ''
     };
 }
 
@@ -220,7 +250,8 @@ function pceOpenBlankPreview() {
         section: '',
         schoolYear: '',
         semester: '',
-        subjects: []
+        subjects: [],
+        printedBy: pceConfig.printedBy || ''
     });
     document.getElementById('pcePreviewModal').style.display = 'flex';
     document.body.classList.add('pce-preview-open');

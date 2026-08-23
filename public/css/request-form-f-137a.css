@@ -29,9 +29,137 @@
 }
 
 .registrar-body .rf137a-page .rf137a-actions {
-  width: 210mm;
-  max-width: 210mm;
+  width: min(11in, 100%);
+  max-width: 11in;
   margin: 0 0 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.registrar-body .rf137a-student-filter-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 1;
+  margin: 0;
+}
+
+.registrar-body .rf137a-student-filter-label {
+  margin: 0 0 8px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.registrar-body .rf137a-request-filter-label {
+  margin: 0 0 8px 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.registrar-body .rf137a-request-auto {
+  min-width: 132px;
+  min-height: 38px;
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #0f172a;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.registrar-body .rf137a-request-auto strong {
+  font-size: 13px;
+}
+
+.registrar-body .rf137a-request-auto small {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.registrar-body .rf137a-student-search {
+  position: relative;
+  width: min(100%, 520px);
+}
+
+.registrar-body .rf137a-student-search > input[type=text] {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.registrar-body .rf137a-student-search > input[type=text]:focus {
+  border-color: #006837;
+  box-shadow: 0 0 0 3px rgba(0, 104, 55, 0.14);
+  outline: none;
+}
+
+.registrar-body .rf137a-student-results {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  display: none;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+}
+
+.registrar-body .rf137a-student-search.is-open .rf137a-student-results {
+  display: block;
+}
+
+.registrar-body .rf137a-student-option,
+.registrar-body .rf137a-student-empty {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #0f172a;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.registrar-body .rf137a-student-option {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.registrar-body .rf137a-student-option strong {
+  color: #005028;
+  font-size: 12px;
+}
+
+.registrar-body .rf137a-student-option:hover,
+.registrar-body .rf137a-student-option.is-active {
+  background: #eef7f1;
+}
+
+.registrar-body .rf137a-student-empty {
+  color: #64748b;
 }
 
 .registrar-body .rf137a-print-btn {
@@ -63,10 +191,11 @@
 }
 
 .registrar-body .rf137a-sheet {
-  width: 210mm;
-  min-height: 297mm;
+  position: relative;
+  width: 11in;
+  min-height: 8.5in;
   margin: 0 auto;
-  padding: 1in;
+  padding: 0.18in 0.65in 0.42in;
   box-sizing: border-box;
   background: #fff;
   color: #000;
@@ -75,7 +204,7 @@
   transform-origin: top center;
   zoom: var(--rf137a-zoom);
   font-size: 12pt;
-  line-height: 2;
+  line-height: 1.5;
 }
 
 @supports not (zoom: 1) {
@@ -88,8 +217,53 @@
 .registrar-body .rf137a-sheet * {
   color: #000 !important;
   border-color: #000 !important;
-  font-size: 12pt !important;
-  line-height: 2;
+}
+
+.registrar-body .rf137a-letterhead {
+  display: grid;
+  grid-template-columns: 1.15in 1fr;
+  align-items: center;
+  gap: 0.12in;
+  width: 8.1in;
+  margin: 0 auto 0.28in;
+}
+
+.registrar-body .rf137a-letterhead-seal {
+  width: 1.12in;
+  height: 1.12in;
+  overflow: hidden;
+}
+
+.registrar-body .rf137a-letterhead-seal img {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: 100%;
+}
+
+.registrar-body .rf137a-letterhead-copy {
+  text-align: center;
+  line-height: 1.12;
+}
+
+.registrar-body .rf137a-letterhead-city {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14pt;
+  font-weight: 700;
+}
+
+.registrar-body .rf137a-letterhead-school,
+.registrar-body .rf137a-letterhead-office {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17pt;
+  font-weight: 700;
+}
+
+.registrar-body .rf137a-letterhead-address,
+.registrar-body .rf137a-letterhead-contact {
+  font-size: 11pt;
+  font-weight: 700;
+  line-height: 1.22;
 }
 
 .registrar-body .rf137a-topline {
@@ -97,7 +271,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 }
 
 .registrar-body .rf137a-form-no {
@@ -105,6 +279,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  font-size: 12pt;
 }
 
 .registrar-body .rf137a-date-line {
@@ -114,22 +289,25 @@
   gap: 4px;
   white-space: nowrap;
   font-weight: 700;
+  font-size: 12pt;
 }
 
 .registrar-body .rf137a-line-label {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
   font-weight: 700;
+  font-size: 12pt;
 }
 
 .registrar-body .rf137a-line-wrap {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
 }
 
 .registrar-body .rf137a-paragraph {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   text-align: justify;
-  text-indent: 46px;
-  line-height: 2;
+  text-indent: 0.75in;
+  font-size: 12pt;
+  line-height: 1.55;
 }
 
 .registrar-body .rf137a-sentence-field {
@@ -137,7 +315,9 @@
   align-items: flex-end;
   vertical-align: baseline;
   margin: 0 2px;
-  min-width: 0;
+  width: 40ch;
+  min-width: 40ch;
+  max-width: 100%;
 }
 
 .registrar-body .rf137a-inline-input {
@@ -169,27 +349,37 @@
 
 .registrar-body .rf137a-inline-input--full {
   display: block;
-  width: 60% !important;
-  max-width: 420px;
+  width: 3.6in !important;
+  max-width: 3.6in;
   min-width: 160px;
 }
 
 .registrar-body .rf137a-inline-input--sentence {
-  width: 32ch;
-  min-width: 18ch;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
-  flex-grow: 1;
+  flex: 0 0 100%;
 }
 
 .registrar-body .rf137a-signature-block {
-  width: 265px;
-  margin: 34px 0 0 auto;
+  width: 3.1in;
+  margin: 16px 0 0 auto;
   text-align: center;
 }
 
 .registrar-body .rf137a-signature-intro {
-  margin: 0 0 24px;
+  margin: 0 0 2px;
   text-align: left;
+  font-size: 12pt;
+}
+
+.registrar-body .rf137a-signature-image {
+  display: block;
+  width: 1.15in;
+  height: 0.55in;
+  margin: 0 auto -4px;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 
 .registrar-body .rf137a-signature-line {
@@ -207,21 +397,29 @@
   text-transform: uppercase;
   text-decoration: underline;
   letter-spacing: 0.02em;
+  font-size: 12pt;
+  line-height: 1.2;
 }
 
 .registrar-body .rf137a-signatory-role {
   margin: 2px 0 0;
   font-weight: 700;
+  font-size: 12pt;
+  line-height: 1.2;
 }
 
 .registrar-body .rf137a-request-order {
-  margin: 84px 0 0;
+  position: absolute;
+  bottom: 0.62in;
+  left: 0.65in;
+  margin: 0;
   font-weight: 700;
+  font-size: 11pt;
 }
 
 @media print {
 @page {
-    size: A4 portrait;
+    size: letter landscape;
     margin: 0 !important;
 }
 
@@ -277,11 +475,11 @@
   }
 
   .registrar-body .rf137a-sheet {
-    width: auto !important;
-    min-width: 0 !important;
-    min-height: auto !important;
+    width: 11in !important;
+    min-width: 11in !important;
+    min-height: 8.5in !important;
     margin: 0 !important;
-    padding: 2in 0.5in 0 0.5in !important;
+    padding: 0.18in 0.65in 0.42in !important;
     zoom: 1 !important;
     transform: none !important;
     border: none !important;
@@ -290,14 +488,9 @@
     box-sizing: border-box !important;
   }
 
-  .registrar-body .rf137a-sheet,
-  .registrar-body .rf137a-sheet * {
-    font-size: 12pt !important;
-    line-height: 2 !important;
-  }
-
   .registrar-body .rf137a-sheet .rf137a-paragraph {
-    line-height: 2 !important;
+    font-size: 12pt !important;
+    line-height: 1.55 !important;
   }
 
   .registrar-body .rf137a-sheet input,

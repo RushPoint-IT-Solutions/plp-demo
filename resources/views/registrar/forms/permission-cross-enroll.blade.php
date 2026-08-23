@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
     @media print {
-        @page { size: portrait; margin: 8mm; }
+        @page { size: legal portrait; margin: 0; }
     }
 </style>
 @endpush
@@ -46,7 +46,11 @@
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Year Level</label>
                     <select class="app-filter-select">
-                        @include('registrar.forms.partials.fourth-fifth-year-options')
+                        <option>First</option>
+                        <option>Second</option>
+                        <option>Third</option>
+                        <option>Fourth</option>
+                        <option>Fifth</option>
                     </select>
                 </div>
                 <div class="app-filter-group" style="flex:1;">
@@ -193,7 +197,8 @@
 window.pceConfig = {
     csrfToken: @json(csrf_token()),
     updateUrlTemplate: @json(route('registrar.registrar-menu.forms.permission-cross-enroll.update', ['crossEnrollmentRequest' => '__ID__'])),
-    destroyUrlTemplate: @json(route('registrar.registrar-menu.forms.permission-cross-enroll.destroy', ['crossEnrollmentRequest' => '__ID__']))
+    destroyUrlTemplate: @json(route('registrar.registrar-menu.forms.permission-cross-enroll.destroy', ['crossEnrollmentRequest' => '__ID__'])),
+    printedBy: @json(optional(auth()->user())->name ?? '')
 };
 </script>
 <script src="{{ asset('js/permission-cross-enroll.js') }}?v={{ time() }}"></script>

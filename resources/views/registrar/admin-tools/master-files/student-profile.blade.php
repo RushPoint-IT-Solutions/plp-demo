@@ -528,10 +528,16 @@
         });
     }
 
-    function spBuildMenu(menuId, id) {
+    function spBuildMenu(menuId, row) {
+        var id = row.id;
+        var viewProfileButton = row.profileUrl
+            ? '<button type="button" onclick="spGoToStudentProfile(\'' + spEscapeHtml(id) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>View Student Profile</button>'
+            : '';
+
         return '' +
             '<div class="apst-action-btn" data-sp-menu-toggle="' + menuId + '" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>' +
             '<div class="apst-dropdown" id="' + menuId + '">' +
+                viewProfileButton +
                 '<button type="button" onclick="spOpenEditModal(\'' + spEscapeHtml(id) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>' +
                 '<button type="button" class="apst-del-btn" onclick="spOpenDeleteModal(\'' + spEscapeHtml(id) + '\')"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Delete</button>' +
             '</div>';
@@ -635,7 +641,7 @@
                     '<td>' + spEscapeHtml(row.name).toUpperCase() + '</td>' +
                     '<td>' + spEscapeHtml(row.course) + '</td>' +
                     '<td>' + spEscapeHtml(row.yearLevel) + '</td>' +
-                    '<td style="text-align:center;">' + spBuildMenu(menuId, row.id) + '</td>' +
+                    '<td style="text-align:center;">' + spBuildMenu(menuId, row) + '</td>' +
                 '</tr>';
         }).join('');
 
@@ -671,6 +677,17 @@
         document.getElementById('spYearInput').value = row.yearLevel;
         spCloseActionMenus();
         document.getElementById('spFormModal').style.display = 'flex';
+    }
+
+    function spGoToStudentProfile(id) {
+        var row = spRows.find(function(item) { return String(item.id) === String(id); });
+
+        if (!row || !row.profileUrl) {
+            alert('This masterfile record is not linked to a student in Student List.');
+            return;
+        }
+
+        window.location.href = row.profileUrl;
     }
 
     function spCloseFormModal() {
@@ -762,17 +779,7 @@
 
         var row = event.target.closest('#spTableBody tr[data-sp-id]');
         if (row && !event.target.closest('.apst-dropdown') && !event.target.closest('.apst-action-btn')) {
-            var rowId = row.getAttribute('data-sp-id');
-            var selected = spRows.find(function(item) { return String(item.id) === String(rowId); });
-            if (selected) {
-                var url = '{{ route('registrar.admin-tools.master-files.student-profile') }}' +
-                    '?view=config' +
-                    '&student_id=' + encodeURIComponent(selected.studentId || '') +
-                    '&name=' + encodeURIComponent(selected.name || '') +
-                    '&course=' + encodeURIComponent(selected.course || '') +
-                    '&year_level=' + encodeURIComponent(selected.yearLevel || '');
-                window.location.href = url;
-            }
+            spGoToStudentProfile(row.getAttribute('data-sp-id'));
             return;
         }
 

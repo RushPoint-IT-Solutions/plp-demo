@@ -64,42 +64,51 @@ function wceFormatSection(program, yearLevel) {
 }
 
 function wceBuildTemplate(data) {
-    var now = new Date();
-    var ay = '2025-2026';
-    var sem = 'Second';
-    var monthDayYear = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
     return '' +
-        '<div class="wce-header-space"></div>' +
-        '<div class="wce-form-no">PLP/RO FORM NO.</div>' +
-        '<div class="wce-title">WAIVER FOR CANCELLATION OF ENROLLMENT</div>' +
+        '<div class="wce-header">' +
+            '<img class="wce-seal" src="/img/logobg.png" alt="PLP Seal">' +
+            '<div class="wce-header-text">' +
+                '<div class="wce-header-school">PAMANTASAN NG LUNGSOD NG PASIG</div>' +
+                '<div class="wce-header-office">REGISTRAR\'S OFFICE</div>' +
+                '<div class="wce-header-address">Alkalde Jose St. Kapasigan, Pasig City</div>' +
+                '<div class="wce-header-tel">Tel No. 628-1014</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="wce-form-no">PLPRO FORM NO.</div>' +
+        '<div class="wce-title">WAIVER FOR CANCELLATION OF ENROLMENT</div>' +
 
         '<div class="wce-address">The Registrar<br>Pamantasan ng Lungsod ng Pasig</div>' +
 
-        '<p class="wce-p">I hereby cancel my enrollment to Pamantasan ng Lungsod ng Pasig in the College of <span class="wce-fill">' + wceEsc(data.program) + '</span> effective on the <span class="wce-fill-short">' + wceEsc(monthDayYear) + '</span> semester of Academic Year <span class="wce-fill-short">' + wceEsc(ay) + '</span>.</p>' +
+        '<p class="wce-p">I hereby cancel my enrolment to Pamantasan ng Lungsod ng Pasig in the College of <span class="wce-fill">' + wceEsc(data.program) + '</span> effective on the <span class="wce-fill-short">&nbsp;</span> semester of Academic Year 2<span class="wce-fill-year">&nbsp;</span>-2<span class="wce-fill-year">&nbsp;</span>.</p>' +
 
-        '<p class="wce-p">I understand that the cancellation of my enrollment will waive my right and qualification to re-enroll in this University as my slot will be given to the students in the waiting list.</p>' +
+        '<p class="wce-p">I understand that the cancellation of my enrolment will waive my right and qualification to re-enroll in this University as my slot will be given to the students in the waiting list.</p>' +
 
         '<p class="wce-p">In this connection, I acknowledge the receipt of the following documents I submitted to the Registrar\'s Office:</p>' +
 
+        '<div class="wce-grid-ack">' +
+            '<div></div>' +
+            '<div></div>' +
+            '<div class="wce-ack-head">ACKNOWLEDGEMENT RECEIPT</div>' +
+        '</div>' +
         '<div class="wce-grid-head">' +
+            '<div></div>' +
             '<div></div>' +
             '<div class="wce-rec-head">RELEASED BY</div>' +
             '<div class="wce-rec-head">RECEIVED BY</div>' +
         '</div>' +
 
-        '<div class="wce-item-row"><span class="wce-item">____ 2 pcs 2 x 2 picture</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Birth Certificate</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Barangay Clearance</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Cert. of Good Moral Character</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Photocopy of Voters ID</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Photocopy of Real Estate Tax Dec. No. or</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ 2 Utility Bills</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Form 138</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Original Form 137</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Transcript of Records</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Honorable Dismissal</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
-        '<div class="wce-item-row"><span class="wce-item">____ Certified True Copy of Grades</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">2 pcs 2 x 2 picture</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Original Birth Certificate</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Original Barangay Clearance</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Original Cert. of Good Moral Character</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Photocopy of Voters ID</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Photocopy of Real Estate Tax Dec. No. or</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">2 Utility Bills</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Original Form 138</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Original Form 137</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Transcript of Records</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Honorable Dismissal</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
+        '<div class="wce-item-row"><span class="wce-item-blank"></span><span class="wce-item">Certified True Copy of Grades</span><span class="wce-line"></span><span class="wce-line"></span></div>' +
 
         '<div class="wce-sign-area">' +
             '<div class="wce-vty">Very truly yours,</div>' +

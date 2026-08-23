@@ -10,14 +10,56 @@
 @section('content')
 @php
     $studentName = optional($student)->name ? strtoupper(optional($student)->name) : '';
+    $studentNumber = trim((string) optional($student)->student_no);
+    $studentSearchLabel = trim($studentNumber . ' - ' . (string) optional($student)->name, ' -');
     $requestDate = now()->format('F j,');
     $requestYearSuffix = substr(now()->format('Y'), -1);
+    $requestNumber = max(1, min(4, (int) ($requestNumber ?? 1)));
+    $requestSuffixes = [1 => 'st', 2 => 'nd', 3 => 'rd', 4 => 'th'];
 @endphp
-<div class="rf137a-page" id="rf137a-page">
-    <div class="rf137a-actions d-flex justify-content-end w-100 d-print-none">
-        <button type="button" id="rf137a-print-btn" class="btn btn-success rf137a-print-btn" title="Print this form" aria-label="Print this form">Print</button>
+<div class="rf137a-page"
+     id="rf137a-page"
+     data-print-url="{{ $student ? route('registrar.registrar-menu.forms.request-form-f-137a.print', ['student' => $student->id]) : '' }}">
+    <div class="rf137a-actions d-print-none">
+        <form method="GET" action="{{ route('registrar.registrar-menu.forms.request-form-f-137a') }}" class="rf137a-student-filter-form">
+            <label for="rf137a-student-search-input" class="rf137a-student-filter-label">Student</label>
+            <div class="rf137a-student-search"
+                 data-rf137a-student-search
+                 data-search-url="{{ route('registrar.registrar-menu.forms.request-form-f-137a.students.search') }}">
+                <input type="hidden" name="student_id" id="rf137a-student-id" value="{{ optional($student)->id ?: '' }}">
+                <input type="text"
+                       id="rf137a-student-search-input"
+                       value="{{ $studentSearchLabel }}"
+                       placeholder="Search student name or number"
+                       autocomplete="off"
+                       role="combobox"
+                       aria-autocomplete="list"
+                       aria-expanded="false"
+                       aria-controls="rf137a-student-results">
+                <div class="rf137a-student-results" id="rf137a-student-results" role="listbox"></div>
+            </div>
+            <span class="rf137a-request-filter-label">Request</span>
+            <span class="rf137a-request-auto" aria-live="polite">
+                <strong id="rf137a-request-auto-label">{{ $requestNumber }}{{ $requestSuffixes[$requestNumber] }} Request</strong>
+                <small>Auto-detected</small>
+            </span>
+        </form>
+        <button type="button" id="rf137a-print-btn" class="btn btn-success rf137a-print-btn" title="{{ $student ? 'Print this form' : 'Select a student before printing' }}" aria-label="Print this form" {{ $student ? '' : 'disabled' }}>Print</button>
     </div>
     <article class="rf137a-sheet a4-wrapper" aria-label="Request Form for F 137A">
+        <header class="rf137a-letterhead">
+            <div class="rf137a-letterhead-seal" aria-hidden="true">
+                <img src="{{ asset('img/plplogo2000.png') }}" alt="">
+            </div>
+            <div class="rf137a-letterhead-copy">
+                <div class="rf137a-letterhead-city">City Government of Pasig</div>
+                <div class="rf137a-letterhead-school">PAMANTASAN NG LUNGSOD NG PASIG</div>
+                <div class="rf137a-letterhead-office">OFFICE OF THE UNIVERSITY REGISTRAR</div>
+                <div class="rf137a-letterhead-address">Alkalde Jose St. Kapasigan Pasig City, Philippines 1600</div>
+                <div class="rf137a-letterhead-contact">Tel No. 8642-8300 Email: registrar@plpasig.edu.ph</div>
+            </div>
+        </header>
+
         <div class="rf137a-topline">
             <p class="rf137a-form-no">PLPRO FORM NO.4A</p>
             <label class="rf137a-date-line">
@@ -57,11 +99,12 @@
 
         <div class="rf137a-signature-block">
             <p class="rf137a-signature-intro">Very truly yours,</p>
+            <img src="{{ asset('img/deans-honors-signature.png') }}" class="rf137a-signature-image" alt="Registrar signature">
             <p class="rf137a-signatory-name">FEDERICO G. NUEVA, MT</p>
             <p class="rf137a-signatory-role">University Registrar</p>
         </div>
 
-        <p class="rf137a-request-order">1<sup>st</sup> Request</p>
+        <p class="rf137a-request-order" id="rf137a-request-order"><span>{{ $requestNumber }}</span><sup>{{ $requestSuffixes[$requestNumber] }}</sup> Request</p>
     </article>
 </div>
 @endsection

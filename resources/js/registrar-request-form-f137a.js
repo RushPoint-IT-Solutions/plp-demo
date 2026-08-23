@@ -2,6 +2,28 @@ document.addEventListener('DOMContentLoaded', function () {
     var page = document.getElementById('rf137a-page');
     var sheet = page ? page.querySelector('.rf137a-sheet') : null;
     var sentenceInputs = page ? page.querySelectorAll('.rf137a-sentence-field .rf137a-inline-input') : [];
+    var studentSearch = page ? page.querySelector('[data-rf137a-student-search]') : null;
+    var studentIdInput = page ? page.querySelector('#rf137a-student-id') : null;
+    var studentSearchInput = page ? page.querySelector('#rf137a-student-search-input') : null;
+    var studentResults = page ? page.querySelector('#rf137a-student-results') : null;
+    var studentSearchRequest = null;
+    var studentSearchTimer = null;
+    var activeStudentIndex = -1;
+    var requestAutoLabel = page ? page.querySelector('#rf137a-request-auto-label') : null;
+    var requestOrder = page ? page.querySelector('#rf137a-request-order') : null;
+
+    function renderRequestNumber(number) {
+        var safeNumber = Math.max(1, Math.min(4, parseInt(number, 10) || 1));
+        var suffixes = { '1': 'st', '2': 'nd', '3': 'rd', '4': 'th' };
+        var label = safeNumber + suffixes[safeNumber] + ' Request';
+
+        if (requestAutoLabel) {
+            requestAutoLabel.textContent = label;
+        }
+        if (requestOrder) {
+            requestOrder.innerHTML = '<span>' + safeNumber + '</span><sup>' + suffixes[safeNumber] + '</sup> Request';
+        }
+    }
 
     function autoResizeSentenceInput(input) {
         var nextWidth = Math.max((input.value.length || 1) + 2, 18);
@@ -13,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        var targetWidth = 794;
+        var targetWidth = 1056;
         var availableWidth = page.clientWidth;
         var scale = 1;
 
@@ -23,6 +45,180 @@ document.addEventListener('DOMContentLoaded', function () {
 
         sheet.style.setProperty('--rf137a-zoom', scale.toFixed(4));
         sheet.style.setProperty('--rf137a-scale', scale.toFixed(4));
+    }
+
+    function getStudentOptions() {
+        return studentResults
+            ? Array.prototype.slice.call(studentResults.querySelectorAll('.rf137a-student-option'))
+            : [];
+    }
+
+    function setStudentSearchOpen(isOpen) {
+        if (!studentSearch || !studentSearchInput) {
+            return;
+        }
+
+        studentSearch.classList.toggle('is-open', isOpen);
+        studentSearchInput.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    function setActiveStudentOption(index) {
+        var options = getStudentOptions();
+
+        options.forEach(function (option) {
+            option.classList.remove('is-active');
+            option.setAttribute('aria-selected', 'false');
+        });
+
+        if (!options.length) {
+            activeStudentIndex = -1;
+            return;
+        }
+
+        if (index < 0) {
+            index = options.length - 1;
+        }
+        if (index >= options.length) {
+            index = 0;
+        }
+
+        activeStudentIndex = index;
+        options[index].classList.add('is-active');
+        options[index].setAttribute('aria-selected', 'true');
+        options[index].scrollIntoView({ block: 'nearest' });
+    }
+
+    function chooseStudent(option) {
+        if (!option || !studentIdInput || !studentSearchInput) {
+            return;
+        }
+
+        studentIdInput.value = option.getAttribute('data-student-id') || '';
+        studentSearchInput.value = option.getAttribute('data-student-label') || option.textContent.trim();
+        setStudentSearchOpen(false);
+
+        if (studentIdInput.value && studentIdInput.form) {
+            studentIdInput.form.submit();
+        }
+    }
+
+    function renderStudentResults(items, message) {
+        if (!studentResults) {
+            return;
+        }
+
+        studentResults.innerHTML = '';
+        activeStudentIndex = -1;
+
+        if (!items.length) {
+            var empty = document.createElement('div');
+            empty.className = 'rf137a-student-empty';
+            empty.textContent = message || 'No matching students found';
+            studentResults.appendChild(empty);
+            setStudentSearchOpen(true);
+            return;
+        }
+
+        items.forEach(function (item, index) {
+            var option = document.createElement('button');
+            option.type = 'button';
+            option.className = 'rf137a-student-option';
+            option.setAttribute('role', 'option');
+            option.setAttribute('aria-selected', 'false');
+            option.setAttribute('data-student-id', item.id);
+            option.setAttribute('data-student-label', item.label || '');
+
+            var number = document.createElement('strong');
+            number.textContent = item.student_no || 'No student number';
+            var name = document.createElement('span');
+            name.textContent = item.name || 'Unnamed student';
+
+            option.appendChild(number);
+            option.appendChild(name);
+            option.addEventListener('mouseenter', function () {
+                setActiveStudentOption(index);
+            });
+            option.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+            });
+            option.addEventListener('click', function () {
+                chooseStudent(option);
+            });
+            studentResults.appendChild(option);
+        });
+
+        setStudentSearchOpen(true);
+        setActiveStudentOption(0);
+    }
+
+    function searchStudents() {
+        if (!studentSearch || !studentSearchInput) {
+            return;
+        }
+
+        var searchUrl = studentSearch.getAttribute('data-search-url');
+        if (!searchUrl) {
+            return;
+        }
+
+        if (studentSearchRequest && typeof studentSearchRequest.abort === 'function') {
+            studentSearchRequest.abort();
+        }
+        studentSearchRequest = window.AbortController ? new AbortController() : null;
+        renderStudentResults([], 'Searching students...');
+
+        fetch(searchUrl + '?q=' + encodeURIComponent(studentSearchInput.value.trim()) + '&limit=25', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            signal: studentSearchRequest ? studentSearchRequest.signal : undefined
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Student search failed');
+                }
+                return response.json();
+            })
+            .then(function (payload) {
+                renderStudentResults(payload.results || []);
+            })
+            .catch(function (error) {
+                if (error && error.name === 'AbortError') {
+                    return;
+                }
+                renderStudentResults([], 'Unable to load student matches');
+            });
+    }
+
+    if (studentSearch && studentIdInput && studentSearchInput && studentResults) {
+        studentSearchInput.addEventListener('input', function () {
+            studentIdInput.value = '';
+            window.clearTimeout(studentSearchTimer);
+            studentSearchTimer = window.setTimeout(searchStudents, 180);
+        });
+        studentSearchInput.addEventListener('focus', searchStudents);
+        studentSearchInput.addEventListener('keydown', function (event) {
+            var options = getStudentOptions();
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setActiveStudentOption(activeStudentIndex + 1);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setActiveStudentOption(activeStudentIndex - 1);
+            } else if (event.key === 'Enter' && options[activeStudentIndex]) {
+                event.preventDefault();
+                chooseStudent(options[activeStudentIndex]);
+            } else if (event.key === 'Escape') {
+                setStudentSearchOpen(false);
+            }
+        });
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('[data-rf137a-student-search]')) {
+                setStudentSearchOpen(false);
+            }
+        });
     }
 
     if (sentenceInputs.length) {
@@ -37,15 +233,45 @@ document.addEventListener('DOMContentLoaded', function () {
     var printBtn = page ? page.querySelector('#rf137a-print-btn') : null;
     if (printBtn) {
         printBtn.addEventListener('click', function () {
-            try {
-                // Give immediate visual feedback and rely on beforeprint/afterprint to reset
-                printBtn.disabled = true;
-                printBtn.classList.add('is-printing');
-                window.print();
-            } catch (e) {
-                console.error('Print failed', e);
-                try { printBtn.disabled = false; printBtn.classList.remove('is-printing'); } catch (er) {}
+            var printUrl = page.getAttribute('data-print-url');
+            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+
+            if (!printUrl) {
+                window.alert('Please select a student before printing.');
+                return;
             }
+
+            printBtn.disabled = true;
+            printBtn.classList.add('is-printing');
+
+            fetch(printUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfMeta ? csrfMeta.getAttribute('content') : ''
+                }
+            })
+                .then(function (response) {
+                    return response.json().then(function (payload) {
+                        if (!response.ok || !payload.ok) {
+                            throw new Error(payload.message || 'Unable to record print count');
+                        }
+                        return payload;
+                    });
+                })
+                .then(function (payload) {
+                    renderRequestNumber(payload.request_number);
+                    window.print();
+                })
+                .catch(function (error) {
+                    console.error('Print failed', error);
+                    window.alert(error.message || 'Unable to print the form. Please try again.');
+                })
+                .then(function () {
+                    printBtn.disabled = false;
+                    printBtn.classList.remove('is-printing');
+                });
         });
     }
 

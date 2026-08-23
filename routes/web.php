@@ -411,6 +411,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/tor', 'Registrar\RegistrarController@formsTor')->name('tor');
             Route::get('/application-leave-of-absence-enrolled/{student}', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled.show');
             Route::get('/application-leave-of-absence-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled');
+            Route::get('/application-leave-of-absence-non-enrolled/{student}', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceNonEnrolled')->name('application-leave-of-absence-non-enrolled.show');
+            Route::get('/application-leave-of-absence-non-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceNonEnrolled')->name('application-leave-of-absence-non-enrolled');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
             Route::post('/diploma/signatories', 'Registrar\RegistrarController@formsDiplomaSaveSignatories')->name('diploma.signatories.save');
             Route::get('/graduation-clearance/{student}', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance.show');
@@ -429,6 +431,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/official-grade-report/{student}/data', 'Registrar\RegistrarController@formsOfficialGradeReportData')->name('official-grade-report.data');
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
             Route::get('/citizens-charter', 'Registrar\RegistrarController@formsCitizensCharter')->name('citizens-charter');
+            Route::get('/request-form-f-137a/students/search', 'Registrar\RegistrarController@formsRequestFormF137aStudentSearch')->name('request-form-f-137a.students.search');
+            Route::post('/request-form-f-137a/{student}/print', 'Registrar\RegistrarController@formsRequestFormF137aPrint')->name('request-form-f-137a.print');
             Route::get('/request-form-f-137a/{student}', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a.show');
             Route::get('/request-form-f-137a', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a');
             Route::post('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnrollStore')->name('permission-cross-enroll.store');

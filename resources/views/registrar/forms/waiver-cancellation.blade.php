@@ -46,7 +46,11 @@
                 <div class="app-filter-group" style="flex:1;">
                     <label class="app-filter-label" style="text-transform: uppercase;">Year Level</label>
                     <select class="app-filter-select">
-                        @include('registrar.forms.partials.fourth-fifth-year-options')
+                        <option>First</option>
+                        <option>Second</option>
+                        <option>Third</option>
+                        <option>Fourth</option>
+                        <option>Fifth</option>
                     </select>
                 </div>
                 <div class="app-filter-group" style="flex:1;">

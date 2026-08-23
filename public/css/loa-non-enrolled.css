@@ -1,0 +1,115 @@
+@charset "UTF-8";
+
+/* Application for Leave of Absence (Non-Enrolled) — additions on top of loa-enrolled.css */
+
+.registrar-body .lne-label {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.registrar-body .lne-reason-elaborate {
+  display: block;
+  width: 100%;
+  min-height: 1.1em;
+  margin-top: 4px;
+  border-bottom: 1px solid #000;
+}
+
+.registrar-body .lne-kv-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 3px 0;
+}
+
+.registrar-body .lne-kv-row .lne-label {
+  flex: 0 0 auto;
+}
+
+.registrar-body .lne-kv-row .loae-inline {
+  flex: 1 1 auto;
+  min-width: 30px;
+}
+
+.registrar-body .lne-kv-row .lne-suffix {
+  flex: 0 0 auto;
+}
+
+.registrar-body .lne-grid-top {
+  grid-template-columns: 1.05fr 1fr 0.85fr;
+  margin-top: 10px;
+}
+
+.registrar-body .lne-grid-top .loae-box {
+  min-height: 168px;
+}
+
+.registrar-body .lne-assess-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+}
+
+.registrar-body .lne-assess-table td {
+  border: 1px solid #000;
+  padding: 4px 5px;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.registrar-body .lne-assess-table td:first-child {
+  width: 62%;
+}
+
+.registrar-body .lne-remarks-title {
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.registrar-body .lne-remarks-item {
+  margin: 3px 0;
+}
+
+.registrar-body .lne-remarks-item--strong {
+  font-weight: 700;
+}
+
+.registrar-body .lne-remarks-item--note {
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+.registrar-body .lne-remarks-assessed {
+  margin-top: 10px;
+}
+
+.registrar-body .lne-caption-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.registrar-body .lne-grid-medical .loae-box,
+.registrar-body .lne-grid-attest .loae-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 132px;
+}
+
+.registrar-body .lne-grid-medical .loae-sign-line,
+.registrar-body .lne-grid-attest .loae-sign-line {
+  margin-top: auto;
+}
+
+@media print {
+  .registrar-body .lne-grid-top .loae-box {
+    min-height: 168px !important;
+  }
+
+  .registrar-body .lne-grid-medical .loae-box,
+  .registrar-body .lne-grid-attest .loae-box {
+    min-height: 132px !important;
+  }
+}
