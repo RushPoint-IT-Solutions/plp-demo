@@ -231,7 +231,7 @@ $loae-border-color: #000;
         min-width: 816px;
         min-height: 1344px;
         margin: 0 auto;
-        padding: 1in 0.8in;
+        padding: 1in 0.55in;
         box-sizing: border-box;
         border: 1px solid $loae-border-color;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -250,7 +250,6 @@ $loae-border-color: #000;
     .loae-sheet,
     .loae-sheet * {
         color: #000 !important;
-        font-size: 10pt !important;
         border-color: #000 !important;
         line-height: 1.15;
     }
@@ -623,17 +622,32 @@ $loae-border-color: #000;
 
     .loae-grade-table th:nth-child(2),
     .loae-grade-table td:nth-child(2) {
-        width: 43%;
+        width: 16%;
     }
 
     .loae-grade-table th:nth-child(3),
     .loae-grade-table td:nth-child(3) {
-        width: 11%;
+        width: 14%;
     }
 
     .loae-grade-table th:nth-child(4),
     .loae-grade-table td:nth-child(4) {
-        width: 33%;
+        width: 13%;
+    }
+
+    .loae-grade-table th:nth-child(5),
+    .loae-grade-table td:nth-child(5) {
+        width: 12%;
+    }
+
+    .loae-grade-table th:nth-child(6),
+    .loae-grade-table td:nth-child(6) {
+        width: 18%;
+    }
+
+    .loae-grade-table th:nth-child(7),
+    .loae-grade-table td:nth-child(7) {
+        width: 14%;
     }
 
     .loae-grade-table th,
@@ -642,12 +656,15 @@ $loae-border-color: #000;
         font-size: 0.7rem;
         vertical-align: middle;
         background: #fff;
+        padding: 0 2px;
+        height: 16px;
     }
 
     .loae-grade-table th {
         font-weight: 700;
         text-align: center;
         letter-spacing: 0.01em;
+        height: 46px;
     }
 
     .loae-grade-table thead tr,
@@ -712,10 +729,19 @@ $loae-border-color: #000;
     .loae-grid--clearance .loae-box {
         display: flex;
         flex-direction: column;
+        padding: 6px;
+        font-size: 8.5pt;
+        box-sizing: border-box;
+    }
+
+    .loae-grid--attestation .loae-box {
+        height: 105px;
+        min-height: 105px;
     }
 
     .loae-grid--clearance .loae-box {
-        min-height: 128px;
+        height: 115px;
+        min-height: 115px;
     }
 
     .loae-grid--attestation .loae-sign-line,
@@ -784,14 +810,15 @@ $loae-border-color: #000;
     .loae-mini-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 6px;
-        font-size: 0.68rem;
+        margin-top: 2px;
+        font-size: 6.5pt;
+        line-height: 1.05;
     }
 
     .loae-mini-table td {
         border: 1px solid $loae-border-color;
         border-left: none;
-        padding: 4px;
+        padding: 1px 3px;
         vertical-align: middle;
         background: #fff;
     }
@@ -824,6 +851,14 @@ $loae-border-color: #000;
         padding: 0;
     }
 
+    .loae-box--dean-metrics > .loae-box-title {
+        margin: 0;
+        padding: 3px;
+        font-size: 7pt;
+        line-height: 1.05;
+        text-transform: none;
+    }
+
     .loae-box--approval,
     .loae-box--noted,
     .loae-box--recorded {
@@ -842,15 +877,18 @@ $loae-border-color: #000;
 
     /* Ensure staff grid boxes align signature blocks to the bottom */
     .loae-grid--staff {
-        /* align grid items to end so boxes sit at the bottom of the row */
-        align-items: flex-end;
+        /* The reference form starts every staff column on the same row. */
+        align-items: stretch;
 
         /* Make each staff box a column flex container so inner elements can use margin-top:auto */
         > .loae-box {
             display: flex;
             flex-direction: column;
-            /* allow the box to shrink/grow naturally within the grid */
-            min-height: 247px;
+            height: 160px;
+            min-height: 160px;
+            padding: 6px;
+            font-size: 8.5pt;
+            box-sizing: border-box;
         }
 
         /* Push the signature line (p.loae-sign-line) to the bottom of its box */
@@ -873,10 +911,10 @@ $loae-border-color: #000;
     .loae-box--recorded .loae-record-divider {
         border-top: 1px solid #000;
         /* remove side gaps caused by .loae-box padding so divider aligns with box borders */
-        width: calc(100% + 16px);
-        margin: 8px 0;
-        margin-left: -8px;
-        margin-right: -8px;
+        width: calc(100% + 12px);
+        margin: 4px 0;
+        margin-left: -6px;
+        margin-right: -6px;
         box-sizing: border-box;
         display: block;
         height: 0;
@@ -917,10 +955,10 @@ $loae-border-color: #000;
     }
 
     .loae-processed-label {
-        margin-top: 12px;
+        margin-top: 4px;
         font-weight: 700;
         /* keep label clear from divider */
-        padding-top: 6px;
+        padding-top: 2px;
     }
 
     .loae-grid--requirements {
@@ -1024,10 +1062,10 @@ $loae-border-color: #000;
     /* Ensure divider spans full width in print as well (no side gaps) */
     .registrar-body .loae-box--recorded .loae-record-divider {
         border-top: 1px solid #000 !important;
-        width: calc(100% + 16px) !important;
-        margin: 8px 0 !important;
-        margin-left: -8px !important;
-        margin-right: -8px !important;
+        width: calc(100% + 12px) !important;
+        margin: 4px 0 !important;
+        margin-left: -6px !important;
+        margin-right: -6px !important;
         box-sizing: border-box !important;
         display: block !important;
         height: 0 !important;
@@ -1077,7 +1115,7 @@ $loae-border-color: #000;
         min-width: 8.5in !important;
         min-height: 14in !important;
         margin: 0 !important;
-        padding: 1in 0.8in !important;
+        padding: 1in 0.55in !important;
         zoom: 1 !important;
         transform: none !important;
         border: none !important;
@@ -1224,13 +1262,14 @@ $loae-border-color: #000;
 
     /* Ensure staff grid boxes behave as flex columns in print and push signature lines to bottom */
     .registrar-body .loae-grid--staff {
-        align-items: flex-end !important;
+        align-items: stretch !important;
     }
 
     .registrar-body .loae-grid--staff > .loae-box {
         display: flex !important;
         flex-direction: column !important;
-        min-height: 247px !important;
+        height: 160px !important;
+        min-height: 160px !important;
         box-sizing: border-box !important;
     }
 

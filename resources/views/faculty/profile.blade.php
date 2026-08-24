@@ -10,7 +10,8 @@
     $row = $profileRow ?? null;
     $facultyName = old('name', isset($state['name']) ? $state['name'] : (optional($row)->name ?? optional($faculty)->name));
     $department = old('department', isset($state['department']) ? $state['department'] : (optional($row)->department ?? 'Computer Studies'));
-    $status = old('status', isset($state['status']) ? $state['status'] : (optional($row)->status ?? 'Active'));
+    $employmentTypeValue = old('employment_type', isset($state['employment_type']) ? $state['employment_type'] : (optional($faculty)->employment_type ?? 'Full Time'));
+    $employmentType = stripos((string) $employmentTypeValue, 'part') !== false ? 'Part Time' : 'Full Time';
 @endphp
 
 <div class="profile-page">
@@ -57,10 +58,10 @@
                                 <input type="text" class="setup-input" name="code_display" value="{{ old('code_display', optional($row)->code ?? optional($faculty)->code ?? '') }}" readonly>
                             </div>
                             <div class="setup-col setup-col--w-280">
-                                <label class="setup-label">Status</label>
-                                <select class="setup-input setup-select" name="status" required>
-                                    <option value="Active" @if($status === 'Active') selected @endif>Active</option>
-                                    <option value="Inactive" @if($status === 'Inactive') selected @endif>Inactive</option>
+                                <label class="setup-label">Employment Type</label>
+                                <select class="setup-input setup-select" name="employment_type" required>
+                                    <option value="Full-time Teacher" @if($employmentType === 'Full Time') selected @endif>Full Time</option>
+                                    <option value="Part-time Teacher" @if($employmentType === 'Part Time') selected @endif>Part Time</option>
                                 </select>
                             </div>
                         </div>

@@ -13,8 +13,11 @@
     $code = optional($profileRow)->code ?? optional($faculty)->code;
     $photoPath = isset($state['profile_photo_path']) ? $state['profile_photo_path'] : null;
     $photoUrl = $photoPath ? asset('storage/' . $photoPath) : null;
+    $employmentTypeValue = isset($state['employment_type']) ? $state['employment_type'] : (optional($faculty)->employment_type ?? 'Full Time');
+    $employmentType = stripos((string) $employmentTypeValue, 'part') !== false ? 'Part Time' : 'Full Time';
 
     $employment = [
+        'Employment Type' => $employmentType,
         'Position' => isset($state['position']) ? $state['position'] : '—',
         'Office Department' => isset($state['department']) ? $state['department'] : '—',
         'Parent College' => isset($state['parent_college']) ? $state['parent_college'] : '—',
@@ -87,8 +90,8 @@
 
             <div class="pv-meta-grid">
                 <div class="pv-meta-row">
-                    <span class="pv-meta-label">STATUS</span>
-                    <span class="pv-meta-value pv-meta-status">{{ isset($state['status']) ? $state['status'] : 'Active' }}</span>
+                    <span class="pv-meta-label">EMPLOYMENT TYPE</span>
+                    <span class="pv-meta-value pv-meta-status">{{ $employmentType }}</span>
                 </div>
                 <div class="pv-meta-row">
                     <span class="pv-meta-label">DEPARTMENT</span>

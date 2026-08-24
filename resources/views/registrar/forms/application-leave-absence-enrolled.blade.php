@@ -21,7 +21,7 @@
     $studentEmail = optional(optional($selectedStudent)->profile)->student_email ?: '';
     $studentPhone = optional(optional($selectedStudent)->profile)->mobile_number ?: '';
 
-    $displayRows = collect($gradeRows ?? [])->take(8)->values()->all();
+    $displayRows = collect($gradeRows ?? [])->take(9)->values()->all();
     $blankRow = [
         'course_code' => '',
         'course_description' => '',
@@ -82,7 +82,7 @@
                 <p class="loae-header-line loae-header-line--school">PAMANTASAN NG LUNGSOD NG PASIG</p>
                 <p class="loae-header-line loae-header-line--office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
                 <p class="loae-header-line loae-header-line--address">Alkalde Jose St. Kapasigan, Pasig City, Philippines 1600</p>
-                <p class="loae-header-line loae-header-line--contact">Tel Nos. 628-1015 loc 107 Telefax 628-1015</p>
+                <p class="loae-header-line loae-header-line--contact">Tel Nos. 628-1013 loc 107 Telefax 628-1015</p>
             </div>
         </header>
 

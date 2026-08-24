@@ -1444,7 +1444,7 @@ class FacultyController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:190',
             'department' => 'required|string|max:190',
-            'status' => 'required|string|in:Active,Inactive',
+            'employment_type' => 'required|string|in:Full-time Teacher,Part-time Teacher',
             'sections_json' => 'nullable|string',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:4096',
         ]);
@@ -1471,7 +1471,6 @@ class FacultyController extends Controller
         $profileRow->update([
             'name' => $validated['name'],
             'department' => $validated['department'],
-            'status' => $validated['status'],
             'config_payload' => [
                 'form_state' => $formState,
                 'sections' => $sections,
@@ -1479,6 +1478,7 @@ class FacultyController extends Controller
         ]);
 
         $faculty->name = $validated['name'];
+        $faculty->employment_type = $validated['employment_type'];
         $faculty->save();
 
         User::where('faculty_id', $faculty->id)->update(['name' => $validated['name']]);

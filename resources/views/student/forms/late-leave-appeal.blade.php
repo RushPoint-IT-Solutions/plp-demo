@@ -27,11 +27,25 @@
         </div>
 
         <div class="cor-container acd-form loa-form">
+            <header class="cor-header loa-header">
+                <div class="cor-header-left form-logo-left">
+                    <img src="{{ asset('img/logobg.png') }}" alt="PLP Logo" class="cor-logo">
+                </div>
+                <div class="cor-header-center form-header-copy">
+                    <p class="loa-gov">City Government of Pasig</p>
+                    <p class="loa-school">PAMANTASAN NG LUNGSOD NG PASIG</p>
+                    <p class="loa-office">OFFICE OF THE UNIVERSITY REGISTRAR</p>
+                    <p class="loa-address">Alkalde Jose St. Kapasigan, Pasig City, Philippines 1600</p>
+                    <p class="loa-contact">Tel Nos. 8642-8300 / registrar@plpasig.edu.ph</p>
+                </div>
+                <div class="cor-header-right" aria-hidden="true"></div>
+            </header>
+
             <div class="loa-body">
-                <p style="margin: 0 0 8px; font-weight: 700; text-align: left;">PLPRO FORM NO. 1H-4</p>
-                <div class="loa-top-row">
+                <div class="loa-top-row" style="justify-content: flex-end;">
                     <p>Date of Application: <input type="text" class="acd-inline-input acd-inline-input--md no-print-underline" value="{{ now()->format('F d, Y') }}"></p>
                 </div>
+                <p style="margin: 0 0 8px; font-weight: 700; text-align: left;">PLPRO FORM NO. 1H-4</p>
                 <h2>APPEAL FOR LATE APPLICATION OF LEAVE OF ABSENCE</h2>
 
                 <p class="loa-text-line"><span class="loa-first-indent">I hereby appeal for the approval of my late application of Leave of Absence for the <input type="text" class="acd-inline-input acd-inline-input--sm" value="{{ optional($student)->semester ?? '' }}"> of AY <input type="text" class="acd-inline-input acd-inline-input--sm" value="{{ optional($student)->school_year ?? '' }}"></span><br>to <input type="text" class="acd-inline-input acd-inline-input--sm" value=""> Semester of AY <input type="text" class="acd-inline-input acd-inline-input--sm" value=""> due to:</p>
