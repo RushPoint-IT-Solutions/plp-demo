@@ -1,8 +1,8 @@
-@extends('layouts.student')
+@extends($layout ?? 'layouts.student')
 
-@section('title', 'Appeal For Late Application Of Leave Of Absence - PLP')
-@section('page-title', 'FORMS')
-@section('body-class', 'page-student-forms')
+@section('title', $pageTitle ?? 'Appeal For Late Application Of Leave Of Absence - PLP')
+@section('page-title', $pageHeading ?? 'FORMS')
+@section('body-class', ($isRegistrarView ?? false) ? 'page-registrar-late-loa page-student-forms' : 'page-student-forms')
 
 @section('content')
 @php
@@ -10,8 +10,20 @@
 @endphp
 <div class="cor-scroll-wrapper acd-page loa-page">
     <div class="acd-canvas">
+        @if($isRegistrarView ?? false)
+        <form method="GET" action="{{ route('registrar.registrar-menu.forms.late-application-leave-of-absence') }}" class="acd-actions d-print-none" aria-label="Select student for late leave application">
+            <label for="late-loa-student" class="mb-0 font-weight-bold">Student:</label>
+            <select id="late-loa-student" name="student_id" class="form-control form-control-sm" style="max-width: 420px;" onchange="this.form.submit()">
+                @foreach($students as $studentOption)
+                    <option value="{{ $studentOption->id }}" {{ (int) $selectedStudentId === (int) $studentOption->id ? 'selected' : '' }}>
+                        {{ $studentOption->student_no }} — {{ $studentOption->name }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
+        @endif
         <div class="acd-actions">
-            <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn">Print Form</button>
+            <button id="acd-print-btn" type="button" class="btn btn-sm acd-print-btn" @if($isRegistrarView ?? false) onclick="window.print()" @endif>Print Form</button>
         </div>
 
         <div class="cor-container acd-form loa-form">

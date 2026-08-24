@@ -413,6 +413,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/application-leave-of-absence-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceEnrolled')->name('application-leave-of-absence-enrolled');
             Route::get('/application-leave-of-absence-non-enrolled/{student}', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceNonEnrolled')->name('application-leave-of-absence-non-enrolled.show');
             Route::get('/application-leave-of-absence-non-enrolled', 'Registrar\RegistrarController@formsApplicationLeaveAbsenceNonEnrolled')->name('application-leave-of-absence-non-enrolled');
+            Route::get('/late-application-leave-of-absence/{student}', 'Registrar\RegistrarController@formsLateApplicationLeaveAbsence')->name('late-application-leave-of-absence.show');
+            Route::get('/late-application-leave-of-absence', 'Registrar\RegistrarController@formsLateApplicationLeaveAbsence')->name('late-application-leave-of-absence');
             Route::get('/diploma', 'Registrar\RegistrarController@formsDiploma')->name('diploma');
             Route::post('/diploma/signatories', 'Registrar\RegistrarController@formsDiplomaSaveSignatories')->name('diploma.signatories.save');
             Route::get('/graduation-clearance/{student}', 'Registrar\RegistrarController@formsGraduationClearance')->name('graduation-clearance.show');

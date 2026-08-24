@@ -22458,6 +22458,40 @@ class RegistrarController extends Controller
     }
 
     /**
+     * Registrar > Forms > Late Application of Leave of Absence
+     */
+    public function formsLateApplicationLeaveAbsence(Request $request, ?Student $student = null)
+    {
+        if (!$student && $request->filled('student_id')) {
+            $student = Student::find($request->query('student_id'));
+        }
+
+        $students = Student::query()
+            ->orderBy('name')
+            ->limit(500)
+            ->get(['id', 'student_no', 'name']);
+
+        if (!$student && $students->isNotEmpty()) {
+            $student = Student::find($students->first()->id);
+        }
+
+        if ($student) {
+            $student->loadMissing('profile');
+        }
+
+        return view('student.forms.late-leave-appeal', [
+            'layout' => 'layouts.registrar',
+            'pageTitle' => 'PLP - Late Application of Leave of Absence',
+            'pageHeading' => 'LATE APPLICATION OF LEAVE OF ABSENCE',
+            'isRegistrarView' => true,
+            'students' => $students,
+            'selectedStudentId' => $student ? (int) $student->id : 0,
+            'student' => $student,
+            'profile' => $student ? $student->profile : null,
+        ]);
+    }
+
+    /**
      * Registrar > Forms > Diploma
      */
     public function formsDiploma(Request $request)
