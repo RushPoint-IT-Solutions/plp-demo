@@ -111,7 +111,7 @@
         <div class="loae-reasons">
             <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">medical condition</span></label>
             <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">financial constraint</span></label>
-            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">unavailability of subject</span></label>
+            <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">unavailability of course</span></label>
             <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">work</span></label>
             <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">pregnancy</span></label>
             <label class="loae-reason-item"><input type="checkbox"><span class="loae-check-render">family problem</span></label>
@@ -193,8 +193,8 @@
             </section>
 
             <section class="loae-box loae-box--unavailability">
-                <p class="loae-box-title">FOR UNAVAILABILITY OF SUBJECT REASON ONLY:</p>
-                <p>This is to attest that the student has no subject to enroll this semester.</p>
+                <p class="loae-box-title">FOR UNAVAILABILITY OF COURSE REASON ONLY:</p>
+                <p>This is to attest that the student has no course to enroll this semester.</p>
                 <div class="row justify-content-end">
                     <div class="col-auto">
                         <p class="loae-sign-line"><input type="text" class="loae-inline loae-inline--line loae-rosc" value=""></p>
@@ -214,7 +214,7 @@
                         <tr><td>No. of Yrs Enrolled</td><td><input type="text" class="loae-mini-input" value=""></td></tr>
                         <tr><td>No. of Remaining Yrs</td><td><input type="text" class="loae-mini-input" value=""></td></tr>
                         <tr><td>Will Require Extension of Residency Yrs</td><td><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">Y</span></label><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">N</span></label></td></tr>
-                        <tr><td>All subjects are still offered upon projected return</td><td><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">Y</span></label><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">N</span></label></td></tr>
+                        <tr><td>All courses are still offered upon projected return</td><td><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">Y</span></label><label class="loae-inline-check"><input type="checkbox"><span class="loae-check-render">N</span></label></td></tr>
                     </tbody>
                 </table>
             </section>
@@ -264,7 +264,7 @@
             </section>
             <section class="loae-box loae-box--requirements">
                 <p class="loae-box-title">Requirements:</p>
-                <p>For Unavailability of Subject</p>
+                <p>For Unavailability of Course</p>
                 <p>* Clearance from Reg. Off. College Secretary</p>
             </section>
             <section class="loae-box loae-box--requirements">
