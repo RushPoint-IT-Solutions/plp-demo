@@ -128,6 +128,11 @@ class Student extends Model
         return $this->hasMany(ScholarshipStudent::class, 'student_id');
     }
 
+    public function loaApplications()
+    {
+        return $this->hasMany(LoaApplication::class);
+    }
+
     /**
      * Helper: formatted school year + semester label.
      * e.g. "SY 2025-2026 2nd Semester"

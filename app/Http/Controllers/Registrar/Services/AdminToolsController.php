@@ -2568,7 +2568,7 @@ class AdminToolsController extends Controller
                     ['code' => 'documents_forms_honorable_dismissal', 'name' => 'Honorable Dismissal'],
                     ['code' => 'documents_forms_certificates', 'name' => 'Certificates'],
                     ['code' => 'documents_forms_leave_of_absence', 'name' => 'Leave of Absence'],
-                    ['code' => 'documents_forms_cross_enroll', 'name' => 'Permission to Cross-Enroll'],
+                    ['code' => 'documents_forms_cross_enroll', 'name' => 'Application to Cross-Enroll'],
                     ['code' => 'documents_forms_f137a', 'name' => 'Request Form F137A'],
                     ['code' => 'documents_forms_graduation_clearance', 'name' => 'Graduation Clearance'],
                     ['code' => 'documents_forms_waiver_cancellation', 'name' => 'Waiver & Cancellation'],

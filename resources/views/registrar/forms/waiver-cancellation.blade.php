@@ -69,6 +69,7 @@
                 </div>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="wceOpenBlankPreview()">Preview Form</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="wcePrintSelected()">Print Selected</button>
+                <a class="req-btn-cancel frm-action-btn" href="{{ route('registrar.services.reports-admin.waiver-cancellation-reports') }}">Reports</a>
                 <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
         </div>
@@ -86,6 +87,8 @@
                         <th>Semester</th>
                         <th>Year</th>
                         <th>Section</th>
+                        <th>Date Requested</th>
+                        <th>Reason for Cancellation</th>
                         <th style="text-align: center; width: 70px;">Action</th>
                     </tr>
                 </thead>
@@ -118,7 +121,7 @@
                             }
                         }
                     @endphp
-                    <tr data-row-id="{{ $record->id }}">
+                    <tr data-row-id="{{ $record->id }}" data-cancellation-reason="{{ $record->remarks }}">
                         <td style="text-align: center;"><input type="checkbox" class="wce-row-select" onchange="wceSyncSelectAll()"></td>
                         <td>{{ optional($record->student)->student_no ?: '-' }}</td>
                         <td><button type="button" class="doc-link-btn" onclick="wceOpenPreview({{ $record->id }})">{{ optional($record->student)->name ?: '-' }}</button></td>
@@ -126,6 +129,8 @@
                         <td>{{ $record->semester ?: '-' }}</td>
                         <td>{{ $displayYear ?: '-' }}</td>
                         <td>{{ $displaySection }}</td>
+                        <td>{{ optional($record->created_at)->format('M d, Y') ?: '-' }}</td>
+                        <td>{{ $record->remarks ?: 'Reason not recorded' }}</td>
                         <td style="text-align:center;">
                             <div class="apst-action-btn" data-wce-menu-toggle="wceMenu-{{ $record->id }}" aria-label="Open row actions" title="Actions"><span></span><span></span><span></span></div>
                             <div class="apst-dropdown" id="wceMenu-{{ $record->id }}">
@@ -141,7 +146,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" style="text-align:center; color:#666;">No waiver records found.</td></tr>
+                    <tr><td colspan="10" style="text-align:center; color:#666;">No waiver records found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -171,6 +176,10 @@
                 <label class="req-modal-label">Year</label>
                 <input type="text" id="wceEditYear" class="req-modal-input">
             </div>
+        </div>
+        <div class="req-modal-field-group" style="margin-top:10px;">
+            <label class="req-modal-label" for="wceEditReason">Reason for Cancellation</label>
+            <textarea id="wceEditReason" class="req-modal-input" maxlength="255" rows="3" placeholder="Enter the student's reason for cancelling enrollment"></textarea>
         </div>
         <div class="sc-modal-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
             <div class="req-modal-field-group">

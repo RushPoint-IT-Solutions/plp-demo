@@ -308,6 +308,10 @@ function wceOpenEdit(rowId) {
         var semValue = (cells[4] ? cells[4].textContent : '').trim();
         semesterSelect.value = semValue || 'First';
     }
+    var reasonInput = document.getElementById('wceEditReason');
+    if (reasonInput) {
+        reasonInput.value = row.getAttribute('data-cancellation-reason') || '';
+    }
     wceOpenModal('wceEditModal');
 }
 
@@ -321,6 +325,8 @@ function wceSaveEdit() {
     var yearLevel = (document.getElementById('wceEditYear').value || '').trim();
     var semesterEl = document.getElementById('wceEditSemester');
     var semester = semesterEl ? semesterEl.value : '';
+    var reasonEl = document.getElementById('wceEditReason');
+    var reason = reasonEl ? reasonEl.value.trim() : '';
     var sectionValue = wceFormatSection(program, yearLevel);
 
     var finish = function() {
@@ -332,6 +338,8 @@ function wceSaveEdit() {
         if (cells[4]) cells[4].textContent = semester;
         if (cells[5]) cells[5].textContent = yearLevel;
         if (cells[6]) cells[6].textContent = sectionValue;
+        row.setAttribute('data-cancellation-reason', reason);
+        if (cells[8]) cells[8].textContent = reason || 'Reason not recorded';
         wceCloseModal('wceEditModal');
     };
 
@@ -345,7 +353,8 @@ function wceSaveEdit() {
         name: studentName,
         program: program,
         year_level: yearLevel,
-        semester: semester
+        semester: semester,
+        reason: reason
     }).then(function() {
         finish();
     }).catch(function(error) {

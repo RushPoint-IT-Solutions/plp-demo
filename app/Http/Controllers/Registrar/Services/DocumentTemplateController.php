@@ -43,7 +43,7 @@ class DocumentTemplateController extends Controller
         'form-8c2' => 'Form 8C-2 (Graduation)',
         'form-8d2' => 'Form 8D-2 (Honor)',
         'official-grade-report' => 'Official Grade Report',
-        'cross-enroll-permit' => 'Cross-Enroll Permit',
+        'cross-enroll-permit' => 'Application to Cross-Enroll',
     ];
 
     public function index()

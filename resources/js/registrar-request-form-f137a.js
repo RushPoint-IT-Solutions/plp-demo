@@ -11,10 +11,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var activeStudentIndex = -1;
     var requestAutoLabel = page ? page.querySelector('#rf137a-request-auto-label') : null;
     var requestOrder = page ? page.querySelector('#rf137a-request-order') : null;
+    var printRecorded = false;
 
     function renderRequestNumber(number) {
-        var safeNumber = Math.max(1, Math.min(4, parseInt(number, 10) || 1));
-        var suffixes = { '1': 'st', '2': 'nd', '3': 'rd', '4': 'th' };
+        var safeNumber = Math.max(1, Math.min(2, parseInt(number, 10) || 1));
+        var suffixes = { '1': 'st', '2': 'nd' };
         var label = safeNumber + suffixes[safeNumber] + ' Request';
 
         if (requestAutoLabel) {
@@ -262,6 +263,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .then(function (payload) {
                     renderRequestNumber(payload.request_number);
+                    var historyRow = page.querySelector('[data-issuance-row="' + payload.request_number + '"]');
+                    if (historyRow) {
+                        var requestedCell = historyRow.querySelector('[data-requested-at]');
+                        var printedCell = historyRow.querySelector('[data-printed-at]');
+                        var statusCell = historyRow.querySelector('[data-request-status]');
+                        if (requestedCell) { requestedCell.textContent = payload.requested_at || '—'; }
+                        if (printedCell) { printedCell.textContent = payload.printed_at || '—'; }
+                        if (statusCell) { statusCell.textContent = 'Printed'; }
+                    }
+                    printRecorded = true;
+                    printBtn.textContent = 'Printed';
                     window.print();
                 })
                 .catch(function (error) {
@@ -269,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.alert(error.message || 'Unable to print the form. Please try again.');
                 })
                 .then(function () {
-                    printBtn.disabled = false;
+                    printBtn.disabled = printRecorded;
                     printBtn.classList.remove('is-printing');
                 });
         });
@@ -293,6 +305,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('afterprint', function () {
         try { syncA4Scale(); } catch (e) {}
+        if (printRecorded) {
+            window.location.reload();
+            return;
+        }
         if (printBtn) {
             try { printBtn.disabled = false; printBtn.classList.remove('is-printing'); } catch (e) {}
         }

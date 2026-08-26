@@ -1,4 +1,4 @@
-/* permission-cross-enroll.js - Permission to Cross-Enroll form page logic */
+/* permission-cross-enroll.js - Application to Cross-Enroll form page logic */
 
 var pceCurrentRowId = null;
 var pceConfig = window.pceConfig || {};

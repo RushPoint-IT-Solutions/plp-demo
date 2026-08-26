@@ -1,4 +1,5 @@
 @charset "UTF-8";
+
 :root {
   --plp-green: #006837;
   --plp-green-dark: #005028;
@@ -13,10 +14,12 @@
   background: #fff;
   overflow: visible;
 }
+
 .registrar-body .counsel {
   text-align: right !important;
   margin-right: 5rem !important;
 }
+
 .registrar-body .loae-page {
   --loae-scale: 1;
   --loae-zoom: 1;
@@ -33,6 +36,7 @@
   font-size: 10pt;
   line-height: 1.25;
 }
+
 .registrar-body .loae-a4-stage {
   width: 100%;
   display: flex;
@@ -40,6 +44,7 @@
   align-items: flex-start;
   overflow: visible;
 }
+
 .registrar-body .loae-toolbar {
   display: flex;
   justify-content: space-between;
@@ -47,11 +52,13 @@
   gap: 12px;
   flex-wrap: nowrap;
 }
+
 .registrar-body .loae-toolbar,
 .registrar-body .loae-toolbar * {
   font-size: 10pt !important;
   color: #000;
 }
+
 .registrar-body .loae-toolbar__form {
   display: flex;
   align-items: flex-end;
@@ -59,6 +66,7 @@
   flex: 1;
   min-width: 0;
 }
+
 .registrar-body .loae-toolbar__label {
   margin-bottom: 0.4rem;
   font-size: 10pt !important;
@@ -67,11 +75,13 @@
   text-transform: uppercase;
   color: #000;
 }
+
 .registrar-body .loae-search-wrapper {
   position: relative;
   flex: 1;
   min-width: 0;
 }
+
 .registrar-body .loae-toolbar__search {
   width: 100%;
   border: 1px solid #000 !important;
@@ -82,6 +92,7 @@
   padding: 0.5rem !important;
   box-sizing: border-box !important;
 }
+
 .registrar-body .loae-search-results {
   position: absolute;
   top: 100%;
@@ -95,6 +106,7 @@
   z-index: 1000;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 .registrar-body .loae-search-result-item {
   padding: 0.75rem;
   cursor: pointer;
@@ -102,9 +114,11 @@
   font-size: 10pt;
   color: #000;
 }
+
 .registrar-body .loae-search-result-item:hover {
   background: #f5f5f5;
 }
+
 .registrar-body .loae-toolbar__actions {
   display: flex;
   justify-content: flex-end;
@@ -112,6 +126,7 @@
   gap: 8px;
   flex-shrink: 0;
 }
+
 .registrar-body .loae-toolbar__button {
   height: 38px;
   min-width: 80px;
@@ -123,32 +138,40 @@
   font-size: 10pt !important;
   white-space: nowrap;
 }
+
 .registrar-body .loae-toolbar__button:hover,
 .registrar-body .loae-toolbar__button:focus {
   background: #005028;
   border-color: #003d20;
   color: #fff;
 }
+
 .registrar-body .loae-student {
   margin-left: 4rem;
 }
+
 .registrar-body .loae-toolbar__button--print {
   background: #006837;
   border-color: #006837;
 }
-.registrar-body .loae-toolbar__button--print:hover, .registrar-body .loae-toolbar__button--print:focus {
+
+.registrar-body .loae-toolbar__button--print:hover,
+.registrar-body .loae-toolbar__button--print:focus {
   background: #005028;
   border-color: #003d20;
 }
+
 @media (max-width: 768px) {
   .registrar-body .loae-toolbar {
     flex-wrap: wrap;
     gap: 8px;
   }
+
   .registrar-body .student-page-header {
     padding-left: 35px;
     height: 50px;
   }
+
   .registrar-body .loae-toolbar__form {
     width: 100%;
     min-width: 0;
@@ -157,6 +180,7 @@
     align-items: center;
     gap: 8px;
   }
+
   .registrar-body .loae-toolbar__label {
     width: auto;
     margin-bottom: 0;
@@ -165,28 +189,35 @@
     align-items: center;
     white-space: nowrap;
   }
+
   .registrar-body .loae-search-wrapper {
     width: auto;
     flex: 1;
     min-width: 0;
   }
+
   .registrar-body .loae-toolbar__actions {
     width: 100%;
   }
+
   .registrar-body .loae-toolbar__button {
     flex: 1;
     min-height: 44px;
   }
+
   .registrar-body .loae-student {
     margin-left: 0 !important;
   }
 }
+
 .registrar-body .loae-search-results--mobile {
   max-height: 150px;
 }
+
 .registrar-body {
   /* Ensure toolbar controls match heights when rendering/previewing print */
 }
+
 @media print {
   .registrar-body .loae-toolbar__search {
     height: 38px !important;
@@ -194,6 +225,7 @@
     padding-bottom: 0.5rem !important;
     box-sizing: border-box !important;
   }
+
   .registrar-body .loae-toolbar__button {
     height: 38px !important;
     min-height: 38px !important;
@@ -204,6 +236,7 @@
     vertical-align: middle !important;
   }
 }
+
 .registrar-body .loae-sheet {
   width: 816px;
   min-width: 816px;
@@ -218,17 +251,20 @@
   transform-origin: top center;
   zoom: var(--loae-zoom);
 }
+
 @supports not (zoom: 1) {
   .registrar-body .loae-sheet {
     transform: scale(var(--loae-scale));
   }
 }
+
 .registrar-body .loae-sheet,
 .registrar-body .loae-sheet * {
   color: #000 !important;
   border-color: #000 !important;
   line-height: 1.15;
 }
+
 .registrar-body .loae-sheet input,
 .registrar-body .loae-sheet textarea,
 .registrar-body .loae-sheet select {
@@ -236,12 +272,14 @@
   border-color: #000 !important;
   text-align: center;
 }
+
 .registrar-body .loae-form-no {
   margin: 0;
   font-size: 10pt !important;
   font-weight: 400;
   letter-spacing: 0.02em;
 }
+
 .registrar-body .loae-document-head {
   display: grid;
   grid-template-columns: 72px 1fr;
@@ -250,48 +288,58 @@
   min-height: 86px;
   margin: -0.55in 0 10px;
 }
+
 .registrar-body .loae-document-logo {
   width: 70px;
   height: 70px;
-  object-fit: contain;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
+
 .registrar-body .loae-document-heading {
   text-align: center;
   padding-right: 28px;
 }
+
 .registrar-body .loae-header-line {
   margin: 0;
   font-weight: 700;
   line-height: 1.05;
 }
+
 .registrar-body .loae-header-line--city {
   font-family: "Bookman Old Style", Georgia, serif;
   font-size: 10.5pt !important;
   letter-spacing: 0.14em;
 }
+
 .registrar-body .loae-header-line--school {
   font-family: "Bookman Old Style", Georgia, serif;
   font-size: 12.5pt !important;
   letter-spacing: 0.16em;
 }
+
 .registrar-body .loae-header-line--office {
   color: #177a1d !important;
   font-family: "Bookman Old Style", Georgia, serif;
   font-size: 12.5pt !important;
   letter-spacing: 0.14em;
 }
+
 .registrar-body .loae-header-line--address,
 .registrar-body .loae-header-line--contact {
   font-family: "Bookman Old Style", Georgia, serif;
   font-size: 7.6pt !important;
   letter-spacing: 0.08em;
 }
+
 .registrar-body .loae-title {
   margin: 0 0 10px;
   font-size: 16pt !important;
   font-weight: 800;
   letter-spacing: 0;
 }
+
 .registrar-body .loae-date-row {
   display: flex;
   justify-content: flex-end;
@@ -299,11 +347,13 @@
   gap: 1px;
   margin-bottom: 12px;
 }
+
 .registrar-body .loae-date-row--stacked {
   flex-direction: column;
   align-items: flex-end;
   margin-bottom: 14px;
 }
+
 .registrar-body .loae-date-caption {
   font-weight: 700;
   font-size: 0.85rem;
@@ -311,6 +361,7 @@
   text-align: center;
   margin-right: 1.7rem;
 }
+
 .registrar-body .loae-student-panel {
   display: grid;
   gap: 4px;
@@ -318,25 +369,30 @@
   padding: 8px;
   border: 1px solid #000;
 }
+
 .registrar-body .loae-student-panel__row {
   display: grid;
   grid-template-columns: 70px minmax(0, 1fr) 68px 155px;
   align-items: end;
   gap: 5px;
 }
+
 .registrar-body .loae-student-panel__row label {
   margin: 0;
   font-weight: 700;
   white-space: nowrap;
 }
+
 .registrar-body .loae-inline--panel {
   width: 100%;
   min-width: 0;
   text-align: left !important;
 }
+
 .registrar-body .loae-inline--panel-sm {
   text-align: center !important;
 }
+
 .registrar-body .loae-date-input {
   border: 0;
   border-bottom: 1px solid #000;
@@ -346,14 +402,17 @@
   background: transparent;
   font: inherit;
 }
+
 .registrar-body .loae-date-label {
   font-weight: 700;
 }
+
 .registrar-body .loae-paragraph {
   margin: 0 0 10px;
   text-align: justify;
   text-indent: 24px;
 }
+
 .registrar-body .loae-paragraph--sentence {
   display: block;
   white-space: normal;
@@ -361,6 +420,7 @@
   text-indent: 0;
   line-height: 1.5;
 }
+
 .registrar-body .loae-sentence-field {
   display: inline-flex;
   align-items: flex-end;
@@ -368,6 +428,7 @@
   margin: 0 2px;
   min-width: 0;
 }
+
 .registrar-body .loae-sentence-field .loae-inline {
   display: inline-block;
   flex: 0 0 auto;
@@ -378,10 +439,12 @@
   border: 0;
   border-bottom: 1px solid #000;
 }
+
 .registrar-body .loae-paragraph--agreement {
   margin-top: 14px;
   text-indent: 0;
 }
+
 .registrar-body .loae-inline {
   display: inline-block;
   border: 0;
@@ -392,34 +455,43 @@
   font: inherit;
   line-height: 1.1;
 }
+
 .registrar-body .loae-inline:focus {
   outline: none;
   border-bottom-color: #000;
 }
+
 .registrar-body .loae-inline--center {
   text-align: center;
 }
+
 .registrar-body .loae-inline--date {
   width: 180px;
 }
+
 .registrar-body .loae-inline--others {
   width: 270px;
 }
+
 .registrar-body .loae-inline--signature {
   width: 13rem;
 }
+
 .registrar-body .loae-inline--line {
   width: 100px;
 }
+
 .registrar-body .loae-inline--date-small {
   width: 90px;
 }
+
 .registrar-body .loae-reasons {
   display: grid;
   grid-template-columns: repeat(4, auto);
   gap: 5px 5px;
   margin-bottom: 8px;
 }
+
 .registrar-body .loae-reason-item {
   display: inline-flex;
   align-items: center;
@@ -427,8 +499,10 @@
   margin: 0;
   font-size: 0.95em;
 }
+
 .registrar-body .loae-reason-item input[type=checkbox] {
-  appearance: none;
+  -moz-appearance: none;
+       appearance: none;
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
@@ -439,6 +513,7 @@
   position: relative;
   cursor: pointer;
 }
+
 .registrar-body .loae-reason-item input[type=checkbox]:checked::after {
   content: "";
   position: absolute;
@@ -450,85 +525,105 @@
   border-width: 0 1px 1px 0;
   transform: rotate(45deg);
 }
+
 .registrar-body .loae-rosc {
   width: 200px !important;
   margin-top: 26px;
 }
+
 .registrar-body .loae-reason-item--others {
   grid-column: span 2;
 }
+
 .registrar-body .loae-signature-block {
   margin-top: 14px;
   text-align: center;
 }
+
 .registrar-body .loae-DSA-block {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
+
 .registrar-body {
   /* DSA Director: short right-aligned signature line */
 }
+
 .registrar-body .loae-box--dsa .loae-sign-line {
   margin: 0;
   width: 100%;
   text-align: right;
 }
+
 .registrar-body .loae-box--dsa .loae-sign-line .loae-inline--line {
   width: 130px;
   max-width: 160px;
   box-sizing: border-box;
   display: inline-block;
 }
+
 .registrar-body .loae-box--dsa .loae-sign-role {
   text-align: right;
   width: 100%;
   margin-right: 2rem;
 }
+
 .registrar-body {
   /* Guidance Counselor: short right-aligned signature line */
 }
+
 .registrar-body .loae-box--guidance .loae-sign-line {
   margin: 0;
   width: 100%;
   text-align: right;
 }
+
 .registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
   width: 180px;
   max-width: 180px;
   box-sizing: border-box;
   display: inline-block;
 }
+
 .registrar-body .loae-box--guidance .counsel {
   text-align: right !important;
   margin-right: 5rem !important;
 }
+
 .registrar-body .loae-box--guidance .loae-sign-role {
   text-align: right;
   width: 100%;
   padding-right: 2rem;
 }
+
 .registrar-body .loae-caption {
   margin: 4px 0 0;
   font-size: 0.92em;
   font-style: italic;
 }
+
 .registrar-body .loae-student-id-line {
   margin: 6px 0 0;
   font-weight: 600;
 }
+
 .registrar-body .loae-divider {
   margin: 5px 0 5px 0;
 }
+
 .registrar-body .loae-divider--dotted {
   border-top: 4px dotted black;
 }
+
 .registrar-body .loae-divider--dashed {
   border-top: 2px dashed black;
 }
+
 .registrar-body .loae-table-lead {
   margin: 0 0 0px;
 }
+
 .registrar-body .loae-grade-table {
   width: 100%;
   border-collapse: collapse;
@@ -536,34 +631,42 @@
   margin-bottom: 10px;
   table-layout: fixed;
 }
+
 .registrar-body .loae-grade-table th:nth-child(1),
 .registrar-body .loae-grade-table td:nth-child(1) {
   width: 13%;
 }
+
 .registrar-body .loae-grade-table th:nth-child(2),
 .registrar-body .loae-grade-table td:nth-child(2) {
   width: 16%;
 }
+
 .registrar-body .loae-grade-table th:nth-child(3),
 .registrar-body .loae-grade-table td:nth-child(3) {
   width: 14%;
 }
+
 .registrar-body .loae-grade-table th:nth-child(4),
 .registrar-body .loae-grade-table td:nth-child(4) {
   width: 13%;
 }
+
 .registrar-body .loae-grade-table th:nth-child(5),
 .registrar-body .loae-grade-table td:nth-child(5) {
   width: 12%;
 }
+
 .registrar-body .loae-grade-table th:nth-child(6),
 .registrar-body .loae-grade-table td:nth-child(6) {
   width: 18%;
 }
+
 .registrar-body .loae-grade-table th:nth-child(7),
 .registrar-body .loae-grade-table td:nth-child(7) {
   width: 14%;
 }
+
 .registrar-body .loae-grade-table th,
 .registrar-body .loae-grade-table td {
   border: 1px solid #000;
@@ -573,17 +676,20 @@
   padding: 0 2px;
   height: 16px;
 }
+
 .registrar-body .loae-grade-table th {
   font-weight: 700;
   text-align: center;
   letter-spacing: 0.01em;
   height: 46px;
 }
+
 .registrar-body .loae-grade-table thead tr,
 .registrar-body .loae-grade-table thead th {
   background: #fff !important;
   color: #000 !important;
 }
+
 .registrar-body .loae-cell-input {
   width: 100%;
   border: 0;
@@ -595,23 +701,29 @@
   line-height: 1.15;
   padding: 0;
 }
+
 .registrar-body .loae-cell-input--left {
   text-align: left;
 }
+
 .registrar-body .loae-grid {
   display: grid;
   gap: 0;
   margin-top: 0;
 }
+
 .registrar-body .loae-grid--two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
 .registrar-body .loae-grid--four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+
 .registrar-body .loae-grid--stacked {
   margin-top: -1px;
 }
+
 .registrar-body .loae-box {
   border: 1px solid #000;
   padding: 8px;
@@ -620,13 +732,16 @@
   margin-top: -1px;
   background: #fff;
 }
+
 .registrar-body .loae-grid > .loae-box:first-child {
   margin-left: 0;
 }
+
 .registrar-body .loae-box p {
   margin: 2px 0;
   line-height: 1.3;
 }
+
 .registrar-body .loae-grid--attestation .loae-box,
 .registrar-body .loae-grid--clearance .loae-box {
   display: flex;
@@ -635,38 +750,47 @@
   font-size: 8.5pt;
   box-sizing: border-box;
 }
+
 .registrar-body .loae-grid--attestation .loae-box {
   height: 105px;
   min-height: 105px;
 }
+
 .registrar-body .loae-grid--clearance .loae-box {
   height: 115px;
   min-height: 115px;
 }
+
 .registrar-body .loae-grid--attestation .loae-sign-line,
 .registrar-body .loae-grid--clearance .loae-sign-line {
   margin-top: 5px;
 }
+
 .registrar-body .loae-box-title {
   font-weight: 700;
   text-transform: uppercase;
 }
+
 .registrar-body .loae-sign-line {
   margin-top: 10px;
 }
+
 .registrar-body .loae-sign-line--spaced {
   margin-top: 26px;
 }
+
 .registrar-body .loae-sign-role {
   margin-top: 4px;
   text-align: center;
   font-weight: 700;
 }
+
 .registrar-body .loae-sign-date {
   margin-top: 4px;
   text-align: center;
   font-weight: 600;
 }
+
 .registrar-body .loae-inline-check {
   display: inline-flex;
   align-items: center;
@@ -674,8 +798,10 @@
   margin-right: 10px;
   font-weight: 600;
 }
+
 .registrar-body .loae-inline-check input[type=checkbox] {
-  appearance: none;
+  -moz-appearance: none;
+       appearance: none;
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
@@ -686,6 +812,7 @@
   position: relative;
   cursor: pointer;
 }
+
 .registrar-body .loae-inline-check input[type=checkbox]:checked::after {
   content: "";
   position: absolute;
@@ -697,6 +824,7 @@
   border-width: 0 1px 1px 0;
   transform: rotate(45deg);
 }
+
 .registrar-body .loae-mini-table {
   width: 100%;
   border-collapse: collapse;
@@ -704,6 +832,7 @@
   font-size: 6.5pt;
   line-height: 1.05;
 }
+
 .registrar-body .loae-mini-table td {
   border: 1px solid #000;
   border-left: none;
@@ -711,9 +840,11 @@
   vertical-align: middle;
   background: #fff;
 }
+
 .registrar-body .loae-mini-table td:first-child {
   width: 68%;
 }
+
 .registrar-body .loae-mini-input {
   width: 100%;
   border: 0;
@@ -724,10 +855,12 @@
   line-height: 1.1;
   padding: 0 2px;
 }
+
 .registrar-body .loae-mini-input:focus {
   outline: none;
   border-bottom-color: #000;
 }
+
 .registrar-body .loae-box--dean-metrics {
   grid-column: span 1;
   border: 1px solid black;
@@ -735,6 +868,7 @@
   border-bottom: none;
   padding: 0;
 }
+
 .registrar-body .loae-box--dean-metrics > .loae-box-title {
   margin: 0;
   padding: 3px;
@@ -742,27 +876,33 @@
   line-height: 1.05;
   text-transform: none;
 }
+
 .registrar-body .loae-box--approval,
 .registrar-body .loae-box--noted,
 .registrar-body .loae-box--recorded {
   min-height: 198px;
 }
+
 .registrar-body .loae-grid--staff .loae-sign-line {
   text-align: center;
 }
+
 .registrar-body .loae-grid--staff .loae-sign-line .loae-inline--line {
   width: 100%;
   max-width: 145px;
   box-sizing: border-box;
 }
+
 .registrar-body {
   /* Ensure staff grid boxes align signature blocks to the bottom */
 }
+
 .registrar-body .loae-grid--staff {
   /* The reference form starts every staff column on the same row. */
   align-items: stretch;
   /* Make each staff box a column flex container so inner elements can use margin-top:auto */
 }
+
 .registrar-body .loae-grid--staff > .loae-box {
   display: flex;
   flex-direction: column;
@@ -772,27 +912,35 @@
   font-size: 8.5pt;
   box-sizing: border-box;
 }
+
 .registrar-body .loae-grid--staff {
   /* Push the signature line (p.loae-sign-line) to the bottom of its box */
 }
+
 .registrar-body .loae-grid--staff .loae-sign-line {
   margin-top: auto;
 }
+
 .registrar-body .loae-grid--staff {
   /* Some inputs had a helper class that applied a fixed margin; neutralize it inside staff boxes */
 }
+
 .registrar-body .loae-grid--staff .loae-sign-line .mt-auto-mod {
   margin-top: 0 !important;
 }
+
 .registrar-body {
   /* Recorded section: add a visual divider and set specific signature widths */
 }
+
 .registrar-body .loae-box--recorded {
   position: relative;
 }
+
 .registrar-body {
   /* divider between College Secretary block and 'Processed in UIS' area */
 }
+
 .registrar-body .loae-box--recorded .loae-record-divider {
   border-top: 1px solid #000;
   /* remove side gaps caused by .loae-box padding so divider aligns with box borders */
@@ -804,81 +952,99 @@
   display: block;
   height: 0;
 }
+
 .registrar-body {
   /* College Secretary signature (short-medium line) */
 }
+
 .registrar-body .loae-box--recorded .loae-sign-line .loae-recorded-college {
   max-width: 200px;
   box-sizing: border-box;
   display: inline-block;
 }
+
 .registrar-body {
   /* Date under College Secretary should be shorter */
 }
+
 .registrar-body .loae-box--recorded .loae-sign-date .loae-recorded-date {
   width: 80px;
   max-width: 120px;
   box-sizing: border-box;
   display: inline-block;
 }
+
 .registrar-body {
   /* Front-Desk Officer signature should be longer */
 }
+
 .registrar-body .loae-box--recorded .loae-sign-line .loae-recorded-frontdesk {
   max-width: 260px;
   box-sizing: border-box;
   display: inline-block;
 }
+
 .registrar-body {
   /* Date for Front-Desk area */
 }
+
 .registrar-body .loae-box--recorded .loae-sign-date .loae-recorded-frontdate {
   width: 80px;
   max-width: 160px;
   box-sizing: border-box;
   display: inline-block;
 }
+
 .registrar-body .mt-auto-mod {
   margin-top: 130px;
 }
+
 .registrar-body .loae-processed-label {
   margin-top: 4px;
   font-weight: 700;
   /* keep label clear from divider */
   padding-top: 2px;
 }
+
 .registrar-body .loae-grid--requirements {
   margin-top: -1px;
 }
+
 .registrar-body .loae-box--requirements {
   min-height: 86px;
   font-size: 0.69rem;
 }
+
 .registrar-body .loae-readmission {
   border: 1px solid #000;
   margin-top: 12px;
   padding: 8px 10px;
   background: #fff;
 }
+
 .registrar-body .loae-readmission p {
   margin: 2px 0;
 }
+
 .registrar-body .loae-readmission__title {
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 @media print {
-  @page {
+@page {
     size: 8.5in 14in;
     margin: 0 !important;
-  }
+}
+
   .loae-mini-table td {
     border-left: 0.5px solid black !important;
   }
+
   .loae-toolbar {
     display: none !important;
   }
+
   html,
   body {
     margin: 0 !important;
@@ -887,6 +1053,7 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
   .registrar-body .plp-sidebar,
   .registrar-body .student-topbar,
   .registrar-body .student-page-header,
@@ -895,40 +1062,49 @@
   .registrar-body #download-toast {
     display: none !important;
   }
+
   .registrar-body .loae-date-row--stacked {
     flex-direction: column !important;
     align-items: flex-end !important;
     justify-content: flex-end !important;
   }
+
   .registrar-body .loae-date-row--stacked .loae-date-input {
     width: 220px !important;
   }
+
   /* Print-safe widths for recorded section (override any other rules) */
+
   .registrar-body .loae-box--recorded .loae-sign-line .loae-recorded-college {
     width: 200px !important;
     max-width: 200px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   .registrar-body .loae-box--recorded .loae-sign-date .loae-recorded-date {
     width: 80px !important;
     max-width: 80px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   .registrar-body .loae-box--recorded .loae-sign-line .loae-recorded-frontdesk {
     width: 260px !important;
     max-width: 260px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   .registrar-body .loae-box--recorded .loae-sign-date .loae-recorded-frontdate {
     width: 160px !important;
     max-width: 160px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   /* Ensure divider spans full width in print as well (no side gaps) */
+
   .registrar-body .loae-box--recorded .loae-record-divider {
     border-top: 1px solid #000 !important;
     width: calc(100% + 12px) !important;
@@ -939,6 +1115,7 @@
     display: block !important;
     height: 0 !important;
   }
+
   .registrar-body .student-layout,
   .registrar-body .student-main-wrapper,
   .registrar-body .content-footer-wrap,
@@ -951,18 +1128,22 @@
     overflow: visible !important;
     background: #fff !important;
   }
+
   .registrar-body .content-footer-wrap {
     min-height: auto !important;
     max-height: none !important;
   }
+
   .registrar-body .student-content {
     overflow: visible !important;
   }
+
   .registrar-body .loae-a4-stage {
     width: 100% !important;
     display: block !important;
     overflow: visible !important;
   }
+
   .registrar-body .loae-page {
     --loae-scale: 1 !important;
     --loae-zoom: 1 !important;
@@ -973,6 +1154,7 @@
     max-width: none !important;
     box-sizing: border-box !important;
   }
+
   .registrar-body .loae-sheet {
     width: 8.5in !important;
     min-width: 8.5in !important;
@@ -986,6 +1168,7 @@
     background: #fff !important;
     box-sizing: border-box !important;
   }
+
   .registrar-body .loae-sheet input,
   .registrar-body .loae-sheet textarea,
   .registrar-body .loae-sheet select {
@@ -994,55 +1177,71 @@
     box-shadow: none !important;
     background: transparent !important;
   }
+
   .registrar-body .loae-sheet .loae-inline,
   .registrar-body .loae-sheet .loae-mini-input,
   .registrar-body .loae-sheet .loae-date-input {
     border: 0 !important;
     border-bottom: 1px solid #000 !important;
   }
+
   .registrar-body .loae-reasons {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
+
   .registrar-body .loae-reason-item--others {
     grid-column: span 2 !important;
   }
+
   .registrar-body .loae-grid--two {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+
   .registrar-body .loae-grid--four {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
+
   .registrar-body .loae-grid > .loae-box {
     margin-left: -1px !important;
     margin-top: -1px !important;
   }
+
   .registrar-body .loae-grid > .loae-box:first-child {
     margin-left: 0 !important;
   }
+
   .registrar-body .loae-grid--staff .loae-sign-line {
     text-align: center !important;
   }
+
   .registrar-body .loae-grid--staff .loae-sign-line .loae-inline--line {
     width: 100% !important;
     max-width: 145px !important;
   }
+
   /* Ensure registrar sign-line input inside unavailability block is 200px in print */
+
   .registrar-body .loae-rosc .loae-inline--line {
     width: 200px !important;
     max-width: 200px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   .registrar-body .loae-box--recorded .loae-sign-date .loae-inline--date-small {
     width: 70px !important;
   }
+
   .registrar-body .loae-grid,
   .registrar-body .loae-grade-table,
   .registrar-body .loae-readmission {
-    break-inside: avoid;
+    -moz-column-break-inside: avoid;
+         break-inside: avoid;
     page-break-inside: avoid;
   }
+
   /* Print-only checkbox replacement: show { } and { } when checked */
+
   .registrar-body .loae-reason-item input[type=checkbox],
   .registrar-body .loae-inline-check input[type=checkbox] {
     position: absolute !important;
@@ -1054,12 +1253,14 @@
     padding: 0 !important;
     pointer-events: none !important;
   }
+
   .registrar-body .loae-reason-item .loae-check-render,
   .registrar-body .loae-inline-check .loae-check-render {
     display: inline-block !important;
     position: relative !important;
     padding-left: 20px !important;
   }
+
   .registrar-body .loae-reason-item .loae-check-render::before,
   .registrar-body .loae-inline-check .loae-check-render::before {
     content: "{ }" !important;
@@ -1068,41 +1269,52 @@
     top: 0 !important;
     line-height: 1 !important;
   }
+
   .registrar-body .loae-reason-item input[type=checkbox]:checked + .loae-check-render::before,
   .registrar-body .loae-inline-check input[type=checkbox]:checked + .loae-check-render::before {
-    content: "{✓}" !important;
+    content: "{\2713}" !important;
   }
+
   /* Print overrides for DSA and Guidance signature lines */
+
   .registrar-body .loae-box--dsa .loae-DSA-block {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-end !important;
   }
+
   .registrar-body .loae-box--dsa .loae-sign-line .loae-inline--line {
     width: 130px !important;
     max-width: 160px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   .registrar-body .loae-box--dsa .loae-sign-role {
     text-align: right !important;
   }
+
   .registrar-body .loae-box--guidance .loae-sign-line {
     text-align: right !important;
   }
+
   .registrar-body .loae-box--guidance .loae-sign-line .loae-inline--line {
     width: 160px !important;
     max-width: 160px !important;
     box-sizing: border-box !important;
     display: inline-block !important;
   }
+
   .registrar-body .loae-box--guidance .loae-sign-role {
     text-align: right !important;
   }
+
   /* Ensure staff grid boxes behave as flex columns in print and push signature lines to bottom */
+
   .registrar-body .loae-grid--staff {
     align-items: stretch !important;
   }
+
   .registrar-body .loae-grid--staff > .loae-box {
     display: flex !important;
     flex-direction: column !important;
@@ -1110,10 +1322,13 @@
     min-height: 160px !important;
     box-sizing: border-box !important;
   }
+
   .registrar-body .loae-grid--staff .loae-sign-line {
     margin-top: auto !important;
   }
+
   .registrar-body .loae-grid--staff .loae-sign-line .mt-auto-mod {
     margin-top: 0 !important;
   }
 }
+

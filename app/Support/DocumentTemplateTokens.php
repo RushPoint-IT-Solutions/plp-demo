@@ -137,7 +137,7 @@ class DocumentTemplateTokens
             'form-8d2' => 'Certificate of Honor (Form 8D-2)',
             'cog' => 'Copy of Grades (COG)',
             'official-grade-report' => 'Official Grade Report',
-            'cross-enroll-permit' => 'Cross-Enroll Permit',
+            'cross-enroll-permit' => 'Application to Cross-Enroll',
         ];
 
         return $titles[$slug] ?? ucwords(str_replace('-', ' ', $slug));

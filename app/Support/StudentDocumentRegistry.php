@@ -95,7 +95,7 @@ class StudentDocumentRegistry
                 'live_url' => route('registrar.registrar-menu.forms.official-grade-report'),
             ],
             [
-                'slug' => 'cross-enroll-permit', 'label' => 'Cross-Enroll Permit', 'group' => 'Enrollment',
+                'slug' => 'cross-enroll-permit', 'label' => 'Application to Cross-Enroll', 'group' => 'Enrollment',
                 'has_editor' => true, 'editor' => 'generic',
                 'live_url' => route('registrar.registrar-menu.forms.permission-cross-enroll'),
             ],

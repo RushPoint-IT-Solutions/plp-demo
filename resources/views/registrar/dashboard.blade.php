@@ -597,7 +597,7 @@
             <div class="rda-card-hd">
                 <div class="rda-card-title">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#006837" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    SEX BREAKDOWN
+                    Gender Breakdown
                 </div>
                 <div class="rda-card-badge">{{ $activeTermLabel !== '' ? $activeTermLabel : 'Current semester' }}</div>
             </div>

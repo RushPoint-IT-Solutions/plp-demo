@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Registrar\Services;
 
 use App\AcademicTerm;
+use App\CancellationWaiver;
 use App\CertificateIssued;
 use App\Course;
 use App\GraduateTagging;
 use App\Http\Controllers\Controller;
+use App\LoaApplication;
 use App\Support\CorTorReportData;
 use App\Support\SystemConfigSchoolTermOptions;
 use App\Student;
@@ -208,6 +210,199 @@ class ReportsAdminController extends Controller
         ];
 
         return view('registrar.services.reports-admin.academic-reports', compact('summary', 'students', 'systemConfig'));
+    }
+
+    public function loaReports(Request $request)
+    {
+        $systemConfig = $this->reportSystemConfig($request);
+        $schoolYear = trim((string) $request->query('school_year', $systemConfig['selectedSchoolYear'] ?? ''));
+        $semester = trim((string) $request->query('semester', $systemConfig['selectedTerm'] ?? ''));
+        $filingType = trim((string) $request->query('filing_type', ''));
+        $reason = trim((string) $request->query('reason', ''));
+        $program = trim((string) $request->query('program', ''));
+        $collegeDepartment = trim((string) $request->query('college_department', ''));
+        $search = trim((string) $request->query('q', ''));
+
+        $records = collect();
+        $schoolYearOptions = collect($systemConfig['schoolYearOptions'] ?? []);
+        $semesterOptions = collect($systemConfig['termOptions'] ?? ['First', 'Second', 'Summer']);
+        $programOptions = collect();
+        $collegeDepartmentOptions = collect();
+        $reasonOptions = collect(LoaApplication::REASONS);
+
+        if (Schema::hasTable('loa_applications')) {
+            $scopedCourseIds = $request->user()
+                ? \App\Support\CourseScopeGate::allowedCourseIds($request->user())
+                : null;
+            $baseQuery = LoaApplication::query()
+                ->when($scopedCourseIds !== null, function ($query) use ($scopedCourseIds) {
+                    $query->whereIn('course_id', $scopedCourseIds);
+                });
+
+            $schoolYearOptions = $schoolYearOptions
+                ->merge((clone $baseQuery)->whereNotNull('school_year')->distinct()->pluck('school_year'))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->reverse()
+                ->values();
+
+            $semesterOptions = $semesterOptions
+                ->merge((clone $baseQuery)
+                    ->when($schoolYear !== '', function ($query) use ($schoolYear) {
+                        $query->where('school_year', $schoolYear);
+                    })
+                    ->whereNotNull('semester')
+                    ->distinct()
+                    ->pluck('semester'))
+                ->filter()
+                ->unique()
+                ->values();
+
+            $programOptions = (clone $baseQuery)
+                ->whereNotNull('program')
+                ->where('program', '<>', '')
+                ->distinct()
+                ->orderBy('program')
+                ->pluck('program');
+
+            $collegeDepartmentOptions = (clone $baseQuery)
+                ->whereNotNull('college_department')
+                ->where('college_department', '<>', '')
+                ->distinct()
+                ->orderBy('college_department')
+                ->pluck('college_department');
+
+            $reasonOptions = $reasonOptions
+                ->merge((clone $baseQuery)->whereNotNull('reason')->distinct()->pluck('reason'))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+
+            $records = $baseQuery
+                ->with('student:id,student_no,name')
+                ->when($schoolYear !== '', function ($query) use ($schoolYear) {
+                    $query->where('school_year', $schoolYear);
+                })
+                ->when($semester !== '', function ($query) use ($semester) {
+                    $query->where('semester', $semester);
+                })
+                ->when($filingType !== '', function ($query) use ($filingType) {
+                    $query->where('filing_type', $filingType);
+                })
+                ->when($reason !== '', function ($query) use ($reason) {
+                    $query->where('reason', $reason);
+                })
+                ->when($program !== '', function ($query) use ($program) {
+                    $query->where('program', $program);
+                })
+                ->when($collegeDepartment !== '', function ($query) use ($collegeDepartment) {
+                    $query->where('college_department', $collegeDepartment);
+                })
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($nested) use ($search) {
+                        $nested->where('program', 'like', '%' . $search . '%')
+                            ->orWhere('college_department', 'like', '%' . $search . '%')
+                            ->orWhere('reason', 'like', '%' . $search . '%')
+                            ->orWhere('reason_details', 'like', '%' . $search . '%')
+                            ->orWhereHas('student', function ($studentQuery) use ($search) {
+                                $studentQuery->where('student_no', 'like', '%' . $search . '%')
+                                    ->orWhere('name', 'like', '%' . $search . '%');
+                            });
+                    });
+                })
+                ->orderByDesc('application_date')
+                ->orderByDesc('id')
+                ->get();
+        }
+
+        $summary = [
+            'total' => $records->count(),
+            LoaApplication::TYPE_ENROLLED => $records->where('filing_type', LoaApplication::TYPE_ENROLLED)->count(),
+            LoaApplication::TYPE_NON_ENROLLED => $records->where('filing_type', LoaApplication::TYPE_NON_ENROLLED)->count(),
+            LoaApplication::TYPE_LATE => $records->where('filing_type', LoaApplication::TYPE_LATE)->count(),
+        ];
+
+        $buildBreakdown = function ($items, string $field) {
+            return $items
+                ->groupBy(function ($item) use ($field) {
+                    return trim((string) $item->{$field}) ?: 'Not Recorded';
+                })
+                ->map(function ($group, $label) {
+                    return [
+                        'label' => $label,
+                        'total' => $group->count(),
+                        'enrolled' => $group->where('filing_type', LoaApplication::TYPE_ENROLLED)->count(),
+                        'non_enrolled' => $group->where('filing_type', LoaApplication::TYPE_NON_ENROLLED)->count(),
+                        'late' => $group->where('filing_type', LoaApplication::TYPE_LATE)->count(),
+                    ];
+                })
+                ->sortByDesc('total')
+                ->values();
+        };
+
+        return view('registrar.services.reports-admin.loa-reports', [
+            'records' => $records,
+            'summary' => $summary,
+            'reasonBreakdown' => $buildBreakdown($records, 'reason'),
+            'programBreakdown' => $buildBreakdown($records, 'program'),
+            'collegeDepartmentBreakdown' => $buildBreakdown($records, 'college_department'),
+            'filingTypes' => LoaApplication::FILING_TYPES,
+            'schoolYearOptions' => $schoolYearOptions,
+            'semesterOptions' => $semesterOptions,
+            'programOptions' => $programOptions,
+            'collegeDepartmentOptions' => $collegeDepartmentOptions,
+            'reasonOptions' => $reasonOptions,
+            'filters' => compact('schoolYear', 'semester', 'filingType', 'reason', 'program', 'collegeDepartment', 'search'),
+        ]);
+    }
+
+    public function waiverCancellationReports(Request $request)
+    {
+        $startDate = trim((string) $request->query('start_date', ''));
+        $endDate = trim((string) $request->query('end_date', ''));
+        $search = trim((string) $request->query('q', ''));
+
+        $scopedCourseIds = $request->user()
+            ? \App\Support\CourseScopeGate::allowedCourseIds($request->user())
+            : null;
+
+        $records = CancellationWaiver::query()
+            ->with(['student:id,student_no,name', 'canonicalCourse:id,code,name'])
+            ->when($scopedCourseIds !== null, function ($query) use ($scopedCourseIds) {
+                $query->whereIn('course_id', $scopedCourseIds);
+            })
+            ->when($startDate !== '', function ($query) use ($startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            })
+            ->when($endDate !== '', function ($query) use ($endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($nested) use ($search) {
+                    $nested->where('remarks', 'like', '%' . $search . '%')
+                        ->orWhereHas('student', function ($studentQuery) use ($search) {
+                            $studentQuery->where('student_no', 'like', '%' . $search . '%')
+                                ->orWhere('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('registrar.services.reports-admin.waiver-cancellation-reports', [
+            'records' => $records,
+            'filters' => compact('startDate', 'endDate', 'search'),
+            'summary' => [
+                'total_requests' => $records->count(),
+                'unique_students' => $records->pluck('student_id')->filter()->unique()->count(),
+                'with_reason' => $records->filter(function ($record) {
+                    return trim((string) $record->remarks) !== '';
+                })->count(),
+            ],
+        ]);
     }
 
     public function gwaReport(Request $request)

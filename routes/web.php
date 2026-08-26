@@ -434,6 +434,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
             Route::get('/permission-cross-enroll', 'Registrar\RegistrarController@formsPermissionCrossEnroll')->name('permission-cross-enroll');
             Route::get('/citizens-charter', 'Registrar\RegistrarController@formsCitizensCharter')->name('citizens-charter');
             Route::get('/request-form-f-137a/students/search', 'Registrar\RegistrarController@formsRequestFormF137aStudentSearch')->name('request-form-f-137a.students.search');
+            Route::post('/request-form-f-137a/{student}/request', 'Registrar\RegistrarController@formsRequestFormF137aRecord')->name('request-form-f-137a.request');
             Route::post('/request-form-f-137a/{student}/print', 'Registrar\RegistrarController@formsRequestFormF137aPrint')->name('request-form-f-137a.print');
             Route::get('/request-form-f-137a/{student}', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a.show');
             Route::get('/request-form-f-137a', 'Registrar\RegistrarController@formsRequestFormF137a')->name('request-form-f-137a');
@@ -530,6 +531,8 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('reports-admin')->name('reports-admin.')->group(function () {
             Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
+            Route::get('/loa-reports', 'Registrar\Services\ReportsAdminController@loaReports')->name('loa-reports');
+            Route::get('/waiver-cancellation-reports', 'Registrar\Services\ReportsAdminController@waiverCancellationReports')->name('waiver-cancellation-reports');
             Route::get('/gwa-report', 'Registrar\Services\ReportsAdminController@gwaReport')->name('gwa-report');
             Route::get('/cwa-report', 'Registrar\Services\ReportsAdminController@cwaReport')->name('cwa-report');
             Route::post('/academic-reports/issue', 'Registrar\Services\ReportsAdminController@issueAcademicReport')->name('academic-reports.issue');

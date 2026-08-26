@@ -58,6 +58,7 @@ use App\StudentMedicalRecord;
 use App\StudentClinicRecord;
 use App\GraduateTagging;
 use App\GradeCorrectionRequest;
+use App\LoaApplication;
 use App\StudentSubjectGrade;
 use App\ScholarshipProgram;
 use App\ScholarshipStudent;
@@ -19845,14 +19846,70 @@ class RegistrarController extends Controller
         $validated = $request->validate([
             'status' => ['required', 'string', Rule::in(Student::STATUSES)],
             'remarks' => ['nullable', 'string', 'max:500'],
+            'loa_filing_type' => ['required_if:status,' . Student::STATUS_LOA, 'nullable', 'string', Rule::in(array_keys(LoaApplication::FILING_TYPES))],
+            'loa_reason' => ['required_if:status,' . Student::STATUS_LOA, 'nullable', 'string', Rule::in(LoaApplication::REASONS)],
+            'loa_reason_details' => ['nullable', 'string', 'max:1000'],
+            'loa_school_year' => ['required_if:status,' . Student::STATUS_LOA, 'nullable', 'string', 'max:20'],
+            'loa_semester' => ['required_if:status,' . Student::STATUS_LOA, 'nullable', 'string', 'max:40'],
+            'loa_application_date' => ['required_if:status,' . Student::STATUS_LOA, 'nullable', 'date'],
         ]);
 
-        $student->status = $validated['status'];
-        $student->status_date = now()->toDateString();
-        $student->status_remarks = trim((string) ($validated['remarks'] ?? '')) ?: null;
-        $student->save();
+        DB::transaction(function () use ($request, $student, $validated) {
+            $student->status = $validated['status'];
+            $student->status_date = now()->toDateString();
+            $student->status_remarks = trim((string) ($validated['remarks'] ?? '')) ?: null;
+            $student->save();
 
-        return response()->json(['success' => true, 'message' => 'Student status updated to ' . $validated['status'] . '.']);
+            if ($validated['status'] !== Student::STATUS_LOA || !Schema::hasTable('loa_applications')) {
+                return;
+            }
+
+            $student->loadMissing([
+                'canonicalCourse.college',
+                'canonicalCourse.department',
+            ]);
+
+            $course = $student->canonicalCourse;
+            $schoolYear = trim((string) $validated['loa_school_year']);
+            $semester = trim((string) $validated['loa_semester']);
+            $academicTerm = AcademicTerm::query()
+                ->where('school_year', $schoolYear)
+                ->where('term', $semester)
+                ->first();
+
+            $program = trim((string) ($student->program ?: optional($course)->code ?: optional($course)->name));
+            $collegeName = trim((string) ($student->college ?: optional(optional($course)->college)->name));
+            $departmentName = trim((string) optional(optional($course)->department)->description);
+            $collegeDepartment = implode(' / ', array_values(array_unique(array_filter([
+                $collegeName,
+                $departmentName,
+            ]))));
+
+            LoaApplication::create([
+                'student_id' => $student->id,
+                'academic_term_id' => optional($academicTerm)->id,
+                'course_id' => optional($course)->id ?: $student->course_id,
+                'college_id' => optional(optional($course)->college)->id,
+                'department_id' => optional(optional($course)->department)->id,
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+                'filing_type' => $validated['loa_filing_type'],
+                'reason' => $validated['loa_reason'],
+                'reason_details' => trim((string) ($validated['loa_reason_details'] ?? '')) ?: null,
+                'program' => $program ?: 'Not Recorded',
+                'college_department' => $collegeDepartment ?: 'Not Recorded',
+                'application_date' => $validated['loa_application_date'],
+                'status' => 'Recorded',
+                'recorded_by_user_id' => optional($request->user())->id,
+            ]);
+        });
+
+        $message = 'Student status updated to ' . $validated['status'] . '.';
+        if ($validated['status'] === Student::STATUS_LOA) {
+            $message = 'Student status and LOA filing were recorded.';
+        }
+
+        return response()->json(['success' => true, 'message' => $message]);
     }
 
     public function studentRecordWithdraw(Request $request, Student $student): JsonResponse
@@ -23637,6 +23694,7 @@ class RegistrarController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
+            'reason' => 'nullable|string|max:255',
         ]);
 
         $student = Student::findOrFail($validated['student_id']);
@@ -23650,6 +23708,7 @@ class RegistrarController extends Controller
             'year_level' => $student->year_level,
             'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
             'status' => 'pending',
+            'remarks' => trim((string) ($validated['reason'] ?? '')) ?: null,
         ]);
 
         return response()->json(['ok' => true, 'id' => $record->id]);
@@ -23662,6 +23721,7 @@ class RegistrarController extends Controller
             'name' => 'required|string|max:120',
             'program' => 'nullable|string|max:80',
             'year_level' => 'nullable|string|max:40',
+            'reason' => 'nullable|string|max:255',
         ]);
 
         $student = $cancellationWaiver->student;
@@ -23675,6 +23735,7 @@ class RegistrarController extends Controller
             'program' => $student->program,
             'year_level' => $student->year_level,
             'section' => trim(($student->program ?: 'PROGRAM') . ' ' . ($student->year_level ?: 'YEAR')),
+            'remarks' => trim((string) ($validated['reason'] ?? '')) ?: null,
         ]);
 
         return response()->json(['ok' => true]);
@@ -24095,16 +24156,100 @@ class RegistrarController extends Controller
             $student = Student::find(request()->query('student_id'));
         }
 
-        $requestNumber = $student
-            ? min(4, $this->formsRequestFormF137aPrintCount($student) + 1)
-            : 1;
+        $requestHistory = $student ? $this->formsRequestFormF137aHistory($student) : collect();
+        $activeRequest = $requestHistory->first(function ($request) {
+            return empty($request->printed_at);
+        });
+        $requestNumber = $activeRequest
+            ? (int) $activeRequest->issuance_number
+            : min(2, $requestHistory->count() + 1);
+        $canRecordRequest = (bool) $student && !$activeRequest && $requestHistory->count() < 2;
+        $canPrint = (bool) $activeRequest;
+        $formRequestDate = $activeRequest && $activeRequest->requested_at
+            ? Carbon::parse($activeRequest->requested_at)
+            : now();
 
-        return view('registrar.forms.request-form-f-137a', compact('student', 'requestNumber'));
+        return view('registrar.forms.request-form-f-137a', compact(
+            'student',
+            'requestNumber',
+            'requestHistory',
+            'activeRequest',
+            'canRecordRequest',
+            'canPrint',
+            'formRequestDate'
+        ));
     }
 
     public function formsRequestFormF137aStudentSearch(Request $request): JsonResponse
     {
         return $this->formsCorStudentSearch($request);
+    }
+
+    public function formsRequestFormF137aRecord(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'requested_on' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        try {
+            $issuanceNumber = DB::transaction(function () use ($student, $validated) {
+                DB::table('students')->where('id', $student->id)->lockForUpdate()->value('id');
+
+                $history = DB::table('form_137a_requests')
+                    ->where('student_id', $student->id)
+                    ->lockForUpdate()
+                    ->orderBy('issuance_number')
+                    ->get();
+
+                if ($history->first(function ($item) { return empty($item->printed_at); })) {
+                    throw new \DomainException('This student already has a request awaiting printing.');
+                }
+
+                if ($history->count() >= 2) {
+                    throw new \DomainException('The first and second Form 137 requests have already been recorded.');
+                }
+
+                $issuanceNumber = $history->count() + 1;
+                $requestedAt = Carbon::createFromFormat('Y-m-d', $validated['requested_on'])->startOfDay();
+                $now = now();
+
+                DB::table('form_137a_requests')->insert([
+                    'student_id' => $student->id,
+                    'issuance_number' => $issuanceNumber,
+                    'requested_at' => $requestedAt,
+                    'printed_at' => null,
+                    'requested_by_user_id' => auth()->id(),
+                    'printed_by_user_id' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+
+                AuditTrailRecorder::record('F137A_REQUESTED', [[
+                    'type' => 'Student',
+                    'id' => (int) $student->id,
+                    'label' => trim((string) ($student->student_no ?: '') . ' - ' . (string) $student->name, ' -'),
+                    'changes' => [
+                        ['field' => 'issuance_number', 'old' => null, 'new' => $issuanceNumber],
+                        ['field' => 'requested_at', 'old' => null, 'new' => $requestedAt],
+                    ],
+                ]], [
+                    'source_module' => 'Registrar Forms',
+                    'source_action' => 'Record Request Form F137A',
+                ]);
+
+                return $issuanceNumber;
+            });
+
+            return redirect()
+                ->route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id])
+                ->with('success', $issuanceNumber === 1
+                    ? 'First Form 137 request recorded. It is ready to print.'
+                    : 'Second Form 137 request recorded. It is ready to print.');
+        } catch (\DomainException $exception) {
+            return redirect()
+                ->route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id])
+                ->withErrors(['request' => $exception->getMessage()]);
+        }
     }
 
     public function formsRequestFormF137aPrint(Student $student): JsonResponse
@@ -24113,55 +24258,78 @@ class RegistrarController extends Controller
             $result = DB::transaction(function () use ($student) {
                 DB::table('students')->where('id', $student->id)->lockForUpdate()->value('id');
 
-                $printCount = $this->formsRequestFormF137aPrintCount($student) + 1;
-                $requestNumber = min(4, $printCount);
-                $recorded = AuditTrailRecorder::record('F137A_PRINTED', [[
+                $formRequest = DB::table('form_137a_requests')
+                    ->where('student_id', $student->id)
+                    ->whereNull('printed_at')
+                    ->lockForUpdate()
+                    ->orderBy('issuance_number')
+                    ->first();
+
+                if (!$formRequest) {
+                    throw new \DomainException('Record the first or second request before printing.');
+                }
+
+                $printedAt = now();
+                DB::table('form_137a_requests')
+                    ->where('id', $formRequest->id)
+                    ->update([
+                        'printed_at' => $printedAt,
+                        'printed_by_user_id' => auth()->id(),
+                        'updated_at' => $printedAt,
+                    ]);
+
+                AuditTrailRecorder::record('F137A_PRINTED', [[
                     'type' => 'Student',
                     'id' => (int) $student->id,
                     'label' => trim((string) ($student->student_no ?: '') . ' - ' . (string) $student->name, ' -'),
                     'changes' => [[
-                        'field' => 'request_number',
-                        'old' => max(0, $printCount - 1),
-                        'new' => $requestNumber,
+                        'field' => 'issuance_number',
+                        'old' => null,
+                        'new' => (int) $formRequest->issuance_number,
+                    ], [
+                        'field' => 'printed_at',
+                        'old' => null,
+                        'new' => $printedAt,
                     ]],
                 ]], [
                     'source_module' => 'Registrar Forms',
                     'source_action' => 'Print Request Form F137A',
                 ]);
 
-                if (!$recorded) {
-                    throw new \RuntimeException('The print event could not be recorded.');
-                }
-
                 return [
-                    'print_count' => $printCount,
-                    'request_number' => $requestNumber,
+                    'request_number' => (int) $formRequest->issuance_number,
+                    'requested_at' => Carbon::parse($formRequest->requested_at)->format('M j, Y'),
+                    'printed_at' => $printedAt->format('M j, Y'),
                 ];
             });
 
             return response()->json(array_merge(['ok' => true], $result));
+        } catch (\DomainException $exception) {
+            return response()->json([
+                'ok' => false,
+                'message' => $exception->getMessage(),
+            ], 409);
         } catch (\Throwable $exception) {
             report($exception);
 
             return response()->json([
                 'ok' => false,
-                'message' => 'Unable to record the F137A print count. Please try again.',
+                'message' => 'Unable to record the Form 137 print date. Please try again.',
             ], 500);
         }
     }
 
-    private function formsRequestFormF137aPrintCount(Student $student): int
+    private function formsRequestFormF137aHistory(Student $student)
     {
-        if (!Schema::hasTable('audit_events') || !Schema::hasTable('audit_event_subjects')) {
-            return 0;
+        if (!Schema::hasTable('form_137a_requests')) {
+            return collect();
         }
 
-        return (int) DB::table('audit_events as ae')
-            ->join('audit_event_subjects as aes', 'aes.audit_event_id', '=', 'ae.id')
-            ->where('ae.event_code', 'F137A_PRINTED')
-            ->where('aes.subject_type', 'Student')
-            ->where('aes.subject_id', $student->id)
-            ->count('ae.id');
+        return DB::table('form_137a_requests')
+            ->where('student_id', $student->id)
+            ->whereIn('issuance_number', [1, 2])
+            ->orderBy('issuance_number')
+            ->get();
     }
 
     private function citizensCharterPages(): array

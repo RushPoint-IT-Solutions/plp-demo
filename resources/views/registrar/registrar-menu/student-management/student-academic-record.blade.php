@@ -860,7 +860,7 @@
             </a>
             <a href="{{ route('registrar.registrar-menu.forms.permission-cross-enroll') }}" class="sar-cert-card" target="_blank">
                 <div class="sar-cert-icon">🔀</div>
-                <div class="sar-cert-name">Cross-Enrollment Permit</div>
+                <div class="sar-cert-name">Application to Cross-Enroll</div>
                 <div class="sar-cert-desc">Permission to enroll subjects at another institution</div>
             </a>
             <a href="{{ route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id]) }}" class="sar-cert-card" target="_blank">

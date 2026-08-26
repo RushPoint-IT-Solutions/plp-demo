@@ -1,7 +1,7 @@
 @extends('layouts.registrar')
 
-@section('title', 'PLP - Permission to Cross-Enroll')
-@section('page-title', 'PERMISSION TO CROSS-ENROLL')
+@section('title', 'PLP - Application to Cross-Enroll')
+@section('page-title', 'APPLICATION TO CROSS-ENROLL')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
@@ -67,7 +67,7 @@
                 <div class="frm-search-wrap">
                     <input type="text" class="app-filter-select frm-search-input" placeholder="Search student..." oninput="pceFilterTable(this.value)">
                 </div>
-                <button type="button" class="req-btn-save frm-action-btn" onclick="pceOpenBlankPreview()">Preview Form</button>
+                <button type="button" class="req-btn-save frm-action-btn" onclick="pceOpenBlankPreview()">Preview Application Form</button>
                 <button type="button" class="req-btn-save frm-action-btn" onclick="pcePrintSelected()">Print Selected</button>
                 <button type="button" class="req-btn-save frm-action-btn">Set</button>
             </div>
@@ -166,7 +166,7 @@
 <div class="req-modal-overlay" id="pceDeleteModal" style="display:none;" onclick="if(event.target===this) pceCloseModal('pceDeleteModal')">
     <div class="req-modal-box" style="width: 440px;">
         <h3 class="req-modal-title">DELETE RECORD</h3>
-        <p style="font-size:0.9rem; color:#4b5563; margin: 8px 0 0; text-align:center;">Are you sure you want to delete this Cross-Enroll Permit record?</p>
+        <p style="font-size:0.9rem; color:#4b5563; margin: 8px 0 0; text-align:center;">Are you sure you want to delete this Application to Cross-Enroll record?</p>
         <div class="req-modal-actions" style="margin-top:16px; justify-content:center;">
             <button type="button" class="req-btn-cancel" onclick="pceCloseModal('pceDeleteModal')">Cancel</button>
             <button type="button" class="req-btn-save" style="background:#b42318;" onclick="pceConfirmDelete()">Delete</button>
@@ -177,7 +177,7 @@
 <div class="req-modal-overlay" id="pcePreviewModal" style="display:none;" onclick="if(event.target===this) pceClosePreview()">
     <div class="req-modal-box pce-preview-modal-box">
         <div class="pce-preview-head">
-            <h3>PERMISSION TO CROSS-ENROLL PREVIEW</h3>
+            <h3>APPLICATION TO CROSS-ENROLL PREVIEW</h3>
         </div>
         <div class="pce-preview-wrap">
             <div class="pce-sheet" id="pcePreviewSheet"></div>

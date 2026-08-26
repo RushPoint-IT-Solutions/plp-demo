@@ -1520,7 +1520,7 @@
                                 ['Honorable Dismissal', route('registrar.registrar-menu.forms.honorable-dismissal.show', ['student' => $student->id]),'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
                                 ['Graduation Clearance', route('registrar.registrar-menu.forms.graduation-clearance.show', ['student' => $student->id]),'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
                                 ['Leave of Absence', route('registrar.registrar-menu.forms.application-leave-of-absence-enrolled.show', ['student' => $student->id]),'M8 2v3M16 2v3M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5z'],
-                                ['Cross-Enroll Permit', route('registrar.registrar-menu.forms.permission-cross-enroll'),'M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4-3 3-3-3m3-3v11'],
+                                ['Application to Cross-Enroll', route('registrar.registrar-menu.forms.permission-cross-enroll'),'M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4-3 3-3-3m3-3v11'],
                                 ['Request Form F137A', route('registrar.registrar-menu.forms.request-form-f-137a.show', ['student' => $student->id]),'M4 4h16v16H4zM4 9h16M9 9v11'],
                             ];
                         @endphp
@@ -1984,6 +1984,48 @@
                         <option value="{{ $statusOption }}" {{ $studentStatus === $statusOption ? 'selected' : '' }}>{{ $statusOption }}</option>
                     @endforeach
                 </select>
+            </div>
+            <div id="loaStatusFields" style="display:none; border:1px solid #d6e7dc; background:#f6fbf8; border-radius:8px; padding:14px; margin-top:14px;">
+                <div style="font-size:.82rem; font-weight:800; color:#006837; margin-bottom:12px; text-transform:uppercase;">LOA Filing Details</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="med-field">
+                        <label for="loa_filing_type">Case Type</label>
+                        <select id="loa_filing_type">
+                            @foreach(\App\LoaApplication::FILING_TYPES as $typeValue => $typeLabel)
+                                <option value="{{ $typeValue }}">{{ $typeLabel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="med-field">
+                        <label for="loa_application_date">Application Date</label>
+                        <input type="date" id="loa_application_date" value="{{ now()->toDateString() }}">
+                    </div>
+                    <div class="med-field">
+                        <label for="loa_school_year">School Year</label>
+                        <input type="text" id="loa_school_year" maxlength="20" placeholder="e.g. 2025-2026" value="{{ optional($student)->school_year ?: optional(optional($student)->academicTerm)->school_year }}">
+                    </div>
+                    <div class="med-field">
+                        <label for="loa_semester">Semester</label>
+                        @php($loaDefaultSemester = optional($student)->semester ?: optional(optional($student)->academicTerm)->term)
+                        <select id="loa_semester">
+                            <option value="First" {{ $loaDefaultSemester === 'First' ? 'selected' : '' }}>First</option>
+                            <option value="Second" {{ $loaDefaultSemester === 'Second' ? 'selected' : '' }}>Second</option>
+                            <option value="Summer" {{ $loaDefaultSemester === 'Summer' ? 'selected' : '' }}>Summer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="med-field" style="margin-top:12px;">
+                    <label for="loa_reason">Reason for LOA</label>
+                    <select id="loa_reason">
+                        @foreach(\App\LoaApplication::REASONS as $loaReason)
+                            <option value="{{ $loaReason }}">{{ $loaReason }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="med-field" style="margin-top:12px;">
+                    <label for="loa_reason_details">Reason Details</label>
+                    <textarea id="loa_reason_details" maxlength="1000" style="min-height:70px;" placeholder="Add supporting details, if applicable."></textarea>
+                </div>
             </div>
             <div class="med-field">
                 <label>Remarks</label>
@@ -2521,6 +2563,7 @@ async function srpConfirmHdTag() {
 
 // ── Edit Status ─────────────────────────────────────────────
 function srpOpenStatusModal() {
+    srpSyncLoaStatusFields();
     document.getElementById('statusEditOverlay').classList.add('open');
 }
 
@@ -2532,6 +2575,15 @@ document.getElementById('statusEditOverlay').addEventListener('click', function(
     if (e.target === this) srpCancelStatusEdit();
 });
 
+function srpSyncLoaStatusFields() {
+    const status = document.getElementById('status_value');
+    const fields = document.getElementById('loaStatusFields');
+    if (!status || !fields) return;
+    fields.style.display = status.value === 'LOA' ? 'block' : 'none';
+}
+
+document.getElementById('status_value').addEventListener('change', srpSyncLoaStatusFields);
+
 function srpReloadOnDocumentsTab() {
     window.location.href = window.location.pathname + '?tab=documents';
 }
@@ -2539,12 +2591,27 @@ function srpReloadOnDocumentsTab() {
 async function srpConfirmStatusEdit() {
     const status = document.getElementById('status_value').value;
     const remarks = document.getElementById('status_remarks').value.trim();
+    const payload = { status: status, remarks: remarks };
+
+    if (status === 'LOA') {
+        payload.loa_filing_type = document.getElementById('loa_filing_type').value;
+        payload.loa_application_date = document.getElementById('loa_application_date').value;
+        payload.loa_school_year = document.getElementById('loa_school_year').value.trim();
+        payload.loa_semester = document.getElementById('loa_semester').value;
+        payload.loa_reason = document.getElementById('loa_reason').value;
+        payload.loa_reason_details = document.getElementById('loa_reason_details').value.trim();
+
+        if (!payload.loa_filing_type || !payload.loa_application_date || !payload.loa_school_year || !payload.loa_semester || !payload.loa_reason) {
+            srpToast('Complete all required LOA filing details.', 'error');
+            return;
+        }
+    }
 
     try {
         const r = await fetch(STATUS_UPDATE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': SRP_CSRF, Accept: 'application/json' },
-            body: JSON.stringify({ status: status, remarks: remarks }),
+            body: JSON.stringify(payload),
         });
         const data = await r.json();
 

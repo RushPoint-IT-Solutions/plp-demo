@@ -6,8 +6,124 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
+    /* Half-legal sheet shown crosswise: 8.5in wide by 7in high. */
+    .gc-sheet {
+        width: 215.9mm;
+        min-height: 177.8mm;
+        padding: 7mm 10mm 6mm;
+        font-size: 9.5pt;
+        line-height: 1.2;
+    }
+
+    .gc-header {
+        margin-bottom: 2mm;
+    }
+
+    .gc-header-school,
+    .gc-header-office {
+        font-size: 10.5pt;
+        line-height: 1.15;
+    }
+
+    .gc-header-title {
+        font-size: 11.5pt;
+        margin-top: 2mm;
+    }
+
+    .gc-title {
+        font-size: 10.5pt;
+        margin-bottom: 1px;
+    }
+
+    .gc-line-row,
+    .gc-sign-row {
+        margin-bottom: 1px;
+    }
+
+    .gc-label,
+    .gc-check-text,
+    .gc-check-office,
+    .gc-office-colon {
+        font-size: 9.2pt;
+    }
+
+    .gc-subhint {
+        font-size: 7.2pt;
+        margin-bottom: 2px;
+    }
+
+    .gc-req-title {
+        margin-top: 2px;
+    }
+
+    .gc-req-sub {
+        font-size: 8.8pt;
+        margin: 0 0 2px;
+    }
+
+    .gc-checklist {
+        margin-bottom: 2px;
+    }
+
+    .gc-check-row {
+        grid-template-columns: minmax(0, 1.5fr) 6px 155px minmax(0, 0.75fr);
+        min-height: 18px;
+        margin-bottom: 1px;
+    }
+
+    .gc-check-box {
+        width: 14px;
+        height: 11px;
+        border-width: 1.5px;
+        margin-right: 6px;
+    }
+
+    .gc-check-text,
+    .gc-check-office {
+        line-height: 1.2;
+    }
+
+    .gc-declaration-title {
+        margin: 2px 0 1px;
+    }
+
+    .gc-declaration {
+        font-size: 9.2pt;
+        line-height: 1.2;
+        margin-bottom: 2px;
+    }
+
+    .gc-sign-row {
+        margin-top: 1px;
+    }
+
     @media print {
-        @page { size: A4 portrait; margin: 0; }
+        @page {
+            size: 8.5in 7in;
+            margin: 0;
+        }
+
+        body.gc-printing .gc-sheet {
+            width: 100%;
+            min-height: 0;
+            margin: 0;
+            padding: 7mm 10mm 6mm;
+            font-size: 9.5pt;
+            line-height: 1.2 !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        body.gc-printing .gc-check-row {
+            grid-template-columns: minmax(0, 1.5fr) 6px 155px minmax(0, 0.75fr) !important;
+            min-height: 18px !important;
+            margin-bottom: 1px !important;
+        }
+
+        body.gc-printing .gc-check-text,
+        body.gc-printing .gc-check-office {
+            line-height: 1.2 !important;
+        }
     }
 </style>
 @endpush
