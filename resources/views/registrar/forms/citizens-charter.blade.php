@@ -36,7 +36,7 @@
         @endphp
         <article class="cc-sheet cc-cover-page" data-page-index="1">
             <div class="cc-cover-body">
-                <img src="{{ asset('img/logo.svg') }}" alt="PLP Logo" class="cc-cover-logo">
+                <img src="{{ asset('img/plplogoo.png') }}?v=1999" alt="Pamantasan ng Lungsod ng Pasig 1999 logo" class="cc-cover-logo">
 
                 <h1 class="cc-cover-school">{{ $coverData['institution'] }}</h1>
                 <p class="cc-cover-school-sub">{{ $coverData['institution_sub'] }}</p>

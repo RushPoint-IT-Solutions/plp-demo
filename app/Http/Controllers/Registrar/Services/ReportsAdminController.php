@@ -587,10 +587,36 @@ class ReportsAdminController extends Controller
         ));
     }
 
+    private function cwaEntryYear($student): ?int
+    {
+        $studentNo = trim((string) optional($student)->student_no);
+
+        if (preg_match('/^(20\d{2})(?:\D|$)/', $studentNo, $matches) === 1) {
+            return (int) $matches[1];
+        }
+
+        if (preg_match('/^(\d{2})(?:\D|$)/', $studentNo, $matches) === 1) {
+            return 2000 + (int) $matches[1];
+        }
+
+        return null;
+    }
+
+    private function cwaIsPeSubject($subject): bool
+    {
+        $code = strtoupper(trim((string) optional($subject)->code));
+        $name = strtoupper(trim((string) optional($subject)->name));
+
+        return preg_match('/^(PE|PATH\s*FIT)(?:\s|\d|-|$)/', $code) === 1
+            || strpos($name, 'PATHFIT') !== false
+            || strpos($name, 'PHYSICAL ACTIVITY TOWARD') !== false
+            || strpos($name, 'PHYSICAL ACTIVITIES TOWARD') !== false;
+    }
+
     /**
-     * CWA Report — every student's Current Weighted Average: the grade equivalent
-     * (1.00-5.00 scale, PE/NSTP excluded) for whichever semester is each student's own
-     * most recent one, plus how many of that semester's subjects still need a grade.
+     * CWA Report — every student's cumulative grade equivalent across all enrolled terms.
+     * PE is included for the 2022 entry cohort. From the 2023 cohort onward, PE is
+     * identified as PATHFit and excluded together with NSTP.
      */
     public function cwaReport(Request $request)
     {
@@ -639,6 +665,7 @@ class ReportsAdminController extends Controller
             ->map(function ($student) use ($gradesByStudent) {
                 $enrolledSubjects = $student->subjects;
                 $currentLabel = '';
+                $entryYear = $this->cwaEntryYear($student);
 
                 if ($enrolledSubjects->isNotEmpty()) {
                     $currentSubject = $enrolledSubjects->sortByDesc('academic_term_id')->first();
@@ -662,7 +689,9 @@ class ReportsAdminController extends Controller
                     $postedCount++;
 
                     $code = strtoupper(trim((string) $subject->code));
-                    if ($code === '' || strpos($code, 'PE') === 0 || strpos($code, 'NSTP') === 0) {
+                    $isNstp = strpos($code, 'NSTP') === 0;
+                    $excludePe = $entryYear !== 2022 && $this->cwaIsPeSubject($subject);
+                    if ($code === '' || $isNstp || $excludePe) {
                         continue;
                     }
 
@@ -687,6 +716,10 @@ class ReportsAdminController extends Controller
                     'student_id' => (int) $student->id,
                     'student_no' => (string) $student->student_no,
                     'student_name' => (string) $student->name,
+                    'entry_year' => $entryYear,
+                    'pe_course_description' => $entryYear !== null && $entryYear >= 2023
+                        ? 'PATHFit (Physical Activity Towards Health and Fitness)'
+                        : 'PE',
                     'program' => (string) ($student->program ?: (optional($student->canonicalCourse)->code ?: optional($student->canonicalCourse)->name ?: '')),
                     'year_level' => (string) ($student->year_level ?: (optional($student->yearBlock)->label ?: '')),
                     'current_semester' => $currentLabel,

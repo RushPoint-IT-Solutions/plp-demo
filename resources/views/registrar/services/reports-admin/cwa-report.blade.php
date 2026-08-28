@@ -210,6 +210,7 @@
     <div class="gwa-head">
         <div>
             <h1 class="gwa-title">Cumulative Weighted Average Report</h1>
+            <p class="gwa-lead"><strong>Cohort rule:</strong> PE is included in CWA for 2022 entrants. Beginning with 2023 entrants, the PE course is identified as PATHFit (Physical Activity Towards Health and Fitness).</p>
             <p class="gwa-lead">Every student's CWA — their grade equivalent averaged across all enrolled semesters to date, plus how many grades overall are still missing.</p>
         </div>
         <div class="gwa-head-actions">
@@ -272,8 +273,10 @@
                         <th>#</th>
                         <th>Student No.</th>
                         <th>Student Name</th>
+                        <th>Entry Year</th>
                         <th>Program</th>
                         <th>Year Level</th>
+                        <th>PE Course Description</th>
                         <th>Current Semester</th>
                         <th>Subjects</th>
                         <th>Status</th>
@@ -294,8 +297,10 @@
                                 @endif
                             </td>
                             <td>{{ $row['student_name'] ?: '-' }}</td>
+                            <td>{{ $row['entry_year'] ?: '-' }}</td>
                             <td>{{ $row['program'] ?: '-' }}</td>
                             <td>{{ $row['year_level'] ?: '-' }}</td>
+                            <td>{{ $row['pe_course_description'] ?: '-' }}</td>
                             <td>{{ $row['current_semester'] ?: '-' }}</td>
                             <td>{{ number_format((int) $row['subjects_count']) }}</td>
                             <td>
@@ -311,7 +316,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9">No students found.</td>
+                            <td colspan="11">No students found.</td>
                         </tr>
                     @endforelse
                 </tbody>
