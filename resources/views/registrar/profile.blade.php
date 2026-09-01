@@ -140,6 +140,41 @@
         line-height: 1.45;
         margin: 0 0 16px;
     }
+    .registrar-password-field {
+        position: relative;
+    }
+    .registrar-password-field .form-control {
+        padding-right: 44px;
+    }
+    .registrar-password-field .form-control.is-invalid {
+        background-position: right 2.75rem center;
+        padding-right: 68px;
+    }
+    .registrar-password-toggle {
+        align-items: center;
+        background: transparent;
+        border: 0;
+        color: #6b7a70;
+        display: inline-flex;
+        height: 36px;
+        justify-content: center;
+        padding: 0;
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 38px;
+        z-index: 2;
+    }
+    .registrar-password-toggle:hover,
+    .registrar-password-toggle:focus-visible {
+        color: #006837;
+    }
+    .registrar-password-toggle:focus-visible {
+        border-radius: 4px;
+        outline: 2px solid rgba(0, 104, 55, 0.3);
+        outline-offset: 0;
+    }
     @media (max-width: 720px) {
         .registrar-profile-hero {
             align-items: flex-start;
@@ -246,23 +281,38 @@
 
                     <div class="mb-3">
                         <label for="registrarCurrentPassword" class="form-label fw-semibold">Current Password</label>
-                        <input id="registrarCurrentPassword" type="password" name="current_password" class="form-control {{ $errors->has('current_password') ? 'is-invalid' : '' }}" autocomplete="current-password" required>
+                        <div class="registrar-password-field">
+                            <input id="registrarCurrentPassword" type="password" name="current_password" class="form-control {{ $errors->has('current_password') ? 'is-invalid' : '' }}" autocomplete="current-password" required>
+                            <button type="button" class="registrar-password-toggle" data-password-toggle="registrarCurrentPassword" aria-label="Show current password" aria-controls="registrarCurrentPassword" aria-pressed="false">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
                         @if($errors->has('current_password'))
-                            <div class="invalid-feedback">{{ $errors->first('current_password') }}</div>
+                            <div class="invalid-feedback d-block">{{ $errors->first('current_password') }}</div>
                         @endif
                     </div>
 
                     <div class="mb-3">
                         <label for="registrarNewPassword" class="form-label fw-semibold">New Password</label>
-                        <input id="registrarNewPassword" type="password" name="password" class="form-control {{ $errors->has('password') ? 'is-invalid' : '' }}" autocomplete="new-password" required>
+                        <div class="registrar-password-field">
+                            <input id="registrarNewPassword" type="password" name="password" class="form-control {{ $errors->has('password') ? 'is-invalid' : '' }}" autocomplete="new-password" required>
+                            <button type="button" class="registrar-password-toggle" data-password-toggle="registrarNewPassword" aria-label="Show new password" aria-controls="registrarNewPassword" aria-pressed="false">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
                         @if($errors->has('password'))
-                            <div class="invalid-feedback">{{ $errors->first('password') }}</div>
+                            <div class="invalid-feedback d-block">{{ $errors->first('password') }}</div>
                         @endif
                     </div>
 
                     <div class="mb-0">
                         <label for="registrarConfirmPassword" class="form-label fw-semibold">Confirm New Password</label>
-                        <input id="registrarConfirmPassword" type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required>
+                        <div class="registrar-password-field">
+                            <input id="registrarConfirmPassword" type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required>
+                            <button type="button" class="registrar-password-toggle" data-password-toggle="registrarConfirmPassword" aria-label="Show confirmed password" aria-controls="registrarConfirmPassword" aria-pressed="false">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -276,14 +326,32 @@
 @endsection
 
 @push('scripts')
-@if($errors->any() || session('open_change_password_modal'))
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+            var input = document.getElementById(button.getAttribute('data-password-toggle'));
+            var icon = button.querySelector('i');
+
+            if (!input || !icon) {
+                return;
+            }
+
+            button.addEventListener('click', function () {
+                var showPassword = input.type === 'password';
+                input.type = showPassword ? 'text' : 'password';
+                icon.classList.toggle('bi-eye', !showPassword);
+                icon.classList.toggle('bi-eye-slash', showPassword);
+                button.setAttribute('aria-pressed', showPassword ? 'true' : 'false');
+                button.setAttribute('aria-label', (showPassword ? 'Hide ' : 'Show ') + input.labels[0].textContent.toLowerCase());
+            });
+        });
+
+        @if($errors->any() || session('open_change_password_modal'))
         var modalElement = document.getElementById('registrarChangePasswordModal');
         if (modalElement && window.bootstrap) {
             window.bootstrap.Modal.getOrCreateInstance(modalElement).show();
         }
+        @endif
     });
 </script>
-@endif
 @endpush
