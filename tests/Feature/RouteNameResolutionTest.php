@@ -35,6 +35,11 @@ class RouteNameResolutionTest extends TestCase
         );
 
         $this->assertSame(
+            '/registrar/services/reports-admin/form-137a-monitoring',
+            route('registrar.services.reports-admin.form-137a-monitoring', [], false)
+        );
+
+        $this->assertSame(
             '/registrar/services/reports-admin/waiver-cancellation-reports',
             route('registrar.services.reports-admin.waiver-cancellation-reports', [], false)
         );

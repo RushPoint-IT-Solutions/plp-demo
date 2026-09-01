@@ -212,6 +212,112 @@ class ReportsAdminController extends Controller
         return view('registrar.services.reports-admin.academic-reports', compact('summary', 'students', 'systemConfig'));
     }
 
+    public function form137aMonitoring(Request $request)
+    {
+        $startDate = $this->normalizedReportDate($request->query('start_date'));
+        $endDate = $this->normalizedReportDate($request->query('end_date'));
+        if ($startDate !== '' && $endDate !== '' && $startDate > $endDate) {
+            [$startDate, $endDate] = [$endDate, $startDate];
+        }
+
+        $search = trim((string) $request->query('q', ''));
+        $status = trim((string) $request->query('status', ''));
+        if (!in_array($status, ['awaiting_print', 'printed'], true)) {
+            $status = '';
+        }
+
+        $issuance = (int) $request->query('issuance', 0);
+        if (!in_array($issuance, [1, 2], true)) {
+            $issuance = 0;
+        }
+
+        $records = collect();
+        if (Schema::hasTable('form_137a_requests')) {
+            $query = DB::table('form_137a_requests as f137')
+                ->join('students as s', 's.id', '=', 'f137.student_id')
+                ->leftJoin('users as requested_user', 'requested_user.id', '=', 'f137.requested_by_user_id')
+                ->leftJoin('users as printed_user', 'printed_user.id', '=', 'f137.printed_by_user_id')
+                ->select([
+                    'f137.id',
+                    'f137.student_id',
+                    'f137.issuance_number',
+                    'f137.requested_at',
+                    'f137.printed_at',
+                    's.student_no',
+                    's.name as student_name',
+                    'requested_user.name as requested_by',
+                    'printed_user.name as printed_by',
+                ]);
+
+            $hasStudentCourseId = Schema::hasColumn('students', 'course_id');
+            $hasStudentProgram = Schema::hasColumn('students', 'program');
+            if ($hasStudentCourseId && Schema::hasTable('courses')) {
+                $query->leftJoin('courses as course', 'course.id', '=', 's.course_id');
+                $query->addSelect($hasStudentProgram
+                    ? DB::raw("COALESCE(NULLIF(s.program, ''), course.code, course.name, '') as program")
+                    : DB::raw("COALESCE(course.code, course.name, '') as program"));
+            } elseif ($hasStudentProgram) {
+                $query->addSelect('s.program');
+            } else {
+                $query->addSelect(DB::raw("'' as program"));
+            }
+
+            $scopedCourseIds = $request->user()
+                ? \App\Support\CourseScopeGate::allowedCourseIds($request->user())
+                : null;
+
+            $records = $query
+                ->when($scopedCourseIds !== null && $hasStudentCourseId, function ($builder) use ($scopedCourseIds) {
+                    $builder->whereIn('s.course_id', $scopedCourseIds);
+                })
+                ->when($scopedCourseIds !== null && !$hasStudentCourseId, function ($builder) {
+                    $builder->whereRaw('1 = 0');
+                })
+                ->when($startDate !== '', function ($builder) use ($startDate) {
+                    $builder->whereDate('f137.requested_at', '>=', $startDate);
+                })
+                ->when($endDate !== '', function ($builder) use ($endDate) {
+                    $builder->whereDate('f137.requested_at', '<=', $endDate);
+                })
+                ->when($status === 'awaiting_print', function ($builder) {
+                    $builder->whereNull('f137.printed_at');
+                })
+                ->when($status === 'printed', function ($builder) {
+                    $builder->whereNotNull('f137.printed_at');
+                })
+                ->when($issuance > 0, function ($builder) use ($issuance) {
+                    $builder->where('f137.issuance_number', $issuance);
+                })
+                ->when($search !== '', function ($builder) use ($search) {
+                    $like = '%' . $search . '%';
+                    $builder->where(function ($nested) use ($like) {
+                        $nested->where('s.student_no', 'like', $like)
+                            ->orWhere('s.name', 'like', $like)
+                            ->orWhere('requested_user.name', 'like', $like)
+                            ->orWhere('printed_user.name', 'like', $like);
+                    });
+                })
+                ->orderByDesc('f137.requested_at')
+                ->orderByDesc('f137.id')
+                ->get();
+        }
+
+        return view('registrar.services.reports-admin.form-137a-monitoring', [
+            'records' => $records,
+            'filters' => compact('startDate', 'endDate', 'search', 'status', 'issuance'),
+            'summary' => [
+                'total' => $records->count(),
+                'unique_students' => $records->pluck('student_id')->unique()->count(),
+                'awaiting_print' => $records->filter(function ($record) {
+                    return empty($record->printed_at);
+                })->count(),
+                'printed' => $records->filter(function ($record) {
+                    return !empty($record->printed_at);
+                })->count(),
+            ],
+        ]);
+    }
+
     public function loaReports(Request $request)
     {
         $systemConfig = $this->reportSystemConfig($request);
@@ -1244,5 +1350,17 @@ class ReportsAdminController extends Controller
             'selectedSchoolYear' => $selectedSchoolYear,
             'selectedTerm' => $selectedTerm,
         ];
+    }
+
+    private function normalizedReportDate($value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        $date = \DateTime::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $value : '';
     }
 }

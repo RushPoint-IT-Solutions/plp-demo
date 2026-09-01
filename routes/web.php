@@ -531,6 +531,7 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth', 'force_passw
 
         Route::prefix('reports-admin')->name('reports-admin.')->group(function () {
             Route::get('/academic-reports', 'Registrar\Services\ReportsAdminController@academicReports')->name('academic-reports');
+            Route::get('/form-137a-monitoring', 'Registrar\Services\ReportsAdminController@form137aMonitoring')->name('form-137a-monitoring');
             Route::get('/loa-reports', 'Registrar\Services\ReportsAdminController@loaReports')->name('loa-reports');
             Route::get('/waiver-cancellation-reports', 'Registrar\Services\ReportsAdminController@waiverCancellationReports')->name('waiver-cancellation-reports');
             Route::get('/gwa-report', 'Registrar\Services\ReportsAdminController@gwaReport')->name('gwa-report');

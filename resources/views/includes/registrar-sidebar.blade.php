@@ -382,7 +382,7 @@
         @php
             $reportsActive = request()->routeIs('registrar.services.reports-admin.*');
         @endphp
-        @if($canViewAny(['registrar.services.reports-admin.academic-reports', 'registrar.services.reports-admin.loa-reports', 'registrar.services.reports-admin.waiver-cancellation-reports', 'registrar.services.reports-admin.gwa-report', 'registrar.services.reports-admin.cwa-report', 'registrar.services.reports-admin.certifications', 'registrar.services.reports-admin.tagging-of-graduates', 'registrar.services.reports-admin.guidance-reports', 'registrar.services.reports-admin.batch-print']))
+        @if($canViewAny(['registrar.services.reports-admin.academic-reports', 'registrar.services.reports-admin.form-137a-monitoring', 'registrar.services.reports-admin.loa-reports', 'registrar.services.reports-admin.waiver-cancellation-reports', 'registrar.services.reports-admin.gwa-report', 'registrar.services.reports-admin.cwa-report', 'registrar.services.reports-admin.certifications', 'registrar.services.reports-admin.tagging-of-graduates', 'registrar.services.reports-admin.guidance-reports', 'registrar.services.reports-admin.batch-print']))
         <div class="sidebar-dropdown {{ $reportsActive ? 'open' : '' }}">
             <a href="#" class="sidebar-link sidebar-dropdown-toggle {{ $reportsActive ? 'active' : '' }}">
                 {{-- chart / analytics icon --}}
@@ -398,6 +398,7 @@
             <div class="sidebar-dropdown-menu">
                 <div class="sidebar-section-label">Academic</div>
                 @if($canView('registrar.services.reports-admin.academic-reports'))<a href="{{ route('registrar.services.reports-admin.academic-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.academic-reports') ? 'active' : '' }}">Academic Reports</a>@endif
+                @if($canView('registrar.services.reports-admin.form-137a-monitoring'))<a href="{{ route('registrar.services.reports-admin.form-137a-monitoring') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.form-137a-monitoring') ? 'active' : '' }}">Form 137-A Monitoring</a>@endif
                 @if($canView('registrar.services.reports-admin.loa-reports'))<a href="{{ route('registrar.services.reports-admin.loa-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.loa-reports') ? 'active' : '' }}">LOA Reports</a>@endif
                 @if($canView('registrar.services.reports-admin.waiver-cancellation-reports'))<a href="{{ route('registrar.services.reports-admin.waiver-cancellation-reports') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.waiver-cancellation-reports') ? 'active' : '' }}">Waiver Cancellation Reports</a>@endif
                 @if($canView('registrar.services.reports-admin.gwa-report'))<a href="{{ route('registrar.services.reports-admin.gwa-report') }}" class="sidebar-sublink {{ request()->routeIs('registrar.services.reports-admin.gwa-report') ? 'active' : '' }}">GWA Report</a>@endif
