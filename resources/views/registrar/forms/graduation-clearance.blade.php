@@ -6,7 +6,7 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/forms.css') }}?v={{ time() }}">
 <style>
-    /* Half-legal sheet shown crosswise: 8.5in wide by 7in high. */
+    /* The form occupies the upper half of a portrait Legal sheet. */
     .gc-sheet {
         width: 215.9mm;
         min-height: 177.8mm;
@@ -99,15 +99,18 @@
 
     @media print {
         @page {
-            size: 8.5in 7in;
+            size: 8.5in 14in;
             margin: 0;
         }
 
         body.gc-printing .gc-sheet {
-            width: 100%;
-            min-height: 0;
+            width: 8.5in;
+            height: 7in;
+            min-height: 7in;
+            max-height: 7in;
             margin: 0;
             padding: 7mm 10mm 6mm;
+            box-sizing: border-box;
             font-size: 9.5pt;
             line-height: 1.2 !important;
             break-inside: avoid;
