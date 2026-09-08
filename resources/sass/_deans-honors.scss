@@ -40,7 +40,9 @@
 
         @media print {
             width: 7in;
+            height: 4.25in;
             min-height: 4.25in;
+            box-sizing: border-box;
             margin: 0;
             padding: 0.36in 0.575in 0.36in;
             box-shadow: none;
@@ -48,8 +50,9 @@
             break-inside: avoid;
             position: absolute;
             top: 0;
-            left: 0;
-            transform: none !important;
+            left: 4.25in;
+            transform: rotate(90deg) !important;
+            transform-origin: top left;
         }
     }
 
@@ -195,7 +198,13 @@
     }
 
     .registrar-body .pf-page {
+        position: relative !important;
+        width: 8.5in !important;
+        height: 7in !important;
+        min-height: 7in !important;
+        max-height: 7in !important;
         margin: 0 !important;
         padding: 0 !important;
+        overflow: hidden !important;
     }
 }
