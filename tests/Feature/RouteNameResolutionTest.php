@@ -55,4 +55,42 @@ class RouteNameResolutionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         route('faculty-create');
     }
+
+    public function test_pwa_manifest_has_required_install_assets()
+    {
+        $manifestPath = public_path('manifest.webmanifest');
+        $this->assertFileExists($manifestPath);
+
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+        $this->assertSame('PLP Portal', $manifest['name']);
+        $this->assertSame('standalone', $manifest['display']);
+        $this->assertSame('#006837', $manifest['theme_color']);
+
+        $icons = collect($manifest['icons'])->keyBy('sizes');
+        $this->assertTrue($icons->has('192x192'));
+        $this->assertTrue($icons->has('512x512'));
+
+        foreach (['192x192', '512x512'] as $size) {
+            $iconPath = public_path($icons->get($size)['src']);
+            $this->assertFileExists($iconPath);
+            [$width, $height] = getimagesize($iconPath);
+            [$expectedWidth, $expectedHeight] = array_map('intval', explode('x', $size));
+            $this->assertSame($expectedWidth, $width);
+            $this->assertSame($expectedHeight, $height);
+        }
+    }
+
+    public function test_service_worker_and_offline_fallback_exist()
+    {
+        $serviceWorkerPath = public_path('service-worker.js');
+        $offlinePath = public_path('offline.html');
+
+        $this->assertFileExists($serviceWorkerPath);
+        $this->assertFileExists($offlinePath);
+
+        $serviceWorker = file_get_contents($serviceWorkerPath);
+        $this->assertNotFalse(strpos($serviceWorker, "request.mode === 'navigate'"));
+        $this->assertNotFalse(strpos($serviceWorker, "request.method !== 'GET'"));
+        $this->assertNotFalse(strpos($serviceWorker, 'private media'));
+    }
 }
