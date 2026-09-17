@@ -4,9 +4,24 @@ Prepared from the implemented Laravel application, registered route surface, con
 
 ## Deliverable
 
-- `PLP-System-Process-Flows.vsdx` - editable Microsoft Visio drawing with 37 pages.
-- Each page uses consistent actor labels, decision points, and exception/rework notes.
+- `PLP-System-Process-Flows.vsdx` - editable Microsoft Visio drawing with 37 controlled process-documentation pages.
+- `PLP-All-Modules-Consolidated-Process-Flow.vsdx` - separate editable one-page Visio swimlane showing all 37 process families as one end-to-end academic lifecycle.
+- `PLP-All-Modules-Consolidated-Flow-Guide.md` - phase, module, ownership, and exit-validation companion for the consolidated page.
+- Each page uses a cross-functional swimlane design with one horizontal lane per responsible actor, numbered left-to-right activities, orthogonal handoff connectors, decision points, exception/rework notes, requirements, validation gates, outputs, records, and audit evidence.
 - Page names are numbered so Visio keeps the intended business dependency order.
+
+## Documentation standard used on every page
+
+Each Visio page contains the following documentation layers:
+
+1. **Purpose and scope** - defines the business boundary and the capability represented.
+2. **Cross-functional swimlane flow** - separates the initiating party, system activity, reviewers/approvers, and recipients into actor-owned horizontal lanes, making responsibility and handoffs explicit.
+3. **Decision and exception path** - identifies where a transaction is rejected, returned for correction, held, or blocked.
+4. **Requirements / preconditions** - lists the records, configuration, permissions, documents, and prior states required before processing.
+5. **Validation and decision gates** - summarizes identity, authorization, completeness, uniqueness, reference-integrity, date/status, capacity, approval, and duplication controls relevant to that process.
+6. **Outputs / records / audit evidence** - identifies the transaction record, status/result, downstream output, actor, timestamp, history, and exception evidence produced by the flow.
+
+The validation panels are business-facing control summaries grounded in the implemented application. They are not intended to replace field-by-field Laravel validator definitions or formal policy/legal requirements.
 
 ## Coverage
 
@@ -60,7 +75,7 @@ Prepared from the implemented Laravel application, registered route surface, con
 
 ## Source basis
 
-- `routes/web.php` and the registered `php artisan route:list` surface (550 routes at review time)
+- `routes/web.php` and the registered `php artisan route:list` surface (551 routes at the latest validation)
 - `app/Http/Controllers/**`, related request validators, middleware, models, and support services
 - `resources/views/**` portal and registrar view hierarchy
 - `docs/manual/PLP-System-User-Manual.md`
