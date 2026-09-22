@@ -1,6 +1,7 @@
 @extends('layouts.registrar')
 
 @section('title', 'Student Records')
+@section('page-title', 'Student Records')
 
 @push('styles')
 <style>
