@@ -414,10 +414,11 @@
 @endpush
 
 @section('content')
+@include('registrar.registrar-menu.student-management.partials.student-master-source')
 @php
     $prof    = $student->profile;
     $isWD    = $student->is_withdrawn ?? false;
-    $studentStatus = $isWD ? 'Withdrawn' : ($student->status ?: 'Active');
+    $studentStatus = $isWD ? 'Withdrawn' : ($student->import_inactive ? 'Inactive' : ($student->status ?: 'Active'));
     $statusBadgeClass = [
         'Active' => 'badge-green',
         'LOA' => 'badge-yellow',

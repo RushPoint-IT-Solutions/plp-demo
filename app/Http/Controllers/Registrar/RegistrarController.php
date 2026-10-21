@@ -19204,6 +19204,9 @@ class RegistrarController extends Controller
 
         // students table uses course_id, year_block_id, academic_term_id — not text columns
         $studentRelations = ['profile', 'canonicalCourse', 'academicTerm', 'yearBlock'];
+        if (Schema::hasTable('student_master_sources')) {
+            $studentRelations[] = 'masterSource';
+        }
         if (Schema::hasTable('graduate_taggings')) {
             $studentRelations[] = 'graduateTagging';
         }
@@ -19244,8 +19247,10 @@ class RegistrarController extends Controller
             }
         }
         if ($status === 'active') {
-            $query->where(function ($q) {
-                $q->whereNull('is_withdrawn')->orWhere('is_withdrawn', false);
+            $query->active();
+        } elseif ($status === 'inactive' && Schema::hasTable('student_master_sources')) {
+            $query->whereHas('masterSource', function ($source) {
+                $source->where('is_active', false);
             });
         } elseif ($status === 'withdrawn') {
             $query->where('is_withdrawn', true);
@@ -19342,9 +19347,7 @@ class RegistrarController extends Controller
         $totalCount     = Student::when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
             $q->whereIn('course_id', $scopedCourseIds);
         })->count();
-        $activeCount    = Student::where(function ($q) {
-            $q->whereNull('is_withdrawn')->orWhere('is_withdrawn', false);
-        })->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
+        $activeCount    = Student::active()->when($scopedCourseIds !== null, function ($q) use ($scopedCourseIds) {
             $q->whereIn('course_id', $scopedCourseIds);
         })->count();
         $withdrawnCount = Student::where('is_withdrawn', true)

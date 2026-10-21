@@ -235,6 +235,9 @@
             <p style="font-size:13px;color:#64748b;margin:2px 0 0;">Complete student database — search, filter, and view full profiles</p>
         </div>
         <div class="sr-view-controls">
+            @if(\App\Support\CourseScopeGate::allowedCourseIds(auth()->user()) === null)
+                <a class="sr-btn-clear" href="{{ route('registrar.registrar-menu.student-mgmt.student-master-import') }}">Import StudentMaster</a>
+            @endif
             <form method="POST" action="{{ route('registrar.registrar-menu.student-mgmt.student-records.recalculate-irregular') }}" onsubmit="return confirm('Recalculate Irregular status for every active student from their current term grades?');">
                 @csrf
                 <button type="submit" class="sr-btn-clear" title="Recompute Irregular status from current term grades">Recalculate Irregular Status</button>
@@ -368,7 +371,7 @@
 
         {{-- Status pills --}}
         <div class="sr-status-bar">
-            @foreach([['all','All Students'],['active','Active'],['withdrawn','Withdrawn'],['transferee','Transferee'],['irregular','Irregular']] as [$val,$lbl])
+            @foreach([['all','All Students'],['active','Active'],['inactive','Inactive'],['withdrawn','Withdrawn'],['transferee','Transferee'],['irregular','Irregular']] as [$val,$lbl])
                 <a href="{{ route('registrar.registrar-menu.student-mgmt.student-records', array_merge(request()->except('status','graduate','page'), ['status'=>$val, 'graduate'=>'all'])) }}"
                    class="sr-status-pill {{ $val }} {{ $status === $val ? 'selected' : '' }}">
                     {{ $lbl }}
@@ -407,8 +410,8 @@
                         <div class="sr-card-name">{{ $name }}</div>
                         <div class="sr-card-no">{{ $s->student_no }}</div>
                     </div>
-                    <span class="sr-card-badge {{ $isWD ? 'badge-withdrawn' : 'badge-active' }}">
-                        {{ $isWD ? 'Withdrawn' : 'Active' }}
+                    <span class="sr-card-badge {{ $isWD || $s->import_inactive ? 'badge-withdrawn' : 'badge-active' }}">
+                        {{ $isWD ? 'Withdrawn' : ($s->import_inactive ? 'Inactive' : 'Active') }}
                     </span>
                     @if($s->is_transferee || $s->is_irregular)
                     <div class="sr-card-flags">
@@ -550,7 +553,7 @@
                             <div class="sr-table-muted">{{ $semesterText ?: '-' }}</div>
                         </td>
                         <td>
-                            <span class="sr-table-status {{ $isWD ? 'withdrawn' : 'active' }}">{{ $isWD ? 'Withdrawn' : 'Active' }}</span>
+                            <span class="sr-table-status {{ $isWD || $s->import_inactive ? 'withdrawn' : 'active' }}">{{ $isWD ? 'Withdrawn' : ($s->import_inactive ? 'Inactive' : 'Active') }}</span>
                             @if($s->is_transferee || $s->is_irregular)
                             <div class="sr-table-flags">
                                 @if($s->is_transferee)<span class="sr-table-status transferee">Transferee</span>@endif

@@ -6,6 +6,7 @@ namespace App;
 use App\Concerns\ResolvesAcademicTerm;
 use App\Concerns\ResolvesProgramYearDimensions;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Student extends Model
 {
@@ -46,9 +47,25 @@ class Student extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where(function ($q) {
+        $query->where(function ($q) {
             $q->whereNull('is_withdrawn')->orWhere('is_withdrawn', false);
         });
+        if (Schema::hasTable('student_master_sources')) {
+            $query->whereDoesntHave('masterSource', function ($source) {
+                $source->where('is_active', false);
+            });
+        }
+        return $query;
+    }
+
+    public function masterSource()
+    {
+        return $this->hasOne(StudentMasterSource::class, 'student_id');
+    }
+
+    public function getImportInactiveAttribute(): bool
+    {
+        return $this->relationLoaded('masterSource') && $this->masterSource && !$this->masterSource->is_active;
     }
 
     /**
