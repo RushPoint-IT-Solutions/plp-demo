@@ -176,6 +176,13 @@ class ScholarshipController extends Controller
     {
         $this->ensureTables();
 
+        if (!Schema::hasColumn('scholarship_student', 'is_unifast')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'UNIFAST tagging is unavailable until the database migration is applied. Please contact your administrator.',
+            ], 503);
+        }
+
         $validated = $request->validate([
             'is_unifast' => ['required', 'boolean'],
         ]);

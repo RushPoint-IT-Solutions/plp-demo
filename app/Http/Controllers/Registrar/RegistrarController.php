@@ -19292,7 +19292,7 @@ class RegistrarController extends Controller
         }
 
         $unifastStudentIds = collect();
-        if (Schema::hasTable('scholarship_student')) {
+        if (Schema::hasTable('scholarship_student') && Schema::hasColumn('scholarship_student', 'is_unifast')) {
             $unifastStudentIds = DB::table('scholarship_student')
                 ->whereIn('student_id', $students->pluck('id'))
                 ->where('is_unifast', true)
