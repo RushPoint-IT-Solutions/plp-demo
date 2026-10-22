@@ -46,6 +46,18 @@ class AcademicCalendarEvent extends Model
         )->withTimestamps();
     }
 
+    public function scopeInCalendarOrder($query)
+    {
+        $query->orderBy('event_date');
+
+        // Older deployments still use time ranges until the date-range migration runs.
+        if (Schema::hasColumn($this->getTable(), 'date_from')) {
+            $query->orderBy('date_from');
+        }
+
+        return $query;
+    }
+
     public function scopeVisibleToAudience($query, $audienceCode)
     {
         $normalizedCode = strtolower(trim((string) $audienceCode));

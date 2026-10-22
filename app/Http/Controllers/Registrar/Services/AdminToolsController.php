@@ -292,8 +292,7 @@ class AdminToolsController extends Controller
 
         if (Schema::hasTable('academic_calendar_events')) {
             $calendarQuery = AcademicCalendarEvent::query()
-                ->orderBy('event_date')
-                ->orderBy('date_from');
+                ->inCalendarOrder();
 
             if (Schema::hasTable('academic_calendar_event_audiences')
                 && Schema::hasTable('academic_calendar_audience_types')) {

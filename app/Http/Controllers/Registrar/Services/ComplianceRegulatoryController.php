@@ -206,5 +206,3 @@ class ComplianceRegulatoryController extends Controller
             'selectedSchoolYear',
             'selectedTerm'
         ));
-    }
-}

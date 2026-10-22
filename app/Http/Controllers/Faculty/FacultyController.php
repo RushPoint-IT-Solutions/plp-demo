@@ -598,8 +598,7 @@ class FacultyController extends Controller
                         ->orWhereDate('post_until', '>=', $today);
                 })
                 ->visibleToAudience('faculty')
-                ->orderBy('event_date')
-                ->orderBy('date_from')
+                ->inCalendarOrder()
                 ->get()
                 ->map(function ($event) {
                     return [

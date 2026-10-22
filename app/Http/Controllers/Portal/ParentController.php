@@ -500,8 +500,7 @@ class ParentController extends Controller
                         ->orWhereDate('post_until', '>=', $today);
                 })
                 ->visibleToAudience($audienceCode)
-                ->orderBy('event_date')
-                ->orderBy('date_from')
+                ->inCalendarOrder()
                 ->get()
                 ->map(function ($event) {
                     return [

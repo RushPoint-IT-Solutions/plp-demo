@@ -244,8 +244,7 @@ class StudentController extends Controller
                         ->orWhereDate('post_until', '>=', $today);
                 })
                 ->visibleToAudience('student')
-                ->orderBy('event_date')
-                ->orderBy('date_from')
+                ->inCalendarOrder()
                 ->get()
                 ->map(function ($event) {
                     return [
