@@ -48,4 +48,17 @@ class Handler extends ExceptionHandler
     {
         return parent::render($request, $exception);
     }
+
+    protected function prepareResponse($request, Exception $exception)
+    {
+        $status = $this->isHttpException($exception) ? $exception->getStatusCode() : 500;
+
+        if ($status === 500 && !(app()->environment('local') && config('app.debug'))) {
+            return response()->view('errors.500', [], 500,
+                $this->isHttpException($exception) ? $exception->getHeaders() : []
+            );
+        }
+
+        return parent::prepareResponse($request, $exception);
+    }
 }
