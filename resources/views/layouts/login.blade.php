@@ -8,7 +8,7 @@
     <title>@yield('title', 'PLP - Login')</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+    <link rel="icon" href="{{ secure_asset('img/logobg.png') }}" type="image/png">
     @include('includes.pwa-meta')
 
     <!-- Google Fonts -->

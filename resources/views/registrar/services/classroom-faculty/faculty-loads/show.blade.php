@@ -880,7 +880,7 @@
             <div
                 id="rflPrintConfig"
                 class="d-none"
-                data-favicon="{{ asset('img/logobg.png') }}"
+                data-favicon="{{ secure_asset('img/logobg.png') }}"
                 data-bootstrap-css="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
                 data-app-css="{{ mix('css/app.css') }}"
                 data-style-css="{{ mix('css/style.css') }}"

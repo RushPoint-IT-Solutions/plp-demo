@@ -9,7 +9,7 @@
     <title>@yield('title', 'PLP Portal')</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+    <link rel="icon" href="{{ secure_asset('img/logobg.png') }}" type="image/png">
     @include('includes.pwa-meta')
     
     @include('includes.style')

@@ -7,7 +7,7 @@
 
     <title>@yield('title', 'PLP - Help Center')</title>
 
-    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+    <link rel="icon" href="{{ secure_asset('img/logobg.png') }}" type="image/png">
     @include('includes.pwa-meta')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

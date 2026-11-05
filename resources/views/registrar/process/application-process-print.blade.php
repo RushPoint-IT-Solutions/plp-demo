@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PLP - Application Process Print List</title>
 
-    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+    <link rel="icon" href="{{ secure_asset('img/logobg.png') }}" type="image/png">
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ mix('css/style.css') }}">
 </head>

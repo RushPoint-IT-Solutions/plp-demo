@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>Page unavailable | PLP Portal</title>
-    <link rel="icon" href="{{ asset('img/logobg.png') }}" type="image/png">
+    <link rel="icon" href="{{ secure_asset('img/logobg.png') }}" type="image/png">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; background: #f5f7f6; color: #243a30; font-family: 'Segoe UI', Arial, sans-serif; }
