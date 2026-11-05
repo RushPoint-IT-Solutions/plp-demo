@@ -11,7 +11,11 @@ class ApplicantBulkSeeder extends Seeder
     public function run()
     {
         if (app()->environment('production')) {
-            throw new \Exception('Cannot seed in production.');
+            if ($this->command) {
+                $this->command->warn('Skipping ApplicantBulkSeeder in production (sample applicants only).');
+            }
+
+            return;
         }
 
         $now = now();
