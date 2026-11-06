@@ -360,9 +360,7 @@ class ParentController extends Controller
                 ->where('student_id', $student->id)
                 ->get();
 
-            if ($gradeRows->isEmpty()) {
-                $gradeRows = $this->mapStudentGradeRecords($student);
-            }
+            $gradeRows = (new \App\Services\HistoricalStudentGrades())->merge($student, $gradeRows);
         }
 
         $deficiencyItems = collect();

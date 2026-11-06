@@ -145,6 +145,7 @@ class StudentController extends Controller
             }
 
             $gradeRows = $gradeQuery->get();
+            $gradeRows = (new \App\Services\HistoricalStudentGrades())->merge($student, $gradeRows);
         }
 
         $semesterOptions = $gradeRows

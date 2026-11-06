@@ -3368,13 +3368,6 @@ class AdminToolsController extends Controller
             return response()->json(['ok' => true, 'records' => []]);
         }
 
-        if (Schema::hasTable('student_grade_records')) {
-            $count = StudentGradeRecord::where('student_no', $studentNo)->count();
-            if ($count === 0) {
-                $this->seedStudentGradeRecordsFor($studentNo);
-            }
-        }
-
         $records = StudentGradeRecord::where('student_no', $studentNo)
             ->orderByDesc('school_year')
             ->orderByRaw("CASE WHEN LOWER(term) LIKE '%first%' THEN 1 WHEN LOWER(term) LIKE '%second%' THEN 2 WHEN LOWER(term) LIKE '%summer%' THEN 3 ELSE 4 END")

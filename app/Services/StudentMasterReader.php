@@ -12,7 +12,14 @@ use ZipArchive;
 
 class StudentMasterReader
 {
-    public function rows(string $path): Generator
+    private $xmlLimit;
+
+    public function __construct(int $xmlLimit = 67108864)
+    {
+        $this->xmlLimit = $xmlLimit;
+    }
+
+    public function rows(string $path, array $requiredHeaders = ['fldStudNo', 'fldLastName', 'fldFirstName', 'fldActive']): Generator
     {
         $zip = new ZipArchive();
         if ($zip->open($path) !== true) {
@@ -55,9 +62,8 @@ class StudentMasterReader
                 if ($headers === null) {
                     ksort($values);
                     $headers = $values;
-                    if (!in_array('fldStudNo', $headers, true) || !in_array('fldLastName', $headers, true)
-                        || !in_array('fldFirstName', $headers, true) || !in_array('fldActive', $headers, true)) {
-                        throw new RuntimeException('The first worksheet must contain the original StudentMaster column headings.');
+                    if (array_diff($requiredHeaders, $headers)) {
+                        throw new RuntimeException('The first worksheet is missing required column headings: ' . implode(', ', array_diff($requiredHeaders, $headers)));
                     }
                     continue;
                 }
@@ -89,8 +95,8 @@ class StudentMasterReader
     private function elements(ZipArchive $zip, string $entry, string $element): Generator
     {
         $stat = $zip->statName($entry);
-        if (!$stat || $stat['size'] > 64 * 1024 * 1024) {
-            throw new RuntimeException('The workbook is missing a worksheet or exceeds the 64 MB expanded XML limit.');
+        if (!$stat || $stat['size'] > $this->xmlLimit) {
+            throw new RuntimeException('The workbook is missing a worksheet or exceeds the expanded XML limit.');
         }
         $stream = $zip->getStream($entry);
         $temporary = tmpfile();

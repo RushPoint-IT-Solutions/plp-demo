@@ -124,6 +124,10 @@ class StudentMasterImporter
             $get('fldFirstName'), $get('fldMiddleName'), $get('fldNameSuffix')])));
         $errors = [];
         $warnings = [];
+        $excluded = (new LegacyImportPolicy())->exclusion($fields, ['fldStudNo', 'fldFirstName', 'fldLastName', 'fldMiddleName'], $row['source'] ?? []);
+        if ($excluded) {
+            $errors[] = 'Excluded source record: ' . $excluded . '.';
+        }
         if ($number === '' || mb_strlen($number) > 255 || preg_match('/[\x00-\x1F]/', $number)) {
             $errors[] = 'Missing or invalid student number.';
         }
